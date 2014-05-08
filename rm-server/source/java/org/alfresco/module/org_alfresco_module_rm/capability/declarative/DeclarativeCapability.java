@@ -29,6 +29,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
@@ -209,7 +210,12 @@ public class DeclarativeCapability extends AbstractCapability
                     throw new AlfrescoRuntimeException("Capability condition " + conditionName + " does not exist.  Check the configuration of the capability " + name + ".");
                 }
 
+                // determine the actual value
                 boolean actual = condition.evaluate(nodeRef);
+                
+                // report information about condition (for exception reporting)
+                RMMethodSecurityInterceptor.reportCapabilityCondition(getName(), condition.getName(), expected, actual);
+                
                 if (expected != actual)
                 {
                     result = false;
@@ -218,11 +224,10 @@ public class DeclarativeCapability extends AbstractCapability
                     {
                         logger.debug("FAIL: Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
                     }
-
+                    
                     break;
                 }
             }
-
         }
         return result;
     }
@@ -277,7 +282,7 @@ public class DeclarativeCapability extends AbstractCapability
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability#hasPermissionImpl(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.Capability#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     public int evaluate(NodeRef nodeRef)

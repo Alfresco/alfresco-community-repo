@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,20 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.integration;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.disposition;
 
-import org.alfresco.module.org_alfresco_module_rm.test.integration.disposition.DispositionTestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.integration.dod.DoD5015TestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.integration.event.EventTestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.integration.issue.IssueTestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.integration.report.ReportTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-
 /**
- * RM Integration Test Suite
+ * Disposition integration test suite
  *
  * @author Roy Wetherall
  * @since 2.2
@@ -37,12 +31,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    DoD5015TestSuite.class,
-    IssueTestSuite.class,
-    EventTestSuite.class,
-    ReportTestSuite.class,
-    DispositionTestSuite.class
+    CutOffTest.class
 })
-public class IntegrationTestSuite
+public class DispositionTestSuite
 {
 }

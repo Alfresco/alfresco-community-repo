@@ -337,27 +337,32 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @param lastAsFolder  true if this is the last element of the pathe being created and it should be created as a folder. ignored if targetIsUnfiledRecords is true
      * @return
      */
-    private NodeRef createChild(Action action, NodeRef parent, String childName, boolean targetisUnfiledRecords, boolean lastAsFolder)
+    private NodeRef createChild(final Action action, final NodeRef parent, final String childName, final boolean targetisUnfiledRecords, final boolean lastAsFolder)
     {
-        NodeRef child = null;
-        if(targetisUnfiledRecords)
+        return AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            child = this.fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
-        }
-        else if(lastAsFolder)
-        {
-            child = recordFolderService.createRecordFolder(parent, childName);
-        }
-        else
-        {
-            if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(parent)))
+            public NodeRef doWork() throws Exception
             {
-                throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be created.");
+                NodeRef child = null;
+                if(targetisUnfiledRecords)
+                {
+                    child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
+                }
+                else if(lastAsFolder)
+                {
+                    child = recordFolderService.createRecordFolder(parent, childName);
+                }
+                else
+                {
+                    if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(parent)))
+                    {
+                        throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be created.");
+                    }
+                    child = filePlanService.createRecordCategory(parent, childName);
+                }
+                return child;
             }
-            child = this.filePlanService.createRecordCategory(parent, childName);
-        }
-        return child;
-
+        });
     }
 
     /**

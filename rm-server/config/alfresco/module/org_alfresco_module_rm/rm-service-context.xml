@@ -16,7 +16,7 @@
         </property>
     </bean>
 
-    <bean id="baseSecurity" abstract="true" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+    <bean id="baseSecurity" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
         </property>
@@ -77,16 +77,7 @@
         </property>
     </bean>
 
-    <bean id="VitalRecordService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="VitalRecordService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -139,16 +130,7 @@
         </property>
     </bean>
 
-    <bean id="DispositionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="DispositionService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -212,16 +194,7 @@
         </property>
     </bean>
 
-    <bean id="rmTransferService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="rmTransferService_security" parent="baseSecurity">        
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -266,16 +239,7 @@
         </property>
     </bean>
 
-    <bean id="CapabilityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="CapabilityService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -395,16 +359,7 @@
         </property>
     </bean>
 
-    <bean id="RecordsManagementSearchService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="RecordsManagementSearchService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -517,16 +472,7 @@
         </property>
     </bean>
 
-    <bean id="FilePlanPermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="FilePlanPermissionService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -586,16 +532,7 @@
         </property>
     </bean>
 
-    <bean id="FilePlanRoleService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="FilePlanRoleService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                <![CDATA[
@@ -697,16 +634,7 @@
         </property>
     </bean>
 
-    <bean id="ModelSecurityService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="ModelSecurityService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -751,16 +679,7 @@
     </bean>
 
 
-    <bean id="RecordsManagementActionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="RecordsManagementActionService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -817,16 +736,7 @@
     </bean>
 
 
-    <bean id="RecordsManagementEventService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="RecordsManagementEventService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -893,16 +803,7 @@
     </bean>
 
 
-    <bean id="RecordsManagementAdminService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="RecordsManagementAdminService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -981,16 +882,7 @@
         </property>
     </bean>
 
-    <bean id="FreezeService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="FreezeService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -1062,16 +954,7 @@
         </property>
     </bean>
 
-    <bean id="RecordsManagementAuditService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="RecordsManagementAuditService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -1130,16 +1013,7 @@
         </property>
     </bean>
 
-    <bean id="RecordFolderService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="RecordFolderService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -1149,7 +1023,7 @@
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.setupRecordFolder=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.closeRecordFolder=RM_CAP.0.rma:filePlanComponent.CloseFolders
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.closeRecordFolder=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.*=RM_DENY
                 ]]>
             </value>
@@ -1210,16 +1084,7 @@
         </property>
     </bean>
 
-    <bean id="RecordService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="RecordService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -1313,16 +1178,7 @@
         </property>
     </bean>
 
-        <bean id="CustomEmailMappingService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+        <bean id="CustomEmailMappingService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -1434,16 +1290,7 @@
         <property name="caveatConfigService" ref="caveatConfigService"/>
     </bean>
 
-    <bean id="CaveatConfigService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="CaveatConfigService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -1553,16 +1400,7 @@
         </property>
     </bean>
 
-    <bean id="DataSetService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
-        <property name="authenticationManager">
-            <ref bean="authenticationManager"/>
-        </property>
-        <property name="accessDecisionManager">
-            <ref bean="accessDecisionManager"/>
-        </property>
-        <property name="afterInvocationManager">
-            <ref bean="afterInvocationManager"/>
-        </property>
+    <bean id="DataSetService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[

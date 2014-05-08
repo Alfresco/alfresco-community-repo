@@ -28,6 +28,8 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -153,47 +155,57 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
      * @param rootJSONObject    root JSON object
      */
     @SuppressWarnings("unchecked")
-    private void addInfo(FileInfo nodeInfo, JSONObject rootJSONObject)
+    private void addInfo(final FileInfo nodeInfo, JSONObject rootJSONObject)
     {
         String itemType = (String) rootJSONObject.get("type");
-        QName itemTypeQName = QName.createQName(itemType, namespaceService);
-        if (dictionaryService.isSubClass(itemTypeQName, ContentModel.TYPE_CONTENT))
+        final QName itemTypeQName = QName.createQName(itemType, namespaceService);
+        
+        NodeRef originatingLocation = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            NodeRef nodeRef = nodeInfo.getNodeRef();
-            List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
-
-            NodeRef originatingLocation = null;
-            for (ChildAssociationRef parent : parentAssocs)
-            {
-                // FIXME: What if there is more than a secondary parent?
-                if (!parent.isPrimary())
+            public NodeRef doWork() throws Exception
+            {    
+                NodeRef originatingLocation = null;
+                
+                if (dictionaryService.isSubClass(itemTypeQName, ContentModel.TYPE_CONTENT))
                 {
-                    originatingLocation = parent.getParentRef();
-                    
-                    // only consider the non-RM parent otherwise we can
-                    // run into issues with frozen or transferring records
-                    if (!nodeService.hasAspect(originatingLocation, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+                    NodeRef nodeRef = nodeInfo.getNodeRef();
+                    List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+
+                    for (ChildAssociationRef parent : parentAssocs)
                     {
-                        // assume we have found the correct in-place location
-                        // FIXME when we support multiple in-place locations
-                        break;
+                        // FIXME: What if there is more than a secondary parent?
+                        if (!parent.isPrimary())
+                        {
+                            originatingLocation = parent.getParentRef();
+                            
+                            // only consider the non-RM parent otherwise we can
+                            // run into issues with frozen or transferring records
+                            if (!nodeService.hasAspect(originatingLocation, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+                            {
+                                // assume we have found the correct in-place location
+                                // FIXME when we support multiple in-place locations
+                                break;
+                            }
+                        }
                     }
                 }
+                
+                return originatingLocation;
             }
-
-            if (originatingLocation != null)
+        });  
+        
+        if (originatingLocation != null)
+        {
+            String pathSeparator = "/";
+            String displayPath = PathUtil.getDisplayPath(nodeService.getPath(originatingLocation), true);
+            String[] displayPathElements = displayPath.split(pathSeparator);
+            Object[] subPath = ArrayUtils.subarray(displayPathElements, 5, displayPathElements.length);
+            StringBuffer originatingLocationPath = new StringBuffer();
+            for (int i = 0; i < subPath.length; i++)
             {
-                String pathSeparator = "/";
-                String displayPath = PathUtil.getDisplayPath(nodeService.getPath(originatingLocation), true);
-                String[] displayPathElements = displayPath.split(pathSeparator);
-                Object[] subPath = ArrayUtils.subarray(displayPathElements, 5, displayPathElements.length);
-                StringBuffer originatingLocationPath = new StringBuffer();
-                for (int i = 0; i < subPath.length; i++)
-                {
-                    originatingLocationPath.append(pathSeparator).append(subPath[i]);
-                }
-                rootJSONObject.put("originatingLocationPath", originatingLocationPath.toString());
+                originatingLocationPath.append(pathSeparator).append(subPath[i]);
             }
+            rootJSONObject.put("originatingLocationPath", originatingLocationPath.toString());
         }
     }
 

@@ -21,6 +21,7 @@ package org.alfresco.repo.domain.solr.ibatis;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
@@ -133,29 +134,30 @@ public class SOLRDAOImpl implements SOLRDAO
             source = (List<Acl>) template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params, new RowBounds(0, maxResults));
         }
         // Add any unlinked shared ACLs from defining nodes to index them now
-        ArrayList<Acl> answer = new ArrayList<Acl>(source);
-        HashSet<Long> acls = new HashSet<Long>();
-        for(Acl acl : answer)
+        TreeSet<Acl> sorted = new TreeSet<Acl>(source);
+        HashSet<Long> found = new HashSet<Long>();
+        for(Acl acl : source)
         {
-            acls.add(acl.getId());
+            found.add(acl.getId());
         }
-        ArrayList<Acl> sharedAndUnlinked = new ArrayList<Acl>();
-        for(Acl acl : answer)
+        
+        for(Acl acl : source)
         {
             if(acl.getInheritedId() != null)
             {
-                if(!acls.contains(acl.getInheritedId()))
+                if(!found.contains(acl.getInheritedId()))
                 {
                     AclEntity shared = new AclEntity();
                     shared.setId(acl.getInheritedId());
                     shared.setAclChangeSetId(acl.getAclChangeSetId());
                     shared.setInheritedId(acl.getInheritedId());
-                    sharedAndUnlinked.add(shared);
-                    acls.add(shared.getId());
+                    sorted.add(shared);
                 }
             }
         }
-        answer.addAll(sharedAndUnlinked);
+
+        ArrayList<Acl> answer = new ArrayList<Acl>();
+        answer.addAll(sorted);
         return answer;
     }
 

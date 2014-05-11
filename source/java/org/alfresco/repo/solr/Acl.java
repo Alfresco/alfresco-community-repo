@@ -24,7 +24,7 @@ package org.alfresco.repo.solr;
  * @author Derek Hulley
  * @since 4.0
  */
-public interface Acl
+public interface Acl extends Comparable<Acl>
 {
     Long getId();
     Long getInheritedId();

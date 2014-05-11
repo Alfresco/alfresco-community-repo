@@ -138,27 +138,30 @@ public class SOLRTrackingComponentTest extends TestCase
 
     }
 
-    public void testGetAcls_Simple()
-    {
-        List<AclChangeSet> cs = getAclChangeSets(null, null, null, null, 50);
-        assertTrue("Expected results to be limited in number", cs.size() <= 50);
-        int totalAcls = 0;
-        for (AclChangeSet aclChangeSet : cs)
-        {
-            totalAcls += aclChangeSet.getAclCount();
-        }
-        int totalAclsCheck = 0;
-        
-        for (AclChangeSet aclChangeSet : cs)
-        {
-            List<Acl> acls = getAcls(Arrays.asList(new Long[]{aclChangeSet.getId()}), null, 200);
-            assertEquals(aclChangeSet.getAclCount(), acls.size());
-            totalAclsCheck += acls.size();
-        }
-        
-        // Double check number of ACLs
-        assertEquals("ACL count should have matched", totalAcls, totalAclsCheck);
-    }
+    // This test is no longer valid as we may or may include shared acls not linked to defining ones 
+    // If they are not linked to a node they will be counted wring ...
+    
+//    public void testGetAcls_Simple()
+//    {
+//        List<AclChangeSet> cs = getAclChangeSets(null, null, null, null, 50);
+//        assertTrue("Expected results to be limited in number", cs.size() <= 50);
+//        int totalAcls = 0;
+//        for (AclChangeSet aclChangeSet : cs)
+//        {
+//            totalAcls += aclChangeSet.getAclCount();
+//        }
+//        int totalAclsCheck = 0;
+//        
+//        for (AclChangeSet aclChangeSet : cs)
+//        {
+//            List<Acl> acls = getAcls(Arrays.asList(new Long[]{aclChangeSet.getId()}), null, 200);
+//            assertEquals(aclChangeSet.getAclCount(), acls.size());
+//            totalAclsCheck += acls.size();
+//        }
+//        
+//        // Double check number of ACLs
+//        assertEquals("ACL count should have matched", totalAcls, totalAclsCheck);
+//    }
 
     public void testGetNodeMetaData()
     {

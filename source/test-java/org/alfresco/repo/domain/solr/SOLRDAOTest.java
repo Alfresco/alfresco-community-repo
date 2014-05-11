@@ -254,11 +254,24 @@ public class SOLRDAOTest extends TestCase
             {
                 break;
             }
-            assertEquals("Expected exactly one result", 1, acls.size());
-            totalAclCount++;
+            if(acls.size() == 1)
+            {
+                // OK single acl
+            }
+            else if(acls.size() == 2)
+            {
+                // definning has unlinkfd shared acl
+                assertEquals("Not a defining and shared pair", acls.get(0).getInheritedId(), acls.get(1).getId());
+            }
+            else
+            {
+                fail("More then two acls");
+            }
+            totalAclCount++;;
             minAclId = acls.get(0).getId() + 1;
         }
-        assertEquals("Expected to page to exact number of results", aclCount, totalAclCount);
+        // This may not be true - it depands on lazy/eager shared acl creation.
+        //assertEquals("Expected to page to exact number of results", aclCount, totalAclCount);
     }
     
     private List<Long> toIds(List<AclChangeSet> aclChangeSets)

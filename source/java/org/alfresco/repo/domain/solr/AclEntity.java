@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,22 +29,21 @@ import org.alfresco.repo.solr.Acl;
 public class AclEntity implements Acl
 {
     private Long id;
+    private Long inheritedId;
     private Long aclChangeSetId;
 
     @Override
     public String toString()
     {
-        return "AclEntity " +
-        		"[id=" + id +
-                ", aclChangeSetId=" + aclChangeSetId +
-        		"]";
+        return "AclEntity [id=" + id + ", inheritedId=" + inheritedId + ", aclChangeSetId=" + aclChangeSetId + "]";
     }
-
+    
     @Override
     public Long getId()
     {
         return id;
     }
+    
     public void setId(Long id)
     {
         this.id = id;
@@ -58,5 +57,16 @@ public class AclEntity implements Acl
     public void setAclChangeSetId(Long aclChangeSetId)
     {
         this.aclChangeSetId = aclChangeSetId;
+    }
+
+    @Override
+    public Long getInheritedId()
+    {
+        return inheritedId;
+    }
+
+    public void setInheritedId(Long inheritedId)
+    {
+        this.inheritedId = inheritedId;
     }
 }

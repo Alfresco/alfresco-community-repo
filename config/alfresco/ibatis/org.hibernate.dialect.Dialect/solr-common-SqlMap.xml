@@ -12,7 +12,8 @@
         <result property="aclCount" column="acl_count" jdbcType="INTEGER" javaType="java.lang.Integer"/>
     </resultMap>
     <resultMap id="result_Acl" type="SOLRAcl">
-        <id property="id" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="id" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="inheritedId" column="inherited_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="aclChangeSetId" column="acl_changeset_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     <resultMap id="result_Transaction" type="SOLRTransaction">
@@ -41,7 +42,7 @@
             alf_acl_change_set acs
         join alf_access_control_list acl on (acl.acl_change_set = acs.id)
         <where>
-           exists (select 1 from alf_node admnode where admnode.acl_id = acl.id OR admnode.acl_id = acl.inherits_from)
+           exists (select 1 from alf_node admnode where admnode.acl_id = acl.id)
            <if test="fromCommitTimeInclusive != null">
                and <![CDATA[acs.commit_time_ms >= #{fromCommitTimeInclusive}]]>
            </if>
@@ -62,11 +63,12 @@
     <select id="select_AclsByChangeSetIds" parameterType="SOLRTrackingParameters" resultMap="result_Acl">
         select
             acl.acl_change_set  as acl_changeset_id,
-            acl.id              as acl_id
+            acl.id              as acl_id,
+            acl.inherited_acl   as inherited_acl_id
         from
             alf_access_control_list acl
         <where>
-            exists (select 1 from alf_node admnode where admnode.acl_id = acl.id OR admnode.acl_id = acl.inherits_from)
+            exists (select 1 from alf_node admnode where admnode.acl_id = acl.id)
             <if test="fromIdInclusive != null">
                and <![CDATA[acl.id >= #{fromIdInclusive}]]>
             </if>

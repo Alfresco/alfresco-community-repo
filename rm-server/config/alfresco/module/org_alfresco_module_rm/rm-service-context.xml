@@ -194,7 +194,7 @@
         </property>
     </bean>
 
-    <bean id="rmTransferService_security" parent="baseSecurity">        
+    <bean id="rmTransferService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
@@ -380,7 +380,7 @@
    <bean id="filePlanService"
          parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
-        <property name="nodeDAO" ref="nodeDAO"/> 
+        <property name="nodeDAO" ref="nodeDAO"/>
         <property name="filePlanPermissionService" ref="FilePlanPermissionService" />
     </bean>
 
@@ -1479,6 +1479,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="RecordFolderService" />
+      <property name="permissionService" ref="PermissionService"/>
    </bean>
 
    <bean id="HoldService"

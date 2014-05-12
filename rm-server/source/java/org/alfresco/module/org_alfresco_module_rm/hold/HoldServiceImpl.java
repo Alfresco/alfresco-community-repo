@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -45,6 +46,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -76,6 +79,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
     /** Record folder service */
     private RecordFolderService recordFolderService;
+
+    /** Permission service */
+    private PermissionService permissionService;
 
     /**
      * Set the file plan service
@@ -115,6 +121,16 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
+    }
+
+    /**
+     * Set the permission service
+     *
+     * @param permissionService the permission services
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -442,6 +458,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can only add records or record folders to a hold.");
         }
 
+        if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
+        {
+            throw new AlfrescoRuntimeException("Filing permission on the record or record folder is required.");
+        }
+
         for (final NodeRef hold : holds)
         {
             if (!isHold(hold))
@@ -453,7 +474,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (!getHeld(hold).contains(nodeRef))
             {
                 // run as system to ensure we have all the appropriate premissions to perform the manipulations we require
-                runAsSystem(new RunAsWork<Void>() 
+                runAsSystem(new RunAsWork<Void>()
                 {
                     @Override
                     public Void doWork() throws Exception
@@ -499,7 +520,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                                 }
                             }
                         }
-                        
+
                         return null;
                     }
                 });

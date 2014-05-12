@@ -1156,8 +1156,7 @@ public class AclDAOImpl implements AclDAO
             inheritedAclId = acl.getId();
         }
 
-        // Does not cause the change set to change
-        //acl.setAclChangeSetId(getCurrentChangeSetId());
+        acl.setAclChangeSetId(getCurrentChangeSetId());
         aclCrudDAO.updateAcl(acl);
         return inheritedAclId;
     }

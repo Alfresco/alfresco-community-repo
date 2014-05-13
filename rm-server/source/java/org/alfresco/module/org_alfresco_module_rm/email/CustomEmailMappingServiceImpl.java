@@ -399,7 +399,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
                             // update the extractor with the custom mappings
                             updateExtractor();
                         }
-                        catch (Throwable e)
+                        catch (RuntimeException e)
                         {
                             // log a warning
                             if (logger.isWarnEnabled())

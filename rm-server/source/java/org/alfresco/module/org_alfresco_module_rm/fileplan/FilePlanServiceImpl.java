@@ -368,7 +368,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         {
             getNodeRefPathRecursive(nodeRef, nodeRefPath);
         }
-        catch (Throwable e)
+        catch (RuntimeException e)
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PATH_NODE, nodeRef), e);
         }

@@ -32,17 +32,26 @@ import org.alfresco.service.cmr.repository.StoreRef;
  */
 public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 {
+    /** rm config folder name */
     private static final String CONFIG_NODEID = "rm_config_folder";
 
+    /** node service */
     private NodeService nodeService;
 
+    /** module patch executer */
     private ModulePatchExecuter modulePatchExecuter;
 
+    /**
+     * @param nodeService   node service
+     */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
     }
 
+    /**
+     * @param modulePatchExecuter   module patch executer
+     */
     public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter)
     {
 		this.modulePatchExecuter = modulePatchExecuter;
@@ -55,22 +64,14 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
      */
     @Override
     protected void executeInternal() throws Throwable
-    {
-        try
+    {        
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
+        if (!nodeService.exists(nodeRef))
         {
-            NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
-            if (!nodeService.exists(nodeRef))
-            {
-                super.executeInternal();
+            super.executeInternal();
 
-                // init module schema number
-                modulePatchExecuter.initSchemaVersion();
-            }
-        }
-        catch (Throwable exception)
-        {
-            exception.printStackTrace();
-            throw exception;
-        }
+            // init module schema number
+            modulePatchExecuter.initSchemaVersion();
+        }        
     }
 }

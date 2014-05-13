@@ -714,7 +714,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             // Done
             return auditTrailFile;
         }
-        catch (Throwable e)
+        catch (IOException e)
         {
             throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, e);
         }
@@ -743,7 +743,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             // Done
             return entries;
         }
-        catch (Throwable e)
+        catch (IOException e)
         {
             // Should be
             throw new AlfrescoRuntimeException(MSG_TRAIL_FILE_FAIL, e);

@@ -140,20 +140,23 @@
    <bean id="rma.extendedSecurity" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.ExtendedSecurityAspect" parent="rm.baseBehaviour">
       <property name="extendedSecurityService" ref="ExtendedSecurityService"/>
    </bean>
-   
+
    <bean id="rma.cutOff" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.CutoffAspect" parent="rm.baseBehaviour">
    </bean>
-   
+
    <bean id="rma.accended" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.AccendedAspect" parent="rm.baseBehaviour">
    </bean>
-   
+
    <bean id="rma.transferred" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.TransferredAspect" parent="rm.baseBehaviour">
    </bean>
-   
+
    <bean id="rma.transferring" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.TransferringAspect" parent="rm.baseBehaviour">
    </bean>
-   
+
    <bean id="rma.declaredRecord" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.DeclaredRecordAspect" parent="rm.baseBehaviour">
+   </bean>
+
+   <bean id="rma:recordOriginatingDetails" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordOriginatingDetailsAspect" parent="rm.baseBehaviour">
    </bean>
 
    <!--  Base bean definition for customisable types bootstrap -->

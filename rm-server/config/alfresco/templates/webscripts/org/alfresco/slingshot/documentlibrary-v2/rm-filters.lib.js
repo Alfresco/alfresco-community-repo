@@ -172,7 +172,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          }
          else
          {
-            filterParams.query = "+PARENT:\"" + filterData + "\"";
+            filterParams.query = "+PARENT:\"" + filterData + "\""  + " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
          }
          break;
 

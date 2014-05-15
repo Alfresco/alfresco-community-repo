@@ -187,6 +187,8 @@
       <property name="mimetypeService" ref="mimetypeService" />
       <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
       <property name="namespaceService" ref="namespaceService" />
+      <property name="recordFolderService" ref="RecordFolderService" />
+      <property name="dispositionService" ref="DispositionService" />
    </bean>
 
    <!-- REST impl for PUT Audit Log (starting and stopping auditing) -->

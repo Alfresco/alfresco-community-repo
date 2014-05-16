@@ -2860,26 +2860,31 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
           final NodeRef container = containerTmp;
        
           // Ensure the calendar container has the tag scope aspect applied to it
-          if(! taggingService.isTagScope(container))
+          if (!taggingService.isTagScope(container))
           {
              if(logger.isDebugEnabled())
              {
                 logger.debug("Attaching tag scope to " + componentName + " " + container.toString() + " for " + siteShortName);
              }
-             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>() {
-                public Void doWork() throws Exception
-                {
-                   transactionService.getRetryingTransactionHelper().doInTransaction(
-                       new RetryingTransactionCallback<Void>() {
-                           public Void execute() throws Throwable {
-                              // Add the tag scope aspect
-                              taggingService.addTagScope(container);
-                              return null;
-                           }
-                       }, false, true
+             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+             {
+                 public Void doWork() throws Exception
+                 {
+                     RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                     txnHelper.setForceWritable(true);
+                     txnHelper.doInTransaction(
+                             new RetryingTransactionCallback<Void>()
+                             {
+                                 public Void execute() throws Throwable
+                                 {
+                                     // Add the tag scope aspect
+                                     taggingService.addTagScope(container);
+                                     return null;
+                                 }
+                             }, false, true
                    );
                    return null;
-                }
+                 }
              }, AuthenticationUtil.getSystemUserName());
           }
           

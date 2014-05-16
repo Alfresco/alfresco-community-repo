@@ -502,6 +502,9 @@
          <property name="messagesCache">
              <ref bean="messagesCache"/>
         </property>
+        <property name="tryLockTimeout">
+            <value>${system.lockTryTimeout.MessageServiceImpl}</value>
+        </property>
     </bean>
 
     <!--                               -->
@@ -731,6 +734,9 @@
         </property>
         <property name="defaultAnalyserResourceBundleName">
             <value>${lucene.defaultAnalyserResourceBundleName}</value>
+        </property>
+        <property name="tryLockTimeout">
+            <value>${system.lockTryTimeout.DictionaryDAOImpl}</value>
         </property>
     </bean>
 

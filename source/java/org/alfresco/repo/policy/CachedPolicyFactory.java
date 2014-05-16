@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2013 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -59,7 +59,16 @@ import org.apache.commons.logging.LogFactory;
      */
     private Map<B, Collection<P>> listCache = new HashMap<B, Collection<P>>();
 
-    
+    // Try lock timeout (MNT-11371)
+    private long tryLockTimeout;
+
+
+    public void setTryLockTimeout(long tryLockTimeout)
+    {
+        this.tryLockTimeout = tryLockTimeout;
+    }
+
+
     /**
      * Construct cached policy factory
      * 
@@ -93,7 +102,7 @@ import org.apache.commons.logging.LogFactory;
             return super.create(binding);
         }
         
-        LockHelper.tryLock(lock.readLock(), 100);
+        LockHelper.tryLock(lock.readLock(), tryLockTimeout, "getting policy from cache in 'CachedPolicyFactory.create()'");
         try
         {
             P policyInterface = singleCache.get(binding);
@@ -108,7 +117,7 @@ import org.apache.commons.logging.LogFactory;
         }
         
         // There wasn't one
-        LockHelper.tryLock(lock.writeLock(), 100);
+        LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "putting new policy to cache in 'CachedPolicyFactory.create()'");
         try
         {
             P policyInterface = singleCache.get(binding);
@@ -140,7 +149,7 @@ import org.apache.commons.logging.LogFactory;
             return super.createList(binding);
         }
         
-        LockHelper.tryLock(lock.readLock(), 100);
+        LockHelper.tryLock(lock.readLock(), tryLockTimeout, "getting policy list from cache in 'CachedPolicyFactory.createList()'");
         try
         {
             Collection<P> policyInterfaces = listCache.get(binding);
@@ -155,7 +164,7 @@ import org.apache.commons.logging.LogFactory;
         }
         
         // There wasn't one
-        LockHelper.tryLock(lock.writeLock(), 100);
+        LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "putting policy list to cache in 'CachedPolicyFactory.createList()'");
         try
         {
             Collection<P> policyInterfaces = listCache.get(binding);
@@ -188,7 +197,7 @@ import org.apache.commons.logging.LogFactory;
     {
         if (binding == null)
         {
-            LockHelper.tryLock(lock.writeLock(), 100);
+            LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "clearing policy cache in 'CachedPolicyFactory.clearCache()'");
             try
             {
                 // A specific binding has not been provided, so clear all entries
@@ -226,7 +235,7 @@ import org.apache.commons.logging.LogFactory;
             // Remove all invalid bindings
             if (invalidBindings.size() > 0)
             {
-                LockHelper.tryLock(lock.writeLock(), 100);
+                LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "removing invalid policy bindings from cache in 'CachedPolicyFactory.clearCache()'");
                 try
                 {
                     for (B invalidBinding : invalidBindings)

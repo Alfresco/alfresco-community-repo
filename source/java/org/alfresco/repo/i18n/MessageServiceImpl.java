@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -85,7 +85,10 @@ public class MessageServiceImpl implements MessageService
     private ContentService contentService;
     private NamespaceService namespaceService;
     private NodeService nodeService;        
-    
+
+    // Try lock timeout (MNT-11371)
+    private long tryLockTimeout;
+
     /**
      * List of registered bundles
      */
@@ -138,7 +141,12 @@ public class MessageServiceImpl implements MessageService
     {
         this.messagesCache = messagesCache;
     }
-    
+
+    public void setTryLockTimeout(long tryLockTimeout)
+    {
+        this.tryLockTimeout = tryLockTimeout;
+    }
+
     public void setLocale(Locale locale)
     {
         I18NUtil.setLocale(locale);
@@ -173,7 +181,7 @@ public class MessageServiceImpl implements MessageService
     {
         String tenantDomain = getTenantDomain(); 
         Set<String> tenantResourceBundleBaseNames = null;
-        LockHelper.tryLock(readLock, 100);
+        LockHelper.tryLock(readLock, tryLockTimeout, "getting resource bundle base names in 'MessageServiceImpl.registerResourceBundle()'");
         try
         {
             tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain);  
@@ -183,7 +191,7 @@ public class MessageServiceImpl implements MessageService
             readLock.unlock();
         }
         
-        LockHelper.tryLock(writeLock, 100);
+        LockHelper.tryLock(writeLock, tryLockTimeout, "adding new resource bundle path and clearing loaded resource bundles in 'MessageServiceImpl.registerResourceBundle()'");
         try
         {
             if (! tenantResourceBundleBaseNames.contains(resBundlePath))
@@ -273,7 +281,7 @@ public class MessageServiceImpl implements MessageService
         Set<String> resourceBundleBaseNamesForAllLocales;
         
         String tenantDomain = getTenantDomain();
-        LockHelper.tryLock(readLock, 100);
+        LockHelper.tryLock(readLock, tryLockTimeout, "getting loaded resource bundles, messages and base names in 'MessageServiceImpl.unregisterResourceBundle()'");
         try
         {
             // all locales
@@ -286,7 +294,7 @@ public class MessageServiceImpl implements MessageService
             readLock.unlock();
         }
         
-        LockHelper.tryLock(writeLock, 100);
+        LockHelper.tryLock(writeLock, tryLockTimeout, "removing resource bundle by path in 'MessageServiceImpl.unregisterResourceBundle()'");
         try
         {
             // unload resource bundles for each locale (by tenant, if applicable)        
@@ -388,7 +396,7 @@ public class MessageServiceImpl implements MessageService
         Map<Locale, Map<String, String>> tenantCachedMessages = null;
         Set<String> tenantResourceBundleBaseNames = null;
 
-        LockHelper.tryLock(readLock, 100);
+        LockHelper.tryLock(readLock, tryLockTimeout, "getting loaded resource bundles, messages and base names in 'MessageServiceImpl.getLocaleProperties()'");
         try
         {
             tenantLoadedResourceBundles = getLoadedResourceBundles(tenantDomain);
@@ -407,7 +415,7 @@ public class MessageServiceImpl implements MessageService
 
         if (loadedBundles == null)
         {
-            LockHelper.tryLock(writeLock, 100);
+            LockHelper.tryLock(writeLock, tryLockTimeout, "adding resource bundle for locale in 'MessageServiceImpl.getLocaleProperties()'");
             try
             {
                 loadedBundles = new HashSet<String>();
@@ -422,7 +430,8 @@ public class MessageServiceImpl implements MessageService
 
         if (props == null)
         {
-            LockHelper.tryLock(writeLock, 100);
+            LockHelper.tryLock(writeLock, tryLockTimeout,
+                    "adding resource bundle properties into the cache (because properties are not cached) in 'MessageServiceImpl.getLocaleProperties()'");
             try
             {
                 props = new HashMap<String, String>();
@@ -437,7 +446,8 @@ public class MessageServiceImpl implements MessageService
 
         if ((loadedBundles.size() != loadedBundleCount) || (init == true))
         {
-            LockHelper.tryLock(writeLock, 100);
+            LockHelper.tryLock(writeLock, tryLockTimeout,
+                    "searching resource bundle and adding new resource bundle for locale if the bundle is not found in 'MessageServiceImpl.getLocaleProperties()'");
             try
             {
                 // get registered resource bundles               
@@ -582,7 +592,7 @@ public class MessageServiceImpl implements MessageService
     
     public Set<String> getRegisteredBundles()
     {
-        LockHelper.tryLock(readLock, 100);
+        LockHelper.tryLock(readLock, tryLockTimeout, "getting resource bundle base names in 'MessageServiceImpl.getRegisteredBundles()'");
         try
         {
             return getResourceBundleBaseNames(getTenantDomain());
@@ -604,7 +614,7 @@ public class MessageServiceImpl implements MessageService
         
         // They are not there.  Upgrade to the write lock.
         readLock.unlock();
-        LockHelper.tryLock(writeLock, 100);
+        LockHelper.tryLock(writeLock, tryLockTimeout, "getting cached resource bundle base names by tenant domain in 'MessageServiceImpl.getRegisteredBundles()'");
         try
         {
             resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
@@ -618,7 +628,7 @@ public class MessageServiceImpl implements MessageService
         finally
         {
             writeLock.unlock();
-            LockHelper.tryLock(readLock, 100);
+            LockHelper.tryLock(readLock, tryLockTimeout, "upgrading to read lock in MessageServiceImpl.getResourceBundleBaseNames()");
         }
         
         if (resourceBundleBaseNames == null)
@@ -655,7 +665,7 @@ public class MessageServiceImpl implements MessageService
         
         // Not present.  Upgrade to write lock.
         readLock.unlock();
-        LockHelper.tryLock(writeLock, 100);
+        LockHelper.tryLock(writeLock, tryLockTimeout, "getting cached resource bundle by tenant domain in 'MessageServiceImpl.getLoadedResourceBundles()'");
         try
         {
             loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
@@ -669,7 +679,7 @@ public class MessageServiceImpl implements MessageService
         finally
         {
             writeLock.unlock();
-            LockHelper.tryLock(readLock, 100);
+            LockHelper.tryLock(readLock, tryLockTimeout, "upgrading to read lock in MessageServiceImpl.getLoadedResourceBundles()");
         }
         
         if (loadedResourceBundles == null)
@@ -714,7 +724,7 @@ public class MessageServiceImpl implements MessageService
         
         // Need to create it.  Upgrade to write lock.
         readLock.unlock();
-        LockHelper.tryLock(writeLock, 100);
+        LockHelper.tryLock(writeLock, tryLockTimeout, "getting messages by tenant domain from the cache in 'MessageServiceImpl.getMessages()'");
         try
         {
             messages = messagesCache.get(tenantDomain);
@@ -728,7 +738,7 @@ public class MessageServiceImpl implements MessageService
         finally
         {
             writeLock.unlock();
-            LockHelper.tryLock(readLock, 100);
+            LockHelper.tryLock(readLock, tryLockTimeout, "upgrading to read lock in MessageServiceImpl.getMessages()");
         }
         
         if (messages == null)

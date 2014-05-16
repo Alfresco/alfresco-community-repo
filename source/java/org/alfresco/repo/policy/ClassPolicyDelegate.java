@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -51,7 +51,7 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
      * @param index  the behaviour index to query against
      */
     @SuppressWarnings("unchecked")
-    /*package*/ ClassPolicyDelegate(DictionaryService dictionary, Class<P> policyClass, BehaviourIndex<ClassBehaviourBinding> index)
+    /*package*/ ClassPolicyDelegate(DictionaryService dictionary, Class<P> policyClass, BehaviourIndex<ClassBehaviourBinding> index, long tryLockTimeout)
     {
         // Get list of all pre-registered behaviours for the policy and
         // ensure they are valid.
@@ -64,6 +64,7 @@ public class ClassPolicyDelegate<P extends ClassPolicy>
         // Rely on cached implementation of policy factory
         // Note: Could also use PolicyFactory (without caching)
         this.factory = new CachedPolicyFactory<ClassBehaviourBinding, P>(policyClass, index);
+        this.factory.setTryLockTimeout(tryLockTimeout);
         this.dictionary = dictionary;
     }
     

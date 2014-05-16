@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -73,7 +73,15 @@ public class PolicyComponentImpl implements PolicyComponent
 
     // Wild Card Feature
     private static final QName FEATURE_WILDCARD = QName.createQName(NamespaceService.DEFAULT_URI, "*"); 
-    
+
+    // Try lock timeout (MNT-11371)
+    private long tryLockTimeout;
+
+
+    public void setTryLockTimeout(long tryLockTimeout)
+    {
+        this.tryLockTimeout = tryLockTimeout;
+    }
 
     /**
      * Construct
@@ -129,7 +137,8 @@ public class PolicyComponentImpl implements PolicyComponent
         ParameterCheck.mandatory("Policy interface class", policy);
         PolicyDefinition definition = createPolicyDefinition(policy);
         registeredPolicies.put(new PolicyKey(definition.getType(), definition.getName()), definition);
-        ClassPolicyDelegate<P> delegate = new ClassPolicyDelegate<P>(dictionary, policy, getClassBehaviourIndex(definition.getName()));
+        ClassPolicyDelegate<P> delegate = new ClassPolicyDelegate<P>(dictionary, policy, getClassBehaviourIndex(definition.getName()), tryLockTimeout);
+        
         
         if (logger.isInfoEnabled())
             logger.info("Registered class policy " + definition.getName() + " (" + definition.getPolicyInterface() + ")");
@@ -152,7 +161,7 @@ public class PolicyComponentImpl implements PolicyComponent
         ParameterCheck.mandatory("Policy interface class", policy);
         PolicyDefinition definition = createPolicyDefinition(policy);
         registeredPolicies.put(new PolicyKey(definition.getType(), definition.getName()), definition);
-        PropertyPolicyDelegate<P> delegate = new PropertyPolicyDelegate<P>(dictionary, policy, getPropertyBehaviourIndex(definition.getName()));
+        PropertyPolicyDelegate<P> delegate = new PropertyPolicyDelegate<P>(dictionary, policy, getPropertyBehaviourIndex(definition.getName()), tryLockTimeout);
         
         if (logger.isInfoEnabled())
             logger.info("Registered property policy " + definition.getName() + " (" + definition.getPolicyInterface() + ")");
@@ -170,7 +179,7 @@ public class PolicyComponentImpl implements PolicyComponent
         ParameterCheck.mandatory("Policy interface class", policy);
         PolicyDefinition definition = createPolicyDefinition(policy);
         registeredPolicies.put(new PolicyKey(definition.getType(), definition.getName()), definition);
-        AssociationPolicyDelegate<P> delegate = new AssociationPolicyDelegate<P>(dictionary, policy, getAssociationBehaviourIndex(definition.getName()));
+        AssociationPolicyDelegate<P> delegate = new AssociationPolicyDelegate<P>(dictionary, policy, getAssociationBehaviourIndex(definition.getName()), tryLockTimeout);
         
         if (logger.isInfoEnabled())
             logger.info("Registered association policy " + definition.getName() + " (" + definition.getPolicyInterface() + ")");
@@ -431,6 +440,7 @@ public class PolicyComponentImpl implements PolicyComponent
         if (index == null)
         {
             index = new ClassBehaviourIndex<ClassBehaviourBinding>(behaviourFilter);
+            index.setTryLockTimeout(tryLockTimeout);
             classBehaviours.put(policy, index);
         }
         return index;
@@ -449,6 +459,7 @@ public class PolicyComponentImpl implements PolicyComponent
         if (index == null)
         {
             index = new ClassBehaviourIndex<ClassFeatureBehaviourBinding>(behaviourFilter);
+            index.setTryLockTimeout(tryLockTimeout);
             propertyBehaviours.put(policy, index);
         }
         return index;
@@ -467,6 +478,7 @@ public class PolicyComponentImpl implements PolicyComponent
         if (index == null)
         {
             index = new ClassBehaviourIndex<ClassFeatureBehaviourBinding>(behaviourFilter);
+            index.setTryLockTimeout(tryLockTimeout);
             associationBehaviours.put(policy, index);
         }
         return index;

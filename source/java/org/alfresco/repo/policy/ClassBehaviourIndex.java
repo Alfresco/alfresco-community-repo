@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,7 +53,15 @@ import org.alfresco.util.LockHelper;
     // Behaviour Filter
     private BehaviourFilter filter = null;
 
-    
+    // Try lock timeout (MNT-11371)
+    private long tryLockTimeout;
+
+
+    public void setTryLockTimeout(long tryLockTimeout)
+    {
+        this.tryLockTimeout = tryLockTimeout;
+    }
+
     /**
      * Construct.
      */
@@ -92,7 +100,7 @@ import org.alfresco.util.LockHelper;
     @Override
     public Collection<BehaviourDefinition> getAll()
     {
-        LockHelper.tryLock(lock.readLock(), 100);
+        LockHelper.tryLock(lock.readLock(), tryLockTimeout, "getting all behavior definitions in 'ClassBehaviourIndex.getAll()'");
         
         try
         {
@@ -112,7 +120,7 @@ import org.alfresco.util.LockHelper;
     @SuppressWarnings("unchecked")
     public Collection<BehaviourDefinition> find(B binding)
     {
-        LockHelper.tryLock(lock.readLock(), 100);
+        LockHelper.tryLock(lock.readLock(), tryLockTimeout, "searching behavior definitions list in 'ClassBehaviourIndex.find()'");
         
         try
         {
@@ -175,7 +183,7 @@ import org.alfresco.util.LockHelper;
      */
     public void putClassBehaviour(BehaviourDefinition<B> behaviour)
     {
-        LockHelper.tryLock(lock.writeLock(), 100);
+        LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "putting behavior definition in 'ClassBehaviourIndex.putClassBehavior()'");
         try
         {
             classMap.put(behaviour);
@@ -194,7 +202,7 @@ import org.alfresco.util.LockHelper;
      */
     public void putServiceBehaviour(BehaviourDefinition<ServiceBehaviourBinding> behaviour)
     {
-        LockHelper.tryLock(lock.writeLock(), 100);
+        LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "putting behavior definition in 'ClassBehaviourIndex.putServiceBehavior()'");
         try
         {
             serviceMap.put(behaviour);
@@ -212,7 +220,7 @@ import org.alfresco.util.LockHelper;
      */
     public void removeClassBehaviour(BehaviourDefinition<B> behaviour)
     {
-        LockHelper.tryLock(lock.writeLock(), 100);
+        LockHelper.tryLock(lock.writeLock(), tryLockTimeout, "removing behavior definition in 'ClassBehaviourIndex.removeClassBehavior()'");
         try
         {
             classMap.remove(behaviour);

@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.activities.feed.FeedTaskProcessor;
 import org.alfresco.repo.activities.feed.RepoCtx;
@@ -41,6 +42,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.template.ClassPathRepoTemplateLoader;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -397,10 +399,11 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         {
             // note: deleted node does not exist (hence no permission, although default permission check would return true which is problematic)
             final NodeRef checkNodeRef;
+            NodeRef parentToCheckNodeRef = null;
             if (nodeService.exists(nodeRef))
             {
                 checkNodeRef = nodeRef;
-            } 
+            }
             else
             {
                 // TODO: require ghosting - this is temp workaround (we should not rely on archive - may be permanently deleted, ie. not archived or already purged)
@@ -409,6 +412,16 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                 {
                     return false;
                 }
+                // MNT-10023
+                if (permissionService.getInheritParentPermissions(archiveNodeRef))
+                {
+                    ChildAssociationRef originalParentAssoc = (ChildAssociationRef) nodeService.getProperty(archiveNodeRef, ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+                    if (originalParentAssoc != null)
+                    {
+                        parentToCheckNodeRef = originalParentAssoc.getParentRef();
+                    }
+                }
+
                 checkNodeRef = archiveNodeRef;
             }
 
@@ -426,18 +439,31 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                         return true;
                     }
                 }
+
+                if (parentToCheckNodeRef != null)
+                {
+                    return canReadImpl(connectedUser, parentToCheckNodeRef);
+                }
+
                 return false;
-            } 
+            }
             else
             {
                 // user feed
-                return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+                boolean allow = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
                 {
                     public Boolean doWork() throws Exception
                     {
                         return (permissionService.hasPermission(checkNodeRef, PermissionService.READ) == AccessStatus.ALLOWED);
                     }
                 }, connectedUser);
+
+                if (!allow && parentToCheckNodeRef != null)
+                {
+                    allow = canReadImpl(connectedUser, parentToCheckNodeRef);
+                }
+
+                return allow;
             }
         }
         finally

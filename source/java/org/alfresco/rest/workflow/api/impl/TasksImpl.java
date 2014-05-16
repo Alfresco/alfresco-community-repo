@@ -162,6 +162,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
         
         String status = propertyWalker.getProperty("status", WhereClauseParser.EQUALS);
         String assignee = propertyWalker.getProperty("assignee", WhereClauseParser.EQUALS);
+        // MNT-11264 Workflow public API for tasks is returning other users tasks
+        if (assignee == null)
+        {
+            assignee = AuthenticationUtil.getRunAsUser();
+        }
         String assigneeLike = propertyWalker.getProperty("assignee", WhereClauseParser.MATCHES);
         String owner = propertyWalker.getProperty("owner", WhereClauseParser.EQUALS);
         String ownerLike = propertyWalker.getProperty("owner", WhereClauseParser.MATCHES);

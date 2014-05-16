@@ -66,7 +66,6 @@ public class PdfBoxContentTransformer extends TikaPoweredContentTransformer
         ParseContext context = super.buildParseContext(metadata, targetMimeType, options);
         if (pdfParserConfig != null)
         {
-            System.out.println("**** spacingTolerance=" + pdfParserConfig.getSpacingTolerance() + ", averageCharTolerance=" + pdfParserConfig.getAverageCharTolerance());
             context.set(PDFParserConfig.class, pdfParserConfig);
         }
         // TODO: Possibly extend TransformationOptions to allow for per-transform PDFParserConfig?

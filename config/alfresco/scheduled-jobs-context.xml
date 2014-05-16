@@ -61,6 +61,9 @@
         <property name="cronExpression">
             <value>0 0 * * * ?</value>
         </property>
+        <property name="startDelayMinutes">
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
 
     <bean id="contentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">

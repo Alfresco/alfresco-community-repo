@@ -45,6 +45,8 @@ import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;

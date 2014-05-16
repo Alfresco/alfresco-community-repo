@@ -50,6 +50,8 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeArchiveServicePolicies;
 import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforePurgeNodePolicy;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.FilterPropString;
 import org.alfresco.repo.node.getchildren.FilterPropString.FilterTypeString;
@@ -118,7 +120,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Roy Wetherall
  */
-public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeArchiveServicePolicies.BeforePurgeNodePolicy
+public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServiceInternal, SiteModel, NodeArchiveServicePolicies.BeforePurgeNodePolicy, NodeServicePolicies.OnRestoreNodePolicy
 {
     /** Logger */
     protected static Log logger = LogFactory.getLog(SiteServiceImpl.class);
@@ -402,6 +404,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 BeforePurgeNodePolicy.QNAME,
                 SiteModel.TYPE_SITE,
                 new JavaBehaviour(this, "beforePurgeNode"));
+        this.policyComponent.bindClassBehaviour(
+                OnRestoreNodePolicy.QNAME,
+                SiteModel.TYPE_SITE,
+                new JavaBehaviour(this, "onRestoreNode"));
     }
 
     /* (non-Javadoc)
@@ -564,6 +570,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private void setupSitePermissions(
             final NodeRef siteNodeRef, final String shortName, final SiteVisibility visibility, final Map<String, Set<String>> memberships)
     {
+        setupSitePermissions(siteNodeRef, shortName, visibility, memberships, false);
+    }
+
+    private void setupSitePermissions(
+            final NodeRef siteNodeRef, final String shortName, final SiteVisibility visibility, final Map<String, Set<String>> memberships, final boolean ignoreExistingGroups)
+    {
         // Get the current user
         final String currentUser = authenticationContext.getCurrentUserName();
         
@@ -593,14 +605,26 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 
                 // Create the site's groups
                 String siteGroupShortName = getSiteGroup(shortName, false);
-                String siteGroup = authorityService.createAuthority(AuthorityType.GROUP, siteGroupShortName,
+                /* MNT-11289 fix - group is probably already exists. we should check it for existence */
+                String siteGroup = authorityService.getName(AuthorityType.GROUP, siteGroupShortName);
+                if (!ignoreExistingGroups || !authorityService.authorityExists(siteGroup))
+                {
+                    siteGroup = authorityService.createAuthority(AuthorityType.GROUP, siteGroupShortName,
                         siteGroupShortName, shareZones);
+                }
                 QName siteType = directNodeService.getType(siteNodeRef);
                 Set<String> permissions = permissionService.getSettablePermissions(siteType);
                 for (String permission : permissions)
                 {
                     // Create a group for the permission
                     String permissionGroupShortName = getSiteRoleGroup(shortName, permission, false);
+                    /* MNT-11289 fix - group is probably already exists. we should check it for existence */
+                    String authorityName = authorityService.getName(AuthorityType.GROUP, permissionGroupShortName);
+                    if (ignoreExistingGroups && authorityService.authorityExists(authorityName))
+                    {
+                        continue;
+                    }
+                    
                     String permissionGroup = authorityService.createAuthority(AuthorityType.GROUP,
                             permissionGroupShortName, permissionGroupShortName, shareZones);
                     authorityService.addAuthority(siteGroup, permissionGroup);
@@ -646,9 +670,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 permissionService.setPermission(siteNodeRef,
                         PermissionService.ALL_AUTHORITIES,
                         PermissionService.READ_PERMISSIONS, true);
-                if (memberships == null)
+                
+                // add the default site manager authority
+                Set<String> currentManagers = 
+                    authorityService.getContainedAuthorities(AuthorityType.USER, getSiteRoleGroup(shortName, SiteModel.SITE_MANAGER, true), false);
+                if (currentManagers.isEmpty())
                 {
-                    // add the default site manager authority
                     authorityService.addAuthority(getSiteRoleGroup(shortName,
                             SiteModel.SITE_MANAGER, true), currentUser);
                 }
@@ -1818,6 +1845,22 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         CannedQueryResults<SiteMembership> results = query.execute();
 
         return getPagingResults(pagingRequest, results);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy#onRestoreNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void onRestoreNode(ChildAssociationRef childAssocRef)
+    {
+        // regenerate the groups for the site when it is restored from the Archive store
+        NodeRef siteRef = childAssocRef.getChildRef();
+        setupSitePermissions(
+                siteRef,
+                (String)directNodeService.getProperty(siteRef, ContentModel.PROP_NAME),
+                getSiteVisibility(siteRef),
+                (Map<String, Set<String>>)directNodeService.getProperty(siteRef, QName.createQName(null, "memberships")), true);
     }
 
     /**

@@ -194,6 +194,138 @@ public class SiteServiceImplMoreTest
             }
         });
     }
+    /**
+     * This test ensures that site deleted before MNT-10109 fix (i.e. deleted with their associated authorities) could be restored
+     * with site-groups recreation
+     * 
+     * @throws Exception
+     */
+    @Test public void deleteSiteDeleteAuthoritiesAndRestoreEnsuringSiteGroupsWasRecreated() throws Exception
+    {
+        final String siteShortName = "testsite-" + System.currentTimeMillis();
+        final SiteServiceImpl siteServiceImpl = (SiteServiceImpl)SITE_SERVICE;
+        log.debug("Creating test site called: " + siteShortName);
+        
+        // Create site
+        final TestSiteAndMemberInfo testSiteAndMemberInfo = 
+            perMethodTestSites.createTestSiteWithUserPerRole(siteShortName, "sitePreset", SiteVisibility.PUBLIC, AuthenticationUtil.getAdminUserName());
+        
+        // Delete permissions and site
+        final Map<String, String> membersBefore = TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Map<String, String>>()
+        {
+            public Map<String, String> execute() throws Throwable
+            {
+                NodeRef siteNodeRef = testSiteAndMemberInfo.siteInfo.getNodeRef();
+                
+                Map<String, String> membersBefore = SITE_SERVICE.listMembers(siteShortName, null, null, 0, true);
+                log.debug(membersBefore.size() + " members...");
+                for (Map.Entry<String, String> entry : membersBefore.entrySet()) { log.debug(entry); }
+                
+                Map<String, Set<String>> groupsMemberships = new HashMap<String, Set<String>>();
+                
+                log.debug("About to delete site-related groups.");
+                // delete authorities
+                Set<String> permissions = PERMISSION_SERVICE.getSettablePermissions(SiteModel.TYPE_SITE);
+                for (String permission : permissions)
+                {
+                    String prefixSiteRoleGroup = siteServiceImpl.getSiteRoleGroup(siteShortName, permission, true);
+                    
+                    Set<String> groupUsers = AUTHORITY_SERVICE.getContainedAuthorities(null, prefixSiteRoleGroup, true);
+                    groupsMemberships.put(prefixSiteRoleGroup, groupUsers);
+                    
+                    AUTHORITY_SERVICE.deleteAuthority(prefixSiteRoleGroup);
+                }
+                //emulate onDelete site behavior before MNT-10109 fix
+                NODE_SERVICE.setProperty(siteNodeRef, QName.createQName(null, "memberships"), (Serializable)groupsMemberships);
+                log.debug("Site-related groups deleted.");
+                
+                log.debug("About to delete site.");
+                SITE_SERVICE.deleteSite(siteShortName);
+                log.debug("Site deleted.");
+                
+                return membersBefore;
+            }
+        });
+        
+        // restore the site
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                assertThatArchivedNodeExists(testSiteAndMemberInfo.siteInfo.getNodeRef(), "Site node not found in archive.");
+                
+                // ensure there are no authorities
+                Set<String> permissions = PERMISSION_SERVICE.getSettablePermissions(SiteModel.TYPE_SITE);
+                for (String permission : permissions)
+                {
+                    String permissionGroupShortName = siteServiceImpl.getSiteRoleGroup(siteShortName, permission, false);
+                    String authorityName = AUTHORITY_SERVICE.getName(AuthorityType.GROUP, permissionGroupShortName);
+                    
+                    assertTrue("Authotiry should not exist : " + authorityName, !AUTHORITY_SERVICE.authorityExists(authorityName));
+                }
+                
+                log.debug("About to restore site node from archive");
+                
+                final NodeRef archivedSiteNode = NODE_ARCHIVE_SERVICE.getArchivedNode(testSiteAndMemberInfo.siteInfo.getNodeRef());
+                RestoreNodeReport report = NODE_ARCHIVE_SERVICE.restoreArchivedNode(archivedSiteNode);
+                // ...which should work
+                assertEquals("Failed to restore site from archive", RestoreStatus.SUCCESS, report.getStatus());
+                
+                log.debug("Successfully restored site from arhive.");
+                
+                return null;
+            }
+        });
+        
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Map<String, String>>()
+        {
+            public Map<String, String> execute() throws Throwable
+            {
+                // The site itself should have been restored, of course...
+                assertTrue("The site noderef was not restored as expected", NODE_SERVICE.exists(testSiteAndMemberInfo.siteInfo.getNodeRef()));
+                
+                Map<String, String> members = SITE_SERVICE.listMembers(siteShortName, null, null, 0, true);
+                assertEquals("Not all member have been restored", membersBefore.size(), members.size());
+                log.debug(members.size() + " members...");
+                for (Map.Entry<String, String> entry : SITE_SERVICE.listMembers(siteShortName, null, null, 0, true).entrySet()) { log.debug(entry); }
+                
+                // Group authority nodes should be restored or recreated
+                for (String role : SITE_SERVICE.getSiteRoles())
+                {
+                    final String siteGroup = SITE_SERVICE.getSiteRoleGroup(siteShortName, role);
+                    assertTrue("Site group for role " + role + " did not exist after site restoration",
+                               AUTHORITY_SERVICE.authorityExists(siteGroup));
+                }
+                
+                Set<String> currentManagers = 
+                		AUTHORITY_SERVICE.getContainedAuthorities(AuthorityType.USER, siteServiceImpl.getSiteRoleGroup(siteShortName, SiteModel.SITE_MANAGER, true), false);
+                // ensure that there is at least one site manager
+                log.debug("Current Managers " + currentManagers);
+                assertTrue("There should be at least one site manager", !currentManagers.isEmpty());
+                
+                return null;
+            }
+        });
+        
+        // remove site completely
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                log.debug("About to delete site completely.");
+                SITE_SERVICE.deleteSite(siteShortName);
+                log.debug("About to purge site from trashcan.");
+                
+                // get archive node reference
+                String storePath = "archive://SpacesStore";
+                StoreRef storeRef = new StoreRef(storePath);
+                NodeRef archivedNodeRef = new NodeRef(storeRef, testSiteAndMemberInfo.siteInfo.getNodeRef().getId());
+                NODE_ARCHIVE_SERVICE.purgeArchivedNode(archivedNodeRef);
+                
+                return null;
+            }
+        });
+    }
     
     /**
      * This test ensures that when sites are deleted (moved to the trashcan) and then restored, that the 4 role-based groups are

@@ -3880,7 +3880,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         catch(Throwable t)
         {
             // Ignore error during cleanup to prevent swallowing potential assetion-exception
-            log("Error while cleaning up process instance");
+            log("Error while cleaning up process instance", t);
         }
     }
     
@@ -3898,7 +3898,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         catch(Throwable t)
         {
             // Ignore error during cleanup to prevent swallowing potential assetion-exception
-            log("Error while cleaning up process instance");
+            log("Error while cleaning up process instance", t);
         }
     }
 }

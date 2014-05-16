@@ -2154,13 +2154,17 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
                 {
                     activitiProcessEngine.getRuntimeService().deleteProcessInstance(processInstanceId, null);
                 } 
-                catch(Exception e) {}
+                catch(Exception e) 
+                {
+                    log("Error while cleaning up process instance", e);
+                }
                 activitiProcessEngine.getHistoryService().deleteHistoricProcessInstance(processInstanceId);
             }
         }
         catch (Throwable t)
         {
             // Ignore error during cleanup
+            log("Error while cleaning up process instance", t);
         }
     }
 }

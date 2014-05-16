@@ -76,10 +76,15 @@ public abstract class AbstractTestApi
 
 	protected void log(String msg)
 	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug(msg);
-		}
+	    log(msg, null);
+	}
+	
+	protected void log(String msg, Throwable t)
+	{
+	    if(logger.isDebugEnabled())
+    	    {
+                logger.debug(msg, t);
+	    }
 	}
 	
 	protected Paging getPaging(Integer skipCount, Integer maxItems)

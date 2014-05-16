@@ -512,8 +512,8 @@ export JAVA_OPTS
                     <type>exact</type>
                     <substitutionList>
                         <substitution>
-                            <pattern>//US//%SERVICE_NAME% --JvmOptions</pattern>
-                            <value>//US//%SERVICE_NAME% --StartPath "${installdir}" --Startup auto --JvmOptions</value>
+                            <pattern>--JvmOptions</pattern>
+                            <value>--StartPath "${installdir}" --Startup auto --JvmOptions</value>
                         </substitution>
                         <substitution>
                             <pattern>set PR_DISPLAYNAME=Apache Tomcat %2</pattern>

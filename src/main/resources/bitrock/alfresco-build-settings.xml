@@ -20,7 +20,7 @@
 
         <setInstallerVariable name="alfresco_mmt_source_file" value="${build_project_directory}/alfresco/bin/*.jar" />
         <!-- SharePoint settings -->
-        <setInstallerVariable name="alfresco_sharepoint_source_file" value="${build_project_directory}/alfresco-${alfresco_edition}-spp-*.amp" />
+        <setInstallerVariable name="alfresco_sharepoint_source_file" value="${build_project_directory}/alfresco-spp-*.amp" />
         <setInstallerVariable name="alfresco_sharepoint_on_install_settings_directory" value="${build_project_directory}/bitrock/alfrescosharepoint" />
         <!-- Records Management and Quickr AMPs -->
         <setInstallerVariable name="alfresco_quickr_source_file" value="${build_project_directory}/alfresco-${alfresco_edition}-quickr-*.amp" />

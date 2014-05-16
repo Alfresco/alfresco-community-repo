@@ -81,7 +81,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>get-googledocs</id>
+                        <id>get-amps</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>copy</goal>
@@ -98,6 +98,12 @@
                                     <groupId>org.alfresco.integrations</groupId>
                                     <artifactId>alfresco-googledocs-share</artifactId>
                                     <version>${alfresco.googledocs.version}</version>
+                                    <type>amp</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>alfresco-spp</artifactId>
+                                    <version>${project.version}</version>
                                     <type>amp</type>
                                 </artifactItem>
                             </artifactItems>

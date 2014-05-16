@@ -45,6 +45,7 @@ import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -221,6 +222,10 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
                 NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
                 this,
                 new JavaBehaviour(this, "onUpdateProperties"));
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
+                ContentModel.ASPECT_NO_CONTENT, 
+                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
         
         // Register on content update policy
         this.onContentUpdateDelegate = this.policyComponent.registerClassPolicy(OnContentUpdatePolicy.class);
@@ -345,6 +350,25 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             OnContentUpdatePolicy policy = onContentUpdateDelegate.get(nodeRef, types);
             policy.onContentUpdate(nodeRef, isNewContent);
         }
+    }
+    
+    /**
+     * MNT-10966: removing ASPECT_NO_CONTENT means that new content was uploaded
+     * 
+     * @param nodeRef            the node reference
+     * @param aspectTypeQName    tha removed aspect
+     */
+    public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
+    {
+        if (!nodeService.exists(nodeRef))
+        {
+            return;
+        }
+        
+        // Fire the content update policy
+        Set<QName> types = getTypes(nodeRef, null);
+        OnContentUpdatePolicy policy = onContentUpdateDelegate.get(nodeRef, types);
+        policy.onContentUpdate(nodeRef, true);
     }
     
     /**

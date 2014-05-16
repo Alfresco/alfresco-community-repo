@@ -321,7 +321,7 @@ public class TransformerConfigMBeanImpl implements TransformerConfigMBean
     @Override
     public String[] getContextNames()
     {
-        return new String[] {"", "doclib", "index", "webpreview", "syncRule", "asyncRule"};
+        return new String[] {"", "doclib", "index", "webpreview", "syncRule", "asyncRule", "pdf"};
     }
 
     @Override

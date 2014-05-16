@@ -64,6 +64,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.publishing.NodeSnapshot;
 import org.alfresco.service.cmr.publishing.PublishingDetails;
@@ -84,6 +85,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
@@ -562,6 +564,13 @@ public class PublishingEventHelper
     
     private NodeSnapshotTransferImpl createPublishSnapshot(NodeRef node)
     {
+        if (!nodeService.hasAspect(node, ContentModel.ASPECT_VERSIONABLE))
+        {
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+            props.put(ContentModel.PROP_AUTO_VERSION, true);
+            props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+            versionService.ensureVersioningEnabled(node, props);
+        }
         versionService.createVersion(node, null);
         TransferManifestNormalNode payload = (TransferManifestNormalNode) transferManifestNodeFactory.createTransferManifestNode(node, excludedAspectsTransferDefinition);
         NodeSnapshotTransferImpl snapshot = new NodeSnapshotTransferImpl(payload);

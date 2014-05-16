@@ -462,6 +462,17 @@
    <bean id="transformer.PdfBox"
          class="org.alfresco.repo.content.transform.PdfBoxContentTransformer"
          parent="baseContentTransformer" >
+         <property name="documentSelector">
+            <bean class="org.alfresco.repo.content.metadata.MediaTypeDisablingDocumentSelector">
+                <property name="disabledMediaTypes">
+                    <list>
+                        <value>image/jpeg</value>
+                        <value>image/tiff</value>
+                        <value>image/png</value>
+                    </list>
+                </property>
+            </bean>
+         </property>
    </bean>
    
    <bean id="transformer.PdfBox.TextToPdf"

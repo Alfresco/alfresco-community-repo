@@ -365,17 +365,17 @@
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
-            <version>1.8.2-alfresco-patched</version>
+            <version>1.8.4-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>fontbox</artifactId>
-            <version>1.8.2</version>
+            <version>1.8.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>jempbox</artifactId>
-            <version>1.8.2</version>
+            <version>1.8.4</version>
         </dependency>
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -511,7 +511,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>3.9-beta1-20121129-alfresco-patched</version>
+            <version>${dependency.poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.tika.extractor.DocumentSelector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
@@ -69,6 +70,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
             MimetypeMap.MIMETYPE_XML});
 
     protected List<String> sourceMimeTypes;
+    protected DocumentSelector documentSelector;
     
     /**
      * Windows carriage return line feed pair.
@@ -163,13 +165,42 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        }
        return handler;
     }
+    
+    /**
+     * Sets the document selector, used for determining whether to parse embedded resources.
+     * 
+     * @param documentSelector
+     */
+    public void setDocumentSelector(DocumentSelector documentSelector)
+    {
+        this.documentSelector = documentSelector;
+    }
+    /**
+     * Gets the document selector, used for determining whether to parse embedded resources, 
+     * null by default so parse all.
+     * 
+     * @param metadata
+     * @param targetMimeType
+     * @param options
+     * @return the document selector
+     */
+    protected DocumentSelector getDocumentSelector(Metadata metadata, String targetMimeType, TransformationOptions options)
+    {
+        return documentSelector;
+    }
 
     /**
      * By default returns a ParseContent that does not recurse
      */
     protected ParseContext buildParseContext(Metadata metadata, String targetMimeType, TransformationOptions options)
     {
-       return new ParseContext();
+       ParseContext context = new ParseContext();
+       DocumentSelector selector = getDocumentSelector(metadata, targetMimeType, options);
+       if (selector != null)
+       {
+           context.set(DocumentSelector.class, selector);
+       }
+       return context;
     }
     
     public void transformInternal(ContentReader reader, ContentWriter writer,  TransformationOptions options)

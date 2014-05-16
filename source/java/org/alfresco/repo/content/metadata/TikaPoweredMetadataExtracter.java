@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.embedder.Embedder;
+import org.apache.tika.extractor.DocumentSelector;
 import org.apache.tika.io.TemporaryResources;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
@@ -94,6 +95,7 @@ public abstract class TikaPoweredMetadataExtracter
 
     private DateTimeFormatter tikaUTCDateFormater;
     private DateTimeFormatter tikaDateFormater;
+    protected DocumentSelector documentSelector;
     
     /**
      * Builds up a list of supported mime types by merging
@@ -267,6 +269,46 @@ public abstract class TikaPoweredMetadataExtracter
        }
     }
     
+    /**
+     * Sets the document selector, used for determining whether to parse embedded resources.
+     * 
+     * @param documentSelector
+     */
+    public void setDocumentSelector(DocumentSelector documentSelector)
+    {
+        this.documentSelector = documentSelector;
+    }
+    /**
+     * Gets the document selector, used for determining whether to parse embedded resources, 
+     * null by default so parse all.
+     * 
+     * @param metadata
+     * @param sourceMimeType
+     * @return the document selector
+     */
+    protected DocumentSelector getDocumentSelector(Metadata metadata, String targetMimeType)
+    {
+        return documentSelector;
+    }
+    
+    /**
+     * By default returns a new ParseContent
+     * 
+     * @param metadata
+     * @param sourceMimeType
+     * @return the parse context
+     */
+    protected ParseContext buildParseContext(Metadata metadata, String sourceMimeType)
+    {
+        ParseContext context = new ParseContext();
+        DocumentSelector selector = getDocumentSelector(metadata, sourceMimeType);
+        if (selector != null)
+        {
+            context.set(DocumentSelector.class, selector);
+        }
+        return context;
+    }
+    
     @SuppressWarnings("deprecation")
     @Override
     protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
@@ -278,10 +320,11 @@ public abstract class TikaPoweredMetadataExtracter
         {
             is = getInputStream(reader); 
             Parser parser = getParser();
-            ParseContext context = new ParseContext();
             
             Metadata metadata = new Metadata();
             metadata.add(Metadata.CONTENT_TYPE, reader.getMimetype());
+            
+            ParseContext context = buildParseContext(metadata, reader.getMimetype());
             
             ContentHandler handler;
             Map<String,String> headers = null;

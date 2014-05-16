@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.content.metadata.MediaTypeDisablingDocumentSelector;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -51,6 +53,14 @@ public class PdfBoxContentTransformerTest extends AbstractContentTransformerTest
         transformer.setMimetypeService(mimetypeService);
         transformer.setTransformerDebug(transformerDebug);
         transformer.setTransformerConfig(transformerConfig);
+        
+        // Disable parsing of embedded images
+        MediaTypeDisablingDocumentSelector selector = new MediaTypeDisablingDocumentSelector();
+        selector.setDisabledMediaTypes(Arrays.asList(
+                MimetypeMap.MIMETYPE_IMAGE_JPEG,
+                MimetypeMap.MIMETYPE_IMAGE_TIFF,
+                MimetypeMap.MIMETYPE_IMAGE_PNG));
+        transformer.setDocumentSelector(selector);
     }
     
     /**

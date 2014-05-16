@@ -10,7 +10,7 @@ package org.alfresco.repo.webservice.types;
 public class NamedValue  implements java.io.Serializable {
     private java.lang.String name;
 
-    private java.lang.Boolean isMultiValue;
+    private java.lang.Boolean isMultiValue = Boolean.FALSE;
 
     private java.lang.String value;
 

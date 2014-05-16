@@ -190,7 +190,7 @@
     <xsd:complexType name="NamedValue">
     	<xsd:sequence>
     		<xsd:element name="name" type="cms:Name"></xsd:element>
-    		<xsd:element name="isMultiValue" type="xsd:boolean" nillable="true"></xsd:element>
+    		<xsd:element name="isMultiValue" type="xsd:boolean" default="false"></xsd:element>
     		<xsd:element name="value" type="xsd:string" nillable="true"></xsd:element>
     		<xsd:element name="values" type="xsd:string" nillable="true" maxOccurs="unbounded" minOccurs="0"></xsd:element>
     	</xsd:sequence>

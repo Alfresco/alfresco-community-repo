@@ -373,18 +373,6 @@ Tomcat 5.5 is recommended.</text>
                 <portTest condition="cannot_bind" port="${tomcat_server_jmx_port}"/>
             </ruleList>
         </parameterGroup>
-	<stringParameter name="tomcat_memory_settings_unix" value="-XX:MaxPermSize=256M -Xms256M -Xmx512M" ask="0" />
-	<stringParameter> 
-	    <name>tomcat_memory_settings_windows</name>
-	    <value>--JvmMs 256 --JvmMx 512 ++JvmOptions="-XX:MaxPermSize=256M"</value>
-	    <ask>0</ask>
-	</stringParameter>
-	<stringParameter name="tomcat_extra_opts_unix" value="-Djava.awt.headless=true -XX:+UseG1GC" ask="0" />
-	<stringParameter>
-	    <name>tomcat_extra_opts_windows</name>
-	    <value>++JvmOptions="-Djava.awt.headless=true" ++JvmOptions="-XX:+UseG1GC"</value>
-	    <ask>0</ask>
-	</stringParameter>
     </parameterList>
     <readyToInstallActionList>
 <!-- To use tomcat as alone server -->
@@ -478,9 +466,8 @@ Tomcat 5.5 is recommended.</text>
 <writeFile>
                     <path>${application_server_directory}/bin/setenv.sh</path>
                     <text>JAVA_HOME=${java_home_directory}
-JRE_HOME=$JAVA_HOME
-JAVA_OPTS="${tomcat_extra_opts_unix} $JAVA_OPTS "
-JAVA_OPTS="${tomcat_memory_settings_unix} $JAVA_OPTS " # java-memory-settings
+JRE_HOME=${java_home_directory}
+JAVA_OPTS="$JAVA_OPTS "
 export JAVA_HOME
 export JRE_HOME
 export JAVA_OPTS
@@ -494,9 +481,7 @@ export JAVA_OPTS
 <writeFile>
                     <path>${application_server_directory}/bin/setenv.bat</path>
                     <text>set JAVA_HOME=${java_home_directory.dos}
-set JRE_HOME=%JAVA_HOME%
-set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JAVA_OPTS%
-</text>
+set JAVA_OPTS=%JAVA_OPTS%                  </text>
                     <ruleList>
                         <platformTest type="windows"/>
                     </ruleList>
@@ -506,9 +491,7 @@ set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JA
 <writeFile>
                     <path>${application_server_directory}/bin/setenv.sh</path>
                     <text>export JAVA_HOME=${java_home_directory}
-export JRE_HOME=$JAVA_HOME
-JAVA_OPTS="${tomcat_extra_opts_unix} $JAVA_OPTS "
-JAVA_OPTS="${tomcat_memory_settings_unix} $JAVA_OPTS "
+JAVA_OPTS="$JAVA_OPTS "
 export JAVA_OPTS
                             </text>
                     <ruleList>
@@ -533,26 +516,8 @@ export JAVA_OPTS
                             <value>//US//%SERVICE_NAME% --StartPath "${installdir}" --Startup auto --JvmOptions</value>
                         </substitution>
                         <substitution>
-                            <pattern>--JvmMx 256</pattern>
-                            <value></value>
-                        </substitution>
-                        <substitution>
-                            <pattern>--JvmMs 128 ^</pattern>
-                            <value></value>
-                        </substitution>
-                        <substitution>
-                            <pattern>StopMode jvm</pattern>
-                            <value>StopMode jvm %JAVA_OPTS%</value>
-                        </substitution>
-                        <!-- Tomcat 6 -->
-                        <substitution>
                             <pattern>set PR_DISPLAYNAME=Apache Tomcat %2</pattern>
                             <value>set PR_DISPLAYNAME=${product_fullname} %2</value>
-                        </substitution>
-                        <!-- Tomcat 7 -->
-                        <substitution>
-                            <pattern>set PR_DISPLAYNAME=Apache Tomcat %1</pattern>
-                            <value>set PR_DISPLAYNAME=%1</value>
                         </substitution>
                     </substitutionList>
                     <ruleList>
@@ -565,9 +530,6 @@ export JAVA_OPTS
             </ruleList>
         </folder>
     </folderList>
-    <postInstallationActionList>
-	<addLogrotate name="tomcat" logs="${application_server_directory}/logs/*.out ${application_server_directory}/logs/*.log" />
-    </postInstallationActionList>
     <installationAbortedActionList>
 <!-- WINDOWS -->
 <actionGroup>
@@ -575,7 +537,7 @@ export JAVA_OPTS
                 <runProgram>
                     <abortOnError>0</abortOnError>
                     <showMessageOnError>0</showMessageOnError>
-                    <program>net</program>
+                    <program>sc</program>
                     <programArguments>stop ${tomcat_unique_service_name}</programArguments>
                 </runProgram>
                 <runProgram>

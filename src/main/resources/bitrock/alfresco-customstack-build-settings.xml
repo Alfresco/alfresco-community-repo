@@ -45,16 +45,6 @@
         <setInstallerVariable name="swftools_distribution_folder" value="${binaries_folder}/swftools-0.9.2" />
         <setInstallerVariable name="tomcat_distribution_folder" value="${binaries_folder}/apache-tomcat-7.0.52" />
 
-        <!-- Java settings -->
-        <setInstallerVariable name="component(tomcat).parameter(tomcat_memory_settings_unix).value" value="-XX:MaxPermSize=256M -Xms128M -Xmx1024M" />
-        <setInstallerVariable name="component(tomcat).parameter(tomcat_extra_opts_unix).value" value="-XX:-DisableExplicitGC -XX:ReservedCodeCacheSize=128m" />
-        <setInstallerVariable name="component(tomcat).parameter(tomcat_memory_settings_windows).value">
-		    <value>--JvmMs 128 --JvmMx 768 ++JvmOptions="-XX:MaxPermSize=256M"</value>
-        </setInstallerVariable>
-        <setInstallerVariable name="component(tomcat).parameter(tomcat_extra_opts_windows).value">
-            <value>++JvmOptions="-XX:-DisableExplicitGC" ++JvmOptions="-XX:ReservedCodeCacheSize=128m"</value>
-        </setInstallerVariable>
-				
         <!-- END ALFRESCO BUILD SYSTEM-->
         </actionList>
         <ruleList>

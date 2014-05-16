@@ -89,28 +89,6 @@
                 <platformTest type="windows"/>
             </ruleList>
         </substitute>
-        <substitute>
-            <files>${application_server_directory}/bin/service.bat</files>
-            <type>exact</type>
-            <substitutionList>
-                <substitution>
-                    <pattern>if not exist "%JAVA_HOME%\jre\bin\java.exe" goto noJavaHome</pattern>
-                    <value>rem if not exist "%JAVA_HOME%\jre\bin\java.exe" goto noJavaHome</value>
-                </substitution>
-                <substitution>
-                    <pattern>if not exist "%JAVA_HOME%\jre\bin\javaw.exe" goto noJavaHome</pattern>
-                    <value>rem if not exist "%JAVA_HOME%\jre\bin\javaw.exe" goto noJavaHome</value>
-                </substitution>
-                <substitution>
-                    <pattern>if not exist "%JAVA_HOME%\bin\javac.exe" goto noJavaHome</pattern>
-                    <value>rem if not exist "%JAVA_HOME%\bin\javac.exe" goto noJavaHome</value>
-                </substitution>
-                <substitution>
-                    <pattern>PR_JVM=%JAVA_HOME%\jre\bin\</pattern>
-                    <value>PR_JVM=%JAVA_HOME%\bin\</value>
-                </substitution>
-            </substitutionList>
-        </substitute>
 
         <!-- System owner service installation -->
         <actionGroup>

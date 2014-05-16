@@ -319,7 +319,7 @@ msgstr "Veuillez spécifier le répertoire dans lequel est situé Tomcat."
 msgid "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
 msgstr "Veuillez spécifier le répertoire dans lequel sont situés les fichiers binaires psql, pg_restore et vacuumdb"
 
-msgid "Please, choose a folder to install ${product_fullname}"
+msgid "Please choose a folder to install ${product_fullname}"
 msgstr "Veuillez sélectionner un dossier d'installation de ${product_fullname}"
 
 msgid "Please, select the encoding type."

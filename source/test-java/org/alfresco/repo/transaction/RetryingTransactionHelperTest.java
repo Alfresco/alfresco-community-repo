@@ -38,6 +38,7 @@ import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -618,6 +619,78 @@ public class RetryingTransactionHelperTest extends TestCase
         }
         assertEquals("Should have been called tree times", 3, callCount.intValue());
         
+    }
+
+    public void testForceWritable() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        
+        final RetryingTransactionCallback<Void> doNothingCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                return null;
+            }
+        };
+        
+        TransactionServiceImpl txnService = (TransactionServiceImpl) transactionService;
+        txnService.setAllowWrite(false, QName.createQName("{test}testForceWritable"));
+        try
+        {
+            final RetryingTransactionHelper vetoedTxnHelper = txnService.getRetryingTransactionHelper();
+            // We can execute read-only
+            vetoedTxnHelper.doInTransaction(doNothingCallback, true, false);
+            // We fail on write
+            try
+            {
+                vetoedTxnHelper.doInTransaction(doNothingCallback, false, false);
+                fail("Failed to prevent read-write txn in vetoed txn helper.");
+            }
+            catch (RuntimeException e)
+            {
+                // Expected
+            }
+            
+            // Now call the vetoed callback in one that has been forced writable
+            // A failure would be one of the causes of MNT-11310.
+            RetryingTransactionHelper forcedTxnHelper = txnService.getRetryingTransactionHelper();
+            forcedTxnHelper.setForceWritable(true);
+            forcedTxnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // Participate in the outer transaction
+                    vetoedTxnHelper.doInTransaction(doNothingCallback, false, false);
+                    return null;
+                }
+            }, false);
+            
+            // However, if we attempt to force a new transaction, then the forcing should have no effect
+            try
+            {
+                forcedTxnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                {
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        // Start a new transaction
+                        vetoedTxnHelper.doInTransaction(doNothingCallback, false, true);
+                        return null;
+                    }
+                }, false);
+                fail("Inner, non-propagating transactions should still fall foul of the write veto.");
+            }
+            catch (AccessDeniedException e)
+            {
+                // Expected
+            }
+        }
+        finally
+        {
+            txnService.setAllowWrite(true, QName.createQName("{test}testForceWritable"));
+        }
     }
 
     public void testStartNewTransaction() throws Exception

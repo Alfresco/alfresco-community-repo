@@ -360,11 +360,6 @@ public class RetryingTransactionHelper
      */
     public <R> R doInTransaction(RetryingTransactionCallback<R> cb, boolean readOnly, boolean requiresNew)
     {
-        if (this.readOnly && !readOnly)
-        {
-            throw new AccessDeniedException(MSG_READ_ONLY);
-        }
-
         // First validate the requiresNew setting
         if (!requiresNew)
         {
@@ -388,6 +383,15 @@ public class RetryingTransactionHelper
                     break;
                 default:
                     throw new RuntimeException("Unknown transaction state: " + readState);
+            }
+        }
+        
+        // If we need a new transaction, then we have to check that the read-write request can be served
+        if (requiresNew)
+        {
+            if (this.readOnly && !readOnly)
+            {
+                throw new AccessDeniedException(MSG_READ_ONLY);
             }
         }
 

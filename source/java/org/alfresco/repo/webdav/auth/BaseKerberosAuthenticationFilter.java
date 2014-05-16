@@ -274,6 +274,10 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             	restartLoginChallenge(context, req, resp);
         		return false;
         	}
+            else if (isFallbackEnabled())
+            {
+                return performFallbackAuthentication(context, req, resp);
+            }
         }
         
         // Check if the user is already authenticated        
@@ -631,6 +635,12 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
             getLogger().debug("Issuing login challenge to browser.");
         // Force the logon to start again
         resp.setHeader("WWW-Authenticate", "Negotiate");
+        
+        if (isFallbackEnabled())
+        {
+            includeFallbackAuth(context, req, resp);
+        }
+        
         resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         writeLoginPageLink(context, req, resp);
         

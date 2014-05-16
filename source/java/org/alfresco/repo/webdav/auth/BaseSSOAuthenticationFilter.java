@@ -73,6 +73,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     
     private boolean m_isActive = true;
             
+    private AuthenticationDriver fallbackDelegate;
+            
     protected static final String MIME_HTML_TEXT = "text/html";
 
     /**
@@ -102,6 +104,24 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     public final boolean isActive()
     {
         return m_isActive;
+    }
+
+    /**
+     * Activates or deactivates the fallback authentication support for this filter
+     * 
+     * @param delegate
+     */
+    public final void setFallback(AuthenticationDriver delegate)
+    {
+        this.fallbackDelegate = delegate;
+    }
+    
+    /** 
+     * @return <code>true</code> if fallback authentication enabled
+     */
+    public final boolean isFallbackEnabled()
+    {
+        return fallbackDelegate != null;
     }
 
     /*
@@ -551,6 +571,53 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         }
     }
 
+    /**
+     * Include into response authentication method that is supported by fallback mechanism
+     * 
+     * @param context ServletContext
+     * @param req HttpServletRequest
+     * @param resp HttpServletResponse
+     * @throws IOException
+     */
+    protected void includeFallbackAuth(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
+    {
+        fallbackDelegate.restartLoginChallenge(context, req, resp);
+    }
     
+    /**
+     * Delegate authentication to the fallback mechanism
+     * 
+     * @param context ServletContext
+     * @param req HttpServletRequest
+     * @param resp HttpServletResponse
+     * @return
+     * @throws IOException
+     * @throws ServletException
+     */
+    protected boolean performFallbackAuthentication(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException
+    {
+        if (getLogger().isDebugEnabled())
+        {
+            getLogger().debug("Performing fallback authentication...");
+        }
+        
+        boolean fallbackSuccess = fallbackDelegate.authenticateRequest(context, req, resp);
+        
+        if (!fallbackSuccess)
+        {
+            restartLoginChallenge(context, req, resp);
     
+            if (getLogger().isDebugEnabled())
+            {
+                getLogger().debug("Fallback authentication failed. Restarting login...");
+            }
+        }
+    
+        if (fallbackSuccess && getLogger().isDebugEnabled())
+        {
+            getLogger().debug("Fallback authentication succeeded.");
+        }
+        
+        return fallbackSuccess;
+    }
 }

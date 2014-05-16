@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -2031,8 +2031,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         {
             return false;
         }
-        
-        if(query.getProcessCustomProps() != null)
+    	
+        // Do NOT include start-task when the process for the given processId is already ended
+        // See MNT-10931
+        if(query.getProcessCustomProps() != null &&
+                !WorkflowTaskState.COMPLETED.equals(workflowTask.getState()))
         {
             // Get properties for process instance, based on path of start task, which is process-instance
             Map<QName, Serializable> props = getPathProperties(workflowTask.getPath().getId());

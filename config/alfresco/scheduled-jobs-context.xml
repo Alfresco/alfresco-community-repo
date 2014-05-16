@@ -36,6 +36,33 @@
         </property>
     </bean>
 
+    <bean id="webscripts.tempFileCleanerTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <bean id="webscripts.tempFileCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+                <property name="jobClass">
+                    <value>org.alfresco.util.TempFileProvider$TempFileCleanerJob</value>
+                </property>
+                <property name="jobDataAsMap">
+                    <map>
+                        <entry key="protectHours">
+                            <value>1</value>
+                        </entry>
+                        <entry key="directoryName">
+                            <value>${webscripts.tempDirectoryName}</value>
+                        </entry>
+                    </map>
+                </property>
+            </bean>
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <!-- Repeat hourly on the start hour -->
+        <property name="cronExpression">
+            <value>0 0 * * * ?</value>
+        </property>
+    </bean>
+
     <bean id="contentStoreCleanerJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.content.cleanup.ContentStoreCleanupJob</value>

@@ -9,21 +9,27 @@
     </parent>
     <artifactId>alfresco-installer</artifactId>
     <packaging>pom</packaging>
-    <name>Alfresco Installer packaging</name>
+    <name>Alfresco Installers</name>
 
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${binaries.folder}/bitrock/bitrock-8.5.1-20121129</bitrock.folder>
+        <bitrock.arguments>
+           --license
+           ${binaries.folder}/build-classpath/license.xml
+           --verbose
+           --setvars
+           project.outputDirectory=${project.build.directory}
+           project.version=${project.version}
+           project.fullName='Alfresco Community'
+           alfresco_svn_rootdir=${basedir}/../..
+           alfresco_edition=community
+           distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}
+           solr_folder=${project.build.directory}/solr
+           alfresco_googledocs_source_file=${project.build.directory}/dependency/alfresco-googledocs-repo-${alfresco.googledocs.version}.amp
+           alfresco_googledocs_share_source_file=${project.build.directory}/dependency/alfresco-googledocs-share-${alfresco.googledocs.version}.amp
+        </bitrock.arguments>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-distribution</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-    </dependencies>
 
     <build>
         <plugins>
@@ -84,39 +90,83 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>get-distribution</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
                 <configuration>
                     <executable>${bitrock.executable}</executable>
                     <workingDirectory>${basedir}/src/main/resources/bitrock</workingDirectory>
-                    <arguments>
-                        <argument>build</argument>
-                        <argument>project.xml</argument>
-                        <argument>windows</argument>
-                        <argument>--license</argument>
-                        <argument>${binaries.folder}/build-classpath/license.xml</argument>
-                        <argument>--verbose</argument>
-                        <argument>--setvars</argument>
-                        <argument>project.outputDirectory=${project.build.directory}</argument>
-                        <argument>project.version=${project.version}</argument>
-                        <argument>project.fullName=Alfresco Community</argument>
-                        <argument>alfresco_svn_rootdir=${basedir}/../..</argument>
-                        <argument>alfresco_edition=community</argument>
-                        <argument>project.installerFilename=alfresco-community-${project.version}-win-x64.exe</argument>
-                        <argument>binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64</argument>
-                        <argument>distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}</argument>
-                        <argument>solr_folder=${project.build.directory}/solr</argument>
-                        <argument>alfresco_googledocs_source_file=${project.build.directory}/dependency/alfresco-googledocs-repo-${alfresco.googledocs.version}.amp</argument>
-                        <argument>alfresco_googledocs_share_source_file=${project.build.directory}/dependency/alfresco-googledocs-share-${alfresco.googledocs.version}.amp</argument>
-                    </arguments>
                 </configuration>
+                <executions>
+                    <!-- Windows 32 -->
+                    <execution>
+                        <id>win32-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               windows
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-windows
+                               project.installerFilename=alfresco-community-${project.version}-win-x32.exe
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                    <!-- Windows 64 -->
+                    <execution>
+                        <id>win64-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               windows
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64
+                               project.installerFilename=alfresco-community-${project.version}-win-x64.exe
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                    <!-- Linux 64 -->
+                    <execution>
+                        <id>linux-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               linux-x64
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64
+                               project.installerFilename=alfresco-community-${project.version}-linux-x64.bin
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                    <!-- OS X -->
+                    <execution>
+                        <id>osx-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               osx
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64
+                               project.installerFilename=alfresco-community-${project.version}-osx-x64.app
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

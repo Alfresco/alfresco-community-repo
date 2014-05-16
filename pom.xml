@@ -62,6 +62,25 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>get-solr</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.directory}/solr</outputDirectory>
+                                    <destFileName>apache-solr-1.4.1.war</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>get-googledocs</id>
                         <phase>prepare-package</phase>
                         <goals>

@@ -450,7 +450,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         if (requiresTransaction())
         {
             // execute in a transaction
-            String temp = transactionService.getRetryingTransactionHelper().doInTransaction(patchWork, false, true);
+            String temp = this.transactionHelper.doInTransaction(patchWork, false, true);
             sb.append(temp);
         }
         else

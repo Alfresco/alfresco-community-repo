@@ -1309,9 +1309,9 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
         String transferIdA1 = receiver.start("transferFromRepoA1", true, receiver.getVersion());
 
-        TransferManifestNormalNode folder1A1 = createFolderNode(transferIdA1, folder1Name);
-        TransferManifestNormalNode folder2A1 = createFolderNode(transferIdA1, folder2Name);
-        TransferManifestNormalNode folder3A1 = createFolderNode(transferIdA1, folder3Name);
+        TransferManifestNormalNode folder1A1 = createFolderNode(folder1Name);
+        TransferManifestNormalNode folder2A1 = createFolderNode(folder2Name);
+        TransferManifestNormalNode folder3A1 = createFolderNode(folder3Name);
         moveNode(folder2A1, folder1A1);
 
         List<TransferManifestNode> nodesA1 = new ArrayList<TransferManifestNode>();
@@ -1352,8 +1352,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
         String transferIdB1 = receiver.start("transferFromRepoB1", true, receiver.getVersion());
 
-        TransferManifestNormalNode folder1B1 = createFolderNode(transferIdB1, folder1Name);
-        TransferManifestNormalNode folder3B1 = createFolderNode(transferIdB1, folder3Name);
+        TransferManifestNormalNode folder1B1 = createFolderNode(folder1Name);
+        TransferManifestNormalNode folder3B1 = createFolderNode(folder3Name);
         moveNode(folder3B1, folder1B1);
 
         List<TransferManifestNode> nodesB1 = new ArrayList<TransferManifestNode>();
@@ -1665,12 +1665,12 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         return node;
     }
 
-    private TransferManifestNormalNode createFolderNode(/*String transferId*/) throws Exception
+    private TransferManifestNormalNode createFolderNode() throws Exception
     {
-        return createFolderNode(transferId, null);
+        return createFolderNode(null);
     }
 
-    private TransferManifestNormalNode createFolderNode(String transferId, String folderName) throws Exception
+    private TransferManifestNormalNode createFolderNode(String folderName) throws Exception
     {
         TransferManifestNormalNode node = new TransferManifestNormalNode();
         String uuid = GUID.generate();

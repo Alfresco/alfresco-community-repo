@@ -23,4 +23,7 @@
       </property>
    </bean>
 
+   <bean id="webscript.org.alfresco.runas.largecontent.put" class="org.alfresco.repo.web.scripts.test.LargeContentTestPut" parent="webscript">
+   </bean>
+
 </beans>

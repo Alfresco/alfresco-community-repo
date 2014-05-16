@@ -18,13 +18,16 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import java.util.Arrays;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.CronTriggerBean;
 import org.alfresco.util.PropertyMap;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import static org.springframework.extensions.webscripts.Status.*;
 
@@ -41,6 +44,7 @@ public class RepositoryContainerTest extends BaseWebScriptTest
     
     private static final String USER_ONE = "RunAsOne";
     private static final String USER_TWO = "RunAsTwo";
+    private static final String SUCCESS = "success";
 
     @Override
     protected void setUp() throws Exception
@@ -108,5 +112,35 @@ public class RepositoryContainerTest extends BaseWebScriptTest
     {
         RepositoryContainer repoContainer = (RepositoryContainer) getServer().getApplicationContext().getBean("webscripts.container");
         repoContainer.reset();
+    }
+    
+    /*
+     * Test for MNT-11237 : CMIS uploading file larger the 4mb fails
+     * 
+     * Tests that requests with content larger than 4mb (default memoryThreshold value) can be successfully handled by repository container 
+     */
+    public void testLargeContentRequest() throws Exception
+    {
+        authenticationComponent.setCurrentUser(USER_ONE);
+        
+        // create the 5 mb size buffer of zero bytes
+        byte[] content = new byte[5 * 1024 * 1024];
+        Arrays.fill(content, (byte)0);
+        
+        // chek that we can upload file larger than 4 mb
+        Response response = sendRequest(new PutRequest("/test/largecontenttest", content, "text/plain"), STATUS_OK);
+        assertEquals(SUCCESS, response.getContentAsString());
+        
+        // trigger the webscript temp folder cleaner job
+        CronTriggerBean webscriptsTempFileCleanerJobTrigger = (CronTriggerBean) getServer().getApplicationContext().getBean("webscripts.tempFileCleanerTrigger");
+        
+        webscriptsTempFileCleanerJobTrigger.getScheduler().triggerJobWithVolatileTrigger(
+                webscriptsTempFileCleanerJobTrigger.getJobDetail().getName(),
+                webscriptsTempFileCleanerJobTrigger.getJobDetail().getGroup(),
+                webscriptsTempFileCleanerJobTrigger.getJobDetail().getJobDataMap());
+        
+        // check that we still can upload file larger than 4 mb, i.e. ensure that cleaner has not deleted temp folder
+        response = sendRequest(new PutRequest("/test/largecontenttest", content, "text/plain"), STATUS_OK);
+        assertEquals(SUCCESS, response.getContentAsString());
     }
 }

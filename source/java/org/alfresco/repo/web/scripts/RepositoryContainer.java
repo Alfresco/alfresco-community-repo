@@ -93,7 +93,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
      */
     public void setup()
     {
-        File tempDirectory = new File(TempFileProvider.getTempDir(), tempDirectoryName);
+        File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
     	this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
     }
 

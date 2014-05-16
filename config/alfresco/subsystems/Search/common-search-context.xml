@@ -11,6 +11,7 @@
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="ownableService" ref="ownableService"/>
         <property name="tenantService" ref="tenantService"/>
+        <property name="namespaceService" ref="namespaceService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="solrDAO" ref="solrDAO" />
@@ -18,6 +19,15 @@
         <property name="aclDAO" ref="aclDAO" />
         <property name="enabled">
             <value>${search.solrTrackingSupport.enabled}</value>
+        </property>
+        <property name="ignorePathsForSpecificTypes">
+            <value>${search.solrTrackingSupport.ignorePathsForSpecificTypes}</value>
+        </property>
+        <property name="typesForIgnoringPaths">
+            <list>
+                <value>{http://www.alfresco.org/model/content/1.0}person</value>
+                <value>{http://www.alfresco.org/model/application/1.0}configurations</value>
+            </list>
         </property>
     </bean>
 

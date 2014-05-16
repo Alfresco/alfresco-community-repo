@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,6 +58,8 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.InvalidQNameException;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
@@ -78,8 +80,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private OwnableService ownableService;
     private TenantService tenantService;
     private DictionaryService dictionaryService;
+    private NamespaceService namespaceService;
     private boolean enabled = true;
     private boolean cacheAncestors =true;
+    private boolean ignorePathsForSpecificTypes = false;
+    private Set<QName> typesForIgnoringPaths = new HashSet<QName>();
+    private List<String> typesForIgnoringPathsString;
     
     
     @Override
@@ -93,7 +99,22 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         this.enabled = enabled;
     }
-    
+
+    public boolean isIgnorePathsForSpecificTypes()
+    {
+        return ignorePathsForSpecificTypes;
+    }
+
+    public void setIgnorePathsForSpecificTypes(boolean ignorePersonAndConfigurationPaths)
+    {
+        this.ignorePathsForSpecificTypes = ignorePersonAndConfigurationPaths;
+    }
+
+    public void setTypesForIgnoringPaths(List<String> typesForIgnoringPaths)
+    {
+        typesForIgnoringPathsString = typesForIgnoringPaths;
+    }
+
     /**
      * @param cacheAncestors the cacheAncestors to set
      */
@@ -136,7 +157,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
     public void setAclDAO(AclDAO aclDAO)
     {
         this.aclDAO = aclDAO;
@@ -161,6 +187,29 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "dictionaryDAO", dictionaryDAO);
         PropertyCheck.mandatory(this, "aclDAO", aclDAO);
+
+        if ((null != typesForIgnoringPathsString) && (null != namespaceService))
+        {
+            for (String typeQName : typesForIgnoringPathsString)
+            {
+                if ((null != typeQName) && !typeQName.isEmpty())
+                {
+                    try
+                    {
+                        QName type = QName.resolveToQName(namespaceService, typeQName);
+
+                        if (null != dictionaryService.getType(type))
+                        {
+                            this.typesForIgnoringPaths.add(type);
+                        }
+                    }
+                    catch (InvalidQNameException e)
+                    {
+                        // Just ignore
+                    }
+                }
+            }
+        }
     }
     
     @Override
@@ -686,9 +735,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             
             if(includeType)
             {
-                QName nodeType = nodeDAO.getNodeType(nodeId);
-                TypeDefinition type = dictionaryService.getType(nodeType);
-                if(type != null)
+                QName nodeType = getNodeType(nodeId);
+                if(nodeType != null)
                 {
                     nodeMetaData.setNodeType(nodeType);
                 }
@@ -725,9 +773,44 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 }
             }
             nodeMetaData.setAspects(aspects);
-            
+
+            boolean ignoreLargeMetadata = ignorePathsForSpecificTypes && shouldTypeBeIgnored(getNodeType(nodeId));
+            if (!ignoreLargeMetadata && ignorePathsForSpecificTypes)
+            {
+                final List<Long> parentIds = new LinkedList<Long>();
+                nodeDAO.getParentAssocs(nodeId, null, null, true, new ChildAssocRefQueryCallback()
+                {
+                    @Override
+                    public boolean preLoadNodes()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean orderResults()
+                    {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+                    {
+                        parentIds.add(parentNodePair.getFirst());
+                        return false;
+                    }
+
+                    @Override
+                    public void done()
+                    {
+                    }
+                });
+
+                QName parentType = (!parentIds.isEmpty()) ? (getNodeType(parentIds.iterator().next())) : (null);
+                ignoreLargeMetadata = shouldTypeBeIgnored(parentType);
+            }
+
             CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
-            if(includePaths || includeParentAssociations)
+            if(!ignoreLargeMetadata && (includePaths || includeParentAssociations))
             {
                 if(props == null)
                 {
@@ -735,26 +818,26 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 }
                 categoryPaths = getCategoryPaths(status.getNodeRef(), aspects, props);
             }
-            
-            if(includePaths)
+
+            if (includePaths && !ignoreLargeMetadata)
             {
-                if(props == null)
+                if (props == null)
                 {
                     props = getProperties(nodeId);
                 }
-                
+
                 List<Path> directPaths = nodeDAO.getPaths(new Pair<Long, NodeRef>(nodeId, status.getNodeRef()), false);
-                
+
                 Collection<Pair<Path, QName>> paths = new ArrayList<Pair<Path, QName>>(directPaths.size() + categoryPaths.getPaths().size());
                 for (Path path : directPaths)
                 {
                     paths.add(new Pair<Path, QName>(path.getBaseNamePath(tenantService), null));
                 }
-                for(Pair<Path, QName> catPair : categoryPaths.getPaths())
+                for (Pair<Path, QName> catPair : categoryPaths.getPaths())
                 {
-                    paths.add(new Pair<Path, QName>(catPair.getFirst().getBaseNamePath(tenantService),  catPair.getSecond()));
+                    paths.add(new Pair<Path, QName>(catPair.getFirst().getBaseNamePath(tenantService), catPair.getSecond()));
                 }
-                         
+
                 nodeMetaData.setPaths(paths);
             }
          
@@ -781,7 +864,16 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
                             Pair<Long, NodeRef> childNodePair)
                     {
-                        childAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
+                        boolean addCurrentChildAssoc = true;
+                        if (ignorePathsForSpecificTypes)
+                        {
+                            QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
+                            addCurrentChildAssoc = !shouldTypeBeIgnored(nodeType);
+                        }
+                        if (addCurrentChildAssoc)
+                        {
+                            childAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
+                        }
                         return true;
                     }
                     
@@ -814,7 +906,16 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair, Pair<Long, NodeRef> parentNodePair,
                             Pair<Long, NodeRef> childNodePair)
                     {
-                        childIds.add(childNodePair.getFirst());
+                        boolean addCurrentId = true;
+                        if (ignorePathsForSpecificTypes)
+                        {
+                            QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
+                            addCurrentId = !shouldTypeBeIgnored(nodeType);
+                        }
+                        if (addCurrentId)
+                        {
+                            childIds.add(childNodePair.getFirst());
+                        }
                         return true;
                     }
                     
@@ -825,8 +926,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 });
                 nodeMetaData.setChildIds(childIds);
             }
-
-            if(includeParentAssociations)
+            
+            if(includeParentAssociations && !ignoreLargeMetadata)
             {
                 final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
                 nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
@@ -891,7 +992,35 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             rowHandler.processResult(nodeMetaData);
         }
     }
-   
+
+    private QName getNodeType(Long nodeId)
+    {
+        QName result = nodeDAO.getNodeType(nodeId);
+        TypeDefinition type = dictionaryService.getType(result);
+        return (null == type) ? (null) : (result);
+    }
+
+    private boolean shouldTypeBeIgnored(QName nodeType)
+    {
+        if (null != nodeType)
+        {
+            if (typesForIgnoringPaths.contains(nodeType))
+            {
+                return true;
+            }
+
+            for (QName type : typesForIgnoringPaths)
+            {
+                if (dictionaryService.isSubClass(nodeType, type))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     /**
      * {@inheritDoc}
      */

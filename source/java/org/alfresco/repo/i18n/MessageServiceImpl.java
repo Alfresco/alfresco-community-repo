@@ -824,22 +824,24 @@ public class MessageServiceImpl implements MessageService
     
     /**
      * Message Resource Bundle
-     * 
-     * Custom message property resource bundle, to overcome known limitation of JDK 5.0 (and lower).
-     *
+     * <p/>
+     * Custom message property resource bundle, to overcome known limitation of JDK 5.0 (and lower).<br/>
      * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6204853
-     * 
+     * <p/>
      * Note: JDK 6.0 provides the ability to construct a PropertyResourceBundle from a Reader.
      */
     private class MessagePropertyResourceBundle extends ResourceBundle
     {   
         private Properties properties = new Properties();
-        
+
+        /**
+         * @param reader            the source of the properties, which will be closed after use
+         */
         public MessagePropertyResourceBundle(Reader reader) throws IOException
         {
+            BufferedReader br = new BufferedReader(reader);
             try
             {
-                BufferedReader br = new BufferedReader(reader);
                 String line = br.readLine();
                 while (line != null)
                 {
@@ -866,7 +868,8 @@ public class MessageServiceImpl implements MessageService
             }
             finally
             {
-                reader.close();
+                try {br.close();} catch (IOException e) {}
+                try {reader.close();} catch (IOException e) {}
             }
         }
         

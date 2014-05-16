@@ -38,6 +38,7 @@ import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.action.Action;
@@ -1624,9 +1625,9 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
             // Set the run as user to the current user
             if (logger.isDebugEnabled() == true)
             {
-                logger.debug("The current user is: " + this.authenticationContext.getCurrentUserName());
+                logger.debug("The current user is: " + AuthenticationUtil.getRunAsUser());
             }
-            ((ActionImpl) action).setRunAsUser(this.authenticationContext.getCurrentUserName());
+            ((ActionImpl) action).setRunAsUser(AuthenticationUtil.getRunAsUser());
 
             // Set the tenant context to the current tenant
             if (logger.isDebugEnabled() == true)

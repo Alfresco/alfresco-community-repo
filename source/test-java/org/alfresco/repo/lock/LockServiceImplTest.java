@@ -33,7 +33,6 @@ import org.alfresco.repo.lock.mem.LockStore;
 import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.SearcherComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -904,41 +903,5 @@ public class LockServiceImplTest extends BaseSpringTest
             logger.debug("exception while trying to unlock a checked out node", e);
         }
     }
-    
-    public void testUnlockEphemeralNodeWithAdminUser()
-    {
-        for (Lifetime lt : new Lifetime[]{Lifetime.EPHEMERAL, Lifetime.PERSISTENT})
-        {
-            TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
-        
-            /* create node */
-            final NodeRef testNode = 
-                this.nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("{}testNode"), ContentModel.TYPE_CONTAINER).getChildRef();
-        
-            // lock it as GOOD user
-            this.lockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
-        
-            TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
-        
-            try
-            {
-                // try to unlock as bad user
-                this.lockService.unlock(testNode);
-                fail("BAD user shouldn't be able to unlock " + lt + " lock");
-            }
-            catch(NodeLockedException e)
-            {
-                // it's expected
-            }
-        
-            TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), "admin", rootNodeRef, this.authenticationService);
-        
-            // try to unlock as ADMIN user
-            this.lockService.unlock(testNode);
-        
-            TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
-        
-            this.nodeService.deleteNode(testNode);
-        }
-    }
+
 }

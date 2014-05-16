@@ -66,8 +66,6 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
@@ -96,7 +94,6 @@ public class LockServiceImpl implements LockService,
     private TenantService tenantService;
     private AuthenticationService authenticationService;
     private SearchService searchService;
-    private AuthorityService authorityService;
     private BehaviourFilter behaviourFilter;
     private LockStore lockStore;
     private PolicyComponent policyComponent;
@@ -140,10 +137,6 @@ public class LockServiceImpl implements LockService,
     public void setSearchService(SearchService searchService)
     {
         this.searchService = searchService;
-    }
-
-    public void setAuthorityService(AuthorityService authorityService) {
-        this.authorityService = authorityService;
     }
 
     /**
@@ -480,8 +473,6 @@ public class LockServiceImpl implements LockService,
         
         if (lockState.isLockInfo())
         {
-            // check if the node is the user able to unlock the node
-            checkForLockIfNotAdmin(nodeRef);
         	// MNT-231: forbidden to unlock a checked out node
             if (!allowCheckedOut && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT))
             {
@@ -512,8 +503,8 @@ public class LockServiceImpl implements LockService,
             }
             else if (lifetime == Lifetime.EPHEMERAL)
             {
-                // force unlock the ephemeral lock.
-                lockStore.forceUnlock(nodeRef);
+                // Remove the ephemeral lock.
+                lockStore.set(nodeRef, LockState.createUnlocked(nodeRef));
                 nodeIndexer.indexUpdateNode(nodeRef);
             }
             else
@@ -663,16 +654,6 @@ public class LockServiceImpl implements LockService,
                     // Ignore since this indicates that the node does not have the lock aspect applied
                 }
             }
-        }
-    }
-    
-    private void checkForLockIfNotAdmin(NodeRef nodeRef)
-    {
-        Set<String> userAuthorities = authorityService.getAuthoritiesForUser(AuthenticationUtil.getRunAsUser());
-        // ignore checkForLock for admins
-        if (!userAuthorities.contains(PermissionService.ADMINISTRATOR_AUTHORITY))
-        {
-            checkForLock(nodeRef);	
         }
     }
 

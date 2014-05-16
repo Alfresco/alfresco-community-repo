@@ -669,21 +669,30 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     public void testRenderPdfDocumentLongRunningCheckout() throws Exception
     {
-        class CheckoutRunnable extends AbstractNodeModifyingRunnable
+        try
         {
-            public CheckoutRunnable(NodeRef nodeRef)
+            class CheckoutRunnable extends AbstractNodeModifyingRunnable
             {
-                super(nodeRef);
-            }
-            protected void modifyNode(NodeRef nodeRef)
-            {
-                AuthenticationUtil.setRunAsUserSystem();
-                CheckOutCheckInService checkOutCheckInService = 
+                public CheckoutRunnable(NodeRef nodeRef)
+                {
+                    super(nodeRef);
+                }
+                protected void modifyNode(NodeRef nodeRef)
+                {
+                    AuthenticationUtil.setRunAsUserSystem();
+                    CheckOutCheckInService checkOutCheckInService = 
                         (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
-                checkOutCheckInService.checkout(nodeWithDocContent);
-            }
-        };
-        renderPdfDocumentLongRunningTest(new CheckoutRunnable(nodeWithDocContent));
+                    checkOutCheckInService.checkout(nodeWithDocContent);
+                }
+            };
+            renderPdfDocumentLongRunningTest(new CheckoutRunnable(nodeWithDocContent));
+        }
+        finally
+        {
+            AuthenticationUtil.setRunAsUserSystem();
+            CheckOutCheckInService checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("CheckOutCheckInService");
+            checkOutCheckInService.cancelCheckout(checkOutCheckInService.getWorkingCopy(nodeWithDocContent));
+        }
     }
     
     /**

@@ -178,7 +178,8 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         objecVariant = CMISObjectVariant.CURRENT_VERSION;
         objectId = connector.constructObjectId(nodeRef, CMISConnector.UNVERSIONED_VERSION_LABEL);
         versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
-        currentObjectId = objectId;                    
+        currentObjectId = objectId; 
+        hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);		
     }
     
     protected void analyseObjectId()

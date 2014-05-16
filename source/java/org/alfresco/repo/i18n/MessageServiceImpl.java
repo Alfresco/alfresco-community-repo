@@ -184,7 +184,7 @@ public class MessageServiceImpl implements MessageService
         LockHelper.tryLock(readLock, tryLockTimeout, "getting resource bundle base names in 'MessageServiceImpl.registerResourceBundle()'");
         try
         {
-            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain);  
+            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain, false);  
         }
         finally
         {
@@ -287,7 +287,7 @@ public class MessageServiceImpl implements MessageService
             // all locales
             loadedResourceBundlesForAllLocales = getLoadedResourceBundles(tenantDomain);
             cachedMessagesForAllLocales = getMessages(tenantDomain);
-            resourceBundleBaseNamesForAllLocales = getResourceBundleBaseNames(tenantDomain);
+            resourceBundleBaseNamesForAllLocales = getResourceBundleBaseNames(tenantDomain, false);
         }    
         finally
         {
@@ -405,7 +405,7 @@ public class MessageServiceImpl implements MessageService
             tenantCachedMessages = getMessages(tenantDomain);
             props = tenantCachedMessages.get(locale);
 
-            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain);
+            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain, false);
             loadedBundleCount = tenantResourceBundleBaseNames.size();
         }
         finally
@@ -451,7 +451,7 @@ public class MessageServiceImpl implements MessageService
             try
             {
                 // get registered resource bundles               
-                Set<String> resBundleBaseNames = getResourceBundleBaseNames(tenantDomain);
+                Set<String> resBundleBaseNames = getResourceBundleBaseNames(tenantDomain, true);
 
                 int count = 0;
                 
@@ -595,7 +595,7 @@ public class MessageServiceImpl implements MessageService
         LockHelper.tryLock(readLock, tryLockTimeout, "getting resource bundle base names in 'MessageServiceImpl.getRegisteredBundles()'");
         try
         {
-            return getResourceBundleBaseNames(getTenantDomain());
+            return getResourceBundleBaseNames(getTenantDomain(), false);
         }
         finally
         {
@@ -603,7 +603,7 @@ public class MessageServiceImpl implements MessageService
         }
     }  
     
-    private Set<String> getResourceBundleBaseNames(String tenantDomain)
+    private Set<String> getResourceBundleBaseNames(String tenantDomain, boolean haveWriteLock)
     {
         // Assume a read lock is present
         Set<String> resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
@@ -611,10 +611,14 @@ public class MessageServiceImpl implements MessageService
         {
             return resourceBundleBaseNames;
         }
-        
-        // They are not there.  Upgrade to the write lock.
-        readLock.unlock();
-        LockHelper.tryLock(writeLock, tryLockTimeout, "getting cached resource bundle base names by tenant domain in 'MessageServiceImpl.getRegisteredBundles()'");
+
+        if (!haveWriteLock)
+        {
+            // They are not there. Upgrade to the write lock.
+            readLock.unlock();
+            LockHelper.tryLock(writeLock, tryLockTimeout, "getting cached resource bundle base names by tenant domain in 'MessageServiceImpl.getRegisteredBundles()'");
+        }
+
         try
         {
             resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
@@ -627,8 +631,11 @@ public class MessageServiceImpl implements MessageService
         }
         finally
         {
-            writeLock.unlock();
-            LockHelper.tryLock(readLock, tryLockTimeout, "upgrading to read lock in MessageServiceImpl.getResourceBundleBaseNames()");
+            if (!haveWriteLock)
+            {
+                writeLock.unlock();
+                LockHelper.tryLock(readLock, tryLockTimeout, "upgrading to read lock in MessageServiceImpl.getResourceBundleBaseNames()");
+            }
         }
         
         if (resourceBundleBaseNames == null)

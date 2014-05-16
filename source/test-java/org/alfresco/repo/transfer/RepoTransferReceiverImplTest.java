@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 Alfresco Software Limited.
+ * Copyright (C) 2009-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1289,6 +1289,150 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         }
 
     }
+
+    /**
+     * Test for fault raised as MNT-11057
+     * (https://issues.alfresco.com/jira/browse/MNT-11057) Bug in replication process on Aliens.
+     *
+     * @throws Exception
+     */
+
+    public void testMNT11057() throws Exception
+    {
+        String folder1Name = "H1";
+        String folder2Name = "H2";
+        String folder3Name = "H3";
+
+        //Step 1 transfer from repo A (H1 -> H2)
+        setDefaultRollback(true);
+        startNewTransaction();
+
+        String transferIdA1 = receiver.start("transferFromRepoA1", true, receiver.getVersion());
+
+        TransferManifestNormalNode folder1A1 = createFolderNode(transferIdA1, folder1Name);
+        TransferManifestNormalNode folder2A1 = createFolderNode(transferIdA1, folder2Name);
+        TransferManifestNormalNode folder3A1 = createFolderNode(transferIdA1, folder3Name);
+        moveNode(folder2A1, folder1A1);
+
+        List<TransferManifestNode> nodesA1 = new ArrayList<TransferManifestNode>();
+
+        nodesA1.add(folder1A1);
+        nodesA1.add(folder2A1);
+
+        endTransaction();
+
+        this.setDefaultRollback(false);
+        startNewTransaction();
+        try
+        {
+            String snapshot = createSnapshot(nodesA1, "repo A");
+            log.debug(snapshot);
+            receiver.saveSnapshot(transferIdA1, new StringInputStream(snapshot, "UTF-8"));
+
+            for (TransferManifestNode node : nodesA1)
+            {
+                receiver.saveContent(transferIdA1, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
+            }
+            receiver.commit(transferIdA1);
+
+            for (TransferManifestNode node : nodesA1)
+            {
+                assertTrue(nodeService.exists(node.getNodeRef()));
+            }
+        }
+        finally
+        {
+            receiver.end(transferIdA1);
+            endTransaction();
+        }
+
+        //Step 2 trasfer from repo B (H1 -> H3)
+        setDefaultRollback(true);
+        startNewTransaction();
+
+        String transferIdB1 = receiver.start("transferFromRepoB1", true, receiver.getVersion());
+
+        TransferManifestNormalNode folder1B1 = createFolderNode(transferIdB1, folder1Name);
+        TransferManifestNormalNode folder3B1 = createFolderNode(transferIdB1, folder3Name);
+        moveNode(folder3B1, folder1B1);
+
+        List<TransferManifestNode> nodesB1 = new ArrayList<TransferManifestNode>();
+
+        nodesB1.add(folder1B1);
+        nodesB1.add(folder3B1);
+
+        endTransaction();
+
+        this.setDefaultRollback(false);
+        startNewTransaction();
+        try
+        {
+            String snapshot = createSnapshot(nodesB1, "repo B");
+            log.debug(snapshot);
+            receiver.saveSnapshot(transferIdB1, new StringInputStream(snapshot, "UTF-8"));
+
+            for (TransferManifestNode node : nodesB1)
+            {
+                receiver.saveContent(transferIdB1, node.getUuid(), new ByteArrayInputStream(dummyContentBytes));
+            }
+            receiver.commit(transferIdB1);
+        }
+        finally
+        {
+            receiver.end(transferIdB1);
+            endTransaction();
+        }
+
+        assertTrue(nodeService.exists(folder1A1.getNodeRef()));
+        log.info("has Alien");
+        log.info(nodeService.hasAspect(folder1A1.getNodeRef(), TransferModel.ASPECT_ALIEN));
+
+        assertTrue(nodeService.exists(folder2A1.getNodeRef()));
+        log.info("has Alien");
+        assertFalse(nodeService.hasAspect(folder2A1.getNodeRef(), TransferModel.ASPECT_ALIEN));
+
+        assertFalse(nodeService.exists(folder1B1.getNodeRef()));
+
+        assertTrue(nodeService.exists(folder3B1.getNodeRef()));
+        log.info("has Alien");
+        assertTrue(nodeService.hasAspect(folder3B1.getNodeRef(), TransferModel.ASPECT_ALIEN));
+
+        startNewTransaction();
+
+        moveNode(folder3A1, folder1A1);
+        moveNode(folder2A1, folder3A1);
+
+        nodesA1 = new ArrayList<TransferManifestNode>();
+
+        nodesA1.add(folder1A1);
+        nodesA1.add(folder3A1);
+        nodesA1.add(folder2A1);
+
+        endTransaction();
+
+
+        //Step 3 transfer from repo A again (H2 is moved to newly created H3 on A: H1 -> H3 -> H2)
+        startNewTransaction();
+        try
+        {
+            String transferId = receiver.start("transferFromRepoA1Again", true, receiver.getVersion());
+            String snapshot = createSnapshot(nodesA1, "repo A");
+            log.debug(snapshot);
+            receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+            receiver.commit(transferId);
+        }
+        catch(Exception ex)
+        {
+            if(ex instanceof NullPointerException)
+            {
+                fail("Test of MNT-11057 failed: " + ex.getMessage());
+            }
+        }
+        finally
+        {
+            endTransaction();
+        }
+    }
     
     
     public void testAsyncCommit() throws Exception
@@ -1459,13 +1603,18 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
     private String createSnapshot(List<TransferManifestNode> nodes) throws Exception
     {
+        return createSnapshot(nodes, "repo 1");
+    }
+
+    private String createSnapshot(List<TransferManifestNode> nodes, String repoID) throws Exception
+    {
         XMLTransferManifestWriter manifestWriter = new XMLTransferManifestWriter();
         StringWriter output = new StringWriter();
         manifestWriter.startTransferManifest(output);
         TransferManifestHeader header = new TransferManifestHeader();
         header.setCreatedDate(new Date());
         header.setNodeCount(nodes.size());
-        header.setRepositoryId("repo 1");
+        header.setRepositoryId(repoID);
         manifestWriter.writeTransferManifestHeader(header);
         for (TransferManifestNode node : nodes)
         {
@@ -1518,6 +1667,11 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
 
     private TransferManifestNormalNode createFolderNode(/*String transferId*/) throws Exception
     {
+        return createFolderNode(transferId, null);
+    }
+
+    private TransferManifestNormalNode createFolderNode(String transferId, String folderName) throws Exception
+    {
         TransferManifestNormalNode node = new TransferManifestNormalNode();
         String uuid = GUID.generate();
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, uuid);
@@ -1535,7 +1689,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         NodeRef guestHome = guestHomeResult.getNodeRef(0); 
         NodeRef parentFolder = guestHome;
         
-        String nodeName = uuid + ".folder" + getNameSuffix();
+        String nodeName = folderName == null ? uuid + ".folder" + getNameSuffix() : folderName;
 
         List<ChildAssociationRef> parents = new ArrayList<ChildAssociationRef>();
         ChildAssociationRef primaryAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parentFolder, QName

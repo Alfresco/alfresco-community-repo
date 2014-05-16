@@ -153,8 +153,9 @@ public class AlienProcessorImpl implements AlienProcessor
     public void beforeDeleteAlien(NodeRef deletedNodeRef, ChildAssociationRef oldAssoc)
     {
         log.debug("before delete node - need to check for alien invaders");
-        
-        List<String>stuff = (List<String>)nodeService.getProperty(deletedNodeRef, TransferModel.PROP_INVADED_BY);        
+
+        List<String>stuff = (List<String>)nodeService.getProperty(deletedNodeRef, TransferModel.PROP_INVADED_BY);
+        if (stuff == null) return;
         Vector<String> exInvaders = new Vector<String>(stuff);
         
         /**

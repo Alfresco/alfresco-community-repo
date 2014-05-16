@@ -1327,7 +1327,8 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         {
             String snapshot = createSnapshot(nodesA1, "repo A");
             log.debug(snapshot);
-            receiver.saveSnapshot(transferIdA1, new StringInputStream(snapshot, "UTF-8"));
+            
+            receiver.saveSnapshot(transferIdA1, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
             for (TransferManifestNode node : nodesA1)
             {
@@ -1369,7 +1370,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         {
             String snapshot = createSnapshot(nodesB1, "repo B");
             log.debug(snapshot);
-            receiver.saveSnapshot(transferIdB1, new StringInputStream(snapshot, "UTF-8"));
+            receiver.saveSnapshot(transferIdB1, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
 
             for (TransferManifestNode node : nodesB1)
             {
@@ -1418,7 +1419,7 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
             String transferId = receiver.start("transferFromRepoA1Again", true, receiver.getVersion());
             String snapshot = createSnapshot(nodesA1, "repo A");
             log.debug(snapshot);
-            receiver.saveSnapshot(transferId, new StringInputStream(snapshot, "UTF-8"));
+            receiver.saveSnapshot(transferId, new ByteArrayInputStream(snapshot.getBytes("UTF-8")));
             receiver.commit(transferId);
         }
         catch(Exception ex)

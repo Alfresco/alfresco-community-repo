@@ -72,15 +72,15 @@
    <bean id="dispositionLifecycleJobExecuter"
    		 class="org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuter"
          parent="baseRMJobExecuter">
-      
-      <!-- list of disposition actions to automatically execute when eligible -->  
+
+      <!-- list of disposition actions to automatically execute when eligible -->
       <property name="dispositionActions">
          <list>
          	<value>cutoff</value>
          	<value>retain</value>
          </list>
       </property>
-         
+
       <property name="nodeService" ref="nodeService" />
       <property name="searchService" ref="searchService" />
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
@@ -95,7 +95,8 @@
       </property>
       <property name="cronExpression">
          <!-- <value>0 30 3 * * ?</value> -->
-         <value>0/30 * * * * ?</value>
+         <!-- <value>0/30 * * * * ?</value> -->
+         <value>${rm.dispositionlifecycletrigger.cronexpression}</value>
       </property>
    </bean>
 

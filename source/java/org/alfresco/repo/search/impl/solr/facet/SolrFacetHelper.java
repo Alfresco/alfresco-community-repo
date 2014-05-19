@@ -20,7 +20,6 @@ package org.alfresco.repo.search.impl.solr.facet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -198,12 +197,12 @@ public class SolrFacetHelper
     /**
      * Creates display name for the Date buckets.
      * 
-     * @return Map of {@literal <date range, display label key>}
+     * @return Map of {@literal <date range, (display label key, insertion index)>}
      */
     private static Map<String, Pair<String, Integer>> makeDateBucketsDisplayLabel(LocalDate date)
     {
         List<String> dateBuckets = makeDateBuckets(date);
-        Map<String, Pair<String, Integer>> bucketDisplayName = new LinkedHashMap<>(5);
+        Map<String, Pair<String, Integer>> bucketDisplayName = new HashMap<>(5);
 
         if (dateBuckets.size() != 5)
         {
@@ -222,7 +221,7 @@ public class SolrFacetHelper
     /**
      * Creates display name for the Content size buckets.
      * 
-     * @return Map of {@literal <size range, display label key>}
+     * @return Map of {@literal <size range, (display label key, insertion index)>}
      */
     private static Map<String, Pair<String, Integer>> makeContentSizeBucketsDisplayLabel()
     {

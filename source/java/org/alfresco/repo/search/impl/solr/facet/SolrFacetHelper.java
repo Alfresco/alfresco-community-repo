@@ -101,17 +101,7 @@ public class SolrFacetHelper
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modified", modifiedDateBucketsDisplayHandler);
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}content.size", contentSizeBucketsDisplayHandler);
     }
-
-    /**
-     * Set the facet value and facet query display label handlers.
-     * 
-     * @param displayHandlers the displayHandlers to set
-     */
-    public void setDisplayHandlers(Map<String, FacetLabelDisplayHandler> displayHandlers)
-    {
-        this.displayHandlers = displayHandlers;
-    }
-
+    
     /**
      * Gets predefined set of facet queries. Currently the facet queries are:
      * <li>Created date buckets</li>

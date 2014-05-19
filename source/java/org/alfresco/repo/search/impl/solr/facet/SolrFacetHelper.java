@@ -127,8 +127,8 @@ public class SolrFacetHelper
         DateBucketsDisplayHandler dateBucketsDisplayHandler = new DateBucketsDisplayHandler();
         ContentSizeBucketsDisplayHandler contentSizeBucketsDisplayHandler = new ContentSizeBucketsDisplayHandler();
         
-        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}creator.__", userNameDisplayHandler);
-        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modifier.__", userNameDisplayHandler);
+        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}creator.__.u", userNameDisplayHandler);
+        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modifier.__.u", userNameDisplayHandler);
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}content.mimetype", mimetypeDisplayHandler);
         this.displayHandlers.put(CREATED_FIELD_FACET_QUERY, dateBucketsDisplayHandler);
         this.displayHandlers.put(MODIFIED_FIELD_FACET_QUERY, dateBucketsDisplayHandler);

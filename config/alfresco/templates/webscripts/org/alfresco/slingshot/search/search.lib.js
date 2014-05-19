@@ -575,6 +575,11 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
       }
    }
 
+   if (overriden && parts == null)
+   {
+      displayPath.unshift("");
+   }
+   
    return (parts !== null ? parts : [ null, null, displayPath ]);
 }
 
@@ -945,7 +950,16 @@ function getSearchResults(params)
                      }
                      else
                      {
-                        formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':\\"' + propValue + '\\"';
+                        var index = propValue.lastIndexOf(" ");
+                        formQuery += (first ? '' : ' AND ') + escapeQName(propName)
+                        if (index > 0 && index < propValue.length - 1)
+                        {
+                           formQuery += ':(' + propValue + ')';
+                        }
+                        else
+                        {
+                           formQuery += ':"' + propValue + '"';
+                     }
                      }
                      first = false;
                   }
@@ -1015,7 +1029,7 @@ function getSearchResults(params)
          }
       }
 
-      // ensure a TYPE is specified - if not, then add one to remove system objects etc. from result sets
+      // ensure a TYPE is specified - if no add one to remove system objects from result sets
       if (ftsQuery.indexOf("TYPE:\"") === -1 && ftsQuery.indexOf("TYPE:'") === -1)
       {
          ftsQuery += ' AND (+TYPE:"cm:content" OR +TYPE:"cm:folder")';
@@ -1055,7 +1069,7 @@ function getSearchResults(params)
       }
       ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"st:site"' +
                                    ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system';
-
+      
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name
       //  - pseudo cm:content field starting with "." such as: .size

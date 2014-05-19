@@ -39,11 +39,13 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.Operator;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
@@ -501,6 +503,7 @@ public class Search extends BaseScopableProcessorExtension
      *    namespace: string,      optional, the default namespace for properties
      *    defaultField: string,   optional, the default field for query elements when not explicit in the query
      *    defaultOperator: string,optional, the default operator for query elements when they are not explicit in the query AND or OR
+     *    fieldFacets: [],        optional, Array of fields (as full QName strings) to facet against
      *    onerror: string         optional, result on error - one of: exception, no-results - defaults to 'exception'
      * }
      * 
@@ -533,7 +536,13 @@ public class Search extends BaseScopableProcessorExtension
      */
     public Scriptable query(Object search)
     {
+        return (Scriptable)queryResultSet(search).get("nodes", getScope());
+    }
+    
+    public Scriptable queryResultSet(Object search)
+    {
         Object[] results = null;
+        Map<String,Object> meta = null;
         
         // convert values from JS to Java - may contain native JS object such as ConsString etc.
         search = new ValueConverter().convertValueForJava(search);
@@ -556,6 +565,7 @@ public class Search extends BaseScopableProcessorExtension
                 String language = (String)def.get("language");
                 List<Map<Serializable, Serializable>> sort = (List<Map<Serializable, Serializable>>)def.get("sort");
                 Map<Serializable, Serializable> page = (Map<Serializable, Serializable>)def.get("page");
+                List<String> facets = (List<String>)def.get("fieldFacets");
                 String namespace = (String)def.get("namespace");
                 String onerror = (String)def.get("onerror");
                 String defaultField = (String)def.get("defaultField");
@@ -676,6 +686,13 @@ public class Search extends BaseScopableProcessorExtension
                         sp.addQueryTemplate(field, queryTemplates.get(field));
                     }
                 }
+                if (facets != null)
+                {
+                    for (String field: facets)
+                    {
+                        sp.addFieldFacet(new FieldFacet("@" + field));
+                    }
+                }
                 
                 // error handling opions
                 boolean exceptionOnError = true;
@@ -696,7 +713,9 @@ public class Search extends BaseScopableProcessorExtension
                 }
                 
                 // execute search based on search definition
-                results = query(sp, exceptionOnError);
+                Pair<Object[], Map<String,Object>> r = queryResultMeta(sp, exceptionOnError);
+                results = r.getFirst();
+                meta = r.getSecond();
             }
         }
         
@@ -705,7 +724,25 @@ public class Search extends BaseScopableProcessorExtension
             results = new Object[0];
         }
         
-        return Context.getCurrentContext().newArray(getScope(), results);
+        // construct a JS return object
+        // {
+        //    nodes: [],                // Array of ScriptNode results
+        //    meta: {
+        //       numberFound: long,     // total number found in index, or -1 if not known or not supported by this resultset
+        //       facets: {              // facets are returned for each field as requested in the SearchParameters fieldfacets 
+        //          field: {            // each field contains a map of facet to value
+        //              facet: value,
+        //              ...
+        //          },
+        //          ...
+        //       }
+        //    }
+        // }
+        Scriptable scope = getScope();
+        Scriptable res = Context.getCurrentContext().newObject(scope);
+        res.put("nodes", res, Context.getCurrentContext().newArray(scope, results));
+        res.put("meta", res, meta);
+        return res;
     }
     
     /**
@@ -803,8 +840,25 @@ public class Search extends BaseScopableProcessorExtension
      * @return Array of Node objects
      */
     protected Object[] query(SearchParameters sp, boolean exceptionOnError)
-    {   
+    {
+        return queryResultMeta(sp, exceptionOnError).getFirst();
+    }
+    
+    /**
+     * Execute the query
+     * 
+     * Removes any duplicates that may be present (ID search can cause duplicates -
+     * it is better to remove them here)
+     * 
+     * @param sp                SearchParameters describing the search to execute.
+     * @param exceptionOnError  True to throw a runtime exception on error, false to return empty resultset
+     * 
+     * @return Pair containing Object[] of Node objects, and the ResultSet metadata hash.
+     */
+    protected Pair<Object[], Map<String,Object>> queryResultMeta(SearchParameters sp, boolean exceptionOnError)
+    {
         Collection<ScriptNode> set = null;
+        Map<String, Object> meta = new HashMap<>(8);
         
         long time = 0L;
         if (logger.isDebugEnabled())
@@ -819,6 +873,7 @@ public class Search extends BaseScopableProcessorExtension
         {
             results = this.services.getSearchService().query(sp);
             
+            // results nodes
             if (results.length() != 0)
             {
                 NodeService nodeService = this.services.getNodeService();
@@ -832,6 +887,24 @@ public class Search extends BaseScopableProcessorExtension
                     }
                 }
             }
+            // results metadata
+            meta.put("numberFound", results.getNumberFound());
+            meta.put("hasMore", results.hasMore());
+            // results facets
+            Map<String, Map<String, Integer>> facetMeta = new HashMap<>();
+            for (FieldFacet ff: sp.getFieldFacets())
+            {
+                // for each field facet, get the facet results
+                List<Pair<String, Integer>> fs = results.getFieldFacet(ff.getField());
+                HashMap<String, Integer> facets = new HashMap<>();
+                for (Pair<String, Integer> f: fs)
+                {
+                    facets.put(f.getFirst(), f.getSecond());
+                }
+                // store facet results per field
+                facetMeta.put(ff.getField(), facets);
+            }
+            meta.put("facets", facetMeta);
         }
         catch (Throwable err)
         {
@@ -854,7 +927,8 @@ public class Search extends BaseScopableProcessorExtension
                 logger.debug("query time: " + (System.currentTimeMillis()-time) + "ms");
         }
         
-        return set != null ? set.toArray(new Object[(set.size())]) : new Object[0];
+        Object[] res = set != null ? set.toArray(new Object[(set.size())]) : new Object[0];
+        return new Pair<Object[], Map<String,Object>>(res, meta);
     }
     
     

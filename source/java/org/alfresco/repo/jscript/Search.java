@@ -711,8 +711,16 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     {
                         sp.addFieldFacet(new FieldFacet("@" + field));
                     }
-                    
-                    List<String> facetQueries = solrFacetHelper.getFacetQueries();
+                    List<String> facetQueries = null;
+                    // Workaround for ACE-1605
+                    if (query.indexOf("created:") < 0 && query.indexOf("modified:") < 0)
+                    {
+                        facetQueries = solrFacetHelper.getDefaultFacetQueries();
+                    }
+                    else
+                    {
+                        facetQueries = solrFacetHelper.createFacetQueriesFromSearchQuery(query);
+                    }
                     for (String fq : facetQueries)
                     {
                         sp.addFacetQuery(fq);

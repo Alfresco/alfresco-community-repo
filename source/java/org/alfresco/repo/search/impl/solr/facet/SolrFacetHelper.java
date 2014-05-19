@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -73,6 +75,15 @@ public class SolrFacetHelper
     private static final int HUGE = 128 * MB;
 
     private static final String SIZE_BUCKETS_CACHE_KEY = "sizeBucketsCacheKey";
+    
+    // Positive-look-behind RegEx.
+    // E.g. pattern-input => {http://www.alfresco.org/model/content/1.0}created:("2014-04-07".."2014-05-07")
+    // the matcher-output => 2014-04-07".."2014-05-07
+    /** Pattern to search for created date */
+    private static final Pattern CREATED_DATE_PATTERN = Pattern.compile("(?<=created:\\(\")(\\d{4}-\\d{2}-\\d{2})(\"..\")(\\d{4}-\\d{2}-\\d{2})");
+    
+    /** Pattern to search for modified date */
+    private static final Pattern MODIFIED_DATE_PATTERN = Pattern.compile("(?<=modified:\\(\")(\\d{4}-\\d{2}-\\d{2})(\"..\")(\\d{4}-\\d{2}-\\d{2})");
     
     /** Content size buckets */
     private static final List<String> CONTENT_SIZE_BUCKETS = new ArrayList<>(6);
@@ -125,28 +136,17 @@ public class SolrFacetHelper
     }
     
     /**
-     * Gets predefined set of facet queries. Currently the facet queries are:
+     * Gets the predefined set of facet queries. Currently the facet queries are:
      * <li>Created date buckets</li>
      * <li>Modified date buckets</li>
      * <li>Content size buckets</li>
      * 
      * @return list of facet queries
      */
-    public List<String> getFacetQueries()
+    public List<String> getDefaultFacetQueries()
     {
         List<String> facetQueries = new ArrayList<>();
-        List<String> dateBuckets = null;
-
-        try
-        {
-            dateBuckets = fqDateCache.getRangeBuckets(LocalDate.now());
-        }
-        catch (Exception e)
-        {
-            logger.error(
-                        "Error occured while trying to get the date buckets from the cache. Calculating the dates without the cache.", e);
-            dateBuckets = makeDateBuckets(LocalDate.now());
-        }
+        List<String> dateBuckets = getDateBuckets();
 
         // Created and Modified dates facet queries
         for (String bucket : dateBuckets)
@@ -163,11 +163,114 @@ public class SolrFacetHelper
 
         return facetQueries;
     }
+    
+    /**
+     * Creates <i>Created</i> and <i>Modified</i> facet queries by trying to
+     * extract the date range from the Created and/or Modified filter(s) within
+     * the search query. If either of the <i>Created</i> or <i>Modified</i>
+     * filter is missing from the search query, the default set of facet queries
+     * will be created for the missing date filter. Also, creates the default
+     * <i>Content.Size</i> facet queries.
+     * 
+     * @return list of facet queries
+     */
+    // ACE-1605
+    public List<String> createFacetQueriesFromSearchQuery(String searchQuery)
+    {
+        String createdDateRange = extractDateRange(searchQuery, CREATED_DATE_PATTERN);
+        String modifiedDateRange = extractDateRange(searchQuery, MODIFIED_DATE_PATTERN);
+
+        if (createdDateRange == null && modifiedDateRange == null)
+        {
+            return getDefaultFacetQueries();
+        }
+
+        List<String> facetQueries = new ArrayList<>();
+        List<String> dateBuckets = getDateBuckets();
+
+        if (createdDateRange != null && modifiedDateRange != null)
+        {
+            // Add the Created and Modified dates facet queries
+            facetQueries.add(CREATED_FIELD_FACET_QUERY + ":[" + createdDateRange + ']');
+            facetQueries.add(MODIFIED_FIELD_FACET_QUERY + ":[" + modifiedDateRange + ']');
+        }
+        else if (createdDateRange == null)
+        {
+            // As Created date is null, add all the the predefined created buckets.
+            for (String bucket : dateBuckets)
+            {
+                facetQueries.add(CREATED_FIELD_FACET_QUERY + ":[" + bucket + ']');
+            }
+            // We can be sure, that modifiedDateRange is not null (see the first 'if' statement).
+            facetQueries.add(MODIFIED_FIELD_FACET_QUERY + ":[" + modifiedDateRange + ']');
+        }
+        else
+        {
+            // If we are here, it means, Modified date is null, hence, add
+            // all the the predefined modified buckets.
+            for (String bucket : dateBuckets)
+            {
+                facetQueries.add(MODIFIED_FIELD_FACET_QUERY + ":[" + bucket + ']');
+            }
+            facetQueries.add(CREATED_FIELD_FACET_QUERY + ":[" + createdDateRange + ']');
+        }
+
+        // Always add the content size facet query
+        for (String bucket : CONTENT_SIZE_BUCKETS)
+        {
+            facetQueries.add(CONTENT_SIZE_FIELD_FACET_QUERY + ":[" + bucket + ']');
+        }
+
+        return facetQueries;
+    }
+    
+    /**
+     * Gets the date range that will match against the pattern from the search query
+     * 
+     * @param searchQuery the string input
+     * @param pattern the compiled representation of a RegEx
+     * @return the date range or null, if there is no match. An example of the
+     *         date range string representation is: 2014-04-28 TO 2014-04-29
+     */
+    private String extractDateRange(String searchQuery, Pattern pattern)
+    {
+        String dateRange = null;
+        Matcher matcher = pattern.matcher(searchQuery);
+        if (matcher.find())
+        {
+            dateRange = matcher.group();
+            // E.g. dateRange => 2014-04-28".."2014-04-29
+        }
+
+        return (dateRange == null) ? null : dateRange.replace("\"..\"", " TO ");
+    }
+    
+    /**
+     * Gets the predefined date buckets from the cache
+     * 
+     * @return list of date ranges. An example of the date range string
+     *         representation is: 2014-04-28 TO 2014-04-29
+     */
+    private List<String> getDateBuckets()
+    {
+        List<String> dateBuckets = null;
+        try
+        {
+            dateBuckets = fqDateCache.getRangeBuckets(LocalDate.now());
+        }
+        catch (Exception e)
+        {
+            logger.error(
+                        "Error occured while trying to get the date buckets from the cache. Calculating the dates without the cache.", e);
+            dateBuckets = makeDateBuckets(LocalDate.now());
+        }
+        return dateBuckets;
+    }
 
     /**
      * Gets the appropriate facet display label handler
      * 
-     * @param qName
+     * @param qName the field facet QName
      * @return the diplayHandler object or null if there is no handler
      *         registered for the given @{code qName}
      */
@@ -189,7 +292,8 @@ public class SolrFacetHelper
     /**
      * Creates Date buckets. The dates are in ISO8601 format (yyyy-MM-dd)
      * 
-     * @return list of date ranges. e.g. "2014-04-28 TO 2014-04-29"
+     * @return list of date ranges. An example of the date range string
+     *         representation is: 2014-04-28 TO 2014-04-29
      */
     private static List<String> makeDateBuckets(LocalDate currentDate)
     {

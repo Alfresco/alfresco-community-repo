@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -50,7 +51,8 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         if (nodeService.exists(actionedUponNodeRef) &&
-            !freezeService.isFrozen(actionedUponNodeRef))
+            !freezeService.isFrozen(actionedUponNodeRef) &&
+            !(dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) && !recordService.isFiled(actionedUponNodeRef)))
         {
             // TODO move re-open logic into a service method
             // TODO check that the user in question has the correct permission to re-open a records folder

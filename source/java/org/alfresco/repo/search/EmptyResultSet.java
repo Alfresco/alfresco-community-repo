@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -164,4 +165,10 @@ public class EmptyResultSet implements ResultSet
     {
         return 0;
     }
+    
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return Collections.emptyMap();
+    }  
 }

@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.impl.lucene.LuceneResultSetRow;
@@ -931,6 +932,12 @@ public class SortedResultSet implements ResultSet
     public long getNumberFound()
     {
         return resultSet.getNumberFound();
+    }
+    
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return resultSet.getFacetQueries();
     }
 
 }

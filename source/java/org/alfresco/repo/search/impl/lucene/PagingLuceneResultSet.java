@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -249,5 +250,11 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     public long getNumberFound()
     {
        return wrapped.getNumberFound();
+    }
+
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return wrapped.getFacetQueries();
     }
 }

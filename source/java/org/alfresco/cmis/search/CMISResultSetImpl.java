@@ -348,4 +348,10 @@ public class CMISResultSetImpl implements CMISResultSet, Serializable
         }
         throw new IllegalStateException();
     }
+
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return Collections.emptyMap();
+    }
 }

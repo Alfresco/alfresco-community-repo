@@ -23,6 +23,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 import org.alfresco.repo.search.ResultSetRowIterator;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -335,5 +336,11 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     public long getNumberFound()
     {
         return inclusionMask.cardinality();
+    }
+    
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return unfiltered.getFacetQueries();
     }
 }

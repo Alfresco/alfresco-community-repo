@@ -21,6 +21,7 @@ package org.alfresco.repo.search;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -121,5 +122,10 @@ public abstract class AbstractResultSet implements ResultSet
         return Collections.<Pair<String, Integer>>emptyList();
     }
     
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return Collections.emptyMap();
+    }    
     
 }

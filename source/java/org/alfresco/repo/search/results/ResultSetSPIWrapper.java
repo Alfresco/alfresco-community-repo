@@ -20,6 +20,7 @@ package org.alfresco.repo.search.results;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -154,6 +155,12 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
     public List<Pair<String, Integer>> getFieldFacet(String field)
     {
         return wrapped.getFieldFacet(field);
+    }
+    
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return wrapped.getFacetQueries();
     }
     
     private static class WrappedIterator<ROW extends ResultSetRow> implements Iterator<ResultSetRow>

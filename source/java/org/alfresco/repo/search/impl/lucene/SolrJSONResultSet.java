@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
@@ -71,6 +72,8 @@ public class SolrJSONResultSet implements ResultSet
     private SimpleResultSetMetaData resultSetMetaData;
     
     private HashMap<String, List<Pair<String, Integer>>> fieldFacets = new HashMap<String, List<Pair<String, Integer>>>(1);
+    
+    private Map<String, Integer> facetQueries = new HashMap<String, Integer>();
     
     private NodeDAO nodeDao;
     
@@ -143,6 +146,16 @@ public class SolrJSONResultSet implements ResultSet
             if(json.has("facet_counts"))
             {
                 JSONObject facet_counts = json.getJSONObject("facet_counts");
+                if(facet_counts.has("facet_queries"))
+                {
+                    JSONObject facet_queries = facet_counts.getJSONObject("facet_queries");
+                    for(Iterator it = facet_queries.keys(); it.hasNext(); /**/)
+                    {
+                        String fq = (String) it.next();
+                        Integer count =Integer.parseInt(facet_queries.getString(fq));
+                        facetQueries.put(fq, count);
+                    }
+                }
                 if(facet_counts.has("facet_fields"))
                 {
                     JSONObject facet_fields = facet_counts.getJSONObject("facet_fields");
@@ -390,5 +403,11 @@ public class SolrJSONResultSet implements ResultSet
     public long getLastIndexedTxId()
     {
         return lastIndexedTxId;
+    }
+
+    @Override
+    public Map<String, Integer> getFacetQueries()
+    {
+        return Collections.unmodifiableMap(facetQueries);
     }
 }

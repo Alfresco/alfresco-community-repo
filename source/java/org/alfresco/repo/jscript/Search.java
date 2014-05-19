@@ -26,14 +26,17 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper.FacetLabelDisplayHandler;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -48,6 +51,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.dom4j.Document;
@@ -56,6 +60,7 @@ import org.dom4j.io.SAXReader;
 import org.jaxen.saxpath.base.XPathReader;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -71,7 +76,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author Kevin Roast
  */
-public class Search extends BaseScopableProcessorExtension
+public class Search extends BaseScopableProcessorExtension implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(Search.class);
     
@@ -85,7 +90,18 @@ public class Search extends BaseScopableProcessorExtension
     protected Repository repository;
 
     private SwitchableApplicationContextFactory searchSubsystem;
+    
+    /** Solr facet helper */
+    private SolrFacetHelper solrFacetHelper;
+    
 
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        PropertyCheck.mandatory(this, "services", services);
+        
+        this.solrFacetHelper = new SolrFacetHelper(services);
+    }
     /**
      * Set the default store reference
      * 
@@ -694,6 +710,12 @@ public class Search extends BaseScopableProcessorExtension
                     {
                         sp.addFieldFacet(new FieldFacet("@" + field));
                     }
+                    
+                    List<String> facetQueries = solrFacetHelper.getFacetQueries();
+                    for (String fq : facetQueries)
+                    {
+                        sp.addFacetQuery(fq);
+                    }
                 }
                 
                 // error handling opions
@@ -905,15 +927,47 @@ public class Search extends BaseScopableProcessorExtension
                     if (f.getSecond() > 0)
                     {
                         String facetValue = f.getFirst();
-                        Field field = getFieldType(ff.getField());
-                        String label = (field == null) ? facetValue : field.getLabel(services, facetValue);
+                        FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(ff.getField());
+                        String label = (handler == null) ? facetValue : handler.getDisplayLabel(facetValue).getSecond();
+                        
                         facets.add(new ScriptFacetResult(facetValue, label, f.getSecond()));
                     }
                 }
                 // store facet results per field
                 facetMeta.put(ff.getField(), facets);
+            } 
+            
+            Set<Entry<String, Integer>> facetQueries = results.getFacetQueries().entrySet();
+            Map<String, List<ScriptFacetResult>> facetQueryMeta = new HashMap<>(facetQueries.size());
+            for(Entry<String, Integer> entry : facetQueries)
+            {
+                // ignore zero hit facet queries
+                if (entry.getValue() > 0)
+                {
+                    String key = entry.getKey();
+                    // for example the key could be: {!afts}@{http://www.alfresco.org/model/content/1.0}created:[2013-10-29 TO 2014-04-29]
+                    // qName => @{http://www.alfresco.org/model/content/1.0}created
+                    // 7 => {!afts}
+                    String qName = key.substring(7, key.lastIndexOf(':'));
+
+                    // Retrieve the previous facet queries
+                    List<ScriptFacetResult> fqs = facetQueryMeta.get(qName);
+                    if (fqs == null)
+                    {
+                        fqs = new ArrayList<>();
+                    }
+                    FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(qName);
+                    Pair<String, String> valueLabelPair = (handler == null) ? new Pair<String, String>(qName,
+                                key.substring(qName.length(), key.length())) : handler.getDisplayLabel(key);
+                    
+                    fqs.add(new ScriptFacetResult(valueLabelPair.getFirst(), valueLabelPair.getSecond(), entry.getValue()));
+                    
+                    // store facet query results per field
+                    facetQueryMeta.put(qName, fqs);
+                }
             }
             meta.put("facets", facetMeta);
+            meta.put("facetQueries", facetQueryMeta);
         }
         catch (Throwable err)
         {
@@ -960,84 +1014,5 @@ public class Search extends BaseScopableProcessorExtension
         
         public String column;
         public boolean asc;
-    }
-    
-    /**
-     * @author Jamal Kaabi-Mofrad
-     */
-    private enum Field
-    {
-        CREATOR("creator.__"), MODIFIER("modifier.__"), MIMETYPE("content.mimetype")
-        {
-            @Override
-            /*Package access level*/
-            String getLabel(ServiceRegistry services, String facetValue)
-            {
-                MimetypeService mimetypeService = services.getMimetypeService();
-                Map<String, String> mimetypes = mimetypeService.getDisplaysByMimetype();
-                String displayName = mimetypes.get(facetValue);
-                return displayName == null ? facetValue : displayName.trim();
-            }
-        };
-
-        private Field(String facetField)
-        {
-            this.facetField = facetField;
-        }
-
-        private String facetField;
-
-        private String getFacetField()
-        {
-            return facetField;
-        }
-
-        /**
-         * Default implementation which will return the full user name from
-         * the facetValue, if the facetValue represent a userID
-         * 
-         * @param services the ServiceRegistry 
-         * @param facetValue the facet value
-         * @return the full user name. If the user doesn't exist then, the
-         *         {@code facetValue} will be returned.
-         */
-        /*Package access level*/
-        String getLabel(ServiceRegistry services, String facetValue)
-        {
-            String name = null;
-
-            final NodeRef personRef = services.getPersonService().getPersonOrNull(facetValue);
-            if (personRef != null)
-            {
-                final NodeService nodeService = services.getNodeService();
-                final String firstName = (String) nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
-                final String lastName = (String) nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
-                name = (firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "");
-            }
-            return name == null ? facetValue : name.trim();
-        }
-    }
-
-    /**
-     * Gets the facet field.
-     * 
-     * @param facetField the facet field value
-     * @return the Field type
-     */
-    private Field getFieldType(String facetField)
-    {
-        if (facetField == null)
-        {
-            return null;
-        }
-
-        for (Field val : Field.values())
-        {
-            if (facetField.endsWith(val.getFacetField()))
-            {
-                return val;
-            }
-        }
-        return null;
     }
 }

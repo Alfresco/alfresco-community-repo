@@ -938,6 +938,14 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 facetMeta.put(ff.getField(), facets);
             } 
             
+            // Start of bucketing
+            // ACE-1615: Populate the facetMeta map with empty lists. If there is a
+            // facet query with >0 hits, the relevant list will be populated
+            // with the results, otherwise the list remains empty.
+            for(String bucketedField : solrFacetHelper.getBucketedFieldFacets())
+            {
+                facetMeta.put(bucketedField, new ArrayList<ScriptFacetResult>());
+            }
             Set<Entry<String, Integer>> facetQueries = results.getFacetQueries().entrySet();
             for(Entry<String, Integer> entry : facetQueries)
             {
@@ -954,18 +962,17 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     List<ScriptFacetResult> fqs = facetMeta.get(qName);
                     if (fqs == null)
                     {
-                        fqs = new ArrayList<>();
+                        // Shouldn't be here
+                        throw new AlfrescoRuntimeException("Field facet [" + qName + "] has"
+                                    + " not been registerd with SolrFacetHelper.BUCKETED_FIELD_FACETS.");
                     }
                     FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(qName);
                     FacetLabel facetLabel = (handler == null) ? new FacetLabel(qName, key.substring(qName.length(),
                                 key.length()), -1) : handler.getDisplayLabel(key);
                     
                     fqs.add(new ScriptFacetResult(facetLabel.getValue(), facetLabel.getLabel(), facetLabel.getLabelIndex(), entry.getValue()));
-                    
-                    // store facet query results per field
-                    facetMeta.put(qName, fqs);
                 }
-            }
+            }// End of bucketing
             meta.put("facets", facetMeta);
         }
         catch (Throwable err)

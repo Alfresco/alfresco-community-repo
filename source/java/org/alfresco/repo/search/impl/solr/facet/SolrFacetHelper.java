@@ -19,7 +19,9 @@
 package org.alfresco.repo.search.impl.solr.facet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,9 +59,9 @@ public class SolrFacetHelper
     private static Log logger = LogFactory.getLog(SolrFacetHelper.class);
 
     private static final String FQ_NS_PREFIX = "@{http://www.alfresco.org/model/content/1.0}";
-    private static final String CREATED_FACET_QUERY_PREFIX = FQ_NS_PREFIX + "created:";
-    private static final String MODIFIED_FACET_QUERY_PREFIX = FQ_NS_PREFIX + "modified:";
-    private static final String CONTENT_SIZE_FACET_QUERY_PREFIX = FQ_NS_PREFIX + "content.size:";
+    private static final String CREATED_FIELD_FACET_QUERY = FQ_NS_PREFIX + "created";
+    private static final String MODIFIED_FIELD_FACET_QUERY = FQ_NS_PREFIX + "modified";
+    private static final String CONTENT_SIZE_FIELD_FACET_QUERY = FQ_NS_PREFIX + "content.size";
 
     // Content size buckets
     private static final int KB = 1024;
@@ -82,6 +84,15 @@ public class SolrFacetHelper
         CONTENT_SIZE_BUCKETS.add(MEDIUM + " TO " + LARGE);
         CONTENT_SIZE_BUCKETS.add(LARGE + " TO " + HUGE);
         CONTENT_SIZE_BUCKETS.add(HUGE + " TO MAX");
+    }
+
+    /** Field facet buckets */
+    private static final Set<String> BUCKETED_FIELD_FACETS = new HashSet<>(3);
+    static
+    {
+        BUCKETED_FIELD_FACETS.add(CREATED_FIELD_FACET_QUERY);
+        BUCKETED_FIELD_FACETS.add(MODIFIED_FIELD_FACET_QUERY);
+        BUCKETED_FIELD_FACETS.add(CONTENT_SIZE_FIELD_FACET_QUERY);
     }
 
     /** Facet value and facet query display label handlers */
@@ -108,9 +119,9 @@ public class SolrFacetHelper
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}creator.__", userNameDisplayHandler);
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modifier.__", userNameDisplayHandler);
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}content.mimetype", mimetypeDisplayHandler);
-        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}created", dateBucketsDisplayHandler);
-        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modified", dateBucketsDisplayHandler);
-        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}content.size", contentSizeBucketsDisplayHandler);
+        this.displayHandlers.put(CREATED_FIELD_FACET_QUERY, dateBucketsDisplayHandler);
+        this.displayHandlers.put(MODIFIED_FIELD_FACET_QUERY, dateBucketsDisplayHandler);
+        this.displayHandlers.put(CONTENT_SIZE_FIELD_FACET_QUERY, contentSizeBucketsDisplayHandler);
     }
     
     /**
@@ -140,14 +151,14 @@ public class SolrFacetHelper
         // Created and Modified dates facet queries
         for (String bucket : dateBuckets)
         {
-            facetQueries.add(CREATED_FACET_QUERY_PREFIX + '[' + bucket + ']');
-            facetQueries.add(MODIFIED_FACET_QUERY_PREFIX + '[' + bucket + ']');
+            facetQueries.add(CREATED_FIELD_FACET_QUERY + ":[" + bucket + ']');
+            facetQueries.add(MODIFIED_FIELD_FACET_QUERY + ":[" + bucket + ']');
         }
 
         // Content size facet query
         for (String bucket : CONTENT_SIZE_BUCKETS)
         {
-            facetQueries.add(CONTENT_SIZE_FACET_QUERY_PREFIX + '[' + bucket + ']');
+            facetQueries.add(CONTENT_SIZE_FIELD_FACET_QUERY + ":[" + bucket + ']');
         }
 
         return facetQueries;
@@ -163,6 +174,16 @@ public class SolrFacetHelper
     public FacetLabelDisplayHandler getDisplayHandler(String qName)
     {
         return displayHandlers.get(qName);
+    }
+
+    /**
+     * Gets predefined set of field facets which are used to construct bucketing
+     * 
+     * @return an unmodifiable view of the set of predefined field facets
+     */
+    public Set<String> getBucketedFieldFacets()
+    {
+        return Collections.unmodifiableSet(BUCKETED_FIELD_FACETS);
     }
 
     /**

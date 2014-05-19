@@ -964,7 +964,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     {
                         // Shouldn't be here
                         throw new AlfrescoRuntimeException("Field facet [" + qName + "] has"
-                                    + " not been registerd with SolrFacetHelper.BUCKETED_FIELD_FACETS.");
+                                    + " not been registered with SolrFacetHelper.BUCKETED_FIELD_FACETS.");
                     }
                     FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(qName);
                     FacetLabel facetLabel = (handler == null) ? new FacetLabel(qName, key.substring(qName.length(),

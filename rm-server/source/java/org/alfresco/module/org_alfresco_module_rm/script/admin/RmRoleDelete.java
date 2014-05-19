@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -45,7 +46,7 @@ public class RmRoleDelete extends RoleDeclarativeWebScript
         // Role name
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String roleParam = templateVars.get("rolename");
-        if (roleParam == null)
+        if (StringUtils.isBlank(roleParam))
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "No role name was provided on the URL.");
         }

@@ -784,6 +784,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             throw new AlfrescoRuntimeException("Can not delete the records management administration role.");
         }
 
+        // ensure that we are not trying to delete a system role
+        if (FilePlanRoleService.SYSTEM_ROLES.contains(role))
+        {
+            throw new AlfrescoRuntimeException("'" + role + "' is a system role and cannot be deleted.");
+        }
+
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Boolean doWork() throws Exception

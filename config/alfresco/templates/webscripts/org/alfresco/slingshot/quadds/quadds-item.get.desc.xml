@@ -6,6 +6,6 @@
   <url>/aikau/quadds/{name}</url>
   <url>/aikau/quadds</url>
   <format default="json"></format>
-  <authentication>admin</authentication>
+  <authentication>user</authentication>
   <lifecycle>internal</lifecycle>
 </webscript>

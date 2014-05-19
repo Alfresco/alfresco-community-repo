@@ -4,6 +4,6 @@
   <family>QuADDS</family>
   <url>/aikau/quadds/{name}/item/{item_name}</url>
   <format default="json"></format>
-  <authentication>admin</authentication>
+  <authentication>user</authentication>
   <lifecycle>internal</lifecycle>
 </webscript>

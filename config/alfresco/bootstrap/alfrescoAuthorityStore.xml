@@ -43,6 +43,16 @@
                         <cm:authorityName>GROUP_SITE_ADMINISTRATORS</cm:authorityName>
                     </view:properties>
                 </cm:authorityContainer>
+                <cm:authorityContainer view:childName="cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS">
+                    <view:aspects>
+                        <sys:referenceable />
+                    </view:aspects>
+                    <view:properties>
+                        <sys:node-uuid>GROUP_ALFRESCO_SEARCH_ADMINISTRATORS</sys:node-uuid>
+                        <cm:name>GROUP_ALFRESCO_SEARCH_ADMINISTRATORS</cm:name>
+                        <cm:authorityName>GROUP_ALFRESCO_SEARCH_ADMINISTRATORS</cm:authorityName>
+                    </view:properties>
+                </cm:authorityContainer>
             </sys:children>
         </view:associations>
     </sys:container>
@@ -80,6 +90,11 @@
                                 view:pathref="${system.authorities_container.childname}/cm:GROUP_SITE_ADMINISTRATORS"
                                 view:childName="cm:GROUP_SITE_ADMINISTRATORS" />
                         </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS" />
+                        </cm:inZone>
                     </view:associations>
                 </cm:zone>
                 <cm:zone view:childName="cm:APP.DEFAULT">
@@ -105,6 +120,11 @@
                             <view:reference
                                 view:pathref="${system.authorities_container.childname}/cm:GROUP_SITE_ADMINISTRATORS"
                                 view:childName="cm:GROUP_SITE_ADMINISTRATORS" />
+                        </cm:inZone>
+                        <cm:inZone>
+                            <view:reference
+                                view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS"
+                                view:childName="cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS" />
                         </cm:inZone>
                     </view:associations>
                 </cm:zone>

@@ -95,8 +95,8 @@ public class AuthorityServiceTest extends TestCase
     
     private static final int DEFAULT_SITE_GRP_CNT = 5;      // default number of groups per site
     private static final int DEFAULT_SITE_ROOT_GRP_CNT = 1; // default number of root groups per site
-    private static final int DEFAULT_GRP_CNT = 3;           // default (non-site) bootstrap groups - 
-                                                            // eg. GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_SITE_ADMINISTRATORS
+    private static final int DEFAULT_GRP_CNT = 4;           // default (non-site) bootstrap groups - 
+                                                            // eg. GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_SITE_ADMINISTRATORS, GROUP_ALFRESCO_SEARCH_ADMINISTRATORS
     
     private int SITE_CNT = 0;
     private int GRP_CNT = 0;
@@ -431,8 +431,8 @@ public class AuthorityServiceTest extends TestCase
         assertTrue(authorityService.hasAdminAuthority());
         assertTrue(pubAuthorityService.hasAdminAuthority());
         Set<String> authorities = authorityService.getAuthorities();
-        // 5 => [GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_EVERYONE, GROUP_SITE_ADMINISTRATORS, ROLE_ADMINISTRATOR]
-        assertEquals("Unexpected result: " + authorities, 5 + (SITE_CNT*2), authorityService.getAuthorities().size());
+        // 6 => [GROUP_ALFRESCO_ADMINISTRATORS, GROUP_EMAIL_CONTRIBUTORS, GROUP_EVERYONE, GROUP_SITE_ADMINISTRATORS, ROLE_ADMINISTRATOR, GROUP_ALFRESCO_SEARCH_ADMINISTRATORS]
+        assertEquals("Unexpected result: " + authorities, 6 + (SITE_CNT*2), authorityService.getAuthorities().size());
     }
     
     public void testNoUser()

@@ -25,6 +25,14 @@
          </cm:member>
       </view:associations>
    </view:reference>
+   <view:reference view:pathref="${system.authorities_container.childname}/cm:GROUP_ALFRESCO_SEARCH_ADMINISTRATORS">
+      <view:associations>
+         <cm:member>
+            <view:reference view:pathref="${system.people_container.childname}/cm:${alfresco_user_store.adminusername}"
+               view:childName="cm:${alfresco_user_store.adminusername}" />
+         </cm:member>
+      </view:associations>
+   </view:reference>
    <view:reference view:pathref="${system.zones_container.childname}/cm:AUTH.ALF">
       <view:associations>
          <cm:inZone>

@@ -1,11 +1,4 @@
 function main() {
-   var queryDef = {
-      query: alfQuery,
-      language: "fts-alfresco",
-      page: {maxItems: 50},
-      templates: []
-   };
-
    // Get the name and data for the QuADDS item...
    var name = json.get("name");
    var data = json.get("data");
@@ -46,12 +39,7 @@ function main() {
       }
 
       // Construct query to find the requested QuADDS...
-      var alfQuery = 'TYPE:"{http://www.alfresco.org/model/content/1.0}content" AND ' + 
-                     'PATH:"/app:company_home/app:dictionary/cm:QuADDS/cm:' + url.templateArgs.name + '/*" '+ 
-                     'AND @cm\:name:"' + url.templateArgs.item_name + '"';
-      queryDef.query = alfQuery;
-      
-      var QuADDS_Items = search.query(queryDef);
+      var QuADDS_Items = search.selectNodes('/app:company_home/app:dictionary/cm:QuADDS/cm:' + search.ISO9075Encode(url.templateArgs.name) + '/cm:' + search.ISO9075Encode(url.templateArgs.item_name));
       if (QuADDS_Items.length > 0)
       {
          var node = QuADDS_Items[0];
@@ -64,7 +52,7 @@ function main() {
       else
       {
          status.code = 500;
-         model.errorMessage = "Culd not find QuADDS item";
+         model.errorMessage = "Could not find QuADDS item";
          return false;
       }
 

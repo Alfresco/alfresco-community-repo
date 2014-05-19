@@ -1,12 +1,5 @@
 function main() {
-   var queryDef = {
-      language: "fts-alfresco",
-      page: {maxItems: 50},
-      templates: []
-   };
-
    var results = [];
-   var alfQuery;
    if (url.templateArgs.name == null)
    {
       // Can't create a QuADDS item without knowing where to place the item...
@@ -24,12 +17,7 @@ function main() {
    else
    {
       // Gets the items for a specific QuADDS...
-      alfQuery = 'TYPE:"{http://www.alfresco.org/model/content/1.0}content" AND ' + 
-                 'PATH:"/app:company_home/app:dictionary/cm:QuADDS/cm:' + url.templateArgs.name + '/*" '+ 
-                 'AND @cm\:name:"' + url.templateArgs.item_name + '"';
-      queryDef.query = alfQuery;
-
-      var QuADDS_Items = search.query(queryDef);
+      var QuADDS_Items = search.selectNodes('/app:company_home/app:dictionary/cm:QuADDS/cm:' + search.ISO9075Encode(url.templateArgs.name) + '/cm:' + search.ISO9075Encode(url.templateArgs.item_name));
       if (QuADDS_Items.length > 0)
       {
          var node = QuADDS_Items[0];

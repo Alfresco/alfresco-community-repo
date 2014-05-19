@@ -1,11 +1,4 @@
 function main() {
-   var queryDef = {
-      query: alfQuery,
-      language: "fts-alfresco",
-      page: {maxItems: 50},
-      templates: []
-   };
-
    // Get the name and data for the QuADDS item...
    var name = json.get("name");
    var data = json.get("data");
@@ -46,23 +39,14 @@ function main() {
       }
 
       // Construct query to find the requested QuADDS...
-      var alfQuery = 'TYPE:"{http://www.alfresco.org/model/content/1.0}folder" ' + 
-                     'AND PATH:"/app:company_home/app:dictionary/cm:QuADDS/*" ' + 
-                     'AND @cm\:name:"' + url.templateArgs.name + '"';
-      queryDef.query = alfQuery;
-      
-      var QuADDS_Folder,
-          nodes = search.query(queryDef);
+      var QuADDS_Folder;
+          // nodes = search.query(queryDef);
+      var nodes = search.selectNodes('/app:company_home/app:dictionary/cm:QuADDS/cm:' + search.ISO9075Encode(url.templateArgs.name));
       if (nodes.length == 0)
       {
          // Need to create the QuADDS Folder...
-         alfQuery = 'TYPE:"{http://www.alfresco.org/model/content/1.0}folder" ' + 
-                     'AND PATH:"/app:company_home/app:dictionary/*" ' + 
-                     'AND @cm\:name:"QuADDS"';
-         queryDef.query = alfQuery;
-
          // Get the root folder...
-         nodes = search.query(queryDef);
+         nodes = search.selectNodes('/app:company_home/app:dictionary/cm:QuADDS');
          if (nodes.length == 0)
          {
             // TODO: Create the QuADDS folder

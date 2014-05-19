@@ -13,25 +13,11 @@
 			{
 			"label": "${f.facetLabel}",
 			"value": "${f.facetValue}",
-			"hits": ${f.hits?c}
+			"hits": ${f.hits?c},
+			"index": ${f.facetLabelIndex?c}
 			}<#if f_has_next>,</#if>
 			</#list>
 		]<#if field_has_next>,</#if>
-		</#list></#if>
-	},
-	"facetQueries":
-	{
-		<#if data.facetQueries??><#list data.facetQueries?keys as fqParam>
-		"${fqParam}":
-		[
-			<#assign fqs=data.facetQueries[fqParam]><#list fqs as q>
-			{
-			"label": "${q.facetLabel}",
-			"value": "${q.facetValue}",
-			"hits": ${q.hits?c}
-			}<#if q_has_next>,</#if>
-			</#list>
-		]<#if fqParam_has_next>,</#if>
 		</#list></#if>
 	},
 	"items":

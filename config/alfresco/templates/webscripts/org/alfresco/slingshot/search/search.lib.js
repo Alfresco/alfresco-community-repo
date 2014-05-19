@@ -651,7 +651,6 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
          numberFound: meta ? meta.numberFound : -1
       },
       facets: meta ? meta.facets : null,
-      facetQueries: meta ? meta.facetQueries : null,
       items: results
    });
 }

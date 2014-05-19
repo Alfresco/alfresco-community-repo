@@ -58,7 +58,8 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     {
         boolean result = false;
         if (nodeService.exists(actionedUponNodeRef) &&
-                !freezeService.isFrozen(actionedUponNodeRef))
+                !freezeService.isFrozen(actionedUponNodeRef) &&
+                !TYPE_UNFILED_RECORD_FOLDER.equals(nodeService.getType(actionedUponNodeRef)))
         {
             result = true;
         }

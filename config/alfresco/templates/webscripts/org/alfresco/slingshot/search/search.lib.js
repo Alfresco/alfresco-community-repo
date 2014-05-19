@@ -1054,7 +1054,8 @@ function getSearchResults(params)
          ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ')';
       }
       ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"st:site"' +
-                                   ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system';
+                                    ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system AND -PATH:"'
+                                    + SITES_SPACE_QNAME_PATH + '*/cm:surf-config//*"';
       
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name

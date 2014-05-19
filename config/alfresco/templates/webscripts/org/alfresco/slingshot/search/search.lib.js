@@ -534,18 +534,16 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
 {
    var path = node.qnamePath,
        displayPath = qnameOnly ? null : utils.displayPath(node).split("/"),
-       parts = null;
+       parts = null,
+       overriden = false;
    
    // restructure the display path of the node if we have an overriden root node
    if (!qnameOnly && rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0)
    {
       var nodeDisplayPath = utils.displayPath(node).split("/");
       nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
-      for (var i = 0; i < rootNodeQNamePath.split("/").length-1; i++)
-      {
-         nodeDisplayPath.unshift(null);
-      }
       displayPath = nodeDisplayPath;
+      overriden = true;
    }
    
    if (path.match("^"+SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
@@ -554,6 +552,14 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
           pos = tmp.indexOf('/');
       if (pos >= 1)
       {
+         if (rootNodeQNamePath != null && path.indexOf(rootNodeQNamePath) === 0)
+         {
+            for (var i = 0; i < rootNodeQNamePath.split("/").length-1; i++)
+            {
+               nodeDisplayPath.unshift(null);
+            }
+            displayPath = nodeDisplayPath;
+         }
          var siteQName = Packages.org.alfresco.util.ISO9075.decode(tmp.split("/")[0]);
              siteId = siteQName.substring(siteQName.indexOf(":") + 1);
          tmp = tmp.substring(pos + 1);

@@ -52,13 +52,11 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
                                implements BeanNameAware, RecordsManagementModel, DOD5015Model
 {
     /** Extended reader and writer role details */
-    private static final String ROLE_READERS = "ExtendedReaders";
     private static final String ROLE_READERS_LABEL = "In-Place Readers";
     private static final String[] ROLE_READERS_CAPABILITIES = new String[]
     {
        "ViewRecords"
     };
-    private static final String ROLE_WRITERS = "ExtendedWriters";
     private static final String ROLE_WRITERS_LABEL = "In-Place Writers";
     private static final String[] ROLE_WRITERS_CAPABILITIES = new String[]
     {
@@ -173,8 +171,8 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
                     moveExistingTransfers(filePlan);
 
                     // add the inplace roles
-                    filePlanRoleService.createRole(filePlan, ROLE_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
-                    filePlanRoleService.createRole(filePlan, ROLE_WRITERS, ROLE_WRITERS_LABEL, getCapabilities(ROLE_WRITERS_CAPABILITIES));
+                    filePlanRoleService.createRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS, ROLE_READERS_LABEL, getCapabilities(ROLE_READERS_CAPABILITIES));
+                    filePlanRoleService.createRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS, ROLE_WRITERS_LABEL, getCapabilities(ROLE_WRITERS_CAPABILITIES));
                 }
                 finally
                 {

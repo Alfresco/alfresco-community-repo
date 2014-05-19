@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper.FacetLabel;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper.FacetLabelDisplayHandler;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -928,9 +929,9 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     {
                         String facetValue = f.getFirst();
                         FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(ff.getField());
-                        String label = (handler == null) ? facetValue : handler.getDisplayLabel(facetValue).getSecond();
+                        String label = (handler == null) ? facetValue : handler.getDisplayLabel(facetValue).getLabel();
                         
-                        facets.add(new ScriptFacetResult(facetValue, label, f.getSecond()));
+                        facets.add(new ScriptFacetResult(facetValue, label, -1, f.getSecond()));
                     }
                 }
                 // store facet results per field
@@ -938,7 +939,6 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
             } 
             
             Set<Entry<String, Integer>> facetQueries = results.getFacetQueries().entrySet();
-            Map<String, List<ScriptFacetResult>> facetQueryMeta = new HashMap<>(facetQueries.size());
             for(Entry<String, Integer> entry : facetQueries)
             {
                 // ignore zero hit facet queries
@@ -951,23 +951,22 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     String qName = key.substring(7, key.lastIndexOf(':'));
 
                     // Retrieve the previous facet queries
-                    List<ScriptFacetResult> fqs = facetQueryMeta.get(qName);
+                    List<ScriptFacetResult> fqs = facetMeta.get(qName);
                     if (fqs == null)
                     {
                         fqs = new ArrayList<>();
                     }
                     FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(qName);
-                    Pair<String, String> valueLabelPair = (handler == null) ? new Pair<String, String>(qName,
-                                key.substring(qName.length(), key.length())) : handler.getDisplayLabel(key);
+                    FacetLabel facetLabel = (handler == null) ? new FacetLabel(qName, key.substring(qName.length(),
+                                key.length()), -1) : handler.getDisplayLabel(key);
                     
-                    fqs.add(new ScriptFacetResult(valueLabelPair.getFirst(), valueLabelPair.getSecond(), entry.getValue()));
+                    fqs.add(new ScriptFacetResult(facetLabel.getValue(), facetLabel.getLabel(), facetLabel.getLabelIndex(), entry.getValue()));
                     
                     // store facet query results per field
-                    facetQueryMeta.put(qName, fqs);
+                    facetMeta.put(qName, fqs);
                 }
             }
             meta.put("facets", facetMeta);
-            meta.put("facetQueries", facetQueryMeta);
         }
         catch (Throwable err)
         {

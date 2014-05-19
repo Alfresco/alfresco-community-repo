@@ -20,6 +20,7 @@ package org.alfresco.repo.search.impl.solr.facet;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +72,18 @@ public class SolrFacetHelper
     private static final int HUGE = 128 * MB;
 
     private static final String SIZE_BUCKETS_CACHE_KEY = "sizeBucketsCacheKey";
+    
+    /** Content size buckets */
+    private static final List<String> CONTENT_SIZE_BUCKETS = new ArrayList<>(6);
+    static
+    {
+        CONTENT_SIZE_BUCKETS.add("0 TO " + TINY);
+        CONTENT_SIZE_BUCKETS.add(TINY + " TO " + SMALL);
+        CONTENT_SIZE_BUCKETS.add(SMALL + " TO " + MEDIUM);
+        CONTENT_SIZE_BUCKETS.add(MEDIUM + " TO " + LARGE);
+        CONTENT_SIZE_BUCKETS.add(LARGE + " TO " + HUGE);
+        CONTENT_SIZE_BUCKETS.add(HUGE + " TO MAX");
+    }
 
     /** Facet value and facet query display label handlers */
     private Map<String, FacetLabelDisplayHandler> displayHandlers;
@@ -90,15 +103,14 @@ public class SolrFacetHelper
         
         UserNameDisplayHandler userNameDisplayHandler = new UserNameDisplayHandler(serviceRegistry);
         MimetypeDisplayHandler mimetypeDisplayHandler = new MimetypeDisplayHandler(serviceRegistry);
-        DateBucketsDisplayHandler createdDateBucketsDisplayHandler = new DateBucketsDisplayHandler("cm:created");
-        DateBucketsDisplayHandler modifiedDateBucketsDisplayHandler = new DateBucketsDisplayHandler("cm:modified");
-        ContentSizeBucketsDisplayHandler contentSizeBucketsDisplayHandler = new ContentSizeBucketsDisplayHandler("cm:content.size");
+        DateBucketsDisplayHandler dateBucketsDisplayHandler = new DateBucketsDisplayHandler();
+        ContentSizeBucketsDisplayHandler contentSizeBucketsDisplayHandler = new ContentSizeBucketsDisplayHandler();
         
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}creator.__", userNameDisplayHandler);
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modifier.__", userNameDisplayHandler);
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}content.mimetype", mimetypeDisplayHandler);
-        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}created", createdDateBucketsDisplayHandler);
-        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modified", modifiedDateBucketsDisplayHandler);
+        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}created", dateBucketsDisplayHandler);
+        this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}modified", dateBucketsDisplayHandler);
         this.displayHandlers.put("@{http://www.alfresco.org/model/content/1.0}content.size", contentSizeBucketsDisplayHandler);
     }
     
@@ -134,7 +146,7 @@ public class SolrFacetHelper
         }
 
         // Content size facet query
-        for (String bucket : makeContentSizeBuckets())
+        for (String bucket : CONTENT_SIZE_BUCKETS)
         {
             facetQueries.add(CONTENT_SIZE_FACET_QUERY_PREFIX + '[' + bucket + ']');
         }
@@ -188,41 +200,23 @@ public class SolrFacetHelper
      * 
      * @return Map of {@literal <date range, display label key>}
      */
-    private static Map<String, String> makeDateBucketsDisplayLabel(LocalDate date)
+    private static Map<String, Pair<String, Integer>> makeDateBucketsDisplayLabel(LocalDate date)
     {
         List<String> dateBuckets = makeDateBuckets(date);
-        Map<String, String> bucketDisplayName = new HashMap<>(5);
+        Map<String, Pair<String, Integer>> bucketDisplayName = new LinkedHashMap<>(5);
 
         if (dateBuckets.size() != 5)
         {
             throw new AlfrescoRuntimeException("Date buckets size does not match the bucket display label size!");
         }
 
-        bucketDisplayName.put(dateBuckets.get(0), "faceted-search.date.one-day.label");
-        bucketDisplayName.put(dateBuckets.get(1), "faceted-search.date.one-week.label");
-        bucketDisplayName.put(dateBuckets.get(2), "faceted-search.date.one-month.label");
-        bucketDisplayName.put(dateBuckets.get(3), "faceted-search.date.six-months.label");
-        bucketDisplayName.put(dateBuckets.get(4), "faceted-search.date.one-year.label");
+        bucketDisplayName.put(dateBuckets.get(0), new Pair<String, Integer>("faceted-search.date.one-day.label", 0));
+        bucketDisplayName.put(dateBuckets.get(1), new Pair<String, Integer>("faceted-search.date.one-week.label", 1));
+        bucketDisplayName.put(dateBuckets.get(2), new Pair<String, Integer>("faceted-search.date.one-month.label", 2));
+        bucketDisplayName.put(dateBuckets.get(3), new Pair<String, Integer>("faceted-search.date.six-months.label", 3));
+        bucketDisplayName.put(dateBuckets.get(4), new Pair<String, Integer>("faceted-search.date.one-year.label", 4));
 
         return bucketDisplayName;
-    }
-
-    /**
-     * Creates Content size buckets
-     * 
-     * @return list of size ranges. e.g. "0 TO 1024"
-     */
-    private static List<String> makeContentSizeBuckets()
-    {
-        List<String> sizeBuckets = new ArrayList<>(6);
-        sizeBuckets.add("0 TO " + TINY);
-        sizeBuckets.add(TINY + " TO " + SMALL);
-        sizeBuckets.add(SMALL + " TO " + MEDIUM);
-        sizeBuckets.add(MEDIUM + " TO " + LARGE);
-        sizeBuckets.add(LARGE + " TO " + HUGE);
-        sizeBuckets.add(HUGE + " TO MAX");
-
-        return sizeBuckets;
     }
 
     /**
@@ -230,22 +224,21 @@ public class SolrFacetHelper
      * 
      * @return Map of {@literal <size range, display label key>}
      */
-    private static Map<String, String> makeContentSizeBucketsDisplayLabel()
+    private static Map<String, Pair<String, Integer>> makeContentSizeBucketsDisplayLabel()
     {
-        List<String> sizeBuckets = makeContentSizeBuckets();
-        Map<String, String> bucketDisplayName = new HashMap<>(6);
+        Map<String, Pair<String, Integer>> bucketDisplayName = new HashMap<>(6);
 
-        if (sizeBuckets.size() != 6)
+        if (CONTENT_SIZE_BUCKETS.size() != 6)
         {
             throw new AlfrescoRuntimeException("Content size buckets size does not match the bucket display label size!");
         }
 
-        bucketDisplayName.put(sizeBuckets.get(0), "faceted-search.size.0-10KB.label");
-        bucketDisplayName.put(sizeBuckets.get(1), "faceted-search.size.10-100KB.label");
-        bucketDisplayName.put(sizeBuckets.get(2), "faceted-search.size.100KB-1MB.label");
-        bucketDisplayName.put(sizeBuckets.get(3), "faceted-search.size.1-16MB.label");
-        bucketDisplayName.put(sizeBuckets.get(4), "faceted-search.size.16-128MB.label");
-        bucketDisplayName.put(sizeBuckets.get(5), "faceted-search.size.over128.label");
+        bucketDisplayName.put(CONTENT_SIZE_BUCKETS.get(0), new Pair<String, Integer>("faceted-search.size.0-10KB.label", 0));
+        bucketDisplayName.put(CONTENT_SIZE_BUCKETS.get(1), new Pair<String, Integer>("faceted-search.size.10-100KB.label", 1));
+        bucketDisplayName.put(CONTENT_SIZE_BUCKETS.get(2), new Pair<String, Integer>("faceted-search.size.100KB-1MB.label", 2));
+        bucketDisplayName.put(CONTENT_SIZE_BUCKETS.get(3), new Pair<String, Integer>("faceted-search.size.1-16MB.label", 3));
+        bucketDisplayName.put(CONTENT_SIZE_BUCKETS.get(4), new Pair<String, Integer>("faceted-search.size.16-128MB.label", 4));
+        bucketDisplayName.put(CONTENT_SIZE_BUCKETS.get(5), new Pair<String, Integer>("faceted-search.size.over128.label", 5));
 
         return bucketDisplayName;
     }
@@ -350,10 +343,10 @@ public class SolrFacetHelper
      * 
      * @author Jamal Kaabi-Mofrad
      */
-    private static class FacetQueryResultDateBuckets implements Buckets<LocalDate, Map<String, String>>
+    private static class FacetQueryResultDateBuckets implements Buckets<LocalDate, Map<String, Pair<String, Integer>>>
     {
         @Override
-        public Map<String, String> compute(LocalDate localDate) throws Exception
+        public Map<String, Pair<String, Integer>> compute(LocalDate localDate) throws Exception
         {
             return makeDateBucketsDisplayLabel(localDate);
         }
@@ -365,10 +358,10 @@ public class SolrFacetHelper
      * 
      * @author Jamal Kaabi-Mofrad
      */
-    private static class FacetQueryResultContentSizeBuckets implements Buckets<String, Map<String, String>>
+    private static class FacetQueryResultContentSizeBuckets implements Buckets<String, Map<String, Pair<String, Integer>>>
     {
         @Override
-        public Map<String, String> compute(String arg) throws Exception
+        public Map<String, Pair<String, Integer>> compute(String arg) throws Exception
         {
             return makeContentSizeBucketsDisplayLabel();
         }
@@ -381,7 +374,108 @@ public class SolrFacetHelper
      */
     public static interface FacetLabelDisplayHandler
     {
-        Pair<String, String> getDisplayLabel(String value);
+        FacetLabel getDisplayLabel(String value);
+    }
+    
+    /**
+     * A class to encapsulate the result of the facet label display handler
+     * 
+     * @author Jamal Kaabi-Mofrad
+     */
+    public static class FacetLabel
+    {
+        private final String value;
+        private final String label;
+        private final int labelIndex;
+
+        /**
+         * @param value
+         * @param label
+         * @param labelIndex
+         */
+        public FacetLabel(String value, String label, int labelIndex)
+        {
+            this.value = value;
+            this.label = label;
+            this.labelIndex = labelIndex;
+        }
+
+        /**
+         * Gets the original facet value or a new modified value
+         * 
+         * @return the original facet value or a new modified value
+         */
+        public String getValue()
+        {
+            return this.value;
+        }
+
+        /**
+         * Gets the facet display label
+         * 
+         * @return the label
+         */
+        public String getLabel()
+        {
+            return this.label;
+        }
+
+        /**
+         * Gets the label index to be used for sorting. The index only relevant
+         * to to Date and Size facets.
+         * 
+         * @return the index or -1, if it isn't relevant to the facet label
+         */
+        public int getLabelIndex()
+        {
+            return this.labelIndex;
+        }
+
+        /*
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((this.label == null) ? 0 : this.label.hashCode());
+            result = prime * result + this.labelIndex;
+            result = prime * result + ((this.value == null) ? 0 : this.value.hashCode());
+            return result;
+        }
+
+        /*
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (!(obj instanceof FacetLabel))
+                return false;
+            FacetLabel other = (FacetLabel) obj;
+            if (this.label == null)
+            {
+                if (other.label != null)
+                    return false;
+            }
+            else if (!this.label.equals(other.label))
+                return false;
+            if (this.labelIndex != other.labelIndex)
+                return false;
+            if (this.value == null)
+            {
+                if (other.value != null)
+                    return false;
+            }
+            else if (!this.value.equals(other.value))
+                return false;
+            return true;
+        }
     }
 
     /**
@@ -401,7 +495,7 @@ public class SolrFacetHelper
         }
 
         @Override
-        public Pair<String, String> getDisplayLabel(String value)
+        public FacetLabel getDisplayLabel(String value)
         {
             String name = null;
 
@@ -412,7 +506,7 @@ public class SolrFacetHelper
                 final String lastName = (String) nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
                 name = (firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "");
             }
-            return new Pair<String, String>(value, name == null ? value : name.trim());
+            return new FacetLabel(value, name == null ? value : name.trim(), -1);
         }
     }
 
@@ -431,11 +525,11 @@ public class SolrFacetHelper
         }
 
         @Override
-        public Pair<String, String> getDisplayLabel(String value)
+        public FacetLabel getDisplayLabel(String value)
         {
             Map<String, String> mimetypes = mimetypeService.getDisplaysByMimetype();
             String displayName = mimetypes.get(value);
-            return new Pair<String, String>(value, displayName == null ? value : displayName.trim());
+            return new FacetLabel(value, displayName == null ? value : displayName.trim(), -1);
         }
     }
 
@@ -446,19 +540,13 @@ public class SolrFacetHelper
      */
     public static class DateBucketsDisplayHandler implements FacetLabelDisplayHandler
     {
-        private final BucketsCache<LocalDate, Map<String, String>> cache = new BucketsCache<>(
+        private final BucketsCache<LocalDate, Map<String, Pair<String, Integer>>> cache = new BucketsCache<>(
                     new FacetQueryResultDateBuckets());
-        private final String fq;
-
-        public DateBucketsDisplayHandler(String fq)
-        {
-            this.fq = fq;
-        }
 
         @Override
-        public Pair<String, String> getDisplayLabel(String value)
+        public FacetLabel getDisplayLabel(String value)
         {
-            Map<String, String> dateBuckets = null;
+            Map<String, Pair<String, Integer>> dateBuckets = null;
 
             String dateRange = value.substring(value.indexOf('[') + 1, value.length() - 1);
             String[] lowerUpperDates = dateRange.split("\\sTO\\s");
@@ -473,9 +561,9 @@ public class SolrFacetHelper
                             "Error occurred while trying to get the date buckets from the cache. Calculating the dates without the cache.", e);
                 dateBuckets = makeDateBucketsDisplayLabel(date);
             }
-            String newValue = fq + ":\"" + lowerUpperDates[0] + "\"..\"" + lowerUpperDates[1] + '"';
-            String label = dateBuckets.get(dateRange);
-            return new Pair<String, String>(newValue, label);
+            String newValue = lowerUpperDates[0] + "\"..\"" + lowerUpperDates[1];
+            Pair<String, Integer> labelIndexPair = dateBuckets.get(dateRange);
+            return new FacetLabel(newValue, labelIndexPair.getFirst(), labelIndexPair.getSecond());
         }
     }
 
@@ -486,22 +574,16 @@ public class SolrFacetHelper
      */
     public static class ContentSizeBucketsDisplayHandler implements FacetLabelDisplayHandler
     {
-        private final BucketsCache<String, Map<String, String>> cache = new BucketsCache<>(
+        private final BucketsCache<String, Map<String, Pair<String, Integer>>> cache = new BucketsCache<>(
                     new FacetQueryResultContentSizeBuckets());
-        private final String fq;
-
-        public ContentSizeBucketsDisplayHandler(String fq)
-        {
-            this.fq = fq;
-        }
 
         @Override
-        public Pair<String, String> getDisplayLabel(String value)
+        public FacetLabel getDisplayLabel(String value)
         {
             String sizeRange = value.substring(value.indexOf('[') + 1, value.length() - 1);
             String[] lowerUppperSize = sizeRange.split("\\sTO\\s");
 
-            Map<String, String> sizeBuckets;
+            Map<String, Pair<String, Integer>> sizeBuckets;
             try
             {
                 sizeBuckets = cache.getRangeBuckets(SIZE_BUCKETS_CACHE_KEY);
@@ -513,9 +595,9 @@ public class SolrFacetHelper
                 sizeBuckets = makeContentSizeBucketsDisplayLabel();
             }
 
-            String newValue = fq + ":\"" + lowerUppperSize[0] + "\"..\"" + lowerUppperSize[1] + '"';
-            String label = sizeBuckets.get(sizeRange);
-            return new Pair<String, String>(newValue, label);
+            String newValue = lowerUppperSize[0] + "\"..\"" + lowerUppperSize[1];
+            Pair<String, Integer> labelIndexPair = sizeBuckets.get(sizeRange);
+            return new FacetLabel(newValue, labelIndexPair.getFirst(), labelIndexPair.getSecond());
         }
     }
 }

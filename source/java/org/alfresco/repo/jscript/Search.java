@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.repo.jscript;
 
 import java.io.Serializable;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -32,6 +33,7 @@ import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFacto
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -891,15 +893,22 @@ public class Search extends BaseScopableProcessorExtension
             meta.put("numberFound", results.getNumberFound());
             meta.put("hasMore", results.hasMore());
             // results facets
-            Map<String, Map<String, Integer>> facetMeta = new HashMap<>();
+            Map<String, List<ScriptFacetResult>> facetMeta = new HashMap<>();
             for (FieldFacet ff: sp.getFieldFacets())
             {
                 // for each field facet, get the facet results
                 List<Pair<String, Integer>> fs = results.getFieldFacet(ff.getField());
-                HashMap<String, Integer> facets = new HashMap<>();
-                for (Pair<String, Integer> f: fs)
+                List<ScriptFacetResult> facets = new ArrayList<>();
+                for (Pair<String, Integer> f : fs)
                 {
-                    facets.put(f.getFirst(), f.getSecond());
+                    // ignore zero hit fields
+                    if (f.getSecond() > 0)
+                    {
+                        String facetValue = f.getFirst();
+                        Field field = getFieldType(ff.getField());
+                        String label = (field == null) ? facetValue : field.getLabel(services, facetValue);
+                        facets.add(new ScriptFacetResult(facetValue, label, f.getSecond()));
+                    }
                 }
                 // store facet results per field
                 facetMeta.put(ff.getField(), facets);
@@ -951,5 +960,84 @@ public class Search extends BaseScopableProcessorExtension
         
         public String column;
         public boolean asc;
+    }
+    
+    /**
+     * @author Jamal Kaabi-Mofrad
+     */
+    private enum Field
+    {
+        CREATOR("creator.__"), MODIFIER("modifier.__"), MIMETYPE("content.mimetype")
+        {
+            @Override
+            /*Package access level*/
+            String getLabel(ServiceRegistry services, String facetValue)
+            {
+                MimetypeService mimetypeService = services.getMimetypeService();
+                Map<String, String> mimetypes = mimetypeService.getDisplaysByMimetype();
+                String displayName = mimetypes.get(facetValue);
+                return displayName == null ? facetValue : displayName.trim();
+            }
+        };
+
+        private Field(String facetField)
+        {
+            this.facetField = facetField;
+        }
+
+        private String facetField;
+
+        private String getFacetField()
+        {
+            return facetField;
+        }
+
+        /**
+         * Default implementation which will return the full user name from
+         * the facetValue, if the facetValue represent a userID
+         * 
+         * @param services the ServiceRegistry 
+         * @param facetValue the facet value
+         * @return the full user name. If the user doesn't exist then, the
+         *         {@code facetValue} will be returned.
+         */
+        /*Package access level*/
+        String getLabel(ServiceRegistry services, String facetValue)
+        {
+            String name = null;
+
+            final NodeRef personRef = services.getPersonService().getPersonOrNull(facetValue);
+            if (personRef != null)
+            {
+                final NodeService nodeService = services.getNodeService();
+                final String firstName = (String) nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);
+                final String lastName = (String) nodeService.getProperty(personRef, ContentModel.PROP_LASTNAME);
+                name = (firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "");
+            }
+            return name == null ? facetValue : name.trim();
+        }
+    }
+
+    /**
+     * Gets the facet field.
+     * 
+     * @param facetField the facet field value
+     * @return the Field type
+     */
+    private Field getFieldType(String facetField)
+    {
+        if (facetField == null)
+        {
+            return null;
+        }
+
+        for (Field val : Field.values())
+        {
+            if (facetField.endsWith(val.getFacetField()))
+            {
+                return val;
+            }
+        }
+        return null;
     }
 }

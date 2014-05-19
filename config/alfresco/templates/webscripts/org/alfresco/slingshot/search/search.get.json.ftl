@@ -3,6 +3,18 @@
 	"totalRecords": ${data.paging.totalRecords?c},
 	"totalRecordsUpper": ${data.paging.totalRecordsUpper?c},
 	"startIndex": ${data.paging.startIndex?c},
+	"numberFound": ${(data.paging.numberFound!-1)?c},
+	"facets":
+	{
+		<#if data.facets??><#list data.facets?keys as field>
+		"${field}":
+		{
+			<#assign facets=data.facets[field]><#assign first=true><#list facets?keys as f>
+			<#if facets[f] != 0><#if !first>,<#else><#assign first=false></#if>"${f}": ${facets[f]?c}</#if>
+			</#list>
+		}<#if field_has_next>,</#if>
+		</#list></#if>
+	},
 	"items":
 	[
 		<#list data.items as item>

@@ -534,16 +534,18 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
 {
    var path = node.qnamePath,
        displayPath = qnameOnly ? null : utils.displayPath(node).split("/"),
-       parts = null,
-       overriden = false;
+       parts = null;
    
    // restructure the display path of the node if we have an overriden root node
    if (!qnameOnly && rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0)
    {
       var nodeDisplayPath = utils.displayPath(node).split("/");
       nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
+      for (var i = 0; i < rootNodeQNamePath.split("/").length-1; i++)
+      {
+         nodeDisplayPath.unshift(null);
+      }
       displayPath = nodeDisplayPath;
-      overriden = true;
    }
    
    if (path.match("^"+SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
@@ -552,14 +554,6 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
           pos = tmp.indexOf('/');
       if (pos >= 1)
       {
-         if (rootNodeQNamePath != null && path.indexOf(rootNodeQNamePath) === 0)
-         {
-            for (var i = 0; i < rootNodeQNamePath.split("/").length-1; i++)
-            {
-               nodeDisplayPath.unshift(null);
-            }
-            displayPath = nodeDisplayPath;
-         }
          var siteQName = Packages.org.alfresco.util.ISO9075.decode(tmp.split("/")[0]);
              siteId = siteQName.substring(siteQName.indexOf(":") + 1);
          tmp = tmp.substring(pos + 1);
@@ -575,11 +569,6 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
       }
    }
    
-   if (overriden && parts == null)
-   {
-      displayPath.unshift("");
-   }
-   
    return (parts !== null ? parts : [ null, null, displayPath ]);
 }
 
@@ -588,7 +577,7 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
  * 
  * @return the final search results object
  */
-function processResults(nodes, maxPageResults, startIndex, rootNode)
+function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
 {
    // empty cache state
    processedCache = {};
@@ -652,8 +641,10 @@ function processResults(nodes, maxPageResults, startIndex, rootNode)
       {
          totalRecords: results.length,
          totalRecordsUpper: nodes.length - failed,
-         startIndex: startIndex
+         startIndex: startIndex,
+         numberFound: meta ? meta.numberFound : -1
       },
+      facets: meta ? meta.facets : null,
       items: results
    });
 }
@@ -948,16 +939,7 @@ function getSearchResults(params)
                      }
                      else
                      {
-                        var index = propValue.lastIndexOf(" ");
-                        formQuery += (first ? '' : ' AND ') + escapeQName(propName)
-                        if (index > 0 && index < propValue.length - 1)
-                        {
-                           formQuery += ':(' + propValue + ')';
-                        }
-                        else
-                        {
-                           formQuery += ':"' + propValue + '"';
-                        }
+                        formQuery += (first ? '' : ' AND ') + escapeQName(propName) + ':\\"' + propValue + '\\"';
                      }
                      first = false;
                   }
@@ -993,7 +975,41 @@ function getSearchResults(params)
    
    if (ftsQuery.length !== 0)
    {
-      // ensure a TYPE is specified - if no add one to remove system objects from result sets
+      if (params.filters !== null)
+      {
+         // comma separated list of filter pairs - filter|value|value|...
+         var filters = params.filters.split(",");
+         for (var f=0; f<filters.length; f++)
+         {
+            var filterParts = filters[f].split("|");
+            if (filterParts.length > 1)
+            {
+               // special case for some filters e.g. TYPE content or folder
+               switch (filterParts[0])
+               {
+                  case "TYPE":
+                  {
+                     ftsQuery += ' AND +TYPE:"' + filterParts[1] + '"';
+                     break;
+                  }
+                  default:
+                  {
+                     // facet filtering selection - reduce query results
+                     // bracket each filter part within the attribute statement
+                     ftsQuery += ' AND (' + filterParts[0] + ':(';
+                     for (var p=1; p<filterParts.length; p++)
+                     {
+                        ftsQuery += '"' + filterParts[p] + '" ';  // space separated values
+                     }
+                     ftsQuery += '))';
+                     break;
+                  }
+               }
+            }
+         }
+      }
+      
+      // ensure a TYPE is specified - if not, then add one to remove system objects etc. from result sets
       if (ftsQuery.indexOf("TYPE:\"") === -1 && ftsQuery.indexOf("TYPE:'") === -1)
       {
          ftsQuery += ' AND (+TYPE:"cm:content" OR +TYPE:"cm:folder")';
@@ -1085,17 +1101,25 @@ function getSearchResults(params)
          defaultField: "keywords",
          defaultOperator: qt.operator,
          onerror: "no-results",
-         sort: sortColumns 
+         sort: sortColumns,
+         fieldFacets: params.facetFields !== null ? params.facetFields.split(",") : null
       };
-      nodes = search.query(queryDef);
+      var rs = search.queryResultSet(queryDef);
+      nodes = rs.nodes;
    }
    else
    {
       // failed to process the search string - empty list returned
+      var rs = {};
       nodes = [];
    }
    
-   return processResults(nodes, params.pageSize < params.maxResults ? params.pageSize : params.maxResults, params.startIndex, rootNode);
+   return processResults(
+      nodes,
+      params.pageSize < params.maxResults ? params.pageSize : params.maxResults,
+      params.startIndex,
+      rootNode,
+      rs.meta);
 }
 
 /**

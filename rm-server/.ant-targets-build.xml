@@ -1,0 +1,5 @@
+assembleLocalisationPackage
+buildAndDeploy
+configure-solr
+deployExploded
+prepareEnv

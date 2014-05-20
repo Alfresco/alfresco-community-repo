@@ -175,12 +175,6 @@
          <artifactId>alfresco-remote-api</artifactId>
          <version>${alfresco.base.version}</version>
       </dependency>
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-solr</artifactId>
-         <version>${alfresco.base.version}</version>
-         <type>zip</type>
-      </dependency>
       <!-- Test dependencies -->
       <dependency>
          <groupId>junit</groupId>

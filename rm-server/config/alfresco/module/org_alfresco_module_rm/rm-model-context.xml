@@ -4,7 +4,7 @@
 <beans>
 
    <!-- Bootstrap Records Management Models -->
-   <bean id="org_alfresco_module_rm_dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="siteService_dictionaryBootstrap">
+   <bean id="org_alfresco_module_rm_dictionaryBootstrap" parent="dictionaryModelBootstrap">
       <property name="models">
          <list>
             <value>alfresco/module/org_alfresco_module_rm/model/recordsModel.xml</value>

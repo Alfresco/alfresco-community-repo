@@ -70,9 +70,9 @@
         </property>
     </bean>
 
-    <bean name="writersSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
-      <property name="maxItems" value="${cache.writersSharedCache.maxItems}"/>
-    </bean>
+   <bean name="writersSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.writersSharedCache"/>
+   </bean>
 
     <bean name="writersCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">

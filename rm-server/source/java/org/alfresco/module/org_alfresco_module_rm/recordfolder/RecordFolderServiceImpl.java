@@ -32,8 +32,6 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -292,18 +290,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
         {
             if (!isRecordFolderClosed(nodeRef))
             {
-                final NodeRef folderNodeRef = nodeRef;
-                // do the work of creating the record as the system user
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
-                    @Override
-                    public Void doWork() throws Exception
-                    {
-                        nodeService.setProperty(folderNodeRef, PROP_IS_CLOSED, true);
-
-                        return null;
-                    }
-                });
+                nodeService.setProperty(nodeRef, PROP_IS_CLOSED, true);
             }
         }
         else

@@ -26,6 +26,8 @@ import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -42,11 +44,13 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
 {
     /** action name */
     public static final String NAME = "fileReport";
-    
+
     /** Constants for the parameters passed from the UI */
     public static final String REPORT_TYPE = "reportType";
+
     public static final String DESTINATION = "destination";
-    public static final String MIMETYPE= "mimetype";
+
+    public static final String MIMETYPE = "mimetype";
 
     /** I18N */
     private static final String MSG_PARAM_NOT_SUPPLIED = "rm.action.parameter-not-supplied";
@@ -63,29 +67,37 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action,
+     *      org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         // get the mimetype of the report
-        String mimetype = (String)action.getParameterValue(MIMETYPE);
+        String mimetype = (String) action.getParameterValue(MIMETYPE);
         if (mimetype == null || mimetype.isEmpty())
         {
             mimetype = MimetypeMap.MIMETYPE_HTML;
         }
-        
+
         // get the report type
         QName reportType = getReportType(action);
-        
+
         // get the destination
-        NodeRef destination = getDestination(action);
-        
+        final NodeRef destination = getDestination(action);
+
         // generate the report
-        Report report = reportService.generateReport(reportType, actionedUponNodeRef, mimetype);
-        
-        // file the report
-        NodeRef filedReport = reportService.fileReport(destination, report);
+        final Report report = reportService.generateReport(reportType, actionedUponNodeRef, mimetype);
+
+        // file the report as system
+        NodeRef filedReport = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                return reportService.fileReport(destination, report);
+            }
+        });
 
         // return the report name
         String filedReportName = (String) nodeService.getProperty(filedReport, ContentModel.PROP_NAME);
@@ -93,26 +105,25 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     }
 
     /**
-     * Retrieves the value of the given parameter. If the parameter has not been passed from the UI an error will be thrown
+     * Retrieves the value of the given parameter. If the parameter has not been
+     * passed from the UI an error will be thrown
      *
-     * @param action        The action
-     * @param parameter     The parameter for which the value should be retrieved
+     * @param action The action
+     * @param parameter The parameter for which the value should be retrieved
      * @return The value of the given parameter
      */
     private String getParameterValue(Action action, String parameter)
     {
         String paramValue = (String) action.getParameterValue(parameter);
-        if (StringUtils.isBlank(paramValue))
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_PARAM_NOT_SUPPLIED, parameter));
-        }
+        if (StringUtils.isBlank(paramValue)) { throw new AlfrescoRuntimeException(I18NUtil.getMessage(
+                MSG_PARAM_NOT_SUPPLIED, parameter)); }
         return paramValue;
     }
 
     /**
      * Helper method for getting the destination.
      *
-     * @param action    The action
+     * @param action The action
      * @return The file plan node reference
      */
     private NodeRef getDestination(Action action)
@@ -124,7 +135,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     /**
      * Helper method for getting the report type.
      *
-     * @param action    The action
+     * @param action The action
      * @return The report type
      */
     private QName getReportType(Action action)

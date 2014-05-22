@@ -232,6 +232,11 @@ function rm_doclist_main()
    // Loop through and evaluate each node in this result set
    for each (node in nodes)
    {
+      // we have to check if we have read permission on the node parent as an error will be thrown if we try to
+      // get the evaluated properties for a linked record whose parent we do not have read permissions for
+      var parentReadable = (node.parent != null && node.parent.isContainer && node.parent.hasPermission("ReadRecords"));
+      if (!parentReadable) continue;
+
       // Get evaluated properties.
       item = Evaluator.run(node);
       if (item !== null)
@@ -247,7 +252,7 @@ function rm_doclist_main()
             if (!locationNode.hasPermission("ReadRecords")) continue;
             location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
             // Parent node
-            if (node.parent != null && node.parent.isContainer && node.parent.hasPermission("ReadRecords"))
+            if (parentReadable)
             {
                item.parent = Evaluator.run(node.parent, true);
             }

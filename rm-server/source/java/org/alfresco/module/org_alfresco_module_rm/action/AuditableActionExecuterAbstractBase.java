@@ -104,9 +104,9 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
                 // default to name if no title available
                 title = name;
             }
-            
+
             // register audit event
-            getAuditService().registerAuditEvent(title, name);
+            getAuditService().registerAuditEvent(name, title);
         }
     }
 

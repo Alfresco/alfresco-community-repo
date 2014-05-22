@@ -18,23 +18,28 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
-import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
+import java.util.Map;
+
+import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
- * Move audit event.
- * 
+ * Copy audit event.
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 @BehaviourBean
-public class MoveAuditEvent extends AuditEvent implements OnMoveNodePolicy
+public class CopyToAuditEvent extends AuditEvent implements OnCopyCompletePolicy
 {
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     * Audit copy of file plan components
+     *
+     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean, java.util.Map)
      */
     @Override
     @Behaviour
@@ -42,9 +47,15 @@ public class MoveAuditEvent extends AuditEvent implements OnMoveNodePolicy
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent"
     )
-    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    public void onCopyComplete(QName classRef,
+                               NodeRef sourceNodeRef,
+                               NodeRef targetNodeRef,
+                               boolean copyToNewNode,
+                               Map<NodeRef, NodeRef> copyMap)
     {
-        recordsManagementAuditService.auditEvent(newChildAssocRef.getChildRef(), getName());
+        if (copyToNewNode)
+        {
+            recordsManagementAuditService.auditEvent(targetNodeRef, getName());
+        }
     }
-    
 }

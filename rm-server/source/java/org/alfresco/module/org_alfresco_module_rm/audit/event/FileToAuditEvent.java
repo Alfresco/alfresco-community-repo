@@ -18,9 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
+import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -28,34 +29,29 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Copy audit event.
+ * File audit event.
  *
  * @author Roy Wetherall
  * @since 2.1
  */
 @BehaviourBean
-public class CopyAuditEvent extends AuditEvent implements OnCopyCompletePolicy
+public class FileToAuditEvent extends AuditEvent implements OnUpdatePropertiesPolicy
 {
     /**
-     * Audit copy of file plan components
-     *
-     * @see org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy#onCopyComplete(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef, boolean, java.util.Map)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      */
     @Override
     @Behaviour
     (
             kind = BehaviourKind.CLASS,
-            type = "rma:filePlanComponent"
+            type = "rma:record"
     )
-    public void onCopyComplete(QName classRef,
-                               NodeRef sourceNodeRef,
-                               NodeRef targetNodeRef,
-                               boolean copyToNewNode,
-                               Map<NodeRef, NodeRef> copyMap)
+    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        if (copyToNewNode)
+        if (before.get(PROP_DATE_FILED) == null && after.get(PROP_DATE_FILED) != null)
         {
-            recordsManagementAuditService.auditEvent(targetNodeRef, getName());
+            // then we can assume that the record has just been filed
+            recordsManagementAuditService.auditEvent(nodeRef, getName());
         }
     }
 }

@@ -19,6 +19,8 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -37,11 +39,21 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
      *      org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+    protected void executeImpl(Action action, final NodeRef actionedUponNodeRef)
     {
         if (eligibleForAction(actionedUponNodeRef))
         {
-            recordFolderService.closeRecordFolder(actionedUponNodeRef);
+            // do the work of creating the record as the system user
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    recordFolderService.closeRecordFolder(actionedUponNodeRef);
+
+                    return null;
+                }
+            });
         }
     }
 

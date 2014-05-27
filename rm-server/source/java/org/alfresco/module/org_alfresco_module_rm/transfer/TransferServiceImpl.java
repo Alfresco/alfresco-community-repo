@@ -53,7 +53,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * @author Tuna Aksoy
  * @since 2.2
  */
-public class TransferServiceImpl extends ServiceBaseImpl 
+public class TransferServiceImpl extends ServiceBaseImpl
                                  implements TransferService, RecordsManagementModel
 {
     /** Transfer node reference key */
@@ -176,14 +176,14 @@ public class TransferServiceImpl extends ServiceBaseImpl
         setPDFIndicationFlag(transferNodeRef, nodeRef);
 
         // Set the transferring indicator aspect
-        nodeService.addAspect(nodeRef, ASPECT_TRANSFERRING, null);        
-        if (isRecordFolder(nodeRef) == true)
+        nodeService.addAspect(nodeRef, ASPECT_TRANSFERRING, null);
+        if (isRecordFolder(nodeRef))
         {
             // add the transferring indicator aspect to all the child records
             for (NodeRef record : recordService.getRecords(nodeRef))
             {
                 nodeService.addAspect(record, ASPECT_TRANSFERRING, null);
-            }            
+            }
         }
 
         return transferNodeRef;

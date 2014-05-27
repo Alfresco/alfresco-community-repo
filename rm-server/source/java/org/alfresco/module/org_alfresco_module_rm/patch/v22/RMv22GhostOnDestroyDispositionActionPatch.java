@@ -130,14 +130,14 @@ public class RMv22GhostOnDestroyDispositionActionPatch extends AbstractModulePat
      */
     private void getDispositionSchedules(NodeRef nodeRef, Set<DispositionSchedule> dispositionSchedules)
     {
-        if (filePlanService.isRecordCategory(nodeRef) == true)
+        if (filePlanService.isRecordCategory(nodeRef))
         {
             DispositionSchedule dispositionSchedule = this.dispositionService.getDispositionSchedule(nodeRef);
             if (dispositionSchedule != null)
             {
                 dispositionSchedules.add(dispositionSchedule);
             }
-    
+
             List<ChildAssociationRef> children = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
             for (ChildAssociationRef childAssoc : children)
             {

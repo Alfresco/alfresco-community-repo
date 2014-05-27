@@ -123,7 +123,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         if (logger.isDebugEnabled())
         {
             CapabilityReport capability = getCapabilityReport(name);
-            if (expected == false)
+            if (!expected)
             {
                 conditionName = "!" + conditionName;
             }
@@ -155,7 +155,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
                         for (Map.Entry<String, Boolean> entry : capability.conditions.entrySet())
                         {
                             buffer.append("    - ").append(entry.getKey()).append(" (");
-                            if (entry.getValue() == true)
+                            if (entry.getValue())
                             {
                                 buffer.append("passed");
                             }

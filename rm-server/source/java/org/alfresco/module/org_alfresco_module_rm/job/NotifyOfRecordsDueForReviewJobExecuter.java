@@ -104,10 +104,10 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 if(resultNodes.size() != 0)
                 {
                     //Send the email message - but we must not retry since email is not transactional
-                    RetryingTransactionCallback<Boolean> txCallbackSendEmail = new RetryingTransactionCallback<Boolean>()
+                    RetryingTransactionCallback<Void> txCallbackSendEmail = new RetryingTransactionCallback<Void>()
                     {
                         // Set the notification issued property.
-                        public Boolean execute()
+                        public Void execute()
                         {
                             // Send notification
                             recordsManagementNotificationHelper.recordsDueForReviewEmailNotification(resultNodes);

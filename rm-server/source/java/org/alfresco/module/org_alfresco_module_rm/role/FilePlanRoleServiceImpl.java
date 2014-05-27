@@ -792,7 +792,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Boolean doWork()
+            public Void doWork()
             {
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
                 authorityService.deleteAuthority(roleAuthority);

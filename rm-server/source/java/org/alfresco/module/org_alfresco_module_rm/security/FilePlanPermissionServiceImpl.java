@@ -396,7 +396,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Boolean doWork()
+            public Void doWork()
             {
                 if (isFilePlan(nodeRef))
                 {
@@ -519,7 +519,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Boolean doWork()
+            public Void doWork()
             {
                 // can't delete permissions if inherited (eg hold and transfer containers)
                 if (!permissionService.getInheritParentPermissions(nodeRef))

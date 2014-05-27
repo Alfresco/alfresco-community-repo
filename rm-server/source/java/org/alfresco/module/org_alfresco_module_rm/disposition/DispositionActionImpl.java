@@ -42,7 +42,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Disposition action implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 1.0
  */
@@ -51,13 +51,13 @@ public class DispositionActionImpl implements DispositionAction,
 {
     /** logger */
     private static Log logger = LogFactory.getLog(DispositionActionImpl.class);
-    
+
     /** records management service registry */
     private RecordsManagementServiceRegistry services;
-    
+
     /** disposition node reference */
     private NodeRef dispositionNodeRef;
-    
+
     /** disposition action definition */
     private DispositionActionDefinition dispositionActionDefinition;
 
@@ -208,11 +208,11 @@ public class DispositionActionImpl implements DispositionAction,
 
         return result;
     }
-    
+
     /**
      * Helper method to create object representation of event completed details from
      * node reference.
-     * 
+     *
      * @param nodeRef                           node reference
      * @return {@link EventCompletionDetails}   event completion details
      */
@@ -220,20 +220,20 @@ public class DispositionActionImpl implements DispositionAction,
     {
         // get the properties
         Map<QName, Serializable> props = this.services.getNodeService().getProperties(nodeRef);
-        
+
         // get the event name
         String eventName = (String)props.get(PROP_EVENT_EXECUTION_NAME);
-   
-        // create event completion details 
+
+        // create event completion details
         EventCompletionDetails ecd = new EventCompletionDetails(
-                nodeRef, 
+                nodeRef,
                 eventName,
                 services.getRecordsManagementEventService().getEvent(eventName).getDisplayLabel(),
                 getBooleanValue(props.get(PROP_EVENT_EXECUTION_AUTOMATIC), false),
                 getBooleanValue(props.get(PROP_EVENT_EXECUTION_COMPLETE), false),
                 (Date)props.get(PROP_EVENT_EXECUTION_COMPLETED_AT),
                 (String)props.get(PROP_EVENT_EXECUTION_COMPLETED_BY));
-        
+
         return ecd;
     }
 
@@ -258,10 +258,10 @@ public class DispositionActionImpl implements DispositionAction,
      * Gets the event completion details for the named event.
      * <p>
      * Returns null if event can not be found.
-     * 
+     *
      * @param  eventName   name of the event
      * @return {@link EventCompletionDetails}   event completion details for named event, null otherwise
-     * 
+     *
      * @since 2.2
      */
     @Override
@@ -269,17 +269,17 @@ public class DispositionActionImpl implements DispositionAction,
     {
         EventCompletionDetails result = null;
         List<ChildAssociationRef> assocs = services.getNodeService().getChildAssocsByPropertyValue(dispositionNodeRef, PROP_EVENT_EXECUTION_NAME, eventName);
-        
+
         if (!assocs.isEmpty())
         {
             if (assocs.size() != 1)
             {
                 throw new AlfrescoRuntimeException("Unable to get event completion details, because more than one child was found for event " + eventName);
             }
-            
+
             result = getEventCompletionDetailsFromNodeRef(assocs.get(0).getChildRef());
         }
-        
+
         return result;
     }
 
@@ -295,7 +295,7 @@ public class DispositionActionImpl implements DispositionAction,
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     // use "now" if no completed date set
                     Date completedAtValue = completedAt;
@@ -310,7 +310,7 @@ public class DispositionActionImpl implements DispositionAction,
                     {
                         completedByValue = AuthenticationUtil.getFullyAuthenticatedUser();
                     }
-                    
+
                     // Update the event so that it is complete
                     NodeRef eventNodeRef = event.getNodeRef();
                     Map<QName, Serializable> props = services.getNodeService().getProperties(eventNodeRef);
@@ -321,7 +321,7 @@ public class DispositionActionImpl implements DispositionAction,
 
                     // Check to see if the events eligible property needs to be updated
                     updateEventEligible();
-                    
+
                     return null;
                 }
             });
@@ -340,7 +340,7 @@ public class DispositionActionImpl implements DispositionAction,
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     // Update the event so that it is undone
                     NodeRef eventNodeRef = event.getNodeRef();
@@ -349,16 +349,16 @@ public class DispositionActionImpl implements DispositionAction,
                     props.put(PROP_EVENT_EXECUTION_COMPLETED_AT, null);
                     props.put(PROP_EVENT_EXECUTION_COMPLETED_BY, null);
                     services.getNodeService().setProperties(eventNodeRef, props);
-        
+
                     // Check to see if the events eligible property needs to be updated
                     updateEventEligible();
-                    
+
                     return null;
                 }
             });
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#refreshEvents()
      */
@@ -369,26 +369,26 @@ public class DispositionActionImpl implements DispositionAction,
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // go through the current events on the next action and remove any that are not present any more
                 List<String> stepEvents = (List<String>) services.getNodeService().getProperty(getDispositionActionDefinition().getNodeRef(), PROP_DISPOSITION_EVENT);
-                
+
                 List<EventCompletionDetails> eventsList = getEventCompletionDetails();
                 List<String> nextActionEvents = new ArrayList<String>(eventsList.size());
-                
+
                 for (EventCompletionDetails event : eventsList)
                 {
                     // take note of the event names present on the next action
                     String eventName = event.getEventName();
                     nextActionEvents.add(eventName);
-        
+
                     // if the event has been removed delete from next action
                     if (stepEvents != null && !stepEvents.contains(event.getEventName()))
                     {
                         // remove the child association representing the event
                         services.getNodeService().removeChild(getNodeRef(), event.getNodeRef());
-        
+
                         if (logger.isDebugEnabled())
                         {
                             logger.debug("Removed '" + eventName + "' from next action '" + getName() +
@@ -396,7 +396,7 @@ public class DispositionActionImpl implements DispositionAction,
                         }
                     }
                 }
-        
+
                 // go through the disposition action definition step events and add any new ones
                 if (stepEvents != null)
                 {
@@ -406,7 +406,7 @@ public class DispositionActionImpl implements DispositionAction,
                         {
                             // add the details of the new event
                             addEventCompletionDetails(services.getRecordsManagementEventService().getEvent(eventName));
-        
+
                             if (logger.isDebugEnabled())
                             {
                                 logger.debug("Added '" + eventName + "' to next action '" + getName() +
@@ -415,24 +415,24 @@ public class DispositionActionImpl implements DispositionAction,
                         }
                     }
                 }
-        
+
                 // NOTE: eventsList contains all the events that have been updated!
                 // TODO: manually update the search properties for the parent node!
-        
+
                 // finally since events may have changed re-calculate the events eligible flag
                 boolean eligible = updateEventEligible();
-        
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Set events eligible flag to '" + eligible + "' for next action '" + getName() +
                                  "' (" + getNodeRef() + ")");
                 }
-                
+
                 return null;
             }
         });
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction#addEventCompletionDetails(org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent)
      */
@@ -446,13 +446,13 @@ public class DispositionActionImpl implements DispositionAction,
         eventProps.put(PROP_EVENT_EXECUTION_COMPLETE, false);
 
         // Create the event execution object
-        services.getNodeService().createNode(getNodeRef(), 
+        services.getNodeService().createNode(getNodeRef(),
                                              ASSOC_EVENT_EXECUTIONS,
-                                             ASSOC_EVENT_EXECUTIONS, 
-                                             TYPE_EVENT_EXECUTION, 
+                                             ASSOC_EVENT_EXECUTIONS,
+                                             TYPE_EVENT_EXECUTION,
                                              eventProps);
     }
-    
+
 
     /**
      * Calculates and updates the <code>rma:dispositionEventsEligible</code>
@@ -460,13 +460,13 @@ public class DispositionActionImpl implements DispositionAction,
      *
      * @param nextAction The next disposition action
      * @return The result of calculation
-     * 
+     *
      * @since 2.2
      */
     private boolean updateEventEligible()
     {
         boolean eligible = false;
-        
+
         // get the events for the next disposition action
         List<EventCompletionDetails> events = getEventCompletionDetails();
 

@@ -37,7 +37,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Record type parameter constraint
- * 
+ *
  * @author Craig Tan
  * @since 2.1
  */
@@ -45,16 +45,16 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
 {
     /** Name constant */
     public static final String NAME = "rm-ac-record-types";
-    
+
     /** record service */
     private RecordService recordService;
 
     /** dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /** file plan service */
     private FilePlanService filePlanService;
-  
+
     /**
      * @param recordService record service
      */
@@ -78,28 +78,28 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @see org.alfresco.service.cmr.action.ParameterConstraint#getAllowableValues()
      */
     protected Map<String, String> getAllowableValuesImpl()
-    {   
+    {
         return AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, String>>()
         {
             @SuppressWarnings("unchecked")
-            public Map<String, String> doWork() throws Exception
+            public Map<String, String> doWork()
             {
                 Map<String, String> result = Collections.EMPTY_MAP;
-                
+
                 // get the file plan
                 // TODO we will likely have to re-implement as a custom control so that context of the file
                 //      plan can be correctly determined when setting the rule up
                 NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-                
+
                 if (filePlan != null)
                 {
                     Set<QName> recordTypes = recordService.getRecordMetadataAspects(filePlan);
-    
+
                     result = new HashMap<String, String>(recordTypes.size());
                     for (QName recordType : recordTypes)
                     {
@@ -110,9 +110,9 @@ public class RecordTypeParameterConstraint extends BaseParameterConstraint
                         }
                     }
                 }
-                
+
                 return result;
             }
         });
-    }      
+    }
 }

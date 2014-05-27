@@ -85,7 +85,7 @@ public class FrozenAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef) &&
                     filePlanService.isFilePlanComponent(nodeRef))

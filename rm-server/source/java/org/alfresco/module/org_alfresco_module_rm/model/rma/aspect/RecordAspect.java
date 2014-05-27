@@ -103,7 +103,7 @@ public class RecordAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 NodeRef thumbnail = childAssocRef.getChildRef();
 
@@ -222,7 +222,7 @@ public class RecordAspect extends    BaseBehaviourBean
             final NodeRef newNodeRef = newChildAssocRef.getChildRef();
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
-                public Object doWork() throws Exception
+                public Object doWork()
                 {
                     if (nodeService.exists(newNodeRef))
                     {

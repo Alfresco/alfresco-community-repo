@@ -132,7 +132,7 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
             // Run as admin user
             return filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Integer>()
             {
-                public Integer doWork() throws Exception
+                public Integer doWork()
                 {
                     return compareImpl(f1, f2);
                 }
@@ -147,11 +147,11 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
             {
                 return 0;
             }
-            
+
             // get the disposition schedules for the folders
             DispositionSchedule ds1 = dispositionService.getDispositionSchedule(f1);
             DispositionSchedule ds2 = dispositionService.getDispositionSchedule(f2);
-            
+
             // make sure each folder has a disposition schedule
             if (ds1 == null && ds2 != null)
             {

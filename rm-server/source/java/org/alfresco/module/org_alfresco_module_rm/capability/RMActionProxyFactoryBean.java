@@ -27,7 +27,7 @@ import org.springframework.aop.framework.ProxyFactoryBean;
 
 /**
  * RM action proxy factory bean.
- * 
+ *
  * @author Roy Wetherall
  */
 public class RMActionProxyFactoryBean extends ProxyFactoryBean
@@ -45,7 +45,7 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
 
     /**
      * Set action service
-     * 
+     *
      * @param actionService
      */
     public void setRuntimeActionService(RuntimeActionService runtimeActionService)
@@ -55,7 +55,7 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
 
     /**
      * Set records management service
-     * 
+     *
      * @param recordsManagementActionService
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
@@ -65,7 +65,7 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
 
     /**
      * Set records management service
-     * 
+     *
      * @param recordsManagementAuditService
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
@@ -80,14 +80,14 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
-            public Void doWork() throws Exception
+            public Void doWork()
             {
-                RecordsManagementAction action = (RecordsManagementAction)getObject();                
+                RecordsManagementAction action = (RecordsManagementAction)getObject();
                 recordsManagementActionService.register(action);
-        
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-        
+
     }
 }

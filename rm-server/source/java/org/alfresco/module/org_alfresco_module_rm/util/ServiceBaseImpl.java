@@ -50,7 +50,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** Dictionary service */
     protected DictionaryService dictionaryService;
-    
+
     /** Application context */
     protected ApplicationContext applicationContext;
 
@@ -78,10 +78,10 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * Gets the file plan component kind from the given node reference
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlanComponentKind(org.alfresco.service.cmr.repository.NodeRef)
      */
     public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef)
@@ -139,7 +139,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /**
      * Gets the file plan component kind from the given type.
-     * 
+     *
      * @see FilePlanService#getFilePlanComponentKindFromType(QName)
      */
     public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
@@ -181,22 +181,22 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         }
 
         return result;
-    } 
-    
+    }
+
     /**
      * Indicates whether the given node is a file plan component or not.
      * <p>
      * Exposed in the FilePlan service.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isFilePlanComponent(NodeRef nodeRef)
     {
         boolean result = false;
-     
+
         // use the internal node service to prevent redirection of security checking.
         NodeService myNodeService = (NodeService)applicationContext.getBean("nodeService");
-        
+
         if (myNodeService.exists(nodeRef) &&
             myNodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
         {
@@ -204,22 +204,22 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         }
         return result;
     }
-    
+
     /**
      * Indicates whether the given node is a file plan or not.
      * <p>
      * Exposed in the FilePlan service.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isFilePlan(NodeRef nodeRef)
     {
         return instanceOf(nodeRef, TYPE_FILE_PLAN);
     }
-    
+
     /**
      * Indicates whether the given node is a file plan container or not.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanContainer(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isFilePlanContainer(NodeRef nodeRef)
@@ -229,7 +229,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /**
      * Indicates whether the given node is a record category or not.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isRecordCategory(NodeRef nodeRef)
@@ -283,16 +283,16 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         }
         return isHold;
     }
-    
+
     /**
      * Indicates whether the given node reference is a transfer or not.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.transfer.TransferService#isTransfer(NodeRef)
      */
     public boolean isTransfer(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         return instanceOf(nodeRef, TYPE_TRANSFER);
     }
 
@@ -310,7 +310,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
             RunAsWork<NodeRef> runAsWork = new RunAsWork<NodeRef>()
             {
                 @Override
-                public NodeRef doWork() throws Exception
+                public NodeRef doWork()
                 {
                     NodeRef result = (NodeRef)nodeService.getProperty(nodeRef, PROP_ROOT_NODEREF);
                     if (result == null)
@@ -359,10 +359,10 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         }
         return result;
     }
-    
+
     /**
      * Utility method to quickly determine whether one class is equal to or sub of another.
-     * 
+     *
      * @param className     class name
      * @param ofClassName   class name to check against
      * @return boolean      true if equal to or sub, false otherwise

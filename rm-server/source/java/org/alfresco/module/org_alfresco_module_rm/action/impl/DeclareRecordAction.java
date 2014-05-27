@@ -83,7 +83,7 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                         {
                             @Override
-                            public Void doWork() throws Exception
+                            public Void doWork()
                             {
                                 // remove all owner related rights
                                 ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);

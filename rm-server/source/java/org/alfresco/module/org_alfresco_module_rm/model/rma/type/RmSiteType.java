@@ -253,7 +253,7 @@ public class RmSiteType extends    BaseBehaviourBean
             NodeRef filePlan = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
             {
                 @Override
-                public NodeRef doWork() throws Exception
+                public NodeRef doWork()
                 {
                     return siteService.getContainer(siteInfo.getShortName(), COMPONENT_DOCUMENT_LIBRARY);
                 }
@@ -268,18 +268,18 @@ public class RmSiteType extends    BaseBehaviourBean
                 {
                     throw new AlfrescoRuntimeException("The records management site can not be deleted, because the user doesn't have sufficient privillages to delete the file plan.");
                 }
-                
+
                 // work around for MNT-11038 .. we want to ensure that the RM site can be created once it's been deleted since we only
                 // allow one short name for the RM site
                 AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                 {
                     @Override
-                    public Void doWork() throws Exception
+                    public Void doWork()
                     {
                         // delete the authority
                         String siteGroup = siteService.getSiteGroup(siteInfo.getShortName());
                         authorityService.deleteAuthority(siteGroup, true);
-                        
+
                         return null;
                     }
                 });

@@ -63,7 +63,7 @@ public class BroadcastVitalRecordDefinitionAction extends RMActionExecuterAbstra
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 propagateChangeToChildrenOf(actionedUponNodeRef);
                 return null;

@@ -111,7 +111,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef))
                 {
@@ -201,7 +201,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef))
                 {
@@ -232,7 +232,7 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(newChildAssocRef.getParentRef()) &&
                     nodeService.exists(newChildAssocRef.getChildRef()))

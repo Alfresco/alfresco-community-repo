@@ -52,7 +52,7 @@ public final class PoliciesUtil
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<QName>>()
         {
-            public Set<QName> doWork() throws Exception
+            public Set<QName> doWork()
             {
                 Set<QName> qnames = null;
                 try

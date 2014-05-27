@@ -94,7 +94,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // Get the elements of the created association
                 final NodeRef child = childAssocRef.getChildRef();
@@ -172,7 +172,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 if (nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) &&
                     nodeService.getProperty(nodeRef, PROP_IDENTIFIER) == null)

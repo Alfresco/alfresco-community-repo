@@ -116,7 +116,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     try
                     {
@@ -341,7 +341,8 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     {
         return AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            public NodeRef doWork() throws Exception
+            @Override
+            public NodeRef doWork()
             {
                 NodeRef child = null;
                 if(targetisUnfiledRecords)

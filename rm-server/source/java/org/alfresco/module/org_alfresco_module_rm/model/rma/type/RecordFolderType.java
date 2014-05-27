@@ -132,7 +132,7 @@ public class RecordFolderType extends    BaseBehaviourBean
 
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
                 {
-                    public Object doWork() throws Exception
+                    public Object doWork()
                     {
                         behaviourFilter.disableBehaviour();
                         try
@@ -269,7 +269,7 @@ public class RecordFolderType extends    BaseBehaviourBean
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     // setup vital record definition
                     vitalRecordService.setupVitalRecordDefinition(recordFolder);

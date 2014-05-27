@@ -237,7 +237,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
     {
         AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 java.util.List<NodeRef> rmRoots = recordsManagementService.getFilePlans();
                 logger.info("Bootstraping " + rmRoots.size() + " rm roots ...");

@@ -47,7 +47,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     recordFolderService.closeRecordFolder(actionedUponNodeRef);
 

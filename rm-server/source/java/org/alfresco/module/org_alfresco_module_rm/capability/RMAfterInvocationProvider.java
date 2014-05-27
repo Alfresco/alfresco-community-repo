@@ -94,7 +94,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return (MethodInvocation.class.isAssignableFrom(clazz));
     }
 
-    public void afterPropertiesSet() throws Exception
+    public void afterPropertiesSet()
     {
     }
 

@@ -470,7 +470,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
             container = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
             {
                 @Override
-                public NodeRef doWork() throws Exception
+                public NodeRef doWork()
                 {
                     return siteService.createContainer(siteId, SEARCH_CONTAINER, null, null);
                 }
@@ -488,7 +488,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
                 userContainer = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
                 {
                     @Override
-                    public NodeRef doWork() throws Exception
+                    public NodeRef doWork()
                     {
                         return fileFolderService.create(parentContainer, userName, ContentModel.TYPE_FOLDER).getNodeRef();
                     }
@@ -505,7 +505,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
             searchNode = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
             {
                 @Override
-                public NodeRef doWork() throws Exception
+                public NodeRef doWork()
                 {
                     return fileFolderService.create(searchContainer, savedSearchDetails.getName(), ContentModel.TYPE_CONTENT).getNodeRef();
                 }
@@ -517,7 +517,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 ContentWriter writer = fileFolderService.getWriter(writableSearchNode);
                 writer.setEncoding("UTF-8");

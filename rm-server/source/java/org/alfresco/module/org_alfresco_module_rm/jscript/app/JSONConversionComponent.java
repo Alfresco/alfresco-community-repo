@@ -56,7 +56,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
     /** Capability service */
     private CapabilityService capabilityService;
-    
+
     /** dictionary service */
     private DictionaryService dictionaryService;
 
@@ -89,7 +89,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param dictionaryService dictionary service
      */
@@ -126,21 +126,21 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         {
             // Set the base root values
             super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
-    
+
             // Get the node reference for convenience
             NodeRef nodeRef = nodeInfo.getNodeRef();
-    
+
             if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef,
                     RMPermissionModel.VIEW_RECORDS)))
             {
                 // Indicate whether the node is a RM object or not
                 boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeInfo.getNodeRef());
                 rootJSONObject.put("isRmNode", isFilePlanComponent);
-    
+
                 if (isFilePlanComponent)
                 {
                     rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, useShortQNames));
-    
+
                     // FIXME: Is this the right place to add the information?
                     addInfo(nodeInfo, rootJSONObject);
                 }
@@ -150,7 +150,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
     /**
      * Helper method to add information about node
-     * 
+     *
      * @param nodeInfo          node information
      * @param rootJSONObject    root JSON object
      */
@@ -159,13 +159,13 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     {
         String itemType = (String) rootJSONObject.get("type");
         final QName itemTypeQName = QName.createQName(itemType, namespaceService);
-        
+
         NodeRef originatingLocation = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            public NodeRef doWork() throws Exception
-            {    
+            public NodeRef doWork()
+            {
                 NodeRef originatingLocation = null;
-                
+
                 if (dictionaryService.isSubClass(itemTypeQName, ContentModel.TYPE_CONTENT))
                 {
                     NodeRef nodeRef = nodeInfo.getNodeRef();
@@ -177,7 +177,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                         if (!parent.isPrimary())
                         {
                             originatingLocation = parent.getParentRef();
-                            
+
                             // only consider the non-RM parent otherwise we can
                             // run into issues with frozen or transferring records
                             if (!nodeService.hasAspect(originatingLocation, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
@@ -189,11 +189,11 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                         }
                     }
                 }
-                
+
                 return originatingLocation;
             }
-        });  
-        
+        });
+
         if (originatingLocation != null)
         {
             String pathSeparator = "/";

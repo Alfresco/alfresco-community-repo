@@ -184,7 +184,7 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                 filePlan = filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<NodeRef>()
                 {
                     @Override
-                    public NodeRef doWork() throws Exception
+                    public NodeRef doWork()
                     {
                         return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
                     }

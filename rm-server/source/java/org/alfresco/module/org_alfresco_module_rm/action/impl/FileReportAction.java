@@ -93,7 +93,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         NodeRef filedReport = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
             @Override
-            public NodeRef doWork() throws Exception
+            public NodeRef doWork()
             {
                 return reportService.fileReport(destination, report);
             }

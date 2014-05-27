@@ -817,7 +817,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
              * @see org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork#doWork()
              */
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // Get this disposition instructions for the node
                 DispositionSchedule di = getDispositionSchedule(nodeRef);
@@ -991,7 +991,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // Apply the cut off aspect and set cut off date
                 Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);

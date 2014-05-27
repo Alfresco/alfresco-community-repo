@@ -168,7 +168,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     {
         AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 if (nodeService.exists(nodeRef) && name.equals(actionName))
                 {

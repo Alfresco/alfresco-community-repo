@@ -69,7 +69,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
     }
 
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         // check whether report dir exists or not
         if (nodeService.exists(RM_CONFIG_FOLDER) && !nodeService.exists(TEMPLATE_ROOT))

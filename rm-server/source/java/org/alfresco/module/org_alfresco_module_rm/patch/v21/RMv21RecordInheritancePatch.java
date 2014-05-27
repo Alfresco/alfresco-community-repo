@@ -102,7 +102,7 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         Pair<Long, QName> aspectPair = qnameDAO.getQName(ASPECT_RECORD);
         if (aspectPair != null)

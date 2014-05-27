@@ -123,7 +123,7 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         Set<NodeRef> filePlans = getFilePlans();
 

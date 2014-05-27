@@ -64,7 +64,7 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
      */
     @Override
     protected void executeInternal() throws Throwable
-    {        
+    {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
         if (!nodeService.exists(nodeRef))
         {
@@ -72,6 +72,6 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 
             // init module schema number
             modulePatchExecuter.initSchemaVersion();
-        }        
+        }
     }
 }

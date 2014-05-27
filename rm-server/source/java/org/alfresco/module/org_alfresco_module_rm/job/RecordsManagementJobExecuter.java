@@ -63,7 +63,7 @@ public abstract class RecordsManagementJobExecuter implements RecordsManagementM
             retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
             {
                 @Override
-                public Void execute() throws Throwable
+                public Void execute()
                 {
                     executeImpl();
 

@@ -85,7 +85,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
      * @see org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent#executePatch()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         // check that the rm config root has been correctly bootstrapped
         if (!nodeService.exists(RM_CONFIG))

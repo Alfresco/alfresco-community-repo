@@ -32,7 +32,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * RM module bootstrap
- * 
+ *
  * @author janv
  */
 public class RecordsManagementBootstrap extends AbstractLifecycleBean
@@ -41,23 +41,23 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     private RMCaveatConfigService caveatConfigService;
     private CustomEmailMappingService customEmailMappingService;
     private RecordsManagementAdminService adminService;
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-    
+
     public void setCaveatConfigService(RMCaveatConfigService caveatConfigService)
     {
         this.caveatConfigService = caveatConfigService;
     }
-    
+
     public void setCustomEmailMappingService(CustomEmailMappingService customEmailMappingService)
     {
         this.customEmailMappingService = customEmailMappingService;
     }
-    
-    public void setRecordsManagementAdminService(RecordsManagementAdminService adminService) 
+
+    public void setRecordsManagementAdminService(RecordsManagementAdminService adminService)
     {
 		this.adminService = adminService;
 	}
@@ -66,7 +66,7 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     {
         return customEmailMappingService;
     }
-    
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -77,28 +77,28 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
             {
                 RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
                 {
-                    public Void execute() throws Throwable
+                    public Void execute()
                     {
                         // initialise caveat config
                         caveatConfigService.init();
-                        
+
                         // Initialise the custom model
                         adminService.initialiseCustomModel();
-                        
+
                         // Initialise the SplitEmailAction
                         SplitEmailAction action = (SplitEmailAction)getApplicationContext().getBean("splitEmail");
                         action.bootstrap();
-                        
+
                         return null;
                     }
                 };
                 transactionService.getRetryingTransactionHelper().doInTransaction(callback);
-                
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     @Override
     protected void onShutdown(ApplicationEvent event)
     {

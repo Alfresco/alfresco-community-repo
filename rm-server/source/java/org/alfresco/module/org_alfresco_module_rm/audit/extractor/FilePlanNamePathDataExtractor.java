@@ -75,7 +75,7 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
     /**
      * @see org.alfresco.repo.audit.extractor.DataExtractor#extractData(java.io.Serializable)
      */
-    public Serializable extractData(Serializable value) throws Throwable
+    public Serializable extractData(Serializable value)
     {
         NodeRef nodeRef = (NodeRef) value;
 

@@ -53,10 +53,10 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 {
     /** logger */
     private static Log logger = LogFactory.getLog(DispositionLifecycleJobExecuter.class);
-    
+
     /** list of disposition actions to automatically execute */
     private List<String> dispositionActions;
-    
+
     /** query string */
     private String query;
 
@@ -71,14 +71,14 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
 
     /**
      * List of disposition actions to automatically execute when eligible.
-     * 
+     *
      * @param dispositionActions    disposition actions
      */
     public void setDispositionActions(List<String> dispositionActions)
     {
         this.dispositionActions = dispositionActions;
     }
-    
+
     /**
      * @param recordsManagementActionService    records management action service
      */
@@ -102,21 +102,21 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     {
         this.searchService = searchService;
     }
-    
+
     /**
      * Get the search query string.
-     * 
+     *
      * @return  job query string
      */
     private String getQuery()
     {
         if (query == null)
-        {        
+        {
             StringBuilder sb = new StringBuilder();
-            
+
             sb.append("+TYPE:\"rma:dispositionAction\" ");
             sb.append("+(@rma\\:dispositionAction:(");
-            
+
             boolean bFirst = true;
             for (String dispositionAction : dispositionActions)
             {
@@ -128,20 +128,20 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 {
                     sb.append(" OR ");
                 }
-                   
+
                 sb.append("\"").append(dispositionAction).append("\"");
-            }            
-            
+            }
+
             sb.append("))");
             sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
             sb.append("+( ");
             sb.append("@rma\\:dispositionEventsEligible:true ");
             sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
             sb.append(") ");
-            
+
             query = sb.toString();
         }
-        
+
         return query;
     }
 
@@ -153,30 +153,30 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         try
         {
             logger.debug("Job Starting");
-            
+
             if (dispositionActions != null && !dispositionActions.isEmpty())
             {
                 // execute search
                 ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, getQuery());
                 List<NodeRef> resultNodes = results.getNodeRefs();
                 results.close();
-                
+
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Processing " + resultNodes.size() + " nodes");
                 }
-    
+
                 // process search results
                 for (NodeRef node : resultNodes)
                 {
                     final NodeRef currentNode = node;
-    
+
                     RetryingTransactionCallback<Boolean> processTranCB = new RetryingTransactionCallback<Boolean>()
                     {
-                        public Boolean execute() throws Throwable
+                        public Boolean execute()
                         {
                             final String dispAction = (String) nodeService.getProperty(currentNode, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-    
+
                             // Run disposition action
                             if (dispAction != null && dispositionActions.contains(dispAction))
                             {
@@ -185,21 +185,21 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                                 {
                                     Map<String, Serializable> props = new HashMap<String, Serializable>(1);
                                     props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
-                                    
+
                                     // execute disposition action
                                     recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
-                                    
+
                                     if (logger.isDebugEnabled())
                                     {
                                         logger.debug("Processed action: " + dispAction + "on" + parent);
                                     }
                                 }
                             }
-                                
+
                             return Boolean.TRUE;
                         }
                     };
-    
+
                     // if exists
                     if (nodeService.exists(currentNode))
                     {

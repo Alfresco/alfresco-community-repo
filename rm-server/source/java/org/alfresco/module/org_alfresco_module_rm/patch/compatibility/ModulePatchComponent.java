@@ -85,7 +85,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executeInternal()
     {
         try
         {
@@ -98,7 +98,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
             retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
-                public Void execute() throws Throwable
+                public Void execute()
                 {
                     behaviourFilter.disableBehaviour();
                     try
@@ -132,8 +132,6 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
 
     /**
      * Execute patch work.
-     *
-     * @throws Throwable
      */
-    protected abstract void executePatch() throws Throwable;
+    protected abstract void executePatch();
 }

@@ -125,7 +125,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     ExtendedRuleServiceImpl.super.saveRule(nodeRef, rule);
                     return null;
@@ -150,7 +150,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     ExtendedRuleServiceImpl.super.removeRule(nodeRef, rule);
                     return null;
@@ -187,7 +187,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     	            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
     	            	{
     						@Override
-    						public Void doWork() throws Exception
+    						public Void doWork()
     						{
     							ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
     							return null;

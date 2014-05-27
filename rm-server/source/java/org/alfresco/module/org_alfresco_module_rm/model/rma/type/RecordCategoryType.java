@@ -130,7 +130,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     // setup vital record definition
                     vitalRecordService.setupVitalRecordDefinition(recordCategory);
@@ -165,7 +165,7 @@ public class RecordCategoryType extends    BaseBehaviourBean
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // setup record category permissions
                 filePlanPermissionService.setupRecordCategoryPermissions(childAssocRef.getChildRef());

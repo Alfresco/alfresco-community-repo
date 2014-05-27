@@ -116,7 +116,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 if (rmLoaded())
                 {

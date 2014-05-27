@@ -477,7 +477,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 runAsSystem(new RunAsWork<Void>()
                 {
                     @Override
-                    public Void doWork() throws Exception
+                    public Void doWork()
                     {
                         // Link the record to the hold
                         nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);

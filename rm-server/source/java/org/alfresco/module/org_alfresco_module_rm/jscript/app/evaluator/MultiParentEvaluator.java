@@ -41,7 +41,7 @@ public class MultiParentEvaluator extends BaseEvaluator
         return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
         {
             @Override
-            public Boolean doWork() throws Exception
+            public Boolean doWork()
             {
                 List<ChildAssociationRef> parents = nodeService.getParentAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
                 int count = 0;

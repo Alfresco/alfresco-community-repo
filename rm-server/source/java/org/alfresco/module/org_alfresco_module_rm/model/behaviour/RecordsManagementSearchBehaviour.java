@@ -296,7 +296,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
                     if (assoc.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
@@ -354,7 +354,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
                 {
@@ -594,7 +594,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef))
                 {
@@ -618,7 +618,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // Only care about record folders
                 if (nodeService.exists(nodeRef) && recordFolderService.isRecordFolder(nodeRef))
@@ -643,7 +643,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // Only care about record folders
                 if (nodeService.exists(nodeRef) && recordFolderService.isRecordFolder(nodeRef))
@@ -743,7 +743,7 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         AuthenticationUtil.RunAsWork<Void> work = new AuthenticationUtil.RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef))
                 {

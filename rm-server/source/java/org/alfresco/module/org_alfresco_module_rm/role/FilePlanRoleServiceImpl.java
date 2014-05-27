@@ -479,7 +479,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>()
         {
-            public Set<Role> doWork() throws Exception
+            public Set<Role> doWork()
             {
                 Set<Role> result = new HashSet<Role>(13);
 
@@ -524,7 +524,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<Role>>()
         {
-            public Set<Role> doWork() throws Exception
+            public Set<Role> doWork()
             {
                 Set<Role> result = new HashSet<Role>(13);
 
@@ -595,7 +595,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>()
         {
-            public Role doWork() throws Exception
+            public Role doWork()
             {
                 Role result = null;
 
@@ -647,7 +647,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
         {
-            public Boolean doWork() throws Exception
+            public Boolean doWork()
             {
                 String fullRoleName = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
 
@@ -690,7 +690,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>()
         {
-            public Role doWork() throws Exception
+            public Role doWork()
             {
                 String fullRoleName = getFullRoleName(role, rmRootNode);
 
@@ -744,7 +744,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>()
         {
-            public Role doWork() throws Exception
+            public Role doWork()
             {
                 if (!existsRole(rmRootNode, role))
                 {
@@ -792,7 +792,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Boolean doWork() throws Exception
+            public Boolean doWork()
             {
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, rmRootNode));
                 authorityService.deleteAuthority(roleAuthority);
@@ -826,7 +826,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Set<String>>()
         {
-            public Set<String> doWork() throws Exception
+            public Set<String> doWork()
             {
                 Role role = getRole(filePlan, roleName);
                 if (role == null)
@@ -873,7 +873,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (!getAllAssignedToRole(filePlan, role).contains(authorityName))
                 {
@@ -894,7 +894,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
                 authorityService.removeAuthority(roleAuthority, authorityName);

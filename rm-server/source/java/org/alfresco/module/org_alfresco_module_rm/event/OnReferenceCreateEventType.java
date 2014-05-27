@@ -106,7 +106,7 @@ public class OnReferenceCreateEventType extends SimpleRecordsManagementEventType
     {
         AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 // Check whether it is the reference type we care about
                 if (reference.equals(OnReferenceCreateEventType.this.reference))

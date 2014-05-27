@@ -38,7 +38,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * rma:extendedSecurity behaviour bean
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -51,7 +51,7 @@ public class ExtendedSecurityAspect extends    BaseBehaviourBean
 {
     /** extended security service */
     protected ExtendedSecurityService extendedSecurityService;
-    
+
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -59,10 +59,10 @@ public class ExtendedSecurityAspect extends    BaseBehaviourBean
     {
         this.extendedSecurityService = extendedSecurityService;
     }
-    
+
     /**
      * Copy callback.
-     * 
+     *
      * Aspect should not be copied.
      */
     @Behaviour
@@ -77,7 +77,7 @@ public class ExtendedSecurityAspect extends    BaseBehaviourBean
 
     /**
      * Update extended security when moving a node.
-     * 
+     *
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
@@ -91,7 +91,7 @@ public class ExtendedSecurityAspect extends    BaseBehaviourBean
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 NodeRef record = newAssoc.getChildRef();
                 NodeRef newParent = newAssoc.getParentRef();
@@ -107,7 +107,7 @@ public class ExtendedSecurityAspect extends    BaseBehaviourBean
             }
         });
     }
-    
-    
-    
+
+
+
 }

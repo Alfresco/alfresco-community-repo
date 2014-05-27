@@ -439,7 +439,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 onCreateChildAssociation.disable();
                 try
@@ -740,7 +740,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (!nodeService.hasAspect(nodeRef, ASPECT_RECORD))
                 {
@@ -1006,7 +1006,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // remove the child association
                 NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);

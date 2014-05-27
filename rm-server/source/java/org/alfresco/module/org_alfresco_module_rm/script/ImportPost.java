@@ -217,7 +217,7 @@ public class ImportPost extends DeclarativeWebScript
                 // import the ACP file as the system user
                 AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
                 {
-                     public NodeRef doWork() throws Exception
+                     public NodeRef doWork()
                      {
                          importerService.importView(importHandler, new Location(destination), null, null);
                          return null;

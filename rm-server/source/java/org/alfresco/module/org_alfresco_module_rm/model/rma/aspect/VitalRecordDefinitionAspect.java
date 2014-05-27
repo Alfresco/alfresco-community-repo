@@ -83,7 +83,7 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef) &&
                     nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
@@ -98,7 +98,7 @@ public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
                 }
                 return null;
             }
-        });               
+        });
     }
 
 }

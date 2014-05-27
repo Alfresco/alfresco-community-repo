@@ -304,7 +304,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef) &&
                     dictionaryService.getAllModels().contains(RM_CUSTOM_MODEL) &&
@@ -334,7 +334,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (nodeService.exists(nodeRef) &&
                     isCustomisable(aspectTypeQName))
@@ -365,7 +365,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 if (dictionaryService.getAllModels().contains(RecordsManagementCustomModel.RM_CUSTOM_MODEL))
                 {
@@ -1173,7 +1173,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 		    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
 		    {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     List<ChildAssociationRef> children = nodeService.getChildAssocs(fromNode);
                     for (ChildAssociationRef chRef : children)

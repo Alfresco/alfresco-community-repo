@@ -78,7 +78,7 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
 
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 // Query is for all records that are due for review and for which
                 // notification has not been sent.

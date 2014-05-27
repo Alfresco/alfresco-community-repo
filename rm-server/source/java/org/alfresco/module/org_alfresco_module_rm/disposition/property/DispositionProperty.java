@@ -194,7 +194,7 @@ public class DispositionProperty extends BaseBehaviourBean
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
                     @Override
-                    public Void doWork() throws Exception
+                    public Void doWork()
                     {
                         Date updatedDateValue = (Date)after.get(propertyName);
                         if (updatedDateValue != null)

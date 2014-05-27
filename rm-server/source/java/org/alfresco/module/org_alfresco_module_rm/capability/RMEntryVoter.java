@@ -317,7 +317,7 @@ public class RMEntryVoter extends RMSecurityCommon
     /**
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */
-    public void afterPropertiesSet() throws Exception
+    public void afterPropertiesSet()
     {
     }
 

@@ -136,7 +136,7 @@ public class FilePlanType extends    BaseBehaviourBean
 
         AuthenticationUtil.runAsSystem(new RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 if (nodeService.hasAspect(filePlan, ASPECT_FILE_PLAN_COMPONENT) &&
                     nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)

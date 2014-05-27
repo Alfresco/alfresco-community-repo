@@ -349,7 +349,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
     {
         AuthenticationUtil.RunAsWork<Object> runAsWork = new AuthenticationUtil.RunAsWork<Object>()
         {
-            public Object doWork() throws Exception
+            public Object doWork()
             {
                 Set<NodeRef> rmRoots = filePlanService.getFilePlans();
                 logger.info("Bootstraping " + rmRoots.size() + " rm roots ...");

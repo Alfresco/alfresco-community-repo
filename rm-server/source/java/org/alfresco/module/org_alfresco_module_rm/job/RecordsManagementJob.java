@@ -95,7 +95,7 @@ public class RecordsManagementJob implements Job
 
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // try and get the lock
                 String lockToken = getLock();

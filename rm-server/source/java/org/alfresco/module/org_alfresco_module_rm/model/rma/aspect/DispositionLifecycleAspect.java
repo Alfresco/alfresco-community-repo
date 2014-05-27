@@ -86,7 +86,7 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
             AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
-                public Void doWork() throws Exception
+                public Void doWork()
                 {
                     dispositionService.refreshDispositionAction(nodeRef);
                     return null;

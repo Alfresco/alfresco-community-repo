@@ -243,7 +243,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public Void doWork() throws Exception
+            public Void doWork()
             {
                 // add the relationship
                 recordsManagementAdminService.addCustomReference(parentRef, childRef, relationshipQName);

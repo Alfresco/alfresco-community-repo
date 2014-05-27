@@ -218,7 +218,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
         String tenantDomain = tenantAdminService.getCurrentUserDomain();
         return TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
         {
-            public NodeRef doWork() throws Exception
+            public NodeRef doWork()
             {
                 return nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
             }
@@ -396,7 +396,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
         return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
             @Override
-            public NodeRef doWork() throws Exception
+            public NodeRef doWork()
             {
                 return filePlanService.getFilePlan(context);
 
@@ -416,7 +416,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
         return AuthenticationUtil.runAs(new RunAsWork<String>()
         {
             @Override
-            public String doWork() throws Exception
+            public String doWork()
             {
                 // Find the authority for the given role
                 Role role = filePlanRoleService.getRole(root, notificationRole);
@@ -449,7 +449,7 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
         return AuthenticationUtil.runAs(new RunAsWork<String>()
         {
             @Override
-            public String doWork() throws Exception
+            public String doWork()
             {
                 String result = DEFAULT_SITE;
 

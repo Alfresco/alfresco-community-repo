@@ -28,6 +28,7 @@ import java.util.Map;
 import org.alfresco.repo.search.ResultSetRowIterator;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
@@ -280,7 +281,21 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
 
     public boolean hasMore()
     {
-        throw new UnsupportedOperationException();
+        if(getResultSetMetaData().getLimitedBy() != LimitBy.UNLIMITED)
+        {
+            return true;
+        }
+        else
+        {
+            try
+            {
+                return (unfiltered.getStart()+unfiltered.length()) < unfiltered.getNumberFound();
+            }
+            catch(UnsupportedOperationException uoe)
+            {
+                return true;
+            }
+        }
     }
 
     /**

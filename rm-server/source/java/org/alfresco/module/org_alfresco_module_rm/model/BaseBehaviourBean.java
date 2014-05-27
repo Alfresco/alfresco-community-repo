@@ -24,7 +24,7 @@ public abstract class BaseBehaviourBean extends ServiceBaseImpl
                                                    BehaviourRegistry
 {
     /** Logger */
-    protected static Log logger = LogFactory.getLog(BaseBehaviourBean.class);
+    protected static final Log logger = LogFactory.getLog(BaseBehaviourBean.class);
 
     /** behaviour filter */
     protected BehaviourFilter behaviourFilter;

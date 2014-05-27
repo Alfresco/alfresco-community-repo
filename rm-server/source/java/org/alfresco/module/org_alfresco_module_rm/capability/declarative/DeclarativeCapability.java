@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 public class DeclarativeCapability extends AbstractCapability
 {
     /** Logger */
-    protected static Log logger = LogFactory.getLog(DeclarativeCapability.class);
+    protected static final Log logger = LogFactory.getLog(DeclarativeCapability.class);
 
     /** Required permissions */
     protected List<String> permissions;
@@ -212,10 +212,10 @@ public class DeclarativeCapability extends AbstractCapability
 
                 // determine the actual value
                 boolean actual = condition.evaluate(nodeRef);
-                
+
                 // report information about condition (for exception reporting)
                 RMMethodSecurityInterceptor.reportCapabilityCondition(getName(), condition.getName(), expected, actual);
-                
+
                 if (expected != actual)
                 {
                     result = false;
@@ -224,7 +224,7 @@ public class DeclarativeCapability extends AbstractCapability
                     {
                         logger.debug("FAIL: Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
                     }
-                    
+
                     break;
                 }
             }

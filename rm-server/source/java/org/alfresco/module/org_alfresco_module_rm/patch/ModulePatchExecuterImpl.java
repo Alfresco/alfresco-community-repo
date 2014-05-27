@@ -40,7 +40,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
                                     implements ModulePatchExecuter
 {
     /** logger */
-    protected static Log logger = LogFactory.getLog(ModulePatchExecuterImpl.class);
+    protected static final Log logger = LogFactory.getLog(ModulePatchExecuterImpl.class);
 
     /** default start schema */
     private static final int START_SCHEMA = 0;

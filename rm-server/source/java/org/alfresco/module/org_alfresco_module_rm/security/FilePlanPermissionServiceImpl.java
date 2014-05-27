@@ -67,7 +67,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     protected PolicyComponent policyComponent;
 
     /** Logger */
-    protected static Log logger = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
+    protected static final Log logger = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
 
     /**
      * Initialisation method

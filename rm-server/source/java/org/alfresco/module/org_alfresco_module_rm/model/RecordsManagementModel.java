@@ -173,9 +173,11 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
 
     // Records management root aspect
     QName ASPECT_RECORDS_MANAGEMENT_ROOT = QName.createQName(RM_URI, "recordsManagementRoot");
-    @Deprecated // since 2.1
+    // since 2.1
+    @Deprecated
     QName ASSOC_HOLDS = QName.createQName(RM_URI, "holds");
-    @Deprecated // since 2.1
+    // since 2.1
+    @Deprecated
     QName ASSOC_TRANSFERS = QName.createQName(RM_URI, "transfers");
 
     // Hold type

@@ -8,16 +8,16 @@
          parent="baseJsonConversionComponent">
       <property name="recordService" ref="RecordService"/>
       <property name="filePlanService" ref="FilePlanService"/>
-      <property name="capabilityService" ref="CapabilityService"/> 
+      <property name="capabilityService" ref="CapabilityService"/>
       <property name="dictionaryService" ref="DictionaryService" />
    </bean>
- 
+
    <!--  extends core bean with RM extensions -->
    <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
       <property name="beanName" value="jsonConversionComponent" />
       <property name="extendingBeanName" value="rm.jsonConversionComponent" />
-   </bean> 	
- 
+   </bean>
+
    <bean id="jsonConversionComponent.baseEvaluator"
          abstract="true">
       <property name="jsonConversionComponent" ref="jsonConversionComponent"/>
@@ -373,6 +373,7 @@
          <set>
             <value>RECORD_FOLDER</value>
             <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </set>
       </property>
       <property name="capability" value ="FileRecords"/>
@@ -635,6 +636,7 @@
          <set>
             <value>RECORD_CATEGORY</value>
             <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_FOLDER</value>
          </set>
       </property>
       <property name="capability" value ="CreateModifyDestroyFolders"/>
@@ -803,6 +805,15 @@
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="manageRules"/>
       <property name="capability" value="ManageRules"/>
+      <property name="kinds">
+         <set>
+            <value>FILE_PLAN</value>
+            <value>RECORD_CATEGORY</value>
+            <value>RECORD_FOLDER</value>
+            <value>UNFILED_RECORD_CONTAINER</value>
+            <value>UNFILED_RECORD_FOLDER</value>
+         </set>
+      </property>
    </bean>
 
    <bean id="jsonConversionComponent.requestInfo"
@@ -874,7 +885,7 @@
       </property>
       <property name="capability" value ="RemoveFromHold"/>
    </bean>
-   
+
    <bean id="jsonConversionComponent.fileHoldReport"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="fileHoldReport"/>

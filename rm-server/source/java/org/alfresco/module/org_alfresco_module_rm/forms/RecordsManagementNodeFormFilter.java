@@ -345,18 +345,16 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             // as read only
             QName qname = QName.createQName(prefixName, namespaceService);
             Serializable value = nodeService.getProperty(nodeRef, qname);
-            if (value != null)
+            if (value != null &&
+                (prefixName.equals("cm:title") ||
+                prefixName.equals("cm:author") ||
+                prefixName.equals("dod:originator") ||
+                prefixName.equals("dod:publicationDate") ||
+                prefixName.equals("dod:dateReceived") ||
+                prefixName.equals("dod:address") ||
+                prefixName.equals("dod:otherAddress")))
             {
-                if (prefixName.equals("cm:title") ||
-                    prefixName.equals("cm:author") ||
-                    prefixName.equals("dod:originator") ||
-                    prefixName.equals("dod:publicationDate") ||
-                    prefixName.equals("dod:dateReceived") ||
-                    prefixName.equals("dod:address") ||
-                    prefixName.equals("dod:otherAddress"))
-                {
-                    fieldDef.setProtectedField(true);
-                }
+                fieldDef.setProtectedField(true);
             }
         }
 

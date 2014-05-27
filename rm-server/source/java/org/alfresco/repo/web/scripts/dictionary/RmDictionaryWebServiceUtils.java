@@ -46,12 +46,9 @@ public final class RmDictionaryWebServiceUtils
         if (StringUtils.isNotBlank(siteId))
         {
             SiteInfo site = siteService.getSite(siteId);
-            if (site != null)
+            if (site != null && site.getSitePreset().equals(SITE_PRESET))
             {
-                if (site.getSitePreset().equals(SITE_PRESET))
-                {
-                    isRmSite = true;
-                }
+                isRmSite = true;
             }
         }
         return isRmSite;

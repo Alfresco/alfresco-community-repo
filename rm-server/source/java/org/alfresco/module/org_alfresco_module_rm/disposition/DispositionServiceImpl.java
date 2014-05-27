@@ -444,12 +444,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     result.add(item);
                 }
             }
-            else if (filePlanService.isRecordCategory(item))
+            else if (filePlanService.isRecordCategory(item) && getAssociatedDispositionScheduleImpl(item) == null)
             {
-                if (getAssociatedDispositionScheduleImpl(item) == null)
-                {
-                    result.addAll(getDisposableItemsImpl(isRecordLevelDisposition, item));
-                }
+                result.addAll(getDisposableItemsImpl(isRecordLevelDisposition, item));
             }
         }
         return result;
@@ -972,7 +969,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 applyCutoff(nodeRef);
 
                 // close the record folder if it isn't already closed!
-                if (recordFolderService.isRecordFolder(nodeRef) && 
+                if (recordFolderService.isRecordFolder(nodeRef) &&
                     !recordFolderService.isRecordFolderClosed(nodeRef))
                 {
                     recordFolderService.closeRecordFolder(nodeRef);
@@ -987,7 +984,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
     /**
      * Helper method to apply the cut off
-     * 
+     *
      * @param nodeRef   node to cut off
      */
     private void applyCutoff(final NodeRef nodeRef)
@@ -1000,7 +997,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 Map<QName, Serializable> cutOffProps = new HashMap<QName, Serializable>(1);
                 cutOffProps.put(PROP_CUT_OFF_DATE, new Date());
                 nodeService.addAspect(nodeRef, ASPECT_CUT_OFF, cutOffProps);
-                
+
                 return null;
             }
         });

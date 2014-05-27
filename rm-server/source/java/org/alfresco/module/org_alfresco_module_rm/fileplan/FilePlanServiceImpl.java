@@ -148,15 +148,12 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         SiteService siteService = getSiteService();
 
         SiteInfo siteInfo = siteService.getSite(siteId);
-        if (siteInfo != null)
+        if (siteInfo != null && siteService.hasContainer(siteId, FILE_PLAN_CONTAINER))
         {
-            if (siteService.hasContainer(siteId, FILE_PLAN_CONTAINER))
+            NodeRef nodeRef = siteService.getContainer(siteId, FILE_PLAN_CONTAINER);
+            if (instanceOf(nodeRef, TYPE_FILE_PLAN))
             {
-                NodeRef nodeRef = siteService.getContainer(siteId, FILE_PLAN_CONTAINER);
-                if (instanceOf(nodeRef, TYPE_FILE_PLAN))
-                {
-                    filePlan = nodeRef;
-                }
+                filePlan = nodeRef;
             }
         }
 

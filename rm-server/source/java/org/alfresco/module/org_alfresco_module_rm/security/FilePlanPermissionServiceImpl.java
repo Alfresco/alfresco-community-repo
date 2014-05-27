@@ -59,7 +59,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 {
     /** Permission service */
     protected PermissionService permissionService;
-    
+
     /** Ownable service */
     protected OwnableService ownableService;
 
@@ -99,7 +99,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @param ownableService    ownable service
      */
@@ -124,12 +124,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         // setup category permissions
         NodeRef parentNodeRef = nodeService.getPrimaryParent(recordCategory).getParentRef();
-        setupPermissions(parentNodeRef, recordCategory);        
+        setupPermissions(parentNodeRef, recordCategory);
     }
-    
+
     /**
      * Setup permissions on new unfiled record folder
-     * 
+     *
      * @param childAssocRef child association reference
      */
     @Behaviour
@@ -146,7 +146,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     /**
      * Setup permissions on new record folder
-     * 
+     *
      * @param childAssocRef child association reference
      */
     @Behaviour
@@ -160,10 +160,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
     }
-    
+
     /**
      * Setup permissions on newly created hold.
-     * 
+     *
      * @param childAssocRef child association reference
      */
     @Behaviour
@@ -177,10 +177,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
     }
-    
+
     /**
      * Setup permissions on newly created transfer.
-     * 
+     *
      * @param childAssocRef child association reference
      */
     @Behaviour
@@ -194,10 +194,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
     }
-    
+
     /**
      * Helper method to setup permissions.
-     * 
+     *
      * @param parent        parent node reference
      * @param nodeRef       child node reference
      */
@@ -205,12 +205,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         ParameterCheck.mandatory("parent", parent);
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        
+
         if (nodeService.exists(nodeRef))
         {
             // initialise permissions
             initPermissions(nodeRef);
-            
+
             if (nodeService.exists(parent))
             {
                 runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
@@ -236,7 +236,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                     {
                                         allow = true;
                                     }
-                                    
+
                                     // set the permission on the target node
                                     permissionService.setPermission(
                                             nodeRef,
@@ -246,17 +246,17 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                 }
                             }
                         }
-                        
+
                         return null;
                     }
                 });
             }
         }
     }
- 
+
     /**
      * Helper method to determine whether all or just filling permissions should be inherited.
-     * 
+     *
      * @param parent    parent node
      * @param child     child node
      * @return boolean  true if inherit filling only, false otherwise
@@ -264,7 +264,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     private boolean inheritFillingOnly(NodeRef parent, NodeRef child)
     {
         boolean result = false;
-        
+
         // if root category or
         // if in root of unfiled container or
         // if in root of hold container
@@ -274,8 +274,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             result = true;
         }
-        
-        return result;        
+
+        return result;
     }
 
     /**
@@ -326,15 +326,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     for (AccessPermission perm : origionalRecordPerms)
                     {
                         if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
-                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
+                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) &&
+                            (perm.getPermission().equals(RMPermissionModel.FILING) || perm.getPermission().equals(RMPermissionModel.FILE_RECORDS)) &&
+                            !origionalParentPerms.contains(perm))
                         {
-                            if ((perm.getPermission().equals(RMPermissionModel.FILING) ||
-                                 perm.getPermission().equals(RMPermissionModel.FILE_RECORDS)) &&
-                                !origionalParentPerms.contains(perm))
-                            {
-                                // then we can assume this is a permission we want to preserve
-                                keepPerms.add(perm);
-                            }
+                            // then we can assume this is a permission we want to preserve
+                            keepPerms.add(perm);
                         }
                     }
 
@@ -371,14 +368,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 {
                     // break inheritance
                     permissionService.setInheritParentPermissions(nodeRef, false);
-                    
+
                     // clear all existing permissions
                     permissionService.clearPermission(nodeRef, null);
 
                     // set extended reader permissions
                     permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
                     permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-                    
+
                     // remove owner
                     ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
 
@@ -413,7 +410,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 {
                     // set read permission to the parents of the node
                     setReadPermissionUp(nodeRef, authority);
-                    
+
                     // set the permission on the node and it's children
                     setPermissionDown(nodeRef, authority, permission);
                 }

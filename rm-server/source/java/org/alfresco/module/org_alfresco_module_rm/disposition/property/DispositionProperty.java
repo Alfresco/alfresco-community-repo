@@ -203,18 +203,15 @@ public class DispositionProperty extends BaseBehaviourBean
                             if (dispositionAction != null)
                             {
                                 DispositionActionDefinition daDefinition = dispositionAction.getDispositionActionDefinition();
-                                if (daDefinition != null)
+                                // check whether the next disposition action matches this disposition property
+                                if (daDefinition != null && propertyName.equals(daDefinition.getPeriodProperty()))
                                 {
-                                    // check whether the next disposition action matches this disposition property
-                                    if (propertyName.equals(daDefinition.getPeriodProperty()))
-                                    {
-                                        Period period = daDefinition.getPeriod();
-                                        Date updatedAsOf = period.getNextDate(updatedDateValue);
+                                    Period period = daDefinition.getPeriod();
+                                    Date updatedAsOf = period.getNextDate(updatedDateValue);
 
-                                        // update asOf date on the disposition action based on the new property value
-                                        NodeRef daNodeRef = dispositionAction.getNodeRef();
-                                        nodeService.setProperty(daNodeRef, PROP_DISPOSITION_AS_OF, updatedAsOf);
-                                    }
+                                    // update asOf date on the disposition action based on the new property value
+                                    NodeRef daNodeRef = dispositionAction.getNodeRef();
+                                    nodeService.setProperty(daNodeRef, PROP_DISPOSITION_AS_OF, updatedAsOf);
                                 }
                             }
                         }

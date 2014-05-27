@@ -65,7 +65,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      * <p>
      * Used to getnerate the capability error report.
      */
-    private static final ThreadLocal<Map<String, CapabilityReport>> capabilities = new ThreadLocal<Map<String, CapabilityReport>>()
+    private static final ThreadLocal<Map<String, CapabilityReport>> CAPABILITIES = new ThreadLocal<Map<String, CapabilityReport>>()
     {
         @Override
         protected Map<String, CapabilityReport> initialValue()
@@ -83,7 +83,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      */
     private static final CapabilityReport getCapabilityReport(String name)
     {
-        Map<String, CapabilityReport> map = RMMethodSecurityInterceptor.capabilities.get();
+        Map<String, CapabilityReport> map = RMMethodSecurityInterceptor.CAPABILITIES.get();
         CapabilityReport capability = map.get(name);
         if (capability == null)
         {
@@ -142,7 +142,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
 
         if (logger.isDebugEnabled())
         {
-            Collection<CapabilityReport> capabilities = RMMethodSecurityInterceptor.capabilities.get().values();
+            Collection<CapabilityReport> capabilities = RMMethodSecurityInterceptor.CAPABILITIES.get().values();
 
             if (!capabilities.isEmpty())
             {
@@ -185,7 +185,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         try
         {
             // clear the capability report information
-            RMMethodSecurityInterceptor.capabilities.remove();
+            RMMethodSecurityInterceptor.CAPABILITIES.remove();
 
             result = super.beforeInvocation(object);
         }

@@ -97,7 +97,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executeInternal() throws Throwable
+    protected void executeInternal()
     {
         // get current schema version
         int currentSchema = getCurrentSchema();

@@ -392,7 +392,7 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
             {
                 RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
                 {
-                    public Void execute() throws Throwable
+                    public Void execute()
                     {
                         try
                         {

@@ -107,7 +107,7 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                     RetryingTransactionCallback<Boolean> txCallbackSendEmail = new RetryingTransactionCallback<Boolean>()
                     {
                         // Set the notification issued property.
-                        public Boolean execute() throws Throwable
+                        public Boolean execute()
                         {
                             // Send notification
                             recordsManagementNotificationHelper.recordsDueForReviewEmailNotification(resultNodes);
@@ -119,7 +119,7 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                     RetryingTransactionCallback<Boolean> txUpdateNodesCallback = new RetryingTransactionCallback<Boolean>()
                     {
                         // Set the notification issued property.
-                        public Boolean execute() throws Throwable
+                        public Boolean execute()
                         {
                             for (NodeRef node : resultNodes)
                             {

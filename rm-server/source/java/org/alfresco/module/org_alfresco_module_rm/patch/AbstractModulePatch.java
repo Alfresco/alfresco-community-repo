@@ -233,7 +233,7 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
          * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
          */
         @Override
-        public Void execute() throws Throwable
+        public Void execute()
         {
             applyInternal();
             return null;

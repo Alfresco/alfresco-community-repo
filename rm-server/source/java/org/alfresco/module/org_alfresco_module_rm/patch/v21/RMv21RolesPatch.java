@@ -67,7 +67,7 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
      * @see org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent#executePatch()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
 

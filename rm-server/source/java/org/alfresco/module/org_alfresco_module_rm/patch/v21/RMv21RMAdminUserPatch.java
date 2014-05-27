@@ -109,7 +109,7 @@ public class RMv21RMAdminUserPatch extends RMv21PatchComponent implements BeanNa
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         String user = filePlanAuthenticationService.getRmAdminUserName();
         String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);

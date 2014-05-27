@@ -66,7 +66,7 @@ public class RMv2ModelPatch extends ModulePatchComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         updateQName(QName.createQName(DOD_URI, "filePlan"), TYPE_FILE_PLAN, "TYPE");
         updateQName(QName.createQName(DOD_URI, "recordCategory"), TYPE_RECORD_CATEGORY, "TYPE");

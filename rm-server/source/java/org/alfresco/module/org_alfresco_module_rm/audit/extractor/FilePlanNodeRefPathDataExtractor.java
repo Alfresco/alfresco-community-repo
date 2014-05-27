@@ -68,7 +68,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
         return nodeService.hasAspect((NodeRef)data, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT);
     }
 
-    public Serializable extractData(Serializable value) throws Throwable
+    public Serializable extractData(Serializable value)
     {
         NodeRef nodeRef = (NodeRef) value;
 

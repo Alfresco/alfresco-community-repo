@@ -82,7 +82,7 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         if (siteService.getSite(RM_SITE_ID) != null)
         {

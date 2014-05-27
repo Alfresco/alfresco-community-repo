@@ -201,7 +201,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
             new RetryingTransactionHelper.RetryingTransactionCallback<List<NodeRef>>()
             {
                 @Override
-                public List<NodeRef> execute() throws Throwable
+                public List<NodeRef> execute()
                 {
                     // Build the query string
                     StringBuilder sb = new StringBuilder();
@@ -251,7 +251,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
             new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
-                public Void execute() throws Throwable
+                public Void execute()
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -287,7 +287,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
             new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
-                public Void execute() throws Throwable
+                public Void execute()
                 {
                     behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
                     try
@@ -358,7 +358,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
             new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
-                public Void execute() throws Throwable
+                public Void execute()
                 {
                     behaviourFilter.disableBehaviour(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION);
                     try

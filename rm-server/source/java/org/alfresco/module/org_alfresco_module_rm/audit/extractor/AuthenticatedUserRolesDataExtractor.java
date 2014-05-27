@@ -84,7 +84,7 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
     /**
      * @see org.alfresco.repo.audit.extractor.DataExtractor#extractData(java.io.Serializable)
      */
-    public Serializable extractData(Serializable value) throws Throwable
+    public Serializable extractData(Serializable value)
     {
         NodeRef nodeRef = (NodeRef) value;
         String user = AuthenticationUtil.getFullyAuthenticatedUser();

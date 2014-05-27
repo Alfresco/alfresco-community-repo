@@ -82,7 +82,7 @@ public class NotificationTemplatePatch_v21 extends RMv21PatchComponent
     }
 
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, CONFIG_NODEID);
         // get the parent node

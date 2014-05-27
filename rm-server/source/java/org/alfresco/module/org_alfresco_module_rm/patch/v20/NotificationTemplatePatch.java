@@ -126,7 +126,7 @@ public class NotificationTemplatePatch extends ModulePatchComponent
      * @see org.alfresco.repo.module.AbstractModuleComponent#executeInternal()
      */
     @Override
-    protected void executePatch() throws Throwable
+    protected void executePatch()
     {
         NodeRef supersededTemplate = notificationHelper.getSupersededTemplate();
         updateTemplate(supersededTemplate, PATH_SUPERSEDED);

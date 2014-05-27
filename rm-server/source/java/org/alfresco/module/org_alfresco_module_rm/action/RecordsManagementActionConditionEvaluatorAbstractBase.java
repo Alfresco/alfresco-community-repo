@@ -32,26 +32,26 @@ import org.springframework.beans.factory.BeanNameAware;
 
 /**
  * Records management action condition evaluator abstract base implementation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
-public abstract class RecordsManagementActionConditionEvaluatorAbstractBase extends ActionConditionEvaluatorAbstractBase 
+public abstract class RecordsManagementActionConditionEvaluatorAbstractBase extends ActionConditionEvaluatorAbstractBase
                                                                             implements RecordsManagementActionCondition,
                                                                                        BeanNameAware
 {
     /** records management action service */
     protected RecordsManagementActionService recordsManagementActionService;
-    
+
     /** File Plan Service */
     protected FilePlanService filePlanService;
-    
+
     /** bean name */
     private String name;
-    
+
     /** public condition */
     protected boolean publicCondition = true;
-    
+
     private RetryingTransactionHelper retryingTransactionHelper;
 
     /**
@@ -61,11 +61,11 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     {
         this.recordsManagementActionService = recordsManagementActionService;
     }
-    
+
     /**
      * @param filePlanService	file plan service
      */
-    public void setFilePlanService(FilePlanService filePlanService) 
+    public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
@@ -93,7 +93,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
             {
                 RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
                 {
-                    public Void execute() throws Throwable
+                    public Void execute()
                     {
                         recordsManagementActionService.register(RecordsManagementActionConditionEvaluatorAbstractBase.this);
 
@@ -107,13 +107,13 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
         }, AuthenticationUtil.getSystemUserName());
 
     }
-    
+
     @Override
     public void setPublicCondition(boolean publicCondition)
     {
         this.publicCondition = publicCondition;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.CommonResourceAbstractBase#setBeanName(java.lang.String)
      */
@@ -123,7 +123,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
         this.name = name;
         super.setBeanName(name);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAction#getName()
      */
@@ -131,7 +131,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     {
         return this.name;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getLabel()
      */
@@ -139,19 +139,19 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     {
         return getActionConditionDefintion().getTitle();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction#getDescription()
      */
     public String getDescription()
-    {        
+    {
         return getActionConditionDefintion().getDescription();
     }
-    
+
     /**
      * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#getActionConditionDefintion()
-     * 
-     * TODO base class should provide "createActionDefinition" method that can be over-ridden like the ActionExecuter 
+     *
+     * TODO base class should provide "createActionDefinition" method that can be over-ridden like the ActionExecuter
      * base class to prevent duplication of code and a cleaner extension.
      */
     @Override
@@ -168,7 +168,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
         }
         return this.actionConditionDefinition;
     }
-    
+
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#addParameterDefinitions(java.util.List)
      */
@@ -186,7 +186,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     {
         return publicCondition;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getRecordsManagementActionConditionDefinition()
      */

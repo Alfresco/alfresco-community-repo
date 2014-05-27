@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
@@ -59,7 +60,7 @@ public class RMEntryVoter extends RMSecurityCommon
     private CapabilityService capabilityService;
 
     /** Policy map */
-    private HashMap<String, Policy> policies = new HashMap<String, Policy>();
+    private Map<String, Policy> policies = new HashMap<String, Policy>();
 
     /**
      * @param capabilityService     capability service

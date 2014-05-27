@@ -50,12 +50,15 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     private static final String LOV_CONSTRAINT_VALUE = "listconstraint";
     private List<String> allowedValues;
     private List<String> allowedValuesUpper;
-    private MatchLogic matchLogic = MatchLogic.AND; // defined match logic used by caveat matching (default = "AND")
+    // defined match logic used by caveat matching (default = "AND")
+    private MatchLogic matchLogic = MatchLogic.AND;
 
     public enum MatchLogic
     {
-        AND, // closed marking - all values must match
-        OR;  // open marking   - at least one value must match
+        // closed marking - all values must match
+        AND,
+        // open marking   - at least one value must match
+        OR;
     }
 
     // note: alternative to static init could be to use 'registered' constraint
@@ -140,7 +143,8 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         String runAsUser = AuthenticationUtil.getRunAsUser();
         if ((runAsUser != null) && (! runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
         {
-            List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getType()); // get allowed values for current user
+            // get allowed values for current user
+            List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getType());
 
             List<String> filteredList = new ArrayList<String>(allowedForUser.size());
             for (String allowed : allowedForUser)

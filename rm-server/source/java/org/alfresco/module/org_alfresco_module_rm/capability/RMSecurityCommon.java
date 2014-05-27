@@ -57,7 +57,8 @@ public class RMSecurityCommon implements ApplicationContextAware
     private static Log logger = LogFactory.getLog(RMSecurityCommon.class);
 
     /** Services */
-    protected NodeService nodeService; //This is the internal NodeService -- no permission checks
+    //This is the internal NodeService -- no permission checks
+    protected NodeService nodeService;
     protected PermissionService permissionService;
     protected RMCaveatConfigComponent caveatConfigComponent;
     private FilePlanService filePlanService;

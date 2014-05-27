@@ -36,7 +36,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 @BehaviourBean
 (
-   defaultType = "rma:ghosted" // optional
+   // optional
+   defaultType = "rma:ghosted"
 )
 public class GhostedAspect extends    BaseBehaviourBean
                            implements ContentServicePolicies.OnContentUpdatePolicy
@@ -52,10 +53,14 @@ public class GhostedAspect extends    BaseBehaviourBean
     @Override
     @Behaviour
     (
-       kind = BehaviourKind.CLASS,                                // required, use ASSOC for association behaviors
-       notificationFrequency = NotificationFrequency.EVERY_EVENT, // (defaults to EVERY_EVENT)
-       policy = "alf:onContentUpdate",                            // (defaults to alf:<methodname>)
-       type = "rma:ghosted"                                       // required, unless defaultType set
+       // required, use ASSOC for association behaviors
+       kind = BehaviourKind.CLASS,
+       // (defaults to EVERY_EVENT)
+       notificationFrequency = NotificationFrequency.EVERY_EVENT,
+       // (defaults to alf:<methodname>)
+       policy = "alf:onContentUpdate",
+       // required, unless defaultType set
+       type = "rma:ghosted"
 
        // isService (default false)
        // name (only needs to specified if associated behvaiour object needs to be accessed)

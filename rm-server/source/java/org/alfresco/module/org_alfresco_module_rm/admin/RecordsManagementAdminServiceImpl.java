@@ -1239,7 +1239,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, label));
         }
 
-        NodeRef modelRef = getCustomModelRef(""); // defaults to RM_CUSTOM_URI
+        // defaults to RM_CUSTOM_URI
+        NodeRef modelRef = getCustomModelRef("");
         M2Model deserializedModel = readCustomContentModel(modelRef);
 
         String aspectName = RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
@@ -1309,7 +1310,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
            //throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, compoundID));
         }
 
-        NodeRef modelRef = getCustomModelRef(""); // defaults to RM_CUSTOM_URI
+        // defaults to RM_CUSTOM_URI
+        NodeRef modelRef = getCustomModelRef("");
         M2Model deserializedModel = readCustomContentModel(modelRef);
 
         String aspectName = RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
@@ -1390,7 +1392,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CONNOT_FIND_ASSOC_DEF, refQName));
         }
 
-        NodeRef modelRef = getCustomModelRef(""); // defaults to RM_CUSTOM_URI
+        // defaults to RM_CUSTOM_URI
+        NodeRef modelRef = getCustomModelRef("");
         M2Model deserializedModel = readCustomContentModel(modelRef);
 
         M2Aspect customAssocsAspect = deserializedModel.getAspect(RMC_CUSTOM_ASSOCS);

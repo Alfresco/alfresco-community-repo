@@ -132,7 +132,8 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                     /**
                      * Now do the work, one action in each transaction
                      */
-                    retryingTransactionHelper.setMaxRetries(0);   // don't retry the send email
+                    // don't retry the send email
+                    retryingTransactionHelper.setMaxRetries(0);
                     retryingTransactionHelper.doInTransaction(txCallbackSendEmail);
                     retryingTransactionHelper.setMaxRetries(10);
                     retryingTransactionHelper.doInTransaction(txUpdateNodesCallback);

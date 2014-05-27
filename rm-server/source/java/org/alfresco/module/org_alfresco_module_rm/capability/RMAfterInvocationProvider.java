@@ -739,9 +739,11 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                         logger.debug("\t" + cad.typeString + " test on " + testNodeRef + " from " + nextObject.getClass().getName());
                     }
 
-                    if (isUnfiltered(testNodeRef))      // Null allows
+                    // Null allows
+                    if (isUnfiltered(testNodeRef))
                     {
-                        continue;                       // Continue to next ConfigAttributeDefintion
+                        // Continue to next ConfigAttributeDefintion
+                        continue;
                     }
 
                     if (allowed &&
@@ -749,7 +751,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                         checkRead(testNodeRef) != AccessDecisionVoter.ACCESS_GRANTED)
                     {
                         allowed = false;
-                        break;                          // No point evaluating more ConfigAttributeDefintions
+                        // No point evaluating more ConfigAttributeDefintions
+                        break;
                     }
                 }
             }

@@ -870,7 +870,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     if (values.containsKey(RM_AUDIT_DATA_LOGIN_ERROR))
                     {
                         eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
-                        fullName = user;            // The user didn't log in
+                        // The user didn't log in
+                        fullName = user;
                     }
                     else
                     {
@@ -884,7 +885,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     if (values.containsKey(DOD5015_AUDIT_DATA_LOGIN_ERROR))
                     {
                         eventName = RM_AUDIT_EVENT_LOGIN_FAILURE;
-                        fullName = user;            // The user didn't log in
+                        // The user didn't log in
+                        fullName = user;
                     }
                     else
                     {
@@ -908,7 +910,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         timestamp,
                         user,
                         fullName,
-                        userRoles,              // A concatenated string of roles
+                        // A concatenated string of roles
+                        userRoles,
                         nodeRef,
                         nodeName,
                         nodeType,
@@ -979,7 +982,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
         Long toTime = getToDateTime(params.getDateTo());
         NodeRef nodeRef = params.getNodeRef();
         int maxEntries = params.getMaxEntries();
-        boolean forward = maxEntries > 0 ? false : true;        // Reverse order if the results are limited
+        // Reverse order if the results are limited
+        boolean forward = maxEntries > 0 ? false : true;
 
         // start the audit trail report
         writeAuditTrailHeader(writer, params, reportFormat);
@@ -1370,7 +1374,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     {
                         propDataType = propDef.getDataType().getName();
                     }
-                    
+
                     if(DataTypeDefinition.MLTEXT.equals(propDataType))
                     {
                         writer.write(values.getFirst() == null ? "&lt;none&gt;" : StringEscapeUtils.escapeHtml(convertToMlText((Map)values.getFirst()).getDefaultValue()));
@@ -1441,10 +1445,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                         {
                             propDataType = propDef.getDataType().getName();
                         }
-                        
+
                         // handle output of mltext properties
                         if(DataTypeDefinition.MLTEXT.equals(propDataType))
-                        {                        
+                        {
                             changedValue.put("previous", values.getFirst() == null ? "" : convertToMlText((Map)values.getFirst()).getDefaultValue());
                             changedValue.put("new", values.getSecond() == null ? "" : convertToMlText((Map)values.getSecond()).getDefaultValue());
                         }
@@ -1468,10 +1472,10 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
             }
         }
     }
-    
+
     /**
      * Helper method to convert value to MLText
-     * 
+     *
      * @param map   map of locale's and values
      * @return {@link MLText}   multilingual text value
      */

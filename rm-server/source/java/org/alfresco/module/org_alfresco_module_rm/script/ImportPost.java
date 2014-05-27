@@ -203,7 +203,8 @@ public class ImportPost extends DeclarativeWebScript
 
                 // copy contents of uploaded file to temp ACP file
                 FileOutputStream fos = new FileOutputStream(acpFile);
-                FileCopyUtils.copy(acpContent.getInputStream(), fos);   // NOTE: this method closes both streams
+                // NOTE: this method closes both streams
+                FileCopyUtils.copy(acpContent.getInputStream(), fos);
 
                 if (logger.isDebugEnabled())
                 {

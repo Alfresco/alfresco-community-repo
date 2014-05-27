@@ -58,7 +58,7 @@ public class RecordComponentIdentifierAspect extends    BaseBehaviourBean
                                                         CopyServicePolicies.OnCopyCompletePolicy
 {
     /** I18N */
-    private final static String MSG_SET_ID = "rm.service.set-id";
+    private static final String MSG_SET_ID = "rm.service.set-id";
 
     /** attribute context value */
     private static final String CONTEXT_VALUE = "rma:identifier";

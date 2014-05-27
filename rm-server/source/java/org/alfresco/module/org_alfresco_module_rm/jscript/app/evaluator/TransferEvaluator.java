@@ -28,14 +28,14 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Evaluates whether the node in question is transferring is either a transfer or accession.
- * 
+ *
  * @author Roy Wetherall
  */
 public class TransferEvaluator extends BaseEvaluator
 {
     /** indicates whether we are looking for accessions or transfers */
     private boolean transferAccessionIndicator = false;
-    
+
     /**
      * @param transferAccessionIndicator    true if accession, false otherwise
      */
@@ -43,7 +43,7 @@ public class TransferEvaluator extends BaseEvaluator
     {
         this.transferAccessionIndicator = transferAccessionIndicator;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.jscript.app.BaseEvaluator#evaluateImpl(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -51,29 +51,29 @@ public class TransferEvaluator extends BaseEvaluator
     protected boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
-        
+
         NodeRef transfer = getTransferNodeRef(nodeRef);
         if (transfer != null)
         {
             boolean actual = ((Boolean)nodeService.getProperty(transfer, RecordsManagementModel.PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
             result = (actual == transferAccessionIndicator);
         }
-        
+
         return result;
     }
-    
+
     /**
      * Helper method to get the transfer node reference.
      * <p>
      * Takes into account records in tranferred record folders.
-     * 
+     *
      * @param nodeRef               node reference
      * @return {@link NodeRef}      transfer node
      */
     private NodeRef getTransferNodeRef(NodeRef nodeRef)
     {
         NodeRef result = null;
-        
+
         List<ChildAssociationRef> parents = nodeService.getParentAssocs(nodeRef, RecordsManagementModel.ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
         if (parents.size() == 1)
         {
@@ -90,10 +90,10 @@ public class TransferEvaluator extends BaseEvaluator
                     {
                         break;
                     }
-                };
+                }
             }
         }
-        
+
         return result;
     }
 }

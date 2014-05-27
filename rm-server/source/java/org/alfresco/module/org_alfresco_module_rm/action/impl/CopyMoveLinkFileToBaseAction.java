@@ -88,7 +88,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
         String actionName = action.getActionDefinitionName();
         if (isOkToProceedWithAction(actionedUponNodeRef, actionName))
         {
-            QName actionedUponType = nodeService.getType(actionedUponNodeRef);;
+            QName actionedUponType = nodeService.getType(actionedUponNodeRef);
 
             boolean targetIsUnfiledRecords;
             if (ACTION_FILETO.equals(action.getActionDefinitionName()))

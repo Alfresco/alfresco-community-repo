@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import net.sf.acegisecurity.ConfigAttribute;
@@ -40,19 +41,19 @@ public class ConfigAttributeDefinition
     public static final String RM_CAP = "RM_CAP";
     public static final String RM_ABSTAIN = "RM_ABSTAIN";
     public static final String RM_QUERY = "RM_QUERY";
-    
+
     private String typeString;
 
     private String policyName;
 
     private SimplePermissionReference required;
 
-    private HashMap<Integer, Integer> parameters = new HashMap<Integer, Integer>(2, 1.0f);
+    private Map<Integer, Integer> parameters = new HashMap<Integer, Integer>(2, 1.0f);
 
     private boolean parent = false;
-    
+
     public ConfigAttributeDefinition(ConfigAttribute attr, NamespacePrefixResolver namespacePrefixResolver)
-    {        
+    {
         StringTokenizer st = new StringTokenizer(attr.getAttribute(), ".", false);
         if (st.countTokens() < 1)
         {
@@ -97,27 +98,27 @@ public class ConfigAttributeDefinition
             }
         }
     }
-    
+
     public String getTypeString()
     {
         return typeString;
     }
-    
+
     public String getPolicyName()
     {
         return policyName;
     }
-    
+
     public SimplePermissionReference getRequired()
     {
         return required;
     }
-    
-    public HashMap<Integer, Integer> getParameters()
+
+    public Map<Integer, Integer> getParameters()
     {
         return parameters;
     }
-    
+
     public boolean isParent()
     {
         return parent;

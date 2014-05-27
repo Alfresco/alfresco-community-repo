@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.fileplan;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -375,7 +376,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /**
      * Helper method to build a <b>NodeRef</b> path from the node to the RM root
      */
-    private void getNodeRefPathRecursive(NodeRef nodeRef, LinkedList<NodeRef> nodeRefPath)
+    private void getNodeRefPathRecursive(NodeRef nodeRef, Deque<NodeRef> nodeRefPath)
     {
         if (!isFilePlanComponent(nodeRef))
         {

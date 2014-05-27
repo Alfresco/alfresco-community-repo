@@ -153,9 +153,10 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
 
       case "transfers":
       case "holds":
+         filterParams.variablePath = false;
+         filterParams.filter = "containerFilter";
          if (filterData == null)
          {
-            filterParams.filter = "containerFilter";
             filterParams.query = "";
          }
          else
@@ -166,6 +167,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
 
       case "unfiledRecords":
          filterParams.variablePath = false;
+         filterParams.filter = "containerFilter";
          if (filterData == null)
          {
             filterParams.query = "";

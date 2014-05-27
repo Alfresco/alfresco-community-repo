@@ -219,10 +219,16 @@ function rm_doclist_main()
    // Common or variable parent container?
    var parent = null;
 
-   if (!filterParams.variablePath || filterParams.filter === "containerFilter")
+   if (!filterParams.variablePath)
    {
+      var node = parsedArgs.pathNode;
+      // Display the toolbar actions for the child containers within unfiled records container and holds correctly
+      if (filterParams.filter === "containerFilter" && args.filterData !== null)
+      {
+         node = search.findNode(args.filterData);
+      }
       // Parent node permissions (and Site role if applicable)
-      parent = Evaluator.run(parsedArgs.pathNode, true);
+      parent = Evaluator.run(node, true);
    }
 
    var thumbnail = null,

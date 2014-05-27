@@ -33,7 +33,7 @@ import org.springframework.beans.factory.BeanNameAware;
 public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
 {
     /** logger */
-    protected static Log logger = LogFactory.getLog(ModulePatch.class);
+    protected static final Log logger = LogFactory.getLog(ModulePatch.class);
 
     /** module patch service */
     private ModulePatchExecuter modulePatchExecuter;

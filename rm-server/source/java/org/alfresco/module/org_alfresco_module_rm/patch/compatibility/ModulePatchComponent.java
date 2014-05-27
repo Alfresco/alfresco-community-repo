@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class ModulePatchComponent extends AbstractModuleComponent
 {
     /** logger */
-    protected static Log logger = LogFactory.getLog(ModulePatchComponent.class);
+    protected static final Log logger = LogFactory.getLog(ModulePatchComponent.class);
 
     /** Retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;

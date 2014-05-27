@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
 {
     /** logger */
-    protected static Log logger = LogFactory.getLog(RMMethodSecurityInterceptor.class);
+    protected static final Log logger = LogFactory.getLog(RMMethodSecurityInterceptor.class);
 
     /**
      * Helper class to hold capability report information

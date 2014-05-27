@@ -56,11 +56,11 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
     private static Log logger = LogFactory.getLog(RecordFolderServiceImpl.class);
 
     /** I18N */
-    private final static String MSG_RECORD_FOLDER_EXPECTED = "rm.service.record-folder-expected";
-    private final static String MSG_PARENT_RECORD_FOLDER_ROOT = "rm.service.parent-record-folder-root";
-    private final static String MSG_PARENT_RECORD_FOLDER_TYPE = "rm.service.parent-record-folder-type";
-    private final static String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
-    private final static String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.service.close-record-folder-not-folder";
+    private static final String MSG_RECORD_FOLDER_EXPECTED = "rm.service.record-folder-expected";
+    private static final String MSG_PARENT_RECORD_FOLDER_ROOT = "rm.service.parent-record-folder-root";
+    private static final String MSG_PARENT_RECORD_FOLDER_TYPE = "rm.service.parent-record-folder-type";
+    private static final String MSG_RECORD_FOLDER_TYPE = "rm.service.record-folder-type";
+    private static final String MSG_CLOSE_RECORD_FOLDER_NOT_FOLDER = "rm.service.close-record-folder-not-folder";
 
     /** Disposition service */
     private DispositionService dispositionService;

@@ -54,14 +54,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                                  implements FilePlanService
 {
 	/** I18N */
-    private final static String MSG_DUP_ROOT = "rm.service.dup-root";
-    private final static String MSG_ROOT_TYPE = "rm.service.root-type";
-    private final static String MSG_PATH_NODE = "rm.service.path-node";
-    private final static String MSG_INVALID_RM_NODE = "rm.service.invalid-rm-node";
-    private final static String MSG_NO_ROOT = "rm.service.no-root";
-    private final static String MSG_CONTAINER_PARENT_TYPE= "rm.service.container-parent-type";
-    private final static String MSG_CONTAINER_TYPE = "rm.service.container-type";
-    private final static String MSG_CONTAINER_EXPECTED = "rm.service.container-expected";
+    private static final String MSG_DUP_ROOT = "rm.service.dup-root";
+    private static final String MSG_ROOT_TYPE = "rm.service.root-type";
+    private static final String MSG_PATH_NODE = "rm.service.path-node";
+    private static final String MSG_INVALID_RM_NODE = "rm.service.invalid-rm-node";
+    private static final String MSG_NO_ROOT = "rm.service.no-root";
+    private static final String MSG_CONTAINER_PARENT_TYPE= "rm.service.container-parent-type";
+    private static final String MSG_CONTAINER_TYPE = "rm.service.container-type";
+    private static final String MSG_CONTAINER_EXPECTED = "rm.service.container-expected";
 
     /** File plan containers */
     private static final String NAME_UNFILED_CONTAINER = "Unfiled Records";
@@ -73,10 +73,10 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
 
     /** node DAO */
     private NodeDAO nodeDAO;
-    
+
     /** file plan permission service */
     private FilePlanPermissionService filePlanPermissionService;
-    
+
     /**
      * @param nodeDAO   node DAO
      */
@@ -84,7 +84,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         this.nodeDAO = nodeDAO;
     }
-    
+
     /**
      * @return  site service
      */
@@ -92,14 +92,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         return (SiteService)applicationContext.getBean("siteService");
     }
-    
+
     /**
      * @param filePlanPermissionService file plan permission service
      */
     public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
     {
         this.filePlanPermissionService = filePlanPermissionService;
-    }   
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlans()
@@ -146,7 +146,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         NodeRef filePlan = null;
         SiteService siteService = getSiteService();
-        
+
         SiteInfo siteInfo = siteService.getSite(siteId);
         if (siteInfo != null)
         {
@@ -282,7 +282,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         QName.createQName(RM_URI, containerName),
                         containerType,
                         properties).getChildRef();
-        
+
         // setup the permissions
         filePlanPermissionService.setupPermissions(filePlan, container);
 

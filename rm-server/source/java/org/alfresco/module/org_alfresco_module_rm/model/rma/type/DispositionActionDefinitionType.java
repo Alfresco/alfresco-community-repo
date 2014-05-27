@@ -50,7 +50,7 @@ public class DispositionActionDefinitionType extends    BaseBehaviourBean
                                              implements NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** I18N */
-    private final static String MSG_UPDATE_DISP_ACT_DEF = "rm.service.update-disposition-action-def";
+    private static final String MSG_UPDATE_DISP_ACT_DEF = "rm.service.update-disposition-action-def";
 
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)

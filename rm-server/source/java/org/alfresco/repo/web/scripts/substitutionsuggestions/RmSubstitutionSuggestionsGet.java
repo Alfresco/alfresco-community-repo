@@ -50,18 +50,18 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
 {
-    private final static String FRAGMENT_PARAMETER = "fragment";
-    private final static String PATH_PARAMETER = "path";
-    private final static String UNFILED_PARAMETER = "unfiled";
-    private final static String UNFILED = "true";
+    private static final String FRAGMENT_PARAMETER = "fragment";
+    private static final String PATH_PARAMETER = "path";
+    private static final String UNFILED_PARAMETER = "unfiled";
+    private static final String UNFILED = "true";
 
-    private final static String SUBSTITUTIONS_MODEL_KEY = "substitutions";
+    private static final String SUBSTITUTIONS_MODEL_KEY = "substitutions";
 
-    private final static String CREATE_CAPABILITY = "Create";
-    private final static String VIEW_CAPABILITY = "ViewRecords";
+    private static final String CREATE_CAPABILITY = "Create";
+    private static final String VIEW_CAPABILITY = "ViewRecords";
 
-    private final static int DEFAULT_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH = 0;
-    private final static int DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS = 10;
+    private static final int DEFAULT_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH = 0;
+    private static final int DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS = 10;
 
     private int pathSubstitutionMaximumNumberSuggestions = DEFAULT_MAXIMUM_NUMBER_PATH_SUGGESTIONS;
     private int substitutionMinimumFragmentSize = DEFAULT_SUBSTITUTION_MINIMUM_FRAGMENT_LENGTH;

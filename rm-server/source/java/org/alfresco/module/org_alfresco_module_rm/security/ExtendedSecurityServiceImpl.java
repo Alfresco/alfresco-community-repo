@@ -47,8 +47,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                                                     RecordsManagementModel
 {
     /** Ad hoc properties used for reference counting */
-    private final static QName PROP_EXTENDED_READER_ROLE = QName.createQName(RM_URI, "extendedReaderRole");
-    private final static QName PROP_EXTENDED_WRITER_ROLE = QName.createQName(RM_URI, "extendedWriterRole");
+    private static final QName PROP_EXTENDED_READER_ROLE = QName.createQName(RM_URI, "extendedReaderRole");
+    private static final QName PROP_EXTENDED_WRITER_ROLE = QName.createQName(RM_URI, "extendedWriterRole");
 
     /** File plan service */
     private FilePlanService filePlanService;

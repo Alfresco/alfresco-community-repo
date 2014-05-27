@@ -28,7 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -61,9 +60,6 @@ public abstract class BaseEvaluator implements RecordsManagementModel
 
     /** Capability service */
     protected CapabilityService capabilityService;
-
-    /** Freeze service */
-    protected FreezeService freezeService;
 
     /** File plan component kinds */
     protected Set<FilePlanComponentKind> kinds;
@@ -118,14 +114,6 @@ public abstract class BaseEvaluator implements RecordsManagementModel
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
-    }
-
-    /**
-     * @param freezeService freeze service
-     */
-    public void setFreezeService(FreezeService freezeService)
-    {
-       this.freezeService = freezeService;
     }
 
     /**

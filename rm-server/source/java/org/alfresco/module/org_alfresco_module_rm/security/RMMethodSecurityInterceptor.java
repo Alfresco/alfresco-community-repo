@@ -81,7 +81,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      * @param name  capability name
      * @return {@link CapabilityReport} object containing information about the capability
      */
-    private static final CapabilityReport getCapabilityReport(String name)
+    private static CapabilityReport getCapabilityReport(String name)
     {
         Map<String, CapabilityReport> map = RMMethodSecurityInterceptor.CAPABILITIES.get();
         CapabilityReport capability = map.get(name);

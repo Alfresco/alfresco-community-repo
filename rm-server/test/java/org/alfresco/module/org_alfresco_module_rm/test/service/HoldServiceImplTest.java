@@ -147,7 +147,7 @@ public class HoldServiceImplTest extends BaseRMTestCase
         });
     }
 
-    public void testAddRecordFolderOrRecordToHoldWithoutFilingPermission()
+    public void testAddRecordFolderToHoldWithoutFilingPermissionOnRecordFolder()
     {
         // Create hold
         final NodeRef hold = holdService.createHold(filePlan, "hold one", "I have my reasons", "but I'll not describe them here!");
@@ -166,6 +166,40 @@ public class HoldServiceImplTest extends BaseRMTestCase
 
                // Give the user only read permissions on the record folder
                permissionService.setPermission(rmFolder, userName, RMPermissionModel.READ_RECORDS, true);
+
+               return null;
+           }
+        }, "admin");
+
+        doTestInTransaction(new FailureTest(AlfrescoRuntimeException.class)
+        {
+            @Override
+            public void run() throws Exception
+            {
+                holdService.addToHold(hold, rmFolder);
+            }
+        }, userName);
+    }
+
+    public void testAddRecordFolderToHoldWithoutFilingPermissionOnHold()
+    {
+        // Create hold
+        final NodeRef hold = holdService.createHold(filePlan, "hold one", "I have my reasons", "but I'll not describe them here!");
+        assertNotNull(hold);
+
+        doTestInTransaction(new Test<Void>()
+        {
+           @Override
+           public Void run() throws Exception
+           {
+               // Add the user to the RM Manager role
+               filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_RECORDS_MANAGER, userName);
+
+               // Give the user read permissions on the hold
+               permissionService.setPermission(hold, userName, RMPermissionModel.READ_RECORDS, true);
+
+               // Give the user filing permissions on the record folder
+               permissionService.setPermission(rmFolder, userName, RMPermissionModel.FILING, true);
 
                return null;
            }

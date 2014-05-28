@@ -17,9 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
  
-/*
- * There is an Enterprise overlay for this file
- */
+/* Enterprise overlay */
 
 package org.alfresco.web.ui.repo.tag;
 
@@ -74,8 +72,8 @@ public class PageTag extends TagSupport
       // ajax pickers
       "/scripts/ajax/picker.js",
       "/scripts/ajax/tagger.js",
-       // validation handling
-       "/scripts/validation.js"
+      // validation handling
+      "/scripts/validation.js"
    };
    
    private final static String[] CSS = 
@@ -88,20 +86,10 @@ public class PageTag extends TagSupport
  * Please ensure you understand the terms of the license before changing the contents of this file.
  */
    
-   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/assets/images/logos/community-4.2.png";
-   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/assets/images/logos/community-4.2.png";
    private final static String ALF_URL   = "http://www.alfresco.com";
-   private final static String ALF_TEXT  = "Alfresco Community";
-   private final static String ALF_COPY  = "Supplied free of charge with " +
-        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#support'>no support</a>, " +
-        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#certification'>no certification</a>, " +
-        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#maintenance'>no maintenance</a>, " +
-        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#warranty'>no warranty</a> and " +
-        "<a class='footer' href='http://www.alfresco.com/services/support/communityterms/#indemnity'>no indemnity</a> by " +
-        "<a class='footer' href='http://www.alfresco.com'>Alfresco</a> or its " +
-        "<a class='footer' href='http://www.alfresco.com/partners/'>Certified Partners</a>. " +
-        "<a class='footer' href='http://www.alfresco.com/services/support/'>Click here for support</a>. " +
-        "Alfresco Software Inc. &copy; 2005-2014 All rights reserved.";
+   private final static String ALF_LOGO  = "/images/logo/alfresco_enterprise.gif";
+   private final static String ALF_TEXT  = "Alfresco Enterprise";
+   private final static String ALF_COPY  = "Certified and supported. Alfresco Software Inc. &copy; 2005-2014 All rights reserved.";
    
    private final static Log logger = LogFactory.getLog(PageTag.class);
    private static String alfresco = null;
@@ -340,12 +328,12 @@ public class PageTag extends TagSupport
    {
       if (PageTag.alfresco == null)
       {
-         final HttpServletRequest req = (HttpServletRequest)pageContext.getRequest();
+         final String reqPath = ((HttpServletRequest)pageContext.getRequest()).getContextPath();
          PageTag.alfresco = ("<center><table style='margin: 0px auto;'><tr><td>" +
                              "<a href='" + ALF_URL + "'>" +
-                             "<img style='vertical-align:middle;border-width:0px;' width='176' height='26' alt='' title='" + ALF_TEXT + 
-                             "' src='" + ("http".equals(req.getScheme()) ? ALF_LOGO_HTTP : ALF_LOGO_HTTPS) + 
-                             "'>" +"</a></td><td align='center'>" +
+                             "<img style='vertical-align:middle;border-width:0px;' width='164' height='26' alt='' title='" + ALF_TEXT + 
+                             "' src='" + reqPath + ALF_LOGO + "'/>" +
+                             "</a></td><td align='center'>" +
                              "<span class='footer'>" + ALF_COPY +
                              "</span></td><td></td></tr></table></center>");
       }

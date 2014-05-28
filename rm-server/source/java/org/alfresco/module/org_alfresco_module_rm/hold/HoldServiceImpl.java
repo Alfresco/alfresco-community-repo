@@ -455,25 +455,35 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         if (!isRecord(nodeRef) && !isRecordFolder(nodeRef))
         {
-            throw new AlfrescoRuntimeException("Can only add records or record folders to a hold.");
+            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            throw new AlfrescoRuntimeException("'" + nodeName + "' is neither a record nor a record folder. Only records or record folders can be added to a hold.");
         }
 
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
         {
-            throw new AlfrescoRuntimeException("Filing permission on the record or record folder is required.");
+            String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            throw new AlfrescoRuntimeException("Filing permission on '" + nodeName + "' is needed.");
         }
 
         for (final NodeRef hold : holds)
         {
             if (!isHold(hold))
             {
-                throw new AlfrescoRuntimeException("Can't add to hold, because it isn't a hold. (hold=" + hold.toString() + ")");
+                String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                throw new AlfrescoRuntimeException("'" + holdName + "' is not a hold so record folders/records cannot be added.");
+            }
+
+            if (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.DENIED)
+            {
+                String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                String holdName = (String) nodeService.getProperty(hold, ContentModel.PROP_NAME);
+                throw new AlfrescoRuntimeException("'" + nodeName + "' can't be added to the hold container as filing permission for '" + holdName + "' is needed.");
             }
 
             // check that the node isn't already in the hold
             if (!getHeld(hold).contains(nodeRef))
             {
-                // run as system to ensure we have all the appropriate premissions to perform the manipulations we require
+                // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
                 runAsSystem(new RunAsWork<Void>()
                 {
                     @Override

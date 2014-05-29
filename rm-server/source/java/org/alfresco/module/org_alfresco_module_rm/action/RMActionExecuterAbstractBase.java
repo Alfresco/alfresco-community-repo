@@ -30,6 +30,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEventService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -112,6 +113,9 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
 
     /** Record folder service */
     protected RecordFolderService recordFolderService;
+
+    /** Hold service */
+    protected HoldService holdService;
 
     /** List of kinds for which this action is applicable */
     protected Set<FilePlanComponentKind> applicableKinds = new HashSet<FilePlanComponentKind>();
@@ -204,7 +208,6 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
         this.recordsManagementEventService = recordsManagementEventService;
     }
 
-
     /**
      * Set the ownable service
      * @param ownableSerice
@@ -264,6 +267,14 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
+    }
+
+    /**
+     * @param holdService hold service
+     */
+    public void setHoldService(HoldService holdService)
+    {
+        this.holdService = holdService;
     }
 
     /**

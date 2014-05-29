@@ -139,6 +139,7 @@
       <property name="parameterProcessorComponent" ref="parameterProcessorComponent"/>
       <property name="modelSecurityService" ref="modelSecurityService" />
       <property name="recordFolderService" ref="RecordFolderService" />
+      <property name="holdService" ref="HoldService" />
    </bean>
 
    <bean id="rmProxyAction"
@@ -1054,12 +1055,12 @@
    <bean id="addRecordTypes" class="org.alfresco.module.org_alfresco_module_rm.action.impl.AddRecordTypeAction" parent="rmAction">
       <property name="publicAction" value="true"/>
    </bean>
-   
+
    <!--  file report action -->
-   
+
    <bean id="fileReport"
          class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportAction"
-         parent="rmAction">      
+         parent="rmAction">
       <property name="reportService" ref="ReportService" />
       <property name="publicAction" value="false"/>
    </bean>
@@ -1074,11 +1075,36 @@
          </list>
       </property>
    </bean>
- 
+
    <bean id="fileReport_security"   parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="deleteHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeleteHoldAction" parent="rmAction">
+      <property name="auditedImmediately" value="true"/>
+   </bean>
+
+   <bean id="deleteHold_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="deleteHold"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="deleteHold_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="deleteHold_security" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.DeleteHoldContainer
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
             org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
          </value>

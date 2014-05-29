@@ -895,4 +895,15 @@
       </property>
       <property name="capability" value ="FileHoldReport"/>
    </bean>
+
+   <bean id="jsonConversionComponent.deleteHold"
+      parent="jsonConversionComponent.baseAction">
+      <property name="name" value="deleteHold"/>
+      <property name="kinds">
+         <set>
+            <value>HOLD</value>
+         </set>
+      </property>
+      <property name="capability" value ="DeleteHoldContainer"/>
+   </bean>
 </beans>

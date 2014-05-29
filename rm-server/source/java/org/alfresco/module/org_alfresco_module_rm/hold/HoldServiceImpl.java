@@ -218,7 +218,8 @@ public class HoldServiceImpl extends ServiceBaseImpl
         for (ChildAssociationRef holdAssoc : holdsAssocs)
         {
             NodeRef hold = holdAssoc.getChildRef();
-            if (isHold(hold))
+            boolean hasPermissionOnHold = (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.ALLOWED);
+            if (isHold(hold) && hasPermissionOnHold)
             {
                 // add to list of holds
                 holds.add(hold);

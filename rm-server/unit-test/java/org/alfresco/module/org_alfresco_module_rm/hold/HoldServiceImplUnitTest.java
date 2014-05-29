@@ -71,7 +71,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
     protected NodeRef holdContainer;
     protected NodeRef hold;
-    protected NodeRef hold2;    
+    protected NodeRef hold2;
 
     @Spy @InjectMocks HoldServiceImpl holdService;
 
@@ -88,8 +88,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
         // setup interactions
         doReturn(holdContainer).when(mockedFilePlanService).getHoldContainer(filePlan);
-
-        
     }
 
     @Test
@@ -97,56 +95,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     {
         assertTrue(holdService.isHold(hold));
         assertFalse(holdService.isHold(recordFolder));
-    }
-
-    @Test
-    public void getHolds()
-    {
-        // with no holds
-        List<NodeRef> emptyHoldList = holdService.getHolds(filePlan);
-        verify(mockedNodeService).getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-        assertNotNull(emptyHoldList);
-        assertTrue(emptyHoldList.isEmpty());
-
-        // setup holds (hold1 and hold 2)
-        setupHolds();
-
-        // with 2 holds
-        List<NodeRef> holdsList = holdService.getHolds(filePlan);
-        verify(mockedNodeService, times(2)).getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-        assertNotNull(holdsList);
-        assertEquals(2, holdsList.size());
-
-        // check one of the holds
-        NodeRef holdFromList = holdsList.get(0);
-        assertEquals(TYPE_HOLD, mockedNodeService.getType(holdFromList));
-    }
-
-    private void setupHolds()
-    {
-        // set up list of two holds
-        List<ChildAssociationRef> list = new ArrayList<ChildAssociationRef>(2);
-        list.add(new ChildAssociationRef(generateQName(), holdContainer, generateQName(), hold, true, 1));
-        list.add(new ChildAssociationRef(generateQName(), holdContainer, generateQName(), hold2, true, 2));
-        when(mockedNodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL)).thenReturn(list);
-    }
-
-    @Test
-    public void heldByNothing()
-    {
-        // setup interactions
-        doReturn(new ArrayList<ChildAssociationRef>()).when(mockedNodeService).getParentAssocs(recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-        setupHolds();
-
-        // check that the record folder isn't held by anything
-        assertTrue(holdService.heldBy(recordFolder, true).isEmpty());
-        List<NodeRef> holds = holdService.heldBy(recordFolder, false);
-        assertEquals(2, holds.size());
-
-        // check that the record isn't held by anything (record is a child of the record folder)
-        assertTrue(holdService.heldBy(record, true).isEmpty());
-        holds = holdService.heldBy(record, false);
-        assertEquals(2, holds.size());
     }
 
     @Test
@@ -357,7 +305,6 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
-
     }
 
     @SuppressWarnings("unchecked")

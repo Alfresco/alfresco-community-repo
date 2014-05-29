@@ -209,20 +209,26 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
+        List<NodeRef> holds = new ArrayList<NodeRef>();
+
         // get the root hold container
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
 
-        // get the children of the root hold container
-        List<ChildAssociationRef> holdsAssocs = nodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-        List<NodeRef> holds = new ArrayList<NodeRef>(holdsAssocs.size());
-        for (ChildAssociationRef holdAssoc : holdsAssocs)
+        // If you remove the "All Records Management Roles" which means users do not have read permissions on hold container
+        // at all, the hold container will not be found for the logged in user. That's why we need to do a check here.
+        if (holdContainer != null)
         {
-            NodeRef hold = holdAssoc.getChildRef();
-            boolean hasPermissionOnHold = (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.ALLOWED);
-            if (isHold(hold) && hasPermissionOnHold)
+            // get the children of the root hold container
+            List<ChildAssociationRef> holdsAssocs = nodeService.getChildAssocs(holdContainer, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef holdAssoc : holdsAssocs)
             {
-                // add to list of holds
-                holds.add(hold);
+                NodeRef hold = holdAssoc.getChildRef();
+                boolean hasPermissionOnHold = (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.ALLOWED);
+                if (isHold(hold) && hasPermissionOnHold)
+                {
+                    // add to list of holds
+                    holds.add(hold);
+                }
             }
         }
 

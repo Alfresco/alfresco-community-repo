@@ -360,4 +360,40 @@ public class HoldServiceImplTest extends BaseRMTestCase
            }
         });
     }
+
+    public void testDeleteHoldWithoutPermissionsOnChildren()
+    {
+        // Create the test hold
+        final NodeRef hold = createAndCheckHold();
+
+        doTestInTransaction(new Test<Void>()
+        {
+           @Override
+           public Void run() throws Exception
+           {
+               // Add the user to the RM Manager role
+               filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_RECORDS_MANAGER, userName);
+
+               // Give the user filing permissions on the hold
+               permissionService.setPermission(hold, userName, RMPermissionModel.FILING, true);
+
+               // Give the user read permissions on the record folder
+               permissionService.setPermission(rmFolder, userName, RMPermissionModel.READ_RECORDS, true);
+
+               // Add record folder to the hold
+               holdService.addToHold(hold, rmFolder);
+
+               return null;
+           }
+        });
+
+        doTestInTransaction(new FailureTest(AlfrescoRuntimeException.class)
+        {
+            @Override
+            public void run() throws Exception
+            {
+                holdService.deleteHold(hold);
+            }
+        }, userName);
+    }
 }

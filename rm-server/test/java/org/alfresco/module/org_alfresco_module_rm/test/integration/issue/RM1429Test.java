@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.2
  * @version 1.0
  */
-public class RM1429 extends HoldServiceImplTest
+public class RM1429Test extends HoldServiceImplTest
 {
     public void testDeleteHoldWithoutPermissionsOnChildren()
     {

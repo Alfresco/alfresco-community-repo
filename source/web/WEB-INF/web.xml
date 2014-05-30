@@ -100,7 +100,7 @@
       <param-value>false</param-value>
    </context-param>
    
-   <context-param><param-name>productionMode</param-name><param-value>true</param-value><description>Vaadin production mode</description></context-param>
+   <!-- Activiti context param placeholder -->
 
    <filter>
       <filter-name>CMIS security context cleaning filter</filter-name>
@@ -240,8 +240,7 @@
       <url-pattern>/d/*</url-pattern>
    </filter-mapping>
  
-   <filter-mapping><filter-name>Global Authentication Filter</filter-name><url-pattern>/activiti-admin/*</url-pattern></filter-mapping>
-   <filter-mapping><filter-name>Global Authentication Filter</filter-name><url-pattern>/VAADIN/*</url-pattern></filter-mapping>
+   <!-- Activiti Global Authentication Filter mapping placeholder -->
 
     <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
    <filter-mapping>
@@ -384,7 +383,7 @@
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
    </listener> 
    
-   <listener><listener-class>org.springframework.web.context.request.RequestContextListener</listener-class></listener>
+   <!-- Activiti listener placeholder -->
 
 
    <!-- Faces Servlet -->
@@ -635,7 +634,7 @@
       </init-param>
    </servlet>
    
-   <servlet><servlet-name>Vaadin Application Servlet</servlet-name><servlet-class>org.activiti.explorer.servlet.ExplorerApplicationServlet</servlet-class></servlet>
+   <!-- Activiti servlet placeholder -->
 	
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
@@ -835,8 +834,7 @@
    </servlet-mapping>
    CMISTCK -->
    
-   <servlet-mapping><servlet-name>Vaadin Application Servlet</servlet-name><url-pattern>/activiti-admin/*</url-pattern></servlet-mapping>
-   <servlet-mapping><servlet-name>Vaadin Application Servlet</servlet-name><url-pattern>/VAADIN/*</url-pattern></servlet-mapping>
+   <!-- Activiti servlet mapping placeholder -->
 
    <session-config>
       <session-timeout>60</session-timeout>

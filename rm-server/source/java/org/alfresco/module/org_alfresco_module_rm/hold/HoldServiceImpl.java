@@ -418,6 +418,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can't delete hold, becuase passed node is not a hold. (hold=" + hold.toString() + ")");
         }
 
+        /*
         List<NodeRef> held = getHeld(hold);
         List<String> heldNames = new ArrayList<String>();
         for (NodeRef nodeRef : held)
@@ -438,6 +439,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
             throw new AlfrescoRuntimeException("Can't delete hold, because filing permissions for the following items are needed: " + sb.toString());
         }
+        */
 
         // delete the hold node
         nodeService.deleteNode(hold);

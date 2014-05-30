@@ -31,13 +31,17 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    RM452Test.class,
-    RM994Test.class,
     RM1008Test.class,
-    RM1030Test.class,
     RM1027Test.class,
+    RM1030Test.class,
     RM1039Test.class,
-    RM804Test.class
+    RM1424Test.class,
+    RM1429Test.class,
+    RM1463Test.class,
+    RM1464Test.class,
+    RM452Test.class,
+    RM804Test.class,
+    RM994Test.class
 })
 public class IssueTestSuite
 {

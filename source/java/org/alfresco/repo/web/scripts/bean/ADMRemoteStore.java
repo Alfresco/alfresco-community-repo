@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -819,12 +820,23 @@ public class ADMRemoteStore extends BaseRemoteStore
                     {
                         if (create)
                         {
+                            List<String> folders = isFolder ? pathElements : pathElements.subList(0, pathElements.size() - 1);
+                            
+                            List<FileFolderUtil.PathElementDetails> folderDetails = new ArrayList<>(pathElements.size());
+                            Map<QName, Serializable> prop = new HashMap<>(2);
+                            prop.put(ContentModel.PROP_IS_INDEXED, false);
+                            prop.put(ContentModel.PROP_IS_CONTENT_INDEXED, false);
+                            for (String element : folders)
+                            {
+                                folderDetails.add(new FileFolderUtil.PathElementDetails(element, Collections.singletonMap(
+                                            ContentModel.ASPECT_INDEX_CONTROL, prop)));
+                            }
                             // ensure folders exist down to the specified parent
                             // ALF-17729 / ALF-17796 - disable auditable on parent folders
                             result = FileFolderUtil.makeFolders(
-                                    this.fileFolderService,
+                                    this.fileFolderService,nodeService,
                                     surfConfigRef,
-                                    isFolder ? pathElements : pathElements.subList(0, pathElements.size() - 1),
+                                    folderDetails,
                                     ContentModel.TYPE_FOLDER,
                                     behaviourFilter,
                                     new HashSet<QName>(Arrays.asList(new QName[]{ContentModel.ASPECT_AUDITABLE})));

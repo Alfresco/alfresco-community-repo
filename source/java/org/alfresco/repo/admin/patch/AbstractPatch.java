@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -94,13 +94,15 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     /** start time * */
     long startTime;
     
-    private boolean deferred = false;
+    /** whether the patch must be deferred (not to be executed in bootstrap) or not */
+    private boolean deferred = false;    
+
     
     // Does the patch require an enclosing transaction?
     private boolean requiresTransaction = true;
 
     /** the service to register ourselves with */
-    private PatchService patchService;
+    protected PatchService patchService;
     /** used to ensure a unique transaction per execution */
     protected TransactionService transactionService;
     /** Use this helper to ensure that patches can execute even on a read-only system */
@@ -560,11 +562,7 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     }
     
     /**
-     * Apply the patch, regardless of the deferred flag.    So if the patch has not run due to it being deferred earlier 
-     * then this will run it now.   Also ignores the "applied" lock.   So the patch can be executed many times.
-     * 
-     * @return the patch report
-     * @throws PatchException if the patch failed to be applied
+     * {@inheritDoc}
      */
     public String applyAsync() throws PatchException
     {    
@@ -744,13 +742,13 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
         this.deferred = deferred;
     }
 
-    /*
-     * 
+    /**
+     * {@inheritDoc}
      */
     public boolean isDeferred()
     {
-        return deferred;
-    }
+        return this.deferred;
+    }    
 
     private int getReportingInterval(long soFar, long toGo)
     {

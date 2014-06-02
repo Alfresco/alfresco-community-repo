@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -38,6 +38,7 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -102,8 +103,24 @@ public class PatchServiceImpl implements PatchService
     
     private final QName vetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "PatchServiceImpl");
 
-
+    /**
+     * {@inheritDoc}
+     */
     public boolean validatePatches()
+    {
+        return validatePatchImpl(patches);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean validatePatch(Patch patch)
+    {
+        ParameterCheck.mandatory("patch", patch);
+        return validatePatchImpl(Collections.singletonList(patch));        
+    }
+    
+    private boolean validatePatchImpl(List<Patch> patches)
     {
         boolean success = true;
         int serverSchemaVersion = descriptorService.getServerDescriptor().getSchema();
@@ -115,7 +132,6 @@ public class PatchServiceImpl implements PatchService
                         .getFixesToSchema(), patch.getTargetSchema()));
                 success = false;
             }
-
         }
         if (!success)
         {
@@ -140,7 +156,7 @@ public class PatchServiceImpl implements PatchService
                 Collections.sort(sortedPatches, comparator);
                 
                 // construct a list of executed patches by ID (also check the date)
-                Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(23);
+                Map<String, AppliedPatch> appliedPatchesById = new HashMap<String, AppliedPatch>(250);
                 List<AppliedPatch> appliedPatches = appliedPatchDAO.getAppliedPatches();
                 for (final AppliedPatch appliedPatch : appliedPatches)
                 {
@@ -187,6 +203,55 @@ public class PatchServiceImpl implements PatchService
             success = false;
         }
         
+        // done
+        return success;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public boolean applyOutstandingPatch(Patch patch)
+    {
+        boolean success = true;
+        try
+        {
+            // Disable rules whilst processing the patches
+            this.ruleService.disableRules();
+            try
+            {
+                Map<String, AppliedPatch> appliedPatchesById = null;
+                if (patch.getDependsOn().isEmpty())
+                {
+                    AppliedPatch appliedPatch = appliedPatchDAO.getAppliedPatch(patch.getId());
+                    appliedPatchesById = new HashMap<String, AppliedPatch>(1);
+                    if (appliedPatch != null)
+                    {
+                        appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
+                    }
+                }
+                else
+                {
+                    appliedPatchesById = new HashMap<String, AppliedPatch>(250);
+                    List<AppliedPatch> appliedPatches = appliedPatchDAO.getAppliedPatches();
+                    for (final AppliedPatch appliedPatch : appliedPatches)
+                    {
+                        appliedPatchesById.put(appliedPatch.getId(), appliedPatch);
+                    }
+                }
+                // apply the patch
+                success = applyPatchAndDependencies(patch, appliedPatchesById);
+            }
+            finally
+            {
+                this.ruleService.enableRules();
+            }
+        }
+        catch (Throwable exception)
+        {
+            exception.printStackTrace();
+            success = false;
+        }
+
         // done
         return success;
     }
@@ -488,7 +553,7 @@ public class PatchServiceImpl implements PatchService
                         patch.getId(),
                         I18NUtil.getMessage(patch.getDescription()));
                 logger.info(msg);
-                report = patch.apply();
+                report = (patch.isDeferred()) ? patch.applyAsync() : patch.apply();
                 state = STATE.APPLIED;
             }
             catch (PatchException e)

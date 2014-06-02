@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,13 +18,18 @@
  */
 package org.alfresco.service.cmr.model;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -70,34 +75,61 @@ public class FileFolderUtil
      * @param parentBehavioursToDisable
      * @return
      */
-    public static FileInfo makeFolders(FileFolderService service,
-            NodeRef parentNodeRef, List<String> pathElements,
-            QName folderTypeQName,
-            BehaviourFilter behaviourFilter,
-            Set<QName> parentBehavioursToDisable)
+    public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements,
+                QName folderTypeQName, BehaviourFilter behaviourFilter, Set<QName> parentBehavioursToDisable)
     {
-        if (pathElements.size() == 0)
+        validate(pathElements, service, folderTypeQName);
+
+        List<PathElementDetails> list = new ArrayList<>(pathElements.size());
+        for (String pathElement : pathElements)
         {
-            throw new IllegalArgumentException("Path element list is empty");
+            list.add(new PathElementDetails(pathElement, null));
         }
 
-        // make sure that the folder is correct
-        boolean isFolder = service.getType(folderTypeQName) == FileFolderServiceType.FOLDER;
-        if (!isFolder)
-        {
-            throw new IllegalArgumentException(
-                    "Type is invalid to make folders with: " + folderTypeQName);
-        }
+        FileInfo fileInfo = makeFolders(service, null, parentNodeRef, list, folderTypeQName, behaviourFilter,
+                    parentBehavioursToDisable);
+
+        // Should we check the type?
+        return fileInfo;
+    }
+
+    
+    /**
+     * Checks for the presence of, and creates as necessary, the folder
+     * structure in the provided paths with the following options:
+     * <ul>
+     * <li>Option to disable parent behaviour(s) when creating sub-folder.</li>
+     * <li>Each folder has the option to have its own set of aspects</li>
+     *</ul>
+     * 
+     * @param service the FileFolderService object
+     * @param nodeService the NodeService object
+     * @param parentNodeRef the node under which the path will be created
+     * @param pathElementDetails the list of folder hierarchy where each folder
+     *            can have its own set of aspects - may not be empty
+     * @param folderTypeQName the types of nodes to create. This must be a valid
+     *            subtype of {@link org.alfresco.model.ContentModel#TYPE_FOLDER
+     *            they folder type}
+     * @param behaviourFilter the BehaviourFilter object
+     * @param parentBehavioursToDisable the set of behaviours that must be
+     *            disabled
+     * @return Returns the {@code FileInfo} of the last folder in the path.
+     */
+    public static FileInfo makeFolders(FileFolderService service, NodeService nodeService, NodeRef parentNodeRef,
+                List<PathElementDetails> pathElementDetails, QName folderTypeQName, BehaviourFilter behaviourFilter,
+                Set<QName> parentBehavioursToDisable)
+    {
+        validate(pathElementDetails, service, folderTypeQName);
 
         NodeRef currentParentRef = parentNodeRef;
         // just loop and create if necessary
-        for (String pathElement : pathElements)
+        for (PathElementDetails pathElement : pathElementDetails)
         {
             // does it exist?
             // Navigation should not check permissions
-            NodeRef nodeRef = AuthenticationUtil.runAs(new SearchAsSystem(
-                    service, currentParentRef, pathElement), AuthenticationUtil
-                    .getSystemUserName());
+            NodeRef nodeRef = AuthenticationUtil.runAs(
+                        new SearchAsSystem(service, currentParentRef, pathElement.getFolderName()),
+                        AuthenticationUtil.getSystemUserName());
 
             if (nodeRef == null)
             {
@@ -108,15 +140,23 @@ public class FileFolderUtil
                         behaviourFilter.disableBehaviour(currentParentRef, parentBehaviourToDisable);
                     }
                 }
-                
+
                 try
                 {
                     // not present - make it
                     // If this uses the public service it will check create
                     // permissions
-                    FileInfo createdFileInfo = service.create(currentParentRef,
-                            pathElement, folderTypeQName);
+                    FileInfo createdFileInfo = service.create(currentParentRef, pathElement.getFolderName(), folderTypeQName);
                     currentParentRef = createdFileInfo.getNodeRef();
+
+                    Map<QName, Map<QName, Serializable>> requireddAspects = pathElement.getAspects();
+                    if (requireddAspects != null && nodeService != null)
+                    {
+                        for (QName aspect : requireddAspects.keySet())
+                        {
+                            nodeService.addAspect(currentParentRef, aspect, requireddAspects.get(aspect));
+                        }
+                    }
                 }
                 finally
                 {
@@ -144,6 +184,21 @@ public class FileFolderUtil
         return fileInfo;
     }
 
+    private static <T> void validate(List<T> pathElements, FileFolderService service, QName folderTypeQName)
+    {
+        if (pathElements.size() == 0)
+        {
+            throw new IllegalArgumentException("Path element list is empty");
+        }
+
+        // make sure that the folder is correct
+        boolean isFolder = service.getType(folderTypeQName) == FileFolderServiceType.FOLDER;
+        if (!isFolder)
+        {
+            throw new IllegalArgumentException("Type is invalid to make folders with: " + folderTypeQName);
+        }
+    }
+
     private static class SearchAsSystem implements RunAsWork<NodeRef>
     {
         FileFolderService service;
@@ -163,5 +218,37 @@ public class FileFolderUtil
         }
 
     }
+    
+    /**
+     * A simple POJO to hold information about the folder which will be created.
+     * 
+     * @author Jamal Kaabi-Mofrad
+     */
+    public static class PathElementDetails
+    {
+        private final String folderName;
+        private final Map<QName, Map<QName, Serializable>> aspects;
 
+        public PathElementDetails(String folderName, Map<QName, Map<QName, Serializable>> aspects)
+        {
+            this.folderName = folderName;
+            this.aspects = Collections.unmodifiableMap(aspects);
+        }
+
+        /**
+         * @return the folderName
+         */
+        public String getFolderName()
+        {
+            return this.folderName;
+        }
+
+        /**
+         * @return the aspects
+         */
+        public Map<QName, Map<QName, Serializable>> getAspects()
+        {
+            return this.aspects;
+        }
+    }
 }

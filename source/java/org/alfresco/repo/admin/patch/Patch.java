@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -100,8 +100,25 @@ public interface Patch
     public String apply() throws PatchException;
     
     /**
+     * Apply the patch, regardless of the deferred flag. So if the patch has not
+     * run due to it being deferred earlier then this will run it now. Also
+     * ignores the "applied" lock. So the patch can be executed many times.
+     * 
+     * @return the patch report
+     * @throws PatchException if the patch failed to be applied
+     */
+    public String applyAsync() throws PatchException;
+
+    /**
      * Is this patch just ignored - never considered for application
      * @return
      */
     public boolean isIgnored();
+    
+    /**
+     * Indicates whether the patch must be deferred (not to be executed in bootstrap) or not
+     * 
+     * @return true if the patch must be deferred, false otherwise
+     */
+    public boolean isDeferred();
 }

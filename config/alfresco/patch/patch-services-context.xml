@@ -3746,5 +3746,25 @@
              </bean>
         </property>
     </bean>
- 
+    
+    <!-- Fix data related to cm:copiedfrom aspect -->
+    <bean id="patch.surfConfigFolder" class="org.alfresco.repo.admin.patch.impl.SurfConfigFolderPatch" parent="basePatch" >
+        <property name="id"><value>patch.surfConfigFolder</value></property>
+        <property name="description"><value>patch.surfConfigFolderPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7004</value></property>
+        <property name="targetSchema"><value>7005</value></property>
+        <property name="requiresTransaction"><value>false</value></property>
+        <property name="applyToTenants"><value>false</value></property>
+        <!-- We have to ignore it, as this patch will be run by the scheduler in the background. The AsynchronousPatch will take care of registration -->
+        <property name="ignored"><value>${system.patch.surfConfigFolder.deferred}</value></property>
+        <property name="patchDAO" ref="patchDAO" />
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="qnameDAO" ref="qnameDAO" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
+        <property name="ruleService" ref="ruleService" />
+        <property name="jobLockService" ref="jobLockService" />
+        <!--  Do we deferr running the shared folder patch? -->
+        <property name="deferred"><value>${system.patch.surfConfigFolder.deferred}</value></property>
+    </bean> 
 </beans>

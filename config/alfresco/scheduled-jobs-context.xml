@@ -342,4 +342,31 @@
         </property>
     </bean>
     
+    <!-- surf-config folder patch -->
+    <bean id="patchSurfConfigFolderJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="asynchronousPatch">
+                    <ref bean="patch.surfConfigFolder" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="patchSurfConfigFolderTrigger" class="org.alfresco.util.TriggerBean">
+        <property name="jobDetail">
+            <ref bean="patchSurfConfigFolderJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="startDelayMinutes">
+            <value>${system.patchSurfConfigFolderTrigger.startDelayMinutes}</value>
+        </property>
+        <property name="repeatCount">
+            <value>0</value> 
+        </property>
+    </bean>    
 </beans>

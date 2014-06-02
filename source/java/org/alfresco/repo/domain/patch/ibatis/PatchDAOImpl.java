@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -108,6 +108,9 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_NODES_BY_TYPE_URI = "alfresco.patch.select_NodesByTypeUriId";
     private static final String SELECT_NODES_BY_ASPECT_QNAME = "alfresco.patch.select_NodesByAspectQName";
     private static final String SELECT_NODES_BY_CONTENT_MIMETYPE = "alfresco.patch.select_NodesByContentMimetype";
+    
+    private static final String SELECT_COUNT_NODES_WITH_TYPE_ID = "alfresco.patch.select_CountNodesWithTypeId";
+    private static final String SELECT_CHILDREN_OF_THE_SHARED_SURFCONFIG_FOLDER = "alfresco.patch.select_ChildrenOfTheSharedSurfConfigFolder";
 
     private LocaleDAO localeDAO;
     
@@ -702,5 +705,53 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("minNodeId", minNodeId);
         params.put("maxNodeId", maxNodeId);
         return (List<Long>) template.selectList(SELECT_NODES_BY_CONTENT_MIMETYPE, params);
+    }
+
+    @Override
+    public long getCountNodesWithTypId(QName typeQName)
+    {
+        // Resolve the QName
+        Pair<Long, QName> qnameId = qnameDAO.getQName(typeQName);
+        if (qnameId == null)
+        {
+            return 0L;
+        }
+        IdsEntity params = new IdsEntity();
+        params.setIdOne(qnameId.getFirst());
+        Long count = (Long) template.selectOne(SELECT_COUNT_NODES_WITH_TYPE_ID, params);
+        if (count == null)
+        {
+            return 0L;
+        }
+        else
+        {
+            return count;
+        }
+    }
+
+
+    @Override
+    public List<NodeRef> getChildrenOfTheSharedSurfConfigFolder(Long minNodeId, Long maxNodeId)
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        params.put("minNodeId", minNodeId);
+        params.put("maxNodeId", maxNodeId);
+
+        final List<NodeRef> results = new ArrayList<NodeRef>(1000);
+        ResultHandler resultHandler = new ResultHandler()
+        {
+            @SuppressWarnings("unchecked")
+            public void handleResult(ResultContext context)
+            {
+                Map<String, Object> row = (Map<String, Object>) context.getResultObject();
+                String protocol = (String) row.get("protocol");
+                String identifier = (String) row.get("identifier");
+                String uuid = (String) row.get("uuid");
+                NodeRef nodeRef = new NodeRef(new StoreRef(protocol, identifier), uuid);
+                results.add(nodeRef);
+            }
+        };
+        template.select(SELECT_CHILDREN_OF_THE_SHARED_SURFCONFIG_FOLDER, params, resultHandler);
+        return results;
     }
 }

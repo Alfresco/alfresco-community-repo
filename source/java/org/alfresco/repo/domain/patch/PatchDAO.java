@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -280,5 +280,27 @@ public interface PatchDAO
      * @return
      */
     public List<Long> getNodesByContentPropertyMimetypeId(Long mimetypeId, Long minNodeId, Long maxNodeId);
+    
+    /**
+     * Gets the total number of nodes which match the given Type QName.
+     * 
+     * @param typeQName the qname to search for
+     * @return count of nodes that match the typeQName
+     */
+    public long getCountNodesWithTypId(QName typeQName);
+    
+    /**
+     * Finds folders of the shared surf-config (for all tenants):
+     * <ul>
+     * <li> company_home/sites/surf-config/components </li>
+     * <li>company_home/sites/surf-config/pages </li>
+     * <li>company_home/sites/surf-config/pages/user </li>
+     * <li>company_home/sites/surf-config/pages/user{userId} </li>
+     * </ul>
+     * @param minNodeId - min node id in the result set - inclusive
+     * @param maxNodeId - max node id in the result set - exclusive
+     * @return list of children nodeRefs
+     */
+    public List<NodeRef> getChildrenOfTheSharedSurfConfigFolder(Long minNodeId, Long maxNodeId);
 
 }

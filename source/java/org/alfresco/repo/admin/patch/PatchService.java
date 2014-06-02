@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,6 +55,15 @@ public interface PatchService
      *         patches could be applied.
      */
     public boolean applyOutstandingPatches();
+    
+    /**
+     * Apply the specified patch that is relevant to the repo.
+     * 
+     * @param patch the patch object
+     * @return true if the specified patch and its dependencies were applied, or
+     *         false if the process was terminated before all patches could be applied.
+     */
+    public boolean applyOutstandingPatch(Patch patch);
 
     /**
      * Retrieves all applied patches between two specific times.
@@ -74,4 +83,15 @@ public interface PatchService
      * @return Returns the patch instance or <tt>null</tt> if one has not been persisted
      */
     public AppliedPatch getPatch(String id);
+    
+    /**
+     * Does some up-front validation on the specified patch, specifically to see
+     * if it applies to the current server version and not some future version.
+     * This is to prevent tampering with versioning information attached to a
+     * license.
+     * 
+     * @param patch the patch object
+     * @return true if validation is successful. Outputs errors and returns false otherwise.
+     */
+    public boolean validatePatch(Patch patch);
 }

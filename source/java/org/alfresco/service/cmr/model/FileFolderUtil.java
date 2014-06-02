@@ -150,7 +150,7 @@ public class FileFolderUtil
                     currentParentRef = createdFileInfo.getNodeRef();
 
                     Map<QName, Map<QName, Serializable>> requireddAspects = pathElement.getAspects();
-                    if (requireddAspects != null && nodeService != null)
+                    if (requireddAspects.size() > 0 && nodeService != null)
                     {
                         for (QName aspect : requireddAspects.keySet())
                         {
@@ -232,7 +232,14 @@ public class FileFolderUtil
         public PathElementDetails(String folderName, Map<QName, Map<QName, Serializable>> aspects)
         {
             this.folderName = folderName;
-            this.aspects = Collections.unmodifiableMap(aspects);
+            if (aspects == null)
+            {
+                this.aspects = Collections.emptyMap();
+            }
+            else
+            {
+                this.aspects = Collections.unmodifiableMap(aspects);
+            }
         }
 
         /**

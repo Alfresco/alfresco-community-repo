@@ -437,7 +437,7 @@
    </bean>
 
    <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability">
-      <property name="publicAction" value="true"/>
+      <property name="publicAction" value="false"/>
    </bean>
 
    <!-- Unfreeze record -->
@@ -464,7 +464,7 @@
    </bean>
 
    <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction">
-      <property name="publicAction" value="true"/>
+      <property name="publicAction" value="false"/>
    </bean>
 
    <!-- Relinquish Hold Action-->
@@ -481,6 +481,7 @@
    </bean>
 
    <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction">
+       <property name="publicAction" value="false"/>
        <property name="auditedImmediately" value="true"/>
    </bean>
 

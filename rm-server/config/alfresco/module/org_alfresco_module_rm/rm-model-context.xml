@@ -134,7 +134,6 @@
 
    <bean id="rma.vitalRecordDefinition" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VitalRecordDefinitionAspect" parent="rm.baseBehaviour">
       <property name="recordsManagementActionService" ref="RecordsManagementActionService"/>
-        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
    </bean>
 
    <bean id="rma.extendedSecurity" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.ExtendedSecurityAspect" parent="rm.baseBehaviour">

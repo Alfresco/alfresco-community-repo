@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -48,19 +47,8 @@ import org.alfresco.util.PropertyMap;
 public class VitalRecordDefinitionAspect extends    BaseBehaviourBean
                                          implements NodeServicePolicies.OnUpdatePropertiesPolicy
 {
-    /** file plan authentication service */
-    protected FilePlanAuthenticationService filePlanAuthenticationService;
-
     /** records management action service */
     protected RecordsManagementActionService recordsManagementActionService;
-
-    /**
-     * @param filePlanAuthenticationService file plan authentication service
-     */
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-        this.filePlanAuthenticationService = filePlanAuthenticationService;
-    }
 
     /**
      * @param recordsManagementActionService    records management action service

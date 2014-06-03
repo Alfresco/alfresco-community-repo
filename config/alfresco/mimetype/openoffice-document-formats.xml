@@ -403,6 +403,15 @@
     <export-filters>
       <entry><family>Presentation</family><string>MS Visio</string></entry>
     </export-filters>
-  </document-format> 
+  </document-format>
+  
+  <document-format><name>OpenDocument Drawing</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.oasis.opendocument.graphics</mime-type>
+    <file-extension>odg</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>draw8</string></entry>
+    </export-filters>
+  </document-format>
   
 </document-formats>

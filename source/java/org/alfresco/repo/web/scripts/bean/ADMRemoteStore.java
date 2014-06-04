@@ -828,8 +828,8 @@ public class ADMRemoteStore extends BaseRemoteStore
                             prop.put(ContentModel.PROP_IS_CONTENT_INDEXED, false);
                             for (String element : folders)
                             {
-                                folderDetails.add(new FileFolderUtil.PathElementDetails(element, Collections.singletonMap(
-                                            ContentModel.ASPECT_INDEX_CONTROL, prop)));
+                                Map<QName, Map<QName, Serializable>> aspects = Collections.singletonMap(ContentModel.ASPECT_INDEX_CONTROL, prop);
+                                folderDetails.add(new FileFolderUtil.PathElementDetails(element, aspects));
                             }
                             // ensure folders exist down to the specified parent
                             // ALF-17729 / ALF-17796 - disable auditable on parent folders

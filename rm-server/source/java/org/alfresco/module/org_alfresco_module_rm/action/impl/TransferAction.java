@@ -99,5 +99,11 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
 
         // Set the return value of the action
         action.setParameterValue(ActionExecuter.PARAM_RESULT, transferNodeRef);
+
+        // Cut off the disposable item if it's not cut off already
+        if (!dispositionService.isDisposableItemCutoff(dispositionLifeCycleNodeRef))
+        {
+            dispositionService.cutoffDisposableItem(dispositionLifeCycleNodeRef);
+        }
     }
 }

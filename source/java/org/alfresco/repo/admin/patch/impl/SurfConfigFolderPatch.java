@@ -395,8 +395,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
             int minResults = SITE_BATCH_MAX_QUERY_RANGE / 2;
             while (currentId <= maxId && siteNodeIDs.size() < minResults)
             {
-                List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(siteTypeQNameId, currentId, currentId
-                            + SITE_BATCH_MAX_QUERY_RANGE);
+                List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(siteTypeQNameId, currentId, currentId + SITE_BATCH_MAX_QUERY_RANGE);
                 siteNodeIDs.addAll(nodeIds);
                 // Increment the minimum ID
                 currentId += SITE_BATCH_MAX_QUERY_RANGE;
@@ -446,8 +445,7 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
             while (currentId <= maxId && folderNodes.size() < minResults)
             {
 
-                List<NodeRef> nodeIds = patchDAO.getChildrenOfTheSharedSurfConfigFolder(currentId, currentId
-                            + SHARED_SURF_CONFIG_BATCH_MAX_QUERY_RANGE);
+                List<NodeRef> nodeIds = patchDAO.getChildrenOfTheSharedSurfConfigFolder(currentId, currentId + SHARED_SURF_CONFIG_BATCH_MAX_QUERY_RANGE);
                 folderNodes.addAll(nodeIds);
                 // Increment the minimum ID
                 currentId += SHARED_SURF_CONFIG_BATCH_MAX_QUERY_RANGE;

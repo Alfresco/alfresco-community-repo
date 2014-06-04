@@ -127,8 +127,8 @@ public abstract class AsynchronousPatch extends AbstractPatch
 
         if (!appliedPatch.getWasExecuted())
         {
-            // the patch was not executed
-            logger.debug(I18NUtil.getMessage(MSG_NOT_EXECUTED, appliedPatch.getId(), appliedPatch.getReport()));
+            // the patch was not executed. E.g. not relevant to the current schema 
+            logger.info(I18NUtil.getMessage(MSG_NOT_EXECUTED, appliedPatch.getId(), appliedPatch.getReport()));
         }
         else if (appliedPatch.getSucceeded())
         {

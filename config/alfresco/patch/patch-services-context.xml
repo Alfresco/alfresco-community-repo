@@ -3747,7 +3747,7 @@
         </property>
     </bean>
     
-    <!-- Fix data related to cm:copiedfrom aspect -->
+    <!-- Add cm:indexControl aspect to surf-config folders and their children -->
     <bean id="patch.surfConfigFolder" class="org.alfresco.repo.admin.patch.impl.SurfConfigFolderPatch" parent="basePatch" >
         <property name="id"><value>patch.surfConfigFolder</value></property>
         <property name="description"><value>patch.surfConfigFolderPatch.description</value></property>
@@ -3764,7 +3764,7 @@
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="ruleService" ref="ruleService" />
         <property name="jobLockService" ref="jobLockService" />
-        <!--  Do we deferr running the shared folder patch? -->
+        <!--  Do we deferr running the surf-config folder patch? -->
         <property name="deferred"><value>${system.patch.surfConfigFolder.deferred}</value></property>
     </bean> 
 </beans>

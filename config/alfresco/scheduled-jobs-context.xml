@@ -355,18 +355,18 @@
             </map>
         </property>
     </bean>
-    <bean id="patchSurfConfigFolderTrigger" class="org.alfresco.util.TriggerBean">
+    <bean id="patchSurfConfigFolderTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <ref bean="patchSurfConfigFolderJobDetail" />
         </property>
         <property name="scheduler">
             <ref bean="schedulerFactory" />
         </property>
+        <property name="cronExpression">
+            <value>${system.patch.surfConfigFolder.cronExpression}</value>
+        </property>
         <property name="startDelayMinutes">
-            <value>${system.patchSurfConfigFolderTrigger.startDelayMinutes}</value>
+            <value>${system.cronJob.startDelayMinutes}</value>
         </property>
-        <property name="repeatCount">
-            <value>0</value> 
-        </property>
-    </bean>    
+    </bean>   
 </beans>

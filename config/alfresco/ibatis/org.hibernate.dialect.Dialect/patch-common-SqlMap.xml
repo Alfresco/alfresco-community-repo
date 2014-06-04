@@ -134,7 +134,12 @@
         <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
-    <parameterMap id="parameter_minMaxNodeId" type="map">
+    <parameterMap id="parameter_qnameCrcAndMinMaxNodeId" type="map">
+        <parameter property="qnameCrcSites" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameCrcSurfConfig" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameCrcPages" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameCrcUser" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameTypeIdContains" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
@@ -567,7 +572,7 @@
          company_home/sites/surf-config/pages/user
          company_home/sites/surf-config/pages/user{userId}
      -->
-    <select id="select_ChildrenOfTheSharedSurfConfigFolder" parameterMap="parameter_minMaxNodeId" resultMap="result_nodeNameUuidMap" >
+    <select id="select_ChildrenOfTheSharedSurfConfigFolder" parameterMap="parameter_qnameCrcAndMinMaxNodeId" resultMap="result_nodeNameUuidMap" >
         <![CDATA[            
         select lev3.child_node_name as name, lev3.child_node_id as node_id, targetn.uuid, targets.protocol, targets.identifier
         from
@@ -577,8 +582,10 @@
             join alf_node targetn on (targetn.id = lev3.child_node_id)
             join alf_store targets on (targets.id = targetn.store_id)
         where
-            lev1.qname_localname = 'sites'
-            and lev2.qname_localname = 'surf-config'
+            lev1.qname_crc = #{qnameCrcSites}
+            and lev1.type_qname_id = #{qnameTypeIdContains}
+            and lev2.qname_crc = #{qnameCrcSurfConfig}
+            and lev2.type_qname_id = #{qnameTypeIdContains}
             and lev3.child_node_id >= #{minNodeId}
             and lev3.child_node_id < #{maxNodeId}
         UNION
@@ -591,9 +598,12 @@
             join alf_node targetn on (targetn.id = lev4.child_node_id)
             join alf_store targets on (targets.id = targetn.store_id)
         where
-            lev1.qname_localname = 'sites'
-            and lev2.qname_localname = 'surf-config'
-            and lev3.qname_localname = 'pages'
+            lev1.qname_crc = #{qnameCrcSites}
+            and lev1.type_qname_id = #{qnameTypeIdContains}
+            and lev2.qname_crc = #{qnameCrcSurfConfig}
+            and lev2.type_qname_id = #{qnameTypeIdContains}
+            and lev3.qname_crc = #{qnameCrcPages}
+            and lev3.type_qname_id = #{qnameTypeIdContains}
             and lev4.child_node_id >= #{minNodeId}
             and lev4.child_node_id < #{maxNodeId}
         UNION 
@@ -607,10 +617,14 @@
             join alf_node targetn on (targetn.id = lev5.child_node_id)
             join alf_store targets on (targets.id = targetn.store_id)
         where
-            lev1.qname_localname = 'sites'
-            and lev2.qname_localname = 'surf-config'
-            and lev3.qname_localname = 'pages'
-            and lev4.qname_localname = 'user'
+            lev1.qname_crc = #{qnameCrcSites}
+            and lev1.type_qname_id = #{qnameTypeIdContains}
+            and lev2.qname_crc = #{qnameCrcSurfConfig}
+            and lev2.type_qname_id = #{qnameTypeIdContains}
+            and lev3.qname_crc = #{qnameCrcPages}
+            and lev3.type_qname_id = #{qnameTypeIdContains}
+            and lev4.qname_crc = #{qnameCrcUser}
+            and lev4.type_qname_id = #{qnameTypeIdContains}
             and lev5.child_node_id >= #{minNodeId}
             and lev5.child_node_id < #{maxNodeId}
        ]]>

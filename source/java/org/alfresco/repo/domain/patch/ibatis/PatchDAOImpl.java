@@ -30,10 +30,13 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.locale.LocaleDAO;
+import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.patch.AbstractPatchDAOImpl;
 import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -733,7 +736,25 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     @Override
     public List<NodeRef> getChildrenOfTheSharedSurfConfigFolder(Long minNodeId, Long maxNodeId)
     {
-        Map<String, Object> params = new HashMap<String, Object>(2);
+        Pair<Long, QName> containsAssocQNamePair = qnameDAO.getQName(ContentModel.ASSOC_CONTAINS);
+        if (containsAssocQNamePair == null)
+        {
+            return Collections.emptyList();
+        }
+        
+        Map<String, Object> params = new HashMap<String, Object>(7);
+        
+        // Get qname CRC
+        Long qnameCrcSites = ChildAssocEntity.getQNameCrc(QName.createQName(SiteModel.SITE_MODEL_URL, "sites"));
+        Long qnameCrcSurfConfig = ChildAssocEntity.getQNameCrc(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "surf-config"));
+        Long qnameCrcPages = ChildAssocEntity.getQNameCrc(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "pages"));
+        Long qnameCrcUser = ChildAssocEntity.getQNameCrc(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "user"));
+        
+        params.put("qnameCrcSites", qnameCrcSites);
+        params.put("qnameCrcSurfConfig", qnameCrcSurfConfig);
+        params.put("qnameCrcPages", qnameCrcPages);
+        params.put("qnameCrcUser", qnameCrcUser);
+        params.put("qnameTypeIdContains", containsAssocQNamePair.getFirst());
         params.put("minNodeId", minNodeId);
         params.put("maxNodeId", maxNodeId);
 

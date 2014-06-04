@@ -86,8 +86,7 @@ public class FileFolderUtil
             list.add(new PathElementDetails(pathElement, null));
         }
 
-        FileInfo fileInfo = makeFolders(service, null, parentNodeRef, list, folderTypeQName, behaviourFilter,
-                    parentBehavioursToDisable);
+        FileInfo fileInfo = makeFolders(service, null, parentNodeRef, list, folderTypeQName, behaviourFilter, parentBehavioursToDisable);
 
         // Should we check the type?
         return fileInfo;

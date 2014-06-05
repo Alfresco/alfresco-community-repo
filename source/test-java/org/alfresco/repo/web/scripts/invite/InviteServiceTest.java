@@ -548,8 +548,15 @@ public class InviteServiceTest extends BaseWebScriptTest
     {
         String url = "/api/invite/" + inviteId + "/" + inviteTicket + "?inviteeUserName=" + inviteeUid;
         
+        String runAsUser = AuthenticationUtil.getRunAsUser(); 
+        
         Response response = sendRequest(new GetRequest(url), Status.STATUS_OK);
-
+        
+        if (!runAsUser.equals(AuthenticationUtil.getRunAsUser()))
+        {
+            AuthenticationUtil.setRunAsUser(runAsUser);
+        }
+        
         JSONObject result = new JSONObject(response.getContentAsString());
 
         return result;

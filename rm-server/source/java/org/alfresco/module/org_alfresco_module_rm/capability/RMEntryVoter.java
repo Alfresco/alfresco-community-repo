@@ -31,7 +31,6 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.policy.ConfigAttributeDefinition;
 import org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -128,7 +127,7 @@ public class RMEntryVoter extends RMSecurityCommon
     {
         // logging
         RMMethodSecurityInterceptor.isRMSecurityChecked(true);
-        
+
     	MethodInvocation mi = (MethodInvocation)object;
 
     	if (TransactionalResourceHelper.isResourcePresent("voting"))
@@ -182,7 +181,7 @@ public class RMEntryVoter extends RMSecurityCommon
 	            {
 	                // log message
 	                RMMethodSecurityInterceptor.addMessage("RM_DENY: check that a security policy has been set for this method");
-	                
+
 	                return AccessDecisionVoter.ACCESS_DENIED;
 	            }
 	            else if (cad.getTypeString().equals(ConfigAttributeDefinition.RM_ABSTAIN))
@@ -245,7 +244,7 @@ public class RMEntryVoter extends RMSecurityCommon
 		                {
 		                    // log message
 		                    RMMethodSecurityInterceptor.addMessage("Policy " + cad.getPolicyName() + " denied.");
-		                    
+
 		                    return AccessDecisionVoter.ACCESS_DENIED;
 		                }
 		                case AccessDecisionVoter.ACCESS_ABSTAIN:

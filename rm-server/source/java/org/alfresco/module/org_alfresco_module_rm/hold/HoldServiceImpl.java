@@ -409,7 +409,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.hold.HoldService#deleteHold(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void deleteHold(NodeRef hold)
+    public void deleteHold(final NodeRef hold)
     {
         ParameterCheck.mandatory("hold", hold);
 
@@ -418,7 +418,15 @@ public class HoldServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Can't delete hold, becuase passed node is not a hold. (hold=" + hold.toString() + ")");
         }
 
-        List<NodeRef> held = getHeld(hold);
+        List<NodeRef> held = AuthenticationUtil.runAsSystem(new RunAsWork<List<NodeRef>>()
+        {
+            @Override
+            public List<NodeRef> doWork()
+            {
+                return getHeld(hold);
+            }
+        });
+
         List<String> heldNames = new ArrayList<String>();
         for (NodeRef nodeRef : held)
         {

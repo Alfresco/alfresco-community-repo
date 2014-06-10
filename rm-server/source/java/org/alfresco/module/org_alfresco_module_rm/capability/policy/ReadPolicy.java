@@ -23,7 +23,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * @author Roy Wethearll
+ * Read method security policy.
+ * 
+ * @author Roy Wetherall
  * @since 2.1
  */
 public class ReadPolicy extends AbstractBasePolicy
@@ -35,7 +37,7 @@ public class ReadPolicy extends AbstractBasePolicy
             Class[] params, 
             ConfigAttributeDefinition cad)
     {
-        NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+        NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());        
         return capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS).evaluate(testNodeRef);
     }
 }

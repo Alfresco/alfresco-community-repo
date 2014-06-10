@@ -728,13 +728,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if (extendedPermissionService.hasPermission(nodeRef, PermissionService.WRITE) != AccessStatus.ALLOWED)
         {
             throw new AccessDeniedException("Can not create record from document, because the user " +
-                                            AuthenticationUtil.getFullyAuthenticatedUser() +
+                                            AuthenticationUtil.getRunAsUser() +
                                             " does not have Write permissions on the doucment " +
                                             nodeRef.toString());
         }
 
-        // Save the id of the currently logged in user
-        final String userId = AuthenticationUtil.getRunAsUser();
 
         // do the work of creating the record as the system user
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -775,10 +773,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // save the information about the originating details
                         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_LOCATION, parentAssoc.getParentRef());
-                        aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, userId);
+                        aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, owner);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
-
+                        
                         // make the document a record
                         makeRecord(nodeRef);
 
@@ -1110,6 +1108,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         throw new AlfrescoRuntimeException("Unable to find the creator of document.");
                     }
                     ownableService.setOwner(nodeRef, documentOwner);
+                    
+                    // clear the existing permissions
+                    permissionService.clearPermission(nodeRef, null);
+                    
+                    // restore permission inheritance
+                    permissionService.setInheritParentPermissions(nodeRef, true);
 
                     // send an email to the record creator
                     notificationHelper.recordRejectedEmailNotification(nodeRef, recordId, documentOwner);

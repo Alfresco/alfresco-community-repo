@@ -3,29 +3,12 @@
 
 <beans>
 
-   <!-- AVM Remote Store to ADM Remote Store migration patch -->
-  <!-- <bean id="patch.avmToAdmRemoteStore" class="org.alfresco.repo.admin.patch.impl.AVMToADMRemoteStorePatch" parent="basePatch">
-        <property name="id"><value>patch.avmToAdmRemoteStore</value></property>
-        <property name="description"><value>patch.avmToAdmRemoteStore.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>5011</value></property>
-        <property name="targetSchema"><value>5012</value></property>
-        <property name="requiresTransaction"><value>false</value></property>
-        <property name="fileFolderService" ref="fileFolderService" />
-        <property name="contentService" ref="contentService" />
-        <property name="siteService" ref="SiteService" />
-        <property name="ruleService" ref="ruleService" />
-        <property name="avmService" ref="AVMService" />
-        <property name="hiddenAspect" ref="hiddenAspect" />
-        <property name="avmStore"><value>sitestore</value></property>
-        <property name="avmRootPath"><value>/alfresco/site-data</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.migrateTenantsFromAttrsToTable" />
-                <ref bean="patch.migrateAttrTenants" />
-            </list>
-        </property>
-    </bean> -->
+   <!-- extend node service security to report capability details on failure -->
+   <bean id="rm.NodeService_security" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor"/>
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+      <property name="beanName" value="NodeService_security" />
+      <property name="extendingBeanName" value="rm.NodeService_security" />
+   </bean>
 
    <bean id="ExtendedPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">

@@ -66,6 +66,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -126,6 +127,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected PermissionService permissionService;
     protected TaggingService taggingService;
     protected ActionService actionService;
+    protected OwnableService ownableService;
 
     /** RM Services */
     protected DispositionService dispositionService;
@@ -376,6 +378,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         permissionService = (PermissionService)applicationContext.getBean("PermissionService");
         taggingService = (TaggingService)applicationContext.getBean("TaggingService");
         actionService = (ActionService)applicationContext.getBean("ActionService");
+        ownableService = (OwnableService)applicationContext.getBean("OwnableService");
 
         // Get RM services
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
@@ -772,13 +775,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     @Override
     protected <A> A doTestInTransaction(Test<A> test)
     {
-        return super.doTestInTransaction(test, rmAdminUserName);
+        return super.doTestInTransaction(test, AuthenticationUtil.getAdminUserName());
     }
 
     @Override
     protected void doTestInTransaction(FailureTest test)
     {
-        super.doTestInTransaction(test, rmAdminUserName);
+        super.doTestInTransaction(test, AuthenticationUtil.getAdminUserName());
     }
 
     /**

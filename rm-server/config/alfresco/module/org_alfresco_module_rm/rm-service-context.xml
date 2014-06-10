@@ -1088,18 +1088,24 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.registerRecordMetadataAspect=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.registerRecordMetadataAspect=RM_ALLOW                
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.disablePropertyEditableCheck=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.enablePropertyEditableCheck=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetadataAspects=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecord=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecord=ACL_ALLOW,RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.file=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.hideRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isPropertyEditable=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isMetadataStub=RM.Read.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.rejectRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecords=RM.Read.0,AFTER_RM.FilterNode
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.addRecordType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.link=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
@@ -1420,56 +1426,6 @@
         <property name="id" value="dod5015"/>
         <property name="path" value="alfresco/module/org_alfresco_module_rm/dod5015/DODExampleFilePlan.xml" />
     </bean>
-
-    <!--
-    <bean id="authorityDAO" class="org.alfresco.repo.security.authority.RMAuthorityDAOImpl" init-method="init">
-        <property name="storeUrl">
-            <value>${spaces.store}</value>
-        </property>
-        <property name="nodeService">
-            <ref bean="mlAwareNodeService" />
-        </property>
-        <property name="searchService">
-            <ref bean="admSearchService" />
-        </property>
-        <property name="namespacePrefixResolver">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="personService">
-            <ref bean="personService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>
-        <property name="authorityLookupCache">
-            <ref bean="authorityLookupCache" />
-        </property>
-        <property name="userAuthorityCache">
-            <ref bean="userToAuthorityCache" />
-        </property>
-        <property name="childAuthorityCache">
-            <ref bean="authorityToChildAuthorityCache" />
-        </property>
-        <property name="zoneAuthorityCache">
-            <ref bean="zoneToAuthorityCache" />
-        </property>
-        <property name="singletonCache">
-            <ref bean="immutableSingletonCache" />
-        </property>
-        <property name="policyComponent">
-            <ref bean="policyComponent"/>
-        </property>
-        <property name="cannedQueryRegistry" ref="cannedQueryRegistry" />
-        <property name="cannedQueryDAO" ref="cannedQueryDAO" />
-        <property name="aclDAO" ref="aclDAO" />
-        <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
-        <property name="authorityBridgeTableCache" ref="authorityBridgeTableCache" />
-        <property name="useBridgeTable" value="${authority.useBridgeTable}" />
-    </bean>
-    -->
 
    <!--  Hold Service -->
 

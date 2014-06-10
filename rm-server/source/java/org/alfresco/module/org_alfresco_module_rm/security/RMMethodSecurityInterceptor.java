@@ -1,15 +1,18 @@
 
 package org.alfresco.module.org_alfresco_module_rm.security;
 
+import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.acegisecurity.AccessDeniedException;
 import net.sf.acegisecurity.intercept.InterceptorStatusToken;
-import net.sf.acegisecurity.intercept.method.aopalliance.MethodSecurityInterceptor;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
+import org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
@@ -63,7 +66,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     /**
      * Current capability report details.
      * <p>
-     * Used to getnerate the capability error report.
+     * Used to generate the capability error report.
      */
     private static final ThreadLocal<Map<String, CapabilityReport>> CAPABILITIES = new ThreadLocal<Map<String, CapabilityReport>>()
     {
@@ -74,6 +77,22 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         };
     };
 
+    /**
+     * Indicates whether this is an RM security check or not
+     */
+    private static final ThreadLocal<Boolean> IS_RM_SECURITY_CHECK = new ThreadLocal<Boolean>()
+    {
+        protected Boolean initialValue() {return false;};
+    };
+    
+    /**
+     * Messages to display in error report.
+     */
+    private static final ThreadLocal<List<String>> MESSAGES = new ThreadLocal<List<String>>()
+    {
+        protected List<String> initialValue() {return new ArrayList<String>();};
+    };
+    
     /**
      * Get capability report object from the thread local, creating one for
      * the given capability name if one does not already exist.
@@ -95,6 +114,41 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         return capability;
     }
 
+    /**
+     * Indicates whether this is a RM security check or not
+     * 
+     * @param newValue  true if RM security check, false otherwise
+     */
+    public static void isRMSecurityChecked(boolean newValue)
+    {
+        if (logger.isDebugEnabled())
+        {
+            RMMethodSecurityInterceptor.IS_RM_SECURITY_CHECK.set(newValue);
+        }
+    }
+    
+    /**
+     * Add a message to be displayed in the error report.
+     * 
+     * @param message   error message
+     */
+    public static void addMessage(String message)
+    {
+        if (logger.isDebugEnabled())
+        {
+            List<String> messages = RMMethodSecurityInterceptor.MESSAGES.get();
+            messages.add(message);
+        }
+    }
+    
+    public static void addMessage(String message, Object ... params)
+    {
+        if (logger.isDebugEnabled())
+        {
+            addMessage(MessageFormat.format(message, params));
+        }
+    }
+    
     /**
      * Report capability status.
      *
@@ -186,20 +240,73 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         {
             // clear the capability report information
             RMMethodSecurityInterceptor.CAPABILITIES.remove();
+            RMMethodSecurityInterceptor.IS_RM_SECURITY_CHECK.remove();
+            RMMethodSecurityInterceptor.MESSAGES.remove();
 
+            // before invocation (where method security check takes place)
             result = super.beforeInvocation(object);
         }
         catch (AccessDeniedException exception)
         {
-            String failureReport = getFailureReport();
-            if (failureReport == null)
+            if (logger.isDebugEnabled())
             {
-                throw exception;
+                MethodInvocation mi = (MethodInvocation)object;
+                
+                StringBuilder methodDetails = new StringBuilder("\n");
+                if (RMMethodSecurityInterceptor.IS_RM_SECURITY_CHECK.get())
+                {
+                    methodDetails.append("RM method security check was performed.\n");
+                }
+                else
+                {
+                    methodDetails.append("Standard DM method security check was performed.\n");                    
+                }
+                
+                boolean first = true;
+                methodDetails.append("Failed on method:  ").append(mi.getMethod().getName()).append("(");
+                for (Object arg : mi.getArguments())
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        methodDetails.append(", ");
+                    }
+                    
+                    if (arg != null)
+                    {
+                        methodDetails.append(arg.toString());
+                    }
+                    else
+                    {
+                        methodDetails.append("null");
+                    }
+                }
+                methodDetails.append(")\n");
+                
+                List<String> messages = RMMethodSecurityInterceptor.MESSAGES.get();
+                for (String message : messages)
+                {
+                    methodDetails.append(message).append("\n");
+                }
+                
+                String failureReport = getFailureReport();
+                if (failureReport == null)
+                {
+                    // rethrow with additional information
+                    throw new AccessDeniedException(exception.getMessage() + methodDetails, exception);
+                }
+                else
+                {
+                    // rethrow with additional information
+                    throw new AccessDeniedException(exception.getMessage() + methodDetails + getFailureReport(), exception);
+                }
             }
             else
             {
-                // rethrow with additional information
-                throw new AccessDeniedException(exception.getMessage() + getFailureReport(), exception);
+                throw exception;
             }
         }
         return result;

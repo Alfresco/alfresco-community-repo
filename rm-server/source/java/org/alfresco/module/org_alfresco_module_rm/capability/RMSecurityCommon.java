@@ -23,6 +23,7 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -219,15 +220,22 @@ public class RMSecurityCommon implements ApplicationContextAware
 
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
         {
+            // log message
+            RMMethodSecurityInterceptor.addMessage("User does not have read record permission on node, access denied. (nodeRef={0}, user={1})", nodeRef, AuthenticationUtil.getRunAsUser());
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
             }
+            
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED);
         }
 
         if (permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS) == AccessStatus.DENIED)
         {
+            // log capability details
+            RMMethodSecurityInterceptor.reportCapabilityStatus(RMPermissionModel.VIEW_RECORDS, AccessDecisionVoter.ACCESS_DENIED);
+            
             if (logger.isDebugEnabled())
             {
                 logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");

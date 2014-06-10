@@ -1102,7 +1102,7 @@
       			<protected>true</protected>
             </property>
             <property name="rma:recordOriginatingLocation">
-               	<type>d:any</type>
+               	<type>d:noderef</type>
       			<protected>true</protected>
             </property>
          </properties>

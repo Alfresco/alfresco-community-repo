@@ -43,6 +43,7 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -430,9 +431,16 @@ public class HoldServiceImpl extends ServiceBaseImpl
         List<String> heldNames = new ArrayList<String>();
         for (NodeRef nodeRef : held)
         {
-            if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
+            try
             {
-                heldNames.add((String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+                if (permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.DENIED)
+                {
+                    heldNames.add((String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+                }
+            }
+            catch (AccessDeniedException ade)
+            {
+                throw new AlfrescoRuntimeException("Can't delete hold, because you don't have filling permissions on all the items held within the hold.");
             }
         }
 

@@ -9,7 +9,7 @@
       <property name="description" value="RM patch executer"/>
       <property name="sinceVersion" value="2.2"/>
       <property name="executeOnceOnly" value="false"/>
-      <property name="moduleSchema" value="1007"/>      
+      <property name="moduleSchema" value="1008"/>      
       <property name="attributeService" ref="AttributeService" />   
       <property name="dependsOn">
       	<list>
@@ -34,7 +34,7 @@
 
    <!-- compatibility beans -->
 
-   <!-- @depracted since 2.2 -->
+   <!-- @deprecated since 2.2 -->
    <bean id="rm.baseModulePatch" abstract="true" parent="module.baseComponent" init-method="init">
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
       <property name="behaviourFilter" ref="policyBehaviourFilter" />

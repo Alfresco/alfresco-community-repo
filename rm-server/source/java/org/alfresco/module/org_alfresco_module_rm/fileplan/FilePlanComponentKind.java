@@ -34,6 +34,7 @@ public enum FilePlanComponentKind
     RECORD_FOLDER,
     RECORD,
     TRANSFER,
+    TRANSFER_CONTAINER,
     HOLD,
     HOLD_CONTAINER,
     DISPOSITION_SCHEDULE,

@@ -116,6 +116,10 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
             {
                 result = FilePlanComponentKind.HOLD;
             }
+            else if (instanceOf(nodeRef, TYPE_TRANSFER_CONTAINER))
+            {
+                result = FilePlanComponentKind.TRANSFER_CONTAINER;
+            }
             else if (isTransfer(nodeRef))
             {
                 result = FilePlanComponentKind.TRANSFER;

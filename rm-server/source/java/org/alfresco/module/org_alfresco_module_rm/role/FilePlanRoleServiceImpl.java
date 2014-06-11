@@ -81,6 +81,12 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Location of bootstrap role JSON */
     private static final String BOOTSTRAP_ROLE_JSON_LOCATION = "alfresco/module/org_alfresco_module_rm/security/rm-default-roles-bootstrap.json";
+    
+    /** JSON names */
+    private static final String JSON_NAME = "name";
+    private static final String JSON_DISPLAY_LABEL = "displayLabel";
+    private static final String JSON_IS_ADMIN = "isAdmin";
+    private static final String JSON_CAPABILITIES = "capabilities";
 
     /** Capability service */
     private CapabilityService capabilityService;
@@ -111,9 +117,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
 
-    /**
-     * Records Management Config Node
-     */
+    /** Records Management Config Node */
     private static final String CONFIG_NODEID = "rm_config_folder";
 
     /** Logger */
@@ -286,9 +290,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     }
 
     /**
-     *
-     * @param rmRootNode
-     * @param unfiledContainer
+     * Bootstraps the default roles
+     * 
+     * @param filePlan          file plan
+     * @param systemContainers  system containers
      */
     private void bootstrapDefaultRoles(final NodeRef filePlan, final List<NodeRef> systemContainers)
     {
@@ -321,9 +326,9 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                         // Get the name of the role
                         String name = null;
-                        if (object.has("name"))
+                        if (object.has(JSON_NAME))
                         {
-                            name = object.getString("name");
+                            name = object.getString(JSON_NAME);
                             if (existsRole(filePlan, name))
                             {
                                 throw new AlfrescoRuntimeException("The bootstrap role " + name + " already exists on the rm root node " + filePlan.toString());
@@ -337,23 +342,23 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                         // Get the role's display label
                         String displayLabel = name;
-                        if (object.has("displayLabel"))
+                        if (object.has(JSON_DISPLAY_LABEL))
                         {
-                            displayLabel = object.getString("displayLabel");
+                            displayLabel = object.getString(JSON_DISPLAY_LABEL);
                         }
 
                         // Determine whether the role is an admin role or not
                         boolean isAdmin = false;
-                        if (object.has("isAdmin"))
+                        if (object.has(JSON_IS_ADMIN))
                         {
-                            isAdmin = object.getBoolean("isAdmin");
+                            isAdmin = object.getBoolean(JSON_IS_ADMIN);
                         }
 
                         // Get the roles capabilities
                         Set<Capability> capabilities = new HashSet<Capability>(30);
-                        if (object.has("capabilities"))
+                        if (object.has(JSON_CAPABILITIES))
                         {
-                            JSONArray arrCaps = object.getJSONArray("capabilities");
+                            JSONArray arrCaps = object.getJSONArray(JSON_CAPABILITIES);
                             for (int index = 0; index < arrCaps.length(); index++)
                             {
                                 String capName = arrCaps.getString(index);
@@ -371,7 +376,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                         // Add any additional admin permissions
                         if (isAdmin)
-                        {
+                        { 
                             // Admin has filing
                             permissionService.setPermission(filePlan, role.getRoleGroupName(), RMPermissionModel.FILING, true);
                             if (systemContainers != null)
@@ -686,23 +691,23 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#createRole(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, java.util.Set)
      */
-    public Role createRole(final NodeRef rmRootNode, final String role, final String roleDisplayLabel, final Set<Capability> capabilities)
+    public Role createRole(final NodeRef filePlan, final String role, final String roleDisplayLabel, final Set<Capability> capabilities)
     {
         return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Role>()
         {
             public Role doWork()
             {
-                String fullRoleName = getFullRoleName(role, rmRootNode);
+                String fullRoleName = getFullRoleName(role, filePlan);
 
                 // Check that the role does not already exist for the rm root node
                 if (authorityService.authorityExists(authorityService.getName(AuthorityType.GROUP, fullRoleName)))
                 {
-                    throw new AlfrescoRuntimeException("The role " + role + " already exists for root rm node " + rmRootNode.getId());
+                    throw new AlfrescoRuntimeException("The role " + role + " already exists for root rm node " + filePlan.getId());
                 }
 
                 // Create a group that relates to the records management role
                 Set<String> zones = new HashSet<String>(2);
-                zones.add(getZoneName(rmRootNode));
+                zones.add(getZoneName(filePlan));
                 zones.add(RMAuthority.ZONE_APP_RM);
 
                 // Look up string, default to passed value if none found
@@ -714,9 +719,13 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                 String roleGroup = authorityService.createAuthority(AuthorityType.GROUP, fullRoleName, groupDisplayLabel, zones);
 
-                // Add the roleGroup to the "all" role group
-                String allRoleGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(rmRootNode));
-                authorityService.addAuthority(allRoleGroup, roleGroup);
+                // do not add system roles to "all"
+                if (!isSystemRole(role))
+                {
+                    // Add the roleGroup to the "all" role group
+                    String allRoleGroup = authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(filePlan));
+                    authorityService.addAuthority(allRoleGroup, roleGroup);
+                }
 
                 // TODO .. we should be creating a permission set containing all the capabilities and then assigning that
                 //         single permission group to the file plan .. would be tidier
@@ -726,7 +735,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 {
                     for (Capability capability : capabilities)
                     {
-                        permissionService.setPermission(rmRootNode, roleGroup, capability.getName(), true);
+                        permissionService.setPermission(filePlan, roleGroup, capability.getName(), true);
                     }
                 }
 

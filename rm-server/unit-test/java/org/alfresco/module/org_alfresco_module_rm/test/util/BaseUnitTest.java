@@ -38,6 +38,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -83,25 +85,27 @@ public class BaseUnitTest implements RecordsManagementModel
     protected NodeRef record;
     
     /** core service mocks */
-    @Mock(name="nodeService")                    protected NodeService mockedNodeService; 
-    @Mock(name="dictionaryService")              protected DictionaryService mockedDictionaryService;
-    @Mock(name="namespaceService")               protected NamespaceService mockedNamespaceService; 
-    @Mock(name="identifierService")              protected IdentifierService mockedIdentifierService;
-    @Mock(name="permissionService")              protected PermissionService mockedPermissionService;
-    @Mock(name="ownableService")                 protected OwnableService mockedOwnableService;
-    @Mock(name="searchService")                  protected SearchService mockedSearchService;
-    @Mock(name="retryingTransactionHelper")      protected RetryingTransactionHelper mockedRetryingTransactionHelper;
+    @Mock(name="nodeService")                    protected NodeService                  mockedNodeService; 
+    @Mock(name="dictionaryService")              protected DictionaryService            mockedDictionaryService;
+    @Mock(name="namespaceService")               protected NamespaceService             mockedNamespaceService; 
+    @Mock(name="identifierService")              protected IdentifierService            mockedIdentifierService;
+    @Mock(name="permissionService")              protected PermissionService            mockedPermissionService;
+    @Mock(name="ownableService")                 protected OwnableService               mockedOwnableService;
+    @Mock(name="searchService")                  protected SearchService                mockedSearchService;
+    @Mock(name="retryingTransactionHelper")      protected RetryingTransactionHelper    mockedRetryingTransactionHelper;
+    @Mock(name="authorityService")               protected AuthorityService             mockedAuthorityService;
     
     /** rm service mocks */
-    @Mock(name="filePlanService")                protected FilePlanService mockedFilePlanService;
-    @Mock(name="recordFolderService")            protected RecordFolderService mockedRecordFolderService;
-    @Mock(name="recordService")                  protected RecordService mockedRecordService;
-    @Mock(name="holdService")                    protected HoldService mockedHoldService;
+    @Mock(name="filePlanService")                protected FilePlanService              mockedFilePlanService;
+    @Mock(name="recordFolderService")            protected RecordFolderService          mockedRecordFolderService;
+    @Mock(name="recordService")                  protected RecordService                mockedRecordService;
+    @Mock(name="holdService")                    protected HoldService                  mockedHoldService;
     @Mock(name="recordsManagementActionService") protected RecordsManagementActionService mockedRecordsManagementActionService;
-    @Mock(name="reportService")                  protected ReportService mockedReportService;
+    @Mock(name="reportService")                  protected ReportService                mockedReportService;
+    @Mock(name="filePlanRoleService")            protected FilePlanRoleService          mockedFilePlanRoleService;
     
     /** application context mock */
-    @Mock(name="applicationContext")             protected ApplicationContext mockedApplicationContext;
+    @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;
     
     /** expected exception rule */
     @Rule

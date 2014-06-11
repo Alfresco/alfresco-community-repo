@@ -36,7 +36,7 @@ public interface FilePlanRoleService
     /** Default role names */
     String ROLE_USER                = "User";
     String ROLE_POWER_USER          = "PowerUser";
-    String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
+    String ROLE_SECURITY_OFFICER    = "SecurityOfficer"; 
     String ROLE_RECORDS_MANAGER     = "RecordsManager";
     String ROLE_ADMIN               = "Administrator";
     String ROLE_EXTENDED_READERS    = "ExtendedReaders";

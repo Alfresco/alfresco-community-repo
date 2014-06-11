@@ -26,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExe
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.model.compatibility.DictionaryBootstrapPostProcessorUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22RemoveInPlaceRolesFromAllPatchUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
@@ -70,7 +71,10 @@ import org.junit.runners.Suite.SuiteClasses;
     HoldCapabilityConditionUnitTest.class,
     
     // action implementations
-    FileReportActionUnitTest.class
+    FileReportActionUnitTest.class,
+    
+    // patches
+    RMv22RemoveInPlaceRolesFromAllPatchUnitTest.class
 })
 public class AllUnitTestSuite
 {

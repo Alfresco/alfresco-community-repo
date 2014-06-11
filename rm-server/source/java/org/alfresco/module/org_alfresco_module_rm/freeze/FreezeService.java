@@ -26,6 +26,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Freeze Service Interface
+ * 
+ * TODO should be deprecated and methods moved to the HoldService with "hold, held, etc" style names
  *
  * @author Roy Wetherall
  * @since 2.0

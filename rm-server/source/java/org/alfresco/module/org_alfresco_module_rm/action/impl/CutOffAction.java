@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,8 +39,11 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
     {
-        // Mark the folder as cut off
-        dispositionService.cutoffDisposableItem(recordFolder);
+        if(checkUncutOffStatus(action, recordFolder))
+        {
+            // Mark the folder as cut off
+            dispositionService.cutoffDisposableItem(recordFolder);
+        }
     }
 
     /**
@@ -48,7 +52,38 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordLevelDisposition(Action action, NodeRef record)
     {
-        // Mark the record as cut off
-        dispositionService.cutoffDisposableItem(record);
+        if(checkUncutOffStatus(action, record))
+        {
+            // Mark the record as cut off
+            dispositionService.cutoffDisposableItem(record);
+        }
+    }
+
+    /**
+     * Check if the record or folder has been uncut off. If it has and this cut off action is an
+     * automated disposition action then the cut off isn't run. If it has and this is a manual
+     * cut off action then the uncut off aspect is removed prior to the uncut action.
+     *
+     * @param action The cut off action
+     * @param recordOrFolder The record or folder to be cut off
+     * @return True if the record or folder can be cut off
+     */
+    private boolean checkUncutOffStatus(Action action, NodeRef recordOrFolder)
+    {
+        boolean okToCutOff = true;
+        if(nodeService.hasAspect(recordOrFolder, ASPECT_UNCUT_OFF))
+        {
+            if(action.getParameterValue(PARAM_NO_ERROR_CHECK) != null)
+            {
+                // this exception stops the cut off disposition schedule action taking place and because we're
+                // running from the schedule (PARAM_NO_ERROR_CHECK is set) then the exception will not be reported
+                throw new AlfrescoRuntimeException("Cannot cut off from schedule when uncut off aspect is present");
+            }
+            else
+            {
+                nodeService.removeAspect(recordOrFolder, ASPECT_UNCUT_OFF);
+            }
+        }
+        return okToCutOff;
     }
  }

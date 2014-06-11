@@ -192,7 +192,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     )
     public void onCreateTransfer(final ChildAssociationRef childAssocRef)
     {
-        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef(), false);
     }
 
     /**
@@ -204,12 +204,23 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     public void setupPermissions(final NodeRef parent, final NodeRef nodeRef)
     {
         ParameterCheck.mandatory("parent", parent);
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-
+        ParameterCheck.mandatory("nodeRef", nodeRef);        
+        setupPermissions(parent, nodeRef, true);
+    }
+    
+    /**
+     * Helper method to setup permissions.
+     * 
+     * @param parent            parent node reference
+     * @param nodeRef           child node reference
+     * @param includeInPlace    true if in-place permissions should be included, false otherwise
+     */
+    private void setupPermissions(final NodeRef parent, final NodeRef nodeRef, final boolean includeInPlace)
+    {
         if (nodeService.exists(nodeRef))
         {
             // initialise permissions
-            initPermissions(nodeRef);
+            initPermissions(nodeRef, includeInPlace);
 
             if (nodeService.exists(parent))
             {
@@ -352,13 +363,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-
+    
     /**
      * Init the permissions for the given node.
      *
-     * @param nodeRef   node reference
+     * @param nodeRef           node reference
+     * @param includeInPlace    true if in-place 
      */
-    private void initPermissions(final NodeRef nodeRef)
+    private void initPermissions(final NodeRef nodeRef, final boolean includeInPlace)
     {
         if (nodeService.exists(nodeRef))
         {
@@ -372,9 +384,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     // clear all existing permissions
                     permissionService.clearPermission(nodeRef, null);
 
-                    // set extended reader permissions
-                    permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    if (includeInPlace)
+                    {
+                        // set extended reader permissions
+                        permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                        permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    }
 
                     // remove owner
                     ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);

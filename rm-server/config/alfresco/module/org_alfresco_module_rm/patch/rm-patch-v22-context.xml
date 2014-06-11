@@ -80,5 +80,16 @@
       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
       <property name="capabilityService" ref="CapabilityService"/>
    </bean>
+   
+   <bean id="rm.removeInPlaceRolesFromAllPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22RemoveInPlaceRolesFromAllPatch">
+      <property name="description" value="Remove in-place roles from 'all roles' group."/>
+      <property name="fixesToSchema" value="1007"/>
+      <property name="targetSchema" value="1008"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="authorityService" ref="AuthorityService"/>
+   </bean>
 
 </beans>

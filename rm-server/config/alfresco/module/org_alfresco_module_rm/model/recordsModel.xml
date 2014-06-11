@@ -881,6 +881,10 @@
          </properties>
       </aspect>
 
+      <aspect name="rma:uncutOff">
+         <title>Uncut Off</title>
+      </aspect>
+
       <!--  Indicates that an object is being transferred -->
       <aspect name="rma:transferring">
          <title>Transferring</title>

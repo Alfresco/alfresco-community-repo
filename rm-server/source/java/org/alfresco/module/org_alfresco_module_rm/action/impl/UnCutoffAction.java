@@ -56,14 +56,16 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_UNDO_NOT_LAST));
             }
 
-            // Remove the cutoff aspect
+            // Remove the cutoff aspect and add the uncutoff aspect
             nodeService.removeAspect(actionedUponNodeRef, ASPECT_CUT_OFF);
+            nodeService.addAspect(actionedUponNodeRef, ASPECT_UNCUT_OFF, null);
             if (recordFolderService.isRecordFolder(actionedUponNodeRef))
             {
                 List<NodeRef> records = recordService.getRecords(actionedUponNodeRef);
                 for (NodeRef record : records)
                 {
                     nodeService.removeAspect(record, ASPECT_CUT_OFF);
+                    nodeService.addAspect(record, ASPECT_UNCUT_OFF, null);
                 }
             }
 

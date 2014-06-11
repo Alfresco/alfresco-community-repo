@@ -95,6 +95,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *
      * @param nodeService   the node service
      */
+    @Override
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -105,6 +106,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      *
      * @param dictionaryServic  the dictionary service
      */
+    @Override
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
@@ -252,6 +254,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public DispositionSchedule getDispositionSchedule(NodeRef nodeRef)
     {
         DispositionSchedule di = null;
@@ -302,6 +305,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getAssociatedDispositionSchedule(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public DispositionSchedule getAssociatedDispositionSchedule(NodeRef nodeRef)
     {
         DispositionSchedule ds = null;
@@ -400,6 +404,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getDisposableItems(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule)
      */
+    @Override
     public List<NodeRef> getDisposableItems(DispositionSchedule dispositionSchedule)
     {
         ParameterCheck.mandatory("dispositionSchedule", dispositionSchedule);
@@ -528,6 +533,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      *
      */
+    @Override
     public DispositionActionDefinition addDispositionActionDefinition(
                                             DispositionSchedule schedule,
                                             Map<QName, Serializable> actionDefinitionParams)
@@ -557,6 +563,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#removeDispositionActionDefinition(org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule, org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition)
      */
+    @Override
     public void removeDispositionActionDefinition(DispositionSchedule schedule, DispositionActionDefinition actionDefinition)
     {
         // check first whether action definitions can be removed
@@ -579,6 +586,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * @param actionDefinitionParams Map of parameters to use to update the action definition
      * @return The updated DispositionActionDefinition
      */
+    @Override
     public DispositionActionDefinition updateDispositionActionDefinition(
                                                 DispositionActionDefinition actionDefinition,
                                                 Map<QName, Serializable> actionDefinitionParams)
@@ -665,6 +673,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#isNextDispositionActionEligible(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public boolean isNextDispositionActionEligible(NodeRef nodeRef)
     {
         boolean result = false;
@@ -748,6 +757,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getNextDispositionAction(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public DispositionAction getNextDispositionAction(NodeRef nodeRef)
     {
         DispositionAction result = null;
@@ -766,6 +776,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getCompletedDispositionActions(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public List<DispositionAction> getCompletedDispositionActions(NodeRef nodeRef)
     {
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_DISPOSITION_ACTION_HISTORY, RegexQNamePattern.MATCH_ALL);
@@ -781,6 +792,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#getLastCompletedDispostionAction(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public DispositionAction getLastCompletedDispostionAction(NodeRef nodeRef)
     {
        DispositionAction result = null;
@@ -968,6 +980,12 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 // apply cut off
                 applyCutoff(nodeRef);
 
+                // remove uncut off aspect if applied
+                if(nodeService.hasAspect(nodeRef, ASPECT_UNCUT_OFF))
+                {
+                    nodeService.removeAspect(nodeRef, ASPECT_UNCUT_OFF);
+                }
+
                 // close the record folder if it isn't already closed!
                 if (recordFolderService.isRecordFolder(nodeRef) &&
                     !recordFolderService.isRecordFolderClosed(nodeRef))
@@ -991,6 +1009,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
+            @Override
             public Void doWork()
             {
                 // Apply the cut off aspect and set cut off date

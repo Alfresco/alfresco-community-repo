@@ -130,6 +130,9 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     QName ASPECT_CUT_OFF = QName.createQName(RM_URI, "cutOff");
     QName PROP_CUT_OFF_DATE = QName.createQName(RM_URI, "cutOffDate");
 
+    // Uncut off aspect
+    QName ASPECT_UNCUT_OFF = QName.createQName(RM_URI, "uncutOff");
+
     // Transferred aspect
     QName ASPECT_TRANSFERRED = QName.createQName(RM_URI, "transferred");
 

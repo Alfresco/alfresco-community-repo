@@ -41,7 +41,6 @@
     <bean id="org_alfresco_module_rm_dispositionSelectionStrategy"
           class="org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSelectionStrategy" >
         <property name="dispositionService" ref="dispositionService"/>
-        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
     </bean>
 
     <!--  Vital Record Service -->
@@ -496,10 +495,6 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
         <property name="filePlanService" ref="FilePlanService" />
-        <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
-        <property name="authenticationService" ref="AuthenticationService" />
-        <property name="personService" ref="PersonService" />
-
         <!-- init repo for when a tenant is created -->
         <property name="bootstrapImporterModuleComponent" ref="org_alfresco_module_rm_bootstrapData"/>
 
@@ -1088,7 +1083,7 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.registerRecordMetadataAspect=RM_ALLOW                
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.registerRecordMetadataAspect=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.disablePropertyEditableCheck=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.enablePropertyEditableCheck=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
@@ -1111,45 +1106,6 @@
             </value>
         </property>
     </bean>
-
-    <!--  File Plan Authentication Service -->
-
-    <bean id="filePlanAuthenticationService"
-          class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl">
-        <property name="rmAdminUserName" value="${bootstrap.rmadmin.name}" />
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-    </bean>
-
-    <bean id="FilePlanAuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">
-        <property name="proxyInterfaces">
-            <value>org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService</value>
-        </property>
-        <property name="target">
-            <ref bean="filePlanAuthenticationService"/>
-        </property>
-        <property name="interceptorNames">
-            <list>
-                <idref local="FilePlanAuthenticationService_transaction"/>
-                <idref bean="exceptionTranslator"/>
-                <idref local="FilePlanAuthenticationService_security"/>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="FilePlanAuthenticationService_transaction" parent="baseTransaction"/>
-
-    <bean id="FilePlanAuthenticationService_security" parent="baseSecurity">
-        <property name="objectDefinitionSource">
-            <value>
-                <![CDATA[
-             org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService.*=RM_ALLOW
-                ]]>
-            </value>
-        </property>
-    </bean>
-
 
     <!--  Custom EMail Mapping Service -->
     <bean id="customEmailMappingService"

@@ -52,21 +52,6 @@
       <property name="capabilityService" ref="CapabilityService"/>
    </bean>
 
-   <bean id="org_alfresco_module_rm_RMv21RMAdminUserPatch"
-         parent="rm.baseModulePatch"
-         class="org.alfresco.module.org_alfresco_module_rm.patch.v21.RMv21RMAdminUserPatch">
-      <property name="moduleId" value="org_alfresco_module_rm"/>
-      <property name="name" value="org_alfresco_module_rm_RMv21RMAdminUserPatch"/>
-      <property name="description" value="Adds the global RM admin user to all existing file plans."/>
-      <property name="sinceVersion" value="2.1"/>
-      <property name="appliesFromVersion" value="2.1"/>
-      <property name="filePlanService" ref="FilePlanService"/>
-      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-      <property name="authenticationService" ref="AuthenticationService" />
-      <property name="personService" ref="PersonService" />
-      <property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService" />
-   </bean>
-
    <bean id="org_alfresco_module_rm_RMv21RecordInheritancePatch"
          parent="rm.baseModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.v21.RMv21RecordInheritancePatch">
@@ -118,5 +103,5 @@
       <property name="fileFolderService" ref="FileFolderService"/>
       <property name="nodeService" ref="NodeService"/>
    </bean>
-   
+
 </beans>

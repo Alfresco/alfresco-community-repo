@@ -31,7 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.transfer.TransferService;
@@ -162,12 +161,6 @@ public interface RecordsManagementServiceRegistry extends ServiceRegistry
      */
     @NotAuditable
     FilePlanPermissionService getFilePlanPermissionService();
-
-    /**
-     * @return file plan authentication service
-     * @since 2.1
-     */
-    FilePlanAuthenticationService getFilePlanAuthenticationService();
 
     /**
      * @return identifier service

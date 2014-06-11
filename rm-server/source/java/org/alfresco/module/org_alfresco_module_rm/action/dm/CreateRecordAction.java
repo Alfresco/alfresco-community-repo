@@ -26,8 +26,8 @@ import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuter
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -76,9 +76,6 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     /** Dictionary service */
     private DictionaryService dictionaryService;
 
-    /** File plan authentication service */
-    private FilePlanAuthenticationService filePlanAuthenticationService;
-
     /**
      * @param recordService record service
      */
@@ -109,14 +106,6 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * @param filePlanAuthenticationService file plan authentication service
-     */
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-        this.filePlanAuthenticationService = filePlanAuthenticationService;
     }
 
     /**
@@ -181,14 +170,15 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
             if (filePlan == null)
             {
                 // TODO .. eventually make the file plan parameter required
-                filePlan = filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<NodeRef>()
+
+                filePlan = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
                 {
                     @Override
                     public NodeRef doWork()
                     {
                         return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
                     }
-                });
+                }, AuthenticationUtil.getAdminUserName());
 
                 // if the file plan is still null, raise an exception
                 if (filePlan == null)

@@ -501,7 +501,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
     }
 
     public void testFileNewContent() throws Exception
@@ -643,7 +643,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
             }
         });
 
-        // test rmadmin
+        // test admin
         doTestInTransaction(new VoidTest()
         {
             @Override
@@ -738,11 +738,11 @@ public class RecordServiceImplTest extends BaseRMTestCase
             }
         });
 
-        // test rmadmin
-        canEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, rmAdminName);
-        canEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, rmAdminName);
-        cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, rmAdminName);
-        canEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, rmAdminName);
+        // test admin
+        canEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, ADMIN_USER);
+        canEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, ADMIN_USER);
+        cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, ADMIN_USER);
+        canEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, ADMIN_USER);
 
         // test normal user
         cantEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, rmUserName);

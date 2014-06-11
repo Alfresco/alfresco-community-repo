@@ -45,7 +45,6 @@ import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -104,11 +103,11 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected QName ASPECT_CUSTOM_ASPECT = QName.createQName(URI, "customAspect");
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
 
+    /** admin user */
+    protected static final String ADMIN_USER = "admin";
+
     /** Common test utils */
     protected CommonRMTestUtils utils;
-
-    /** RM Admin user name */
-    protected String rmAdminUserName;
 
     /** Services */
     protected NodeService nodeService;
@@ -143,7 +142,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected FreezeService freezeService;
     protected RecordService recordService;
     protected FilePlanService filePlanService;
-    protected FilePlanAuthenticationService filePlanAuthenticationService;
     protected RecordFolderService recordFolderService;
     protected ExtendedSecurityService extendedSecurityService;
     protected ReportService reportService;
@@ -224,7 +222,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected String powerUserName;
     protected String securityOfficerName;
     protected String recordsManagerName;
-    protected String rmAdminName;
 
     /** test people */
     protected NodeRef userPerson;
@@ -232,7 +229,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef powerUserPerson;
     protected NodeRef securityOfficerPerson;
     protected NodeRef recordsManagerPerson;
-    protected NodeRef rmAdminPerson;
 
     /** test records */
     protected NodeRef recordOne;
@@ -320,20 +316,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // Initialise the service beans
         initServices();
 
-        // grab the rmadmin user name
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
-        {
-            @Override
-            public Object execute() throws Throwable
-            {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-                rmAdminUserName = filePlanAuthenticationService.getRmAdminUserName();
-
-                return null;
-            }
-        });
-
         // Setup test data
         setupTestData();
 
@@ -394,7 +376,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         freezeService = (FreezeService) applicationContext.getBean("FreezeService");
         recordService = (RecordService) applicationContext.getBean("RecordService");
         filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
-        filePlanAuthenticationService = (FilePlanAuthenticationService) applicationContext.getBean("FilePlanAuthenticationService");
         recordFolderService = (RecordFolderService) applicationContext.getBean("RecordFolderService");
         extendedSecurityService = (ExtendedSecurityService) applicationContext.getBean("ExtendedSecurityService");
         reportService = (ReportService) applicationContext.getBean("ReportService");
@@ -542,8 +523,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
               containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
 
-        permissionService.setPermission(folder, "rmadmin", PermissionService.WRITE, true);
-        permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
+        permissionService.setPermission(folder, ADMIN_USER, PermissionService.WRITE, true);
+        permissionService.setPermission(folder, ADMIN_USER, PermissionService.ADD_CHILDREN, true);
 
         if (isRMSiteTest())
         {
@@ -622,18 +603,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         recordsManagerPerson = createPerson(recordsManagerName);
         filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, recordsManagerName);
 
-        rmAdminName = GUID.generate();
-        rmAdminPerson = createPerson(rmAdminName);
-        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, rmAdminName);
-
         testUsers = new String[]
         {
                 userName,
                 rmUserName,
                 powerUserName,
                 securityOfficerName,
-                recordsManagerName,
-                rmAdminName
+                recordsManagerName
         };
 
         if (isFillingForAllUsers())
@@ -769,7 +745,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     }
 
     /**
-     * Override to ensure the tests are run as the 'rmadmin' user by default.
+     * Override to ensure the tests are run as the 'admin' user by default.
      */
 
     @Override
@@ -812,70 +788,70 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             // empty implementation
         }
     }
-    
+
     /**
      * Execute behaviour driven test.
-     * 
+     *
      * @param test
      */
     protected void doBehaviourDrivenTest(BehaviourDrivenTest test)
     {
         test.run();
     }
-    
+
     /**
      * Behaviour driven test.
-     * 
+     *
      * @author Roy Wetherall
      * @since 2.2
      */
     protected abstract class BehaviourDrivenTest
     {
         protected Class<?> expectedException;
-        
+
         public BehaviourDrivenTest()
         {
         }
-        
+
         public BehaviourDrivenTest(Class<?> expectedException)
         {
             this.expectedException = expectedException;
         }
-        
+
         public void given() { /** empty implementation */ }
-        
+
         public void when() { /** empty implementation */ }
-        
+
         public void then() { /** empty implementation */ }
-        
+
         public void after() { /** empty implementation */ }
-        
+
         public void run()
         {
             try
             {
                 doTestInTransaction(new VoidTest()
-                {                
+                {
                     @Override
                     public void runImpl() throws Exception
                     {
-                       given(); 
+                       given();
                     }
                 });
-                
+
                 if (expectedException == null)
                 {
                     doTestInTransaction(new VoidTest()
-                    {                
+                    {
                         @Override
                         public void runImpl() throws Exception
                         {
                             when();
                         }
                     });
-                    
+
                     doTestInTransaction(new VoidTest()
-                    {                
+                    {
                         @Override
                         public void runImpl() throws Exception
                         {
@@ -886,26 +862,26 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 else
                 {
                     doTestInTransaction(new FailureTest(expectedException)
-                    {                    
+                    {
                         @Override
                         public void run() throws Exception
                         {
                             when();
                         }
-                    });                
+                    });
                 }
             }
             finally
-            {            
+            {
                 doTestInTransaction(new VoidTest()
-                {                
+                {
                     @Override
                     public void runImpl() throws Exception
                     {
-                       after(); 
+                       after();
                     }
                 });
             }
-        }        
+        }
     }
 }

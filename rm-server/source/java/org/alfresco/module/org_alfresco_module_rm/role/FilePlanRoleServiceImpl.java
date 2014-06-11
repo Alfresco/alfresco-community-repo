@@ -22,18 +22,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponent;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -42,7 +38,6 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -51,15 +46,9 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.GUID;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -75,8 +64,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                                                 RecordsManagementModel
 {
     /** I18N */
-    private static final String MSG_FIRST_NAME = "bootstrap.rmadmin.firstName";
-    private static final String MSG_LAST_NAME = "bootstrap.rmadmin.lastName";
     private static final String MSG_ALL_ROLES = "rm.role.all";
 
     /** Location of bootstrap role JSON */
@@ -103,15 +90,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     /** Node service */
     private NodeService nodeService;
 
-    /** File plan authentication service */
-    private FilePlanAuthenticationService filePlanAuthenticationService;
-
-    /** mutable authenticaiton service */
-    private MutableAuthenticationService authenticationService;
-
-    /** person service */
-    private PersonService personService;
-
     private BootstrapImporterModuleComponent bootstrapImporterModule;
 
     /** Records management role zone */
@@ -119,9 +97,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Records Management Config Node */
     private static final String CONFIG_NODEID = "rm_config_folder";
-
-    /** Logger */
-    private static Log logger = LogFactory.getLog(FilePlanRoleServiceImpl.class);
 
     /**
      * @param capabilityService capability service
@@ -161,30 +136,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param filePlanAuthenticationService file plan authentication service
-     */
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-        this.filePlanAuthenticationService = filePlanAuthenticationService;
-    }
-
-    /**
-     * @param personService person service
-     */
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
-    }
-
-    /**
-     * @param authenticationService mutable authentication service
-     */
-    public void setAuthenticationService(MutableAuthenticationService authenticationService)
-    {
-        this.authenticationService = authenticationService;
     }
 
     /**
@@ -391,13 +342,10 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                             String user = AuthenticationUtil.getFullyAuthenticatedUser();
                             authorityService.addAuthority(role.getRoleGroupName(), user);
 
-                            if (!filePlanAuthenticationService.getRmAdminUserName().equals(user))
+                            if (!AuthenticationUtil.getAdminUserName().equals(user))
                             {
-                                // Create the RM Admin User if it does not already exist
-                                createRMAdminUser();
-
                                 // add the dynamic admin authority
-                                authorityService.addAuthority(role.getRoleGroupName(), filePlanAuthenticationService.getRmAdminUserName());
+                                authorityService.addAuthority(role.getRoleGroupName(), AuthenticationUtil.getAdminUserName());
                             }
                         }
                     }
@@ -670,7 +618,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
      */
     public boolean hasRMAdminRole(NodeRef rmRootNode, String user)
     {
-        boolean isRMAdmin = false;
+        boolean isAdmin = false;
 
         Set<Role> userRoles = this.getRolesByUser(rmRootNode, user);
         if (userRoles != null)
@@ -679,13 +627,13 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             {
                 if (role.getName().equals("Administrator"))
                 {
-                    isRMAdmin = true;
+                    isAdmin = true;
                     break;
                 }
             }
         }
 
-        return isRMAdmin;
+        return isAdmin;
     }
 
     /**
@@ -920,33 +868,5 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public String getAllRolesContainerGroup(NodeRef filePlan)
     {
         return authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(filePlan));
-    }
-
-    /**
-     * Create the RMAdmin user if it does not already exist
-     */
-    private void createRMAdminUser()
-    {
-        /** generate rm admin password */
-        String password = GUID.generate();
-
-        String user = filePlanAuthenticationService.getRmAdminUserName();
-        String firstName = I18NUtil.getMessage(MSG_FIRST_NAME);
-        String lastName = I18NUtil.getMessage(MSG_LAST_NAME);
-
-        if (!authenticationService.authenticationExists(user))
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("   ... creating RM Admin user");
-            }
-
-            authenticationService.createAuthentication(user, password.toCharArray());
-            Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-            properties.put(ContentModel.PROP_USERNAME, user);
-            properties.put(ContentModel.PROP_FIRSTNAME, firstName);
-            properties.put(ContentModel.PROP_LASTNAME, lastName);
-            personService.createPerson(properties);
-        }
     }
 }

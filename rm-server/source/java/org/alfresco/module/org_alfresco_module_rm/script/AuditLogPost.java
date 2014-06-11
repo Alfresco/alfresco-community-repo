@@ -140,6 +140,7 @@ public class AuditLogPost extends BaseAuditRetrievalWebScript
      * @param record {@link NodeRef} The audit trail as record
      * @return Response text as {@link String}
      */
+    @SuppressWarnings("null")
     private String createResponse(NodeRef record)
     {
         JSONObject responseJSON = new JSONObject();

@@ -92,7 +92,7 @@ public class RM1008Test extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -130,7 +130,7 @@ public class RM1008Test extends BaseRMTestCase
                 holdService.addToHold(hold, rmFolder);
                 return hold;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -145,7 +145,7 @@ public class RM1008Test extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -171,7 +171,7 @@ public class RM1008Test extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -197,7 +197,7 @@ public class RM1008Test extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -282,7 +282,7 @@ public class RM1008Test extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -308,7 +308,7 @@ public class RM1008Test extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -334,7 +334,7 @@ public class RM1008Test extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {

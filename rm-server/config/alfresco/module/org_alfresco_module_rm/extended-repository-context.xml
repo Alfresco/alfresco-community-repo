@@ -219,10 +219,9 @@
         </property>
 
     	<!--  Since RM 2.1 -->
-    	<property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
     	<property name="filePlanService" ref="FilePlanService" />
-    	<property name="runAsRmAdmin">
-    		<value>${rm.rule.runasrmadmin}</value>
+    	<property name="runAsAdmin">
+    		<value>${rm.rule.runasadmin}</value>
     	</property>
 
         <property name="recordService" ref="RecordService" />

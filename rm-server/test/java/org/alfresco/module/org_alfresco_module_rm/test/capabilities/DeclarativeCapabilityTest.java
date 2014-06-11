@@ -60,7 +60,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
 
     private NodeRef moveToFolder;
     private NodeRef moveToCategory;
-    
+
     private NodeRef hold;
 
     @Override
@@ -109,9 +109,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 utils.declareRecord(declaredRecord);
                 utils.declareRecord(frozenRecord);
                 utils.declareRecord(frozenRecord2);
-                
+
                 hold = holdService.createHold(filePlan, GUID.generate(), "reason", "description");
-                
+
                 holdService.addToHold(hold, frozenRecord);
                 holdService.addToHold(hold, frozenRecordFolder);
                 holdService.addToHold(hold, frozenRecord2);
@@ -349,7 +349,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 }
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {
@@ -445,7 +445,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 }
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         doTestInTransaction(new Test<Void>()
         {

@@ -122,6 +122,9 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
     protected NodeRef recordFolder2;
     protected String collabSiteId;
 
+    /** admin user name */
+    protected static final String ADMIN_USER = "admin";
+
     /**
      * Indicates whether the test collaboration site should be created
      * or not.
@@ -248,7 +251,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
                 // As system user
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
-                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, "rmadmin");
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, ADMIN_USER);
 
                 return null;
             }

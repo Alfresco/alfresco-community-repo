@@ -25,7 +25,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.logging.Log;
@@ -47,9 +47,6 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
     /** Disposition service */
     private DispositionService dispositionService;
 
-    /** File plan authentication service */
-    private FilePlanAuthenticationService filePlanAuthenticationService;
-
     /**
      * Set the disposition service
      *
@@ -59,14 +56,6 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
     {
         this.dispositionService = dispositionService;
     }
-
-    /**
-     * @param filePlanAuthenticationService	file plan authentication service
-     */
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-		this.filePlanAuthenticationService = filePlanAuthenticationService;
-	}
 
     /**
      * Select the disposition schedule to use given there is more than one
@@ -130,14 +119,13 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
         public int compare(final NodeRef f1, final NodeRef f2)
         {
             // Run as admin user
-            return filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Integer>()
+            return AuthenticationUtil.runAs(new RunAsWork<Integer>()
             {
                 public Integer doWork()
                 {
                     return compareImpl(f1, f2);
                 }
-
-            });
+            }, AuthenticationUtil.getAdminUserName());
         }
 
         private int compareImpl(NodeRef f1, NodeRef f2)

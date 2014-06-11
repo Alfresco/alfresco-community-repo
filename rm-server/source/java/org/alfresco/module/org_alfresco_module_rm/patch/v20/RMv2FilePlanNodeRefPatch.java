@@ -132,7 +132,7 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
                    nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
                 }
 
-                // only set the rmadmin permissions on record categories, record folders and records
+                // only set the admin permissions on record categories, record folders and records
                 FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(filePlanComponentNodeRef);
                 if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) ||
                     FilePlanComponentKind.RECORD_FOLDER.equals(kind) ||

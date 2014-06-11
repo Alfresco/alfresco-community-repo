@@ -25,7 +25,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,8 +40,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class ExtendedRuleServiceImpl extends RuleServiceImpl
 {
-	/** indicates whether the rules should be run as rmadmin or not */
-    private boolean runAsRmAdmin = true;
+	/** indicates whether the rules should be run as admin or not */
+    private boolean runAsAdmin = true;
 
     /** ignore types */
     private Set<QName> ignoredTypes = new HashSet<QName>();
@@ -50,30 +49,11 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     /** file plan service */
     private FilePlanService filePlanService;
 
-    /** file plan authentication service */
-    private FilePlanAuthenticationService filePlanAuthenticationService;
-
     /** node service */
     protected NodeService nodeService;
 
     /** Record service */
     protected RecordService recordService;
-
-    /**
-     * @param runAsRmAdmin	true if run rules as rmadmin, false otherwise
-     */
-    public void setRunAsRmAdmin(boolean runAsRmAdmin)
-    {
-        this.runAsRmAdmin = runAsRmAdmin;
-    }
-
-    /**
-     * @param filePlanAuthenticationService	file plan authentication service
-     */
-    public void setFilePlanAuthenticationService(FilePlanAuthenticationService filePlanAuthenticationService)
-    {
-        this.filePlanAuthenticationService = filePlanAuthenticationService;
-    }
 
     /**
      * @param nodeService	node service
@@ -97,6 +77,14 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+
+    /**
+     * @param runAsAdmin  true if run rules as admin, false otherwise
+     */
+    public void setRunAsAdmin(boolean runAsAdmin)
+    {
+        this.runAsAdmin = runAsAdmin;
     }
 
     /**
@@ -181,18 +169,17 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
             	// ignore and
                 if (!isIgnoredType(typeQName))
     	        {
-    	        	if (runAsRmAdmin)
+    	        	if (runAsAdmin)
     	            {
-                		// run as rmadmin
-    	            	filePlanAuthenticationService.runAsRmAdmin(new RunAsWork<Void>()
-    	            	{
-    						@Override
-    						public Void doWork()
-    						{
-    							ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-    							return null;
-    						}
-    					});
+    	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork()
+                            {
+                                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                                return null;
+                            }
+                        }, AuthenticationUtil.getAdminUserName());
                 	}
                 	else
                 	{

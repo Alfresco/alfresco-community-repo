@@ -117,7 +117,7 @@ public class CustomEMailMappingServiceImplTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
     }
 
     private CustomMapping getCustomMapping(String from, String to)

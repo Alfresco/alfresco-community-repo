@@ -138,7 +138,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
     }
 
     /**
@@ -147,13 +147,13 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     public void testGetAuditTrail()
     {
         // show the audit is empty
-        getAuditTrail(1, rmAdminName);
+        getAuditTrail(1, ADMIN_USER);
 
         // make a change
-        final String updatedProperty = updateTitle(filePlan, rmAdminName);
+        final String updatedProperty = updateTitle(filePlan, ADMIN_USER);
 
         // show the audit has been updated
-        List<RecordsManagementAuditEntry> entries = getAuditTrail(3, rmAdminName);
+        List<RecordsManagementAuditEntry> entries = getAuditTrail(3, ADMIN_USER);
         final RecordsManagementAuditEntry entry = entries.get(2);
         assertNotNull(entry);
 
@@ -182,15 +182,15 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
 
         // add some more title updates
-        updateTitle(rmContainer, rmAdminName);
-        updateTitle(rmFolder, rmAdminName);
-        updateTitle(record, rmAdminName);
+        updateTitle(rmContainer, ADMIN_USER);
+        updateTitle(rmFolder, ADMIN_USER);
+        updateTitle(record, ADMIN_USER);
 
         // show the audit has been updated
-        getAuditTrail(7, rmAdminName);
+        getAuditTrail(7, ADMIN_USER);
 
         // snap shot date
         Date snapShot = new Date();
@@ -198,7 +198,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         // show the audit results can be limited
         RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
         params.setMaxEntries(2);
-        getAuditTrail(params, 2, rmAdminName);
+        getAuditTrail(params, 2, ADMIN_USER);
 
         // test filter by user
         updateTitle(rmContainer, recordsManagerName);
@@ -207,39 +207,39 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
         params = new RecordsManagementAuditQueryParameters();
         params.setUser(recordsManagerName);
-        getAuditTrail(params, 3, rmAdminName);
+        getAuditTrail(params, 3, ADMIN_USER);
 
         // test filter by date
         params = new RecordsManagementAuditQueryParameters();
         params.setDateFrom(snapShot);
-        getAuditTrail(params, 13, rmAdminName);
+        getAuditTrail(params, 13, ADMIN_USER);
         params = new RecordsManagementAuditQueryParameters();
         params.setDateTo(snapShot);
-        getAuditTrail(params, 14, rmAdminName);
+        getAuditTrail(params, 14, ADMIN_USER);
         params.setDateFrom(testStartTime);
-        getAuditTrail(params, 15, rmAdminName);
+        getAuditTrail(params, 15, ADMIN_USER);
 
         // test filter by object
-        updateTitle(record, rmAdminName);
-        updateTitle(record, rmAdminName);
-        updateTitle(record, rmAdminName);
+        updateTitle(record, ADMIN_USER);
+        updateTitle(record, ADMIN_USER);
+        updateTitle(record, ADMIN_USER);
         params = new RecordsManagementAuditQueryParameters();
         params.setNodeRef(record);
-        getAuditTrail(params, 5, rmAdminName);
+        getAuditTrail(params, 5, ADMIN_USER);
 
         // test filter by event
         params = new RecordsManagementAuditQueryParameters();
      //   params.setEvent("cutoff");
-     //   getAuditTrail(params, 0, rmAdminName);
+     //   getAuditTrail(params, 0, ADMIN_USER);
         params.setEvent("Update RM Object");
-        getAuditTrail(params, 10, rmAdminName);
+        getAuditTrail(params, 10, ADMIN_USER);
 
         // test filter by property
        // params = new RecordsManagementAuditQueryParameters();
         //params.setProperty(PROP_ADDRESSEES);
-        //getAuditTrail(params, 0, rmAdminName);
+        //getAuditTrail(params, 0, ADMIN_USER);
        // params.setProperty(PROP_TITLE);
-       // getAuditTrail(params, 10, rmAdminName);
+       // getAuditTrail(params, 10, ADMIN_USER);
     }
 
     /**
@@ -260,16 +260,16 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
         Thread.sleep(5000);
 
-        List<RecordsManagementAuditEntry> result1 = getAuditTrail(rmAdminName);
+        List<RecordsManagementAuditEntry> result1 = getAuditTrail(ADMIN_USER);
         assertNotNull(result1);
 
         // Update the fileplan
-        updateTitle(filePlan, rmAdminName);
+        updateTitle(filePlan, ADMIN_USER);
 
         Thread.sleep(5000);
 
         // There should be no new audit entries
-        List<RecordsManagementAuditEntry> result2 = getAuditTrail(rmAdminName);
+        List<RecordsManagementAuditEntry> result2 = getAuditTrail(ADMIN_USER);
         assertNotNull(result2);
         assertEquals(
                 "Audit results should not have changed after auditing was disabled",
@@ -277,11 +277,11 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
 
         // repeat with a start
         rmAuditService.startAuditLog(filePlan);
-        updateTitle(filePlan, rmAdminName);
+        updateTitle(filePlan, ADMIN_USER);
 
         Thread.sleep(5000);
 
-        List<RecordsManagementAuditEntry> result3 = getAuditTrail(rmAdminName);
+        List<RecordsManagementAuditEntry> result3 = getAuditTrail(ADMIN_USER);
         assertNotNull(result3);
         assertTrue(
                 "Expected more results after enabling audit",
@@ -294,7 +294,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
         rmAuditService.clearAuditLog(filePlan);
 
         // There should be no entries
-        List<RecordsManagementAuditEntry> result4 = getAuditTrail(rmAdminName);
+        List<RecordsManagementAuditEntry> result4 = getAuditTrail(ADMIN_USER);
         assertNotNull(result4);
         assertEquals(
                 "Audit entries should have been cleared",
@@ -342,7 +342,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             AuthenticationUtil.popAuthentication();
         }
         rmAuditService.stopAuditLog(filePlan);
-        List<RecordsManagementAuditEntry> result1 = getAuditTrail(rmAdminName);
+        List<RecordsManagementAuditEntry> result1 = getAuditTrail(ADMIN_USER);
         // Check that the username is reflected correctly in the results
         assertFalse("No audit results were generated for the failed login.", result1.isEmpty());
         boolean found = false;
@@ -386,7 +386,7 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
             AuthenticationUtil.popAuthentication();
         }
         rmAuditService.stopAuditLog(filePlan);
-        List<RecordsManagementAuditEntry> result2 = getAuditTrail(rmAdminName);
+        List<RecordsManagementAuditEntry> result2 = getAuditTrail(ADMIN_USER);
         found = false;
         for (RecordsManagementAuditEntry entry : result2)
         {

@@ -95,7 +95,7 @@ public class FileToActionTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
     }
 
     private void initRecord()
@@ -147,7 +147,7 @@ public class FileToActionTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
     }
 
     public void testFileToPath2()
@@ -175,7 +175,7 @@ public class FileToActionTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
     }
 
     public void testCreate() throws Exception
@@ -237,7 +237,7 @@ public class FileToActionTest extends BaseRMTestCase
 
                 return null;
             }
-        }, rmAdminName);
+        }, ADMIN_USER);
     }
 
     public void failureTests() throws Exception

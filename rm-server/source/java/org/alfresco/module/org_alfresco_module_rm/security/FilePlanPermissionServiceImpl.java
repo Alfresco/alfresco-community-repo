@@ -55,7 +55,8 @@ import org.apache.commons.logging.LogFactory;
  */
 @BehaviourBean
 public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
-                                           implements FilePlanPermissionService
+                                           implements FilePlanPermissionService,
+                                                      RMPermissionModel
 {
     /** Permission service */
     protected PermissionService permissionService;
@@ -512,21 +513,45 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * Set the permission, taking into account that filing is a superset of read
      *
-     * @param nodeRef
-     * @param authority
-     * @param permission
+     * @param nodeRef       node reference
+     * @param authority     authority
+     * @param permission    permission
      */
     private void setPermissionImpl(NodeRef nodeRef, String authority, String permission)
     {
-        if (RMPermissionModel.FILING.equals(permission))
+        boolean hasRead = false;
+        boolean hasFilling = false;
+        
+        Set<AccessPermission> perms = permissionService.getAllSetPermissions(nodeRef);
+        for (AccessPermission perm : perms)
         {
-            // Remove record read permission before adding filing permission
-            permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);
+            if (perm.getAuthority().equals(authority))
+            {
+                if (perm.getPermission().equals(FILING))
+                {
+                    hasFilling = true;
+                }
+                else if (perm.getPermission().equals(READ_RECORDS))
+                {
+                    hasRead = true;
+                }
+            } 
         }
-
-        permissionService.setPermission(nodeRef, authority, permission, true);
+        
+        if (FILING.equals(permission) && hasRead)
+        {
+            // remove read permission
+            permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);       
+            hasRead = false;
+        }
+        
+        if (!hasRead && !hasFilling)
+        {
+            // add permission
+            permissionService.setPermission(nodeRef, authority, permission, true);            
+        }        
     }
-
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#deletePermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
      */

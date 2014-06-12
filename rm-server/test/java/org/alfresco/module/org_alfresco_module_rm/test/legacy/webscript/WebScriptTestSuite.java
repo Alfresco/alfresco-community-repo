@@ -16,27 +16,36 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
-import org.alfresco.module.org_alfresco_module_rm.test.integration.IntegrationTestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.legacy.LegacyTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-
 /**
- * Convenience test suite that runs all the tests.
+ * RM WebScript test suite
  *
  * @author Roy Wetherall
- * @since 2.1
  */
 @RunWith(Suite.class)
 @SuiteClasses(
-{    
-    LegacyTestSuite.class,
-    IntegrationTestSuite.class
+{
+    DispositionRestApiTest.class,
+    EventRestApiTest.class,
+    RMCaveatConfigScriptTest.class,
+    RMConstraintScriptTest.class,
+    //RmRestApiTest.class,
+    RoleRestApiTest.class,
+    DataSetRestApiTest.class,
+    EmailMapScriptTest.class,
+    EmailMapKeysRestApiTest.class,
+    CapabilitiesRestApiTest.class,
+    ActionDefinitionsRestApiTest.class,
+    RmClassesRestApiTest.class,
+    RmPropertiesRestApiTest.class,
+    RmAuthoritiesRestApiTest.class,
+    SubstitutionSuggestionsRestApiTest.class
 })
-public class AllTestSuite
+public class WebScriptTestSuite
 {
 }

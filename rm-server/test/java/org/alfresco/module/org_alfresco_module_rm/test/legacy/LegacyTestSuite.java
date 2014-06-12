@@ -16,10 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy;
 
-import org.alfresco.module.org_alfresco_module_rm.test.integration.IntegrationTestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.legacy.LegacyTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.legacy.action.ActionTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.legacy.capabilities.CapabilitiesTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.legacy.jscript.JScriptTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.legacy.security.SecurityTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.legacy.service.ServicesTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript.WebScriptTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -33,10 +37,14 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses(
-{    
-    LegacyTestSuite.class,
-    IntegrationTestSuite.class
+{
+    ActionTestSuite.class,
+    CapabilitiesTestSuite.class,
+    ServicesTestSuite.class,
+    WebScriptTestSuite.class,
+    JScriptTestSuite.class,
+    SecurityTestSuite.class
 })
-public class AllTestSuite
+public class LegacyTestSuite
 {
 }

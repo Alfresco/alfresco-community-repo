@@ -16,27 +16,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.security;
 
-import org.alfresco.module.org_alfresco_module_rm.test.integration.IntegrationTestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.legacy.LegacyTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 
 /**
- * Convenience test suite that runs all the tests.
+ * Security Test Suite
  *
  * @author Roy Wetherall
- * @since 2.1
+ * @since 2.2
  */
 @RunWith(Suite.class)
 @SuiteClasses(
-{    
-    LegacyTestSuite.class,
-    IntegrationTestSuite.class
+{
+    MethodSecurityTest.class
 })
-public class AllTestSuite
+public class SecurityTestSuite
 {
 }

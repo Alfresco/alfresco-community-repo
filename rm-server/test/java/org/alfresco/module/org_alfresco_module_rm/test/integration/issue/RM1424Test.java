@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.test.service.HoldServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.legacy.service.HoldServiceImplTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**

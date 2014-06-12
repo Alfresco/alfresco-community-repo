@@ -1107,6 +1107,38 @@
         </property>
     </bean>
 
+   <!--  File Plan Authentication Service -->
+   <bean id="filePlanAuthenticationService"
+      class="org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationServiceImpl" />
+
+   <bean id="FilePlanAuthenticationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService</value>
+      </property>
+      <property name="target">
+         <ref bean="filePlanAuthenticationService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="FilePlanAuthenticationService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="FilePlanAuthenticationService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="FilePlanAuthenticationService_transaction" parent="baseTransaction"/>
+
+   <bean id="FilePlanAuthenticationService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+            org.alfresco.module.org_alfresco_module_rm.security.FilePlanAuthenticationService.*=RM_ALLOW
+            ]]>
+         </value>
+      </property>
+   </bean>
+
     <!--  Custom EMail Mapping Service -->
     <bean id="customEmailMappingService"
       class="org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingServiceImpl" >

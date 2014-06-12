@@ -71,7 +71,7 @@ public class RoleRestApiTest extends BaseRMWebScriptTestCase
         filePlanRoleService.createRole(filePlan, role2, "My Test Role Too", getListOfCapabilities(5));
         
         //The user can either enter a plain text label or a key to look up in a property file.
-        filePlanRoleService.createRole(filePlan, role3, "bootstrap.rmadmin.lastName", getListOfCapabilities(5));
+        filePlanRoleService.createRole(filePlan, role3, "System Administrator", getListOfCapabilities(5));
 
         // create test group
         String groupName = GUID.generate();

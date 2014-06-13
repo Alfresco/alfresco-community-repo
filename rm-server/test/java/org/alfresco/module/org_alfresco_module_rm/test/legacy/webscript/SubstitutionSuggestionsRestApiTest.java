@@ -87,7 +87,8 @@ public class SubstitutionSuggestionsRestApiTest extends BaseRMWebScriptTestCase
             "date.month.number",
             "date.month.long",
             "date.month.short",
-            "date.month"
+            "date.month",
+            "date.day.month",
         });
     }
 }

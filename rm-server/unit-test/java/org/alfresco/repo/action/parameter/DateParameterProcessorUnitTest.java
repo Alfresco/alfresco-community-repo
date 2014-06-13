@@ -50,12 +50,12 @@ public class DateParameterProcessorUnitTest
         assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
+        assertTrue(suggestions.contains("date.day.month"));
         assertTrue(suggestions.contains("date.day.year"));
         assertTrue(suggestions.contains("date.month.short"));
         assertTrue(suggestions.contains("date.month"));
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
-        assertTrue(suggestions.contains("date.year.short"));
         assertEquals(10, suggestions.size());
     }
 
@@ -67,12 +67,12 @@ public class DateParameterProcessorUnitTest
         assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
+        assertTrue(suggestions.contains("date.day.month"));
         assertTrue(suggestions.contains("date.day.year"));
         assertTrue(suggestions.contains("date.month.short"));
         assertTrue(suggestions.contains("date.month"));
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
-        assertTrue(suggestions.contains("date.year.short"));
         assertEquals(10, suggestions.size());
     }
 
@@ -84,12 +84,12 @@ public class DateParameterProcessorUnitTest
         assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
+        assertTrue(suggestions.contains("date.day.month"));
         assertTrue(suggestions.contains("date.day.year"));
         assertTrue(suggestions.contains("date.month.short"));
         assertTrue(suggestions.contains("date.month"));
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
-        assertTrue(suggestions.contains("date.year.short"));
         assertEquals(10, suggestions.size());
     }
 
@@ -101,8 +101,9 @@ public class DateParameterProcessorUnitTest
         assertTrue(suggestions.contains("date.day"));
         assertTrue(suggestions.contains("date.day.long"));
         assertTrue(suggestions.contains("date.day.number"));
+        assertTrue(suggestions.contains("date.day.month"));
         assertTrue(suggestions.contains("date.day.year"));
-        assertEquals(5, suggestions.size());
+        assertEquals(6, suggestions.size());
     }
 
     @Test
@@ -115,6 +116,7 @@ public class DateParameterProcessorUnitTest
         assertTrue(suggestions.contains("date.month.long"));
         assertTrue(suggestions.contains("date.month.number"));
         assertTrue(suggestions.contains("date.year.long"));
-        assertEquals(6, suggestions.size());
+        assertTrue(suggestions.contains("date.day.month"));
+        assertEquals(7, suggestions.size());
     }
 }

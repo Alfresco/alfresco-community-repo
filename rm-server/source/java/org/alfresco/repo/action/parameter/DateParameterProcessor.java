@@ -50,6 +50,7 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         DAY,
         DAY + SEP + LONG,
         DAY + SEP + NUMBER,
+        DAY + SEP + MONTH,
         DAY + SEP + YEAR,
         MONTH + SEP + SHORT,
         MONTH,
@@ -116,11 +117,15 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         }
         else if (NUMBER.equalsIgnoreCase(style))
         {
-            pattern = "u";
+            pattern = "uu";
+        }
+        else if (MONTH.equalsIgnoreCase(style))
+        {
+            pattern = "dd";
         }
         else if (YEAR.equalsIgnoreCase(style))
         {
-            pattern = "D";
+            pattern = "DDD";
         }
         else
         {

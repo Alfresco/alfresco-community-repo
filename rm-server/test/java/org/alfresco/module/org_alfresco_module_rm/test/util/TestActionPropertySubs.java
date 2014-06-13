@@ -63,8 +63,8 @@ public class TestActionPropertySubs extends RMActionExecuterAbstractBase
         Date date = new Date();
         String dayShort = new SimpleDateFormat("EE").format(date);
         String dayLong = new SimpleDateFormat("EEEE").format(date);
-        String dayNumber = new SimpleDateFormat("u").format(date);
-        String dayYear = new SimpleDateFormat("D").format(date);
+        String dayNumber = new SimpleDateFormat("uu").format(date);
+        String dayYear = new SimpleDateFormat("DDD").format(date);
         String monthShort = new SimpleDateFormat("MMM").format(date);
         String monthLong = new SimpleDateFormat("MMMM").format(date);
         String monthNumber = new SimpleDateFormat("MM").format(date);

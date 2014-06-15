@@ -35,10 +35,18 @@ public class SimpleRecordsManagementEventTypeImpl implements RecordsManagementEv
     public static final String NAME = "rmEventType.simple";
 
     /** Records management event service */
-    protected RecordsManagementEventService recordsManagementEventService;
+    private RecordsManagementEventService recordsManagementEventService;
 
     /** Name */
-    protected String name;
+    private String name;
+
+    /**
+     * @return Records management event service
+     */
+    protected RecordsManagementEventService getRecordsManagementEventService()
+    {
+        return this.recordsManagementEventService;
+    }
 
     /**
      * Set the records management event service
@@ -55,7 +63,7 @@ public class SimpleRecordsManagementEventTypeImpl implements RecordsManagementEv
      */
     public void init()
     {
-        recordsManagementEventService.registerEventType(this);
+        getRecordsManagementEventService().registerEventType(this);
     }
 
     /**

@@ -37,7 +37,15 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     private static final String MSG_NODE_NOT_TRANSFER = "rm.action.node-not-transfer";
 
     /** Transfer service */
-    protected TransferService transferService;
+    private TransferService transferService;
+
+    /**
+     * @return transfer service
+     */
+    protected TransferService getTransferService()
+    {
+        return this.transferService;
+    }
 
     /**
      * @param transferService transfer service
@@ -55,7 +63,7 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         checkTransferSubClass(actionedUponNodeRef);
-        transferService.completeTransfer(actionedUponNodeRef);
+        getTransferService().completeTransfer(actionedUponNodeRef);
     }
 
     /**

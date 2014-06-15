@@ -844,9 +844,7 @@
     <bean id="freezeService" class="org.alfresco.module.org_alfresco_module_rm.freeze.FreezeServiceImpl">
         <property name="nodeService" ref="nodeService" />
         <property name="dictionaryService" ref="DictionaryService" />
-        <property name="recordService" ref="RecordService" />
         <property name="filePlanService" ref="FilePlanService" />
-        <property name="recordFolderService" ref="RecordFolderService" />
         <property name="holdService" ref="HoldService" />
     </bean>
 

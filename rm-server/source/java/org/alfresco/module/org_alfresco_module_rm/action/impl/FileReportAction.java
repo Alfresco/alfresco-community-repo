@@ -55,8 +55,16 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     /** I18N */
     private static final String MSG_PARAM_NOT_SUPPLIED = "rm.action.parameter-not-supplied";
 
-    /** report service */
-    protected ReportService reportService;
+    /** Report service */
+    private ReportService reportService;
+
+    /**
+     * @return Report service
+     */
+    protected ReportService getReportService()
+    {
+        return this.reportService;
+    }
 
     /**
      * @param reportService report service
@@ -87,7 +95,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         final NodeRef destination = getDestination(action);
 
         // generate the report
-        final Report report = reportService.generateReport(reportType, actionedUponNodeRef, mimetype);
+        final Report report = getReportService().generateReport(reportType, actionedUponNodeRef, mimetype);
 
         // file the report as system
         NodeRef filedReport = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
@@ -95,7 +103,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
             @Override
             public NodeRef doWork()
             {
-                return reportService.fileReport(destination, report);
+                return getReportService().fileReport(destination, report);
             }
         });
 

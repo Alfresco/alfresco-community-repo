@@ -34,16 +34,40 @@ import org.springframework.context.ApplicationContextAware;
 public abstract class AuditableActionExecuterAbstractBase extends ActionExecuterAbstractBase implements ApplicationContextAware
 {
     /** Indicates whether the action is auditable or not */
-    protected boolean auditable = true;
+    private boolean auditable = true;
 
     /** Indicates whether the action is audited immediately or not */
-    protected boolean auditedImmediately = false;
+    private boolean auditedImmediately = false;
 
     /** Application context */
-    protected ApplicationContext applicationContext;
+    private ApplicationContext applicationContext;
 
     /** Records management audit service */
     private RecordsManagementAuditService auditService;
+
+    /**
+     * @return True if auditable, false otherwise
+     */
+    protected boolean isAuditable()
+    {
+        return this.auditable;
+    }
+
+    /**
+     * @return True if audited immediately, false otherwise
+     */
+    protected boolean isAuditedImmediately()
+    {
+        return this.auditedImmediately;
+    }
+
+    /**
+     * @return Application context
+     */
+    protected ApplicationContext getApplicationContext()
+    {
+        return this.applicationContext;
+    }
 
     /**
      * @param auditable true if auditable, false otherwise
@@ -77,7 +101,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     {
         if (auditService == null)
         {
-            auditService = (RecordsManagementAuditService)applicationContext.getBean("recordsManagementAuditService");
+            auditService = (RecordsManagementAuditService) getApplicationContext().getBean("recordsManagementAuditService");
         }
         return auditService;
     }
@@ -93,7 +117,7 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
             super.init();
         }
 
-        if (auditable)
+        if (isAuditable())
         {
             // get the details of the action
             String name = getActionDefinition().getName();
@@ -116,9 +140,9 @@ public abstract class AuditableActionExecuterAbstractBase extends ActionExecuter
     public void execute(Action action, NodeRef actionedUponNodeRef)
     {
         // audit the execution of the action
-        if (auditable)
+        if (isAuditable())
         {
-            if (auditedImmediately)
+            if (isAuditedImmediately())
             {
                 // To be audited immediately before the action is executed, eg. to audit before actionedUponNodeRef gets deleted during the execution.
                 getAuditService().auditEvent(actionedUponNodeRef, this.getActionDefinition().getName(), null, null, true);

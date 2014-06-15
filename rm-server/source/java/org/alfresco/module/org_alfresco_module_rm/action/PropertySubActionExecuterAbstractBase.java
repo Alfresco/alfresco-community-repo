@@ -32,11 +32,27 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public abstract class PropertySubActionExecuterAbstractBase extends AuditableActionExecuterAbstractBase
 {
-	/** Parameter processor component */
-    protected ParameterProcessorComponent parameterProcessorComponent;
+    /** Parameter processor component */
+    private ParameterProcessorComponent parameterProcessorComponent;
 
     /** Indicates whether parameter substitutions are allowed */
-    protected boolean allowParameterSubstitutions = false;
+    private boolean allowParameterSubstitutions = false;
+
+    /**
+     * @return Parameter processor component
+     */
+    protected ParameterProcessorComponent getParameterProcessorComponent()
+    {
+        return this.parameterProcessorComponent;
+    }
+
+    /**
+     * @return True if parameter substitutions are allowed, false otherwise
+     */
+    protected boolean isAllowParameterSubstitutions()
+    {
+        return this.allowParameterSubstitutions;
+    }
 
     /**
      * 	@param parameterProcessorComponent	parameter processor component
@@ -61,9 +77,9 @@ public abstract class PropertySubActionExecuterAbstractBase extends AuditableAct
     public void execute(Action action, NodeRef actionedUponNodeRef)
     {
     	// do the property subs (if any exist)
-        if (allowParameterSubstitutions)
+        if (isAllowParameterSubstitutions())
         {
-           parameterProcessorComponent.process(action, getActionDefinition(), actionedUponNodeRef);
+           getParameterProcessorComponent().process(action, getActionDefinition(), actionedUponNodeRef);
         }
 
         super.execute(action, actionedUponNodeRef);

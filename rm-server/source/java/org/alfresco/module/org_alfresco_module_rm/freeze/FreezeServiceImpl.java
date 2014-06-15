@@ -29,16 +29,12 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -52,48 +48,38 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                                implements FreezeService,
                                           RecordsManagementModel
 {
-    /** Logger */
-    @SuppressWarnings("unused")
-    private static Log logger = LogFactory.getLog(FreezeServiceImpl.class);
-
     /** I18N */
     //private static final String MSG_FREEZE_ONLY_RECORDS_FOLDERS = "rm.action.freeze-only-records-folders";
     private static final String MSG_HOLD_NAME = "rm.hold.name";
 
-    /** Record service */
-    protected RecordService recordService;
-
     /** File Plan Service */
-    protected FilePlanService filePlanService;
-
-    /** Record folder service */
-    protected RecordFolderService recordFolderService;
+    private FilePlanService filePlanService;
 
     /** Hold service */
-    protected HoldService holdService;
+    private HoldService holdService;
 
     /**
-     * @param recordService record service
+     * @return File plan service
      */
-    public void setRecordService(RecordService recordService)
+    protected FilePlanService getFilePlanService()
     {
-        this.recordService = recordService;
+        return this.filePlanService;
     }
 
     /**
-     * @param filePlanService   file plan service
+     * @return Hold service
+     */
+    protected HoldService getHoldService()
+    {
+        return this.holdService;
+    }
+
+    /**
+     * @param filePlanService file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param recordFolderService record folder service
-     */
-    public void setRecordFolderService(RecordFolderService recordFolderService)
-    {
-        this.recordFolderService = recordFolderService;
     }
 
     /**
@@ -134,8 +120,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         }
 
         return false;
-    } 
-    
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#getFreezeDate(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -169,7 +155,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
 
         return null;
     }
-    
+
     /**
      * Deprecated Method Implementations
      */
@@ -181,7 +167,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     @Deprecated
     public Set<NodeRef> getFrozen(NodeRef hold)
     {
-        return new HashSet<NodeRef>(holdService.getHeld(hold));
+        return new HashSet<NodeRef>(getHoldService().getHeld(hold));
     }
 
     /**
@@ -193,7 +179,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     public NodeRef freeze(String reason, NodeRef nodeRef)
     {
         NodeRef hold = createHold(nodeRef, reason);
-        holdService.addToHold(hold, nodeRef);
+        getHoldService().addToHold(hold, nodeRef);
         return hold;
     }
 
@@ -208,7 +194,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("hold", hold);
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        holdService.addToHold(hold, nodeRef);
+        getHoldService().addToHold(hold, nodeRef);
     }
 
     /**
@@ -219,12 +205,12 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     @Deprecated
     public NodeRef freeze(String reason, Set<NodeRef> nodeRefs)
     {
-        NodeRef hold = null;        
+        NodeRef hold = null;
         if (!nodeRefs.isEmpty())
         {
             List<NodeRef> list = new ArrayList<NodeRef>(nodeRefs);
             hold = createHold(list.get(0), reason);
-            holdService.addToHold(hold, list);
+            getHoldService().addToHold(hold, list);
         }
         return hold;
     }
@@ -253,10 +239,10 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     @Deprecated
     public void unFreeze(NodeRef nodeRef)
     {
-        List<NodeRef> holds = holdService.heldBy(nodeRef, true);
+        List<NodeRef> holds = getHoldService().heldBy(nodeRef, true);
         for (NodeRef hold : holds)
         {
-            holdService.removeFromHold(hold, nodeRef);
+            getHoldService().removeFromHold(hold, nodeRef);
         }
     }
 
@@ -282,7 +268,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     @Deprecated
     public void relinquish(NodeRef hold)
     {
-        holdService.deleteHold(hold);
+        getHoldService().deleteHold(hold);
     }
 
     /**
@@ -292,7 +278,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     @Deprecated
     public String getReason(NodeRef hold)
     {
-        return holdService.getHoldReason(hold);
+        return getHoldService().getHoldReason(hold);
     }
 
     /**
@@ -303,7 +289,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     @Deprecated
     public void updateReason(NodeRef hold, String reason)
     {
-        holdService.setHoldReason(hold, reason);
+        getHoldService().setHoldReason(hold, reason);
     }
 
     /**
@@ -314,8 +300,8 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     {
         ParameterCheck.mandatory("filePlan", filePlan);
 
-        return new HashSet<NodeRef>(holdService.getHolds(filePlan));
-    }   
+        return new HashSet<NodeRef>(getHoldService().getHolds(filePlan));
+    }
 
     /**
      * Creates a hold using the given nodeRef and reason
@@ -327,14 +313,14 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
     private NodeRef createHold(NodeRef nodeRef, String reason)
     {
         // get the hold container
-        final NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-        NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
+        final NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
+        NodeRef holdContainer = getFilePlanService().getHoldContainer(filePlan);
 
         // calculate the hold name
         int nextCount = getNextCount(holdContainer);
         String holdName = I18NUtil.getMessage(MSG_HOLD_NAME) + " " + StringUtils.leftPad(Integer.toString(nextCount), 10, "0");
 
         // create hold
-        return holdService.createHold(filePlan, holdName, reason, null);
-    }    
+        return getHoldService().createHold(filePlan, holdName, reason, null);
+    }
 }

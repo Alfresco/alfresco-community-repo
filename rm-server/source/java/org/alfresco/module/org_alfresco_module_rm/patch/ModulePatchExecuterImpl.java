@@ -40,7 +40,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
                                     implements ModulePatchExecuter
 {
     /** logger */
-    protected static final Log logger = LogFactory.getLog(ModulePatchExecuterImpl.class);
+    protected static final Log LOGGER = LogFactory.getLog(ModulePatchExecuterImpl.class);
 
     /** default start schema */
     private static final int START_SCHEMA = 0;
@@ -85,9 +85,9 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
             throw new AlfrescoRuntimeException("Unable to register module patch, becuase module id is invalid.");
         }
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("Registering module patch " + modulePatch.getId() + " for module " + getModuleId());
+            LOGGER.debug("Registering module patch " + modulePatch.getId() + " for module " + getModuleId());
         }
 
         modulePatches.put(modulePatch.getId(), modulePatch);
@@ -102,9 +102,9 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
         // get current schema version
         int currentSchema = getCurrentSchema();
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("Running module patch executer (currentSchema=" + currentSchema + ", configuredSchema=" + moduleSchema + ")");
+            LOGGER.debug("Running module patch executer (currentSchema=" + currentSchema + ", configuredSchema=" + moduleSchema + ")");
         }
 
         if (moduleSchema > currentSchema)

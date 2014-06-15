@@ -33,7 +33,7 @@ import org.springframework.beans.factory.BeanNameAware;
 public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
 {
     /** logger */
-    protected static final Log logger = LogFactory.getLog(ModulePatch.class);
+    protected static final Log LOGGER = LogFactory.getLog(ModulePatch.class);
 
     /** module patch service */
     private ModulePatchExecuter modulePatchExecuter;
@@ -194,13 +194,13 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     @Override
     public void apply()
     {
-        if (logger.isInfoEnabled())
+        if (LOGGER.isInfoEnabled())
         {
-            logger.info("Executing module patch \"" + description + "\"");
+            LOGGER.info("Executing module patch \"" + description + "\"");
         }
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("   ... id=" + id +
+            LOGGER.debug("   ... id=" + id +
                                ",moduleId=" + moduleId +
                                ",from=" + fixesFromSchema +
                                ",to=" + fixesToSchema +
@@ -212,9 +212,9 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
                 true,
                 false);
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("   ... module patch applied");
+            LOGGER.debug("   ... module patch applied");
         }
     }
 

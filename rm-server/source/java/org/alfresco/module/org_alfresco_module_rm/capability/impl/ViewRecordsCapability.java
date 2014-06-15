@@ -41,9 +41,9 @@ public final class ViewRecordsCapability extends DeclarativeCapability
             }
             else
             {
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug("View Records capability abstains, because node is not a file plan component. (nodeRef=" + nodeRef.toString() + ")");
+                    LOGGER.debug("View Records capability abstains, because node is not a file plan component. (nodeRef=" + nodeRef.toString() + ")");
                 }
             }
         }

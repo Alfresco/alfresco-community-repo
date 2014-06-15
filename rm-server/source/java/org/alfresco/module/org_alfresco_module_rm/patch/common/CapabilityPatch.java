@@ -107,9 +107,9 @@ public abstract class CapabilityPatch extends AbstractModulePatch
                 // only update if the capability is missing
                 if (!capabilities.contains(capability))
                 {
-                    if (logger.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
-                        logger.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
+                        LOGGER.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
                     }
 
                     capabilities.add(capability);
@@ -127,16 +127,16 @@ public abstract class CapabilityPatch extends AbstractModulePatch
     {
         Set<NodeRef> filePlans = getFilePlans();
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("  ... updating " + filePlans.size() + " file plans");
+            LOGGER.debug("  ... updating " + filePlans.size() + " file plans");
         }
 
         for (NodeRef filePlan : filePlans)
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("  ... updating file plan " + filePlan.toString());
+                LOGGER.debug("  ... updating file plan " + filePlan.toString());
             }
             
             // apply the capability patch to each file plan

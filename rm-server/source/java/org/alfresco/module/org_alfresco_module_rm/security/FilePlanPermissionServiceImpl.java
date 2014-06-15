@@ -68,7 +68,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     protected PolicyComponent policyComponent;
 
     /** Logger */
-    protected static final Log logger = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
+    protected static final Log LOGGER = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
 
     /**
      * Initialisation method
@@ -432,9 +432,9 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 }
                 else
                 {
-                    if (logger.isWarnEnabled())
+                    if (LOGGER.isWarnEnabled())
                     {
-                        logger.warn("Setting permissions for this node is not supported.  (nodeRef=" + nodeRef + ", authority=" + authority + ", permission=" + permission + ")");
+                        LOGGER.warn("Setting permissions for this node is not supported.  (nodeRef=" + nodeRef + ", authority=" + authority + ", permission=" + permission + ")");
                     }
                 }
 

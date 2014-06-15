@@ -156,9 +156,9 @@ public class RecordCategoryType extends    BaseBehaviourBean
     )
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("rma:recordCategory|alf:onCreateNode|this.onCreateNode()|TRANSATION_COMMIT");
+            LOGGER.debug("rma:recordCategory|alf:onCreateNode|this.onCreateNode()|TRANSATION_COMMIT");
         }
 
         // execute behaviour code as system user

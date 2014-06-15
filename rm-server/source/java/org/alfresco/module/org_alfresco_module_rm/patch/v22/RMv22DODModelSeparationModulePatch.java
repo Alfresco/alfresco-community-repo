@@ -105,9 +105,9 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
         }
 
         long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug(" ... updating " + recordCount + " records");
+            LOGGER.debug(" ... updating " + recordCount + " records");
         }
 
         // apply the DOD record aspect to all exiting records
@@ -124,9 +124,9 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
                 }
 
                 completed += completed + nodeIds.size();
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug("    ... completed " + completed + " of " + recordCount);
+                    LOGGER.debug("    ... completed " + completed + " of " + recordCount);
                 }
             }
         }

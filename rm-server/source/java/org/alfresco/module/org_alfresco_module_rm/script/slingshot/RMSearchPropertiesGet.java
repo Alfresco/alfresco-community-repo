@@ -83,7 +83,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -101,7 +101,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>(13);
 
         List<Group> groups = new ArrayList<Group>(5);
-        
+
         // get the file plan
         // TODO the file plan should be passed to this web script
         NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
@@ -121,7 +121,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
             }
 
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
-            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(dictionaryService), propObjs);    
+            Group group = new Group(aspect.getLocalName(), aspectDefinition.getTitle(dictionaryService), propObjs);
             groups.add(group);
         }
 
@@ -152,7 +152,7 @@ public class RMSearchPropertiesGet extends DeclarativeWebScript
         {
             this.id = id;
             this.label = label;
-            this.properties = properties;
+            this.properties = properties.clone();
         }
 
         public String getId()

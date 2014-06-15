@@ -21,12 +21,12 @@ package org.alfresco.module.org_alfresco_module_rm.caveat;
 import java.util.Arrays;
 
 public class RMConstraintInfo
-{    
+{
     private String name;
     private String title;
     private boolean caseSensitive;
     private String[] allowedValues;
-    
+
     public void setName(String name)
     {
         this.name = name;
@@ -53,13 +53,13 @@ public class RMConstraintInfo
     }
     public void setAllowedValues(String[] values)
     {
-        this.allowedValues = values;
+        this.allowedValues = values.clone();
     }
     public String[] getAllowedValues()
     {
         return allowedValues;
     }
-    
+
     @Override
     public String toString()
     {
@@ -75,5 +75,5 @@ public class RMConstraintInfo
         builder.append("]");
         return builder.toString();
     }
-    
+
 }

@@ -26,7 +26,7 @@ public class ScriptCapability
     private String name;
     private String displayLabel;
     private String[] actions;
-    
+
     /**
      * @param name
      * @param displayLabel
@@ -36,7 +36,7 @@ public class ScriptCapability
     {
         this.name = name;
         this.displayLabel = displayLabel;
-        this.actions = actions;
+        this.actions = actions.clone();
     }
 
     /**
@@ -46,7 +46,7 @@ public class ScriptCapability
     {
         return name;
     }
-    
+
     /**
      * @return the displayLabel
      */
@@ -54,7 +54,7 @@ public class ScriptCapability
     {
         return displayLabel;
     }
-    
+
     /**
      * @return the actions
      */

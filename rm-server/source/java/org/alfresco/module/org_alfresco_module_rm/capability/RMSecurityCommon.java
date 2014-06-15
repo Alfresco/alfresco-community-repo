@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -71,7 +70,7 @@ public class RMSecurityCommon implements ApplicationContextAware
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    public void setApplicationContext(ApplicationContext applicationContext)
     {
     	this.applicationContext = applicationContext;
     }
@@ -222,12 +221,12 @@ public class RMSecurityCommon implements ApplicationContextAware
         {
             // log message
             RMMethodSecurityInterceptor.addMessage("User does not have read record permission on node, access denied. (nodeRef={0}, user={1})", nodeRef, AuthenticationUtil.getRunAsUser());
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
             }
-            
+
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED);
         }
 
@@ -235,7 +234,7 @@ public class RMSecurityCommon implements ApplicationContextAware
         {
             // log capability details
             RMMethodSecurityInterceptor.reportCapabilityStatus(RMPermissionModel.VIEW_RECORDS, AccessDecisionVoter.ACCESS_DENIED);
-            
+
             if (logger.isDebugEnabled())
             {
                 logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");

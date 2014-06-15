@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.report.generator;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportGenerator;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
@@ -33,7 +32,7 @@ import org.alfresco.util.ParameterCheck;
 
 /**
  * Base report generator.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -63,7 +62,7 @@ public abstract class BaseReportGenerator implements ReportGenerator
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param reportType    report type
      */
@@ -71,7 +70,7 @@ public abstract class BaseReportGenerator implements ReportGenerator
     {
         this.reportType = reportType;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.report.ReportGenerator#getReportType()
      */
@@ -88,7 +87,7 @@ public abstract class BaseReportGenerator implements ReportGenerator
     {
         // ensure required values have been set
         ParameterCheck.mandatory("reportType", reportType);
-        
+
         // register report generator
         reportService.registerReportGenerator(this);
     }
@@ -104,29 +103,28 @@ public abstract class BaseReportGenerator implements ReportGenerator
 
         // check the applicability of the report generator for the given reported upon node
         checkReportApplicability(reportedUponNodeRef);
-        
+
         // generate the report name
         String reportName = generateReportName(reportedUponNodeRef, mimetype);
-        
+
         // generate the report meta-data
         Map<QName, Serializable> reportProperties = generateReportMetadata(reportedUponNodeRef);
-        
+
         // generate the report content
         ContentReader contentReader = generateReportContent(reportedUponNodeRef, mimetype, generateReportTemplateContext(reportedUponNodeRef));
-        
+
         // return the report information object
         return new ReportInfo(reportType, reportName, reportProperties, contentReader);
     }
-    
+
     /**
      * Checks whether the report generator is applicable given the reported upon node reference.
      * <p>
      * Throws AlfrescoRuntimeException if applicability fails, with reason.
-     * 
+     *
      * @param  reportedUponNodeRef          reported upon node reference
-     * @throws AlfrescoRuntimeException     if applicability check fails
      */
-    protected abstract void checkReportApplicability(NodeRef reportedUponNodeRef) throws AlfrescoRuntimeException;
+    protected abstract void checkReportApplicability(NodeRef reportedUponNodeRef);
 
     /**
      * Generate the report name
@@ -137,7 +135,7 @@ public abstract class BaseReportGenerator implements ReportGenerator
      * Generate the report template context.
      */
     protected abstract Map<String, Serializable> generateReportTemplateContext(NodeRef reportedUponNodeRef);
-    
+
     /**
      * Generate report meta-data
      */

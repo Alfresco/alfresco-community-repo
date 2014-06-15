@@ -27,7 +27,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 /**
@@ -68,7 +67,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
      * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessAfterInitialization(java.lang.Object, java.lang.String)
      */
     @Override
-    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException
+    public Object postProcessAfterInitialization(Object bean, String beanName)
     {
         // register annotated behavior methods
         registerBehaviours(bean, beanName);
@@ -81,7 +80,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
      * @see org.springframework.beans.factory.config.BeanPostProcessor#postProcessBeforeInitialization(java.lang.Object, java.lang.String)
      */
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException
+    public Object postProcessBeforeInitialization(Object bean, String beanName)
     {
         // do nothing
         return bean;

@@ -103,7 +103,8 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         String runAsUser = AuthenticationUtil.getRunAsUser();
         if ((runAsUser != null) && (! runAsUser.equals(AuthenticationUtil.getSystemUserName())) && (caveatConfigService != null))
         {
-            List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getShortName()); // get allowed values for current user
+            // get allowed values for current user
+            List<String> allowedForUser = caveatConfigService.getRMAllowedValues(getShortName());
 
             List<String> filteredList = new ArrayList<String>(allowedForUser.size());
             for (String allowed : allowedForUser)

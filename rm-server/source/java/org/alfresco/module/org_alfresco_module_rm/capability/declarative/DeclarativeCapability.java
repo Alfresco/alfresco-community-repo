@@ -43,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
 public class DeclarativeCapability extends AbstractCapability
 {
     /** Logger */
-    protected static final Log logger = LogFactory.getLog(DeclarativeCapability.class);
+    protected static final Log LOGGER = LogFactory.getLog(DeclarativeCapability.class);
 
     /** Required permissions */
     protected List<String> permissions;
@@ -220,9 +220,9 @@ public class DeclarativeCapability extends AbstractCapability
                 {
                     result = false;
 
-                    if (logger.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
-                        logger.debug("FAIL: Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
+                        LOGGER.debug("FAIL: Condition " + condition.getName() + " failed for capability " + getName() + " on nodeRef " + nodeRef.toString());
                     }
 
                     break;
@@ -308,9 +308,9 @@ public class DeclarativeCapability extends AbstractCapability
         result = onEvaluate(nodeRef, result);
 
         // log access denied to help with debug
-        if (logger.isDebugEnabled() && AccessDecisionVoter.ACCESS_DENIED == result)
+        if (LOGGER.isDebugEnabled() && AccessDecisionVoter.ACCESS_DENIED == result)
         {
-            logger.debug("FAIL: Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
+            LOGGER.debug("FAIL: Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
         }
 
         return result;

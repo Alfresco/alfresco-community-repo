@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
 {
     /** logger */
-    protected static final Log logger = LogFactory.getLog(RMMethodSecurityInterceptor.class);
+    protected static final Log LOGGER = LogFactory.getLog(RMMethodSecurityInterceptor.class);
 
     /**
      * Helper class to hold capability report information
@@ -121,7 +121,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      */
     public static void isRMSecurityChecked(boolean newValue)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
             RMMethodSecurityInterceptor.IS_RM_SECURITY_CHECK.set(newValue);
         }
@@ -134,7 +134,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      */
     public static void addMessage(String message)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
             List<String> messages = RMMethodSecurityInterceptor.MESSAGES.get();
             messages.add(message);
@@ -143,7 +143,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     
     public static void addMessage(String message, Object ... params)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
             addMessage(MessageFormat.format(message, params));
         }
@@ -157,7 +157,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      */
     public static void reportCapabilityStatus(String name, int status)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
             CapabilityReport capability = getCapabilityReport(name);
             capability.status = translate(status);
@@ -174,7 +174,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
      */
     public static void reportCapabilityCondition(String name, String conditionName, boolean expected, boolean actual)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
             CapabilityReport capability = getCapabilityReport(name);
             if (!expected)
@@ -194,7 +194,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     {
         String result = null;
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
             Collection<CapabilityReport> capabilities = RMMethodSecurityInterceptor.CAPABILITIES.get().values();
 
@@ -248,7 +248,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
         }
         catch (AccessDeniedException exception)
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
                 MethodInvocation mi = (MethodInvocation)object;
                 

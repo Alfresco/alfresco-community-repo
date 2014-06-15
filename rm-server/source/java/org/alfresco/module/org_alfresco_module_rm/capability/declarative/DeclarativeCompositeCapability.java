@@ -65,9 +65,9 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
         // Check each capability using 'OR' logic
         for (Capability capability : capabilities)
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("Evaluating child capability " + capability.getName() + " on nodeRef " + nodeRef.toString() + " for composite capability " + name);
+                LOGGER.debug("Evaluating child capability " + capability.getName() + " on nodeRef " + nodeRef.toString() + " for composite capability " + name);
             }
 
             int capabilityResult = capability.evaluate(nodeRef);
@@ -82,9 +82,9 @@ public class DeclarativeCompositeCapability extends DeclarativeCapability
             }
             else
             {
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug("Access denied for child capability " + capability.getName() + " on nodeRef " + nodeRef.toString() + " for composite capability " + name);
+                    LOGGER.debug("Access denied for child capability " + capability.getName() + " on nodeRef " + nodeRef.toString() + " for composite capability " + name);
                 }
             }
         }

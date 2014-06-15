@@ -27,7 +27,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -96,7 +95,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    public void setApplicationContext(ApplicationContext applicationContext)
     {
         this.applicationContext = applicationContext;
     }

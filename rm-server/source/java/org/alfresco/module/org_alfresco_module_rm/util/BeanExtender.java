@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -32,7 +31,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
  * Extends the definition of a bean with another.
  * <p>
  * Implements bean factory post processor.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -40,10 +39,10 @@ public class BeanExtender implements BeanFactoryPostProcessor
 {
     /** name of bean to extend */
     private String beanName;
-    
+
     /** extending bean name */
     private String extendingBeanName;
-    
+
     /**
      * @param beanName  bean name
      */
@@ -51,7 +50,7 @@ public class BeanExtender implements BeanFactoryPostProcessor
     {
         this.beanName = beanName;
     }
-    
+
     /**
      * @param extendingBeanName extending bean name
      */
@@ -59,12 +58,12 @@ public class BeanExtender implements BeanFactoryPostProcessor
     {
         this.extendingBeanName = extendingBeanName;
     }
-    
+
     /**
      * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
      */
     @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory)
     {
         ParameterCheck.mandatory("beanName", beanName);
         ParameterCheck.mandatory("extendingBeanName", extendingBeanName);
@@ -74,24 +73,24 @@ public class BeanExtender implements BeanFactoryPostProcessor
         {
             throw new NoSuchBeanDefinitionException("Can't find bean '" + beanName + "' to be extended.");
         }
-            
+
         // check for extending bean
         if (!beanFactory.containsBean(extendingBeanName))
         {
             throw new NoSuchBeanDefinitionException("Can't find bean '" + extendingBeanName + "' that is going to extend origional bean definition.");
-        }    
-          
+        }
+
         // get the bean definitions
         BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
         BeanDefinition extendingBeanDefinition = beanFactory.getBeanDefinition(extendingBeanName);
-        
+
         // update class
         if (StringUtils.isNotBlank(extendingBeanDefinition.getBeanClassName()) &&
             !beanDefinition.getBeanClassName().equals(extendingBeanDefinition.getBeanClassName()))
         {
             beanDefinition.setBeanClassName(extendingBeanDefinition.getBeanClassName());
         }
-        
+
         // update properties
         MutablePropertyValues properties = beanDefinition.getPropertyValues();
         MutablePropertyValues extendingProperties = extendingBeanDefinition.getPropertyValues();

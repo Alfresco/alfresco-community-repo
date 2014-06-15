@@ -25,7 +25,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * QName type editor.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -33,7 +33,7 @@ public class QNameTypeEditor extends PropertyEditorSupport
 {
     /** namespace service */
     private NamespaceService namespaceService;
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -41,12 +41,12 @@ public class QNameTypeEditor extends PropertyEditorSupport
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @see java.beans.PropertyEditorSupport#setAsText(java.lang.String)
      */
     @Override
-    public void setAsText(String text) throws IllegalArgumentException
+    public void setAsText(String text)
     {
         // convert prefix string to QName
         setValue(QName.createQName(text, namespaceService));

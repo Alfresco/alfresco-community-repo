@@ -313,7 +313,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
      * @see org.alfresco.module.org_alfresco_module_rm.report.generator.BaseReportGenerator#checkReportApplicability(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void checkReportApplicability(NodeRef reportedUponNodeRef) throws AlfrescoRuntimeException
+    protected void checkReportApplicability(NodeRef reportedUponNodeRef)
     {
         if (applicableTypes != null && applicableTypes.size() != 0)
         {

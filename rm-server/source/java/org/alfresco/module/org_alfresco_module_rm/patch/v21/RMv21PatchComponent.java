@@ -22,13 +22,12 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.patch.compatibility.ModulePatchComponent;
 import org.alfresco.repo.module.ModuleComponent;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 /**
  * Convenience class to ensure all V2.0 patches are executed before v2.1
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -38,16 +37,16 @@ public abstract class RMv21PatchComponent extends ModulePatchComponent
 {
     /** application context */
     private ApplicationContext applicationContext;
-    
+
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    public void setApplicationContext(ApplicationContext applicationContext)
     {
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * init method
      */
@@ -55,7 +54,7 @@ public abstract class RMv21PatchComponent extends ModulePatchComponent
     public void init()
     {
         super.init();
-        
+
         // manual addition of V20 patch dependencies
         List<ModuleComponent> depends = getDependsOn();
         addDependency(depends, "org_alfresco_module_rm_notificationTemplatePatch");
@@ -63,7 +62,7 @@ public abstract class RMv21PatchComponent extends ModulePatchComponent
         addDependency(depends, "org_alfresco_module_rm_RMv2FilePlanNodeRefPatch");
         addDependency(depends, "org_alfresco_module_rm_RMv2SavedSearchPatch");
     }
-    
+
     /**
      * @param depends   list of module dependencies
      * @param beanName  bean name

@@ -129,7 +129,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     }
 
     @SuppressWarnings("rawtypes")
-    public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object returnedObject) throws AccessDeniedException
+    public Object decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object returnedObject)
     {
         if (logger.isDebugEnabled())
         {
@@ -239,14 +239,14 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     }
 
-    private PermissionCheckedValue decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionCheckedValue returnedObject) throws AccessDeniedException
+    private PermissionCheckedValue decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionCheckedValue returnedObject)
     {
         // This passes as it has already been filtered
         // TODO: Get the filter that was applied and double-check
         return returnedObject;
     }
 
-    private PermissionCheckValue decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionCheckValue returnedObject) throws AccessDeniedException
+    private PermissionCheckValue decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PermissionCheckValue returnedObject)
     {
         // Get the wrapped value
         NodeRef nodeRef = returnedObject.getNodeRef();
@@ -255,8 +255,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return returnedObject;
     }
 
-    private NodeRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, NodeRef returnedObject) throws AccessDeniedException
-
+    private NodeRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, NodeRef returnedObject)
     {
         if (returnedObject == null)
         {
@@ -322,8 +321,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     }
 
     private ChildAssociationRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ChildAssociationRef returnedObject)
-            throws AccessDeniedException
-
     {
         if (returnedObject == null)
         {
@@ -373,8 +370,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return returnedObject;
     }
 
-    private AssociationRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, AssociationRef returnedObject) throws AccessDeniedException
-
+    private AssociationRef decide(Authentication authentication, Object object, ConfigAttributeDefinition config, AssociationRef returnedObject)
     {
         if (returnedObject == null)
         {
@@ -416,16 +412,14 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return returnedObject;
     }
 
-    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PagingLuceneResultSet returnedObject) throws AccessDeniedException
-
+    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, PagingLuceneResultSet returnedObject)
     {
         ResultSet raw = returnedObject.getWrapped();
         ResultSet filteredForPermissions = decide(authentication, object, config, raw);
         return new PagingLuceneResultSet(filteredForPermissions, returnedObject.getResultSetMetaData().getSearchParameters(), nodeService);
     }
 
-    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException
-
+    private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject)
     {
         if (returnedObject == null)
         {
@@ -569,8 +563,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     }
 
     private QueryEngineResults decide(Authentication authentication, Object object, ConfigAttributeDefinition config, QueryEngineResults returnedObject)
-            throws AccessDeniedException
-
     {
         Map<Set<String>, ResultSet> map = returnedObject.getResults();
         Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>(map.size(), 1.0f);
@@ -594,7 +586,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject) throws AccessDeniedException
+    private Collection decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Collection returnedObject)
     {
         if (returnedObject == null)
         {
@@ -788,7 +780,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         return PermissionCheckedCollectionMixin.create(returnedObject, cutoff, checksRemaining, sizeOriginal);
     }
 
-    private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object[] returnedObject) throws AccessDeniedException
+    private Object[] decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Object[] returnedObject)
     {
         // Assumption: value is not null
         BitSet incudedSet = new BitSet(returnedObject.length);
@@ -952,7 +944,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
     }
 
     @SuppressWarnings({"unchecked", "rawtypes" })
-    private Map decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Map returnedObject) throws AccessDeniedException
+    private Map decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Map returnedObject)
     {
         try {
             if (returnedObject.containsKey(RecordsManagementModel.PROP_HOLD_REASON))

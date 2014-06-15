@@ -251,7 +251,7 @@ function rm_doclist_main()
          item.likes = Common.getLikes(node);
 
          // Does this collection of nodes have potentially differering paths?
-         if (filterParams.variablePath || item.isLink)
+         if (filterParams.variablePath || item.isLink || filterParams.filter === "containerFilter")
          {
             locationNode = item.isLink ? item.linkedNode : item.node;
             // Ensure we have Read permissions on the destination on the link object

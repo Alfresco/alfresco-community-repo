@@ -666,7 +666,6 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             // For every event create an entry on the action
             da.addEventCompletionDetails(event);
-           // createEvent(event, dispositionActionNodeRef);
         }
     }
 

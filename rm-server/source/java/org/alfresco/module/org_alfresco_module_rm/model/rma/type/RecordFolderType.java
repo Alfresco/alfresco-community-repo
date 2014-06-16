@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
@@ -134,33 +135,22 @@ public class RecordFolderType extends    BaseBehaviourBean
                 {
                     public Object doWork()
                     {
-                        behaviourFilter.disableBehaviour();
-                        try
+                        // clean record folder
+                        cleanDisposableItem(nodeService, newNodeRef);
+
+                        // re-initialise the record folder
+                        recordFolderService.setupRecordFolder(newNodeRef);
+
+                        // sort out the child records
+                        for (NodeRef record : recordService.getRecords(newNodeRef))
                         {
-                            // Remove unwanted aspects
-                            removeUnwantedAspects(nodeService, newNodeRef);
+                            // clean record
+                            cleanDisposableItem(nodeService, record);
 
-                            // reinitialise the record folder
-                            recordFolderService.setupRecordFolder(newNodeRef);
-
-                            // reinitialise the record folder disposition action details
-                            dispositionService.refreshDispositionAction(newNodeRef);
-
-                            // Sort out the child records
-                            for (NodeRef record : recordService.getRecords(newNodeRef))
-                            {
-                                // Remove unwanted aspects
-                                removeUnwantedAspects(nodeService, record);
-
-                                // Re-initiate the records in the new folder.
-                                recordService.file(record);
-                            }
+                            // Re-initiate the records in the new folder.
+                            recordService.file(record);
                         }
-                        finally
-                        {
-                            behaviourFilter.enableBehaviour();
-                        }
-
+                            
                         return null;
                     }
                 }, AuthenticationUtil.getSystemUserName());
@@ -290,7 +280,7 @@ public class RecordFolderType extends    BaseBehaviourBean
      * @param nodeService
      * @param nodeRef
      */
-    private void removeUnwantedAspects(NodeService nodeService, NodeRef nodeRef)
+    private void cleanDisposableItem(NodeService nodeService, NodeRef nodeRef)
     {
         // Remove unwanted aspects
         for (QName aspect : unwantedAspects)
@@ -299,6 +289,13 @@ public class RecordFolderType extends    BaseBehaviourBean
             {
                 nodeService.removeAspect(nodeRef, aspect);
             }
+        }
+        
+        // remove the current disposition action (if there is one)
+        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
+        if (dispositionAction != null)
+        {
+            nodeService.deleteNode(dispositionAction.getNodeRef());
         }
     }
 }

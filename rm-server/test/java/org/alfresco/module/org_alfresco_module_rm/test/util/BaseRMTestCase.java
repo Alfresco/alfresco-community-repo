@@ -796,7 +796,14 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void doBehaviourDrivenTest(BehaviourDrivenTest test)
     {
-        test.run();
+        try
+        {
+            test.run();
+        }
+        catch (Exception exception)
+        {
+            throw new RuntimeException(exception);
+        }
     }
 
     /**
@@ -807,6 +814,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected abstract class BehaviourDrivenTest
     {
+        protected boolean runInTransactionTests = true;
+        
         protected Class<?> expectedException;
 
         public BehaviourDrivenTest()
@@ -817,47 +826,67 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             this.expectedException = expectedException;
         }
+        
+        public BehaviourDrivenTest(boolean runInTransactionTests)
+        {
+            this.runInTransactionTests = runInTransactionTests;
+        }
 
-        public void given() { /** empty implementation */ }
+        public void given() throws Exception { /** empty implementation */ }
 
-        public void when() { /** empty implementation */ }
+        public void when() throws Exception  { /** empty implementation */ }
 
-        public void then() { /** empty implementation */ }
+        public void then() throws Exception  { /** empty implementation */ }
 
-        public void after() { /** empty implementation */ }
+        public void after() throws Exception { /** empty implementation */ }
 
-        public void run()
+        public void run() throws Exception
         {
             try
             {
-                doTestInTransaction(new VoidTest()
+                if (runInTransactionTests)
                 {
-                    @Override
-                    public void runImpl() throws Exception
+                    doTestInTransaction(new VoidTest()
                     {
-                       given();
-                    }
-                });
+                        @Override
+                        public void runImpl() throws Exception
+                        {
+                           given();
+                        }
+                    });
+                }
+                else
+                {
+                    given();
+                }
 
                 if (expectedException == null)
                 {
-                    doTestInTransaction(new VoidTest()
+                    if (runInTransactionTests)
                     {
-                        @Override
-                        public void runImpl() throws Exception
+                        doTestInTransaction(new VoidTest()
                         {
-                            when();
-                        }
-                    });
-
-                    doTestInTransaction(new VoidTest()
+                            @Override
+                            public void runImpl() throws Exception
+                            {
+                                when();
+                            }
+                        });
+    
+                        doTestInTransaction(new VoidTest()
+                        {
+                            @Override
+                            public void runImpl() throws Exception
+                            {
+                                then();
+                            }
+                        });
+                    }
+                    else
                     {
-                        @Override
-                        public void runImpl() throws Exception
-                        {
-                            then();
-                        }
-                    });
+                        when();
+                        then();
+                    }
                 }
                 else
                 {
@@ -873,14 +902,21 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
             finally
             {
-                doTestInTransaction(new VoidTest()
+                if (runInTransactionTests)
                 {
-                    @Override
-                    public void runImpl() throws Exception
+                    doTestInTransaction(new VoidTest()
                     {
-                       after();
-                    }
-                });
+                        @Override
+                        public void runImpl() throws Exception
+                        {
+                           after();
+                        }
+                    });
+                }
+                else
+                {
+                    after();
+                }
             }
         }
     }

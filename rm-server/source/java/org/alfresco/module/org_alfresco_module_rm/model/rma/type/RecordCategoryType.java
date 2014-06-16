@@ -104,9 +104,11 @@ public class RecordCategoryType extends    BaseBehaviourBean
             throw new AlfrescoRuntimeException("Operation failed, because you can't place content directly into a record category.");
         }
 
-        // setup the record folder
-        // TODO review
-        recordFolderService.setupRecordFolder(nodeRef);
+        if (bNew)
+        {
+            // setup the record folder
+            recordFolderService.setupRecordFolder(nodeRef);
+        }
     }
 
     /**

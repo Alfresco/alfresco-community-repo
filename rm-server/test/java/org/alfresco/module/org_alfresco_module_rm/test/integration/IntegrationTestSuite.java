@@ -23,6 +23,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.integration.dod.DoD5015Te
 import org.alfresco.module.org_alfresco_module_rm.test.integration.event.EventTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.issue.IssueTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.record.RejectRecordTest;
+import org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder.RecordFolderTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.report.ReportTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -43,7 +44,8 @@ import org.junit.runners.Suite.SuiteClasses;
     EventTestSuite.class,
     ReportTestSuite.class,
     DispositionTestSuite.class,
-    RejectRecordTest.class
+    RejectRecordTest.class,
+    RecordFolderTestSuite.class
 })
 public class IntegrationTestSuite
 {

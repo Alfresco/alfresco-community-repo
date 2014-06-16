@@ -64,7 +64,7 @@ public class RejectRecordTest extends BaseRMTestCase
     /**
      * 
      */
-    public void testRejectedRecordInCorrectState()
+    public void testRejectedRecordInCorrectState() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
@@ -111,7 +111,7 @@ public class RejectRecordTest extends BaseRMTestCase
     /**
      * 
      */
-    public void testRevertAfterReject()
+    public void testRevertAfterReject() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {;

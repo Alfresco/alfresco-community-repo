@@ -16,32 +16,24 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder;
 
+import org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder.MoveRecordFolderTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
- * Issue test suite
+ * Record folder integration test suite
  *
  * @author Roy Wetherall
- * @since 2.1
+ * @since 2.2
  */
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    RM1008Test.class,
-    RM1027Test.class,
-    RM1030Test.class,
-    RM1424Test.class,
-    RM1429Test.class,
-    RM1463Test.class,
-    RM1464Test.class,
-    RM452Test.class,
-    RM804Test.class,
-    RM994Test.class
+    MoveRecordFolderTest.class
 })
-public class IssueTestSuite
+public class RecordFolderTestSuite
 {
 }

@@ -31,7 +31,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    RejectRecordTest.class
+    RejectRecordTest.class,
+    CreateRecordTest.class
 })
 public class RecordTestSuite
 {

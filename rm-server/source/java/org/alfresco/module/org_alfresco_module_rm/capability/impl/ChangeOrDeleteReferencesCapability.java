@@ -61,7 +61,7 @@ public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
             else
             {
                 if (checkConditions(source) &&
-                        checkPermissions(source))
+                    checkPermissions(source))
                 {
                     return AccessDecisionVoter.ACCESS_GRANTED;
                 }

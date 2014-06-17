@@ -211,7 +211,7 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="10" />
    </bean>
-
+   
    <bean id="rmEditNonRecordMetadataCapability"
       parent="declarativeCapability">
       <property name="name" value="EditNonRecordMetadata"/>
@@ -253,6 +253,7 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="30" />
    </bean>
+
 
    <bean id="rmMoveRecordsCapability"
       parent="declarativeCapability" >

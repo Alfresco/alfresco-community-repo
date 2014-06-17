@@ -67,19 +67,18 @@ public class CreateCapability extends DeclarativeCapability
     @Override
     public int evaluate(NodeRef nodeRef)
     {
-        return evaluate(nodeRef, null, null, null);
+        return evaluate(nodeRef, null, null);
     }
 
     /**
      * Evaluate capability.
      *
-     * @param destination
-     * @param linkee
-     * @param type
-     * @param assocType
+     * @param destination   destination node reference
+     * @param linkee        linkee node reference, can be null
+     * @param assocType     association type, can be null
      * @return
      */
-    public int evaluate(NodeRef destination, NodeRef linkee, QName type, QName assocType)
+    public int evaluate(NodeRef destination, NodeRef linkee, QName assocType)
     {
         if (linkee != null)
         {
@@ -95,8 +94,9 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if (linkee == null)
                 {
-                    if (recordService.isRecord(destination) && !recordService.isDeclared(destination) &&
-                            permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
+                    if (recordService.isRecord(destination) && 
+                        !recordService.isDeclared(destination) &&
+                        permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                     {
                         return AccessDecisionVoter.ACCESS_GRANTED;
                     }

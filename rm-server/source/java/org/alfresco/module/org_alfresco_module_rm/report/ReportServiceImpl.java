@@ -116,10 +116,10 @@ public class ReportServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("report", report);
 
-        return recordService.createRecord(nodeRef,
-                                          report.getReportName(),
-                                          report.getReportType(),
-                                          report.getReportProperties(),
-                                          report.getReportContent());
+        return recordService.createRecordFromContent(nodeRef,
+                                                     report.getReportName(),
+                                                     report.getReportType(),
+                                                     report.getReportProperties(),
+                                                     report.getReportContent());
     }
 }

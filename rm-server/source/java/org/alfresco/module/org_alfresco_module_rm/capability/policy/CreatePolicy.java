@@ -31,18 +31,25 @@ public class CreatePolicy extends AbstractBasePolicy
             Class[] params, 
             ConfigAttributeDefinition cad)
     {
-
-        NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        QName type = getType(invocation, params, cad.getParameters().get(1), cad.isParent());
-        // linkee is not null for creating secondary child assocs
-        NodeRef linkee = getTestNode(invocation, params, cad.getParameters().get(1), cad.isParent());
+        NodeRef linkee = null;
         QName assocType = null;
-        if(cad.getParameters().size() > 2)
+        
+        // get the destination node
+        NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+
+        if (cad.getParameters().size() > 1)
         {
-            assocType = getType(invocation, params, cad.getParameters().get(2), cad.isParent());
+            // get the linkee when present
+            linkee = getTestNode(invocation, params, cad.getParameters().get(1), cad.isParent());
+            
+            // get the assoc type
+            if(cad.getParameters().size() > 2)
+            {
+                assocType = getType(invocation, params, cad.getParameters().get(2), cad.isParent());
+            }
         }
 
-        return ((CreateCapability)capabilityService.getCapability("Create")).evaluate(destination, linkee, type, assocType);
+        return ((CreateCapability)capabilityService.getCapability("Create")).evaluate(destination, linkee, assocType);
     }
 
 }

@@ -30,11 +30,14 @@ import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 
 /**
+ * RM security configuration definition.
+ * 
  * @author Roy Wetherall
  * @since 2.1
  */
 public class ConfigAttributeDefinition
 {
+    /** allowable RM security configurations */
     public static final String RM = "RM";
     public static final String RM_ALLOW = "RM_ALLOW";
     public static final String RM_DENY = "RM_DENY";
@@ -42,18 +45,30 @@ public class ConfigAttributeDefinition
     public static final String RM_ABSTAIN = "RM_ABSTAIN";
     public static final String RM_QUERY = "RM_QUERY";
 
+    /** security type */
     private String typeString;
 
+    /** policy name */
     private String policyName;
 
+    /** simple permission reference */
     private SimplePermissionReference required;
 
+    /** parameter position map */
     private Map<Integer, Integer> parameters = new HashMap<Integer, Integer>(2, 1.0f);
 
+    /** is parent */
     private boolean parent = false;
 
+    /**
+     * Default constructor
+     * 
+     * @param attr                      configuration attribute instance 
+     * @param namespacePrefixResolver   namespace prefix resolver
+     */
     public ConfigAttributeDefinition(ConfigAttribute attr, NamespacePrefixResolver namespacePrefixResolver)
     {
+        // tokenize configuration string
         StringTokenizer st = new StringTokenizer(attr.getAttribute(), ".", false);
         if (st.countTokens() < 1)
         {
@@ -61,8 +76,13 @@ public class ConfigAttributeDefinition
         }
         typeString = st.nextToken();
 
-        if (!(typeString.equals(RM) || typeString.equals(RM_ALLOW) || typeString.equals(RM_CAP) || typeString.equals(RM_DENY) || typeString.equals(RM_QUERY) || typeString
-                .equals(RM_ABSTAIN)))
+        // check that the configuration is valid
+        if (!(typeString.equals(RM) || 
+              typeString.equals(RM_ALLOW) || 
+              typeString.equals(RM_CAP) || 
+              typeString.equals(RM_DENY) || 
+              typeString.equals(RM_QUERY) || 
+              typeString.equals(RM_ABSTAIN)))
         {
             throw new ACLEntryVoterException("Invalid type: must be ACL_NODE, ACL_PARENT or ACL_ALLOW");
         }

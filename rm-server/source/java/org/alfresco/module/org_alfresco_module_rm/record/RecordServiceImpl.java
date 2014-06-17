@@ -109,6 +109,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
+    
+    /** transation data key */
+    private static final String IGNORE_ON_UPDATE = "ignoreOnUpdate";
 
     /** I18N */
     private static final String MSG_NODE_HAS_ASPECT = "rm.service.node-has-aspect";
@@ -335,8 +338,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 onDeleteDeclaredRecordLink);
     }
 
-
-
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnRemoveAspectPolicy#onRemoveAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -510,6 +511,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         getBehaviour("onUpdateProperties").disable();
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#disablePropertyEditableCheck(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public void disablePropertyEditableCheck(NodeRef nodeRef)
+    {
+        Set<NodeRef> ignoreOnUpdate = TransactionalResourceHelper.getSet(IGNORE_ON_UPDATE);
+        ignoreOnUpdate.add(nodeRef);        
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#enablePropertyEditableCheck()
@@ -537,7 +547,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if (AuthenticationUtil.getFullyAuthenticatedUser() != null &&
             !AuthenticationUtil.isRunAsUserTheSystemUser() &&
             nodeService.exists(nodeRef) &&
-            isRecord(nodeRef))
+            isRecord(nodeRef) &&
+            !TransactionalResourceHelper.getSet(IGNORE_ON_UPDATE).contains(nodeRef))
         {
             for (Map.Entry<QName, Serializable> entry : after.entrySet())
             {
@@ -560,9 +571,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     // otherwise
                     propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
                 }
-
+                
                 if (!propertyUnchanged &&
-                        !isPropertyEditable(nodeRef, property))
+                    !(ContentModel.PROP_CONTENT.equals(property) && beforeValue == null) &&
+                    !isPropertyEditable(nodeRef, property))
                 {
                     // the user can't edit the record property
                     throw new ModelAccessDeniedException(
@@ -814,19 +826,21 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createNewRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
      */
     @Override
-    public NodeRef createRecord(NodeRef nodeRef, String name, QName type, Map<QName, Serializable> properties, ContentReader reader)
+    public NodeRef createRecordFromContent(NodeRef parent, String name, QName type, Map<QName, Serializable> properties, ContentReader reader)
     {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("nodeRef", parent);
         ParameterCheck.mandatory("name", name);
-
-        NodeRef destination = nodeRef;
-        if (isFilePlan(nodeRef))
+        
+        NodeRef record = null;
+        NodeRef destination = parent;
+        
+        if (isFilePlan(parent))
         {
             // get the unfiled record container for the file plan
-            destination = filePlanService.getUnfiledContainer(nodeRef);
+            destination = filePlanService.getUnfiledContainer(parent);
             if (destination == null)
             {
                 throw new AlfrescoRuntimeException("Unable to create record, because unfiled container could not be found.");
@@ -838,24 +852,35 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             type = ContentModel.TYPE_CONTENT;
         }
-        // TODO ensure that the type is a sub-type of cm:content
-
-        // create the new record
-        NodeRef record = fileFolderService.create(destination, name, type).getNodeRef();
-
-        // set the properties
-        if (properties != null)
+        else if (!dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
         {
-            nodeService.addProperties(record, properties);
+            throw new AlfrescoRuntimeException("Record can only be created from a sub-type of cm:content.");
         }
-
-        // set the content
-        if (reader != null)
+                
+        disablePropertyEditableCheck();
+        try
         {
-            ContentWriter writer = fileFolderService.getWriter(record);
-            writer.setEncoding(reader.getEncoding());
-            writer.setMimetype(reader.getMimetype());
-            writer.putContent(reader);
+            // create the new record
+            record = fileFolderService.create(destination, name, type).getNodeRef();
+    
+            // set the properties
+            if (properties != null)
+            {
+                nodeService.addProperties(record, properties);
+            }
+    
+            // set the content
+            if (reader != null)
+            {
+                ContentWriter writer = fileFolderService.getWriter(record);
+                writer.setEncoding(reader.getEncoding());
+                writer.setMimetype(reader.getMimetype());
+                writer.putContent(reader);
+            }
+        }
+        finally
+        {
+            enablePropertyEditableCheck();
         }
 
         // Check if the "record" aspect has been applied already.
@@ -882,6 +907,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("document", document);
 
         ruleService.disableRules();
+        disablePropertyEditableCheck();
         try
         {
             // get the record id
@@ -921,6 +947,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         finally
         {
             ruleService.enableRules();
+            enablePropertyEditableCheck();
         }
 
     }

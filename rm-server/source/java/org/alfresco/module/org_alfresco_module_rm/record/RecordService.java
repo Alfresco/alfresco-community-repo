@@ -56,6 +56,14 @@ public interface RecordService
      * Disables the property editable check.
      */
     void disablePropertyEditableCheck();
+    
+    /**
+     * Disables the property editable check for a given node in this transaction only.
+     * 
+     * @param nodeRef   node reference
+     * @since 2.2
+     */
+    void disablePropertyEditableCheck(NodeRef nodeRef);
 
     /**
      * Enables the property editable check.  By default this is always enabled.
@@ -138,12 +146,13 @@ public interface RecordService
     * Creates a new document in the unfiled records container if the given node reference is a file plan
     * node reference otherwise the node reference will be used as the destination for the new record.
     *
-    * @param nodeRef
-    * @param name
-    * @param type
-    * @param properties
+    * @param parent     parent node reference
+    * @param name       name of the new record
+    * @param type       content type, cm:content if null
+    * @param properties properties
+    * @param reader     content reader
     */
-   NodeRef createRecord(NodeRef nodeRef, String name, QName type, Map<QName, Serializable> properties, ContentReader reader);
+   NodeRef createRecordFromContent(NodeRef parent, String name, QName type, Map<QName, Serializable> properties, ContentReader reader);
 
    /**
     * Indicates whether the record is filed or not

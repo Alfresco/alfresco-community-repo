@@ -81,7 +81,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Gets the file plan component kind from the given node reference
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlanComponentKind(org.alfresco.service.cmr.repository.NodeRef)
+     * @see FilePlanService#getFilePlanComponentKind(org.alfresco.service.cmr.repository.NodeRef)
      */
     public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef)
     {
@@ -191,7 +191,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
      * <p>
      * Exposed in the FilePlan service.
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
+     * @see FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isFilePlanComponent(NodeRef nodeRef)
     {
@@ -213,7 +213,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
      * <p>
      * Exposed in the FilePlan service.
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
+     * @see FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isFilePlan(NodeRef nodeRef)
     {
@@ -223,7 +223,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Indicates whether the given node is a file plan container or not.
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanContainer(org.alfresco.service.cmr.repository.NodeRef)
+     * @see FilePlanService#isFilePlanContainer(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isFilePlanContainer(NodeRef nodeRef)
     {
@@ -233,7 +233,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     /**
      * Indicates whether the given node is a record category or not.
      *
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
+     * @see FilePlanService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isRecordCategory(NodeRef nodeRef)
     {

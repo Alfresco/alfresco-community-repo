@@ -535,9 +535,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     @Override
                     public Void doWork()
                     {
-                        // Link the record to the hold
-                        nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-
                         // gather freeze properties
                         Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
                         props.put(PROP_FROZEN_AT, new Date());
@@ -555,6 +552,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
                                 logger.debug(msg.toString());
                             }
                         }
+
+                        // Link the record to the hold
+                        nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
 
                         // Mark all the folders contents as frozen
                         if (isRecordFolder(nodeRef))

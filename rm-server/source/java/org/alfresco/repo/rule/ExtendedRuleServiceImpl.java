@@ -242,6 +242,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
                        RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER.equals(typeQName) ||
                        RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(typeQName) ||
                        nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_TRANSFERRING) ||
+                       nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FROZEN) ||
                        (ContentModel.TYPE_CONTENT.equals(typeQName) && !recordService.isFiled(nodeRef)));
         }
         return result;

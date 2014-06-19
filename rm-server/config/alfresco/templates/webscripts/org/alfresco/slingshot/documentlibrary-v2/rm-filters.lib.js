@@ -62,7 +62,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          column: "@cm:name",
          ascending: true
       }],
-      language: "lucene",
+      language: "fts-alfresco",
       templates: null,
       variablePath: true,
       ignoreTypes: Filters.IGNORED_TYPES

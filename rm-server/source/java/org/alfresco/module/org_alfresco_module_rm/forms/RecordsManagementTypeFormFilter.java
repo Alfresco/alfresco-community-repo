@@ -159,11 +159,24 @@ public class RecordsManagementTypeFormFilter extends RecordsManagementFormFilter
 	        form.addFields(fields);
         }
     }
-
-    /*
-     * @see org.alfresco.repo.forms.processor.Filter#afterPersist(java.lang.Object, org.alfresco.repo.forms.FormData, java.lang.Object)
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementFormFilter#beforePersist(java.lang.Object, org.alfresco.repo.forms.FormData)
      */
-    public void afterPersist(TypeDefinition item, FormData data, final NodeRef nodeRef)
+    @Override
+    public void beforePersist(TypeDefinition item, FormData data)
     {
+        recordService.disablePropertyEditableCheck();        
+        super.beforePersist(item, data);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementFormFilter#afterPersist(java.lang.Object, org.alfresco.repo.forms.FormData, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void afterPersist(TypeDefinition item, FormData data, NodeRef persistedObject)
+    {
+        super.afterPersist(item, data, persistedObject);
+        recordService.enablePropertyEditableCheck();
     }
 }

@@ -25,7 +25,7 @@ function runAction(p_params)
       status.setCode(status.STATUS_BAD_REQUEST, "No files.");
       return;
    }
-   
+
    for (file in files)
    {
       nodeRef = files[file];
@@ -35,7 +35,7 @@ function runAction(p_params)
          action: "addChild",
          success: false
       }
-      
+
       try
       {
          fileNode = search.findNode(nodeRef);
@@ -44,6 +44,13 @@ function runAction(p_params)
             result.id = file;
             result.nodeRef = nodeRef;
             result.success = false;
+         }
+         if (!rmService.getRecordsManagementNode(destNode).hasCapability("FillingPermissionOnly"))
+         {
+            result.name = fileNode.name;
+            result.error = "The destination is either frozen, closed or cut off!";
+            results.push(result);
+            continue;
          }
          else
          {
@@ -58,13 +65,13 @@ function runAction(p_params)
       {
          result.id = file;
          result.nodeRef = nodeRef;
-         result.success = false;     
+         result.success = false;
          result.error = e.message;
-         
+
          // log the error
          logger.error(e.message);
       }
-      
+
       results.push(result);
    }
 

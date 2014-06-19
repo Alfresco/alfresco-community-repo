@@ -26,7 +26,7 @@ function runAction(p_params)
       status.setCode(status.STATUS_BAD_REQUEST, "No files.");
       return;
    }
-   
+
    for (file in files)
    {
       nodeRef = files[file];
@@ -36,7 +36,7 @@ function runAction(p_params)
          action: "copyFile",
          success: false
       };
-      
+
       try
       {
          fileNode = search.findNode(nodeRef);
@@ -47,15 +47,22 @@ function runAction(p_params)
             result.success = false;
             result.error = "Can't find source node.";
          }
+         if (!rmService.getRecordsManagementNode(destNode).hasCapability("FillingPermissionOnly"))
+         {
+            result.name = fileNode.name;
+            result.error = "The destination is either frozen, closed or cut off!";
+            results.push(result);
+            continue;
+         }
          else
          {
             result.id = fileNode.name;
             result.name = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document"
-            
+
             // Retain the name of the site the node is currently in. Null if it's not in a site.
             fromSite = String(fileNode.siteShortName);
-            
+
             // copy the node (deep copy for containers)
             if (fileNode.isContainer)
             {
@@ -68,7 +75,7 @@ function runAction(p_params)
 
             result.nodeRef = copiedNode.nodeRef.toString();
             result.success = (result.nodeRef != null);
-            
+
             if (result.success)
             {
                // If this was an inter-site copy, we'll need to clean up the permissions on the node
@@ -83,13 +90,13 @@ function runAction(p_params)
       {
          result.id = file;
          result.nodeRef = nodeRef;
-         result.success = false;         
+         result.success = false;
          result.error = e.message;
-         
+
          // log the error
          logger.error(e.message);
       }
-      
+
       results.push(result);
    }
 

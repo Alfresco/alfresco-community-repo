@@ -109,7 +109,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
-    
+
     /** transation data key */
     private static final String IGNORE_ON_UPDATE = "ignoreOnUpdate";
 
@@ -511,14 +511,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         getBehaviour("onUpdateProperties").disable();
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#disablePropertyEditableCheck(org.alfresco.service.cmr.repository.NodeRef)
      */
     public void disablePropertyEditableCheck(NodeRef nodeRef)
     {
         Set<NodeRef> ignoreOnUpdate = TransactionalResourceHelper.getSet(IGNORE_ON_UPDATE);
-        ignoreOnUpdate.add(nodeRef);        
+        ignoreOnUpdate.add(nodeRef);
     }
 
     /**
@@ -566,12 +566,16 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     // deal with date values
                     propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);
                 }
+                else if ((afterValue instanceof Boolean) && (beforeValue == null) && (afterValue == Boolean.FALSE))
+                {
+            		propertyUnchanged = true;
+                }
                 else
                 {
                     // otherwise
                     propertyUnchanged = EqualsHelper.nullSafeEquals(beforeValue, afterValue);
                 }
-                
+
                 if (!propertyUnchanged &&
                     !(ContentModel.PROP_CONTENT.equals(property) && beforeValue == null) &&
                     !isPropertyEditable(nodeRef, property))
@@ -788,7 +792,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, owner);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
-                        
+
                         // make the document a record
                         makeRecord(nodeRef);
 
@@ -833,10 +837,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         ParameterCheck.mandatory("nodeRef", parent);
         ParameterCheck.mandatory("name", name);
-        
+
         NodeRef record = null;
         NodeRef destination = parent;
-        
+
         if (isFilePlan(parent))
         {
             // get the unfiled record container for the file plan
@@ -856,19 +860,19 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             throw new AlfrescoRuntimeException("Record can only be created from a sub-type of cm:content.");
         }
-                
+
         disablePropertyEditableCheck();
         try
         {
             // create the new record
             record = fileFolderService.create(destination, name, type).getNodeRef();
-    
+
             // set the properties
             if (properties != null)
             {
                 nodeService.addProperties(record, properties);
             }
-    
+
             // set the content
             if (reader != null)
             {
@@ -1135,10 +1139,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         throw new AlfrescoRuntimeException("Unable to find the creator of document.");
                     }
                     ownableService.setOwner(nodeRef, documentOwner);
-                    
+
                     // clear the existing permissions
                     permissionService.clearPermission(nodeRef, null);
-                    
+
                     // restore permission inheritance
                     permissionService.setInheritParentPermissions(nodeRef, true);
 

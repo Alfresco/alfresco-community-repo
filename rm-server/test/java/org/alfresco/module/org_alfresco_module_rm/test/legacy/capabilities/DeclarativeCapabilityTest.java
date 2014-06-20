@@ -106,9 +106,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
 
-                utils.declareRecord(declaredRecord);
-                utils.declareRecord(frozenRecord);
-                utils.declareRecord(frozenRecord2);
+                utils.completeRecord(declaredRecord);
+                utils.completeRecord(frozenRecord);
+                utils.completeRecord(frozenRecord2);
                 
                 hold = holdService.createHold(filePlan, GUID.generate(), "reason", "description");
                 

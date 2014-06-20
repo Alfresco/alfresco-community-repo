@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="scheduledDispositionLifecyceleJobTrigger" class="org.alfresco.util.CronTriggerBean">
+      <property name="jobDetail">
+         <ref bean="scheduledDispositionLifecyceleJobDetail" />
+      </property>
+      <property name="scheduler">
+         <ref bean="schedulerFactory" />
+      </property>
+      <property name="cronExpression">
+         <value>0/30 * * * * ?</value>
+      </property>
+   </bean>
+
+</beans>

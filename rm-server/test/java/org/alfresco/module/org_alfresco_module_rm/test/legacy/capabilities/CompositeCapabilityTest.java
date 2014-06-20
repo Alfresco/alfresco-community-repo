@@ -64,7 +64,7 @@ public class CompositeCapabilityTest extends BaseRMTestCase
             {
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
                 
-                utils.declareRecord(declaredRecord);
+                utils.completeRecord(declaredRecord);
                 
                 return null;
             }

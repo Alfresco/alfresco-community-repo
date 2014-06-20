@@ -76,6 +76,11 @@ public class CommonRMTestUtils implements RecordsManagementModel
     public static final String PERIOD_NONE = "none|0";
     public static final String PERIOD_IMMEDIATELY = "immediately|0";
 
+    /**
+     * Constructor
+     * 
+     * @param applicationContext    application context
+     */
     public CommonRMTestUtils(ApplicationContext applicationContext)
     {
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
@@ -99,14 +104,8 @@ public class CommonRMTestUtils implements RecordsManagementModel
     }
 
     /**
-    *
-    * @param container
-    * @param dispositionInstructions
-    * @param dispositionAuthority
-    * @param isRecordLevel
-    * @param defaultDispositionActions
-    * @return
-    */
+     * Create test disposition schedule
+     */
    public DispositionSchedule createBasicDispositionSchedule(
                                    NodeRef container,
                                    String dispositionInstructions,
@@ -118,14 +117,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
    }
 
     /**
-     *
-     * @param container
-     * @param dispositionInstructions
-     * @param dispositionAuthority
-     * @param isRecordLevel
-     * @param defaultDispositionActions
-     * @param extendedDispositionSchedule
-     * @return
+     * Create test disposition schedule
      */
     public DispositionSchedule createDispositionSchedule(
                                     NodeRef container,
@@ -134,6 +126,28 @@ public class CommonRMTestUtils implements RecordsManagementModel
                                     boolean isRecordLevel,
                                     boolean defaultDispositionActions,
                                     boolean extendedDispositionSchedule)
+    {
+        return createDispositionSchedule(
+                container, 
+                dispositionInstructions, 
+                dispositionAuthority, 
+                isRecordLevel, 
+                defaultDispositionActions, 
+                extendedDispositionSchedule, 
+                DEFAULT_EVENT_NAME);
+    }
+    
+    /**
+     * Create test disposition schedule
+     */
+    public DispositionSchedule createDispositionSchedule(
+                                    NodeRef container,
+                                    String dispositionInstructions,
+                                    String dispositionAuthority,
+                                    boolean isRecordLevel,
+                                    boolean defaultDispositionActions,
+                                    boolean extendedDispositionSchedule,
+                                    String defaultEvent)
     {
         Map<QName, Serializable> dsProps = new HashMap<QName, Serializable>(3);
         dsProps.put(PROP_DISPOSITION_AUTHORITY, dispositionAuthority);
@@ -148,7 +162,7 @@ public class CommonRMTestUtils implements RecordsManagementModel
             adParams.put(PROP_DISPOSITION_DESCRIPTION, DEFAULT_DISPOSITION_DESCRIPTION);
 
             List<String> events = new ArrayList<String>(1);
-            events.add(DEFAULT_EVENT_NAME);
+            events.add(defaultEvent);
             adParams.put(PROP_DISPOSITION_EVENT, (Serializable)events);
 
             dispositionService.addDispositionActionDefinition(dispositionSchedule, adParams);

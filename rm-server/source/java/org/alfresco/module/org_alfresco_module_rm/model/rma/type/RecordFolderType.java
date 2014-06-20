@@ -22,10 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
-import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;
@@ -41,7 +38,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.ArrayUtils;
 
@@ -55,26 +51,15 @@ import org.apache.commons.lang.ArrayUtils;
 (
    defaultType = "rma:recordFolder"
 )
-public class RecordFolderType extends    BaseBehaviourBean
+public class RecordFolderType extends    AbstractDisposableItem
                               implements NodeServicePolicies.OnMoveNodePolicy,
                                          NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-    /** unwanted aspects */
-    private QName[] unwantedAspects =
-    {
-        ASPECT_VITAL_RECORD,
-        ASPECT_DISPOSITION_LIFECYCLE,
-        RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH
-    };
-
     /** record service */
     private RecordService recordService;
 
     /** record folder service */
     private RecordFolderService recordFolderService;
-
-    /** disposition service */
-    private DispositionService dispositionService;
 
     /** vital record service */
     protected VitalRecordService vitalRecordService;
@@ -93,14 +78,6 @@ public class RecordFolderType extends    BaseBehaviourBean
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
-    }
-
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
     }
 
     /**
@@ -271,31 +248,6 @@ public class RecordFolderType extends    BaseBehaviourBean
         finally
         {
             behaviourFilter.enableBehaviour();
-        }
-    }
-
-    /**
-     * Removes unwanted aspects
-     *
-     * @param nodeService
-     * @param nodeRef
-     */
-    private void cleanDisposableItem(NodeService nodeService, NodeRef nodeRef)
-    {
-        // Remove unwanted aspects
-        for (QName aspect : unwantedAspects)
-        {
-            if (nodeService.hasAspect(nodeRef, aspect))
-            {
-                nodeService.removeAspect(nodeRef, aspect);
-            }
-        }
-        
-        // remove the current disposition action (if there is one)
-        DispositionAction dispositionAction = dispositionService.getNextDispositionAction(nodeRef);
-        if (dispositionAction != null)
-        {
-            nodeService.deleteNode(dispositionAction.getNodeRef());
         }
     }
 }

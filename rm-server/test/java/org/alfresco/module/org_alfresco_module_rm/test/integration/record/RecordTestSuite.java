@@ -32,7 +32,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(
 {
     RejectRecordTest.class,
-    CreateRecordTest.class
+    CreateRecordTest.class,
+    MoveRecordTest.class
 })
 public class RecordTestSuite
 {

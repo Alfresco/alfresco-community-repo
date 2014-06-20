@@ -25,9 +25,9 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
-import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
-import org.alfresco.module.org_alfresco_module_rm.model.behaviour.RecordsManagementSearchBehaviour;
+import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -54,7 +54,7 @@ import org.alfresco.service.namespace.QName;
 (
    defaultType = "rma:record"
 )
-public class RecordAspect extends    BaseBehaviourBean
+public class RecordAspect extends    AbstractDisposableItem
                           implements NodeServicePolicies.OnCreateChildAssociationPolicy,
                                      RecordsManagementPolicies.OnCreateReference,
                                      RecordsManagementPolicies.OnRemoveReference,
@@ -69,6 +69,9 @@ public class RecordAspect extends    BaseBehaviourBean
 
     /** script service */
     protected ScriptService scriptService;
+    
+    /** record service */
+    protected RecordService recordService;
 
     /**
      * @param extendedSecurityService   extended security service
@@ -84,6 +87,14 @@ public class RecordAspect extends    BaseBehaviourBean
     public void setScriptService(ScriptService scriptService)
     {
         this.scriptService = scriptService;
+    }
+    
+    /**
+     * @param recordService     record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
     }
 
     /**
@@ -219,15 +230,18 @@ public class RecordAspect extends    BaseBehaviourBean
         // check the records parent has actually changed
         if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
         {
-            final NodeRef newNodeRef = newChildAssocRef.getChildRef();
+            final NodeRef record = newChildAssocRef.getChildRef();
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
-                    if (nodeService.exists(newNodeRef))
+                    if (nodeService.exists(record))
                     {
-                        // only remove the search details .. the rest will be resolved automatically
-                        nodeService.removeAspect(newNodeRef, RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH);
+                        // clean record
+                        cleanDisposableItem(nodeService, record);
+
+                        // re-file in the new folder
+                        recordService.file(record);
                     }
 
                     return null;
@@ -239,10 +253,10 @@ public class RecordAspect extends    BaseBehaviourBean
     /**
      * Executes a reference script if present
      *
-     * @param policy
-     * @param reference
-     * @param from
-     * @param to
+     * @param policy        policy
+     * @param reference     reference
+     * @param from          reference from
+     * @param to            reference to
      */
     private void executeReferenceScript(String policy, QName reference, NodeRef from, NodeRef to)
     {

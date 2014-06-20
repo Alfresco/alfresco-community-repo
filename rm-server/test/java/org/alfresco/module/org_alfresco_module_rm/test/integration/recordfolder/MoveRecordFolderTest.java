@@ -38,7 +38,7 @@ import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.GUID;
 
 /**
- * Move record tests.
+ * Move record folder tests.
  * 
  * @author Roy Wetherall
  * @since 2.2

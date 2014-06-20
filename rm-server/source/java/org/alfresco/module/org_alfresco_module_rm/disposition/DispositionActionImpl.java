@@ -472,28 +472,33 @@ public class DispositionActionImpl implements DispositionAction,
 
         if (!events.isEmpty())
         {
-            if (!getDispositionActionDefinition().eligibleOnFirstCompleteEvent())
-            {
-                // if one event is complete then the disposition action is eligible
-                eligible = true;
-                for (EventCompletionDetails event : events)
+            // get the disposition action definition
+            DispositionActionDefinition dispositionActionDefinition = getDispositionActionDefinition();
+            if (dispositionActionDefinition != null)
+            {            
+                if (!dispositionActionDefinition.eligibleOnFirstCompleteEvent())
                 {
-                    if (!event.isEventComplete())
+                    // if one event is complete then the disposition action is eligible
+                    eligible = true;
+                    for (EventCompletionDetails event : events)
                     {
-                        eligible = false;
-                        break;
+                        if (!event.isEventComplete())
+                        {
+                            eligible = false;
+                            break;
+                        }
                     }
                 }
-            }
-            else
-            {
-                // all events must be complete for the disposition action to be eligible
-                for (EventCompletionDetails event : events)
+                else
                 {
-                    if (event.isEventComplete())
+                    // all events must be complete for the disposition action to be eligible
+                    for (EventCompletionDetails event : events)
                     {
-                        eligible = true;
-                        break;
+                        if (event.isEventComplete())
+                        {
+                            eligible = true;
+                            break;
+                        }
                     }
                 }
             }

@@ -89,11 +89,15 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                                      implements RecordsManagementModel, ContentModel, RMPermissionModel
 {
     /** Application context */
-    protected static final String[] CONFIG_LOCATIONS = new String[]
+    protected String[] getConfigLocations()
     {
-        "classpath:alfresco/application-context.xml",
-        "classpath:test-context.xml"
-    };
+        return new String[]
+        {
+            "classpath:alfresco/application-context.xml",
+            "classpath:test-context.xml",
+            "classpath:test-job-context.xml"
+        };
+    }
     protected ApplicationContext applicationContext;
 
     /** test model constants */
@@ -310,7 +314,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected void setUp() throws Exception
     {
         // Get the application context
-        applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
+        applicationContext = ApplicationContextHelper.getApplicationContext(getConfigLocations());
         utils = new CommonRMTestUtils(applicationContext);
 
         // Initialise the service beans
@@ -484,8 +488,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 	                if (isRecordTest())
 	                {
 	                    // declare a record
-	                    utils.declareRecord(recordDeclaredOne);
-	                    utils.declareRecord(recordDeclaredTwo);
+	                    utils.completeRecord(recordDeclaredOne);
+	                    utils.completeRecord(recordDeclaredTwo);
 	                }
 
 	                // unfiled container

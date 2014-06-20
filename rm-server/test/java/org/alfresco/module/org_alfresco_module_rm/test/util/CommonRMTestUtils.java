@@ -227,7 +227,10 @@ public class CommonRMTestUtils implements RecordsManagementModel
         return recordOne;
     }
 
-    public void declareRecord(final NodeRef record)
+    /**
+     * Helper method to complete record.
+     */
+    public void completeRecord(final NodeRef record)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {

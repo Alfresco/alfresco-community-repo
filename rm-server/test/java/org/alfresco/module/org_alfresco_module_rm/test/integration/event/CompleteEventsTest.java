@@ -72,7 +72,7 @@ public class CompleteEventsTest extends BaseRMTestCase
                 
                 // file record
                 record = utils.createRecord(recordFolder, GUID.generate(), "title");
-                utils.declareRecord(record);
+                utils.completeRecord(record);
             }
             
             public void when()
@@ -128,7 +128,7 @@ public class CompleteEventsTest extends BaseRMTestCase
                 
                 // file record
                 NodeRef record = utils.createRecord(recordFolder, GUID.generate(), "title");
-                utils.declareRecord(record);
+                utils.completeRecord(record);
 
             }
             
@@ -194,7 +194,7 @@ public class CompleteEventsTest extends BaseRMTestCase
                 
                 // file record
                 NodeRef record = utils.createRecord(recordFolder, GUID.generate(), "title");
-                utils.declareRecord(record);
+                utils.completeRecord(record);
 
             }
             public void when()
@@ -267,7 +267,7 @@ public class CompleteEventsTest extends BaseRMTestCase
                 
                 // file record
                 NodeRef record = utils.createRecord(recordFolder, GUID.generate(), "title");
-                utils.declareRecord(record);
+                utils.completeRecord(record);
             }
             
             public void when()
@@ -338,7 +338,7 @@ public class CompleteEventsTest extends BaseRMTestCase
                 
                 // file record
                 NodeRef record = utils.createRecord(recordFolder, GUID.generate(), "title");
-                utils.declareRecord(record);
+                utils.completeRecord(record);
             }
             
             public void when()
@@ -409,7 +409,7 @@ public class CompleteEventsTest extends BaseRMTestCase
                 // file record
                 String recordName = GUID.generate();
                 record = utils.createRecord(recordFolder, recordName, "title");
-                utils.declareRecord(record);
+                utils.completeRecord(record);
                 
                 // link record to second record folder
                 nodeService.addChild(recordFolder2, record, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, recordName));

@@ -563,8 +563,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 {
                     public QName execute() throws Throwable
                     {
-                        utils.declareRecord(testRecord1);
-                        utils.declareRecord(testRecord2);
+                        utils.completeRecord(testRecord1);
+                        utils.completeRecord(testRecord2);
 
                         Map <String, Serializable> params = new HashMap<String, Serializable>();
                         params.put("referenceType", refType.toString());
@@ -755,8 +755,8 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     {
                         public Void execute() throws Throwable
                         {
-                            utils.declareRecord(testRecord1);
-                            utils.declareRecord(testRecord2);
+                            utils.completeRecord(testRecord1);
+                            utils.completeRecord(testRecord2);
 
                             policyComponent.bindClassBehaviour(
                                     RecordsManagementPolicies.BEFORE_CREATE_REFERENCE,

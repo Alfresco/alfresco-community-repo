@@ -62,7 +62,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          column: "@cm:name",
          ascending: true
       }],
-      language: "fts-alfresco",
+      language: "lucene",
       templates: null,
       variablePath: true,
       ignoreTypes: Filters.IGNORED_TYPES
@@ -154,6 +154,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
       case "transfers":
       case "holds":
          filterParams.variablePath = false;
+         filterParams.language = "fts-alfresco";
          filterParams.filter = "containerFilter";
          if (filterData == null)
          {
@@ -161,12 +162,13 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          }
          else
          {
-            filterParams.query = "+PARENT:\"" + filterData + "\"";
+            filterParams.query = "PARENT:\"" + filterData + "\"";
          }
          break;
 
       case "unfiledRecords":
          filterParams.variablePath = false;
+         filterParams.language = "fts-alfresco";
          filterParams.filter = "containerFilter";
          if (filterData == null)
          {
@@ -174,7 +176,7 @@ Filters.getFilterParams = function RecordsManagementFilter_getFilterParams(filte
          }
          else
          {
-            filterParams.query = "+PARENT:\"" + filterData + "\""  + " -TYPE:\"{http://www.alfresco.org/model/content/1.0}systemfolder\"";
+            filterParams.query = "PARENT:\"" + filterData + "\""  + " AND NOT TYPE:\"cm:systemfolder\"";
          }
          break;
 

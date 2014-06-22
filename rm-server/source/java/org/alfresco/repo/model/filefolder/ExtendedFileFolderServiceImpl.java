@@ -1,10 +1,9 @@
 /**
- * 
+ *
  */
 package org.alfresco.repo.model.filefolder;
 
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -15,17 +14,17 @@ import org.alfresco.service.namespace.QName;
 public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
 {
     protected RecordService recordService;
-    
+
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
     }
-    
+
     @Override
-    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException
+    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName)
     {
         FileInfo result = null;
-        
+
         recordService.disablePropertyEditableCheck();
         try
         {
@@ -36,15 +35,15 @@ public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
             recordService.enablePropertyEditableCheck();
             recordService.disablePropertyEditableCheck(result.getNodeRef());
         }
-        
+
         return result;
     }
-    
+
     @Override
-    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException
+    public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName)
     {
         FileInfo result = null;
-        
+
         recordService.disablePropertyEditableCheck();
         try
         {
@@ -55,7 +54,7 @@ public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
             recordService.enablePropertyEditableCheck();
             recordService.disablePropertyEditableCheck(result.getNodeRef());
         }
-        
+
         return result;
     }
 }

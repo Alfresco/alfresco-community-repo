@@ -94,16 +94,6 @@ public class RMSavedSearchesPost extends DeclarativeWebScript
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Site not found.");
         }
 
-        // Example format of posted Saved Search JSON:
-        // {
-        //    "name": "search name",
-        //    "description": "the search description",
-        //    "query": "the complete search query string",
-        //    "public": boolean,
-        //    "params": "terms=keywords:xyz&undeclared=true",
-        //    "sort": "cm:name/asc"
-        //}
-
         try
         {
             // Parse the JSON passed in the request

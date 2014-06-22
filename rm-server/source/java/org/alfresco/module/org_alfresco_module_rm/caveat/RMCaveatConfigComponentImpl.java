@@ -383,11 +383,6 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                             }
                         }
 
-                        //if (! found)
-                        //{
-                            //throw new AlfrescoRuntimeException("Constraint does not exist (or is not used): "+conStr);
-                        //}
-
                         if (allowedValues != null)
                         {
                             if (logger.isInfoEnabled())

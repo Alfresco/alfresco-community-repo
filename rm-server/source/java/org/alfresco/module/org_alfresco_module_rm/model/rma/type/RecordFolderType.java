@@ -105,7 +105,6 @@ public class RecordFolderType extends    AbstractDisposableItem
         {
             if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
             {
-                //final NodeRef oldNodeRef = oldChildAssocRef.getChildRef();
                 final NodeRef newNodeRef = newChildAssocRef.getChildRef();
 
                 AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
@@ -127,7 +126,7 @@ public class RecordFolderType extends    AbstractDisposableItem
                             // Re-initiate the records in the new folder.
                             recordService.file(record);
                         }
-                            
+
                         return null;
                     }
                 }, AuthenticationUtil.getSystemUserName());

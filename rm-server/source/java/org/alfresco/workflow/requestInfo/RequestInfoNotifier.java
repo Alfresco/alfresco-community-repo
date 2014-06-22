@@ -52,21 +52,6 @@ public class RequestInfoNotifier implements TaskListener
         // Assign the task to the initiator
         String initiator = RequestInfoUtils.getInitiator(delegateTask);
         delegateTask.setAssignee(initiator);
-
-        // FIXME: Is sending an email required?
-        // At the moment we do not use email templates
-        /*
-        // Create the context and send an email to the initiator
-        NotificationContext notificationContext = new NotificationContext();
-        notificationContext.setAsyncNotification(true);
-        notificationContext.setIgnoreNotificationFailure(true);
-        notificationContext.addTo(initiator);
-        notificationContext.setSubject(getEmailSubject(recordName));
-        notificationContext.setBody(getEmailBody(recordName));
-
-        // Send the email
-        RequestInfoUtils.getServiceRegistry().getNotificationService().sendNotification(EMailNotificationProvider.NAME, notificationContext);
-        */
     }
 
     /**
@@ -84,40 +69,4 @@ public class RequestInfoNotifier implements TaskListener
         sb.append("'");
         return  sb.toString();
     }
-
-    /**
-     * Helper method for building the email subject
-     *
-     * @param recordName The name of the record
-     * @return Returns the email subject
-     */
-//	private String getEmailSubject(String recordName)
-//    {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.subject"));
-//        sb.append(" '");
-//        sb.append(recordName);
-//        sb.append("'");
-//        return sb.toString();
-//    }
-
-    /**
-     * Helper method for building the email body
-     *
-     * @param recordName The name of the record
-     * @return Returns the email body
-     */
-//	private String getEmailBody(String recordName)
-//    {
-//        StringBuilder sb = new StringBuilder();
-//        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body1"));
-//        sb.append(" '");
-//        sb.append(AuthenticationUtil.getFullyAuthenticatedUser());
-//        sb.append("' ");
-//        sb.append(I18NUtil.getMessage("activitiReviewPooled.workflow.email.body2"));
-//        sb.append(" '");
-//        sb.append(recordName);
-//        sb.append("'.");
-//        return  sb.toString();
-//    }
 }

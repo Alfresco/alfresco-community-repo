@@ -446,18 +446,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             maxSize = Integer.valueOf(maxSize + returnedObject.getResultSetMetaData().getSearchParameters().getSkipCount());
         }
 
-//        int maxChecks = maxPermissionChecks;
-//        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks() >= 0)
-//        {
-//            maxChecks = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionChecks();
-//        }
-
-//        long maxCheckTime = maxPermissionCheckTimeMillis;
-//        if (returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis() >= 0)
-//        {
-//            maxCheckTime = returnedObject.getResultSetMetaData().getSearchParameters().getMaxPermissionCheckTimeMillis();
-//        }
-
         if (supportedDefinitions.size() == 0)
         {
             if (maxSize == null)
@@ -505,15 +493,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         for (int i = 0; i < returnedObject.length(); i++)
         {
             long currentTimeMillis = System.currentTimeMillis();
-//            if (i >= maxChecks || (currentTimeMillis - startTimeMillis) > maxCheckTime)
-//            {
-//                filteringResultSet.setResultSetMetaData(
-//                        new SimpleResultSetMetaData(
-//                                LimitBy.NUMBER_OF_PERMISSION_EVALUATIONS,
-//                                PermissionEvaluationMode.EAGER,
-//                                returnedObject.getResultSetMetaData().getSearchParameters()));
-//                break;
-//            }
 
             // All permission checks must pass
             inclusionMask.set(i, true);

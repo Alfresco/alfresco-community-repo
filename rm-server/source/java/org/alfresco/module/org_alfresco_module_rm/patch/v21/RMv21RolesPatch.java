@@ -71,9 +71,9 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
     {
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug(" ... updating " + filePlans.size() + " file plans");
+            LOGGER.debug(" ... updating " + filePlans.size() + " file plans");
         }
 
         for (NodeRef filePlan : filePlans)
@@ -85,9 +85,9 @@ public class RMv21RolesPatch extends RMv21PatchComponent implements BeanNameAwar
                 String roleGroupName = role.getRoleGroupName();
                 if (!authorityService.getAuthorityZones(roleGroupName).contains(RMAuthority.ZONE_APP_RM))
                 {
-                    if (logger.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
-                        logger.debug(" ... updating " + roleGroupName + " in file plan " + filePlan.toString());
+                        LOGGER.debug(" ... updating " + roleGroupName + " in file plan " + filePlan.toString());
                     }
 
                     addAuthorityToZone(roleGroupName);

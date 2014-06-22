@@ -138,18 +138,18 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
     {
         Set<NodeRef> filePlans = filePlanService.getFilePlans();
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("  ... updating " + filePlans.size() + " file plans");
+            LOGGER.debug("  ... updating " + filePlans.size() + " file plans");
         }
 
         for (NodeRef filePlan : filePlans)
         {
             if (filePlanService.getUnfiledContainer(filePlan) == null)
             {
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug("  ... updating file plan " + filePlan.toString());
+                    LOGGER.debug("  ... updating file plan " + filePlan.toString());
                 }
 
                 ruleService.disableRules();
@@ -194,9 +194,9 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
 
     private void moveExistingHolds(NodeRef filePlan)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("  ... moving existing holds for file plan " + filePlan.toString());
+            LOGGER.debug("  ... moving existing holds for file plan " + filePlan.toString());
         }
 
         NodeRef container = filePlanService.getHoldContainer(filePlan);
@@ -212,9 +212,9 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
 
     private void moveExistingTransfers(NodeRef filePlan)
     {
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("  ... moving existing transfers for file plan " + filePlan.toString());
+            LOGGER.debug("  ... moving existing transfers for file plan " + filePlan.toString());
         }
 
         NodeRef container = filePlanService.getTransferContainer(filePlan);

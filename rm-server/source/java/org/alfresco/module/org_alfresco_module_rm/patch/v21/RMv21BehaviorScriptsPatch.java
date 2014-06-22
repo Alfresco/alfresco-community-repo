@@ -97,9 +97,9 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
         // check that the behavior scripts folder exists
         if (!nodeService.exists(newBehaviorScriptsFolder))
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug(" ... creating RM Behavior Scripts folder");
+                LOGGER.debug(" ... creating RM Behavior Scripts folder");
             }
 
             String newBehaviorScriptsFolderName = "Records Management Behavior Scripts";
@@ -137,9 +137,9 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
 
                             if (oldBehaviorScripts != null && !oldBehaviorScripts.isEmpty())
                             {
-                                if (logger.isDebugEnabled())
+                                if (LOGGER.isDebugEnabled())
                                 {
-                                    logger.debug(" ... moving files from RM Scripts folder to RM Behavior Scripts folder");
+                                    LOGGER.debug(" ... moving files from RM Scripts folder to RM Behavior Scripts folder");
                                 }
 
                                 for (FileInfo script : oldBehaviorScripts)
@@ -147,9 +147,9 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
                                     // move the old script to the new location
                                     fileFolderService.moveFrom(script.getNodeRef(), OLD_BEHAVIOR_SCRIPTS_FOLDER, RMv21BehaviorScriptsPatch.newBehaviorScriptsFolder, script.getName());
 
-                                    if (logger.isDebugEnabled())
+                                    if (LOGGER.isDebugEnabled())
                                     {
-                                        logger.debug(" ...... moved " + script.getName());
+                                        LOGGER.debug(" ...... moved " + script.getName());
                                     }
                                 }
 

@@ -74,14 +74,14 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
         // check whether report dir exists or not
         if (nodeService.exists(RM_CONFIG_FOLDER) && !nodeService.exists(TEMPLATE_ROOT))
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug(" ... adding template root folder");
+                LOGGER.debug(" ... adding template root folder");
             }
 
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug(" ... adding destruction report template");
+                LOGGER.debug(" ... adding destruction report template");
             }
 
             // create report templates

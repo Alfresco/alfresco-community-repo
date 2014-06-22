@@ -127,16 +127,16 @@ public class RMv2ModelPatch extends ModulePatchComponent
 
             	qnameDAO.updateQName(qnameBefore, qnameAfter);
 
-            	if (logger.isDebugEnabled())
+            	if (LOGGER.isDebugEnabled())
             	{
-            		logger.debug(" ... updated qname " + qnameBefore.toString());
+            		LOGGER.debug(" ... updated qname " + qnameBefore.toString());
             	}
         	}
             else
             {
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug(" ... no need to update qname " + qnameBefore.toString());
+                    LOGGER.debug(" ... no need to update qname " + qnameBefore.toString());
                 }
             }
 

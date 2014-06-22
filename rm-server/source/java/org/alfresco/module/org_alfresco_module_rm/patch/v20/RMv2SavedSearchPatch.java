@@ -89,9 +89,9 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
             // get the saved searches
             List<SavedSearchDetails> savedSearches = recordsManagementSearchService.getSavedSearches(RM_SITE_ID);
 
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("  ... updating " + savedSearches.size() + " saved searches");
+                LOGGER.debug("  ... updating " + savedSearches.size() + " saved searches");
             }
 
             for (SavedSearchDetails savedSearchDetails : savedSearches)
@@ -106,9 +106,9 @@ public class RMv2SavedSearchPatch extends ModulePatchComponent
                     writer.putContent(refreshedJSON);
 
 
-                    if (logger.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
-                        logger.debug("    ... updated saved search " + savedSearchDetails.getName() + " (nodeRef=" + nodeRef.toString() + ")");
+                        LOGGER.debug("    ... updated saved search " + savedSearchDetails.getName() + " (nodeRef=" + nodeRef.toString() + ")");
                     }
                 }
             }

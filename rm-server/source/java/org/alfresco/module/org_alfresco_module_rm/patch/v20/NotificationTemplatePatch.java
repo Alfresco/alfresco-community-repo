@@ -145,9 +145,9 @@ public class NotificationTemplatePatch extends ModulePatchComponent
     {
         if (template == null || !nodeService.exists(template))
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("Skipping template update, because template has not been bootstraped.");
+                LOGGER.debug("Skipping template update, because template has not been bootstraped.");
             }
         }
         else
@@ -156,9 +156,9 @@ public class NotificationTemplatePatch extends ModulePatchComponent
             String lastPatchUpdate = (String)nodeService.getProperty(template, PROP_LAST_PATCH_UPDATE);
             if (lastPatchUpdate == null || !name.equals(lastPatchUpdate))
             {
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug("Applying update to template. (template=" + template.toString() + ", templateUpdate=" + templateUpdate + ")");
+                    LOGGER.debug("Applying update to template. (template=" + template.toString() + ", templateUpdate=" + templateUpdate + ")");
                 }
 
                 // Make sure the template is versionable
@@ -192,9 +192,9 @@ public class NotificationTemplatePatch extends ModulePatchComponent
             }
             else
             {
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug("Skipping template update, because template has already been patched. (template=" + template.toString() + ")");
+                    LOGGER.debug("Skipping template update, because template has already been patched. (template=" + template.toString() + ")");
                 }
             }
         }

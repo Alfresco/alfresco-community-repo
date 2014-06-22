@@ -182,7 +182,6 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     @SuppressWarnings("unused")
     public List<RecordsManagementAction> getDispositionActions(NodeRef nodeRef)
     {
-        //String userName = AuthenticationUtil.getFullyAuthenticatedUser();
         List<RecordsManagementAction> result = new ArrayList<RecordsManagementAction>(this.rmActions.size());
 
         for (RecordsManagementAction action : this.rmActions.values())

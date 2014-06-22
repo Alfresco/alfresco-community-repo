@@ -1167,9 +1167,6 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 
 		if (assocDef.isChild())
 		{
-		    // TODO:  Ask for a more efficient method such as
-		    //        nodeService.removeChildAssociation(fromNode, toNode, chRef.getTypeQName(), null);
-
 		    AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
 		    {
                 @Override
@@ -1307,7 +1304,6 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
         if (existsLabel(compoundID))
         {
             return null;
-           //throw new IllegalArgumentException(I18NUtil.getMessage(MSG_REF_LABEL_IN_USE, compoundID));
         }
 
         // defaults to RM_CUSTOM_URI
@@ -1447,13 +1443,6 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
             logger.info("addCustomConstraintDefinition: "+constraintNameAsPrefixString+" (valueCnt: "+allowedValues.size()+")");
         }
     }
-
-    /*
-    public void addCustomConstraintDefinition(QName constraintName, String description, Map<String, Object> parameters)
-    {
-        // TODO Auto-generated method stub
-    }
-    */
 
     public void changeCustomConstraintValues(QName constraintName, List<String> newAllowedValues)
     {

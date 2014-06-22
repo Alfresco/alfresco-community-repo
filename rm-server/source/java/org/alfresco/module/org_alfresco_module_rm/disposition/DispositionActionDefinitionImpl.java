@@ -75,7 +75,6 @@ public class DispositionActionDefinitionImpl implements DispositionActionDefinit
      */
     public DispositionActionDefinitionImpl(RecordsManagementEventService recordsManagementEventService, RecordsManagementActionService recordsManagementActionService, NodeService nodeService, NodeRef nodeRef, int index)
     {
-        //this.services = services;
         this.recordsManagementEventService = recordsManagementEventService;
         this.recordsManagementActionService = recordsManagementActionService;
         this.nodeService = nodeService;

@@ -44,7 +44,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RMListOfValuesConstraint extends ListOfValuesConstraint
 {
-    //private static final String ERR_NO_VALUES = "d_dictionary.constraint.list_of_values.no_values";
     private static final String ERR_NON_STRING = "d_dictionary.constraint.string_length.non_string";
     private static final String ERR_INVALID_VALUE = "d_dictionary.constraint.list_of_values.invalid_value";
     private static final String LOV_CONSTRAINT_VALUE = "listconstraint";

@@ -49,7 +49,6 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
                                           RecordsManagementModel
 {
     /** I18N */
-    //private static final String MSG_FREEZE_ONLY_RECORDS_FOLDERS = "rm.action.freeze-only-records-folders";
     private static final String MSG_HOLD_NAME = "rm.hold.name";
 
     /** File Plan Service */

@@ -34,17 +34,17 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * RM saved searches GET web script
- * 
+ *
  * @author Roy Wetherall
  */
 public class RMSavedSearchesGet extends DeclarativeWebScript
 {
     /** Records management search service */
     protected RecordsManagementSearchService recordsManagementSearchService;
-    
+
     /** Site service */
     protected SiteService siteService;
-    
+
     /**
      * @param recordsManagementSearchService    records management search service
      */
@@ -52,7 +52,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
     {
         this.recordsManagementSearchService = recordsManagementSearchService;
     }
-    
+
     /**
      * @param siteService   site service
      */
@@ -60,7 +60,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
     {
         this.siteService = siteService;
     }
-    
+
     /*
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
@@ -71,7 +71,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
         Map<String, Object> model = new HashMap<String, Object>(13);
 
         // Get the site id and confirm it is valid
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();        
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String siteId = templateVars.get("site");
         if (siteId == null || siteId.length() == 0)
         {
@@ -81,15 +81,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Site not found.");
         }
-        
-        // TODO determine whether this is still relevant
-//        String isPublicString = req.getParameter("p");
-//        boolean isPublic = false;
-//        if (isPublicString != null && isPublicString.length() != 0)
-//        {
-//            isPublic = Boolean.parseBoolean(isPublicString);
-//        }
-        
+
         // Get the saved search details
         List<SavedSearchDetails> details = recordsManagementSearchService.getSavedSearches(siteId);
         List<Item> items  = new ArrayList<Item>();
@@ -100,15 +92,15 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
             String query = savedSearchDetails.getCompatibility().getQuery();
             String params = savedSearchDetails.getCompatibility().getParams();
             String sort = savedSearchDetails.getCompatibility().getSort();
-            
+
             Item item = new Item(name, description, query, params, sort);
             items.add(item);
         }
-        
+
         model.put("savedSearches", items);
         return model;
     }
-    
+
     /**
      * Item class to contain information about items being placed in model.
      */
@@ -119,7 +111,7 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
         private String query;
         private String params;
         private String sort;
-        
+
         public Item(String name, String description, String query, String params, String sort)
         {
             this.name = name;
@@ -128,27 +120,27 @@ public class RMSavedSearchesGet extends DeclarativeWebScript
             this.params = params;
             this.sort = sort;
         }
-        
+
         public String getName()
         {
             return name;
         }
-        
+
         public String getDescription()
         {
             return description;
         }
-        
+
         public String getQuery()
         {
             return query;
         }
-        
+
         public String getParams()
         {
             return params;
         }
-        
+
         public String getSort()
         {
             return sort;

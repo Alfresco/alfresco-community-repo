@@ -41,18 +41,34 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
                                                                                        BeanNameAware
 {
     /** records management action service */
-    protected RecordsManagementActionService recordsManagementActionService;
+    private RecordsManagementActionService recordsManagementActionService;
 
     /** File Plan Service */
-    protected FilePlanService filePlanService;
+    private FilePlanService filePlanService;
 
     /** bean name */
     private String name;
 
     /** public condition */
-    protected boolean publicCondition = true;
+    private boolean publicCondition = true;
 
     private RetryingTransactionHelper retryingTransactionHelper;
+
+    /**
+     * @return Records management action service
+     */
+    protected RecordsManagementActionService getRecordsManagementActionService()
+    {
+        return this.recordsManagementActionService;
+    }
+
+    /**
+     * @return File plan service
+     */
+    protected FilePlanService getFilePlanService()
+    {
+        return this.filePlanService;
+    }
 
     /**
      * @param recordsManagementActionService    records management action service
@@ -95,7 +111,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
                 {
                     public Void execute()
                     {
-                        recordsManagementActionService.register(RecordsManagementActionConditionEvaluatorAbstractBase.this);
+                        getRecordsManagementActionService().register(RecordsManagementActionConditionEvaluatorAbstractBase.this);
 
                         return null;
                     }

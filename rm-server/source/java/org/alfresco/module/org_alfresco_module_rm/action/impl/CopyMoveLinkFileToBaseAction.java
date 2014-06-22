@@ -51,7 +51,27 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     {
         COPY, MOVE, LINK
     };
-    protected CopyMoveLinkFileToActionMode mode;
+
+    /** Action Mode */
+    private CopyMoveLinkFileToActionMode mode;
+
+    /**
+     * @return Action Mode
+     */
+    protected CopyMoveLinkFileToActionMode getMode()
+    {
+        return this.mode;
+    }
+
+    /**
+     * Sets the action mode
+     *
+     * @param mode Action mode
+     */
+    protected void setMode(CopyMoveLinkFileToActionMode mode)
+    {
+        this.mode = mode;
+    }
 
     /**
      * @param fileFolderService file folder service
@@ -120,15 +140,15 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                 {
                     try
                     {
-                        if(mode == CopyMoveLinkFileToActionMode.MOVE)
+                        if(getMode() == CopyMoveLinkFileToActionMode.MOVE)
                         {
                             fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
                         }
-                        else if(mode == CopyMoveLinkFileToActionMode.COPY)
+                        else if(getMode() == CopyMoveLinkFileToActionMode.COPY)
                         {
                             fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
                         }
-                        else if(mode == CopyMoveLinkFileToActionMode.LINK)
+                        else if(getMode() == CopyMoveLinkFileToActionMode.LINK)
                         {
                             recordService.link(actionedUponNodeRef, finalRecordFolder);
                         }

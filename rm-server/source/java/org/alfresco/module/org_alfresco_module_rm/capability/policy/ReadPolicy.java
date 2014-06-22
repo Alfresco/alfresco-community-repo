@@ -24,7 +24,7 @@ import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * Read method security policy.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -33,11 +33,11 @@ public class ReadPolicy extends AbstractBasePolicy
 
     @SuppressWarnings("rawtypes")
 	public int evaluate(
-            MethodInvocation invocation, 
-            Class[] params, 
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
-        NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());        
-        return capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS).evaluate(testNodeRef);
+        NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
+        return getCapabilityService().getCapability(RMPermissionModel.VIEW_RECORDS).evaluate(testNodeRef);
     }
 }

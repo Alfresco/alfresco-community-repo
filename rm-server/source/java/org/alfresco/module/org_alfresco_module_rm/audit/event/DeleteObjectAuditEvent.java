@@ -26,13 +26,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Audits file plan component delete
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 @BehaviourBean
 public class DeleteObjectAuditEvent extends AuditEvent implements BeforeDeleteNodePolicy
-{    
+{
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -41,9 +41,9 @@ public class DeleteObjectAuditEvent extends AuditEvent implements BeforeDeleteNo
     (
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent"
-    )    
+    )
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        recordsManagementAuditService.auditEvent(nodeRef, name, null, null, true, false);
+        recordsManagementAuditService.auditEvent(nodeRef, getName(), null, null, true, false);
     }
 }

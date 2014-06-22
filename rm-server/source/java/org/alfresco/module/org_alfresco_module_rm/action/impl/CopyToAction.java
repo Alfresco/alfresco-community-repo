@@ -1,6 +1,5 @@
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-
 /**
  * File To action implementation.
  *
@@ -16,6 +15,6 @@ public class CopyToAction extends CopyMoveLinkFileToBaseAction
     public void init()
     {
         super.init();
-        this.mode = CopyMoveLinkFileToActionMode.COPY;
+        setMode(CopyMoveLinkFileToActionMode.COPY);
     }
 }

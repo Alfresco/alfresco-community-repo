@@ -52,16 +52,48 @@ public class FilePlanType extends    BaseBehaviourBean
                                      NodeServicePolicies.OnDeleteNodePolicy
 {
     /** file plan service */
-    protected FilePlanService filePlanService;
+    private FilePlanService filePlanService;
 
     /** record folder service */
-    protected RecordFolderService recordFolderService;
+    private RecordFolderService recordFolderService;
 
     /** identifier service */
-    protected IdentifierService identifierService;
+    private IdentifierService identifierService;
 
     /** file plan role service */
-    protected FilePlanRoleService filePlanRoleService;
+    private FilePlanRoleService filePlanRoleService;
+
+    /**
+     * @return File plan service
+     */
+    protected FilePlanService getFilePlanService()
+    {
+        return this.filePlanService;
+    }
+
+    /**
+     * @return Record folder service
+     */
+    protected RecordFolderService getRecordFolderService()
+    {
+        return this.recordFolderService;
+    }
+
+    /**
+     * @return Identifier service
+     */
+    protected IdentifierService getIdentifierService()
+    {
+        return this.identifierService;
+    }
+
+    /**
+     * @return File plan role service
+     */
+    protected FilePlanRoleService getFilePlanRoleService()
+    {
+        return this.filePlanRoleService;
+    }
 
     /**
      * @param filePlanService   file plan service
@@ -114,7 +146,7 @@ public class FilePlanType extends    BaseBehaviourBean
 
         // ensure we are not trying to put a record folder in the root of the file plan
         NodeRef parent = childAssocRef.getParentRef();
-        if (filePlanService.isFilePlan(parent) && recordFolderService.isRecordFolder(nodeRef))
+        if (getFilePlanService().isFilePlan(parent) && getRecordFolderService().isRecordFolder(nodeRef))
         {
             throw new AlfrescoRuntimeException("Operation failed, because you can not place a record folder in the root of the file plan.");
         }
@@ -141,7 +173,7 @@ public class FilePlanType extends    BaseBehaviourBean
                 if (nodeService.hasAspect(filePlan, ASPECT_FILE_PLAN_COMPONENT) &&
                     nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
                 {
-                    String id = identifierService.generateIdentifier(filePlan);
+                    String id = getIdentifierService().generateIdentifier(filePlan);
                     nodeService.setProperty(filePlan, RecordsManagementModel.PROP_IDENTIFIER, id);
                 }
 
@@ -150,7 +182,7 @@ public class FilePlanType extends    BaseBehaviourBean
         });
 
         // setup the file plan roles
-        filePlanRoleService.setupFilePlanRoles(filePlan);
+        getFilePlanRoleService().setupFilePlanRoles(filePlan);
     }
 
     /**
@@ -165,6 +197,6 @@ public class FilePlanType extends    BaseBehaviourBean
     public void onDeleteNode(ChildAssociationRef childAssocRef, boolean archived)
     {
         // tear down the file plan roles
-        filePlanRoleService.tearDownFilePlanRoles(childAssocRef.getChildRef());
+        getFilePlanRoleService().tearDownFilePlanRoles(childAssocRef.getChildRef());
     }
 }

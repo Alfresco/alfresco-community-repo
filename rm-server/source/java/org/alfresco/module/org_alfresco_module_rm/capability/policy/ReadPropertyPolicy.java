@@ -30,16 +30,16 @@ public class ReadPropertyPolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate( 
-            MethodInvocation invocation, 
-            Class[] params, 
+	public int evaluate(
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef nodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
         QName propertyQName = getQName(invocation, params, cad.getParameters().get(1));
         if(propertyQName.equals(RecordsManagementModel.PROP_HOLD_REASON))
         {
-            return capabilityService.getCapability(RMPermissionModel.VIEW_UPDATE_REASONS_FOR_FREEZE).evaluate(nodeRef);
+            return getCapabilityService().getCapability(RMPermissionModel.VIEW_UPDATE_REASONS_FOR_FREEZE).evaluate(nodeRef);
         }
         else
         {

@@ -60,14 +60,30 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     private Map<String, RecordsManagementAction> dispositionActions = new HashMap<String, RecordsManagementAction>(5);
 
     /** Policy component */
-    PolicyComponent policyComponent;
+    private PolicyComponent policyComponent;
 
     /** Node service */
-    NodeService nodeService;
+    private NodeService nodeService;
 
     /** Policy delegates */
     private ClassPolicyDelegate<BeforeRMActionExecution> beforeRMActionExecutionDelegate;
     private ClassPolicyDelegate<OnRMActionExecution> onRMActionExecutionDelegate;
+
+    /**
+     * @return Policy component
+     */
+    protected PolicyComponent getPolicyComponent()
+    {
+        return this.policyComponent;
+    }
+
+    /**
+     * @return Node Service
+     */
+    protected NodeService getNodeService()
+    {
+        return this.nodeService;
+    }
 
     /**
      * Set the policy component
@@ -95,8 +111,8 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     public void init()
     {
         // Register the various policies
-        beforeRMActionExecutionDelegate = policyComponent.registerClassPolicy(BeforeRMActionExecution.class);
-        onRMActionExecutionDelegate = policyComponent.registerClassPolicy(OnRMActionExecution.class);
+        beforeRMActionExecutionDelegate = getPolicyComponent().registerClassPolicy(BeforeRMActionExecution.class);
+        onRMActionExecutionDelegate = getPolicyComponent().registerClassPolicy(OnRMActionExecution.class);
     }
 
     /**
@@ -133,7 +149,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     protected void invokeBeforeRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
         // get qnames to invoke against
-        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), nodeRef);
         // execute policy for node type and aspects
         BeforeRMActionExecution policy = beforeRMActionExecutionDelegate.get(qnames);
         policy.beforeRMActionExecution(nodeRef, name, parameters);
@@ -149,7 +165,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     protected void invokeOnRMActionExecution(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
         // get qnames to invoke against
-        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(nodeService, nodeRef);
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), nodeRef);
         // execute policy for node type and aspects
         OnRMActionExecution policy = onRMActionExecutionDelegate.get(qnames);
         policy.onRMActionExecution(nodeRef, name, parameters);
@@ -260,7 +276,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         // Execute action
         invokeBeforeRMActionExecution(nodeRef, name, parameters);
         RecordsManagementActionResult result = rmAction.execute(nodeRef, parameters);
-        if (nodeService.exists(nodeRef))
+        if (getNodeService().exists(nodeRef))
         {
             invokeOnRMActionExecution(nodeRef, name, parameters);
         }

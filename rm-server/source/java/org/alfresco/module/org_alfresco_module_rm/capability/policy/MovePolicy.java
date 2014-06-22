@@ -28,8 +28,8 @@ public class MovePolicy extends AbstractBasePolicy
 
     @SuppressWarnings("rawtypes")
 	public int evaluate(
-            MethodInvocation invocation, 
-            Class[] params, 
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
 
@@ -47,7 +47,7 @@ public class MovePolicy extends AbstractBasePolicy
 
         if ((movee != null) && (destination != null))
         {
-            return capabilityService.getCapability("Move").evaluate(movee, destination);
+            return getCapabilityService().getCapability("Move").evaluate(movee, destination);
         }
         else
         {

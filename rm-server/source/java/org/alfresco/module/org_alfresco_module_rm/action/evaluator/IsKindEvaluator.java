@@ -34,7 +34,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Records management IsKind evaluator that evaluates according to the file plan
  * component kind passed in.
- * 
+ *
  * @author Craig Tan
  * @since 2.1
  */
@@ -55,7 +55,7 @@ public class IsKindEvaluator extends RecordsManagementActionConditionEvaluatorAb
         boolean result = false;
         String kind = ((QName) actionCondition.getParameterValue(PARAM_KIND)).getLocalName();
 
-        FilePlanComponentKind filePlanComponentKind = filePlanService.getFilePlanComponentKind(actionedUponNodeRef);
+        FilePlanComponentKind filePlanComponentKind = getFilePlanService().getFilePlanComponentKind(actionedUponNodeRef);
 
         if (filePlanComponentKind != null &&
             filePlanComponentKind.toString().equals(kind))

@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 public abstract class ModulePatchComponent extends AbstractModuleComponent
 {
     /** logger */
-    protected static final Log logger = LogFactory.getLog(ModulePatchComponent.class);
+    protected static final Log LOGGER = LogFactory.getLog(ModulePatchComponent.class);
 
     /** Retrying transaction helper */
     protected RetryingTransactionHelper retryingTransactionHelper;
@@ -89,9 +89,9 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
     {
         try
         {
-            if (logger.isInfoEnabled())
+            if (LOGGER.isInfoEnabled())
             {
-                logger.info("Module patch component '" + getName() + "' is executing ...");
+                LOGGER.info("Module patch component '" + getName() + "' is executing ...");
             }
 
             // execute path within an isolated transaction
@@ -114,17 +114,17 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
 
             }, false, true);
 
-            if (logger.isInfoEnabled())
+            if (LOGGER.isInfoEnabled())
             {
-                logger.info(" ... completed module patch '" + getName() + "'");
+                LOGGER.info(" ... completed module patch '" + getName() + "'");
             }
         }
         catch (Throwable exception)
         {
             // record the exception otherwise it gets swallowed
-            if (logger.isInfoEnabled())
+            if (LOGGER.isInfoEnabled())
             {
-                logger.info("  ... error encountered.  " + exception.getMessage(), exception);
+                LOGGER.info("  ... error encountered.  " + exception.getMessage(), exception);
             }
             throw exception;
         }

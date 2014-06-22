@@ -113,9 +113,9 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
         {
             List<Long> filePlanComponents = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
 
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("   ... updating " + filePlanComponents.size() + " items");
+                LOGGER.debug("   ... updating " + filePlanComponents.size() + " items");
             }
 
 

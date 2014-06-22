@@ -107,9 +107,9 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
                 // only update if the capability is missing
                 if (!capabilities.contains(capability))
                 {
-                    if (logger.isDebugEnabled())
+                    if (LOGGER.isDebugEnabled())
                     {
-                        logger.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
+                        LOGGER.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
                     }
 
                     capabilities.add(capability);
@@ -127,16 +127,16 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
     {
         Set<NodeRef> filePlans = getFilePlans();
 
-        if (logger.isDebugEnabled())
+        if (LOGGER.isDebugEnabled())
         {
-            logger.debug("  ... updating " + filePlans.size() + " file plans");
+            LOGGER.debug("  ... updating " + filePlans.size() + " file plans");
         }
 
         for (NodeRef filePlan : filePlans)
         {
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("  ... updating file plan " + filePlan.toString());
+                LOGGER.debug("  ... updating file plan " + filePlan.toString());
             }
 
             // add new capabilities

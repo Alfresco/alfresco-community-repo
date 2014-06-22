@@ -109,9 +109,9 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
         {
             List<Long> records = patchDAO.getNodesByAspectQNameId(aspectPair.getFirst(), 0L, patchDAO.getMaxAdmNodeID());
 
-            if (logger.isDebugEnabled())
+            if (LOGGER.isDebugEnabled())
             {
-                logger.debug("  ... updating " + records.size() + " records");
+                LOGGER.debug("  ... updating " + records.size() + " records");
             }
 
             for (Long record : records)
@@ -119,9 +119,9 @@ public class RMv21RecordInheritancePatch extends RMv21PatchComponent
                 Pair<Long, NodeRef> recordPair = nodeDAO.getNodePair(record);
                 NodeRef recordNodeRef = recordPair.getSecond();
 
-                if (logger.isDebugEnabled())
+                if (LOGGER.isDebugEnabled())
                 {
-                    logger.debug("  ... updating record " + recordNodeRef.toString());
+                    LOGGER.debug("  ... updating record " + recordNodeRef.toString());
 
                     // get the primary parent
                     ChildAssociationRef assoc = nodeService.getPrimaryParent(recordNodeRef);

@@ -27,13 +27,13 @@ public class CreatePolicy extends AbstractBasePolicy
 {
     @SuppressWarnings("rawtypes")
 	public int evaluate(
-            MethodInvocation invocation, 
-            Class[] params, 
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef linkee = null;
         QName assocType = null;
-        
+
         // get the destination node
         NodeRef destination = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
 
@@ -41,7 +41,7 @@ public class CreatePolicy extends AbstractBasePolicy
         {
             // get the linkee when present
             linkee = getTestNode(invocation, params, cad.getParameters().get(1), cad.isParent());
-            
+
             // get the assoc type
             if(cad.getParameters().size() > 2)
             {
@@ -49,7 +49,7 @@ public class CreatePolicy extends AbstractBasePolicy
             }
         }
 
-        return ((CreateCapability)capabilityService.getCapability("Create")).evaluate(destination, linkee, assocType);
+        return ((CreateCapability) getCapabilityService().getCapability("Create")).evaluate(destination, linkee, assocType);
     }
 
 }

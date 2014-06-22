@@ -25,13 +25,13 @@ public class DeclarePolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate( 
-            MethodInvocation invocation, 
-            Class[] params, 
+	public int evaluate(
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef declaree = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return capabilityService.getCapability("Declare").evaluate(declaree);
+        return getCapabilityService().getCapability("Declare").evaluate(declaree);
     }
 
 }

@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
 /**
  * Audits person creation.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -44,6 +44,6 @@ public class CreatePersonAuditEvent extends AuditEvent implements OnCreateNodePo
     )
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), name);
+        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName());
     }
 }

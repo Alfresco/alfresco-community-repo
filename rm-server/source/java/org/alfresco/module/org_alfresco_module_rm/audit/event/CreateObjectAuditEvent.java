@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 
 /**
  * Audits the creation of file plan component objects
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -44,6 +44,6 @@ public class CreateObjectAuditEvent extends AuditEvent implements OnCreateNodePo
     )
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
-        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), name);
+        recordsManagementAuditService.auditEvent(childAssocRef.getChildRef(), getName());
     }
 }

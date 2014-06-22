@@ -47,7 +47,7 @@ public class UpdatePolicy extends AbstractBasePolicy
             properties = getProperties(invocation, params, cad.getParameters().get(2));
         }
 
-        UpdateCapability updateCapability = (UpdateCapability)capabilityService.getCapability("Update");
+        UpdateCapability updateCapability = (UpdateCapability) getCapabilityService().getCapability("Update");
         return updateCapability.evaluate(updatee, aspectQName, properties);
     }
 

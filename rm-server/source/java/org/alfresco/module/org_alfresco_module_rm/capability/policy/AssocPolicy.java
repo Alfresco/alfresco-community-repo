@@ -26,13 +26,13 @@ public class AssocPolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate( 
-            MethodInvocation invocation, 
-            Class[] params, 
+	public int evaluate(
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS).evaluate(testNodeRef);
+        return getCapabilityService().getCapability(RMPermissionModel.VIEW_RECORDS).evaluate(testNodeRef);
     }
 
 }

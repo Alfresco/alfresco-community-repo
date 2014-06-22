@@ -28,8 +28,6 @@ import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Abstract base policy implementation
@@ -40,17 +38,14 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractBasePolicy extends RMSecurityCommon
                                          implements Policy
 {
-    /** Logger */
-    protected static Log logger = LogFactory.getLog(AbstractBasePolicy.class);
-
     /** Capability service */
-    protected CapabilityService capabilityService;
+    private CapabilityService capabilityService;
 
     /** Policy register */
-    protected PolicyRegister policyRegister;
+    private PolicyRegister policyRegister;
 
     /** Policy name */
-    protected String name;
+    private String name;
 
     /**
      * @param name  policy name
@@ -67,6 +62,22 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
     public String getName()
     {
         return name;
+    }
+
+    /**
+     * @return Capability service
+     */
+    protected CapabilityService getCapabilityService()
+    {
+        return this.capabilityService;
+    }
+
+    /**
+     * @return Policy register
+     */
+    protected PolicyRegister getPolicyRegister()
+    {
+        return this.policyRegister;
     }
 
     /**
@@ -90,7 +101,7 @@ public abstract class AbstractBasePolicy extends RMSecurityCommon
      */
     public void init()
     {
-    	policyRegister.registerPolicy(this);
+        getPolicyRegister().registerPolicy(this);
     }
 
     /**

@@ -69,10 +69,30 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected static final String TRANSIENT_DISPOSITION_INSTRUCTIONS = "rmDispositionInstructions";
 
     /** Disposition service */
-    protected DispositionService dispositionService;
+    private DispositionService dispositionService;
 
     /** File Plan Service */
-    protected FilePlanService filePlanService;
+    private FilePlanService filePlanService;
+
+    /**
+     * Returns the disposition service
+     *
+     * @return Disposition service
+     */
+    protected DispositionService getDispositionService()
+    {
+        return this.dispositionService;
+    }
+
+    /**
+     * Returns the file plan service
+     *
+     * @return File plan service
+     */
+    protected FilePlanService getFilePlanService()
+    {
+        return this.filePlanService;
+    }
 
     /**
      * Sets the disposition service
@@ -103,12 +123,12 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             Form form,
             Map<String, Object> context)
     {
-        if (filePlanService.isFilePlanComponent(nodeRef))
+        if (getFilePlanService().isFilePlanComponent(nodeRef))
         {
             // add all the custom properties
             addCustomPropertyFieldsToGroup(form, nodeRef);
 
-            FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
+            FilePlanComponentKind kind = getFilePlanService().getFilePlanComponentKind(nodeRef);
             if (FilePlanComponentKind.RECORD.equals(kind))
             {
                 // add all the record meta-data aspect properties
@@ -143,7 +163,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                  // schedule to determine whether the disposition level can be changed i.e. record
                  // level or folder level.
                  DispositionSchedule schedule = new DispositionScheduleImpl(this.rmServiceRegistry, this.nodeService, nodeRef);
-                 if (dispositionService.hasDisposableItems(schedule))
+                 if (getDispositionService().hasDisposableItems(schedule))
                  {
                      protectRecordLevelDispositionPropertyField(form);
                  }
@@ -245,7 +265,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             addTransientPropertyField(form, TRANSIENT_DECLARED, DataTypeDefinition.BOOLEAN, recordService.isDeclared(nodeRef));
         }
 
-        DispositionSchedule ds = dispositionService.getDispositionSchedule(nodeRef);
+        DispositionSchedule ds = getDispositionService().getDispositionSchedule(nodeRef);
         if (ds != null)
         {
             String instructions = ds.getDispositionInstructions();
@@ -254,7 +274,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                 addTransientPropertyField(form, TRANSIENT_DISPOSITION_INSTRUCTIONS, DataTypeDefinition.TEXT, instructions);
             }
 
-            NodeRef recordCategory = dispositionService.getAssociatedRecordsManagementContainer(ds);
+            NodeRef recordCategory = getDispositionService().getAssociatedRecordsManagementContainer(ds);
             if (recordCategory != null)
             {
                 String categoryId = (String)nodeService.getProperty(recordCategory, PROP_IDENTIFIER);

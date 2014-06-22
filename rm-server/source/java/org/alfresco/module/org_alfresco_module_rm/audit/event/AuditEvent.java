@@ -21,8 +21,8 @@ package org.alfresco.module.org_alfresco_module_rm.audit.event;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
-
 
 /**
  * Class to represent an audit event
@@ -34,14 +34,14 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent>
 {
 	/** Name */
-    protected String name;
-    
+    private String name;
+
     /** Label */
-    protected String label;
-    
+    private String label;
+
     /** Records management audit service */
-    protected RecordsManagementAuditService recordsManagementAuditService;    
-    
+    protected RecordsManagementAuditService recordsManagementAuditService;
+
     /**
      * @param recordsManagementAuditService     records management audit service
      */
@@ -49,18 +49,18 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
     }
- 
+
     /**
      * Init method
      */
     public void init()
-    {        
+    {
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("label", label);
-        
+
         recordsManagementAuditService.registerAuditEvent(this);
     }
-    
+
     /**
      * Default constructor.
      */
@@ -68,10 +68,10 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     {
         // do nothing
     }
-    
+
     /**
      * Default constructor.
-     * 
+     *
      * @param name  audit event name
      * @param label audit event label (can be actual label or I18N lookup key)
      */
@@ -79,11 +79,11 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     {
         ParameterCheck.mandatory("name", name);
         ParameterCheck.mandatory("label", label);
-        
-        this.name = name;
-        this.label = label;
+
+        setName(name);
+        setLabel(label);
     }
-    
+
     /**
      * @return  audit event name
      */
@@ -91,11 +91,11 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     {
         return this.name;
     }
-    
+
     /**
      * @param name  audit event name
      */
-    public void setName(String name) 
+    public void setName(String name)
     {
 		this.name = name;
 	}
@@ -106,26 +106,26 @@ public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent
     public String getLabel()
     {
     	String lookup = I18NUtil.getMessage(label);
-    	if (lookup == null)
+    	if (StringUtils.isBlank(lookup))
     	{
     		lookup = label;
     	}
     	return lookup;
     }
-    
+
     /**
      * @param label audit event label
      */
-    public void setLabel(String label) 
+    public void setLabel(String label)
     {
 		this.label = label;
 	}
 
     /**
      * Compare by label.
-     * 
+     *
      * @param compare   compare to audit event
-     * @return int      
+     * @return int
      */
     @Override
     public int compareTo(AuditEvent compare)

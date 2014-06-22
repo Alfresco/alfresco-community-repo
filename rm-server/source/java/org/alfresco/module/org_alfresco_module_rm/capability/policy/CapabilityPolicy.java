@@ -23,7 +23,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
 /**
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -35,12 +35,12 @@ public class CapabilityPolicy extends AbstractBasePolicy
     @Override
     @SuppressWarnings("rawtypes")
 	public int evaluate(
-            MethodInvocation invocation, 
-            Class[] params, 
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return capabilityService.getCapability(RMPermissionModel.MANAGE_ACCESS_CONTROLS).evaluate(testNodeRef);
+        return getCapabilityService().getCapability(RMPermissionModel.MANAGE_ACCESS_CONTROLS).evaluate(testNodeRef);
     }
 
 }

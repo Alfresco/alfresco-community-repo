@@ -30,7 +30,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Audits file plan component property updates
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -48,7 +48,7 @@ public class UpdateObjectAuditEvent extends AuditEvent implements OnUpdateProper
     )
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
-        recordsManagementAuditService.auditEvent(nodeRef, name, before, after, false, true);
+        recordsManagementAuditService.auditEvent(nodeRef, getName(), before, after, false, true);
     }
 
 }

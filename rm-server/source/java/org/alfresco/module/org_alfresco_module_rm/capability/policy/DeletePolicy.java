@@ -27,9 +27,9 @@ public class DeletePolicy extends AbstractBasePolicy
 {
 
     @SuppressWarnings("rawtypes")
-	public int evaluate( 
-            MethodInvocation invocation, 
-            Class[] params, 
+	public int evaluate(
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef deletee = null;
@@ -40,7 +40,7 @@ public class DeletePolicy extends AbstractBasePolicy
         if (deletee != null)
         {
 
-            return capabilityService.getCapability("Delete").evaluate(deletee);
+            return getCapabilityService().getCapability("Delete").evaluate(deletee);
 
         }
         else

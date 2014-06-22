@@ -26,12 +26,12 @@ public class WriteContentPolicy extends AbstractBasePolicy
 
     @SuppressWarnings("rawtypes")
 	public int evaluate(
-            MethodInvocation invocation, 
-            Class[] params, 
+            MethodInvocation invocation,
+            Class[] params,
             ConfigAttributeDefinition cad)
     {
         NodeRef updatee = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return capabilityService.getCapability("WriteContent").evaluate(updatee);
+        return getCapabilityService().getCapability("WriteContent").evaluate(updatee);
     }
 
 }

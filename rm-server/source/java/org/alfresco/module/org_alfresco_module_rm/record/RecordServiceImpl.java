@@ -711,17 +711,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isDeclared(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean isDeclared(NodeRef record)
-    {
-        ParameterCheck.mandatory("record", record);
-
-        return nodeService.hasAspect(record, ASPECT_DECLARED_RECORD);
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override

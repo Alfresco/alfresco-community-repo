@@ -186,12 +186,22 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                                     Map<String, Serializable> props = new HashMap<String, Serializable>(1);
                                     props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
 
-                                    // execute disposition action
-                                    recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
-
-                                    if (logger.isDebugEnabled())
+                                    try
                                     {
-                                        logger.debug("Processed action: " + dispAction + "on" + parent);
+                                        // execute disposition action
+                                        recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+
+                                        if (logger.isDebugEnabled())
+                                        {
+                                            logger.debug("Processed action: " + dispAction + "on" + parent);
+                                        }
+                                    }
+                                    catch (AlfrescoRuntimeException exception)
+                                    {
+                                        if (logger.isDebugEnabled())
+                                        {
+                                            logger.debug(exception);
+                                        }
                                     }
                                 }
                             }

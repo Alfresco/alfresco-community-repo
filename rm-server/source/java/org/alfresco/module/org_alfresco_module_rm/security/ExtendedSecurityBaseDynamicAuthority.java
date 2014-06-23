@@ -86,7 +86,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     {
         if (nodeService == null)
         {
-            nodeService = (NodeService)applicationContext.getBean("nodeService");
+            nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         }
         return nodeService;
     }

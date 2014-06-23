@@ -121,7 +121,7 @@ public class BaseUnitTest implements RecordsManagementModel
         MockitoAnnotations.initMocks(this);
         
         // setup application context
-        doReturn(mockedNodeService).when(mockedApplicationContext).getBean("nodeService");
+        doReturn(mockedNodeService).when(mockedApplicationContext).getBean("dbNodeService");
         
         // setup retrying transaction helper
         Answer<Object> doInTransactionAnswer = new Answer<Object>()

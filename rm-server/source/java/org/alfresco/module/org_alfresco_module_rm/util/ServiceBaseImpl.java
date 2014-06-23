@@ -52,6 +52,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** Application context */
     protected ApplicationContext applicationContext;
+    
+    /** internal node service */
+    private NodeService internalNodeService;
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -76,6 +79,21 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * Helper to get internal node service.
+     * <p>
+     * Used for performance reasons.
+     */
+    private NodeService getInternalNodeService()
+    {
+        if (internalNodeService == null)
+        {
+            internalNodeService = (NodeService)applicationContext.getBean("dbNodeService");
+        }
+        
+        return internalNodeService;
     }
 
     /**
@@ -196,12 +214,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     public boolean isFilePlanComponent(NodeRef nodeRef)
     {
         boolean result = false;
-
-        // use the internal node service to prevent redirection of security checking.
-        NodeService myNodeService = (NodeService)applicationContext.getBean("nodeService");
-
-        if (myNodeService.exists(nodeRef) &&
-            myNodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
+        if (getInternalNodeService().exists(nodeRef) &&
+            getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT))
         {
             result = true;
         }
@@ -264,7 +278,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
+        return getInternalNodeService().hasAspect(nodeRef, ASPECT_RECORD);
     }
 
     /**
@@ -280,7 +294,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         boolean isHold = false;
-        if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_HOLD))
+        if (getInternalNodeService().exists(nodeRef) && 
+            instanceOf(nodeRef, TYPE_HOLD))
         {
             isHold = true;
         }
@@ -298,6 +313,18 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
         return instanceOf(nodeRef, TYPE_TRANSFER);
     }
+    
+    /**
+     * Indicates whether a record is complete or not.
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isDeclared(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public boolean isDeclared(NodeRef record)
+    {
+        ParameterCheck.mandatory("record", record);
+
+        return getInternalNodeService().hasAspect(record, ASPECT_DECLARED_RECORD);
+    }
 
     /**
      * Gets the file plan that a given file plan component resides within.
@@ -309,35 +336,23 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         NodeRef result = null;
         if (nodeRef != null)
-        {
-            RunAsWork<NodeRef> runAsWork = new RunAsWork<NodeRef>()
+        {       
+            result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
+            if (result == null)
             {
-                @Override
-                public NodeRef doWork()
+                if (instanceOf(nodeRef, TYPE_FILE_PLAN))
                 {
-                    NodeRef result = (NodeRef)nodeService.getProperty(nodeRef, PROP_ROOT_NODEREF);
-                    if (result == null)
-                    {
-                        if (instanceOf(nodeRef, TYPE_FILE_PLAN))
-                        {
-                            result = nodeRef;
-                        }
-                        else
-                        {
-                            ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
-                            if (parentAssocRef != null)
-                            {
-                                result = getFilePlan(parentAssocRef.getParentRef());
-                            }
-                        }
-                    }
-
-                    return result;
+                    result = nodeRef;
                 }
-
-            };
-
-            result = AuthenticationUtil.runAsSystem(runAsWork);
+                else
+                {
+                    ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
+                    if (parentAssocRef != null)
+                    {
+                        result = getFilePlan(parentAssocRef.getParentRef());
+                    }
+                }
+            }
         }
 
         return result;
@@ -352,15 +367,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     protected boolean instanceOf(NodeRef nodeRef, QName ofClassName)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("ofClassName", ofClassName);
-        boolean result = false;
-        if (nodeService.exists(nodeRef) &&
-            (ofClassName.equals(nodeService.getType(nodeRef)) ||
-             dictionaryService.isSubClass(nodeService.getType(nodeRef), ofClassName)))
-        {
-            result = true;
-        }
-        return result;
+        ParameterCheck.mandatory("ofClassName", ofClassName);        
+        QName className = getInternalNodeService().getType(nodeRef);        
+        return instanceOf(className, ofClassName);
     }
 
     /**

@@ -80,7 +80,8 @@ function doclist_getAllNodes(parsedArgs, filterParams, query, totalItemCount)
             },
             sort: filterParams.sort,
             templates: filterParams.templates,
-            namespace: (filterParams.namespace ? filterParams.namespace : null)
+            namespace: (filterParams.namespace ? filterParams.namespace : null),
+            onerror: "no-results"
          });
 
          totalRecords = allNodes.length;

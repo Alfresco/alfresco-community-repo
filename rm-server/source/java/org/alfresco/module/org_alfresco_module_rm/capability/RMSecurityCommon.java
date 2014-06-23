@@ -213,10 +213,6 @@ public class RMSecurityCommon implements ApplicationContextAware
             return result;
         }
 
-        // Get the file plan for the node
-        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-
-
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
         {
             // log message
@@ -229,7 +225,9 @@ public class RMSecurityCommon implements ApplicationContextAware
 
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED);
         }
-
+     
+        // Get the file plan for the node
+        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
         if (permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS) == AccessStatus.DENIED)
         {
             // log capability details

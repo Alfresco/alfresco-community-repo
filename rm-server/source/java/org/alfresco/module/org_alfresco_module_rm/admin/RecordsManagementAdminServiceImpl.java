@@ -1214,7 +1214,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
      */
     public List<AssociationRef> getCustomReferencesTo(NodeRef node)
     {
-        return nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL);
+        return nodeService.getSourceAssocs(node, null);
     }
 
     /**

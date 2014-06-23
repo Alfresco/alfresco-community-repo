@@ -745,7 +745,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     private NodeRef getNextDispositionActionNodeRef(NodeRef nodeRef)
     {
         NodeRef result = null;
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
         if (assocs.size() != 0)
         {
             result = assocs.get(0).getChildRef();
@@ -838,7 +838,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     NodeRef currentDispositionAction = null;
                     if (nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
                     {
-                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
                         if (assocs.size() > 0)
                         {
                             currentDispositionAction = assocs.get(0).getChildRef();

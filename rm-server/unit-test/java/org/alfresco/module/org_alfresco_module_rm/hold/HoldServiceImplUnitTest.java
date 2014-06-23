@@ -275,7 +275,8 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
     @Test (expected=AlfrescoRuntimeException.class)
     public void addToHoldNotARecordFolderOrRecord()
     {
-        holdService.addToHold(hold, filePlanComponent);
+        NodeRef anotherThing = generateNodeRef(TYPE_RECORD_CATEGORY);
+        holdService.addToHold(hold, anotherThing);
     }
 
     @SuppressWarnings("unchecked")

@@ -7,8 +7,8 @@
 
     <bean id="capabilityCondition.base"
           abstract="true">
-        <property name="permissionService" ref="PermissionService" />
-        <property name="nodeService" ref="NodeService" />
+        <property name="permissionService" ref="permissionService" /> <!--  use lower case service to enhance performance -->
+        <property name="nodeService" ref="nodeService" />             <!--  use lower case service to enhance performance -->
         <property name="freezeService" ref="FreezeService" />
         <property name="recordService" ref="RecordService" />
         <property name="filePlanService" ref="FilePlanService" />

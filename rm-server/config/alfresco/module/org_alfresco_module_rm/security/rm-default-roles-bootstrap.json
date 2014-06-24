@@ -142,7 +142,9 @@
           "CreateHold",
           "AddToHold",
           "RemoveFromHold",
-          "FileHoldReport"
+          "FileHoldReport",
+          "DeleteHold",
+          "EditHold"
       ]
    },
    {
@@ -213,7 +215,9 @@
           "CreateHold",
           "AddToHold",
           "RemoveFromHold",
-          "FileHoldReport"
+          "FileHoldReport",
+          "DeleteHold",
+          "EditHold"
       ]
    }
 ]

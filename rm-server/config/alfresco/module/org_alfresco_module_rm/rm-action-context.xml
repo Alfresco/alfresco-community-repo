@@ -1105,7 +1105,7 @@
    <bean id="deleteHold_security" parent="actionSecurity">
       <property name="objectDefinitionSource">
          <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.DeleteHoldContainer
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.DeleteHold
             org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
             org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
          </value>

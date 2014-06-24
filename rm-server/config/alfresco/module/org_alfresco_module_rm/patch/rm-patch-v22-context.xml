@@ -92,4 +92,15 @@
       <property name="authorityService" ref="AuthorityService"/>
    </bean>
 
+   <bean id="rm.holdCapabilityPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22HoldCapabilityPatch">
+      <property name="description" value="Add hold capabilities."/>
+      <property name="fixesToSchema" value="1008"/>
+      <property name="targetSchema" value="1009"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="capabilityService" ref="CapabilityService"/>
+   </bean>
+
 </beans>

@@ -639,7 +639,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
         if (holds != null && !holds.isEmpty())
         {
-            for (NodeRef hold : holds)
+            for (final NodeRef hold : holds)
             {
                 if (!instanceOf(hold, TYPE_HOLD))
                 {
@@ -648,8 +648,18 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
                 if (getHeld(hold).contains(nodeRef))
                 {
-                    // remove from hold
-                    nodeService.removeChild(hold, nodeRef);
+                    // run as system so we don't run into further permission issues
+                    // we already know we have to have the correct capability to get here
+                    runAsSystem(new RunAsWork<Void>()
+                    {
+                        @Override
+                        public Void doWork()
+                        {
+                            // remove from hold
+                            nodeService.removeChild(hold, nodeRef);
+                            return null;
+                        }
+                     });                    
                 }
             }
 

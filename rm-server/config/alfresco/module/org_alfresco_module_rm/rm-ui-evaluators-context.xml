@@ -548,30 +548,6 @@
       <property name="capability" value ="ManuallyChangeDispositionDates"/>
    </bean>
 
-   <bean id="jsonConversionComponent.freezeAction"
-         parent="jsonConversionComponent.baseAction">
-      <property name="name" value="freeze"/>
-      <property name="kinds">
-         <set>
-            <value>RECORD_FOLDER</value>
-            <value>RECORD</value>
-         </set>
-      </property>
-      <property name="capability" value ="ExtendRetentionPeriodOrFreeze"/>
-   </bean>
-
-   <bean id="jsonConversionComponent.unfreezeAction"
-         parent="jsonConversionComponent.baseAction">
-      <property name="name" value="unfreeze"/>
-      <property name="kinds">
-         <set>
-            <value>RECORD_FOLDER</value>
-            <value>RECORD</value>
-         </set>
-      </property>
-      <property name="capability" value ="Unfreeze"/>
-   </bean>
-
    <bean id="jsonConversionComponent.reviewedAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="reviewed"/>
@@ -658,28 +634,6 @@
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="export"/>
       <property name="capability" value="ViewRecords"/>
-   </bean>
-
-   <bean id="jsonConversionComponent.relinquish"
-      parent="jsonConversionComponent.baseAction">
-      <property name="name" value="relinquish"/>
-      <property name="kinds">
-         <set>
-            <value>HOLD</value>
-         </set>
-      </property>
-      <property name="capability" value ="Unfreeze"/>
-   </bean>
-
-   <bean id="jsonConversionComponent.editReason"
-         parent="jsonConversionComponent.baseAction">
-      <property name="name" value="editReason"/>
-      <property name="kinds">
-         <set>
-            <value>HOLD</value>
-         </set>
-      </property>
-      <property name="capability" value="ViewUpdateReasonsForFreeze"/>
    </bean>
 
    <bean id="jsonConversionComponent.downloadZip"
@@ -904,6 +858,17 @@
             <value>HOLD</value>
          </set>
       </property>
-      <property name="capability" value ="DeleteHoldContainer"/>
+      <property name="capability" value ="DeleteHold"/>
+   </bean>
+   
+   <bean id="jsonConversionComponent.editHold"
+      parent="jsonConversionComponent.baseAction">
+      <property name="name" value="editHold"/>
+      <property name="kinds">
+         <set>
+            <value>HOLD</value>
+         </set>
+      </property>
+      <property name="capability" value ="EditHold"/>
    </bean>
 </beans>

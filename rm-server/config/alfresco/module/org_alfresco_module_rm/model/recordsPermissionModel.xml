@@ -93,6 +93,8 @@
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="AddToHold"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="RemoveFromHold"/>
             <includePermissionGroup type="rma:filePlanComponent" permissionGroup="FileHoldReport"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="DeleteHold"/>
+            <includePermissionGroup type="rma:filePlanComponent" permissionGroup="EditHold"/>
         </permissionGroup>
 
         <permissionGroup name="Filing" allowFullControl="false" expose="true">
@@ -179,6 +181,8 @@
         <permissionGroup name="AddToHold" expose="false" allowFullControl="false"/>
         <permissionGroup name="RemoveFromHold" expose="false" allowFullControl="false"/>
         <permissionGroup name="FileHoldReport" expose="false" allowFullControl="false"/>
+        <permissionGroup name="DeleteHold" expose="false" allowFullControl="false"/>
+        <permissionGroup name="EditHold" expose="false" allowFullControl="false"/>
 
         <!--  End -->
 
@@ -472,6 +476,14 @@
         
         <permission name="_FileHoldReport" expose="false">
             <grantedToGroup permissionGroup="FileHoldReport"/>
+        </permission>
+        
+        <permission name="_DeleteHold" expose="false">
+            <grantedToGroup permissionGroup="DeleteHold"/>
+        </permission>
+        
+        <permission name="_EditHold" expose="false">
+            <grantedToGroup permissionGroup="EditHold"/>
         </permission>
         
     </permissionSet>

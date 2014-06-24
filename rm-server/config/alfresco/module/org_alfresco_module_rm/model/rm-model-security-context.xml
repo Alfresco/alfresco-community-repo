@@ -51,8 +51,8 @@
 	    <property name="name" value="rma:frozen" />
 	    <property name="capabilities">
 			<set>
-				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
-				<ref bean="rmUnfreezeCapability" />
+				<ref bean="rmAddToHoldCapability" />
+				<ref bean="rmRemoveFromHoldCapability" />
 			</set>
 		</property>
 	</bean>
@@ -132,10 +132,9 @@
 		<property name="name" value="rma:holdReason"/>
 		<property name="capabilities">
 			<set>
-				<ref bean="rmViewUpdateReasonsForFreezeCapability" />
-				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
-				<ref bean="rmUnfreezeCapability" />
-                <ref bean="rmModifyHoldCapability" />
+				<ref bean="rmCreateHoldCapability" />
+				<ref bean="rmDeleteHoldCapability" />
+                <ref bean="rmEditHoldCapability" />
 			</set>
 		</property>
 	</bean>
@@ -144,9 +143,8 @@
 		<property name="name" value="rma:frozenAt"/>
 		<property name="capabilities">
 			<set>
-				<ref bean="rmViewUpdateReasonsForFreezeCapability" />
-				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
-				<ref bean="rmUnfreezeCapability" />
+				<ref bean="rmAddToHoldCapability" />
+				<ref bean="rmRemoveFromHoldCapability" />
 			</set>
 		</property>
 	</bean>
@@ -155,9 +153,8 @@
 		<property name="name" value="rma:frozenBy"/>
 		<property name="capabilities">
 			<set>
-				<ref bean="rmViewUpdateReasonsForFreezeCapability" />
-				<ref bean="rmExtendRetentionPeriodOrFreezeCapability" />
-				<ref bean="rmUnfreezeCapability" />
+				<ref bean="rmAddToHoldCapability" />
+				<ref bean="rmRemoveFromHoldCapability" />
 			</set>
 		</property>
 	</bean>

@@ -94,8 +94,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         return new String[]
         {
             "classpath:alfresco/application-context.xml",
-            "classpath:test-context.xml",
-            "classpath:test-job-context.xml"
+            "classpath:test-context.xml"
         };
     }
     protected ApplicationContext applicationContext;

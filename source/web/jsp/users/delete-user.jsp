@@ -31,6 +31,10 @@
             <f:param value="#{DialogManager.bean.person.properties.userName}"/>
          </h:outputFormat>
          <f:verbatim>
+         <br/>
+         </f:verbatim>
+         <h:outputFormat value="#{msg.delete_user_confirm_note}" />
+         <f:verbatim>
       </td>
    </tr>
 </table>

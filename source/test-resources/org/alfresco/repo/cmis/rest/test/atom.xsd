@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+		-*- rnc -*- RELAX NG Compact Syntax Grammar for the Atom Format
+		Specification Version 11
+-->
+<!--
+		$Revision: 34 $
+		$Date: 2009-08-07 18:20:47 -0400 (Fri, 07 Aug 2009) $
+		$Author: albertcbrown $
+		$HeadURL: file:///var/lib/subversion/cmis/trunk/SchemaProject/schema/ATOM.xsd $
+-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified" targetNamespace="http://www.w3.org/2005/Atom"
+        xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xml="http://www.w3.org/XML/1998/namespace"
+        xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+        jaxb:extensionBindingPrefixes="xjc" jaxb:version="2.1" version="0.62d">
+
+        <xs:import namespace="http://www.w3.org/XML/1998/namespace"
+                schemaLocation="xml.xsd" />
+
+        <!-- Common attributes -->
+        <xs:attributeGroup name="atomCommonAttributes">
+                <xs:attribute ref="xml:base" />
+                <xs:attribute ref="xml:lang" />
+                <xs:attributeGroup ref="atom:undefinedAttribute" />
+        </xs:attributeGroup>
+        <!-- Text Constructs -->
+        <xs:attributeGroup name="atomPlainTextConstruct">
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                <xs:attribute name="type">
+                        <xs:simpleType>
+                                <xs:restriction base="xs:token">
+                                        <xs:enumeration value="text" />
+                                        <xs:enumeration value="html" />
+                                </xs:restriction>
+                        </xs:simpleType>
+                </xs:attribute>
+        </xs:attributeGroup>
+        <xs:group name="atomXHTMLTextConstruct">
+                <xs:sequence>
+                        <xs:any minOccurs="0" maxOccurs="unbounded" namespace="http://www.w3.org/1999/xhtml" />
+                </xs:sequence>
+        </xs:group>
+        <xs:attributeGroup name="atomXHTMLTextConstruct">
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                <xs:attribute name="type" use="required">
+                        <xs:simpleType>
+                                <xs:restriction base="xs:token">
+                                        <xs:enumeration value="xhtml" />
+                                </xs:restriction>
+                        </xs:simpleType>
+                </xs:attribute>
+        </xs:attributeGroup>
+        <xs:complexType name="atomTextConstruct" mixed="true">
+                <xs:group minOccurs="0" ref="atom:atomXHTMLTextConstruct" />
+                <xs:attribute name="type">
+                        <xs:simpleType>
+                                <xs:restriction base="xs:token">
+                                        <xs:enumeration value="text" />
+                                        <xs:enumeration value="html" />
+                                        <xs:enumeration value="xhtml" />
+                                </xs:restriction>
+                        </xs:simpleType>
+                </xs:attribute>
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+        </xs:complexType>
+        <!-- Person Construct -->
+        <xs:complexType name="atomPersonConstruct">
+                <xs:sequence>
+                        <xs:element ref="atom:name" minOccurs="0" maxOccurs="1" />
+                        <xs:element ref="atom:uri" minOccurs="0" maxOccurs="1" />
+                        <xs:element ref="atom:email" minOccurs="0" maxOccurs="1" />
+                        <xs:group ref="atom:extensionElement" minOccurs="0"
+                                maxOccurs="unbounded" />
+                </xs:sequence>
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+        </xs:complexType>
+        <xs:element name="name" type="xs:string" />
+        <xs:element name="uri" type="xs:string" />
+        <xs:element name="email" type="atom:atomEmailAddress" />
+        <!-- Date Construct -->
+        <xs:complexType name="atomDateConstruct">
+                <xs:simpleContent>
+                        <xs:extension base="xs:dateTime">
+                                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                        </xs:extension>
+                </xs:simpleContent>
+        </xs:complexType>
+        <!-- atom:feed -->
+        <xs:element name="feed" type="atom:feedType"></xs:element>
+        <xs:complexType name="feedType">
+                <xs:sequence>
+                        <xs:choice maxOccurs="unbounded">
+                                <xs:annotation>
+                                        <xs:appinfo>
+                                                <jaxb:property name="items" />
+                                        </xs:appinfo>
+                                </xs:annotation>
+                                <xs:element ref="atom:author" />
+                                <xs:element ref="atom:category" />
+                                <xs:element ref="atom:contributor" />
+                                <xs:element ref="atom:generator" />
+                                <xs:element ref="atom:icon" />
+                                <xs:element ref="atom:id" />
+                                <xs:element ref="atom:link" />
+                                <xs:element ref="atom:logo" />
+                                <xs:element ref="atom:rights" />
+                                <xs:element ref="atom:subtitle" />
+                                <xs:element ref="atom:title" />
+                                <xs:element ref="atom:updated" />
+                        </xs:choice>
+
+                        <!--  original atom extension element -->
+                        <xs:group ref="atom:extensionElement" />
+
+                        <xs:element minOccurs="0" maxOccurs="unbounded" ref="atom:entry" />
+                </xs:sequence>
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+        </xs:complexType>
+        <!-- atom:entry -->
+        <xs:element name="entry" type="atom:entryType">
+        </xs:element>
+        <xs:complexType name="entryType">
+                <xs:sequence>
+                        <xs:choice maxOccurs="unbounded">
+                                <xs:annotation>
+                                        <xs:appinfo>
+                                                <jaxb:property name="items" />
+                                        </xs:appinfo>
+                                </xs:annotation>
+                                <xs:element ref="atom:author" />
+                                <xs:element ref="atom:category" />
+                                <xs:element ref="atom:content" />
+                                <xs:element ref="atom:contributor" />
+                                <xs:element ref="atom:id" />
+                                <xs:element ref="atom:link" />
+                                <xs:element ref="atom:published" />
+                                <xs:element ref="atom:rights" />
+                                <xs:element ref="atom:source" />
+                                <xs:element ref="atom:summary" />
+                                <xs:element ref="atom:title" />
+                                <xs:element ref="atom:updated" />
+                        </xs:choice>
+
+                        <!-- Normal ATOM extension element -->
+                        <xs:group ref="atom:extensionElement" />
+                </xs:sequence>
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+        </xs:complexType>
+
+        <!-- atom:content -->
+        <xs:attributeGroup name="atomInlineTextConstruct">
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                <xs:attribute name="type">
+                        <xs:simpleType>
+                                <xs:restriction base="xs:token">
+                                        <xs:enumeration value="text" />
+                                        <xs:enumeration value="html" />
+                                </xs:restriction>
+                        </xs:simpleType>
+                </xs:attribute>
+        </xs:attributeGroup>
+        <xs:group name="atomInlineOtherConstruct">
+                <xs:sequence>
+                        <xs:group minOccurs="0" maxOccurs="unbounded" ref="atom:anyElement" />
+                </xs:sequence>
+        </xs:group>
+        <xs:attributeGroup name="atomInlineOtherConstruct">
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                <xs:attribute name="type">
+                        <xs:simpleType>
+                                <xs:union memberTypes="atom:atomMediaType">
+                                        <xs:simpleType>
+                                                <xs:restriction base="xs:token">
+                                                        <xs:enumeration value="xhtml" />
+                                                </xs:restriction>
+                                        </xs:simpleType>
+                                </xs:union>
+                        </xs:simpleType>
+                </xs:attribute>
+        </xs:attributeGroup>
+        <xs:attributeGroup name="atomOutOfLineConstruct">
+                <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                <xs:attribute name="type" type="atom:atomMediaType" />
+                <xs:attribute name="src" use="required" />
+        </xs:attributeGroup>
+        <xs:element name="content">
+                <xs:complexType mixed="true">
+                        <xs:group minOccurs="0" ref="atom:atomInlineOtherConstruct" />
+                        <xs:attribute name="type">
+                                <xs:simpleType>
+                                        <xs:union memberTypes="atom:atomMediaType">
+                                                <xs:simpleType>
+                                                        <xs:restriction base="xs:token">
+                                                                <xs:enumeration value="text" />
+                                                                <xs:enumeration value="html" />
+                                                        </xs:restriction>
+                                                </xs:simpleType>
+                                                <xs:simpleType>
+                                                        <xs:union memberTypes="atom:atomMediaType">
+                                                                <xs:simpleType>
+                                                                        <xs:restriction base="xs:token">
+                                                                                <xs:enumeration value="xhtml" />
+                                                                        </xs:restriction>
+                                                                </xs:simpleType>
+                                                        </xs:union>
+                                                </xs:simpleType>
+                                        </xs:union>
+                                </xs:simpleType>
+                        </xs:attribute>
+                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                        <xs:attribute name="src" />
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:author -->
+        <xs:element name="author" type="atom:atomPersonConstruct" />
+        <!-- atom:category -->
+        <xs:element name="category">
+                <xs:complexType>
+                        <xs:complexContent>
+                                <xs:extension base="atom:undefinedContent">
+                                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                                        <xs:attribute name="term" use="required" />
+                                        <xs:attribute name="scheme" />
+                                        <xs:attribute name="label" />
+                                </xs:extension>
+                        </xs:complexContent>
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:contributor -->
+        <xs:element name="contributor" type="atom:atomPersonConstruct" />
+        <!-- atom:generator -->
+        <xs:element name="generator">
+                <xs:complexType mixed="true">
+                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                        <xs:attribute name="uri" />
+                        <xs:attribute name="version" />
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:icon -->
+        <xs:element name="icon">
+                <xs:complexType mixed="true">
+                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:id -->
+        <xs:element name="id">
+                <xs:complexType mixed="true">
+                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:logo -->
+        <xs:element name="logo">
+                <xs:complexType mixed="true">
+                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:link -->
+        <xs:element name="link">
+                <xs:annotation>
+                        <xs:documentation>
+                                The "atom:link" element defines a reference from an
+                                entry or feed to a Web resource. This specification
+                                assigns no
+                                meaning to the content (if any) of this
+                                element.
+                        </xs:documentation>
+                </xs:annotation>
+
+                <xs:complexType>
+                        <xs:complexContent>
+                                <xs:extension base="atom:undefinedContent">
+                                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                                        <xs:attribute name="href" use="required" />
+                                        <xs:attribute name="rel"></xs:attribute>
+                                        <xs:attribute name="type" type="atom:atomMediaType" />
+                                        <xs:attribute name="hreflang" type="atom:atomLanguageTag" />
+                                        <xs:attribute name="title" />
+                                        <xs:attribute name="length" />
+                                </xs:extension>
+                        </xs:complexContent>
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:published -->
+        <xs:element name="published" type="atom:atomDateConstruct" />
+        <!-- atom:rights -->
+        <xs:element name="rights" type="atom:atomTextConstruct" />
+        <!-- atom:source -->
+        <xs:element name="source">
+                <xs:annotation>
+                        <xs:documentation>
+                                atom:source is used to preserve metadata of a feed
+                                when
+                                an entry is copied from a feed to another feed.
+                        </xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                        <xs:choice minOccurs="0" maxOccurs="unbounded">
+                                <xs:element ref="atom:author" />
+                                <xs:element ref="atom:category" />
+                                <xs:element ref="atom:contributor" />
+                                <xs:element ref="atom:generator" />
+                                <xs:element ref="atom:icon" />
+                                <xs:element ref="atom:id" />
+                                <xs:element ref="atom:link" />
+                                <xs:element ref="atom:logo" />
+                                <xs:element ref="atom:rights" />
+                                <xs:element ref="atom:subtitle" />
+                                <xs:element ref="atom:title" />
+                                <xs:element ref="atom:updated" />
+                                <xs:group ref="atom:extensionElement" />
+                        </xs:choice>
+                        <xs:attributeGroup ref="atom:atomCommonAttributes" />
+                </xs:complexType>
+        </xs:element>
+        <!-- atom:subtitle -->
+        <xs:element name="subtitle" type="atom:atomTextConstruct" />
+        <!-- atom:summary -->
+        <xs:element name="summary" type="atom:atomTextConstruct" />
+        <!-- atom:title -->
+        <xs:element name="title" type="atom:atomTextConstruct">
+                <xs:annotation>
+                        <xs:documentation>
+                                The "atom:title" element is a Text construct that
+                                conveys a human- readable title for an entry or feed.
+                                atomTitle =
+                                element atom:title { atomTextConstruct }.
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+        <!-- atom:updated -->
+        <xs:element name="updated" type="atom:atomDateConstruct">
+                <xs:annotation>
+                        <xs:documentation>
+                                The "atom:updated" element is a Date construct
+                                indicating the most recent instant in time when an entry
+                                or feed was
+                                modified in a way the publisher considers
+                                significant. Therefore, not
+                                all modifications
+                                necessarily result in a changed atom:updated value.
+                                atomUpdated = element atom:updated { atomDateConstruct
+                                }. Publishers
+                                MAY change the value of this element over
+                                time.
+                        </xs:documentation>
+                </xs:annotation>
+        </xs:element>
+        <!-- Low-level simple types -->
+        <xs:simpleType name="atomNCName">
+                <xs:restriction base="xs:string">
+                        <xs:minLength value="1" />
+                        <xs:pattern value="[^:]*" />
+                </xs:restriction>
+        </xs:simpleType>
+        <!-- Whatever a media type is, it contains at least one slash -->
+        <xs:simpleType name="atomMediaType">
+                <xs:restriction base="xs:string">
+                        <xs:pattern value=".+/.+" />
+                </xs:restriction>
+        </xs:simpleType>
+        <!-- As defined in RFC 3066 -->
+        <xs:simpleType name="atomLanguageTag">
+                <xs:restriction base="xs:string">
+                        <xs:pattern value="[A-Za-z]{1,8}(-[A-Za-z0-9]{1,8})*" />
+                </xs:restriction>
+        </xs:simpleType>
+        <!--
+                Unconstrained; it's not entirely clear how IRI fit into xsd:anyURI so
+                let's not try to constrain it here
+        -->
+        <!-- Whatever an email address is, it contains at least one @ -->
+        <xs:simpleType name="atomEmailAddress">
+                <xs:restriction base="xs:string">
+                        <xs:pattern value=".+@.+" />
+                </xs:restriction>
+        </xs:simpleType>
+
+        <!-- Simple Extension -->
+        <xs:group name="extensionElement">
+                <xs:sequence>
+                        <xs:any namespace="##other" processContents="lax" minOccurs="0"
+                                maxOccurs="unbounded">
+                                <xs:annotation>
+                                        <xs:appinfo>
+                                                <jaxb:property name='anyOther' />
+                                        </xs:appinfo>
+                                </xs:annotation>
+                        </xs:any>
+                        <xs:any namespace="##local" processContents="lax" minOccurs="0"
+                                maxOccurs="unbounded">
+                                <xs:annotation>
+                                        <xs:appinfo>
+                                                <jaxb:property name='anyLocal' />
+                                        </xs:appinfo>
+                                </xs:annotation>
+                        </xs:any>
+                </xs:sequence>
+        </xs:group>
+        <xs:attributeGroup name="undefinedAttribute">
+                <xs:anyAttribute namespace="##other" processContents="lax" />
+        </xs:attributeGroup>
+        <xs:complexType name="undefinedContent">
+                <xs:sequence>
+                        <xs:any namespace="##other" processContents="lax" minOccurs="0"
+                                maxOccurs="unbounded">
+                                <xs:annotation>
+                                        <xs:appinfo>
+                                                <jaxb:property name='anyOther' />
+                                        </xs:appinfo>
+                                </xs:annotation>
+                        </xs:any>
+                        <xs:any namespace="##local" processContents="lax" minOccurs="0"
+                                maxOccurs="unbounded">
+                                <xs:annotation>
+                                        <xs:appinfo>
+                                                <jaxb:property name='anyLocal' />
+                                        </xs:appinfo>
+                                </xs:annotation>
+                        </xs:any>
+                </xs:sequence>
+
+                <!--
+                        <xs:group minOccurs="0" maxOccurs="unbounded"
+                        ref="atom:anyForeignElement" />
+                -->
+        </xs:complexType>
+        <xs:group name="anyElement">
+                <xs:sequence>
+                        <xs:any processContents="lax" />
+                </xs:sequence>
+        </xs:group>
+        <xs:group name="anyForeignElement">
+                <xs:sequence>
+                        <xs:any namespace="##other" processContents="lax" />
+                        <xs:any namespace="##local" processContents="lax" />
+                </xs:sequence>
+        </xs:group>
+        <!-- XHTML -->
+        <xs:group name="anyXHTML">
+                <xs:sequence>
+                        <xs:any namespace="http://www.w3.org/1999/xhtml"
+                                processContents="lax" />
+                </xs:sequence>
+        </xs:group>
+</xs:schema>

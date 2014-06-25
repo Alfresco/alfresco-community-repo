@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+	<!--
+		-*- rnc -*- RELAX NG Compact Syntax Grammar for the Atom Format
+		Specification Version 11
+	-->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified" targetNamespace="http://www.w3.org/2007/app"
+	xmlns:atom="http://www.w3.org/2005/Atom" xmlns:app="http://www.w3.org/2007/app"
+	xmlns:cmisc="http://docs.oasis-open.org/ns/cmis/core/200908/"
+	xmlns:cmisra="http://docs.oasis-open.org/ns/cmis/restatom/200908/"
+	version="0.62d">
+	<xs:import namespace="http://www.w3.org/2005/Atom"
+		schemaLocation="atom.xsd" />
+	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/core/200908/"
+		schemaLocation="CMIS-Core.xsd" />
+	<xs:import namespace="http://docs.oasis-open.org/ns/cmis/restatom/200908/"
+		schemaLocation="CMIS-RestAtom.xsd" />
+
+	<xs:element name="service" type="app:appServiceType"></xs:element>
+	<xs:complexType name="appServiceType">
+		<xs:sequence>
+			<xs:element ref="atom:author" minOccurs="0" maxOccurs="1"></xs:element>
+			<xs:element ref="app:workspace" minOccurs="1" maxOccurs="unbounded"></xs:element>
+			<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"
+				namespace="##other" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="workspace" type="app:appWorkspaceType"></xs:element>
+	<xs:complexType name="appWorkspaceType">
+		<xs:sequence>
+			<xs:element ref="atom:title"></xs:element>
+			<xs:element ref="app:collection" minOccurs="0" maxOccurs="unbounded"></xs:element>
+			<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"
+				namespace="##other" />
+		</xs:sequence>
+		<xs:attributeGroup ref="atom:undefinedAttribute"></xs:attributeGroup>
+	</xs:complexType>
+	<xs:element name="collection" type="app:appCollectionType"></xs:element>
+	<xs:complexType name="appCollectionType">
+		<xs:sequence>
+			<xs:element ref="atom:title"></xs:element>
+			<xs:element name="accept" type="xs:string" minOccurs="0"
+				maxOccurs="unbounded" />
+			<xs:element name="categories" type="app:appCategoriesType"
+				minOccurs="0" maxOccurs="unbounded" />
+			<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"
+				namespace="##other" />
+		</xs:sequence>
+		<xs:attribute name="href" type="xs:anyURI"></xs:attribute>
+		<xs:attributeGroup ref="atom:undefinedAttribute"></xs:attributeGroup>
+	</xs:complexType>
+	<xs:complexType name="appCategoriesType">
+		<xs:sequence>
+			<xs:element name="category" type="app:appCategoryType"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+		<xs:attribute name="fixed" type="xs:boolean" />
+	</xs:complexType>
+	<xs:complexType name="appCategoryType">
+		<xs:sequence>
+		</xs:sequence>
+		<xs:attribute name="scheme" type="xs:anyURI" />
+		<xs:attribute name="term" type="xs:string" />
+		<xs:attribute name="label" type="xs:string" />
+	</xs:complexType>
+
+	<!--  -->
+	<xs:element name="edited" type="atom:atomDateConstruct" />
+	<xs:complexType name="appControlType">
+		<xs:sequence>
+			<xs:element name="draft" type="app:enumYesNo" minOccurs="0"
+				maxOccurs="1" />
+			<xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"
+				namespace="##other" />
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="control" type="app:appControlType" />
+
+	<!-- rfc5023 13.1.1 -->
+	<xs:simpleType name="enumYesNo">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="yes" />
+			<xs:enumeration value="no" />
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
+	<!-- EOF -->

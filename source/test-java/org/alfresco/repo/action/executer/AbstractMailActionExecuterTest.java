@@ -20,20 +20,22 @@ package org.alfresco.repo.action.executer;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -429,4 +431,51 @@ public abstract class AbstractMailActionExecuterTest
         
         AuthenticationUtil.clearCurrentSecurityContext();
     }
+    
+    /**
+     * Test for MNT-11488
+     * @throws Exception 
+     */
+    @Test
+    public void testSendingToMultipleUsers() throws IOException, MessagingException
+    {
+        final String USER_1 = "recipient1";
+        final String USER_2 = "recipient2";
+        final String[] recipientsArray = { USER_1 + "@email.com", USER_2 + "@email.com" };
+        final List<String> recipientsResult = new ArrayList<String>(Arrays.asList(recipientsArray)) ;
+
+        try
+        {
+            createUser(USER_1, null);
+            createUser(USER_2, null);
+            ArrayList<String> recipients = new ArrayList<String>(2);
+            recipients.add(USER_1);
+            recipients.add(USER_2);
+
+            Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+            mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "sender@example.com");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, recipients);
+            mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+            mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+
+            ACTION_EXECUTER.resetTestSentCount();
+
+            ACTION_SERVICE.executeAction(mailAction, null);
+
+            MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
+            Assert.assertNotNull(message);
+            Assert.assertEquals("One email should be sent", 1, ACTION_EXECUTER.getTestSentCount());
+            Assert.assertEquals("All recipients should receive single message", 2, message.getAllRecipients().length);
+            
+            Assert.assertTrue("Both users should receive message", recipientsResult.contains(((InternetAddress) message.getAllRecipients()[0]).getAddress()));
+            Assert.assertTrue("Both users should receive message", recipientsResult.contains(((InternetAddress) message.getAllRecipients()[1]).getAddress()));
+        }
+        finally
+        {
+            // tidy up
+            PERSON_SERVICE.deletePerson(USER_1);
+            PERSON_SERVICE.deletePerson(USER_2);
+        }
+    }
+
 }

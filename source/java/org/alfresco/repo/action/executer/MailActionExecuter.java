@@ -201,6 +201,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
      */
     private boolean testMode = false;
     private MimeMessage lastTestMessage;
+    private int testSentCount;
 
     private TemplateImageResolver imageResolver;
 
@@ -519,6 +520,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     
     private MimeMessageHelper[] prepareEmails(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {
+        Serializable ref = ruleAction.getParameterValue(PARAM_TEMPLATE);
+        String templateRef = (ref instanceof NodeRef ? ((NodeRef)ref).toString() : (String)ref);
+        if (templateRef == null)
+        {
+            // send as bulk message if there is no template
+            MimeMessageHelper[] messages = new MimeMessageHelper[1];
+            messages[0] = prepareEmail(ruleAction, actionedUponNodeRef, null, null);
+            return messages;
+        }
+        
         List<Pair<String, Locale>> recipients = getRecipients(ruleAction);
         
         Pair<InternetAddress, Locale> from = getFrom(ruleAction);
@@ -941,6 +952,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             else
             {
                 lastTestMessage = preparedMessage.getMimeMessage();
+                testSentCount++;
             }
         }
         catch (MailException e)
@@ -1477,6 +1489,16 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public MimeMessage retrieveLastTestMessage()
     {
         return lastTestMessage; 
+    }
+    
+    public int getTestSentCount()
+    {
+        return testSentCount; 
+    }
+    
+    public int resetTestSentCount()
+    {
+        return testSentCount = 0; 
     }
     
     /**

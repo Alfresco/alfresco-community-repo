@@ -488,7 +488,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             else 
             {
                     for (MimeMessageHelper message : finalMessages) {
+                    if (message != null)
+                    {
                         sendEmail(ruleAction, message);
+                    }
                     }
             }
         }
@@ -933,6 +936,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             {
                 logger.warn("Unable to prepare mail message. Skipping.", e);
             }
+            return null;
         }
         
         return messageRef[0];

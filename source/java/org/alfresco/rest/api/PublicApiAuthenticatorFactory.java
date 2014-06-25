@@ -165,7 +165,8 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
             String userId = null;
 
             // If the remote user mapper is configured, we may be able to map in an externally authenticated user
-            if (remoteUserMapper != null && !(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
+            if (remoteUserMapper != null
+                    && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive()))
             {
                 userId = remoteUserMapper.getRemoteUser(this.servletReq.getHttpServletRequest());
             }

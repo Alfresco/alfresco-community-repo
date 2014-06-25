@@ -29,20 +29,17 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ApplicationContextHelper;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Link;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 public class CMISAtomTemplatesTest extends BaseCMISTest
 {
-    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0],"classpath:test-cmisinteger_modell-context.xml"});
     private NodeService nodeService;
     
     static String docName;
@@ -64,7 +61,7 @@ public class CMISAtomTemplatesTest extends BaseCMISTest
         xmlResponse = documentRes.getContentAsString();
         Assert.assertNotNull(xmlResponse);
         
-        this.nodeService = (NodeService)ctx.getBean("NodeService");
+        this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
     }
 
     @Test

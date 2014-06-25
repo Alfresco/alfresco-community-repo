@@ -24,6 +24,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -184,7 +185,7 @@ public class MessageServiceImpl implements MessageService
         LockHelper.tryLock(readLock, tryLockTimeout, "getting resource bundle base names in 'MessageServiceImpl.registerResourceBundle()'");
         try
         {
-            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain, false);  
+            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain, false, true);  
         }
         finally
         {
@@ -197,6 +198,7 @@ public class MessageServiceImpl implements MessageService
             if (! tenantResourceBundleBaseNames.contains(resBundlePath))
             {
             	tenantResourceBundleBaseNames.add(resBundlePath);
+            	putResourceBundleBaseNames(tenantDomain, tenantResourceBundleBaseNames);
             }
 
             logger.info("Registered message bundle '" + resBundlePath + "'");
@@ -285,9 +287,9 @@ public class MessageServiceImpl implements MessageService
         try
         {
             // all locales
-            loadedResourceBundlesForAllLocales = getLoadedResourceBundles(tenantDomain);
-            cachedMessagesForAllLocales = getMessages(tenantDomain);
-            resourceBundleBaseNamesForAllLocales = getResourceBundleBaseNames(tenantDomain, false);
+            loadedResourceBundlesForAllLocales = getLoadedResourceBundles(tenantDomain, false);
+            cachedMessagesForAllLocales = getMessages(tenantDomain, false);
+            resourceBundleBaseNamesForAllLocales = getResourceBundleBaseNames(tenantDomain, false, true);
         }    
         finally
         {
@@ -399,13 +401,13 @@ public class MessageServiceImpl implements MessageService
         LockHelper.tryLock(readLock, tryLockTimeout, "getting loaded resource bundles, messages and base names in 'MessageServiceImpl.getLocaleProperties()'");
         try
         {
-            tenantLoadedResourceBundles = getLoadedResourceBundles(tenantDomain);
+            tenantLoadedResourceBundles = getLoadedResourceBundles(tenantDomain, true);
             loadedBundles = tenantLoadedResourceBundles.get(locale);
 
-            tenantCachedMessages = getMessages(tenantDomain);
+            tenantCachedMessages = getMessages(tenantDomain, true);
             props = tenantCachedMessages.get(locale);
 
-            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain, false);
+            tenantResourceBundleBaseNames = getResourceBundleBaseNames(tenantDomain, false, false);
             loadedBundleCount = tenantResourceBundleBaseNames.size();
         }
         finally
@@ -420,6 +422,7 @@ public class MessageServiceImpl implements MessageService
             {
                 loadedBundles = new HashSet<String>();
                 tenantLoadedResourceBundles.put(locale, loadedBundles);
+                putLoadedResourceBundles(tenantDomain, tenantLoadedResourceBundles);
                 init = true;
             }
             finally
@@ -436,6 +439,7 @@ public class MessageServiceImpl implements MessageService
             {
                 props = new HashMap<String, String>();
                 tenantCachedMessages.put(locale, props);
+                putMessages(tenantDomain, tenantCachedMessages);
                 init = true;
             }
             finally
@@ -451,7 +455,7 @@ public class MessageServiceImpl implements MessageService
             try
             {
                 // get registered resource bundles               
-                Set<String> resBundleBaseNames = getResourceBundleBaseNames(tenantDomain, true);
+                Set<String> resBundleBaseNames = getResourceBundleBaseNames(tenantDomain, true, false);
 
                 int count = 0;
                 
@@ -595,7 +599,7 @@ public class MessageServiceImpl implements MessageService
         LockHelper.tryLock(readLock, tryLockTimeout, "getting resource bundle base names in 'MessageServiceImpl.getRegisteredBundles()'");
         try
         {
-            return getResourceBundleBaseNames(getTenantDomain(), false);
+            return getResourceBundleBaseNames(getTenantDomain(), false, false);
         }
         finally
         {
@@ -603,13 +607,13 @@ public class MessageServiceImpl implements MessageService
         }
     }  
     
-    private Set<String> getResourceBundleBaseNames(String tenantDomain, boolean haveWriteLock)
+    private Set<String> getResourceBundleBaseNames(String tenantDomain, boolean haveWriteLock, boolean forWrite)
     {
         // Assume a read lock is present
         Set<String> resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
         if (resourceBundleBaseNames != null)
         {
-            return resourceBundleBaseNames;
+            return getOrCopyResourceBundleBaseNames(resourceBundleBaseNames, forWrite);
         }
 
         if (!haveWriteLock)
@@ -624,7 +628,7 @@ public class MessageServiceImpl implements MessageService
             resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
             if (resourceBundleBaseNames != null)
             {
-                return resourceBundleBaseNames;
+                return getOrCopyResourceBundleBaseNames(resourceBundleBaseNames, forWrite);
             }
             reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
             resourceBundleBaseNames = resourceBundleBaseNamesCache.get(tenantDomain);
@@ -644,11 +648,17 @@ public class MessageServiceImpl implements MessageService
             throw new AlfrescoRuntimeException("Failed to re-initialise resourceBundleBaseNamesCache " + tenantDomain);
         }
         // Done
-        return resourceBundleBaseNames;
+        return getOrCopyResourceBundleBaseNames(resourceBundleBaseNames, forWrite);
     }  
+    
+    private Set<String> getOrCopyResourceBundleBaseNames(Set<String> inbound, boolean createNew)
+    {
+        return createNew ? new HashSet<String>(inbound) : inbound;
+    }
     
     private void putResourceBundleBaseNames(String tenantDomain, Set<String> resourceBundleBaseNames)
     {
+        resourceBundleBaseNames = Collections.unmodifiableSet(new HashSet<String>(resourceBundleBaseNames));
         resourceBundleBaseNamesCache.put(tenantDomain, resourceBundleBaseNames);
     } 
     
@@ -656,18 +666,17 @@ public class MessageServiceImpl implements MessageService
     {
         if (resourceBundleBaseNamesCache.get(tenantDomain) != null)
         {
-            resourceBundleBaseNamesCache.get(tenantDomain).clear();
             resourceBundleBaseNamesCache.remove(tenantDomain);
         }
     } 
     
-    private Map<Locale, Set<String>> getLoadedResourceBundles(String tenantDomain)
+    private Map<Locale, Set<String>> getLoadedResourceBundles(String tenantDomain, boolean forWrite)
     {
         // Assume a read lock is present
         Map<Locale, Set<String>> loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
         if (loadedResourceBundles != null)
         {
-            return loadedResourceBundles;
+            return getOrCopyResourceBundles(loadedResourceBundles, forWrite);
         }
         
         // Not present.  Upgrade to write lock.
@@ -678,7 +687,7 @@ public class MessageServiceImpl implements MessageService
             loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
             if (loadedResourceBundles != null)
             {
-                return loadedResourceBundles;
+                return getOrCopyResourceBundles(loadedResourceBundles, forWrite);
             }
             reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
             loadedResourceBundles = loadedResourceBundlesCache.get(tenantDomain);
@@ -695,11 +704,17 @@ public class MessageServiceImpl implements MessageService
             throw new AlfrescoRuntimeException("Failed to re-initialise loadedResourceBundlesCache " + tenantDomain);
         }
         // Done
-        return loadedResourceBundles;
-    }  
+        return getOrCopyResourceBundles(loadedResourceBundles, forWrite);
+    }
+    
+    private Map<Locale, Set<String>> getOrCopyResourceBundles(Map<Locale, Set<String>> inbound, boolean createNew)
+    {
+       return createNew ? new HashMap<Locale, Set<String>>(inbound) : inbound;
+    }
     
     private void putLoadedResourceBundles(String tenantDomain, Map<Locale, Set<String>> loadedResourceBundles)
     {
+        loadedResourceBundles = Collections.unmodifiableMap(new HashMap<Locale, Set<String>>(loadedResourceBundles));
         loadedResourceBundlesCache.put(tenantDomain, loadedResourceBundles);
     } 
     
@@ -707,7 +722,6 @@ public class MessageServiceImpl implements MessageService
     {
         if (loadedResourceBundlesCache.get(tenantDomain) != null)
         {
-            loadedResourceBundlesCache.get(tenantDomain).clear();
             loadedResourceBundlesCache.remove(tenantDomain);
         }
     } 
@@ -716,17 +730,17 @@ public class MessageServiceImpl implements MessageService
     {
         if (loadedResourceBundlesCache.get(tenantDomain) != null)
         {
-            loadedResourceBundlesCache.get(tenantDomain).clear();
+            putLoadedResourceBundles(tenantDomain, new HashMap<Locale,Set<String>>());
         }
     } 
     
-    private Map<Locale, Map<String, String>> getMessages(String tenantDomain)
+    private Map<Locale, Map<String, String>> getMessages(String tenantDomain, boolean forWrite)
     {
         // Assume a read lock
         Map<Locale, Map<String, String>> messages = messagesCache.get(tenantDomain);
         if (messages != null)
         {
-            return messages;
+            return getOrCopyMessages(messages, forWrite);
         }
         
         // Need to create it.  Upgrade to write lock.
@@ -737,7 +751,7 @@ public class MessageServiceImpl implements MessageService
             messages = messagesCache.get(tenantDomain);
             if (messages != null)
             {
-                return messages;
+                return getOrCopyMessages(messages, forWrite);
             }
             reset(tenantDomain); // reset caches - may have been invalidated (e.g. in a cluster)
             messages = messagesCache.get(tenantDomain);
@@ -754,11 +768,18 @@ public class MessageServiceImpl implements MessageService
             throw new AlfrescoRuntimeException("Failed to re-initialise messagesCache " + tenantDomain);
         }
         // Done
-        return messages;
+        return getOrCopyMessages(messages, forWrite);
     }  
+    
+    private Map<Locale, Map<String, String>> getOrCopyMessages(Map<Locale, Map<String, String>> inbound, boolean createNew)
+    {
+       return createNew ? new HashMap<Locale, Map<String, String>>(inbound) : inbound;
+    }
+
     
     private void putMessages(String tenantDomain, Map<Locale, Map<String, String>> messages)
     {
+        messages = Collections.unmodifiableMap(new HashMap<Locale, Map<String, String>>(messages)); 
         messagesCache.put(tenantDomain, messages);
     } 
     
@@ -766,7 +787,6 @@ public class MessageServiceImpl implements MessageService
     {
         if (messagesCache.get(tenantDomain) != null)
         {
-            messagesCache.get(tenantDomain).clear();
             messagesCache.remove(tenantDomain);
         }
     } 

@@ -395,6 +395,32 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
         assertEquals(Locale.getDefault(), messageService.parseLocale(""));
     }
     
+    public void testRegisteredBundlesSetDirectModification()
+    {
+        String bad_key = "BAD_KEY" + System.currentTimeMillis();
+        
+        Set<String> bundles = messageService.getRegisteredBundles();
+        
+        assertNotNull(bundles);
+        assertTrue(!bundles.contains(bad_key));
+        
+        try
+        {
+            // put entry directly
+            bundles.add(bad_key);
+            fail("Shouldn't be modified");
+        }
+        catch (UnsupportedOperationException e)
+        {
+            // it's ok
+        }
+        
+        Set<String> anotherTryBundles = messageService.getRegisteredBundles();
+        
+        assertNotNull(anotherTryBundles);
+        assertTrue(!bundles.contains(bad_key));
+    }
+    
     private void getMessages()
     {
         // Check default values

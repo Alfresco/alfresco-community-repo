@@ -75,7 +75,6 @@ public class RemoteApi01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.LockMethodTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.WebDAVHelperIntegrationTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.WebDAVMethodTest.class));
-        suite.addTestSuite(org.alfresco.repo.webservice.CMLUtilTest.class);
     }
     
     static void tests6(TestSuite suite) // 

@@ -60,10 +60,10 @@
             <artifactId>spring-cmis-framework</artifactId>
             <version>${dependency.surf.version}</version>
             <exclusions>
-            	<exclusion>
-            	    <artifactId>chemistry-opencmis-client-impl</artifactId>
-            	    <groupId>org.apache.chemistry.opencmis</groupId>
-            	</exclusion>
+                <exclusion>
+                    <groupId>org.apache.chemistry.opencmis</groupId>
+                    <artifactId>chemistry-opencmis-client-impl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -97,8 +97,8 @@
             <version>2.0.4</version>
             <exclusions>
                 <exclusion>
-                	<groupId>org.apache.geronimo.specs</groupId>
-                	<artifactId>geronimo-javamail_1.4_spec</artifactId>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-javamail_1.4_spec</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -116,10 +116,8 @@
             <!-- <scope>test</scope> -->
             <exclusions>
                 <exclusion>
-                    <artifactId>
-                        chemistry-opencmis-client-impl
-                    </artifactId>
                     <groupId>org.apache.chemistry.opencmis</groupId>
+                    <artifactId>chemistry-opencmis-client-impl</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -224,7 +222,8 @@
                               <forkMode>always</forkMode>
                               <includes combine.self="override">
                                  <include>**/org/alfresco/RemoteApi*TestSuite.java</include>
-				 <include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>
+                                 <include>**/org/alfresco/repo/webdav/PutMethodTest.java</include>
+                                 <include>**/org/alfresco/repo/webdav/WebDAVonContentUpdateTest.java</include>
                               </includes>
                            </configuration>
                         </execution>

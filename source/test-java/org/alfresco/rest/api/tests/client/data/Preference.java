@@ -45,7 +45,7 @@ public class Preference	implements Serializable, ExpectedComparison, Comparable<
 	public static Preference parsePreference(JSONObject jsonObject)
 	{
 		String id = (String)jsonObject.get("id");
-		String value = (String)jsonObject.get("value");
+		String value = jsonObject.get("value").toString();
 		Preference preference = new Preference(id, value);
 		return preference;
 	}

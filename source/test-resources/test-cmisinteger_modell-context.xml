@@ -7,7 +7,6 @@
         <property name="models">
             <list>
                 <value>opencmis/testcmisinteger_model.xml</value>
-                <value>opencmis/testcmis_item_model.xml</value>
                 <value>tenant/exampleModel.xml</value>
             </list>
         </property>

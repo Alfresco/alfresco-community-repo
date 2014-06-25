@@ -1306,9 +1306,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         String sourceId = connector.getSourceIdProperty(properties);
         CMISNodeInfo sourceInfo = getOrCreateNodeInfo(sourceId, "Source");
 
-        if (!sourceInfo.isVariant(CMISObjectVariant.CURRENT_VERSION) && !sourceInfo.isVariant(CMISObjectVariant.FOLDER) && !sourceInfo.isVariant(CMISObjectVariant.ITEM))
+        if (!sourceInfo.isVariant(CMISObjectVariant.CURRENT_VERSION) && !sourceInfo.isVariant(CMISObjectVariant.FOLDER))
         {
-            throw new CmisInvalidArgumentException("Source is not the latest version of a document, a folder or an item object!");
+            throw new CmisInvalidArgumentException("Source is not the latest version of a document or a folder object!");
         }
 
         final NodeRef sourceNodeRef = sourceInfo.getNodeRef();
@@ -1317,10 +1317,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         String targetId = connector.getTargetIdProperty(properties);
         CMISNodeInfo targetInfo = getOrCreateNodeInfo(targetId, "Target");
 
-        if (!targetInfo.isVariant(CMISObjectVariant.CURRENT_VERSION) && !targetInfo.isVariant(CMISObjectVariant.FOLDER) && !targetInfo.isVariant(CMISObjectVariant.ITEM))
+        if (!targetInfo.isVariant(CMISObjectVariant.CURRENT_VERSION) && !targetInfo.isVariant(CMISObjectVariant.FOLDER))
         {
             throw new CmisInvalidArgumentException(
-                    "Target is not the latest version of a document, a folder or an item object!!");
+                    "Target is not the latest version of a document or a folder object!!");
         }
 
         final NodeRef targetNodeRef = targetInfo.getNodeRef();

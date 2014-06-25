@@ -678,6 +678,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(result);
 
         JSONObject editedJsonProperties = result.getJSONObject("properties");
+        editedJsonProperties.remove(qnameToString(ContentModel.PROP_CREATOR));
         compareProperties(jsonProperties, editedJsonProperties);
         
         // test USER1 (the task workflow initiator) can update the task
@@ -691,6 +692,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(result);
 
         editedJsonProperties = result.getJSONObject("properties");
+        editedJsonProperties.remove(qnameToString(ContentModel.PROP_CREATOR));
         compareProperties(jsonProperties, editedJsonProperties);
 
         // Reassign the task to USER3 using taskInstance PUT
@@ -713,6 +715,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(result);
         
         editedJsonProperties = result.getJSONObject("properties");
+        editedJsonProperties.remove(qnameToString(ContentModel.PROP_CREATOR));
         compareProperties(jsonProperties, editedJsonProperties);
     }
 

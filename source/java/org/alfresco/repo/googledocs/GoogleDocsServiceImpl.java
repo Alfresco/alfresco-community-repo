@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2005-2013 Alfresco Software Limited.
+* Copyright (C) 2005-2014 Alfresco Software Limited.
 *
 * This file is part of Alfresco
 *
@@ -197,6 +197,18 @@ public class GoogleDocsServiceImpl extends TransactionListenerAdapter
         else
         {
             service = new MediaService(serviceName, applicationName);
+
+            // MNT-11647: Changes in Google Docs API lead to setting 'Domain: .docs.google.com' cookie. This setting is causing the following exception:
+            // 'java.lang.IllegalArgumentException: Trying to set foreign cookie'. Operations with spreadsheets cannot be completed
+            if (serviceName.equals(spreadSheetServiceName) == true)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Disabling handling cookies for '" + serviceName + "' Google Docs service");
+                }
+
+                service.setHandlesCookies(false);
+            }
         }
         service.setChunkedMediaUpload(-1);
         

@@ -1024,6 +1024,7 @@
                <type>d:text</type>
       			<protected>true</protected>
             </property>
+            <!-- @deprecated as of 2.2, because disposable items now in multiple holds -->
             <property name="rma:recordSearchHoldReason">
                <type>d:text</type>
       			<protected>true</protected>

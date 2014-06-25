@@ -21,7 +21,6 @@ Filters.QUERY_TEMPLATES =
    { field: "hasDispositionSchedule", template: "%(rma:recordSearchHasDispositionSchedule)" },
    { field: "dispositionInstructions", template: "%(rma:recordSearchDispositionInstructions)" },
    { field: "dispositionAuthority", template: "%(rma:recordSearchDispositionAuthority)" },
-   { field: "holdReason", template: "%(rma:recordSearchHoldReason)" },
    { field: "vitalRecordReviewPeriod", template: "%(rma:recordSearchVitalRecordReviewPeriod)" }
 ];
 

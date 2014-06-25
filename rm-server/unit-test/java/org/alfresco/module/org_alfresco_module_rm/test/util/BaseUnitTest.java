@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
@@ -103,6 +104,7 @@ public class BaseUnitTest implements RecordsManagementModel
     @Mock(name="recordsManagementActionService") protected RecordsManagementActionService mockedRecordsManagementActionService;
     @Mock(name="reportService")                  protected ReportService                mockedReportService;
     @Mock(name="filePlanRoleService")            protected FilePlanRoleService          mockedFilePlanRoleService;
+    @Mock(name="recordsManagementAuditService")  protected RecordsManagementAuditService mockedRecordsManagementAuditService;
     
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;

@@ -68,7 +68,6 @@ public class RecordsManagementSearchParameters
             put("hasDispositionSchedule", "%(rma:recordSearchHasDispositionSchedule)");
             put("dispositionInstructions", "%(rma:recordSearchDispositionInstructions)");
             put("dispositionAuthority", "%(rma:recordSearchDispositionAuthority)");
-            put("holdReason", "%(rma:recordSearchHoldReason)");
             put("vitalRecordReviewPeriod", "%(rma:recordSearchVitalRecordReviewPeriod)");
         }
     };

@@ -218,17 +218,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
                 ASPECT_VITAL_RECORD_DEFINITION,
                 new JavaBehaviour(this, "vitalRecordDefintionUpdateProperties", NotificationFrequency.TRANSACTION_COMMIT));
-
-        // Hold reason rollup
-        this.policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "onRemoveAspect"),
-                    ASPECT_FROZEN,
-                    new JavaBehaviour(this, "onRemoveFrozenAspect", NotificationFrequency.TRANSACTION_COMMIT));
-
-        this.policyComponent.bindClassBehaviour(
-                    QName.createQName(NamespaceService.ALFRESCO_URI, "onUpdateProperties"),
-                    TYPE_HOLD,
-                    new JavaBehaviour(this, "frozenAspectUpdateProperties", NotificationFrequency.TRANSACTION_COMMIT));
     }
 
     /**
@@ -714,59 +703,6 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, null);
             nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, null);
         }
-    }
-
-    /**
-     * On remove frozen aspect aspect behaviour implementation
-     *
-     * @param nodeRef           node reference
-     * @param aspectTypeQName   aspect type qname
-     */
-    public void onRemoveFrozenAspect(NodeRef nodeRef, QName aspectTypeQName)
-    {
-        if (nodeService.exists(nodeRef) &&
-            nodeService.hasAspect(nodeRef, ASPECT_RM_SEARCH))
-        {
-            nodeService.setProperty(nodeRef, PROP_RS_HOLD_REASON, null);
-        }
-    }
-
-    /**
-     * Frozen aspect properties update behavour implementation.
-     *
-     * @param nodeRef   node reference
-     * @param before    before properties
-     * @param after     after proeprties
-     */
-    public void frozenAspectUpdateProperties(final NodeRef nodeRef, final Map<QName, Serializable> before, final Map<QName, Serializable> after)
-    {
-        AuthenticationUtil.RunAsWork<Void> work = new AuthenticationUtil.RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                if (nodeService.exists(nodeRef))
-                {
-                    // get the changed hold reason
-                    String holdReason = (String)nodeService.getProperty(nodeRef, PROP_HOLD_REASON);
-
-                    // get all the frozen items the hold node has and change the hold reason
-                    List<ChildAssociationRef> holdAssocs = nodeService.getChildAssocs(nodeRef, ASSOC_FROZEN_RECORDS, RegexQNamePattern.MATCH_ALL);
-                    for (ChildAssociationRef assoc : holdAssocs)
-                    {
-                        NodeRef frozenItem = assoc.getChildRef();
-
-                        // ensure the search aspect is applied and set the hold reason
-                        applySearchAspect(frozenItem);
-                        nodeService.setProperty(frozenItem, PROP_RS_HOLD_REASON, holdReason);
-                    }
-                }
-
-                return null;
-            }
-        };
-
-        AuthenticationUtil.runAs(work, AuthenticationUtil.getSystemUserName());
     }
 
     /**

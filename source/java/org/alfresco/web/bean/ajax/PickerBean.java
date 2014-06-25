@@ -191,7 +191,7 @@ public class PickerBean implements Serializable
          Collection<ChildAssociationRef> childRefs;
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get(PARAM_PARENT);
+         String strParentRef = Utils.encode((String)params.get(PARAM_PARENT));
          if (strParentRef == null || strParentRef.length() == 0)
          {
             childRefs = this.getCategoryService().getRootCategories(
@@ -273,7 +273,7 @@ public class PickerBean implements Serializable
          Collection<ChildAssociationRef> childRefs;
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strParentRef = (String)params.get(ID_PARENT);
+         String strParentRef = Utils.encode((String)params.get(ID_PARENT));
          if (strParentRef == null || strParentRef.length() == 0)
          {
             childRefs = this.getCategoryService().getRootCategories(
@@ -347,7 +347,7 @@ public class PickerBean implements Serializable
          
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strChildRef = (String)params.get(PARAM_CHILD);
+         String strChildRef = Utils.encode((String)params.get(PARAM_CHILD));
          if (strChildRef != null && strChildRef.length() != 0)
          {
             // TODO: check permission on the parent
@@ -357,7 +357,7 @@ public class PickerBean implements Serializable
          else
          {
             // TODO: check permission on the parent
-            String strParentRef = (String)params.get(PARAM_PARENT);
+            String strParentRef = Utils.encode((String)params.get(PARAM_PARENT));
             if (strParentRef == null || strParentRef.length() == 0)
             {
                parentRef = companyHomeRef;
@@ -445,7 +445,7 @@ public class PickerBean implements Serializable
          
          NodeRef parentRef = null;
          Map params = fc.getExternalContext().getRequestParameterMap();
-         String strChildRef = (String)params.get(PARAM_CHILD);
+         String strChildRef = Utils.encode((String)params.get(PARAM_CHILD));
          if (strChildRef != null && strChildRef.length() != 0)
          {
             // TODO: check permission on the parent
@@ -455,7 +455,7 @@ public class PickerBean implements Serializable
          else
          {
             // TODO: check permission on the parent
-            String strParentRef = (String)params.get(PARAM_PARENT);
+            String strParentRef = Utils.encode((String)params.get(PARAM_PARENT));
             if (strParentRef == null || strParentRef.length() == 0)
             {
                parentRef = companyHomeRef;

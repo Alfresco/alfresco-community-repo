@@ -8,18 +8,17 @@
     <fileSets>
         <!-- Local resources: README, etc. -->
         <fileSet>
-            <directory>src/main/resources</directory>
+            <directory>target/classes</directory>
             <outputDirectory></outputDirectory>
-            <filtered>true</filtered>
         </fileSet>
         <!-- Licenses -->
         <fileSet>
-            <directory>../../installer/bitrock/licenses</directory>
+            <directory>${highest.basedir}/installer/bitrock/licenses</directory>
             <outputDirectory>licenses</outputDirectory>
         </fileSet>
         <!-- Win32NetBIOS*.dll, Win32Utils*.dll -->
         <fileSet>
-            <directory>../../projects/alfresco-jlan/jni</directory>
+            <directory>${highest.basedir}/projects/alfresco-jlan/jni</directory>
             <outputDirectory>bin</outputDirectory>
         </fileSet>
     </fileSets>
@@ -38,9 +37,18 @@
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
             <outputDirectory>web-server/webapps</outputDirectory>
-            <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
+            <outputFileNameMapping>alfresco.war</outputFileNameMapping>
             <includes>
-                <include>org.alfresco:*:war</include>
+                <include>org.alfresco:alfresco*:war</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/webapps</outputDirectory>
+            <outputFileNameMapping>share.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:share*:war</include>
             </includes>
         </dependencySet>
         <dependencySet>

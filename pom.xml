@@ -8,8 +8,13 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>alfresco-distribution</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <name>Alfresco Distribution (WAR Installation)</name>
+
+    <!-- To replace in share-config-custom.xml -->
+    <properties>
+        <BITROCK_TOMCAT_PORT>8080</BITROCK_TOMCAT_PORT>
+    </properties>
 
     <dependencies>
         <!-- WAR files -->
@@ -69,6 +74,17 @@
     <build>
         <finalName>${alfresco.package.name}-${project.version}</finalName>
         <plugins>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <delimiters>
+                        <delimiter>${*}</delimiter>
+                        <delimiter>@@</delimiter> <!-- To replace Tomcat port in share-config-custom.xml -->
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>

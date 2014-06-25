@@ -152,15 +152,9 @@ public class AuditMethodInterceptor implements MethodInterceptor
     
     public Object invoke(MethodInvocation mi) throws Throwable
     {
-        // Bypass all auditing if the system is in read-only mode
-        if (!transactionService.getAllowWrite())
-        {
-            return mi.proceed();
-        }
         // Shortcut if no audit values are required
         if(!auditComponent.areAuditValuesRequired(AUDIT_PATH_API_ROOT))
         {
-            // No auditing or server is read-only
             return mi.proceed();
         }
         else

@@ -259,14 +259,9 @@ public class AuditComponentImpl implements AuditComponent
     @Override
     public boolean areAuditValuesRequired(String path)
     {
-        if (loggerInbound.isDebugEnabled())
-        {
-            return !transactionService.isReadOnly();
-        }
         PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
         Set<String> mappedPaths = pathMapper.getMappedPathsWithPartialMatch(path);
-        // for performance, fall through if no mapped paths so isReadyOnly is never called
-        return (mappedPaths.size() > 0 && !transactionService.isReadOnly());
+        return mappedPaths.size() > 0;
     }
 
     /**

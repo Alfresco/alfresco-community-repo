@@ -405,7 +405,14 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             
             if (pv1 == null)
             {
-                return (pv2 == null ? 0 : -1);
+                if(pv2 == null && sortProps.size() > 1)
+                {
+                    return compareImpl(node1In, node2In, sortProps.subList(1, sortProps.size()));
+                }
+                else
+                {
+                    return (pv2 == null ? 0 : -1);
+                }
             }
             else if (pv2 == null)
             {

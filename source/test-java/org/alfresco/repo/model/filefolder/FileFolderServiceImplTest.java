@@ -24,10 +24,12 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -1635,4 +1637,102 @@ public class FileFolderServiceImplTest extends TestCase
          assertFalse(copyInfo.getName().contains("(Working Copy)"));
          assertTrue(copyInfo.getName().substring(0, copyExtIndex).startsWith(checkedOutName.substring(0, origExtIndex)));
     }
+	
+    public void testSortingCustomFields()
+    {
+        // Test sorting based on MNT-11120
+        QName customPropA = QName.createQName(ContentModel.USER_MODEL_URI, "a");
+        QName customPropB = QName.createQName(ContentModel.USER_MODEL_URI, "b");
+
+        HashMap<String, Pair<QName, String>> customProps = new HashMap<String, Pair<QName, String>>();
+        customProps.put("A-foo", new Pair<QName, String>(customPropA, "foo"));
+        customProps.put("A-bar", new Pair<QName, String>(customPropA, "bar"));
+        customProps.put("A-null", new Pair<QName, String>(customPropA, null));
+        customProps.put("B-biz", new Pair<QName, String>(customPropB, "biz"));
+        customProps.put("B-baz", new Pair<QName, String>(customPropB, "baz"));
+        customProps.put("B-null", new Pair<QName, String>(customPropB, null));
+
+        NodeRef nodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+        NodeRef parentTestRef = fileFolderService.create(nodeRef, "parent", ContentModel.TYPE_CONTENT).getNodeRef();
+        for (Entry<String, Pair<QName, String>> entry : customProps.entrySet())
+        {
+            NodeRef child = fileFolderService.create(parentTestRef, entry.getKey(), ContentModel.TYPE_CONTENT).getNodeRef();
+            nodeService.setProperty(child, entry.getValue().getFirst(), entry.getValue().getSecond());
+        }
+
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>();
+
+        PagingRequest pagingRequest = new PagingRequest(100, null);
+
+        // {("user:a", true),("user:b", true")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropA, true));
+        sortProps.add(new Pair<QName, Boolean>(customPropB, true));
+        PagingResults<FileInfo> results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        List<FileInfo> pageRes = results.getPage();
+        String[] expectedNames = new String[] { "A-null", "B-null", "B-baz", "B-biz", "A-bar", "A-foo" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // {("user:a", false),("user:b", true")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropA, false));
+        sortProps.add(new Pair<QName, Boolean>(customPropB, true));
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "A-foo", "A-bar", "A-null", "B-null", "B-baz", "B-biz" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // {(\"user:a", true),("user:b", false")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropA, true));
+        sortProps.add(new Pair<QName, Boolean>(customPropB, false));
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "B-biz", "B-baz", "A-null", "B-null", "A-bar", "A-foo" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // {(\"user:a", false),("user:b", false")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropA, false));
+        sortProps.add(new Pair<QName, Boolean>(customPropB, false));
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "A-foo", "A-bar", "B-biz", "B-baz", "A-null", "B-null" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // {(\"user:b", true),("user:a", true")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropB, true));
+        sortProps.add(new Pair<QName, Boolean>(customPropA, true));
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "A-null", "B-null", "A-bar", "A-foo", "B-baz", "B-biz" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // {("user:b", false),("user:a", true")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropB, false));
+        sortProps.add(new Pair<QName, Boolean>(customPropA, true));
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "B-biz", "B-baz", "A-null", "B-null", "A-bar", "A-foo" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // {("user:b", true),("user:a", false")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropB, true));
+        sortProps.add(new Pair<QName, Boolean>(customPropA, false));
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "A-foo", "A-bar", "A-null", "B-null", "B-baz", "B-biz" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // {("user:b", false),("user:a", false")}
+        sortProps.clear();
+        sortProps.add(new Pair<QName, Boolean>(customPropB, false));
+        sortProps.add(new Pair<QName, Boolean>(customPropA, false));
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "B-biz", "B-baz", "A-foo", "A-bar", "A-null", "B-null" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+
+        // no sort
+        sortProps.clear();
+        results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
+        expectedNames = new String[] { "B-null", "A-foo", "A-bar", "B-baz", "A-null", "B-biz" };
+        checkFileList(pageRes, 6, 0, expectedNames);
+    }	
 }

@@ -519,7 +519,17 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         catch (IOException ioe)
         {
             Throwable socketException = ExceptionStackUtil.getCause(ioe, SocketException.class);
-            if (socketException != null && socketException.getMessage().contains("Broken pipe"))
+            Class<?> clientAbortException = null;
+            try
+            {
+                clientAbortException = Class.forName("org.apache.catalina.connector.ClientAbortException");
+            }
+            catch (ClassNotFoundException e)
+            {
+                // do nothing
+            }
+            // Note: if you need to look for more exceptions in the stack, then create a static array and pass it in
+            if ((socketException != null && socketException.getMessage().contains("Broken pipe")) || (clientAbortException != null && ExceptionStackUtil.getCause(ioe, clientAbortException) != null))
             {
                 if (logger.isDebugEnabled())
                 {

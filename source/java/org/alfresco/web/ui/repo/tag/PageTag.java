@@ -88,8 +88,8 @@ public class PageTag extends TagSupport
  * Please ensure you understand the terms of the license before changing the contents of this file.
  */
    
-   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/assets/images/logos/community-4.2.png";
-   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/assets/images/logos/community-4.2.png";
+   private final static String ALF_LOGO_HTTP  = "http://www.alfresco.com/assets/images/logos/community-5.0.png";
+   private final static String ALF_LOGO_HTTPS = "https://www.alfresco.com/assets/images/logos/community-5.0.png";
    private final static String ALF_URL   = "http://www.alfresco.com";
    private final static String ALF_TEXT  = "Alfresco Community";
    private final static String ALF_COPY  = "Supplied free of charge with " +

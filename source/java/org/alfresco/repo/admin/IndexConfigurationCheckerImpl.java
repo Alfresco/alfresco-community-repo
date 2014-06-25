@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
 import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
 import org.alfresco.repo.search.IndexMode;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -32,6 +33,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -116,8 +118,9 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
             }
             
             // Are we creating the store - in which case we do not check
-            
-            if(nodeService.getChildAssocs(rootNodeRef).size() == 0)
+            // See MNT-11612
+            List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, 1, false);
+            if(childAssocs.size() == 0)
             {
                 continue;
             }

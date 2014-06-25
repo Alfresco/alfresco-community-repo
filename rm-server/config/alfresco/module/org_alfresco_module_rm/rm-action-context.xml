@@ -413,8 +413,6 @@
       <property name="publicAction" value="true"/>
    </bean>
 
-   
-
    <!-- Edit review as of date -->
 
    <bean id="editReviewAsOfDate_proxy" parent="rmProxyAction" >
@@ -968,6 +966,7 @@
          class="org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportAction"
          parent="rmAction">
       <property name="reportService" ref="ReportService" />
+      <property name="capabilityService" ref="CapabilityService" />
       <property name="publicAction" value="false"/>
    </bean>
 
@@ -1016,10 +1015,10 @@
          </value>
       </property>
    </bean>
-   
+
    <!--  @deprecated actions as of 2.2 -->
    <!--  actions can be reinstated by reconfiguring their publicity -->
-   
+
    <!-- Freeze record -->
 
    <bean id="freeze_proxy" parent="rmProxyAction" >

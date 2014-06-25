@@ -48,7 +48,7 @@ var Evaluator =
                linkedNode = node.properties.destination;
                if (linkedNode == null)
                {
-                  return null;
+                  linkedNode = { isTargetDeleted: true };
                }
                break;
 

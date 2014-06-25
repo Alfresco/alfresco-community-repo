@@ -239,9 +239,26 @@ function doclist_main()
          if (filterParams.variablePath || item.isLink)
          {
             locationNode = item.isLink ? item.linkedNode : item.node;
-            // Ensure we have Read permissions on the destination on the link object
-            if (!locationNode.hasPermission("Read")) continue;
-            location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
+            if (locationNode.isTargetDeleted)
+            {
+                // take location of the link node
+                location =
+                {
+                   site: parsedArgs.location.site,
+                   siteTitle: parsedArgs.location.siteTitle,
+                   sitePreset: parsedArgs.location.sitePreset,
+                   container: parsedArgs.location.container,
+                   containerType: parsedArgs.location.containerType,
+                   path: parsedArgs.location.path,
+                   file: "<Broken Link>"
+                };
+            }
+            else
+            {
+                // Ensure we have Read permissions on the destination on the link object
+                if (!locationNode.hasPermission("Read")) continue;
+                location = Common.getLocation(locationNode, parsedArgs.libraryRoot);
+            }
             // Parent node
             if (node.parent != null && node.parent.isContainer && node.parent.hasPermission("Read"))
             {

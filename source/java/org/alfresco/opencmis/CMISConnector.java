@@ -2641,6 +2641,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
 
         Set<AccessPermission> currentAces = permissionService.getAllSetPermissions(nodeRef);
+        Acl currentACL = getACL(nodeRef, false);
 
         // remove all permissions
         permissionService.deletePermissions(nodeRef);
@@ -2654,11 +2655,45 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 principalId = AuthenticationUtil.getFullyAuthenticatedUser();
             }
 
-            List<String> permissions = translatePermissionsFromCMIS(ace.getPermissions());
+            List<String> acePermissions = ace.getPermissions();
+            normaliseAcePermissions(currentACL, ace, acePermissions);
+            List<String> permissions = translatePermissionsFromCMIS(acePermissions);
             normalisePermissions(currentAces, permissions);
             for (String permission : permissions)
             {
                 permissionService.setPermission(nodeRef, principalId, permission, true);
+            }
+        }
+    }
+
+    /*
+     * MNT-10165: CMIS 1.1 API: Impossible to remove ACL through Atom binding
+     * 
+     * Detect permission to delete for principal and 
+     * also delete all the concomitant basic permissions
+     */
+    private void normaliseAcePermissions(Acl currentACL, Ace newAce, List<String> acePermissions)
+    {
+        for (Ace oldAce : currentACL.getAces())
+        {
+            if (oldAce.getPrincipalId().equals(newAce.getPrincipalId()))
+            {
+                // detect what permissions were deleted for principal
+                Set<String> permissionsDeletedForPrincipal = new HashSet<String>(oldAce.getPermissions());
+                Set<String> newPermissions = new HashSet<String>(newAce.getPermissions());
+                permissionsDeletedForPrincipal.removeAll(newPermissions);
+                for (String permissionDeleted : permissionsDeletedForPrincipal)
+                {
+                    // for deleted permission also delete all attendant basic permissions
+                    List<String> onePermissionList = new ArrayList<String>();
+                    onePermissionList.add(permissionDeleted);
+
+                    List<String> cmisPermissions = translatePermmissionsToCMIS(onePermissionList, false);
+                    for (String cmisPermission : cmisPermissions)
+                    {
+                        acePermissions.remove(cmisPermission);
+                    }
+                }
             }
         }
     }

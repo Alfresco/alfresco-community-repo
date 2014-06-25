@@ -288,11 +288,13 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(recordFolder), anyString());
 
         holdService.addToHold(hold, record);
         verify(mockedNodeService).addChild(hold, record, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, times(2)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(record), anyString());
     }
 
     @SuppressWarnings("unchecked")
@@ -306,6 +308,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(recordFolder), anyString());
     }
 
     @SuppressWarnings("unchecked")
@@ -320,6 +323,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).addChild(hold, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService, never()).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, never()).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(recordFolder), anyString());
     }
 
     @SuppressWarnings("unchecked")
@@ -351,6 +355,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).addChild(hold2, recordFolder, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
         verify(mockedNodeService, times(1)).addAspect(eq(recordFolder), eq(ASPECT_FROZEN), any(Map.class));
         verify(mockedNodeService, times(1)).addAspect(eq(record), eq(ASPECT_FROZEN), any(Map.class));
+        verify(mockedRecordsManagementAuditService, times(2)).auditEvent(eq(recordFolder), anyString());
     }
 
     @Test (expected=AlfrescoRuntimeException.class)
@@ -367,6 +372,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).removeChild(hold, recordFolder);
         verify(mockedNodeService, never()).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, never()).removeAspect(record, ASPECT_FROZEN);
+        verify(mockedRecordsManagementAuditService, never()).auditEvent(eq(recordFolder), anyString());
     }
 
     @Test
@@ -381,6 +387,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeChild(hold, recordFolder);
         verify(mockedNodeService, times(1)).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
+        verify(mockedRecordsManagementAuditService, times(1)).auditEvent(eq(recordFolder), anyString());
     }
 
     @Test
@@ -402,6 +409,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).removeChild(hold2, recordFolder);
         verify(mockedNodeService, times(1)).removeAspect(recordFolder, ASPECT_FROZEN);
         verify(mockedNodeService, times(1)).removeAspect(record, ASPECT_FROZEN);
+        verify(mockedRecordsManagementAuditService, times(2)).auditEvent(any(NodeRef.class), anyString());
     }
 
     @Test

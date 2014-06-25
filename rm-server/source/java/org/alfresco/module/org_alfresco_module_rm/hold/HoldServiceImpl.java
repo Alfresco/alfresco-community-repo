@@ -30,6 +30,8 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -71,6 +73,10 @@ public class HoldServiceImpl extends ServiceBaseImpl
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(HoldServiceImpl.class);
+    
+    /** Audit event keys */
+    private static final String AUDIT_ADD_TO_HOLD = "addToHold";
+    private static final String AUDIT_REMOVE_FROM_HOLD = "removeFromHold";
 
     /** File Plan Service */
     private FilePlanService filePlanService;
@@ -83,6 +89,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
     /** Permission service */
     private PermissionService permissionService;
+    
+    /** records management audit service */
+    private RecordsManagementAuditService recordsManagementAuditService;
 
     /**
      * Set the file plan service
@@ -132,6 +141,31 @@ public class HoldServiceImpl extends ServiceBaseImpl
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+    
+    /**
+     * @param recordsManagementAuditService records management audit service
+     */
+    public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
+    {
+        this.recordsManagementAuditService = recordsManagementAuditService;
+    }
+    
+    /**
+     * Initialise hold service
+     */
+    public void init()
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_ADD_TO_HOLD, "capability.AddToHold.title"));
+                recordsManagementAuditService.registerAuditEvent(new AuditEvent(AUDIT_REMOVE_FROM_HOLD, "capability.RemoveFromHold.title"));
+                return null;
+            }
+        });
     }
 
     /**
@@ -555,6 +589,9 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
                         // Link the record to the hold
                         nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
+                        
+                        // audit item being added to the hold
+                        recordsManagementAuditService.auditEvent(nodeRef, AUDIT_ADD_TO_HOLD);
 
                         // Mark all the folders contents as frozen
                         if (isRecordFolder(nodeRef))
@@ -657,6 +694,11 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         {
                             // remove from hold
                             nodeService.removeChild(hold, nodeRef);
+                            
+                            // audit that the node has been remove from the hold
+                            // TODO add details of the hold that the node was removed from
+                            recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
+                            
                             return null;
                         }
                      });                    
@@ -672,7 +714,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                     removeFreezeAspect(nodeRef, 0);
                     return null;
                 }
-             });
+            });
         }
     }
 

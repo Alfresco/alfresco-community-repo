@@ -1418,11 +1418,13 @@
 
    <bean id="holdService"
          parent="baseService"
-         class="org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImpl">
+         class="org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImpl"
+         init-method="init">
       <property name="filePlanService" ref="FilePlanService" />
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="RecordFolderService" />
       <property name="permissionService" ref="PermissionService"/>
+      <property name="recordsManagementAuditService" ref="RecordsManagementAuditService" />
    </bean>
 
    <bean id="HoldService"

@@ -413,102 +413,7 @@
       <property name="publicAction" value="true"/>
    </bean>
 
-   <!-- Freeze record -->
-
-   <bean id="freeze_proxy" parent="rmProxyAction" >
-      <property name="target">
-         <ref bean="freeze"/>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="freeze_security"/>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="freeze_security" parent="actionSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ExtendRetentionPeriodOrFreeze
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-         </value>
-      </property>
-   </bean>
-
-   <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability">
-      <property name="publicAction" value="false"/>
-   </bean>
-
-   <!-- Unfreeze record -->
-
-   <bean id="unfreeze_proxy" parent="rmProxyAction" >
-      <property name="target">
-         <ref bean="unfreeze"/>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="unfreeze_security"/>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="unfreeze_security" parent="actionSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.Unfreeze
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-         </value>
-      </property>
-   </bean>
-
-   <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction">
-      <property name="publicAction" value="false"/>
-   </bean>
-
-   <!-- Relinquish Hold Action-->
-
-   <bean id="relinquishHold_proxy" parent="rmProxyAction" >
-      <property name="target">
-         <ref bean="relinquishHold"/>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="unfreeze_security"/>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction">
-       <property name="publicAction" value="false"/>
-       <property name="auditedImmediately" value="true"/>
-   </bean>
-
-   <!-- Edit hold reason -->
-
-   <bean id="editHoldReason_proxy" parent="rmProxyAction" >
-      <property name="target">
-         <ref bean="editHoldReason"/>
-      </property>
-      <property name="interceptorNames">
-         <list>
-            <idref bean="editHoldReason_security"/>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="editHoldReason_security" parent="actionSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ViewUpdateReasonsForFreeze
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-         </value>
-      </property>
-   </bean>
-
-   <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction" />
+   
 
    <!-- Edit review as of date -->
 
@@ -1110,6 +1015,112 @@
             org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
          </value>
       </property>
+   </bean>
+   
+   <!--  @deprecated actions as of 2.2 -->
+   <!--  actions can be reinstated by reconfiguring their publicity -->
+   
+   <!-- Freeze record -->
+
+   <bean id="freeze_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="freeze"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="freeze_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="freeze_security" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ExtendRetentionPeriodOrFreeze
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="freeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.FreezeAction" parent="rmAction" depends-on="rmExtendRetentionPeriodOrFreezeCapability">
+      <property name="publicAction" value="false"/>
+      <property name="auditable" value="false"/>
+   </bean>
+
+   <!-- Unfreeze record -->
+
+   <bean id="unfreeze_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="unfreeze"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="unfreeze_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="unfreeze_security" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.Unfreeze
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="unfreeze" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnfreezeAction" parent="rmAction">
+      <property name="publicAction" value="false"/>
+      <property name="auditable" value="false"/>
+   </bean>
+
+   <!-- Relinquish Hold Action-->
+
+   <bean id="relinquishHold_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="relinquishHold"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="unfreeze_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="relinquishHold" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RelinquishHoldAction" parent="rmAction">
+       <property name="publicAction" value="false"/>
+      <property name="auditable" value="false"/>
+       <property name="auditedImmediately" value="true"/>
+   </bean>
+
+   <!-- Edit hold reason -->
+
+   <bean id="editHoldReason_proxy" parent="rmProxyAction" >
+      <property name="target">
+         <ref bean="editHoldReason"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="editHoldReason_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="editHoldReason_security" parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.ViewUpdateReasonsForFreeze
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="editHoldReason" class="org.alfresco.module.org_alfresco_module_rm.action.impl.EditHoldReasonAction" parent="rmAction">
+       <property name="publicAction" value="false"/>
+       <property name="auditable" value="false"/>
    </bean>
 
 </beans>

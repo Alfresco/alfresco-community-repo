@@ -205,10 +205,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             {
                 return decide(authentication, object, config, (Object[]) returnedObject);
             }
-            else if (Map.class.isAssignableFrom(returnedObject.getClass()))
-            {
-                return decide(authentication, object, config, (Map) returnedObject);
-            }
             else
             {
                 if (logger.isDebugEnabled())
@@ -920,39 +916,6 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             throw new ACLEntryVoterException("The specified array is not of NodeRef or ChildAssociationRef");
         }
         return testNodeRef;
-    }
-
-    @SuppressWarnings({"unchecked", "rawtypes" })
-    private Map decide(Authentication authentication, Object object, ConfigAttributeDefinition config, Map returnedObject)
-    {
-        try {
-            if (returnedObject.containsKey(RecordsManagementModel.PROP_HOLD_REASON))
-            {
-                HashMap filtered = new HashMap();
-                filtered.putAll(returnedObject);
-                // get the node ref from the properties or delete
-                String protocol = DefaultTypeConverter.INSTANCE.convert(String.class, filtered.get(ContentModel.PROP_STORE_PROTOCOL));
-                String identifier = DefaultTypeConverter.INSTANCE.convert(String.class, filtered.get(ContentModel.PROP_STORE_IDENTIFIER));
-                String uuid = DefaultTypeConverter.INSTANCE.convert(String.class, filtered.get(ContentModel.PROP_NODE_UUID));
-                StoreRef storeRef = new StoreRef(protocol, identifier);
-                NodeRef nodeRef = new NodeRef(storeRef, uuid);
-                if ((nodeRef == null) ||
-                    (permissionService.hasPermission(getFilePlanService().getFilePlan(nodeRef), RMPermissionModel.VIEW_UPDATE_REASONS_FOR_FREEZE) != AccessStatus.ALLOWED))
-                {
-                    filtered.remove(RecordsManagementModel.PROP_HOLD_REASON);
-                }
-                return filtered;
-            }
-            else
-            {
-                return returnedObject;
-            }
-        }
-        catch(ClassCastException ex)
-        {
-            // This will happen if returnedObject is an instance of TreeMap containing anything other than instances of QName
-            return returnedObject;
-        }
     }
 
     private class ConfigAttributeDefintion

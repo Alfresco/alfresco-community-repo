@@ -47,9 +47,5 @@
 	<bean id="declarePolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.DeclarePolicy">
 		<property name="name" value="Declare"/>
 	</bean>
-	
-	<bean id="readPropertyPolicy" parent="basePolicy" class="org.alfresco.module.org_alfresco_module_rm.capability.policy.ReadPropertyPolicy">
-		<property name="name" value="ReadProperty"/>
-	</bean>
 
 </beans>

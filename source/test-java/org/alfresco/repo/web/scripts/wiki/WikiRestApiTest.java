@@ -34,6 +34,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
@@ -909,5 +910,70 @@ public class WikiRestApiTest extends BaseWebScriptTest
        this.authenticationComponent.setCurrentUser(USER_ONE);
        
        sendRequest(new GetRequest(URL_WIKI_LIST), Status.STATUS_NOT_FOUND);
+    }
+    
+    public void test_MNT11595() throws Exception
+    {
+        final String user = "wikiUser";
+
+        try
+        {
+            // admin authentication
+            this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+            MutableAuthenticationService mas = (MutableAuthenticationService) getServer().getApplicationContext().getBean("authenticationService");
+
+            // create user
+            createUser(user, SiteModel.SITE_MANAGER);
+
+            assertTrue(personService.personExists(user));
+
+            // invite user to a site with 'Manager' role
+            siteService.setMembership(SITE_SHORT_NAME_WIKI, user, SiteRole.SiteManager.toString());
+
+            // user authentication
+            this.authenticationComponent.setCurrentUser(user);
+
+            // create wiki page by user ('Manager' role)
+            WikiPageInfo wikiPage = this.wikiService.createWikiPage(SITE_SHORT_NAME_WIKI, "test wiki page",
+                    "I like pigs. Dogs look up to us. Cats look down on us. Pigs treat us as equals. Sir Winston Churchill");
+
+            String uri = "/slingshot/wiki/page/" + SITE_SHORT_NAME_WIKI + "/Main_Page?alf_ticket=" + mas.getCurrentTicket() + "application/json";
+
+            Response responseManagerRole = sendRequest(new GetRequest(uri), 404);
+            JSONObject resultManagerRole = new JSONObject(responseManagerRole.getContentAsString());
+            JSONObject permissionsManagerRole = resultManagerRole.getJSONObject("permissions");
+            assertTrue(permissionsManagerRole.getBoolean("create"));
+            assertTrue(permissionsManagerRole.getBoolean("edit"));
+
+            // admin authentication
+            this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+            // change user role - 'Consumer' role
+            siteService.setMembership(SITE_SHORT_NAME_WIKI, user, SiteRole.SiteConsumer.toString());
+
+            // user authentication
+            this.authenticationComponent.setCurrentUser(user);
+
+            Response responseConsumerRole = sendRequest(new GetRequest(uri), 404);
+            JSONObject resultConsumerRole = new JSONObject(responseConsumerRole.getContentAsString());
+            JSONObject permissionsConsumerRole = resultConsumerRole.getJSONObject("permissions");
+            assertFalse(permissionsConsumerRole.getBoolean("create"));
+            assertFalse(permissionsConsumerRole.getBoolean("edit"));
+        }
+        finally
+        {
+            this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+            if (personService.personExists(user))
+            {
+                personService.deletePerson(user);
+            }
+
+            if (this.authenticationService.authenticationExists(user))
+            {
+                this.authenticationService.deleteAuthentication(user);
+            }
+        }
     }
 }

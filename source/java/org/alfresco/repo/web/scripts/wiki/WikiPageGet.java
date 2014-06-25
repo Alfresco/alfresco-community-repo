@@ -67,18 +67,9 @@ public class WikiPageGet extends AbstractWikiWebScript
          status.setMessage(message);
          status.setRedirect(true);
          
-         // Grab the container, used in permissions checking
-         NodeRef container = siteService.getContainer(
-               site.getShortName(), WikiServiceImpl.WIKI_COMPONENT);
-         
-         // If there's no container yet, the site will do for permissions
-         if (container == null)
-         {
-            container = site.getNodeRef();
-         }
-         
+         // MNT-11595 Downgrading permission from Manager to Consumer, user still allowed to create WIKI pages
          // Record these
-         model.put("container", container);
+         model.put("container", site.getNodeRef());
          model.put("error", rb.getString(MSG_NOT_FOUND));
          
          // Bail out

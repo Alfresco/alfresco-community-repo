@@ -59,7 +59,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     {
         super.before();
         
-        nonStandardFilePlanComponent = generateNodeRef();
+        nonStandardFilePlanComponent = generateNodeRef(TYPE_RECORD_CATEGORY);
         nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
         
         // set-up node service 

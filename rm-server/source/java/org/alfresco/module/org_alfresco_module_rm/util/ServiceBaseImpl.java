@@ -338,7 +338,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         if (nodeRef != null)
         {       
             result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
-            if (result == null)
+            if (result == null || !instanceOf(result, TYPE_FILE_PLAN))
             {
                 if (instanceOf(nodeRef, TYPE_FILE_PLAN))
                 {

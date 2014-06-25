@@ -1895,6 +1895,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         List<CmisExtensionElement> extensions = new ArrayList<CmisExtensionElement>();
         Set<String> propertyIds = new HashSet<String>(alreadySetProperties);
+        List<CmisExtensionElement> propertyExtensionList = new ArrayList<CmisExtensionElement>();
         Set<String> filterSet = splitFilter(filter);
 
         Set<QName> aspects = nodeService.getAspects(info.getNodeRef());
@@ -1909,7 +1910,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             extensions.add(new CmisExtensionElementImpl(ALFRESCO_EXTENSION_NAMESPACE, APPLIED_ASPECTS, null, aspectType
                     .getTypeId()));
 
-            List<CmisExtensionElement> propertyExtensionList = new ArrayList<CmisExtensionElement>();
             for (PropertyDefinitionWrapper propDef : aspectType.getProperties())
             {
                 if (propertyIds.contains(propDef.getPropertyId()))
@@ -1930,13 +1930,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 // mark property as 'added'
                 propertyIds.add(propDef.getPropertyId());
             }
+        }
 
-            if (!propertyExtensionList.isEmpty())
-            {
-                CmisExtensionElementImpl propertiesExtension = new CmisExtensionElementImpl(
-                        ALFRESCO_EXTENSION_NAMESPACE, "properties", null, propertyExtensionList);
-                extensions.addAll(Collections.singletonList(propertiesExtension));
-            }
+        if (!propertyExtensionList.isEmpty())
+        {
+            CmisExtensionElementImpl propertiesExtension = new CmisExtensionElementImpl(
+                    ALFRESCO_EXTENSION_NAMESPACE, "properties", null, propertyExtensionList);
+            extensions.addAll(Collections.singletonList(propertiesExtension));
         }
 
         return extensions;

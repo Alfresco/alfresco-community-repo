@@ -34,13 +34,21 @@ import java.util.Map;
     		this.setRolePrecedence(rolePrecedence);
     }
 
-	public int compare(String first, String second) 
-	{	
-		int firstRank = getRolePrecedence().get(first);
-		int secondRank = getRolePrecedence().get(second);
-					
-		return secondRank - firstRank;			
-	}
+    public int compare(String first, String second) 
+    {
+        int firstRank = 0;
+        int secondRank = 0;
+        if (getRolePrecedence().containsKey(first))
+        {
+            firstRank = getRolePrecedence().get(first);
+        }
+        if (getRolePrecedence().containsKey(second))
+        {
+            secondRank = getRolePrecedence().get(second);
+        }
+
+        return secondRank > firstRank ? 1 : secondRank < firstRank ? -1 : 0;
+    }
 		
 	public void init() 
 	{

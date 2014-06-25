@@ -1639,6 +1639,31 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     }
     
     /**
+     * 
+     * See https://issues.alfresco.com/jira/browse/MNT-2229
+     */    
+    public void testUserRoleInGroups()
+    {
+    	String sitName = "testMembership2";
+    	// Create a site as user one
+        this.siteService.createSite(TEST_SITE_PRESET, sitName, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        
+        /**
+         *  Add a group (GROUP_ONE) with role COLLABORATOR
+         */
+        this.siteService.setMembership(sitName, this.groupOne, SiteModel.SITE_COLLABORATOR);
+        
+        /**
+         *  Add a group (GROUP_TWO) with role CONSUMER
+         */
+        this.siteService.setMembership(sitName, this.groupTwo, SiteModel.SITE_CONSUMER);
+        
+        List<SiteMemberInfo> roles = this.siteService.listMembersInfo(sitName, USER_TWO, null,  0, true);
+        
+        assertEquals(roles.get(0).getMemberRole(), SiteModel.SITE_COLLABORATOR);
+    }
+    
+    /**
      * Tests the visibility of a site
      * 
      * See https://issues.alfresco.com/jira/browse/JAWS-291

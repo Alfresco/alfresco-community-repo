@@ -354,6 +354,7 @@ public class Repository01TestSuite extends TestSuite
     static void tests53(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.tagging.TaggingServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
     }
     
     static void tests55(TestSuite suite)

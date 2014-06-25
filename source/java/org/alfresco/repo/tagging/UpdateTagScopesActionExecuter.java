@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -439,30 +439,44 @@ public class UpdateTagScopesActionExecuter extends ActionExecuterAbstractBase
                   }
               }
           }
-          
-          // Order the list
-          Collections.sort(tags);
-          
-          // Write new content back to tag scope
-          String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
-          ContentWriter contentWriter = contentService.getWriter(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE, true);
-          contentWriter.setEncoding("UTF-8");
-          contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-          contentWriter.putContent(tagContent);  
-          
+
+          // ACE-1979: emptying tag scope cache by setting content property for the cache to null to avoid zero-size writes. Orphaned content will be deleted with content store
+          // cleaner job 
+          if (tags.isEmpty())
+          {
+             nodeService.setProperty(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE, null);
+
+             if (logger.isDebugEnabled())
+             {
+                logger.debug("Updated tag scope: '" + tagScopeNode + "'. No tags were found. Emptying tags cache by setting content property to null...");
+             }
+          }
+          else
+          {
+              // Order the list
+              Collections.sort(tags);
+
+              // Write new content back to tag scope
+              String tagContent = TaggingServiceImpl.tagDetailsToString(tags);
+              ContentWriter contentWriter = contentService.getWriter(tagScopeNode, ContentModel.PROP_TAGSCOPE_CACHE, true);
+              contentWriter.setEncoding("UTF-8");
+              contentWriter.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+              contentWriter.putContent(tagContent);
+
+              // Log this if required
+              if(logger.isDebugEnabled())
+              {
+                 logger.debug(
+                       "Updated tag scope " + tagScopeNode + " with " + updates + ", " +
+                       "new contents are { " + tagContent.replace("\n", " : ") + " } " +
+                       "from old contents of " + previousTagState
+                 );
+              }
+          }
+
           // We're done making our changes
           // Allow behaviours to fire again if they want to
           behaviourFilter.enableBehaviour();
-          
-          // Log this if required
-          if(logger.isDebugEnabled())
-          {
-             logger.debug(
-                   "Updated tag scope " + tagScopeNode + " with " + updates + ", " +
-                   "new contents are { " + tagContent.replace("\n", " : ") + " } " +
-                   "from old contents of " + previousTagState
-             );
-          }
        }
     }
     

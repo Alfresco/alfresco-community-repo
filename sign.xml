@@ -1,0 +1,43 @@
+<project default="sign">
+    <macrodef name="sign-installer">
+        <attribute name="file"/>
+        <sequential>
+            <echo>Signing @{file}...</echo>
+            <exec executable="osslsigncode" failonerror="true">
+                <arg value="sign"/>
+                <arg value="-spc"/>
+                <arg file="${signing.key.location}.p7b"/>
+                <arg value="-key"/>
+                <arg value="${signing.key.location}.der"/>
+                <arg value="-n"/>
+                <arg value="Alfresco"/>
+                <arg value="-i"/>
+                <arg value="http://www.alfresco.com/"/>
+                <arg value="-in"/>
+                <arg value="@{file}"/>
+                <arg value="-out"/>
+                <arg value="${project.build.directory}/signed.exe"/>
+                <arg value="-t"/>
+                <arg value="http://timestamp.digicert.com"/>
+            </exec>
+            <move file="${project.build.directory}/signed.exe" tofile="@{file}"/>
+            <exec executable="osslsigncode" failonerror="true">
+                <arg value="verify"/>
+                <arg value="@{file}"/>
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <target name="sign">
+        <sign-installer file="${project.build.directory}/alfresco-community-${project.version}-installer-win-x32.exe"/>
+        <sign-installer file="${project.build.directory}/alfresco-community-${project.version}-installer-win-x64.exe"/>
+
+        <!-- package OSX installer -->
+        <tar destfile="${project.build.directory}/alfresco-community-${project.version}-installer-osx-x64.app.tar.gz"
+            compression="gzip">
+            <fileset dir="${project.build.directory}">
+                <include name="alfresco-community-${project.version}-installer-osx-x64.app/" />
+            </fileset>
+        </tar>
+    </target>
+</project>

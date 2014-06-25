@@ -35,7 +35,8 @@ import org.junit.runners.Suite.SuiteClasses;
     CreateRecordActionTest.class,
     HideRecordActionTest.class,
     RejectActionTest.class,
-    FileToActionTest.class
+    FileToActionTest.class,
+    FileReportActionTest.class
 })
 public class ActionTestSuite
 {

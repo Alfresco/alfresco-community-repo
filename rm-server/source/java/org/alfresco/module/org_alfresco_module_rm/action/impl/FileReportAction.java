@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.report.Report;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
@@ -30,6 +31,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -58,6 +60,9 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     /** Report service */
     private ReportService reportService;
 
+    /** Capability service */
+    private CapabilityService capabilityService;
+
     /**
      * @return Report service
      */
@@ -67,11 +72,27 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     }
 
     /**
+     * @return Capability service
+     */
+    protected CapabilityService getCapabilityService()
+    {
+        return this.capabilityService;
+    }
+
+    /**
      * @param reportService report service
      */
     public void setReportService(ReportService reportService)
     {
         this.reportService = reportService;
+    }
+
+    /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
     }
 
     /**
@@ -94,6 +115,9 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         // get the destination
         final NodeRef destination = getDestination(action);
 
+        // Check the filing permission only capability for the destination
+        checkFilingPermissionOnlyCapability(destination);
+
         // generate the report
         final Report report = getReportService().generateReport(reportType, actionedUponNodeRef, mimetype);
 
@@ -110,6 +134,19 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         // return the report name
         String filedReportName = (String) nodeService.getProperty(filedReport, ContentModel.PROP_NAME);
         action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, filedReportName);
+    }
+
+    /**
+     * Checks if the destination is frozen, closed, cut off or not. In case if it is an exception will be thrown.
+     *
+     * @param nodeRef The destination node reference for which the capability should be checked
+     */
+    private void checkFilingPermissionOnlyCapability(NodeRef nodeRef)
+    {
+        if (AccessStatus.DENIED.equals(capabilityService.getCapability("FillingPermissionOnly").hasPermission(nodeRef)))
+        {
+            throw new AlfrescoRuntimeException("The destination is either frozen, closed or cut off!");
+        }
     }
 
     /**

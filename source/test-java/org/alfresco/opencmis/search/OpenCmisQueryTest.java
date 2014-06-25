@@ -74,6 +74,7 @@ import org.alfresco.repo.search.impl.parsers.FTSQueryException;
 import org.alfresco.repo.search.impl.querymodel.Order;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -196,6 +197,10 @@ public class OpenCmisQueryTest extends BaseCMISTest
     private NodeRef f8;
 
     private NodeRef f9;
+
+    private NodeRef forAdminFolder;
+
+    private NodeRef forEveryoneFolder;
 
     private NodeRef c0;
 
@@ -5645,6 +5650,70 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         testOrderableProperty("test:singleBoolean");
         testOrderablePropertyFail("test:multipleBoolean");
+    }
+
+    /**
+     * MNT-11163 test:
+     * <p/>
+     * Assume there is a folder 'A' with admin access only and subfolder 'B' with permissions EVERYONE Contributor.
+     * The folder's structure:
+     *<pre>
+     *  repository
+     *           |
+     *            -A
+     *             |
+     *              -B
+     *</pre>
+     * The CMIS query <code>SELECT * FROM cmis:folder</code> should not raise CmisPermissionDeniedException. Returned path for 'A' or 'B' nodes should be null.
+     */
+    public void testParentWithPermissions() throws Exception
+    {
+        String userName = "cmis";
+
+        final String forAdminFolderName = "For admin folder";
+        forAdminFolder = nodeService.createNode(base, ContentModel.ASSOC_CONTAINS,
+                                                QName.createQName("cm", forAdminFolderName, namespaceService),
+                                                ContentModel.TYPE_FOLDER).getChildRef();
+        nodeService.setProperty(forAdminFolder, ContentModel.PROP_NAME, forAdminFolderName);
+        // deny access for test user to 'forAdminFolder'
+        permissionService.setPermission(forAdminFolder, userName, PermissionService.ALL_PERMISSIONS, false);
+
+        String forEveryoneFolderName = "For everyone folder";
+        forEveryoneFolder = nodeService.createNode(forAdminFolder,
+                                                   ContentModel.ASSOC_CONTAINS,
+                                                   QName.createQName("cm", forEveryoneFolderName, namespaceService),
+                                                   ContentModel.TYPE_FOLDER).getChildRef();
+        nodeService.setProperty(forEveryoneFolder, ContentModel.PROP_NAME, forEveryoneFolderName);
+        // set access for test to 'forEveryOneFOlder'
+        permissionService.setPermission(forEveryoneFolder, userName, PermissionService.ALL_PERMISSIONS, true);
+
+        final CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:folder", rootNodeRef.getStoreRef());
+
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Serializable>()
+        {
+            @Override
+            public Serializable doWork() throws Exception
+            {
+                CMISResultSet rs = cmisQueryService.query(options);
+                for (CMISResultSetRow row : rs)
+                {
+                    if (!row.getNodeRef().equals(base))
+                    {
+                        NodeRef ref = row.getNodeRef();
+                        if (ref.equals(forEveryoneFolder))
+                        {
+                            Serializable sValue = row.getValue("cmis:path");
+                            assertEquals("The path for '" + forAdminFolderName + "' should be null", null, sValue);
+                        }
+                        else if (ref.equals(forAdminFolder))
+                        {
+                            assertTrue("Should not get the path for '" + forAdminFolderName + "'",false);
+                        }
+                    }
+                }
+                return null;
+            }
+        }, userName);
     }
 
     public void testNonQueryableTypes() throws Exception

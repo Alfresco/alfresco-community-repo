@@ -805,7 +805,24 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                         ChildAssociationRef assocRef = ((ChildAssocElement) element).getRef();
                         NodeRef node = assocRef.getChildRef();
                         displayPath.append("/");
-                        displayPath.append(connector.getNodeService().getProperty(node, ContentModel.PROP_NAME));
+                        try
+                        {
+                            String propertyName = (String) connector.getNodeService().getProperty(node, ContentModel.PROP_NAME);
+                            displayPath.append(propertyName);
+                        }
+                        catch (AccessDeniedException e)
+                        {
+                            // if the user does not have enough permissions to construct the entire path then the object
+                            // should have a null path
+                            return null;
+                        }
+                        // Somewhere this has not been wrapped correctly
+                        catch (net.sf.acegisecurity.AccessDeniedException e)
+                        {
+                            // if the user does not have enough permissions to construct the entire path then the object
+                            // should have a null path
+                            return null;
+                        }
                     }
                     i++;
                 }

@@ -1203,9 +1203,12 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             
             return new Pair<Long, Long>(entity.getId(), property1Id);
         }
-        catch (Throwable e)
+        catch (Exception e)
         {
-            // Remove from cache
+            // Remove from caches.  The individual values must also be removed in case they are incorrect.
+            propertyValueCache.removeByValue(value1);
+            propertyValueCache.removeByValue(value2);
+            propertyValueCache.removeByValue(value3);
             propertyUniqueContextCache.remove(pucKey);
             
             controlDAO.rollbackToSavepoint(savepoint);

@@ -81,6 +81,7 @@ public class ImportDialog extends BaseDialogBean
    private String fileName;
    private String encoding = "UTF-8";
    private boolean runInBackground = true;
+   private boolean highByteZip = false;
    
    /**
     * Performs the import operation using the current state of the bean
@@ -117,6 +118,10 @@ public class ImportDialog extends BaseDialogBean
                      
                      // build the action to execute
                      Action action = getActionService().createAction(ImporterActionExecuter.NAME, params);
+                     if (action instanceof ImporterActionExecuter)
+                     {
+                         ((ImporterActionExecuter)action).setHighByteZip(highByteZip);
+                     }
                      action.setExecuteAsynchronously(runInBackground);
                      
                      // execute the action on the ACP file
@@ -273,6 +278,22 @@ public class ImportDialog extends BaseDialogBean
    public void setRunInBackground(boolean runInBackground)
    {
       this.runInBackground = runInBackground;
+   }
+   
+   /**
+    * @return the highByteZip encoding switch
+    */
+   public boolean getHighByteZip()
+   {
+      return this.highByteZip;
+   }
+
+   /**
+    * @param highByteZip the encoding switch for high-byte ZIP filenames to set
+    */
+   public void setHighByteZip(boolean highByteZip)
+   {
+      this.highByteZip = highByteZip;
    }
    
    /**

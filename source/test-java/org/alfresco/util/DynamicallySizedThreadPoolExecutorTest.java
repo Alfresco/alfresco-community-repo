@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,7 +18,9 @@
  */
 package org.alfresco.util;
 
-import java.util.ArrayList;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -304,7 +306,7 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
     
     public static class SleepUntilAllWake implements Runnable
     {
-        private static ArrayList<Thread> sleeping = new ArrayList<Thread>();
+        private static ConcurrentMap<String, Thread> sleeping = new ConcurrentHashMap<String, Thread>();
         private static boolean allAwake = false;
 
         @Override
@@ -313,23 +315,31 @@ public class DynamicallySizedThreadPoolExecutorTest extends TestCase
             if(allAwake) return;
             
             // Track us, and wait for the bang
-            sleeping.add(Thread.currentThread());
+            logger.debug("Adding thread: " + Thread.currentThread().getName());
+            sleeping.put(Thread.currentThread().getName(), Thread.currentThread());
             try
             {
                 Thread.sleep(30*1000);
                 System.err.println("Warning - Thread finished sleeping without wake!");
-            } catch(InterruptedException e) {}
+            }
+            catch(InterruptedException e)
+            {
+                logger.debug("Interrupted thread: " + Thread.currentThread().getName());
+            }
         }
         
         public static void wakeAll()
         {
             allAwake = true;
-            for(Thread t : sleeping) {
-                t.interrupt();
+            for(Entry<String, Thread> t : sleeping.entrySet())
+            {
+                logger.debug("Interrupting thread: " + t.getKey());
+                t.getValue().interrupt();
             }
         }
         public static void reset()
         {
+            logger.debug("Resetting.");
             allAwake = false;
             sleeping.clear();
         }

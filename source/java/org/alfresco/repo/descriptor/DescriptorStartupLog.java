@@ -22,6 +22,7 @@ import java.security.Principal;
 import java.util.Date;
 import java.util.Properties;
 
+import org.alfresco.repo.mode.ServerModeProvider;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.descriptor.Descriptor;
@@ -47,6 +48,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
     // Dependencies
     private DescriptorService descriptorService;
     private TransactionService transactionService;
+    private ServerModeProvider serverModeProvider;
     
     private final String SYSTEM_INFO_STARTUP = "system.info.startup";
     private final String SYSTEM_WARN_READONLY = "system.warn.readonly";
@@ -65,6 +67,11 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+    
+    public void setServerModeProvider(ServerModeProvider serverModeProvider)
+    {
+    	this.serverModeProvider = serverModeProvider;
     }
 
     @Override
@@ -152,6 +159,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         // MER - work around for currentRepositoryDescriptor == null
         if (logger.isInfoEnabled() && descriptorService.getCurrentRepositoryDescriptor() != null)
         {
+        	logger.info("Server Mode :" + serverModeProvider.getServerMode());
             Descriptor serverDescriptor = descriptorService.getServerDescriptor();
             Descriptor currentDescriptor = descriptorService.getCurrentRepositoryDescriptor();
             Descriptor installedRepoDescriptor = descriptorService.getInstalledRepositoryDescriptor();
@@ -164,6 +172,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
             
             String installedRepoVersion = installedRepoDescriptor.getVersion();
             int installedSchemaVersion = installedRepoDescriptor.getSchema();
+            
             
             /*
              * Alfresco started 

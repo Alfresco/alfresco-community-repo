@@ -765,6 +765,10 @@
        <property name="transactionService">
            <ref bean="transactionService"/>
        </property>
+       <property name="serverModeProvider">
+           <ref bean="serverMode"/>
+       </property>
+       
     </bean>
     
      <!-- Activiti Jobexecutor -->

@@ -971,6 +971,12 @@
         </property>
     </bean>
 
+    <bean id="serverMode" class="org.alfresco.repo.mode.ServerModeImpl" >
+        <property name="serverModeAsString">
+            <value>${system.serverMode}</value>
+        </property>
+    </bean>
+    
     <bean id="serverDescriptorDAO" class="org.alfresco.repo.descriptor.ServerDescriptorDAOImpl">
        <property name="repositoryName">
            <value>${repository.name}</value>

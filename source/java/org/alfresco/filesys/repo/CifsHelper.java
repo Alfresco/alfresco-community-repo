@@ -879,8 +879,8 @@ public class CifsHelper
 
     	// Check if the node has any child files/folders
     	
-    	List<FileInfo> files = fileFolderService.listFiles( folderNode);
-    	if ( files == null || files.size() == 0)
+    	List<FileInfo> filesAndFolders = fileFolderService.list(folderNode);
+    	if ( filesAndFolders == null || filesAndFolders.size() == 0)
     	{
     		return true;
     	}

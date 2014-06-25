@@ -1,0 +1,268 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.alfresco</groupId>
+        <artifactId>alfresco-enterprise-packaging</artifactId>
+        <version>5.0-BF-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>alfresco-enterprise-installer</artifactId>
+    <packaging>pom</packaging>
+    <name>Alfresco Enterprise Installers</name>
+
+    <properties>
+        <binaries.folder>${user.home}/binaries</binaries.folder>
+        <bitrock.folder>${binaries.folder}/bitrock/bitrock-8.5.1-20121129</bitrock.folder>
+        <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
+        <bitrock.arguments>
+           --license
+           ${binaries.folder}/build-classpath/license.xml
+           --verbose
+           --setvars
+           project.outputDirectory=${project.build.directory}
+           project.version=${project.version}
+           project.fullName='Alfresco One'
+           alfresco_svn_rootdir=${highest.basedir}
+           alfresco_edition=enterprise
+           distribution_folder=${project.build.directory}/distribution/alfresco-enterprise-${project.version}
+           solr_folder=${project.build.directory}/solr
+           alfresco_googledocs_source_file=${project.build.directory}/dependency/alfresco-googledocs-repo-${alfresco.googledocs.version}.amp
+           alfresco_googledocs_share_source_file=${project.build.directory}/dependency/alfresco-googledocs-share-${alfresco.googledocs.version}.amp
+        </bitrock.arguments>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>get-distribution</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-installer</artifactId>
+                                    <version>${project.version}</version>
+                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-enterprise-distribution</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>config</classifier>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/solr</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>get-solr</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>war</type>
+                                    <outputDirectory>${project.build.directory}/solr</outputDirectory>
+                                    <destFileName>apache-solr-1.4.1.war</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>get-amps</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco.integrations</groupId>
+                                    <artifactId>alfresco-googledocs-repo</artifactId>
+                                    <version>${alfresco.googledocs.version}</version>
+                                    <classifier>enterprise</classifier>
+                                    <type>amp</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco.integrations</groupId>
+                                    <artifactId>alfresco-googledocs-share</artifactId>
+                                    <version>${alfresco.googledocs.version}</version>
+                                    <classifier>enterprise</classifier>
+                                    <type>amp</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>alfresco-spp</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>amp</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <configuration>
+                    <executable>${bitrock.executable}</executable>
+                    <workingDirectory>${project.build.directory}/bitrock</workingDirectory>
+                </configuration>
+                <executions>
+                    <!-- Windows 32 -->
+                    <execution>
+                        <id>win32-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               windows
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-windows
+                               project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x32.exe
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                    <!-- Windows 64 -->
+                    <execution>
+                        <id>win64-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               windows
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64
+                               project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x64.exe
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                    <!-- Linux 64 -->
+                    <execution>
+                        <id>linux-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               linux-x64
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64
+                               project.installerFilename=alfresco-enterprise-${project.version}-installer-linux-x64.bin
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+
+                    <!-- OS X -->
+                    <execution>
+                        <id>osx-installer</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <commandlineArgs>
+                               build project.xml
+                               osx
+                               ${bitrock.arguments}
+                               binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64
+                               project.installerFilename=alfresco-enterprise-${project.version}-installer-osx-x64.app
+                            </commandlineArgs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Profiles to set the right path to Bitrock Builder executable -->
+        <profile>
+            <id>win-bitrock</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <bitrock.executable>${bitrock.folder}/win/bin/builder-cli.exe</bitrock.executable>
+            </properties>
+        </profile>
+        <profile>
+            <id>linux-bitrock</id>
+            <activation>
+                <os>
+                    <family>linux</family>
+                </os>
+            </activation>
+            <properties>
+                <bitrock.executable>${bitrock.folder}/linux/bin/builder</bitrock.executable>
+            </properties>
+        </profile>
+
+        <!-- Signing Windows installers -->
+        <profile>
+            <id>sign</id>
+            <activation>
+                <file>
+                    <exists>${user.home}/binaries/build-classpath/alfresco-code-sign.der</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-windows-installers</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <target>
+                            	<ant antfile="${highest.basedir}/packaging/installer/sign.xml">
+                                     <property name="installer.name" value="alfresco-enterprise" />
+                            	</ant>
+                            </target>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+</project>

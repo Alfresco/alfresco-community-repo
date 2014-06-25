@@ -2934,6 +2934,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
         properties.put(WorkflowModel.PROP_PRIORITY, instance.getPriority());
         properties.put(ContentModel.PROP_CREATED, instance.getCreate());
         properties.put(ContentModel.PROP_OWNER, instance.getActorId());
+        properties.put(ContentModel.PROP_CREATOR, AuthenticationUtil.getFullyAuthenticatedUser());
         
         // map jBPM comments
         // NOTE: Only use first comment in list

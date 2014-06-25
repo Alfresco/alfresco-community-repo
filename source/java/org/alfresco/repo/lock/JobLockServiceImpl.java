@@ -136,6 +136,7 @@ public class JobLockServiceImpl implements JobLockService
     /**
      * {@inheritDoc}
      */
+    @Override
     public void getTransactionalLock(QName lockQName, long timeToLive)
     {
         getTransactionalLock(lockQName, timeToLive, defaultRetryWait, defaultRetryCount);
@@ -144,6 +145,7 @@ public class JobLockServiceImpl implements JobLockService
     /**
      * {@inheritDoc}
      */
+    @Override
     public void getTransactionalLock(QName lockQName, long timeToLive, long retryWait, int retryCount)
     {
         // Check that transaction is present
@@ -204,6 +206,7 @@ public class JobLockServiceImpl implements JobLockService
      * 
      * @see #getLock(QName, long, long, int)
      */
+    @Override
     public String getLock(QName lockQName, long timeToLive)
     {
         return getLock(lockQName, timeToLive, defaultRetryWait, defaultRetryCount);
@@ -212,6 +215,7 @@ public class JobLockServiceImpl implements JobLockService
     /**
      * {@inheritDoc}
      */
+    @Override
     public String getLock(QName lockQName, long timeToLive, long retryWait, int retryCount)
     {
         String lockToken = GUID.generate();
@@ -225,6 +229,7 @@ public class JobLockServiceImpl implements JobLockService
      * 
      * @throws LockAcquisitionException on failure
      */
+    @Override
     public void refreshLock(final String lockToken, final QName lockQName, final long timeToLive)
     {
         RetryingTransactionCallback<Object> refreshLockCallback = new RetryingTransactionCallback<Object>()
@@ -347,15 +352,12 @@ public class JobLockServiceImpl implements JobLockService
                     }
                     // The callback is no longer active, so we don't need to refresh.
                     // Release the lock in case the initiator did not do it.
-                    try
+                    // We just want to release and don't care if the lock was already released
+                    // or taken by another process
+                    if (releaseLockQuiet(lockToken, lockQName))
                     {
-                        releaseLock(lockToken, lockQName);
                         // The callback must be informed as we released the lock automatically
                         callLockReleased(callback);
-                    }
-                    catch (LockAcquisitionException e)
-                    {
-                        // The lock is already gone: job done
                     }
                 }
                 else
@@ -419,6 +421,7 @@ public class JobLockServiceImpl implements JobLockService
     /**
      * {@inheritDoc}
      */
+    @Override
     public void releaseLock(final String lockToken, final QName lockQName)
     {
     	releaseLockVerify(lockToken, lockQName);
@@ -434,6 +437,27 @@ public class JobLockServiceImpl implements JobLockService
             public Boolean execute() throws Throwable
             {
                 return lockDAO.releaseLock(lockQName, lockToken, true);
+            }
+        };
+        return retryingTransactionHelper.doInTransaction(releaseCallback, false, true);
+    }
+
+    /**
+     * Attempt to release a lock but do not worry about not being able to update the lock.
+     * If the lock was taken by another process, then it will not matter.  Any other database-related
+     * conditions will still trigger a retry.
+     * 
+     * @param lockToken             the unique lock token to release (expired or not)
+     * @param lockQName             the name of the lock
+     * @return                      <tt>true</tt> if the lock was released or <tt>false</tt> if not
+     */
+    private boolean releaseLockQuiet(final String lockToken, final QName lockQName)
+    {
+        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>()
+        {
+            public Boolean execute() throws Throwable
+            {
+                return lockDAO.releaseLockQuiet(lockQName, lockToken);
             }
         };
         return retryingTransactionHelper.doInTransaction(releaseCallback, false, true);

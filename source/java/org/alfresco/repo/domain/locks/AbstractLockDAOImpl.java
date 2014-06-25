@@ -175,6 +175,22 @@ public abstract class AbstractLockDAOImpl implements LockDAO
         return updateLocks(lockQName, lockToken, LOCK_TOKEN_RELEASED, 0L, optimistic);
     }
     
+    @Override
+    public boolean releaseLockQuiet(QName lockQName, String lockToken)
+    {
+        try
+        {
+            updateLocks(lockQName, lockToken, LOCK_TOKEN_RELEASED, 0L, false);
+            // It worked
+            return true;
+        }
+        catch (LockAcquisitionException e)
+        {
+            // We absorb this
+            return false;
+        }
+    }
+    
     /**
      * Put new values against the given exclusive lock.  This works against the related locks as well.
      * @param optimistic                    <tt>true</tt> if a mismatch in the number of locked rows should

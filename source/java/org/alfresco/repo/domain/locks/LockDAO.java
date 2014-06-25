@@ -71,11 +71,22 @@ public interface LockDAO
      * @param lockToken             the current lock token
      * @param optimistic            <tt>true</tt> if the release attempt is enough even
      *                              if the number of released locks was incorrect.
-     * @return                      <tt>true</tt> if the lock was successfully (and completely)
-     *                              released or <tt>false</tt> if the lock was no longer valid
-     *                              <b>and the method was being called optimistically.</b>
+     * @return                      Returns <tt>true</tt> if all the required locks were
+     *                              (still) held under the lock token and were
+     *                              valid at the time of release, otherwise <tt>false</tt>
      * @throws LockAcquisitionException     if the number of locks released was incorrect
      *                              and pessimistic release is requested.
      */
     boolean releaseLock(QName lockQName, String lockToken, boolean optimistic);
+    
+    /**
+     * Release a lock without throwing any exceptions if the lock was not updated.
+     * 
+     * @param lockQName             the unique name of the lock to release
+     * @param lockToken             the current lock token
+     * @return                      Returns <tt>true</tt> if all the required locks were
+     *                              (still) held under the lock token and were
+     *                              valid at the time of release, otherwise <tt>false</tt>
+     */
+    boolean releaseLockQuiet(QName lockQName, String lockToken);
 }

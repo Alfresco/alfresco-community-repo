@@ -238,6 +238,12 @@ public class LockDAOTest extends TestCase
         String token = lock(lockAAA, 500000L, true);
         release(lockAAA, token, true);
         token = lock(lockAAA, 0L, true);
+        
+        // Check that the lock cannot be release when not held
+        release(lockAAA, "Invalid-Token", false);
+        assertFalse(lockDAO.releaseLockQuiet(lockAAA, "invalidToken"));
+        assertTrue(lockDAO.releaseLockQuiet(lockAAA, token));
+        assertFalse(lockDAO.releaseLockQuiet(lockAAA, token));
     }
     
     public void testReleaseLockRepeated() throws Exception

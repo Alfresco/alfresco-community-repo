@@ -30,7 +30,7 @@ import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
-import org.alfresco.repo.webdav.auth.RemoteUserMapper;
+import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.alfresco.repo.web.auth.BasicAuthCredentials;

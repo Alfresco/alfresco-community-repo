@@ -138,21 +138,6 @@
    
    <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory" lazy-init="true"/>
 
-   <bean id="RemoteUserMapper" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-      <property name="applicationContextManager">
-         <ref bean="Authentication" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.webdav.auth.RemoteUserMapper</value>
-            <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
-         </list>
-      </property>
-      <property name="sourceBeanName">
-         <value>remoteUserMapper</value>
-      </property>
-   </bean>
-
    <bean id="AuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">
          <ref bean="Authentication" />

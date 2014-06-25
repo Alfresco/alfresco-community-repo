@@ -182,13 +182,17 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
             {
                 logger.debug("Header: " + hdr );
             }
-            Object requestBody = request.getRequestBody();
-            if (requestBody instanceof StringRequestEntity)
+            Object requestBody = null;
+            if (request != null)
+            {
+                requestBody = request.getRequestBody();
+            }
+            if (requestBody != null && requestBody instanceof StringRequestEntity)
             {
                 StringRequestEntity re = (StringRequestEntity)request.getRequestBody();
                 logger.debug("Payload (string): " + re.getContent());
             }
-            else if (requestBody instanceof ByteArrayRequestEntity)
+            else if (requestBody != null && requestBody instanceof ByteArrayRequestEntity)
             {
                 ByteArrayRequestEntity re = (ByteArrayRequestEntity)request.getRequestBody();
                 logger.debug("Payload (byte array): " + re.getContent().toString());

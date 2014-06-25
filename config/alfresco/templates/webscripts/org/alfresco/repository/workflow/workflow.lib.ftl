@@ -26,6 +26,17 @@
          <#else>
          null,
          </#if>
+         "creator":
+         <#if task.creator??>
+         {
+            "userName": "${task.creator.userName}"<#if task.creator.firstName??>,
+            "firstName": "${task.creator.firstName}"</#if><#if task.creator.lastName??>,
+            "lastName": "${task.creator.lastName}"</#if><#if task.creator.avatar??>,
+            "avatar": "${task.creator.avatar}"</#if>
+         },
+         <#else>
+         null,
+         </#if>
          "properties":
          <@propertiesJSON properties=task.properties />,
          "propertyLabels":

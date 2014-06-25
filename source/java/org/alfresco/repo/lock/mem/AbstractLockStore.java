@@ -67,9 +67,20 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
         }
         return lockState;
     }
+    
+    @Override
+    public void forceUnlock(NodeRef nodeRef)
+    {
+        set(nodeRef, LockState.createUnlocked(nodeRef), true);
+    }
 
     @Override
     public void set(NodeRef nodeRef, LockState lockState)
+    {
+        set(nodeRef, lockState, false);
+    }
+    
+    private void set(NodeRef nodeRef, LockState lockState, boolean ignoreOwnerCheck)
     {
         Map<NodeRef, LockState> txMap = getTxMap();
         LockState previousLockState = null;
@@ -102,7 +113,7 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
             String userName = AuthenticationUtil.getFullyAuthenticatedUser();
             String owner = previousLockState.getOwner();
             Date expires = previousLockState.getExpires();
-            if (LockUtils.lockStatus(userName, owner, expires) == LockStatus.LOCKED)
+            if (!ignoreOwnerCheck && LockUtils.lockStatus(userName, owner, expires) == LockStatus.LOCKED)
             {
                 throw new UnableToAquireLockException(nodeRef);
             }            

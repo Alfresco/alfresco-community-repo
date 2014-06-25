@@ -284,7 +284,7 @@ public class ImapMessageTest extends TestCase
         BODY bodyNew = getMessageBody(folder, uid);
         
         // The body should be updated
-        assertFalse(Arrays.equals(bodyNew.data.getBytes(), body.data.getBytes()));
+        assertFalse(Arrays.equals(bodyNew.getByteArray().getBytes(), body.getByteArray().getBytes()));
 
         // Parse the multipart MIME message
         message = new MimeMessage(Session.getDefaultInstance(new Properties()), new BufferedInputStream(bodyNew.getByteArrayInputStream()));
@@ -651,7 +651,7 @@ public class ImapMessageTest extends TestCase
                     {
                         FetchResponse fetchResponse = (FetchResponse) r[0];
                         UID uid = (UID) fetchResponse.getItem(UID.class);
-                        logger.debug("MSGNO=" + uid.msgno + ", UID="+uid.uid);
+                        logger.debug("SECNUM=" + uid.seqnum + ", UID="+uid.uid);
                         return uid.uid;
                     }
                 }
@@ -691,7 +691,7 @@ public class ImapMessageTest extends TestCase
      */
     private static Integer getMessageSize(IMAPFolder folder, final Long uid) throws MessagingException
     {
-        return getMessageBody(folder, uid).data.getCount();
+        return getMessageBody(folder, uid).getByteArray().getCount();
     }
 
     /**

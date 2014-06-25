@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,9 +19,7 @@
 package org.alfresco.repo.content.caching.cleanup;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -124,7 +122,7 @@ public class CachedContentCleanupJobTest
     @Test
     public void filesNewerThanMinFileAgeMillisAreNotDeleted() throws InterruptedException
     {
-        final long minFileAge = 1000;
+        final long minFileAge = 5000;
         cleaner.setMinFileAgeMillis(minFileAge);
         cleaner.setMaxDeleteWatchCount(0);
         int numFiles = 10;
@@ -156,7 +154,13 @@ public class CachedContentCleanupJobTest
         {
             Thread.sleep(200);
         }  
-        
+
+        if (cleaner.getDurationMillis() > minFileAge)
+        {
+            fail("Test unable to complete, since cleaner took " + cleaner.getDurationMillis() + "ms" +
+                " which is longer than minFileAge [" + minFileAge + "ms]"); 
+        }
+
         // check all 'old' files deleted
         for (File file : oldFiles)
         {

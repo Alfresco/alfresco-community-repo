@@ -375,6 +375,16 @@
       <other-properties user-choice-visible="true" user-choice-default="true" /> 
    </config>
    
+   <config evaluator="string-compare" condition="Import Dialog">
+      <encodings>
+         <encoding name="Default" />
+         <encoding name="UTF-8" />
+         <encoding name="CP437" />
+      </encodings>
+	  
+      <default-encoding>UTF-8</default-encoding>
+   </config>
+   
    <config evaluator="string-compare" condition="Action Wizards">
       <!-- The list of types shown in the is-subtype condition -->
       <subtypes>

@@ -58,9 +58,10 @@
       <td class="paddingRow"></td>
    </tr>
    <tr>
-      <td colspan="2"></f:verbatim>
-         <h:selectBooleanCheckbox id="chkHighByte" value="#{DialogManager.bean.highByteZip}" /><f:verbatim>&nbsp;
-         <span style="vertical-align:20%"></f:verbatim><h:outputText id="msgHighByte" value="#{msg.import_high_byte_zip_file}"/><f:verbatim></span>
+      <td></f:verbatim><h:outputText id="text12" value="#{msg.encoding}: " /><f:verbatim>
+         </f:verbatim><h:selectOneMenu id="encoding" value="#{ImportDialog.encoding}">
+         <f:selectItems value="#{ImportDialog.encodings}" />
+         </h:selectOneMenu><f:verbatim>
       </td>
    </tr>
    <tr>

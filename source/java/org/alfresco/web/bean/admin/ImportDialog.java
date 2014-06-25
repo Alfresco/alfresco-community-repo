@@ -21,10 +21,13 @@ package org.alfresco.web.bean.admin;
 import java.io.File;
 import java.io.Serializable;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.model.ContentModel;
@@ -48,8 +51,13 @@ import org.alfresco.web.bean.dialog.BaseDialogBean;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.ui.common.ReportedException;
 import org.alfresco.web.ui.common.Utils;
+import org.alfresco.web.ui.repo.component.UICharsetSelector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Backing bean implementation for the Import dialog.
@@ -82,6 +90,7 @@ public class ImportDialog extends BaseDialogBean
    private String encoding = "UTF-8";
    private boolean runInBackground = true;
    private boolean highByteZip = false;
+   List<SelectItem> encodings;
    
    /**
     * Performs the import operation using the current state of the bean
@@ -245,20 +254,20 @@ public class ImportDialog extends BaseDialogBean
     *  
     * @return The encoding
     */
-   public String getEncoding()
+ /*  public String getEncoding()
    {
       return this.encoding;
-   }
+   }*/
 
    /**
     * Sets the encoding to use for the export package
     * 
     * @param encoding The encoding
     */
-   public void setEncoding(String encoding)
+/*   public void setEncoding(String encoding)
    {
       this.encoding = encoding;
-   }
+   }*/
 
    /**
     * Determines whether the import should run in the background
@@ -386,7 +395,7 @@ public class ImportDialog extends BaseDialogBean
       
       // add the content to the node
       ContentWriter writer = this.getContentService().getWriter(acpNodeRef, ContentModel.PROP_CONTENT, true);
-      writer.setEncoding(this.encoding);
+      writer.setEncoding("UTF-8");
       writer.setMimetype(mimetype);
       writer.putContent(this.file);
       
@@ -419,5 +428,81 @@ public class ImportDialog extends BaseDialogBean
        + browseBean.getActionSpace().getName()
        + Application.getMessage(fc, MSG_RIGHT_QUOTE);
        return MessageFormat.format(Application.getMessage(fc, MSG_IMPORT_TITLE), name);
+   }
+   
+   /**
+    * @return  Returns the encoding currently selected
+    */
+   public String getEncoding()
+   {
+      if (encoding == null)
+      {
+         ConfigService configSvc = Application.getConfigService(FacesContext.getCurrentInstance());
+         Config config = configSvc.getConfig("Import Dialog");
+         if (config != null)
+         {
+            ConfigElement defaultEncCfg = config.getConfigElement("default-encoding");
+            if (defaultEncCfg != null)
+            {
+               String value = defaultEncCfg.getValue();
+               if (value != null)
+               {
+                  encoding = value.trim();
+               }
+            }
+         }
+         if (encoding == null || encoding.length() == 0)
+         {
+            // if not configured, set to a sensible default for most character sets
+            encoding = "UTF-8";
+         }
+      }
+      return encoding;
+   }
+
+   /**
+    * @param encoding   the document's encoding
+    */
+   public void setEncoding(String encoding)
+   {
+      this.encoding = encoding;
+   }
+   
+   public List<SelectItem> getEncodings()
+   {
+       if ((this.encodings == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
+       {
+           FacesContext context = FacesContext.getCurrentInstance();
+           
+           this.encodings = new ArrayList<SelectItem>(3);
+           
+           ConfigService svc = Application.getConfigService(context);
+           Config cfg = svc.getConfig("Import Dialog");
+           if (cfg != null)
+           {
+               ConfigElement typesCfg = cfg.getConfigElement("encodings");
+               if (typesCfg != null)
+               {
+                   for (ConfigElement child : typesCfg.getChildren())
+                   {
+                       String encoding = child.getAttribute("name");
+                       if (encoding != null)
+                       {
+                           this.encodings.add(new SelectItem(encoding, encoding));
+                       }
+                   }
+               }
+               else
+               {
+                   logger.warn("Could not find 'encodings' configuration element");
+               }
+           }
+           else
+           {
+               encodings = UICharsetSelector.getCharsetEncodingList();
+           }
+       }
+      
+       return this.encodings;
    }
 }

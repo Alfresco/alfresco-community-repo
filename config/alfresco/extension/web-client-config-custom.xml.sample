@@ -72,6 +72,17 @@
    </config>
    -->
 
+   <!-- Example of adding a custom encoding to the Import dialog -->
+   <!--
+   <config evaluator="string-compare" condition="Import Dialog">
+      <encodings>
+          <encoding name="Default" />
+          <encoding name="UTF-8" />
+      </encodings>
+      <default-encoding>UTF-8</default-encoding>
+   </config>
+   -->
+
    <!-- The config below shows how to incorporate the example model-->
    <!-- into the web client, for this to work you will need to -->
    <!-- rename example-model-context.xml.sample to example-model-context.xml -->

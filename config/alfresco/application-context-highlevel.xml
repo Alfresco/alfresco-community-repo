@@ -5,7 +5,6 @@
 <beans>
     <import resource="classpath:alfresco/bulk-import-context.xml" />
     <import resource="classpath:alfresco/scheduled-jobs-context.xml" />
-    <import resource="classpath:alfresco/jcr-api-context.xml" />
     <import resource="classpath:alfresco/remote-services-context.xml"/>
     <import resource="classpath*:alfresco/office-addin-context.xml"/>
     <import resource="classpath*:alfresco/portlets-context.xml"/>

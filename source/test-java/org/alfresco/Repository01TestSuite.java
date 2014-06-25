@@ -71,16 +71,6 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.filesys.repo.LockKeeperImplTest.class);
     }
     
-    static void tests5(TestSuite suite) // tests="19" time="12.852"
-    {
-        suite.addTestSuite(org.alfresco.jcr.importer.ImportTest.class);
-        suite.addTestSuite(org.alfresco.jcr.item.Alf1791Test.class);
-        suite.addTestSuite(org.alfresco.jcr.item.ItemTest.class);
-        suite.addTestSuite(org.alfresco.jcr.query.QueryManagerImplTest.class);
-        suite.addTestSuite(org.alfresco.jcr.repository.RepositoryImplTest.class);
-        suite.addTestSuite(org.alfresco.jcr.session.SessionImplTest.class);
-    }
-    
     static void tests6(TestSuite suite)
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.opencmis.CMISTest.class));

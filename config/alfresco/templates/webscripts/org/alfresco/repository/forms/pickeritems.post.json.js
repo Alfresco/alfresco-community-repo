@@ -30,12 +30,21 @@ function main()
    for (count = 0; count < numItems; count++)
    {
       item = jsonItems.get(count);
+      var container = null;
       if (item != "")
       {
          result = null;
          if (itemValueType == "nodeRef")
          {
             result = search.findNode(item);
+            if (result)
+            {
+               var qnamePaths = result.qnamePath.split("/");
+               if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
+               {
+                  container = qnamePaths[4].substr(3);
+               }
+            }
          }
          else if (itemValueType == "xpath")
          {
@@ -56,7 +65,8 @@ function main()
             
             results.push(
             {
-               item: result
+               item: result,
+               container: container
             });
          }
       }

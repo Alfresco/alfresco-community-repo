@@ -32,13 +32,18 @@
 			{
 				"type": "${row.item.typeShort}",
 				"parentType": "${row.item.parentTypeShort!""}",
+				<#if row.item.parent??>"parentName": "${row.item.parent.name!""}",</#if>
 				"isContainer": ${row.item.isContainer?string},
+				<#if row.container??>"container": "${row.container!""}",</#if>
 				"name": "${row.item.properties.name!""}",
-				"title": "${row.item.properties.title!""}",
+				"title":<#if row.item.properties["lnk:title"]??>"${row.item.properties["lnk:title"]}",
+						<#elseif row.item.properties["ia:whatEvent"]??>"${row.item.properties["ia:whatEvent"]}",
+						<#else>"${row.item.properties.title!""}",</#if>
 				"description": "${row.item.properties.description!""}",
 				<#if row.item.properties.modified??>"modified": "${xmldate(row.item.properties.modified)}",</#if>
 				<#if row.item.properties.modifier??>"modifier": "${row.item.properties.modifier}",</#if>
 				<#if row.item.siteShortName??>"site": "${row.item.siteShortName}",</#if>
+				<#if row.item.properties["ia:fromDate"]??>"fromDate": "${xmldate(row.item.properties["ia:fromDate"])}",</#if>
 				"displayPath": "${row.item.displayPath!""}",
 				<#if row.item.typeShort != "cm:person" && row.item.typeShort != "cm:authorityContainer">
 					"userAccess":

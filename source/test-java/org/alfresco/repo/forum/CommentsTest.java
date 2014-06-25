@@ -32,8 +32,15 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.domain.activities.ActivityPostDAO;
+import org.alfresco.repo.domain.activities.ActivityPostEntity;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.impl.ModelDAO;
+import org.alfresco.repo.security.permissions.impl.PermissionServiceImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -41,16 +48,23 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
 import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
+import org.json.JSONObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -96,6 +110,13 @@ public class CommentsTest
     private static Repository repositoryHelper;
     private static SiteService siteService;
     private static RetryingTransactionHelper transactionHelper;
+    private static AuthenticationComponent authenticationComponent;
+    private static CommentService commentService;
+    private static MutableAuthenticationService authenticationService;
+    private static PersonService personService;
+    private static ActivityPostDAO postDAO;
+    private static PermissionServiceImpl permissionServiceImpl;
+    private static ModelDAO permissionModelDAO;
 
     // These NodeRefs are used by the test methods.
     private static NodeRef COMPANY_HOME;
@@ -112,6 +133,14 @@ public class CommentsTest
         siteService = (SiteService)APP_CONTEXT_INIT.getApplicationContext().getBean("SiteService");
         transactionHelper = (RetryingTransactionHelper)APP_CONTEXT_INIT.getApplicationContext().getBean("retryingTransactionHelper");
         
+        authenticationComponent = (AuthenticationComponent)APP_CONTEXT_INIT.getApplicationContext().getBean("authenticationComponent");
+        commentService = (CommentService)APP_CONTEXT_INIT.getApplicationContext().getBean("commentService");
+        authenticationService = (MutableAuthenticationService)APP_CONTEXT_INIT.getApplicationContext().getBean("AuthenticationService");
+        personService = (PersonService)APP_CONTEXT_INIT.getApplicationContext().getBean("PersonService");
+        postDAO = (ActivityPostDAO)APP_CONTEXT_INIT.getApplicationContext().getBean("postDAO");
+        permissionServiceImpl = (PermissionServiceImpl)APP_CONTEXT_INIT.getApplicationContext().getBean("permissionServiceImpl");
+        permissionModelDAO = (ModelDAO)APP_CONTEXT_INIT.getApplicationContext().getBean("permissionsModelDAO");
+        
         COMPANY_HOME = repositoryHelper.getCompanyHome();
     }
     
@@ -126,6 +155,129 @@ public class CommentsTest
         {
             NodeRef testNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, COMPANY_HOME, "testDocInFolder" + i, TEST_USER1.getUsername());
             testDocs.add(testNode);
+        }
+    }
+    
+    // MNT-11667 "createComment" method creates activity for users who are not supposed to see the file
+    @Test public void testMNT11667() throws Exception
+    {
+        final String userTwo = "usertwo";
+
+        try
+        {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+                    createUser(userTwo);
+
+                    assertTrue(siteService.hasSite(testSite.getShortName()));
+
+                    authenticationComponent.setCurrentUser(USER_ONE_NAME);
+
+                    // invite user to a site with 'Collaborator' role
+                    siteService.setMembership(testSite.getShortName(), userTwo, SiteRole.SiteCollaborator.toString());
+
+                    assertEquals(SiteRole.SiteManager.toString(), siteService.getMembersRole(testSite.getShortName(), USER_ONE_NAME));
+                    assertEquals(SiteRole.SiteCollaborator.toString(), siteService.getMembersRole(testSite.getShortName(), userTwo));
+
+                    // get container of site
+                    NodeRef doclib = siteService.getContainer(testSite.getShortName(), SiteService.DOCUMENT_LIBRARY);
+
+                    // create file in container of site
+                    NodeRef testNode = testNodes.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, doclib, "testDoc", USER_ONE_NAME);
+
+                    assertTrue(nodeService.exists(testNode));
+
+                    // change permissions
+                    permissionServiceImpl.setInheritParentPermissions(testNode, false);
+                    permissionServiceImpl.setPermission(testNode, USER_ONE_NAME, PermissionService.ALL_PERMISSIONS, true);
+
+                    // create comment
+                    NodeRef comment = commentService.createComment(testNode, "This is the comment title", "This is a Web Script comment", true);
+
+                    assertTrue(nodeService.exists(comment));
+
+                    // get post activity
+                    ActivityPostEntity params = new ActivityPostEntity();
+                    params.setStatus(ActivityPostEntity.STATUS.PENDING.toString());
+
+                    List<ActivityPostEntity> activityPostList = postDAO.selectPosts(params, -1);
+
+                    String activityNodeRef = null;
+                    for (ActivityPostEntity activityPostEntry : activityPostList)
+                    {
+                        if ("comments".equals(activityPostEntry.getAppTool()))
+                        {
+                            String activityData = activityPostEntry.getActivityData();
+                            JSONObject json = new JSONObject(activityData);
+                            activityNodeRef = (String) json.get("nodeRef");
+                        }
+                    }
+
+                    assertFalse(activityNodeRef == null);
+
+                    NodeRef nodeRef = new NodeRef(activityNodeRef);
+
+                    assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
+                    assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.WRITE)) == AccessStatus.ALLOWED);
+                    assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.DELETE)) == AccessStatus.ALLOWED);
+
+                    authenticationComponent.setCurrentUser(userTwo);
+
+                    assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.READ)) == AccessStatus.DENIED);
+                    assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.WRITE)) == AccessStatus.DENIED);
+                    assertTrue(permissionServiceImpl.hasPermission(nodeRef, getPermission(PermissionService.DELETE)) == AccessStatus.DENIED);
+
+                    return null;
+                }
+            });
+        }
+
+        finally
+        {
+            authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+            if (personService.personExists(userTwo))
+            {
+                personService.deletePerson(userTwo);
+            }
+
+            if (authenticationService.authenticationExists(userTwo))
+            {
+                authenticationService.deleteAuthentication(userTwo);
+            }
+        }
+
+    }
+    
+    private PermissionReference getPermission(String permission)
+    {
+        return permissionModelDAO.getPermissionReference(null, permission);
+    }
+    
+    private void createUser(String userName)
+    {
+        // if user with given user name doesn't already exist then create user
+        if (authenticationService.authenticationExists(userName) == false)
+        {
+            // create user
+            authenticationService.createAuthentication(userName, "password".toCharArray());
+            
+            // create person properties
+            PropertyMap personProps = new PropertyMap();
+            personProps.put(ContentModel.PROP_USERNAME, userName);
+            personProps.put(ContentModel.PROP_FIRSTNAME, userName);
+            personProps.put(ContentModel.PROP_LASTNAME, userName);
+            personProps.put(ContentModel.PROP_EMAIL, "FirstName123.LastName123@email.com");
+            personProps.put(ContentModel.PROP_JOBTITLE, "JobTitle123");
+            personProps.put(ContentModel.PROP_JOBTITLE, "Organisation123");
+            
+            // create person node for user
+            personService.createPerson(personProps);
         }
     }
     

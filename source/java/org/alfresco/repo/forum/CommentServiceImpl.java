@@ -267,7 +267,9 @@ public class CommentServiceImpl implements CommentService
 			{
 				StringBuilder sb = new StringBuilder("document-details?nodeRef=");
 				sb.append(URLEncoder.encode(nodeRef.toString(), "UTF-8"));
-		        json.put("page", sb.toString());
+				json.put("page", sb.toString());
+				// MNT-11667 "createComment" method creates activity for users who are not supposed to see the file
+				json.put("nodeRef", nodeRef.toString());
 			}
 			catch (UnsupportedEncodingException e)
 			{

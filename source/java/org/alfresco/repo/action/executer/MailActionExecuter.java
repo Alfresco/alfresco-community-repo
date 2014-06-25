@@ -1169,19 +1169,19 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         {
                             if (personExists(authority))
                             {
-                                EmailValidator emailValidator = EmailValidator.getInstance(true);
-                                if (validateAddresses && emailValidator.isValid(authority))
+                                String address = getPersonEmail(authority);
+                                if (address != null && address.length() != 0 && validateAddress(address))
                                 {
                                     Locale locale = getLocaleForUser(authority);
-                                    recipients.add(new Pair<String, Locale>(authority, locale));
+                                    recipients.add(new Pair<String, Locale>(address, locale));
                                 }
                                 else
                                 {
-                                    String address = getPersonEmail(authority);
-                                    if (address != null && address.length() != 0 && validateAddress(address))
+                                    EmailValidator emailValidator = EmailValidator.getInstance(true);
+                                    if (validateAddresses && emailValidator.isValid(authority))
                                     {
                                         Locale locale = getLocaleForUser(authority);
-                                        recipients.add(new Pair<String, Locale>(address, locale));
+                                        recipients.add(new Pair<String, Locale>(authority, locale));
                                     }
                                 }
                             }
@@ -1211,22 +1211,22 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                 // Check the user name to be a valid email and we don't need to log an error in this case
                                 // ALF-19231
                                 // Validate the email, allowing for local email addresses
-                                EmailValidator emailValidator = EmailValidator.getInstance(true);
-                                if (validateAddresses && emailValidator.isValid(userAuth))
+                                String address = getPersonEmail(userAuth);
+                                if (address != null && address.length() != 0 && validateAddress(address))
                                 {
-                                    if (userAuth != null && userAuth.length() != 0)
-                                    {
-                                        Locale locale = getLocaleForUser(userAuth);
-                                        recipients.add(new Pair<String, Locale>(userAuth, locale));
-                                    }
+                                    Locale locale = getLocaleForUser(userAuth);
+                                    recipients.add(new Pair<String, Locale>(address, locale));
                                 }
                                 else
                                 {
-                                    String address = getPersonEmail(userAuth);
-                                    if (address != null && address.length() != 0 && validateAddress(address))
+                                    EmailValidator emailValidator = EmailValidator.getInstance(true);
+                                    if (validateAddresses && emailValidator.isValid(userAuth))
                                     {
-                                        Locale locale = getLocaleForUser(userAuth);
-                                        recipients.add(new Pair<String, Locale>(address, locale));
+                                        if (userAuth != null && userAuth.length() != 0)
+                                        {
+                                            Locale locale = getLocaleForUser(userAuth);
+                                            recipients.add(new Pair<String, Locale>(userAuth, locale));
+                                        }
                                     }
                                 }
                             }

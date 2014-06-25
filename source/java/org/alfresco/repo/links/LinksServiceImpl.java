@@ -456,7 +456,10 @@ public class LinksServiceImpl implements LinksService
              {
                 skipCount = finalLuceneResults.getStart();
              }
-             catch(UnsupportedOperationException e) {}
+             catch(UnsupportedOperationException e)
+             {
+                skipCount = paging.getSkipCount();
+             }
              try
              {
                 itemsRemainingAfterThisPage = finalLuceneResults.length();

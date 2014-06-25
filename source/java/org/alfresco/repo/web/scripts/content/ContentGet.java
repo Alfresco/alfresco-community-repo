@@ -36,10 +36,12 @@ import org.alfresco.repo.cmis.reference.ReferenceFactory;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -69,6 +71,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
     private CMISRenditionService renditionService;
+    private ContentService contentService;
 
     /**
      * @param 
@@ -110,6 +113,14 @@ public class ContentGet extends StreamContent implements ServletContextAware
         this.renditionService = renditionService;
     }
         
+    /**
+     * @param contentService
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
+    }
+
     /**
      * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
      */
@@ -177,6 +188,18 @@ public class ContentGet extends StreamContent implements ServletContextAware
         if (attach && rfc5987Supported)
         {
             String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            
+            //IE use file extension to get mimetype
+            //So we set correct extension. see MNT-11246
+            if(userAgent.contains("MSIE"))
+            {
+                String mimeType = contentService.getReader(nodeRef, propertyQName).getMimetype();
+                if (!mimetypeService.getMimetypes(FilenameUtils.getExtension(name)).contains(mimeType))
+                {
+                    name = FilenameUtils.removeExtension(name) + FilenameUtils.EXTENSION_SEPARATOR_STR + mimetypeService.getExtension(mimeType); 
+                }
+            }
+            
             streamContent(req, res, nodeRef, propertyQName, attach, name, null);
         }
         else

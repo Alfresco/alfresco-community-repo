@@ -10,4 +10,30 @@
         </property>
     </bean>
 
+
+    <!-- Cleanup job for alf_prop_xxx tables -->
+    <bean id="propTablesCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.attributes.PropTablesCleanupJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="propertyValueDAO">
+                    <ref bean="propertyValueDAO" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="propTablesCleanupTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="propTablesCleanupJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${attributes.propcleaner.cronExpression}</value>
+        </property>
+    </bean>
 </beans>

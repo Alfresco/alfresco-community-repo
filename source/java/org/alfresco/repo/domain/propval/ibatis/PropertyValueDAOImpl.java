@@ -38,6 +38,7 @@ import org.alfresco.repo.domain.propval.PropertyStringValueEntity;
 import org.alfresco.repo.domain.propval.PropertyUniqueContextEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
+import org.alfresco.repo.domain.schema.script.ScriptBundleExecutor;
 import org.alfresco.util.Pair;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
@@ -98,9 +99,16 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     
     private SqlSessionTemplate template;
     
+    private ScriptBundleExecutor scriptExecutor;
+    
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
         this.template = sqlSessionTemplate;
+    }
+    
+    public void setScriptExecutor(ScriptBundleExecutor scriptExecutor)
+    {
+        this.scriptExecutor = scriptExecutor;
     }
     
     
@@ -671,5 +679,32 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         PropertyRootEntity entity = new PropertyRootEntity();
         entity.setId(rootPropId);
         return template.delete(DELETE_PROPERTY_LINKS_BY_ROOT_ID, entity);
+    }
+
+    @Override
+    public void cleanupUnusedValues()
+    {
+        // execute clean up in case of previous failures
+        scriptExecutor.exec("alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesPostExec.sql");
+        try
+        {
+            scriptExecutor.exec("alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTables.sql");
+        }
+        finally
+        {
+            try
+            {
+                // execute clean up 
+                scriptExecutor.exec("alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesPostExec.sql");
+            }
+            catch (Exception e)
+            {
+                if (logger.isErrorEnabled())
+                {
+                    logger.error("The cleanup failed with an error: ", e);
+                }
+            }
+            clearCaches();
+        }
     }
 }

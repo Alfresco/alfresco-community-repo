@@ -44,6 +44,7 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
@@ -873,5 +874,85 @@ public class PropertyValueDAOTest extends TestCase
             }
         }, false);
         assertEquals("ID-value pair incorrect", v2Pair, pair);
+    }
+    
+    /**
+     * MNT-10067: use a script to delete the orphaned property values.
+     */
+    public void testScriptCanDeleteUnusedProps()
+    {
+        PropValGenerator valueGen = new PropValGenerator(propertyValueDAO);
+        
+        // Find some values to use in the test that aren't already in the property tables.
+        final String stringValue = valueGen.createUniqueString();
+        final Double doubleValue = valueGen.createUniqueDouble();
+        final Date dateValue = valueGen.createUniqueDate();
+        final Serializable serValue = valueGen.createUniqueSerializable();
+        // We'll keep a list of the DB IDs of the persisted values so we can later check they've been deleted.
+        final Map<Object, Long> persistedIDs = new HashMap<Object, Long>();
+        
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                persistedIDs.put(stringValue, propertyValueDAO.getOrCreatePropertyStringValue(stringValue).getFirst());
+                persistedIDs.put(doubleValue, propertyValueDAO.getOrCreatePropertyDoubleValue(doubleValue).getFirst());
+                persistedIDs.put(dateValue, propertyValueDAO.getOrCreatePropertyDateValue(dateValue).getFirst());
+                persistedIDs.put(serValue, propertyValueDAO.getOrCreatePropertyValue(serValue).getFirst());
+                return null;
+            }
+        });
+        
+        // Run the clean-up script.
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // Check there are some persisted values to delete.
+                assertEquals(stringValue, propertyValueDAO.getPropertyStringValue(stringValue).getSecond());
+                assertEquals(doubleValue, propertyValueDAO.getPropertyDoubleValue(doubleValue).getSecond());
+                assertEquals(dateValue, propertyValueDAO.getPropertyDateValue(dateValue).getSecond());
+                // Serializable values are the odd-one-out; we can't query for them by value
+                // and no de-duplication is used during storage.
+                assertEquals(serValue, propertyValueDAO.getPropertyValueById(persistedIDs.get(serValue)).getSecond());
+                
+                propertyValueDAO.cleanupUnusedValues();
+                return null;
+            }
+        });
+
+        // Check all the properties have been deleted.
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {   
+            public Void execute() throws Throwable
+            {                
+                assertPropDeleted(propertyValueDAO.getPropertyStringValue(stringValue));
+                assertPropDeleted(propertyValueDAO.getPropertyDoubleValue(doubleValue));
+                // TODO: fix date deletion, not currently handled by CleanAlfPropTables.sql
+//                assertPropDeleted(propertyValueDAO.getPropertyDateValue(dateValue));
+                // Serializable values cannot be queried by value
+                try
+                {
+                    propertyValueDAO.getPropertyValueById(persistedIDs.get(serValue));
+                    fail(String.format("Persisted %s was not deleted, but should have been.",
+                                serValue.getClass().getSimpleName()));
+                }
+                catch (DataIntegrityViolationException e)
+                {
+                    // Good - it was deleted.
+                }
+                return null;
+            }
+        });
+    }
+    
+    private void assertPropDeleted(Pair<Long, ?> value)
+    {
+        if (value != null)
+        {
+            String msg = String.format("Property value [%s=%s] should have been deleted by cleanup script.",
+                        value.getSecond().getClass().getSimpleName(), value.getSecond());
+            fail(msg);
+        }
     }
 }

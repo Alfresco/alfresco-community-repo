@@ -175,6 +175,25 @@
       <property name="contentStoreCleaner" ref="eagerContentStoreCleaner"/>
    </bean>
    
+   <bean id="scriptExecutor" class="org.alfresco.repo.domain.schema.script.ScriptBundleExecutorImpl">
+      <constructor-arg>
+         <bean class="org.alfresco.repo.domain.schema.script.ScriptExecutorImpl">
+            <property name="dataSource">
+               <ref bean="dataSource" />
+            </property>
+            <property name="localSessionFactory">
+               <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
+            </property>
+            <property name="dialect">
+               <ref bean="dialect" />
+            </property>
+            <property name="globalProperties">
+               <ref bean="global-properties" />
+            </property>
+         </bean>
+      </constructor-arg>
+   </bean>
+   
    <bean id="propertyValueDAO" class="org.alfresco.repo.domain.propval.ibatis.PropertyValueDAOImpl">
       <property name="sqlSessionTemplate" ref="propertyValueSqlSessionTemplate"/>
       <property name="converter">
@@ -192,6 +211,8 @@
       <property name="propertyCache" ref="propertyValueCache"/>
       
       <property name="propertyUniqueContextCache" ref="propertyUniqueContextCache"/>
+      
+      <property name="scriptExecutor" ref="scriptExecutor"/>
       
    </bean>
    

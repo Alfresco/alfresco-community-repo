@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,9 +23,13 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+
+import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
@@ -33,6 +37,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.propval.PropValGenerator;
+import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -62,6 +68,7 @@ public class AuditDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private AuditDAO auditDAO;
+    private PropertyValueDAO propertyValueDAO;
     
     @Override
     public void setUp() throws Exception
@@ -71,6 +78,7 @@ public class AuditDAOTest extends TestCase
         txnHelper = transactionService.getRetryingTransactionHelper();
         
         auditDAO = (AuditDAO) ctx.getBean("auditDAO");
+        propertyValueDAO = ctx.getBean(PropertyValueDAO.class);
     }
     
     public void testAuditModel() throws Exception
@@ -525,6 +533,170 @@ public class AuditDAOTest extends TestCase
                 return countsByApp.get(appName);
             else
                 return 0;
+        }
+    }
+    
+    
+    /**
+     * MNT-10067: use a script to delete the orphaned audit data (property values). 
+     */
+    public void testScriptCanDeleteOrphanedProps() throws Exception
+    {
+        // single test
+        scriptCanDeleteOrphanedPropsWork(false);
+    }
+    
+    private void scriptCanDeleteOrphanedPropsWork(final boolean performance) throws Exception
+    {
+        final int iterationStep, maxIterations;
+        if (performance)
+        {
+            iterationStep = 1000;
+            maxIterations = 1000;
+        }
+        else
+        {
+            iterationStep = 1;
+            maxIterations = 1;
+        }
+        
+        UserTransaction txn;
+        
+        for (int i = iterationStep; i <= maxIterations*iterationStep; i+=iterationStep)
+        {
+            List<String> stringValues = new LinkedList<String>();
+            List<Double> doubleValues = new LinkedList<Double>();
+            List<Date> dateValues = new LinkedList<Date>();
+       
+            txn  = transactionService.getUserTransaction();
+            long startCreate = System.currentTimeMillis();
+            txn.begin();
+            for (int j = 0; j < i; j++)
+            {
+                PropValGenerator valueGen = new PropValGenerator(propertyValueDAO);
+                String stringValue = valueGen.createUniqueString();
+                stringValues.add(stringValue);
+                Double doubleValue = valueGen.createUniqueDouble();
+                doubleValues.add(doubleValue);
+                Date dateValue = valueGen.createUniqueDate();
+                dateValues.add(dateValue);
+                
+                AuditQueryCallbackImpl preDeleteCallback = new AuditQueryCallbackImpl();
+                AuditQueryCallbackImpl resultsCallback = new AuditQueryCallbackImpl();
+                
+                AuditApplicationInfo info1 = createAuditApp();
+                String app1 = info1.getName();
+                
+                String username = "alexi";    
+                Map<String, Serializable> values = new HashMap<String, Serializable>();
+                values.put("/a/b/string-" + j, stringValue);
+                values.put("/a/b/double-" + j, doubleValue);
+                values.put("/a/b/date-" + j, dateValue);
+                // TODO: how to deal with Serializable values which cannot be retrieved later in test by value alone?
+                long now = System.currentTimeMillis();
+                auditDAO.createAuditEntry(info1.getId(), now, username, values);
+                
+                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), -1);
+                assertEquals(1, preDeleteCallback.numEntries(app1));
+                
+                // Delete audit entries between times - for all applications.
+                auditDAO.deleteAuditEntries(info1.getId(), null, null);
+                
+                if (!performance)
+                {
+                    auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                    assertEquals("All entries should have been deleted from app1", 0, resultsCallback.numEntries(app1));
+                }
+            }
+            txn.commit();
+            System.out.println("Created values for " + i + " entries in " + (System.currentTimeMillis() - startCreate) + " ms.");
+            
+            txn  = transactionService.getUserTransaction();
+            txn.begin();
+            if (!performance)
+            {
+                // Check there are some persisted values to delete.
+                // Unlike PropertyValueDAOTest we're using the getPropertyValue() method here,
+                // instead of the datatype-specific methods (e.g. getPropertyStringValue()).
+                // This is because AuditDAO persists an entire map of values resulting in different behaviour
+                // (i.e. dates are persisted as Serializable)
+                for (String stringValue : stringValues)
+                {
+                    assertEquals(stringValue, propertyValueDAO.getPropertyValue(stringValue).getSecond());
+                }
+                for (Double doubleValue : doubleValues)
+                {
+                    assertEquals(doubleValue, propertyValueDAO.getPropertyValue(doubleValue).getSecond());
+                }
+                for (Date dateValue : dateValues)
+                {
+                    assertEquals(dateValue, propertyValueDAO.getPropertyValue(dateValue).getSecond());
+                }
+            }
+            long startDelete = System.currentTimeMillis();
+            propertyValueDAO.cleanupUnusedValues();
+            txn.commit();
+            System.out.println("Cleaned values for " + i + " entries in " + (System.currentTimeMillis() - startDelete) + " ms.");
+            
+            if (!performance)
+            {
+                // Check all the properties have been deleted.
+                txn  = transactionService.getUserTransaction();
+                txn.begin();
+                
+                for (String stringValue : stringValues)
+                {
+                    assertPropDeleted(propertyValueDAO.getPropertyValue(stringValue));
+                }
+                for (Double doubleValue : doubleValues)
+                {
+                    assertPropDeleted(propertyValueDAO.getPropertyValue(doubleValue));
+                }
+                for (Date dateValue : dateValues)
+                {
+                    assertPropDeleted(propertyValueDAO.getPropertyValue(dateValue));
+                }
+                
+                txn.commit();
+            }
+        }        
+    }
+    
+    private void assertPropDeleted(Pair<Long, ?> value)
+    {
+        if (value != null)
+        {
+            String msg = String.format("Property value [%s=%s] should have been deleted by cleanup script.",
+                        value.getSecond().getClass().getSimpleName(), value.getSecond());
+            fail(msg);
+        }
+    }
+    
+    public void scriptCanDeleteOrphanedPropsPerformance() throws Exception
+    {
+        scriptCanDeleteOrphanedPropsWork(true);
+    }
+    
+    public static void main(String[] args)
+    {
+        try
+        {
+            AuditDAOTest test = new AuditDAOTest();
+            test.setUp();
+            System.out.println("Press any key to run performance test.");
+            System.in.read();
+            test.scriptCanDeleteOrphanedPropsPerformance();
+            System.out.println("Press any key to shutdown.");
+            System.in.read();
+            test.tearDown();
+        }
+        catch (Throwable e)
+        {
+            e.printStackTrace();
+        }
+        finally
+        {
+            ApplicationContextHelper.closeApplicationContext();
         }
     }
 }

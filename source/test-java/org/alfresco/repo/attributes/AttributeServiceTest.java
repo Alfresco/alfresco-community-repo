@@ -20,13 +20,18 @@ package org.alfresco.repo.attributes;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.domain.propval.PropValGenerator;
+import org.alfresco.repo.domain.propval.PropertyValueDAO;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallback;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.springframework.context.ApplicationContext;
 
@@ -47,12 +52,14 @@ public class AttributeServiceTest extends TestCase
     
     private ApplicationContext ctx;
     private AttributeService attributeService;
+    private PropertyValueDAO propertyValueDAO;
     
     @Override
     protected void setUp() throws Exception
     {
         ctx = ApplicationContextHelper.getApplicationContext();
         attributeService = (AttributeService) ctx.getBean("AttributeService");
+        propertyValueDAO = (PropertyValueDAO) ctx.getBean("propertyValueDAO");
     }
 
     @Override
@@ -131,5 +138,58 @@ public class AttributeServiceTest extends TestCase
         attributeService.getAttributes(callback, KEY_A);
         assertEquals(2, results.size());
         assertEquals(2, counter.getValue());
+    }
+    
+    public void testRemoveOrphanedProps()
+    {
+        final Serializable[] stringKey = new String[] { "z", "q", "string" };
+        final Serializable[] doubleKey = new String[] { "z", "q", "double" };
+        final Serializable[] dateKey = new String[] { "z", "q", "date" };
+        
+        // Make sure there's nothing left from previous failed test runs etc.
+        attributeService.removeAttributes(stringKey);
+        attributeService.removeAttributes(doubleKey);
+        attributeService.removeAttributes(dateKey);
+        
+        final PropValGenerator valueGen = new PropValGenerator(propertyValueDAO);
+
+        // Create some values
+        final String stringValue = valueGen.createUniqueString();
+        attributeService.createAttribute(stringValue, stringKey);
+        
+        final Double doubleValue = valueGen.createUniqueDouble();
+        attributeService.createAttribute(doubleValue, doubleKey);
+        
+        final Date dateValue = valueGen.createUniqueDate();
+        attributeService.createAttribute(dateValue, dateKey);
+        
+        // Remove the properties, potentially leaving oprhaned prop values.
+        attributeService.removeAttributes(stringKey);
+        attributeService.removeAttributes(doubleKey);
+        attributeService.removeAttributes(dateKey);
+        
+        // Check there are some persisted values to delete, otherwise there is no
+        // need to run the cleanup script in the first place.
+        assertEquals(stringValue, propertyValueDAO.getPropertyValue(stringValue).getSecond());
+        assertEquals(doubleValue, propertyValueDAO.getPropertyValue(doubleValue).getSecond());
+        assertEquals(dateValue, propertyValueDAO.getPropertyValue(dateValue).getSecond());
+        
+        // Run the cleanup script - should remove the orphaned values.
+        propertyValueDAO.cleanupUnusedValues();
+     
+        // Check that the cleanup script removed the orphaned values.
+        assertPropDeleted(propertyValueDAO.getPropertyValue(stringValue));
+        assertPropDeleted(propertyValueDAO.getPropertyValue(doubleValue));
+        assertPropDeleted(propertyValueDAO.getPropertyValue(dateValue));
+    }
+    
+    private void assertPropDeleted(Pair<Long, ?> value)
+    {
+        if (value != null)
+        {
+            String msg = String.format("Property value [%s=%s] should have been deleted by cleanup script.",
+                        value.getSecond().getClass().getSimpleName(), value.getSecond());
+            fail(msg);
+        }
     }
 }

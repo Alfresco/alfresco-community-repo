@@ -1588,4 +1588,15 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         // This will have put the values into the correct containers
         return result;
     }
+
+    protected void clearCaches()
+    {
+        propertyClassCache.clear();
+        propertyDateValueCache.clear();
+        propertyStringValueCache.clear();
+        propertyDoubleValueCache.clear();
+        propertySerializableValueCache.clear();
+        propertyCache.clear();
+        propertyValueCache.clear();
+    }
 }

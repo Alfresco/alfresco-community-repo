@@ -362,4 +362,9 @@ public interface PropertyValueDAO
      * @throws IllegalArgumentException     if rows don't all share the same root property ID
      */
     Serializable convertPropertyIdSearchRows(List<PropertyIdSearchRow> rows);
+    
+    /**
+     * Remove orphaned properties.
+     */
+    void cleanupUnusedValues();
 }

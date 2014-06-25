@@ -419,6 +419,8 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.CronTriggerBeanSystemTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.auth.cifs.CifsAuthenticatorKerberosTest.class));		
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.auth.cifs.CifsAuthenticatorPassthruTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.domain.schema.script.ScriptExecutorImplIntegrationTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.domain.schema.script.ScriptBundleExecutorImplIntegrationTest.class));
     }
 
     static void tests65(TestSuite suite)

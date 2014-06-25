@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="simpleScriptExecutor" class="org.alfresco.repo.domain.schema.script.ScriptExecutorImpl">
+        <property name="dataSource">
+            <ref bean="dataSource" />
+        </property>
+        <property name="localSessionFactory">
+            <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
+        </property>
+        <property name="dialect">
+            <ref bean="dialect" />
+        </property>
+        <property name="globalProperties">
+            <ref bean="global-properties" />
+        </property>
+    </bean>
+    
+    <bean id="bundleExecutor" class="org.alfresco.repo.domain.schema.script.ScriptBundleExecutorImpl">
+        <constructor-arg ref="simpleScriptExecutor"/>
+    </bean>
+</beans>

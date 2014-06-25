@@ -1,4 +1,4 @@
-<project default="sign">
+<project default="all">
     <macrodef name="sign-installer">
         <attribute name="file"/>
         <sequential>
@@ -28,16 +28,21 @@
         </sequential>
     </macrodef>
 
+    <target name="all" depends="sign, package-osx"/>
+
     <target name="sign">
         <sign-installer file="${project.build.directory}/alfresco-community-${project.version}-installer-win-x32.exe"/>
         <sign-installer file="${project.build.directory}/alfresco-community-${project.version}-installer-win-x64.exe"/>
 
+    </target>
+
+    <target name="package-osx">
         <!-- package OSX installer -->
         <tar destfile="${project.build.directory}/alfresco-community-${project.version}-installer-osx-x64.app.tar.gz"
-            compression="gzip">
-            <fileset dir="${project.build.directory}">
+            compression="gzip" longfile="gnu">
+            <tarfileset dir="${project.build.directory}" mode="755">
                 <include name="alfresco-community-${project.version}-installer-osx-x64.app/" />
-            </fileset>
+            </tarfileset>
         </tar>
     </target>
 </project>

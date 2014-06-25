@@ -51,7 +51,7 @@ function runAction(p_params)
             result.type = fileNode.isContainer ? "folder" : "document"
             
             // Retain the name of the site the node is currently in. Null if it's not in a site.
-            fromSite = String(fileNode.siteShortName);
+            fromSite = fileNode.siteShortName;
             
             // copy the node (deep copy for containers)
             if (fileNode.isContainer)
@@ -70,7 +70,7 @@ function runAction(p_params)
             if (result.success)
             {
                // If this was an inter-site copy, we'll need to clean up the permissions on the node
-               if (fromSite != String(copiedNode.siteShortName))
+               if ((fromSite) && (String(fromSite) != String(copiedNode.siteShortName)))
                {
                   siteService.cleanSitePermissions(copiedNode);
                }

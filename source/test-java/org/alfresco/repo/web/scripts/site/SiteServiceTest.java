@@ -34,15 +34,20 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -67,6 +72,7 @@ public class SiteServiceTest extends BaseWebScriptTest
     private PersonService personService;
     private SiteService siteService;
     private NodeService nodeService;
+    private PermissionService permissionService;
     private AuthorityService authorityService;
     
     private static final String USER_ONE = "SiteTestOne";
@@ -92,6 +98,7 @@ public class SiteServiceTest extends BaseWebScriptTest
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
+        this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
         this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");
         // sets the testMode property to true via spring injection. This will prevent emails
         // from being sent from within this test case.
@@ -716,6 +723,135 @@ public class SiteServiceTest extends BaseWebScriptTest
 //        assertEquals("tag333", tagsA.getString(2));
     }
     
+    /*
+     * MNT-10917
+     * Check permissions of node after move/copy action from "Repository" to any site.
+     * Note: permissions should be remain
+     */
+    public void testCheckPermissionsAfterCopy()
+            throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        String groupName = AuthorityType.GROUP.getPrefixString() + "_" + GUID.generate().substring(0, 5).trim();
+        String createdAuth = authorityService.createAuthority(AuthorityType.GROUP, groupName);
+        NodeRef fileNode = null, 
+                siteDocLib = null, 
+                copiedNode = null, 
+                movedNode = null;
+        try
+        {
+            fileNode = createRepoFile();
+            siteDocLib = createTestSite();
+            addPermissionsToFile(fileNode, createdAuth, SiteModel.SITE_CONTRIBUTOR, true);
+            checkPermissions(fileNode, createdAuth, SiteModel.SITE_CONTRIBUTOR, "before copy");
+            
+            copiedNode = copyToSite(fileNode, siteDocLib);
+            checkPermissions(copiedNode, createdAuth, SiteModel.SITE_CONTRIBUTOR, "after copy");
+            
+            nodeService.deleteNode(copiedNode);
+            copiedNode = null;
+            checkPermissions(fileNode, createdAuth, SiteModel.SITE_CONTRIBUTOR, "before move");
+            movedNode = moveToSite(fileNode, siteDocLib);
+            checkPermissions(movedNode, createdAuth, SiteModel.SITE_CONTRIBUTOR, "after move");
+        }
+        finally
+        {
+            if (fileNode != null)
+            {
+                nodeService.deleteNode(fileNode);
+            }
+            if (siteDocLib != null)
+            {
+                nodeService.deleteNode(siteDocLib);
+            }
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    private NodeRef copyToSite(NodeRef fileRef, NodeRef destRef) throws Exception
+    {
+        String copyUrl = "/slingshot/doclib/action/copy-to/node/workspace/SpacesStore/" + destRef.getId();
+        return copyMoveRequest(fileRef, destRef, copyUrl);
+    }
+    
+    private NodeRef moveToSite(NodeRef fileRef, NodeRef destRef) throws Exception
+    {
+        String moveUrl = "/slingshot/doclib/action/move-to/node/workspace/SpacesStore/" + destRef.getId();
+        return copyMoveRequest(fileRef, destRef, moveUrl);
+    }
+    
+    private NodeRef copyMoveRequest(NodeRef fileRef, NodeRef destRef, String actionUrl) throws Exception
+    {
+        JSONObject copyRequest = new JSONObject();
+        JSONArray nodesToCopy = new JSONArray();
+        nodesToCopy.put(fileRef.toString());
+        copyRequest.put("nodeRefs", nodesToCopy);
+        copyRequest.put("parentId", nodeService.getPrimaryParent(fileRef).getChildRef());
+        
+        Response response = sendRequest(new PostRequest(actionUrl,  copyRequest.toString(), "application/json"), Status.STATUS_OK);
+        
+        JSONObject result = new JSONObject(response.getContentAsString());
+        String failures = result.getString("failureCount");
+        if (Integer.parseInt(failures) != 0)
+        {
+            fail("Failure at copy action");
+        }
+        JSONArray resList = result.getJSONArray("results");
+        String resNodeRefStr = resList.getJSONObject(0).getString("nodeRef");
+        return new NodeRef(resNodeRefStr);
+    }
+
+    private void checkPermissions(NodeRef nodeRef, String necessatyAuth, String expectedPermission, String actionInfo)
+    {
+        Set<AccessPermission> allSetPermissions = permissionService.getAllSetPermissions(nodeRef);
+        for (AccessPermission perm : allSetPermissions)
+        {
+            String authority = perm.getAuthority();
+            if (necessatyAuth.equals(authority))
+            {
+                if (expectedPermission.equals(perm.getPermission()))
+                {
+                    return;
+                }
+                fail("Expected permissions for authority \"" + necessatyAuth + "\" are incorrect. Expected: " + expectedPermission + ", but actual permission: "
+                        + perm.getPermission() + ". Check position: " + actionInfo);
+            }
+        }
+        fail("Expected authority \"" + necessatyAuth + "\" wasn't found. Check position: " + actionInfo);
+    }
+        
+    private void addPermissionsToFile(NodeRef nodeRef, String user, String permission, boolean isAllowed)
+    {
+        permissionService.setPermission(nodeRef, user, permission, isAllowed);
+    }
+
+    private NodeRef createTestSite()
+    {
+        String sName = GUID.generate();
+        // Create a public site
+        this.siteService.createSite("testSitePreset", sName, sName, sName, SiteVisibility.PUBLIC);
+        NodeRef siteContainer = this.siteService.createContainer(sName, "testContainer", ContentModel.TYPE_FOLDER, null);
+        return siteContainer;
+    }
+
+    private NodeRef createRepoFile()
+    {
+        NodeRef rootNodeRef = this.nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        // create temporary folder
+        NodeRef workingRootNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.ALFRESCO_URI, "working root"),
+                ContentModel.TYPE_FOLDER).getChildRef();
+
+        String fName = GUID.generate();
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
+        properties.put(ContentModel.PROP_NAME, (Serializable) fName);
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(fName));
+        // create empy file
+        ChildAssociationRef assocRef = nodeService.createNode(workingRootNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, ContentModel.TYPE_CONTENT, properties);
+
+        return assocRef.getChildRef();
+    }
+
     /**
      * End to end sanity check of web site invitation.
      * 

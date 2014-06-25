@@ -65,7 +65,7 @@ function runAction(p_params)
             if (result.success)
             {
                // If this was an inter-site move, we'll need to clean up the permissions on the node
-               if (String(fromSite) !== String(fileNode.siteShortName))
+               if ((fromSite) && (String(fromSite) !== String(fileNode.siteShortName)))
                {
                   siteService.cleanSitePermissions(fileNode);
                }

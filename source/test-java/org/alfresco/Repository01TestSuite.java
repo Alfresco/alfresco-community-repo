@@ -363,6 +363,7 @@ public class Repository01TestSuite extends TestSuite
     
     static void tests56(TestSuite suite)
     {
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.tenant.MultiTServiceImplTest.class));
         suite.addTestSuite(org.alfresco.repo.tenant.MultiTDemoTest.class);
     }
     

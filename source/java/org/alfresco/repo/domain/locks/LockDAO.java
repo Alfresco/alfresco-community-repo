@@ -30,7 +30,7 @@ import org.alfresco.service.namespace.QName;
 public interface LockDAO
 {
     /**
-     * Aquire a given exclusive lock, assigning it (and any implicitly shared locks) a
+     * Acquire a given exclusive lock, assigning it (and any implicitly shared locks) a
      * timeout.  All shared locks are implicitly taken as well.
      * <p>
      * A lock can be re-taken if it has expired and if the lock token has not changed
@@ -78,15 +78,4 @@ public interface LockDAO
      *                              and pessimistic release is requested.
      */
     boolean releaseLock(QName lockQName, String lockToken, boolean optimistic);
-    
-    /**
-     * Release a lock without throwing any exceptions if the lock was not updated.
-     * 
-     * @param lockQName             the unique name of the lock to release
-     * @param lockToken             the current lock token
-     * @return                      Returns <tt>true</tt> if all the required locks were
-     *                              (still) held under the lock token and were
-     *                              valid at the time of release, otherwise <tt>false</tt>
-     */
-    boolean releaseLockQuiet(QName lockQName, String lockToken);
 }

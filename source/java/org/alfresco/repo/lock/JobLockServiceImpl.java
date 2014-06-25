@@ -354,7 +354,7 @@ public class JobLockServiceImpl implements JobLockService
                     // Release the lock in case the initiator did not do it.
                     // We just want to release and don't care if the lock was already released
                     // or taken by another process
-                    if (releaseLockQuiet(lockToken, lockQName))
+                    if (releaseLockVerify(lockToken, lockQName))
                     {
                         // The callback must be informed as we released the lock automatically
                         callLockReleased(callback);
@@ -424,7 +424,14 @@ public class JobLockServiceImpl implements JobLockService
     @Override
     public void releaseLock(final String lockToken, final QName lockQName)
     {
-    	releaseLockVerify(lockToken, lockQName);
+        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>()
+        {
+            public Boolean execute() throws Throwable
+            {
+                return lockDAO.releaseLock(lockQName, lockToken, false);
+            }
+        };
+        retryingTransactionHelper.doInTransaction(releaseCallback, false, true);
     }
 
     /**
@@ -437,27 +444,6 @@ public class JobLockServiceImpl implements JobLockService
             public Boolean execute() throws Throwable
             {
                 return lockDAO.releaseLock(lockQName, lockToken, true);
-            }
-        };
-        return retryingTransactionHelper.doInTransaction(releaseCallback, false, true);
-    }
-
-    /**
-     * Attempt to release a lock but do not worry about not being able to update the lock.
-     * If the lock was taken by another process, then it will not matter.  Any other database-related
-     * conditions will still trigger a retry.
-     * 
-     * @param lockToken             the unique lock token to release (expired or not)
-     * @param lockQName             the name of the lock
-     * @return                      <tt>true</tt> if the lock was released or <tt>false</tt> if not
-     */
-    private boolean releaseLockQuiet(final String lockToken, final QName lockQName)
-    {
-        RetryingTransactionCallback<Boolean> releaseCallback = new RetryingTransactionCallback<Boolean>()
-        {
-            public Boolean execute() throws Throwable
-            {
-                return lockDAO.releaseLockQuiet(lockQName, lockToken);
             }
         };
         return retryingTransactionHelper.doInTransaction(releaseCallback, false, true);

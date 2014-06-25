@@ -380,7 +380,7 @@ public class JobLockServiceTest extends TestCase
         // The first refresh will occur in 500ms
         wait(1000L);
         // Should NOT get a callback saying that the lock has been released
-        assertTrue("Lock should be optimistically released", released[0] > 0);
+        assertFalse("Lock should be optimistically released", released[0] > 0);
         try
         {
             jobLockService.getLock(lockQName, lockTTL);

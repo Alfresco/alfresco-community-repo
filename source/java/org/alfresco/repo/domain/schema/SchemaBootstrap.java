@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2010 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -229,6 +229,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         this.descriptorService = descriptorService;
     }
 
+
+    /**
+     * Defines the DatabaseMetaDataHelper to be used
+     * 
+     * @param databaseMetaDataHelper
+     */
+    public void setDatabaseMetaDataHelper(DatabaseMetaDataHelper databaseMetaDataHelper)
+    {
+        this.databaseMetaDataHelper = databaseMetaDataHelper;
+    }
+
     /**
      * Sets the previously auto-detected Hibernate dialect.
      * 
@@ -260,6 +271,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private int maximumStringLength;
     private Properties globalProperties;
     private String dbSchemaName;
+    private DatabaseMetaDataHelper databaseMetaDataHelper;
 
     private ThreadLocal<StringBuilder> executedStatementsThreadLocal = new ThreadLocal<StringBuilder>();
 
@@ -563,7 +575,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      */
     private int countAppliedPatches(Configuration cfg, Connection connection) throws Exception
     {
-        String defaultSchema = dbSchemaName != null ? dbSchemaName : DatabaseMetaDataHelper.getSchema(connection);
+        String defaultSchema = dbSchemaName != null ? dbSchemaName : databaseMetaDataHelper.getSchema(connection);
 
         if (defaultSchema != null && defaultSchema.length() == 0)
         {
@@ -1021,7 +1033,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                 setJobExecutorActivate(false).
                 buildProcessEngine();
 
-            String schemaName = dbSchemaName != null ? dbSchemaName : DatabaseMetaDataHelper.getSchema(connection);
+            String schemaName = dbSchemaName != null ? dbSchemaName : databaseMetaDataHelper.getSchema(connection);
             // create or upgrade the DB schema
             engine.getManagementService().databaseSchemaUpgrade(connection, null, schemaName);
         }
@@ -1774,6 +1786,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             {
                 logger.warn("Error closing DB connection: " + e.getMessage());
             }
+            try
+            {
+                if (session != null)
+                {
+                    session.close();
+                }
+            }
+            catch (Throwable e)
+            {
+                logger.warn("Error closing Hibernate session: " + e.getMessage());
+            }
             // Remove the connection reference from the threadlocal boostrap
             SchemaBootstrapConnectionProvider.setBootstrapConnection(null);
             
@@ -1866,7 +1889,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
         XMLToSchema xmlToSchema = new XMLToSchema(is);
         xmlToSchema.parse();
         Schema reference = xmlToSchema.getSchema();
-        ExportDb exporter = new ExportDb(dataSource, dialect, descriptorService);
+        ExportDb exporter = new ExportDb(dataSource, dialect, descriptorService, databaseMetaDataHelper);
         exporter.setDbSchemaName(dbSchemaName);
         // Ensure that the database objects we're validating are filtered
         // by the same prefix as the reference file.  

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.cfg.Configuration;
+import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
 /**
  * Helper class to collect all of our DatabaseMetaData interpretations in one place.
@@ -35,12 +37,19 @@ public class DatabaseMetaDataHelper {
 	
 	private static Log logger = LogFactory.getLog(DatabaseMetaDataHelper.class);
 
+    private Configuration cfg;
+
+    public void setLocalSessionFactory(LocalSessionFactoryBean localSessionFactory)
+    {
+        this.cfg = localSessionFactory.getConfiguration();
+    }
+
 	/**
 	 * Trys to determine the schema name from the DatabaseMetaData obtained from the Connection.
 	 * @param connection A database connection
 	 * @return
 	 */
-	public static String getSchema(Connection connection) 
+	private String getSchemaFromConnection(Connection connection) 
 	{
 	
 		if (connection == null) {
@@ -89,4 +98,33 @@ public class DatabaseMetaDataHelper {
 		}
 		return null;
 	}
+
+    public String getSchema(Connection connection)
+    {
+        String schema = null;
+
+        if (this.cfg != null)
+        {
+            String tmpSchema = this.cfg.getProperty("hibernate.default_schema");
+            if (tmpSchema != null && tmpSchema.trim().length() > 0)
+            {
+                schema = tmpSchema;
+            }
+        }
+
+        // if hibernate.default_schema was specified as a system property, then override previous value
+        String tmpSchema = System.getProperty("hibernate.default_schema");
+        if (tmpSchema != null && tmpSchema.length() > 0)
+        {
+            schema = tmpSchema;
+        }
+
+        if (schema == null)
+        {
+            schema = getSchemaFromConnection(connection);
+        }
+
+        return schema;
+    }
+
 }

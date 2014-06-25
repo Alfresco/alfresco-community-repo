@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,7 @@ import javax.sql.DataSource;
 
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.util.DatabaseMetaDataHelper;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.schemacomp.model.Column;
 import org.alfresco.util.schemacomp.model.ForeignKey;
@@ -54,6 +55,9 @@ public class ExportDb
 {
     /** Reverse map from database types to JDBC types (loaded from a Hibernate dialect). */
     private final Map<String, Integer> reverseTypeMap = new TreeMap<String, Integer>();
+
+    /** The database metadata helper */
+    private DatabaseMetaDataHelper databaseMetaDataHelper;
 
     /** The JDBC DataSource. */
     private DataSource dataSource;
@@ -80,7 +84,8 @@ public class ExportDb
     {
         this((DataSource) context.getBean("dataSource"),
              (Dialect) context.getBean("dialect"),
-             (DescriptorService) context.getBean("descriptorComponent"));
+             (DescriptorService) context.getBean("descriptorComponent"),
+             (DatabaseMetaDataHelper) context.getBean("databaseMetaDataHelper"));
     }
     
     
@@ -90,11 +95,12 @@ public class ExportDb
      * @param connection            the database connection to use for metadata queries
      * @param dialect               the Hibernate dialect
      */
-    public ExportDb(final DataSource dataSource, final Dialect dialect, DescriptorService descriptorService)
+    public ExportDb(final DataSource dataSource, final Dialect dialect, DescriptorService descriptorService, DatabaseMetaDataHelper databaseMetaDataHelper)
     {
         this.dataSource = dataSource;
         this.dialect = dialect;
         this.descriptorService = descriptorService;
+        this.databaseMetaDataHelper = databaseMetaDataHelper;
         init();
     }
     
@@ -202,7 +208,7 @@ public class ExportDb
     {
         final DatabaseMetaData dbmd = con.getMetaData();
 
-        String schemaName = getSchemaName(dbmd);
+        String schemaName = databaseMetaDataHelper.getSchema(con);
 
         schema = new Schema(schemaName, namePrefix, schemaVersion, true);
         String[] prefixFilters = namePrefixFilters(dbmd);
@@ -381,36 +387,6 @@ public class ExportDb
             foreignkeys.close();
         }
         tables.close();
-    }
-
-    /**
-     * Assume that if there are schemas, we want the one named after the connection user
-     * or the one called "dbo" (MS SQL hack)
-     * 
-     * @param dbmd
-     * @return The schema name, or null otherwise.
-     * @throws SQLException
-     */
-    private String getSchemaName(final DatabaseMetaData dbmd) throws SQLException
-    {
-        if (this.dbSchemaName != null)
-        {
-            return this.dbSchemaName;
-        }
-
-        String schemaName = null;
-        final ResultSet schemas = dbmd.getSchemas();
-        while (schemas.next())
-        {
-            final String thisSchema = schemas.getString("TABLE_SCHEM");
-            if (thisSchema.equalsIgnoreCase(dbmd.getUserName()) || thisSchema.equalsIgnoreCase("dbo"))
-            {
-                schemaName = thisSchema;
-                break;
-            }
-        }
-        schemas.close();
-        return schemaName;
     }
 
 

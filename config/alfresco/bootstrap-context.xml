@@ -49,10 +49,19 @@
     </bean>
 
 
+    <bean id="databaseMetaDataHelper" class="org.alfresco.util.DatabaseMetaDataHelper">
+       <property name="localSessionFactory">
+          <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
+       </property>
+    </bean>
+
     <!-- ensure that the schema is bootstrapped -->
     <bean id="schemaBootstrap" class="org.alfresco.repo.domain.schema.SchemaBootstrap" >
        <property name="dataSource">
           <ref bean="dataSource"/>
+       </property>
+       <property name="databaseMetaDataHelper">
+          <ref bean="databaseMetaDataHelper" />
        </property>
        <property name="appliedPatchDAO">
           <ref bean="appliedPatchDAO"/>

@@ -204,7 +204,7 @@ public class LockableAspectInterceptorTest
         assertEquals(LockType.READ_ONLY_LOCK.toString(), readProps.get(ContentModel.PROP_LOCK_TYPE));
         assertEquals(now, readProps.get(ContentModel.PROP_EXPIRY_DATE));
         // Spoofed - wasn't explicitly added.
-        assertEquals(Lifetime.PERSISTENT, readProps.get(ContentModel.PROP_LOCK_LIFETIME));
+        assertEquals(Lifetime.PERSISTENT.toString(), readProps.get(ContentModel.PROP_LOCK_LIFETIME));
         // Double check - not really present
         ensurePropertyNotPresent(nodeRef, ContentModel.PROP_LOCK_LIFETIME);
     }
@@ -257,6 +257,8 @@ public class LockableAspectInterceptorTest
         assertEquals(lockOwner, properties.get(ContentModel.PROP_LOCK_OWNER));
         assertEquals(LockType.WRITE_LOCK.toString(), properties.get(ContentModel.PROP_LOCK_TYPE));
         assertEquals(now, properties.get(ContentModel.PROP_EXPIRY_DATE));
+        // Spoofed - wasn't explicitly added.
+        assertEquals(Lifetime.EPHEMERAL.toString(), properties.get(ContentModel.PROP_LOCK_LIFETIME));
         
         // In addition to spoofed cm:lockable properties, others properties should still be present.
         assertTrue("Node should have created property",

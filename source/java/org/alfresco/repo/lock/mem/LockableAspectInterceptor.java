@@ -133,14 +133,14 @@ public class LockableAspectInterceptor implements MethodInterceptor
                 properties.put(ContentModel.PROP_LOCK_OWNER, userName);
                 properties.put(ContentModel.PROP_LOCK_TYPE, lockState.getLockType().toString());
                 properties.put(ContentModel.PROP_EXPIRY_DATE, lockState.getExpires());
-                properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL);
+                properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL.toString());
             }
             else if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
             {
                 // Persistent lock, ensure lifetime property is present.
                 if (!properties.containsKey(ContentModel.PROP_LOCK_LIFETIME))
                 {
-                    properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT);
+                    properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.PERSISTENT.toString());
                 }
             }
             return properties;

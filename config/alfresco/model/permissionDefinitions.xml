@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE permissions >
-<!--PUBLIC '-//ALFRECSO//DTD PERMISSIONS//EN' 'permissionSchema.dtd' -->
+<!--PUBLIC '-//ALFRESCO//DTD PERMISSIONS//EN' 'permissionSchema.dtd' -->
 
 <!-- Note: the above is commented out as spring does not seem to find the dtd -->
 

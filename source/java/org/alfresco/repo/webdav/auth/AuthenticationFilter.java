@@ -27,6 +27,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,28 +68,23 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
     private static final String PPT_EXTN = ".ppt";
     
     /** The password encodings to try in priority order **/
-    private static final String[] ENCODINGS = new String[] {
-        "UTF-8", 
-        System.getProperty("file.encoding"),
-        "ISO-8859-1"
-    };
-    
-    /** Corresponding array of CharsetDecoders with CodingErrorAction.REPORT. Duplicates removed. */
-    private static final CharsetDecoder[] DECODERS;
+    private static final String[] ENCODINGS;
     
     static
     {
-        Map<String, CharsetDecoder> decoders = new LinkedHashMap<String, CharsetDecoder>(ENCODINGS.length * 2);
-        for (String encoding : ENCODINGS)
+        String[] encodings = new String[] {
+                "UTF-8", 
+                System.getProperty("file.encoding"),
+                "ISO-8859-1"
+            };
+        
+        Set<String> encodingsSet = new LinkedHashSet<String>();
+        for (String encoding : encodings)
         {
-            if (!decoders.containsKey(encoding))
-            {
-                decoders.put(encoding, Charset.forName(encoding).newDecoder()
-                        .onMalformedInput(CodingErrorAction.REPORT));
-            }
+            encodingsSet.add(encoding);
         }
-        DECODERS = new CharsetDecoder[decoders.size()];
-        decoders.values().toArray(DECODERS);
+        ENCODINGS = new String[encodingsSet.size()];
+        encodingsSet.toArray(ENCODINGS);
     }
     
     // Various services required by NTLM authenticator
@@ -132,9 +128,11 @@ public class AuthenticationFilter extends BaseAuthenticationFilter implements De
                 byte[] encodedString = Base64.decodeBase64(authHdr.substring(5).getBytes());
                 
                 // ALF-13621: Due to browser inconsistencies we have to try a fallback path of encodings
-                Set<String> attemptedAuths = new HashSet<String>(DECODERS.length * 2);
-                for (CharsetDecoder decoder : DECODERS)
-                {                  
+                Set<String> attemptedAuths = new HashSet<String>(ENCODINGS.length * 2);
+                for (String encoding : ENCODINGS)
+                {
+                    CharsetDecoder decoder = Charset.forName(encoding).newDecoder()
+                            .onMalformedInput(CodingErrorAction.REPORT);
                     try
                     {
                         // Attempt to decode using this charset 

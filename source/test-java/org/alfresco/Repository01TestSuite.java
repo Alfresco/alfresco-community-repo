@@ -376,7 +376,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.transaction.RetryingTransactionHelperTest.class);
         suite.addTestSuite(org.alfresco.repo.transaction.TransactionAwareSingletonTest.class);
         suite.addTestSuite(org.alfresco.repo.transaction.TransactionServiceImplTest.class);
-        suite.addTestSuite(org.alfresco.repo.transaction.ConnectionPoolOverloadTest.class);       
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.transaction.ConnectionPoolOverloadTest.class));       
         suite.addTestSuite(org.alfresco.repo.transfer.NodeCrawlerTest.class);
         suite.addTestSuite(org.alfresco.repo.transfer.RepoTransferReceiverImplTest.class);
         suite.addTestSuite(org.alfresco.repo.transfer.TransferServiceCallbackTest.class);

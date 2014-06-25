@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.transaction;
 
+import static org.junit.Assert.*;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -31,12 +33,12 @@ import org.alfresco.util.transaction.ConnectionPoolException;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 import com.sun.star.auth.InvalidArgumentException;
-
-import junit.framework.TestCase;
 
 /**
  * A test designed to catch ConnectionPoolException
@@ -45,7 +47,7 @@ import junit.framework.TestCase;
  * @since 4.1.9
  */
 
-public class ConnectionPoolOverloadTest extends TestCase
+public class ConnectionPoolOverloadTest
 {
     private static Log logger = LogFactory.getLog(ConnectionPoolOverloadTest.class);
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -56,8 +58,9 @@ public class ConnectionPoolOverloadTest extends TestCase
     private Properties properties;
 
     private int dbPoolMax;
+    private int dbPoolWaitMax;
 
-    @Override
+    @Before
     public void setUp() throws Exception
     {
         failCount = new MutableInt(0);
@@ -73,9 +76,22 @@ public class ConnectionPoolOverloadTest extends TestCase
         {
             throw new InvalidArgumentException("The db.pool.max property is not valid.");
         }
+        
+        String dbPoolWaitMaxProp = properties.getProperty("db.pool.wait.max");
+        if (PropertyCheck.isValidPropertyString(dbPoolWaitMaxProp))
+        {
+            dbPoolWaitMax = Integer.parseInt(dbPoolWaitMaxProp);
+        }
+        else
+        {
+            throw new InvalidArgumentException("The db.pool.wait.max property is not valid.");
+        }
+        
+        dbPoolWaitMax = dbPoolWaitMax == -1 ? 100 : dbPoolWaitMax;
     }
     
     @Test
+    @Ignore("The test will fail if db.pool.wait.max=-1 as all the threads will successfully open the transactions.")
     public void testOverload() throws Exception
     {
         List<Thread> threads = new LinkedList<Thread>();
@@ -100,7 +116,7 @@ public class ConnectionPoolOverloadTest extends TestCase
                     {
                         try
                         {
-                            thread.join();
+                            thread.join(dbPoolWaitMax);
                         }
                         catch (Exception e)
                         {

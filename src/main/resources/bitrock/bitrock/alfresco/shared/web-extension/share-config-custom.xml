@@ -354,15 +354,16 @@
             <basic-auth>true</basic-auth>
             <identity>user</identity>
          </endpoint>
-         
+         <!-- 
          <endpoint>
             <id>activiti-admin</id>
             <name>Activiti Admin UI - user access</name>
             <description>Access to Activiti Admin UI, that requires user authentication</description>
             <connector-id>activiti-admin-connector</connector-id>
-            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/activiti-admin</endpoint-url>
+            <endpoint-url>http://localhost:8080/alfresco/activiti-admin</endpoint-url>
             <identity>user</identity>
          </endpoint>
+         -->
       </remote>
    </config>
 

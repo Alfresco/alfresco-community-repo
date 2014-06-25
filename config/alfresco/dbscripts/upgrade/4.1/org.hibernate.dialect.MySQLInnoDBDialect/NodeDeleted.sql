@@ -8,7 +8,7 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-
+SET FOREIGN_KEY_CHECKS=0;
 
 --ASSIGN:SYSTEM_NS_ID=id
 select id from alf_namespace where uri = 'http://www.alfresco.org/model/system/1.0';
@@ -129,7 +129,7 @@ alter table alf_usage_delta add constraint fk_alf_usaged_n foreign key (node_id)
 
 alter table alf_node_aspects add constraint fk_alf_nasp_n foreign key (node_id) references alf_node(id);
 
-
+SET FOREIGN_KEY_CHECKS=1;
 
 --
 -- Record script finish

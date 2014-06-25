@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,9 +18,12 @@
  */
 package org.alfresco.repo.dictionary;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -56,6 +59,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
     
     private static final QName TEST_MODEL_ONE = QName.createQName("{http://www.alfresco.org/test/testmodel1/1.0}testModelOne");
     private static final QName TEST_MODEL_TWO = QName.createQName("{http://www.alfresco.org/test/testmodel2/1.0}testModelTwo");
+    private static final QName TEST_MODEL_THREE = QName.createQName("{http://www.alfresco.org/test/testmodel3/1.0}testModelThree");
     
     /** Test model XMLs */
     
@@ -285,6 +289,52 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         "   </types>" +
         
         "</model>";
+    
+    public static final String MODEL_THREE_XML = 
+            "<model name='test3:testModelThree' xmlns='http://www.alfresco.org/model/dictionary/1.0'>" +
+            
+            "   <description>Test model three</description>" +
+            "   <author>Alfresco</author>" +
+            "   <published>2005-05-30</published>" +
+            "   <version>1.0</version>" +
+            
+            "   <imports>" +
+            "      <import uri='http://www.alfresco.org/model/dictionary/1.0' prefix='d'/>" +
+            "      <import uri='http://www.alfresco.org/model/content/1.0' prefix='cm'/>" +
+            "   </imports>" +
+            
+            "   <namespaces>" +
+            "      <namespace uri='http://www.alfresco.org/test/testmodel3/1.0' prefix='test3'/>" +
+            "   </namespaces>" +
+            
+            "   <types>" +
+            
+            "      <type name='test3:base'>" +
+            "        <title>Base</title>" +
+            "        <description>The Base Type</description>" +
+            "        <parent>cm:content</parent>" +
+            "        <properties>" +
+            "           <property name='test3:prop1'>" +
+            "              <type>d:text</type>" +
+            "              <mandatory enforced='false'>true</mandatory>" +
+            "           </property>" +
+            "        </properties>" +
+            "      </type>" +
+            
+            "      <type name='test3:base-override'>" +
+            "        <title>Base</title>" +
+            "        <description>The Base Type</description>" +
+            "        <parent>test3:base</parent>" +
+            "        <overrides>" +
+            "           <property name='test3:prop1'>" +
+            "              <mandatory enforced='true'>true</mandatory>" +
+            "           </property>" +
+            "        </overrides>" +
+            "      </type>" +
+            
+            "   </types>" +
+            
+            "</model>";
     
     /** Services used in tests */
     private DictionaryService dictionaryService;
@@ -878,6 +928,67 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
                 }
                 
                 return null;
+            }
+        });
+    }
+    
+    /**
+     * Test for MNT-11653
+     */
+    public void testOverrideMandatoryProperty()
+    {
+        try
+        {
+            // Check that the model has not yet been loaded into the dictionary
+            this.dictionaryService.getModel(TEST_MODEL_THREE);
+            fail("This model has not yet been loaded into the dictionary service");
+        }
+        catch (DictionaryException exception)
+        {
+            // We expect this exception
+        }
+        
+        // Check that the namespace is not yet in the namespace service
+        String uri = this.namespaceService.getNamespaceURI("test3");
+        assertNull(uri);
+        
+        // Create a model node
+        PropertyMap properties = new PropertyMap(1);
+        properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
+        
+        final NodeRef modelNode = this.nodeService.createNode(
+                this.rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
+                ContentModel.TYPE_DICTIONARY_MODEL,
+                properties).getChildRef(); 
+        assertNotNull(modelNode);
+        
+        // Add the model content to the model node
+        ContentWriter contentWriter = this.contentService.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+        contentWriter.putContent(MODEL_THREE_XML);
+        
+        // End the transaction to force update
+        setComplete();
+        endTransaction();
+     
+        // create node using new type
+        final NodeRef node1 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Exception
+            {
+                Map<QName, Serializable> properties = new HashMap<>();
+                properties.put(QName.createQName("http://www.alfresco.org/test/testmodel3/1.0", "prop1"), "testvalue");
+                NodeRef node = nodeService.createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("http://www.alfresco.org/model/system/1.0", "node1"),
+                        QName.createQName("http://www.alfresco.org/test/testmodel3/1.0", "base-override"),
+                        properties).getChildRef(); 
+                assertNotNull(node);
+                return node;
             }
         });
     }

@@ -2040,13 +2040,14 @@ public class CMISTest
     {
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        final String groupName = "group" + GUID.generate();
+        final String testGroup = PermissionService.GROUP_PREFIX + groupName;
         try
         {
             // preconditions: create test document
-            final String testGroup = PermissionService.GROUP_PREFIX + "group1";
             if (!authorityService.authorityExists(testGroup))
             {
-                authorityService.createAuthority(AuthorityType.GROUP, "group1");
+                authorityService.createAuthority(AuthorityType.GROUP, groupName);
             }
             
             final FileInfo document = transactionService.getRetryingTransactionHelper().doInTransaction(
@@ -2141,6 +2142,10 @@ public class CMISTest
         }
         finally
         {
+            if (authorityService.authorityExists(testGroup))
+            {
+                authorityService.deleteAuthority(testGroup);
+            }
             AuthenticationUtil.popAuthentication();
         }
     }

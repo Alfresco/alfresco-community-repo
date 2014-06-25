@@ -10,20 +10,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>alfresco-platform-distribution</artifactId>
-  <groupId>@@maven.group.id@@</groupId>
-  <version>@@maven.version.number@@</version>
-  <name>Alfresco ${alfrescoEdition} ${project.version} Platform Distribution descriptor</name>
+  <name>Alfresco Community ${project.version} Platform Distribution descriptor</name>
   <description>This POM describes the Alfresco artifacts usable in the Maven SDK, in terms of artifacts groupId, artifactId, version</description>
   <packaging>pom</packaging>
+  
+  <parent>
+    <artifactId>alfresco-parent</artifactId>
+    <groupId>org.alfresco</groupId>
+    <version>5.0-BF-SNAPSHOT</version>
+    <relativePath>../../../pom.xml</relativePath>
+  </parent>
   
   <url>https://artifacts.alfresco.com/nexus/content/repositories/alfresco-docs/alfresco-platform-distribution/latest</url>
 
   <properties>
     <!-- Alfresco version/edition selection -->
-    <alfresco.groupId>@@maven.group.id@@</alfresco.groupId>
-    <alfresco.version>@@maven.version.number@@</alfresco.version>
+    <alfresco.groupId>${project.groupId}</alfresco.groupId>
+    <alfresco.version>${project.version}</alfresco.version>
     <!-- Filtered in site so no dots allowed in property name -->
-    <alfrescoEdition>@@maven.edition@@</alfrescoEdition>
+    <alfrescoEdition>Community</alfrescoEdition>
   </properties>
   
   <!--  
@@ -42,13 +47,6 @@
         <version>${alfresco.version}</version>
         <type>war</type>
       </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco</artifactId>
-        <version>${alfresco.version}</version>
-        <classifier>config</classifier>
-        <scope>provided</scope>
-      </dependency>
       <!-- Core -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
@@ -56,18 +54,11 @@
         <version>${alfresco.version}</version>
         <scope>provided</scope>
       </dependency>
-      <!-- Data model (JAR + Config) -->
+      <!-- Data model -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-data-model</artifactId>
         <version>${alfresco.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-data-model</artifactId>
-        <version>${alfresco.version}</version>
-        <classifier>config</classifier>
         <scope>provided</scope>
       </dependency>
       <!-- JLAN Embed -->
@@ -84,32 +75,18 @@
         <version>${alfresco.version}</version>
         <scope>provided</scope>
       </dependency>
-      <!-- Remote API (JAR + Config) -->
+      <!-- Remote API (JAR) -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-remote-api</artifactId>
         <version>${alfresco.version}</version>
         <scope>provided</scope>
       </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-remote-api</artifactId>
-        <version>${alfresco.version}</version>
-        <classifier>config</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <!-- Remote API (JAR + Config) -->
+      <!-- Remote API (JAR) -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-repository</artifactId>
         <version>${alfresco.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-repository</artifactId>
-        <version>${alfresco.version}</version>
-        <classifier>config</classifier>
         <scope>provided</scope>
       </dependency>
       <!-- Web Client-->
@@ -139,7 +116,6 @@
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-share</artifactId>
         <version>${alfresco.version}</version>
-        <classifier>config</classifier>
         <scope>provided</scope>
       </dependency>
       <!-- FDK Client -->
@@ -224,8 +200,8 @@
   
   <distributionManagement>
     <site>
-        <id>@@maven.site.id@@</id>
-        <url>dav:@@maven.site.url@@</url>
+        <id>alfresco-internal</id>
+        <url>dav:https://artifacts.alfresco.com/nexus/content/repositories/alfresco-docs/alfresco-platform-distribution/latest</url>
     </site>
   </distributionManagement>
 </project>

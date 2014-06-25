@@ -19,6 +19,7 @@
 package org.alfresco.repo.webdav;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.Writer;
 import java.net.SocketException;
 import java.text.ParseException;
@@ -36,12 +37,15 @@ import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -431,9 +435,9 @@ public class GetMethod extends WebDAVMethod
      */
     private void generateDirectoryListing(FileInfo fileInfo)
     {
-        FileFolderService fileFolderService = getFileFolderService();
         MimetypeService mimeTypeService = getMimetypeService();
-        
+        NodeService nodeService = getNodeService();
+
         Writer writer = null;
 
         try
@@ -498,15 +502,16 @@ public class GetMethod extends WebDAVMethod
             {
                 rootURL = rootURL + WebDAVHelper.PathSeperator;
             }
+
             if (wasLink)
             {
-                Path pathToNode = getNodeService().getPath(fileInfo.getNodeRef());
+                Path pathToNode = nodeService.getPath(fileInfo.getNodeRef());
                 if (pathToNode.size() > 2)
                 {
                     pathToNode = pathToNode.subPath(2, pathToNode.size() - 1);
                 }
 
-                rootURL = getURLForPath(m_request, pathToNode.toDisplayPath(getNodeService(), getPermissionService()), true);
+                rootURL = getURLForPath(m_request, pathToNode.toDisplayPath(nodeService, getPermissionService()), true);
                 if (rootURL.endsWith(WebDAVHelper.PathSeperator) == false)
                 {
                     rootURL = rootURL + WebDAVHelper.PathSeperator;
@@ -560,19 +565,41 @@ public class GetMethod extends WebDAVMethod
 
                 // size field
                 writer.write("</td><td class='textData'>");
+
+                ContentData contentData = null;
+                if (!childNodeInfo.isFolder())
+                {
+                    Serializable contentPropertyName = nodeService.getProperty(childNodeInfo.getNodeRef(), ContentModel.PROP_CONTENT_PROPERTY_NAME);
+                    QName contentPropertyQName = DefaultTypeConverter.INSTANCE.convert(QName.class, contentPropertyName);
+
+                    if (null == contentPropertyQName)
+                    {
+                        contentPropertyQName = ContentModel.PROP_CONTENT;
+                    }
+
+                    Serializable contentProperty = nodeService.getProperty(childNodeInfo.getNodeRef(), contentPropertyQName);
+
+                    if (contentProperty instanceof ContentData)
+                    {
+                        contentData = (ContentData) contentProperty;
+                    }
+                }
+
                 if (childNodeInfo.isFolder())
                 {
                     writer.write("&nbsp;");
                 }
                 else
                 {
-                    ContentReader reader = fileFolderService.getReader(childNodeInfo.getNodeRef());
-                    long fsize = 0L;
-                    if (reader != null)
+                    if (null != contentData)
                     {
-                        fsize = reader.getSize();
+                        writer.write(formatSize(Long.toString(contentData.getSize())));
                     }
-                    writer.write(formatSize(Long.toString(fsize)));
+                    else
+                    {
+                        writer.write("&nbsp;");
+                    }
+
                 }
                 writer.write("</td><td class='textData'>");
 
@@ -583,20 +610,15 @@ public class GetMethod extends WebDAVMethod
                 }
                 else
                 {
-                    ContentReader reader = fileFolderService.getReader(childNodeInfo.getNodeRef());
                     String mimetype = "&nbsp;";
-                    if (reader != null)
+                    if (null != contentData)
                     {
-                        mimetype = reader.getMimetype();
-                        String displayType = mimeTypeService.getDisplaysByMimetype().get(reader.getMimetype());
+                        mimetype = contentData.getMimetype();
+                        String displayType = mimeTypeService.getDisplaysByMimetype().get(mimetype);
 
                         if (displayType != null)
                         {
                             mimetype = displayType;
-                        }
-                        if (mimetype == null)
-                        {
-                           mimetype = reader.getMimetype();
                         }
                     }
                     writer.write(mimetype);

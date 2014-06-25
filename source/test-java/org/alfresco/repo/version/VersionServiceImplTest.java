@@ -117,6 +117,61 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         // NOOP
     }
     
+    // MNT-6400 Reverted node must not have fm:discussable aspect
+    //  from next version
+    public void testDiscussableAspect()
+    {
+        NodeRef versionableNode = createNewVersionableNode();
+        Version v1 = createVersion(versionableNode);
+        createVersion(versionableNode);
+        VersionHistory vh = this.versionService.getVersionHistory(versionableNode);
+        assertEquals(2, vh.getAllVersions().size());
+        addComment(versionableNode, "<p>Comm123</p>", false);
+        
+        Set<QName> aspects = nodeService.getAspects(versionableNode);
+        assertTrue(aspects.contains(ForumModel.ASPECT_DISCUSSABLE));
+        
+        this.versionService.revert(versionableNode, v1);
+        aspects = nodeService.getAspects(versionableNode);
+        assertFalse(aspects.contains(ForumModel.ASPECT_DISCUSSABLE));
+    }
+    
+    private NodeRef addComment(NodeRef nr, String comment, boolean suppressRollups)
+    {
+        // There is no CommentService, so we have to create the node structure by hand.
+        // This is what happens within e.g. comment.put.json.js when comments are submitted via the REST API.
+        if (!nodeService.hasAspect(nr, ForumModel.ASPECT_DISCUSSABLE))
+        {
+            nodeService.addAspect(nr, ForumModel.ASPECT_DISCUSSABLE, null);
+        }
+        if (!nodeService.hasAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP) && !suppressRollups)
+        {
+            nodeService.addAspect(nr, ForumModel.ASPECT_COMMENTS_ROLLUP, null);
+        }
+        // Forum node is created automatically by DiscussableAspect behaviour.
+        NodeRef forumNode = nodeService.getChildAssocs(nr, ForumModel.ASSOC_DISCUSSION, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion")).get(0).getChildRef();
+        
+        final List<ChildAssociationRef> existingTopics = nodeService.getChildAssocs(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"));
+        NodeRef topicNode = null;
+        if (existingTopics.isEmpty())
+        {
+            topicNode = nodeService.createNode(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"), ForumModel.TYPE_TOPIC).getChildRef();
+        }
+        else
+        {
+            topicNode = existingTopics.get(0).getChildRef();
+        }
+
+        NodeRef postNode = nodeService.createNode(topicNode, ContentModel.ASSOC_CONTAINS, QName.createQName("comment" + System.currentTimeMillis()), ForumModel.TYPE_POST).getChildRef();
+        nodeService.setProperty(postNode, ContentModel.PROP_CONTENT, new ContentData(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, 0L, null));
+        ContentWriter writer = contentService.getWriter(postNode, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(comment);
+        
+        return postNode;
+    }
+    
     /**
      * Tests the creation of the initial version of a versionable node
      */

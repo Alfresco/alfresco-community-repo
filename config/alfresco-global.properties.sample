@@ -74,6 +74,10 @@
 #
 #db.driver=com.ibm.db2.jcc.DB2Driver
 #db.url=jdbc:db2://localhost:50000/alfresco:retrieveMessagesFromServerOnGetMessage=true;
+#
+# When schema is used which does not match DB2 username then currentSchema and hibernate.default_schema should be set
+#db.url=jdbc:db2://localhost:50000/alfresco:retrieveMessagesFromServerOnGetMessage=true;currentSchema=${hibernate.default_schema};
+#hibernate.default_schema=SAMPLE_SCHEMA
 
 #
 # Index Recovery Mode

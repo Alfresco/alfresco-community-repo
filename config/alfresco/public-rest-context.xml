@@ -888,6 +888,7 @@
         <property name="restVariableHelper" ref="restVariableHelper" />
         <property name="messageService" ref="messageService" />
         <property name="personService" ref="PersonService" />
+        <property name="propertyConverter" ref="activitiPropertyConverter" />
     </bean>
 
     <bean id="Tasks" class="org.springframework.aop.framework.ProxyFactoryBean">

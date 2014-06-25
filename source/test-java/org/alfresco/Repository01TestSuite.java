@@ -419,5 +419,8 @@ public class Repository01TestSuite extends TestSuite
     static void tests65(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.content.transform.DifferrentMimeTypeTest.class);
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class));
+        suite.addTestSuite(org.alfresco.repo.dictionary.DictionaryModelTypeTest.class);
+        suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
     }
 }

@@ -830,7 +830,6 @@
                               </goals>
                               <configuration>
                                   <forkMode>always</forkMode>
-                                  <enableAssertions>false</enableAssertions> <!-- Failed assertion in AVMServiceTest.testDiffOrder() -->
                                   <includes combine.self="override">
                                       <include>**/org/alfresco/Repository*TestSuite.java</include>
                                   </includes>

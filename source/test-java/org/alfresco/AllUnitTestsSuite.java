@@ -31,6 +31,7 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTestSuite(org.alfresco.filesys.repo.CIFSContentComparatorTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.rules.ShuffleTest.class);
         suite.addTestSuite(org.alfresco.repo.admin.Log4JHierarchyInitTest.class);
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.attributes.PropTablesCleanupJobTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.cache.DefaultCacheFactoryTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.cache.DefaultSimpleCacheTest.class));
         suite.addTestSuite(org.alfresco.repo.cache.lookup.EntityLookupCacheTest.class);

@@ -612,6 +612,12 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                 if (personService.personExists(authority) == true)
                                 {
                                     NodeRef person = personService.getPerson(authority);
+                                    
+                                    if (!personService.isEnabled(authority) && !nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
+                                    {
+                                        continue;
+                                    }
+                                    
                                     String address = (String)nodeService.getProperty(person, ContentModel.PROP_EMAIL);
                                     if (address != null && address.length() != 0 && validateAddress(address))
                                     {

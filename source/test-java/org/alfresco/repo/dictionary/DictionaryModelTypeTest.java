@@ -25,6 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -36,6 +43,7 @@ import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -46,6 +54,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
 import org.junit.experimental.categories.Category;
+import org.springframework.util.ResourceUtils;
 
 /**
  * Dictionary model type unit test
@@ -975,6 +984,22 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         setComplete();
         endTransaction();
      
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {      
+                // Validate the model
+                ContentReader reader = DictionaryModelTypeTest.this.contentService.getReader(modelNode, ContentModel.PROP_CONTENT);
+                Source transferReportSource = new StreamSource(reader.getContentInputStream());
+                SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+                final String schemaLocation = "classpath:alfresco/model/modelSchema.xsd";
+                Schema schema = sf.newSchema(ResourceUtils.getURL(schemaLocation));
+                Validator validator = schema.newValidator();
+                validator.validate(transferReportSource);
+                return null;
+            }
+        });
+        
         // create node using new type
         final NodeRef node1 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {

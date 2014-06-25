@@ -262,7 +262,10 @@
    <xs:complexType name="association">
       <xs:sequence>
          <xs:group ref="dd:TextualDescription"></xs:group>
-         <xs:element name="source" maxOccurs="1" minOccurs="0">            <xs:complexType>               <xs:sequence>                  <xs:element name="role" type="xs:string" maxOccurs="1"
+         <xs:element name="source" maxOccurs="1" minOccurs="0">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="role" type="xs:string" maxOccurs="1"
                      minOccurs="0" />
                   <xs:element name="mandatory" type="xs:boolean"
                      maxOccurs="1" minOccurs="0" />
@@ -271,7 +274,10 @@
                </xs:sequence>
             </xs:complexType>
          </xs:element>
-         <xs:element name="target">            <xs:complexType>               <xs:sequence>                  <xs:element name="class" type="xs:string"  maxOccurs="1" minOccurs="1" />
+         <xs:element name="target">
+            <xs:complexType>
+               <xs:sequence>
+                  <xs:element name="class" type="xs:string"  maxOccurs="1" minOccurs="1" />
                   <xs:element name="role" type="xs:string" maxOccurs="1" minOccurs="0" />
                   <xs:element name="mandatory" type="dd:mandatoryDef"
                      maxOccurs="1" minOccurs="0" />
@@ -301,7 +307,7 @@
 
    <xs:complexType name="propertyOverride">
       <xs:sequence>
-         <xs:element name="mandatory" type="xs:boolean"
+         <xs:element name="mandatory" type="dd:mandatoryDef"
             maxOccurs="1" minOccurs="0" />
          <xs:element name="default" type="xs:string"
             maxOccurs="1" minOccurs="0" />

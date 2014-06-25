@@ -3767,4 +3767,36 @@
         <!--  Do we deferr running the surf-config folder patch? -->
         <property name="deferred"><value>${system.patch.surfConfigFolder.deferred}</value></property>
     </bean> 
+    <bean id="patch.renameSiteAuthorityDisplayName"
+        class="org.alfresco.repo.admin.patch.impl.RenameSiteAuthorityDisplayName"
+        parent="basePatch">
+        <property name="id">
+            <value>patch.renameSiteAuthorityDisplayName</value>
+        </property>
+        <property name="description">
+            <value>patch.renameSiteAuthorityDisplayName.description</value>
+        </property>
+        <property name="fixesFromSchema">
+            <value>0</value>
+        </property>
+        <property name="fixesToSchema">
+            <value>8000</value>
+        </property>
+        <property name="targetSchema">
+            <value>8001</value>
+        </property>
+        <property name="siteService">
+            <ref bean="siteService" />
+        </property>
+        <property name="permissionService">
+            <ref bean="PermissionService" />
+        </property>
+        <property name="authorityService">
+            <ref bean="AuthorityService" />
+        </property>
+        <property name="ruleService">
+            <ref bean="ruleService" />
+        </property>
+    </bean>
+
 </beans>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -41,6 +41,7 @@ public class AuditTestSuite extends TestSuite
         suite.addTestSuite(AuditBootstrapTest.class);
         suite.addTestSuite(AuditComponentTest.class);
         suite.addTestSuite(UserAuditFilterTest.class);
+        suite.addTestSuite(AuditMethodInterceptorTest.class);
         
         suite.addTest(new JUnit4TestAdapter(PropertyAuditFilterTest.class));
         suite.addTest(new JUnit4TestAdapter(AccessAuditorTest.class));

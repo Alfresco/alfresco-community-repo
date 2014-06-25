@@ -128,6 +128,22 @@
 		</property>
 	</bean>
 
+    <bean id="RemoteUserMapper"
+       class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
+       <property name="applicationContextManager">
+          <ref bean="Authentication" />
+       </property>
+       <property name="interfaces">
+          <list>
+             <value>org.alfresco.repo.security.authentication.external.RemoteUserMapper</value>
+             <value>org.alfresco.repo.management.subsystems.ActivateableBean</value>
+          </list>
+       </property>
+       <property name="sourceBeanName">
+          <value>remoteUserMapper</value>
+       </property>
+    </bean>
+
 	<!-- Passwords are encoded using MD4 -->
 	<!-- This is not ideal and only done to be compatible with NTLM -->
 	<!-- authentication against the default authentication mechanism. -->

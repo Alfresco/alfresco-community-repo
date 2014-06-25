@@ -50,4 +50,23 @@
       </property>
    </bean>
 
+   <!-- Enable control over mapping between request and user ID -->
+   <bean id="remoteUserMapper" class="org.alfresco.repo.security.authentication.external.DefaultRemoteUserMapper">
+      <property name="proxyUserName">
+         <value>${external.authentication.proxyUserName}</value>
+      </property>
+      <property name="proxyHeader">
+         <value>${external.authentication.proxyHeader}</value>
+      </property>
+      <property name="active">
+         <value>${external.authentication.enabled}</value>
+      </property>
+      <property name="userIdPattern">
+         <value>${external.authentication.userIdPattern}</value>
+      </property>
+      <property name="personService">
+         <ref bean="PersonService" />
+      </property>
+   </bean>
+
 </beans>

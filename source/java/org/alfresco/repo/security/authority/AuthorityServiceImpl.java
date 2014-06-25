@@ -73,23 +73,11 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     private Set<String> adminGroups = Collections.emptySet();
     private Set<String> guestGroups = Collections.emptySet();
 
-    private boolean useGetContainingAuthoritiesForHasAuthority = true;
-    
     public AuthorityServiceImpl()
     {
         super();
     }
    
-    /**
-     * @param useGetContainingAuthoritiesForHasAuthority the useGetContainingAuthoritiesForHasAuthority to set
-     */
-    public void setUseGetContainingAuthoritiesForHasAuthority(boolean useGetContainingAuthoritiesForHasAuthority)
-    {
-        this.useGetContainingAuthoritiesForHasAuthority = useGetContainingAuthoritiesForHasAuthority;
-    }
-
-
-
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;

@@ -131,8 +131,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 
     private boolean useBridgeTable = true;
     
-    private boolean useGetContainingAuthoritiesForIsAuthorityContained = true;
-    
     private QNameDAO qnameDAO;
     private CannedQueryDAO cannedQueryDAO;
     private AclDAO aclDao;
@@ -259,14 +257,6 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     public void setCannedQueryRegistry(NamedObjectRegistry<CannedQueryFactory<?>> cannedQueryRegistry)
     {
         this.cannedQueryRegistry = cannedQueryRegistry;
-    }
-    
-    /**
-     * @param useGetContainingAuthoritiesForHasAuthority the useGetContainingAuthoritiesForHasAuthority to set
-     */
-    public void setUseGetContainingAuthoritiesForIsAuthorityContained(boolean useGetContainingAuthoritiesForIsAuthorityContained)
-    {
-        this.useGetContainingAuthoritiesForIsAuthorityContained = useGetContainingAuthoritiesForIsAuthorityContained;
     }
     
     /**
@@ -1157,16 +1147,9 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             negativeHits.add(getPooledName(authority));
             return false;
         }
-        if(useGetContainingAuthoritiesForIsAuthorityContained)
+        if (authorityBridgeTableCache.isUpToDate())
         {
-            if(authorityBridgeTableCache.isUpToDate())
-            {
-                return getContainingAuthorities(null, authorityToFind, false).contains(authority);
-            }
-            else
-            {
-                return isAuthorityContained(authorityNodeRef, getPooledName(authority), authorityToFind, positiveHits, negativeHits);
-            }
+            return getContainingAuthorities(null, authorityToFind, false).contains(authority);
         }
         else
         {

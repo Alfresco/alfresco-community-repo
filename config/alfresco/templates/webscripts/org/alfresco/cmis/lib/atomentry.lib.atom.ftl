@@ -45,6 +45,7 @@
 [#--                         --]
 
 [#macro document node renditionfilter="cmis:none" propfilter="*" includeallowableactions=false includerelationships="none" includeacl=false ns=""]
+[#if cmistype(node)??]
 [@entry ns]
 <author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
@@ -71,6 +72,7 @@
 </cmisra:object>
 <cmisra:pathSegment>${node.name?xml}</cmisra:pathSegment>
 [/@entry]
+[/#if]
 [/#macro]
 
 [#macro documentCMISLinks node]
@@ -100,6 +102,7 @@
 [/#macro]
 
 [#macro folder node renditionfilter="cmis:none" propfilter="*" typesfilter="any" includeallowableactions=false includerelationships="none" includeacl=false ns="" depth=1 maxdepth=1 relativePathSegment="" nestedkind=""]
+[#if cmistype(node)??]
 [@entry ns]
 <author><name>${node.properties.creator!""}</name></author>
 [@contentstream node/]
@@ -144,6 +147,7 @@
 [/#if]
 [/#if]
 [/@entry]
+[/#if]
 [/#macro]
 
 [#macro folderCMISLinks node]
@@ -167,6 +171,7 @@
 [#--                             --]
 
 [#macro assoc assoc propfilter="*" includeallowableactions=false ns=""]
+[#if cmistype(node)??]
 [@entry ns]
 <author><name>${assoc.source.properties.creator!""}</name></author>
 <content>[@namedvalue cmisconstants.PROP_OBJECT_ID assoc cmisconstants.DATATYPE_ID/]</content>
@@ -182,6 +187,7 @@
 [#if includeallowableactions][@assocallowableactions assoc/][/#if]
 </cmisra:object>
 [/@entry]
+[/#if]
 [/#macro]
 
 [#macro assocCMISLinks assoc]

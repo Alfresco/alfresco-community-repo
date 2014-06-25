@@ -18,17 +18,33 @@
  */
 package org.alfresco.repo.cmis.rest.test;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.model.ApplicationModel;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ApplicationContextHelper;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Link;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Request;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 public class CMISAtomTemplatesTest extends BaseCMISTest
 {
+    private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0],"classpath:test-cmisinteger_modell-context.xml"});
+    private NodeService nodeService;
+    
     static String docName;
 
     static String xmlResponse;
@@ -47,6 +63,8 @@ public class CMISAtomTemplatesTest extends BaseCMISTest
         Assert.assertNotNull(documentRes);
         xmlResponse = documentRes.getContentAsString();
         Assert.assertNotNull(xmlResponse);
+        
+        this.nodeService = (NodeService)ctx.getBean("NodeService");
     }
 
     @Test
@@ -67,5 +85,52 @@ public class CMISAtomTemplatesTest extends BaseCMISTest
     {
         // check document name with repeatable spaces in xml response.
         assertEquals("Probably, item.get.atomentry.ftl template has compress dirrective", true, xmlResponse.contains(docName));
+    }
+    
+    /*
+     * Get children, if parent has object of non-cmis type
+     * cm:folderlink is non-cmis type.
+     */
+    @Test
+    public void testChildrenWithLink() throws Exception
+    {
+        String testFolderRefStr = testCaseFolder.getId().toString().replace("urn:uuid:", "workspace://SpacesStore/");
+        NodeRef testFolderRef = new NodeRef(testFolderRefStr);
+        
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(2, 1.0f);
+        String linkName = "link " + testCaseFolder.getTitle() + ".url";
+        props.put(ContentModel.PROP_NAME, linkName);
+        props.put(ContentModel.PROP_LINK_DESTINATION, testFolderRef);
+        
+        AuthenticationUtil.pushAuthentication();;
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        
+        NodeRef linkRef = null;
+        
+        try
+        {
+            ChildAssociationRef childRef = nodeService.createNode(
+                    testFolderRef,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(testCaseFolder.getTitle()),
+                    ApplicationModel.TYPE_FOLDERLINK,
+                    props); 
+            linkRef = childRef.getChildRef();
+            
+            String id = testCaseFolder.getId().toString().replace("urn:uuid:", "workspace:SpacesStore/i/");
+            Request get = new GetRequest("/cmis/s/" + id + "/children");
+            sendRequest(get, 200);
+        }
+        finally
+        {
+            if (linkRef != null)
+            {
+                nodeService.deleteNode(linkRef);
+            }
+            AuthenticationUtil.popAuthentication();
+        }
+        
+
+        
     }
 }

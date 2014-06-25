@@ -210,6 +210,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         final int expectedStatusOK = 200;
         final int expectedStatusNotFound = 404;
         final int expectedStatusServerError = 500; // currently mapped from AccessDenied (should it be 403, 404 or does it depend on use-case)
+        final int expectedStatusForbidden = 403;
         
         String testNodeRef_3 = testNode.toString().replace("://", "/");
         
@@ -236,7 +237,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         // As user two ...
         
         rsp = sendRequest(new GetRequest(AUTH_METADATA_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusServerError, USER_TWO);
-        rsp = sendRequest(new GetRequest(AUTH_CONTENT_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusServerError, USER_TWO);
+        rsp = sendRequest(new GetRequest(AUTH_CONTENT_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusForbidden, USER_TWO);
         rsp = sendRequest(new GetRequest(AUTH_CONTENT_THUMBNAIL_URL.replace("{node_ref_3}", testNodeRef_3).replace("{thumbnailname}", "doclib")), expectedStatusServerError, USER_TWO);
         
         // As user one ...

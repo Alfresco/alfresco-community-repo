@@ -34,6 +34,7 @@ import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cmis.reference.ReferenceFactory;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -44,6 +45,7 @@ import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -185,26 +187,33 @@ public class ContentGet extends StreamContent implements ServletContextAware
 
         boolean rfc5987Supported = (null != userAgent) && (userAgent.contains("MSIE") || userAgent.contains(" Chrome/") || userAgent.contains(" FireFox/"));
 
-        if (attach && rfc5987Supported)
+        try
         {
-            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            
-            //IE use file extension to get mimetype
-            //So we set correct extension. see MNT-11246
-            if(userAgent.contains("MSIE"))
+            if (attach && rfc5987Supported)
             {
-                String mimeType = contentService.getReader(nodeRef, propertyQName).getMimetype();
-                if (!mimetypeService.getMimetypes(FilenameUtils.getExtension(name)).contains(mimeType))
-                {
-                    name = FilenameUtils.removeExtension(name) + FilenameUtils.EXTENSION_SEPARATOR_STR + mimetypeService.getExtension(mimeType); 
-                }
-            }
+                String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             
-            streamContent(req, res, nodeRef, propertyQName, attach, name, null);
+                //IE use file extension to get mimetype
+                //So we set correct extension. see MNT-11246
+                if(userAgent.contains("MSIE"))
+                {
+                    String mimeType = contentService.getReader(nodeRef, propertyQName).getMimetype();
+                    if (!mimetypeService.getMimetypes(FilenameUtils.getExtension(name)).contains(mimeType))
+                    {
+                        name = FilenameUtils.removeExtension(name) + FilenameUtils.EXTENSION_SEPARATOR_STR + mimetypeService.getExtension(mimeType); 
+                    }
+                }
+            
+                streamContent(req, res, nodeRef, propertyQName, attach, name, null);
+            }
+            else
+            {
+                streamContent(req, res, nodeRef, propertyQName, attach, null, null);
+            }
         }
-        else
+        catch (AccessDeniedException e)
         {
-            streamContent(req, res, nodeRef, propertyQName, attach, null, null);
+            throw new WebScriptException(Status.STATUS_FORBIDDEN, e.getMessage());
         }
     }
 

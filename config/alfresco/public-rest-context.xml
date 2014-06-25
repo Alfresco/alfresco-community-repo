@@ -87,6 +87,9 @@
             <constructor-arg type="java.lang.String" value="${alfresco.authentication.gateway.outboundHeaders}"/>
          </bean>
       </property>
+      <property name="remoteUserMapper">
+         <ref bean="RemoteUserMapper" />
+      </property>
    </bean>
 
     <bean id="apiBootstrapBean" class="org.alfresco.rest.framework.core.ApiBootstrap">

@@ -7,8 +7,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.auth.AuthenticationListener;
@@ -36,10 +38,9 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
     private static Log logger = LogFactory.getLog(PublicApiAuthenticatorFactory.class);
     
     public static final String DEFAULT_AUTHENTICATOR_KEY_HEADER = "X-Alfresco-Authenticator-Key"; 
-    public static final String DEFAULT_REMOTE_USER_HEADER = "X-Alfresco-Remote-User"; 
     
     private String authenticatorKeyHeader = DEFAULT_AUTHENTICATOR_KEY_HEADER;
-    private String remoteUserHeader = DEFAULT_REMOTE_USER_HEADER;
+    private RemoteUserMapper remoteUserMapper;
     private RetryingTransactionHelper retryingTransactionHelper;
     private TenantAuthentication tenantAuthentication;
     private Set<String> validAuthenticatorKeys = Collections.emptySet();
@@ -76,10 +77,9 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
         this.outboundHeaderNames = outboundHeaders;
     }
 
-    
-    public void setRemoteUserHeader(String remoteUserHeader)
+    public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
     {
-        this.remoteUserHeader = remoteUserHeader;
+        this.remoteUserMapper = remoteUserMapper;
     }
     
     public void setTenantAuthentication(TenantAuthentication service)
@@ -160,6 +160,30 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
             this.proxyListener = proxyListener; 
         }
     
+        private String getRemoteUser()
+        {
+            String userId = null;
+
+            // If the remote user mapper is configured, we may be able to map in an externally authenticated user
+            if (remoteUserMapper != null && !(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive())
+            {
+                userId = remoteUserMapper.getRemoteUser(this.servletReq.getHttpServletRequest());
+            }
+            if (logger.isDebugEnabled())
+            {
+                if (userId == null)
+                {
+                    logger.debug("No external user ID in request.");
+                }
+                else
+                {
+                    logger.debug("Extracted external user ID from request: " + userId);
+                }
+            }
+
+            return userId;
+        }
+
         /* (non-Javadoc)
          * @see org.alfresco.web.scripts.Authenticator#authenticate(org.alfresco.web.scripts.Description.RequiredAuthentication, boolean)
          */
@@ -169,7 +193,7 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
             try
             {
                 String authenticatorKey = servletReq.getHeader(authenticatorKeyHeader);
-                String remoteUser = servletReq.getHeader(remoteUserHeader);
+                String remoteUser = getRemoteUser();
                 if (authenticatorKey != null && 
                     remoteUser != null)
                 {

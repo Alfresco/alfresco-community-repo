@@ -202,8 +202,19 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
                        // NOTE: This encoding allows us to workaround bug:
                        //       http://bugs.sun.com/bugdatabase/view_bug.do;:WuuT?bug_id=4820807
                        // We also try to use the extra encoding information if present
-                       zipFile = new ZipFile(tempFile, isHighByteZip() ? "Cp437" : null, true);
-                       
+                       String encoding = (String) ruleAction.getParameterValue(PARAM_ENCODING);
+                       if (encoding == null)
+                       {
+                    	   encoding = "UTF-8";
+                       }
+                       else
+                       {
+                    	   if (encoding.equalsIgnoreCase("default"))
+                    	   {
+                    		   encoding = null;
+                    	   }
+                       }
+                       zipFile = new ZipFile(tempFile, encoding, true);
                        // build a temp dir name based on the ID of the noderef we are importing
                        // also use the long life temp folder as large ZIP files can take a while
                        File alfTempDir = TempFileProvider.getLongLifeTempDir("import");

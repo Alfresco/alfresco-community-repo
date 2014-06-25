@@ -78,6 +78,7 @@ public class WorkflowModelBuilder
     public static final String TASK_PROPERTIES = "properties";
     public static final String TASK_PROPERTIY_LABELS = "propertyLabels";
     public static final String TASK_OWNER = "owner";
+    public static final String TASK_CREATOR = "creator";
     public static final String TASK_STATE = "state";
     public static final String TASK_DESCRIPTION = "description";
     public static final String TASK_TITLE = "title";
@@ -200,6 +201,9 @@ public class WorkflowModelBuilder
         
         Serializable owner = task.getProperties().get(ContentModel.PROP_OWNER);
         model.put(TASK_OWNER, getPersonModel(owner));
+
+        Serializable creator = task.getProperties().get(ContentModel.PROP_CREATOR);
+        model.put(TASK_CREATOR, getPersonModel(creator));
 
         // task properties
         Map<String, Object> propertyModel = buildProperties(task, propertyFilters);

@@ -119,7 +119,14 @@ public class ExportPost extends StreamACP
                             RenditionModel.ASPECT_RENDITIONED,
                             ContentModel.ASPECT_THUMBNAILED,
                             RecordsManagementModel.ASPECT_DISPOSITION_LIFECYCLE,
-                            RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH};
+                            RecordsManagementSearchBehaviour.ASPECT_RM_SEARCH,
+                            RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
+                params.setExcludeAspects(excludedAspects);
+            }
+            else
+            {
+                // restrict specific aspects from being returned
+                QName[] excludedAspects = new QName[] {RecordsManagementModel.ASPECT_EXTENDED_SECURITY};
                 params.setExcludeAspects(excludedAspects);
             }
 

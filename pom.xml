@@ -57,6 +57,7 @@
                                     <artifactId>alfresco-solr</artifactId>
                                     <version>${project.version}</version>
                                     <classifier>config</classifier>
+                                    <type>zip</type>
                                     <outputDirectory>${project.build.directory}/solr</outputDirectory>
                                 </artifactItem>
                             </artifactItems>

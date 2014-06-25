@@ -125,13 +125,18 @@ function main()
             }
             else
             {
+               var qnamePaths = result.qnamePath.split("/"), container;
+               if ((qnamePaths.length > 4) && (qnamePaths[2] == "st:sites"))
+               {
+                  container = qnamePaths[4].substr(3);
+               }
                // wrap result and determine if it is selectable in the UI
                resultObj = 
                { 
                   item: result
                };
                resultObj.selectable = isItemSelectable(result, argsSelectableType);
-               
+               resultObj.container = container;
                contentResults.push(resultObj);
             }
          }

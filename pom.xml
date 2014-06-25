@@ -8,7 +8,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>alfresco-installer</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <name>Alfresco Installers</name>
 
     <properties>
@@ -33,6 +33,12 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>

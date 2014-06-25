@@ -28,20 +28,22 @@
         </sequential>
     </macrodef>
 
+    <property name="installer.name" value="alfresco-community" />
+
     <target name="all" depends="sign, package-osx"/>
 
     <target name="sign">
-        <sign-installer file="${project.build.directory}/alfresco-community-${project.version}-installer-win-x32.exe"/>
-        <sign-installer file="${project.build.directory}/alfresco-community-${project.version}-installer-win-x64.exe"/>
+        <sign-installer file="${project.build.directory}/${installer.name}-${project.version}-installer-win-x32.exe"/>
+        <sign-installer file="${project.build.directory}/${installer.name}-${project.version}-installer-win-x64.exe"/>
 
     </target>
 
     <target name="package-osx">
         <!-- package OSX installer -->
-        <tar destfile="${project.build.directory}/alfresco-community-${project.version}-installer-osx-x64.app.tar.gz"
+        <tar destfile="${project.build.directory}/${installer.name}-${project.version}-installer-osx-x64.app.tar.gz"
             compression="gzip" longfile="gnu">
             <tarfileset dir="${project.build.directory}" mode="755">
-                <include name="alfresco-community-${project.version}-installer-osx-x64.app/" />
+                <include name="${installer.name}-${project.version}-installer-osx-x64.app/" />
             </tarfileset>
         </tar>
     </target>

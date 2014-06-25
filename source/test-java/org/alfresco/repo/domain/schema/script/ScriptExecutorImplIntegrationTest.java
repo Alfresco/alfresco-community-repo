@@ -1,6 +1,7 @@
 package org.alfresco.repo.domain.schema.script;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -154,5 +155,59 @@ public class ScriptExecutorImplIntegrationTest
         {
             assertEquals("schema.update.err.script_not_found", e.getMsgId());
         }
+    }
+    
+    @Test()
+    public void emptyCustomDelimiter() throws Exception
+    {
+        try
+        {
+            scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/empty-delimiter.sql");
+            fail("Script execution should fail.");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            assertEquals("schema.update.err.delimiter_invalid", e.getMsgId());
+        }
+    }
+    
+    @Test()
+    public void wrongUsageCustomDelimiter() throws Exception
+    {
+        try
+        {
+            scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/wrong-usage-delimiter.sql");
+            fail("Script execution should fail.");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            assertEquals("schema.update.err.delimiter_set_before_sql", e.getMsgId());
+        }
+    }
+    
+    @Test()
+    public void unterminatedCustomDelimiter() throws Exception
+    {
+        try
+        {
+            scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/unterminated-custom-delimiter.sql");
+            fail("Script execution should fail.");
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            assertEquals("schema.update.err.statement_terminator", e.getMsgId());
+        }
+    }
+    
+    @Test()
+    public void customDelimiter() throws Exception
+    {
+        scriptExecutor.executeScriptUrl("scriptexec/${db.script.dialect}/custom-delimiter.sql");
+        String select = "select message from alf_test_custom_delimiter";
+        List<String> res = jdbcTmpl.queryForList(select, String.class);
+        assertEquals(2, res.size());
+        assertEquals("custom delimter success", res.get(0));
+        assertEquals("custom delimter success again", res.get(1));
+        
     }
 }

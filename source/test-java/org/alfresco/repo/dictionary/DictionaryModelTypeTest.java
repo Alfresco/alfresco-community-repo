@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -935,6 +935,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
     /**
      * Test for MNT-11653
      */
+    @SuppressWarnings("deprecation")
     public void testOverrideMandatoryProperty()
     {
         try
@@ -989,6 +990,26 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
                         properties).getChildRef(); 
                 assertNotNull(node);
                 return node;
+            }
+        });
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {      
+                // Delete the node
+                DictionaryModelTypeTest.this.nodeService.deleteNode(node1);
+                return null;
+            }
+        });
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Exception
+            {      
+                // Delete the model
+                DictionaryModelTypeTest.this.nodeService.deleteNode(modelNode);
+                return null;
             }
         });
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,7 @@
  */
 package org.alfresco.rest.workflow.api.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -44,6 +45,7 @@ import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
+import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -126,7 +128,13 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     private WorkflowQNameConverter qNameConverter;
     private MessageService messageService;
     private PersonService personService;
+    private ActivitiPropertyConverter propertyConverter;
     
+    public void setPropertyConverter(ActivitiPropertyConverter propertyConverter)
+    {
+        this.propertyConverter = propertyConverter;
+    }
+
     public void setRestVariableHelper(RestVariableHelper restVariableHelper)
     {
         this.restVariableHelper = restVariableHelper;
@@ -838,7 +846,6 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                     }
                 }
-                
                 switch (taskAction) 
                 {
                     case CLAIMED:
@@ -852,6 +859,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                         break;
                     case COMPLETED:
+                        setOutcome(localVariables, taskId);
                         if (localVariables.size() > 0)
                         {
                             activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
@@ -882,6 +890,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                         break;
                     case RESOLVED:
+                        setOutcome(localVariables, taskId);
                         if (localVariables.size() > 0)
                         {
                             activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
@@ -1701,5 +1710,29 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         ActivitiConstants.ENGINE_ID, WorkflowModel.TYPE_ACTIVTI_START_TASK);
         }
         return workflowFactory;
+    }
+
+    /**
+     * Set bpm:outcome variable to the local variables of the specified task.
+     * <br>The variables should be set separately via {@link org.activiti.engine.TaskService}
+     * @param localVariables The variable, that will be set to the task
+     * @param taskId The id of the task
+     */
+    private void setOutcome(Map<String, Object> localVariables, String taskId)
+    {
+        WorkflowQNameConverter qNameConverter = getQNameConverter();
+        org.activiti.engine.task.Task task = activitiProcessEngine.getTaskService().createTaskQuery().taskId(taskId).singleResult();
+        String outcomeValue = ActivitiConstants.DEFAULT_TRANSITION_NAME;
+        Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task);
+        QName outcomePropName = (QName) properties.get(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
+        if (outcomePropName != null)
+        {
+            Serializable rawOutcome = properties.get(outcomePropName);
+            if (rawOutcome != null)
+            {
+                outcomeValue = DefaultTypeConverter.INSTANCE.convert(String.class, rawOutcome);
+            }
+        }
+        localVariables.put(qNameConverter.mapQNameToName(WorkflowModel.PROP_OUTCOME), outcomeValue);
     }
 }

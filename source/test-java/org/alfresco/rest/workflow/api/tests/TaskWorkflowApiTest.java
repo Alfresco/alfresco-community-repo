@@ -792,7 +792,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             assertEquals(1234, historyTask.getProcessVariables().get("newGlobalVariable"));
             assertEquals(5678, historyTask.getTaskLocalVariables().get("newLocalVariable"));
-            
+            assertNotNull("The outcome should not be null for completed task.", historyTask.getTaskLocalVariables().get("bpm_outcome"));
             JSONObject variables = tasksClient.findTaskVariables(withVariablesTask.getId());
             assertNotNull(variables);
             JSONObject list = (JSONObject) variables.get("list");
@@ -988,6 +988,12 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
             assertEquals(DelegationState.RESOLVED, task.getDelegationState());
             assertEquals(initiator, task.getAssignee());
+            HistoricTaskInstance historyTask = activitiProcessEngine.getHistoryService().createHistoricTaskInstanceQuery()
+                     .taskId(task.getId())
+                     .includeProcessVariables()
+                     .includeTaskLocalVariables()
+                     .singleResult();
+            assertNotNull("The outcome should not be null for resolved task.", historyTask.getTaskLocalVariables().get("bpm_outcome"));
             
             // Resolving as owner
             task.setDelegationState(null);

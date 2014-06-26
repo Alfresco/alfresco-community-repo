@@ -44,63 +44,63 @@
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <type>war</type>
       </dependency>
       <!-- Core -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-core</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- Data model -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-data-model</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- JLAN Embed -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-jlan-embed</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- MBeans -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-mbeans</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- Remote API (JAR) -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-remote-api</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- Remote API (JAR) -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-repository</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- Web Client-->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-web-client</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- Web Framework Commons-->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-web-framework-commons</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <classifier>classes</classifier>
         <scope>provided</scope>
       </dependency>
@@ -108,66 +108,66 @@
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>share</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <type>war</type>
       </dependency>
       <!-- Share -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-share</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- FDK Client -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-fdk-client</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- == Solr JARs/WAR -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-solr</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <type>war</type>
       </dependency>
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-solr-integration</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- == Extra platform JARs/WARs -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-wcm-quickstart</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <type>war</type>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-web-service-client</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-webeditor</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-webeditor-taglib</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-webeditor-plugin</artifactId>
-        <version>${alfresco.version}</version>
+        <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- == Extra platform JARs/WARs -->

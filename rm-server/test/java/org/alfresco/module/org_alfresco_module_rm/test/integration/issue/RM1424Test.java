@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.test.legacy.service.HoldServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.integration.hold.DeleteHoldTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -33,7 +33,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.2
  * @version 1.0
  */
-public class RM1424Test extends HoldServiceImplTest
+public class RM1424Test extends DeleteHoldTest
 {
     public void testGettingHolds()
     {

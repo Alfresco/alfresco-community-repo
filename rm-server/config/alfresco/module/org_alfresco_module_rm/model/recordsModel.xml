@@ -278,6 +278,7 @@
             <aspect>rma:recordComponentIdentifier</aspect>
             <aspect>rma:commonRecordDetails</aspect>
             <aspect>rma:filePlanComponent</aspect>
+            <aspect>rma:heldChildren</aspect>
          </mandatory-aspects>
 
       </type>
@@ -1128,6 +1129,20 @@
             <property name="rma:recordRejectionReason">
                	<type>d:text</type>
       			<protected>true</protected>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!-- Number of held children, used to improve evaluation performance -->
+      <!--  @since 2.2 -->
+      <aspect name="rma:heldChildren">
+         <title>Held children</title>
+         <properties>
+            <property name="rma:heldChildrenCount">
+               	<type>d:int</type>
+      			<protected>true</protected>
+      			<mandatory>true</mandatory>
+      			<default>0</default>
             </property>
          </properties>
       </aspect>

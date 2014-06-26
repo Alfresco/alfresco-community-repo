@@ -20,7 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.test.legacy.service.HoldServiceImplTest;
+import org.alfresco.module.org_alfresco_module_rm.test.integration.hold.DeleteHoldTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.2
  * @version 1.0
  */
-public class RM1429Test extends HoldServiceImplTest
+public class RM1429Test extends DeleteHoldTest
 {
     public void testDeleteHoldWithoutPermissionsOnChildren()
     {

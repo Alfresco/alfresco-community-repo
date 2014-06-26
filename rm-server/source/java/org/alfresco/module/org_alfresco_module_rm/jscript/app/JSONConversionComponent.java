@@ -286,6 +286,23 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
             rmNodeValues.put("actions", jsonActions);
         }
     }
+    
+    /**
+     * @see org.alfresco.repo.jscript.app.JSONConversionComponent#permissionsToJSON(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    protected JSONObject permissionsToJSON(final NodeRef nodeRef)
+    {
+        JSONObject permissionsJSON = null;        
+        if (!filePlanService.isFilePlanComponent(nodeRef))
+        {
+            permissionsJSON = super.permissionsToJSON(nodeRef);
+        }
+        else
+        {
+            permissionsJSON = new JSONObject();              
+        }
+        return permissionsJSON;
+    }
 
     /**
      * Gets the rm 'type' used as a UI convenience and compatibility flag.

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
+import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -39,6 +40,9 @@ import org.springframework.extensions.webscripts.GUID;
  */
 public class AutomaticDispositionTest extends BaseRMTestCase
 {
+    @SuppressWarnings("unused")
+    private RecordsManagementAuditService auditService;
+    
     /** additional job context to override job frequency */
     protected String[] getConfigLocations()
     {
@@ -50,6 +54,16 @@ public class AutomaticDispositionTest extends BaseRMTestCase
         };
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#initServices()
+     */
+    @Override
+    protected void initServices()
+    {
+        super.initServices();        
+        auditService = (RecordsManagementAuditService)applicationContext.getBean("recordsManagementAuditService");
+    }
+ 
     /**
      * Given there is a complete record eligible for cut off, when the correct frequency of time passes, then
      * the record will be automatically cut off
@@ -95,6 +109,18 @@ public class AutomaticDispositionTest extends BaseRMTestCase
             {
                 // record should now be cut off
                 assertTrue(dispositionService.isDisposableItemCutoff(record));
+                
+                // TODO uncomment and ensure is working
+                
+                //RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+                //params.setEvent(CutOffAction.NAME);
+                //params.setMaxEntries(1);
+                //List<RecordsManagementAuditEntry> entries = auditService.getAuditTrail(params);
+                //assertNotNull(entries);
+                //assertEquals(1, entries.size());
+                
+                //RecordsManagementAuditEntry entry = entries.get(0);
+                //assertEquals(record, entry.getNodeRef());
             }            
         });        
     }

@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.disposition.DispositionTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.dod.DoD5015TestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.event.EventTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.integration.hold.HoldTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.issue.IssueTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.job.JobTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.record.RecordTestSuite;
@@ -47,7 +48,8 @@ import org.junit.runners.Suite.SuiteClasses;
     DispositionTestSuite.class,
     RecordTestSuite.class,
     RecordFolderTestSuite.class,
-    JobTestSuite.class
+    JobTestSuite.class,
+    HoldTestSuite.class
 })
 public class IntegrationTestSuite
 {

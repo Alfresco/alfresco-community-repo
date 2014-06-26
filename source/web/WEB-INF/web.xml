@@ -507,11 +507,6 @@
    </servlet>
 
    <servlet>
-      <servlet-name>proxyServlet</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.HTTPProxyServlet</servlet-class>
-   </servlet>
-
-   <servlet>
       <servlet-name>workflowDefinitionImageServlet</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.WorkflowDefinitionImageServlet</servlet-class>
    </servlet>
@@ -784,11 +779,6 @@
    <servlet-mapping>
       <servlet-name>fbapiServlet</servlet-name>
       <url-pattern>/fbs/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>proxyServlet</servlet-name>
-      <url-pattern>/proxy</url-pattern>
    </servlet-mapping>
 
    <servlet-mapping>

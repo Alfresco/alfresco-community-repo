@@ -13,7 +13,7 @@
             <name>googledocs</name>
             <platforms>all</platforms>
             <distributionFileList>
-              <distributionFile origin="${alfresco_googledocs_source_file}" allowWildcards="1" />
+              <distributionFile origin="${alfresco_amps_source_directory}/alfresco-googledocs-repo-*.amp" allowWildcards="1" />
             </distributionFileList>
             <actionList>
                 <setInstallerVariable name="alfresco_apply_amps" value="1" />
@@ -25,7 +25,7 @@
             <name>googledocsshare</name>
             <platforms>all</platforms>
             <distributionFileList>
-              <distributionFile origin="${alfresco_googledocs_share_source_file}" allowWildcards="1" />
+              <distributionFile origin="${alfresco_amps_source_directory}/alfresco-googledocs-share-*.amp" allowWildcards="1" />
             </distributionFileList>
             <actionList>
                 <setInstallerVariable name="alfresco_apply_amps_share" value="1" />

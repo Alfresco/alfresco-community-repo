@@ -27,8 +27,7 @@
            alfresco_edition=community
            distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}
            solr_folder=${project.build.directory}/solr
-           alfresco_googledocs_source_file=${project.build.directory}/dependency/alfresco-googledocs-repo-${alfresco.googledocs.version}.amp
-           alfresco_googledocs_share_source_file=${project.build.directory}/dependency/alfresco-googledocs-share-${alfresco.googledocs.version}.amp
+           alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
     </properties>
 
@@ -113,6 +112,7 @@
                                     <artifactId>alfresco-spp</artifactId>
                                     <version>${project.version}</version>
                                     <type>amp</type>
+                                    <destFileName>alfresco-spp.amp</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

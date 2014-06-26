@@ -516,6 +516,7 @@
       <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
    </servlet>
 
+   <!-- See comment on the servlet-mapping CMISFileShareServlet.
    <servlet>
       <servlet-name>CMISFileShareServlet</servlet-name>
       <servlet-class>org.apache.chemistry.opencmis.browser.BrowseServlet</servlet-class>
@@ -564,6 +565,7 @@
          <param-value>/cmisfs/stylesheets/thumbnails.xsl</param-value>
       </init-param>
    </servlet>
+   -->
 
     <servlet>
         <servlet-name>cmisws10</servlet-name>
@@ -791,11 +793,16 @@
       <url-pattern>/workflowdefinitionimage/*</url-pattern>
    </servlet-mapping>
 
+   <!-- The cmisbrowser endpoint is provided by the Chemistry project.
+        If you uncomment this section you need to make sure for security
+		reasons that that you have a firewall set up so that it is not
+		accessible from outside of the organisation.
    <servlet-mapping>
       <servlet-name>CMISFileShareServlet</servlet-name>
       <url-pattern>/cmisbrowser</url-pattern>
    </servlet-mapping>
-
+   -->
+   
    <servlet-mapping>
       <servlet-name>cmisws10</servlet-name>
       <url-pattern>/cmisws/*</url-pattern>

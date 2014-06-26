@@ -170,9 +170,20 @@
         <version>${alfresco.version}</version>
         <scope>provided</scope>
       </dependency>
+      <!-- == Extra platform JARs/WARs -->
+      <dependency>
+        <groupId>org.springframework.extensions.surf</groupId>
+        <artifactId>spring-surf</artifactId>
+        <version>${dependency.surf.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.extensions.surf</groupId>
+        <artifactId>spring-surf-api</artifactId>
+        <version>${dependency.surf.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
-  
+
   <repositories>
     <repository>
         <id>alfresco-maven-repo</id>

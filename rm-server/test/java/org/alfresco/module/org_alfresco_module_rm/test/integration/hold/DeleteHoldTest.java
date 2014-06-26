@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class HoldServiceImplTest extends BaseRMTestCase
+public class DeleteHoldTest extends BaseRMTestCase
 {
     /** Constants for the holds */
     protected static final String HOLD1_NAME = "hold one";

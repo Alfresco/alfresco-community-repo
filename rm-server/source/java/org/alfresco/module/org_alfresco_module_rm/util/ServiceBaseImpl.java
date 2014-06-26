@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
@@ -86,7 +88,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
      * <p>
      * Used for performance reasons.
      */
-    private NodeService getInternalNodeService()
+    protected NodeService getInternalNodeService()
     {
         if (internalNodeService == null)
         {
@@ -371,6 +373,8 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         QName className = getInternalNodeService().getType(nodeRef);        
         return instanceOf(className, ofClassName);
     }
+    
+    private static Map<String, Boolean> instanceOfCache = new HashMap<String, Boolean>();
 
     /**
      * Utility method to quickly determine whether one class is equal to or sub of another.
@@ -383,12 +387,25 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         ParameterCheck.mandatory("className", className);
         ParameterCheck.mandatory("ofClassName", ofClassName);
+        
         boolean result = false;
-        if (ofClassName.equals(className) ||
-            dictionaryService.isSubClass(className, ofClassName))
+        
+        String key = className.toString() + "|" + ofClassName.toString();
+        if (instanceOfCache.containsKey(key))
         {
-            result = true;
+            result = instanceOfCache.get(key);
         }
+        else
+        {        
+            if (ofClassName.equals(className) ||
+                dictionaryService.isSubClass(className, ofClassName))
+            {
+                result = true;
+            }
+            
+            instanceOfCache.put(key, result);
+        }
+        
         return result;
     }
 

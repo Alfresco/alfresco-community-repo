@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
+import org.alfresco.module.org_alfresco_module_rm.test.integration.hold.DeleteHoldTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -52,7 +53,7 @@ import org.junit.runners.Suite.SuiteClasses;
     FilePlanPermissionServiceImplTest.class,
     ReportServiceImplTest.class,
     RecordsManagementQueryDAOImplTest.class,
-    HoldServiceImplTest.class
+    DeleteHoldTest.class
 })
 public class ServicesTestSuite 
 {

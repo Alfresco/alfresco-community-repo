@@ -33,6 +33,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * rma:frozen behaviour bean
@@ -45,7 +46,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
    defaultType = "rma:frozen"
 )
 public class FrozenAspect extends    BaseBehaviourBean
-                          implements NodeServicePolicies.BeforeDeleteNodePolicy
+                          implements NodeServicePolicies.BeforeDeleteNodePolicy,
+                                     NodeServicePolicies.OnAddAspectPolicy,
+                                     NodeServicePolicies.OnRemoveAspectPolicy
 {
     /** file plan service */
     protected FilePlanService filePlanService;
@@ -128,6 +131,75 @@ public class FrozenAspect extends    BaseBehaviourBean
                 checkChildren(nodeService.getChildAssocs(nodeRef));
             }
         }
+    }
+    
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onAddAspect(final NodeRef record, final QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                if (nodeService.exists(record) &&
+                    isRecord(record))
+                {
+                    // get the owning record folder
+                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
+                    // check that the aspect has been added
+                    if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                    {
+                        // increment current count
+                        int currentCount = (Integer)nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
+                        currentCount = currentCount + 1;
+                        nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
+                    }
+                }
+                return null;
+            }
+        });        
+    }
+
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
+    public void onRemoveAspect(final NodeRef record, QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                if (nodeService.exists(record) &&
+                    isRecord(record))
+                {
+                    // get the owning record folder
+                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
+        
+                    // check that the aspect has been added
+                    if (nodeService.hasAspect(recordFolder, ASPECT_HELD_CHILDREN))
+                    {
+                        // decrement current count
+                        int currentCount = (Integer)nodeService.getProperty(recordFolder, PROP_HELD_CHILDREN_COUNT);
+                        if (currentCount > 0)
+                        {
+                            currentCount = currentCount - 1;
+                            nodeService.setProperty(recordFolder, PROP_HELD_CHILDREN_COUNT, currentCount);
+                        }
+                    }                   
+                }
+                return null;
+            }
+        }); 
+        
     }
 
 }

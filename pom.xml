@@ -27,8 +27,7 @@
            alfresco_edition=enterprise
            distribution_folder=${project.build.directory}/distribution/alfresco-enterprise-${project.version}
            solr_folder=${project.build.directory}/solr
-           alfresco_googledocs_source_file=${project.build.directory}/dependency/alfresco-googledocs-repo-${alfresco.googledocs.version}.amp
-           alfresco_googledocs_share_source_file=${project.build.directory}/dependency/alfresco-googledocs-share-${alfresco.googledocs.version}.amp
+           alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
     </properties>
 
@@ -102,12 +101,14 @@
                                     <version>${alfresco.googledocs.version}</version>
                                     <classifier>enterprise</classifier>
                                     <type>amp</type>
+                                    <destFileName>alfresco-googledocs-repo-${alfresco.googledocs.version}.amp</destFileName>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco.integrations</groupId>
                                     <artifactId>alfresco-googledocs-share</artifactId>
                                     <version>${alfresco.googledocs.version}</version>
                                     <classifier>enterprise</classifier>
+                                    <destFileName>alfresco-googledocs-share-${alfresco.googledocs.version}.amp</destFileName>
                                     <type>amp</type>
                                 </artifactItem>
                                 <artifactItem>
@@ -115,6 +116,7 @@
                                     <artifactId>alfresco-spp</artifactId>
                                     <version>${project.version}</version>
                                     <type>amp</type>
+                                    <destFileName>alfresco-spp.amp</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

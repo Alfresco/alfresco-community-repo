@@ -583,7 +583,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
             {
                 String capabilityName = permission.getPermission();
                 Capability capability = capabilityService.getCapability(capabilityName);
-                if (capability != null)
+                if (capability != null && !capability.isPrivate())
                 {
                     capabilities.add(capability);
                 }
@@ -790,7 +790,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 {
                     throw new AlfrescoRuntimeException("Can not get authorities for role " + roleName + ", because it does not exist. (filePlan=" + filePlan.toString() + ")");
                 }
-                return authorityService.getContainedAuthorities(authorityType, role.getRoleGroupName(), false);
+                return authorityService.getContainedAuthorities(authorityType, role.getRoleGroupName(), true);
             }
         }, AuthenticationUtil.getSystemUserName());
 

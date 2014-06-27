@@ -2,13 +2,12 @@
 <!-- ** Experimental Maven build - use at your own risk! ** -->
 <!-- ****************************************************** -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-parent</artifactId>
-        <version>5.0.a-SNAPSHOT</version>
+        <version>5.0.a</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>alfresco</artifactId>
@@ -257,10 +256,9 @@
                             <target>
                               <copy todir="${project.build.outputDirectory}/alfresco/messages" overwrite="true">
                                  <!-- for activity messages based on activity type -->
-                                 <fileset dir="${basedir}/../slingshot/config/alfresco/site-webscripts/org/alfresco/components/dashlets"
-                                          includes="activity-list.get*.properties" />
+                                 <fileset dir="${basedir}/../slingshot/config/alfresco/site-webscripts/org/alfresco/components/dashlets" includes="activity-list.get*.properties" />
                                  <!-- note: remove ".get" since it seems to confuse java.util.ResourceBundle.getBundle -->
-                                 <mapper type="regexp" from="^(activity-list).get(.*\.properties)$$" to="\1\2"/>
+                                 <mapper type="regexp" from="^(activity-list).get(.*\.properties)$$" to="\1\2" />
                               </copy>
                               <copy todir="${project.build.outputDirectory}/alfresco/messages" overwrite="true">
                                  <!-- for role.* messages -->

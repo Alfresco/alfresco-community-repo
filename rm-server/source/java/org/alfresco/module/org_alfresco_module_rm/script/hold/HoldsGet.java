@@ -26,11 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -54,6 +57,9 @@ public class HoldsGet extends DeclarativeWebScript
 
     /** Hold Service */
     private HoldService holdService;
+    
+    /** permission service */
+    private PermissionService permissionService;
 
     /**
      * Set the file plan service
@@ -84,6 +90,16 @@ public class HoldsGet extends DeclarativeWebScript
     {
         this.holdService = holdService;
     }
+    
+    /**
+     * Set the permission service
+     * 
+     * @param permissionService     the permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
 
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
@@ -91,6 +107,7 @@ public class HoldsGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        boolean fileOnly = getFileOnly(req);
         NodeRef itemNodeRef = getItemNodeRef(req);
         List<NodeRef> holds = new ArrayList<NodeRef>();
 
@@ -108,8 +125,12 @@ public class HoldsGet extends DeclarativeWebScript
         List<Hold> holdObjects = new ArrayList<Hold>(holds.size());
         for (NodeRef nodeRef : holds)
         {
-            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            holdObjects.add(new Hold(name, nodeRef));
+            // only add if user has filling permisson on the hold
+            if (!fileOnly || permissionService.hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED)
+            {
+                String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                holdObjects.add(new Hold(name, nodeRef));
+            }
         }
 
         Map<String, Object> model = new HashMap<String, Object>(1);
@@ -186,6 +207,17 @@ public class HoldsGet extends DeclarativeWebScript
         if (StringUtils.isNotBlank(includedInHold))
         {
             result = Boolean.valueOf(includedInHold).booleanValue();
+        }
+        return result;
+    }
+    
+    private boolean getFileOnly(WebScriptRequest req)
+    {
+        boolean result = false;
+        String fillingOnly = req.getParameter("fileOnly");
+        if (StringUtils.isNotBlank(fillingOnly))
+        {
+            result = Boolean.valueOf(fillingOnly).booleanValue();
         }
         return result;
     }

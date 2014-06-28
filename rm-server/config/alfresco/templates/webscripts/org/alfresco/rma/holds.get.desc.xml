@@ -11,7 +11,7 @@
    retrieved which do not include the given node reference.
    ]]>
    </description>
-   <url>/api/rma/{store_type}/{store_id}/{id}/holds?itemNodeRef={itemNodeRef?}&amp;includedInHold={includedInHold?}</url>
+   <url>/api/rma/{store_type}/{store_id}/{id}/holds?itemNodeRef={itemNodeRef?}&amp;includedInHold={includedInHold?}&amp;fileOnly={fileOnly?}</url>
    <url>/api/rma/holds?itemNodeRef={itemNodeRef?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>

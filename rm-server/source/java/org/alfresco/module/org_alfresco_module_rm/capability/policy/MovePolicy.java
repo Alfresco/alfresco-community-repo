@@ -20,7 +20,10 @@ package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.aopalliance.intercept.MethodInvocation;
 
 public class MovePolicy extends AbstractBasePolicy
@@ -47,7 +50,23 @@ public class MovePolicy extends AbstractBasePolicy
 
         if ((movee != null) && (destination != null))
         {
-            return getCapabilityService().getCapability("Move").evaluate(movee, destination);
+            // check that we aren't trying to move something from the DM into RM
+            if (nodeService.hasAspect(movee, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+            {
+                return getCapabilityService().getCapability("Move").evaluate(movee, destination);
+            }
+            else
+            {
+                if (nodeService.hasAspect(destination, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) &&
+                    permissionService.hasPermission(destination, RMPermissionModel.FILING).equals(AccessStatus.ALLOWED))
+                {
+                    return AccessDecisionVoter.ACCESS_GRANTED;
+                }
+                else
+                {
+                    return AccessDecisionVoter.ACCESS_DENIED;
+                }
+            }
         }
         else
         {

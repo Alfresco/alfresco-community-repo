@@ -20,7 +20,7 @@ function getTreenode()
             "{http://www.alfresco.org/model/recordsmanagement/1.0}unfiledRecordContainer":true
          },
          skipPermissionCheck = args["perms"] == "false",
-         evalChildFolders = args["children"] !== "false",
+         evalChildFolders = false,
          item, rmNode, capabilities, cap;
    
       // Use helper function to get the arguments

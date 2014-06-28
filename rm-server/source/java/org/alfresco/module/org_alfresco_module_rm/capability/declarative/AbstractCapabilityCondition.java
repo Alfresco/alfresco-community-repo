@@ -18,12 +18,17 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
+import java.util.Map;
+
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.beans.factory.BeanNameAware;
@@ -37,6 +42,9 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
                                                              BeanNameAware,
                                                              RecordsManagementModel
 {
+    /** transaction cache key */
+    private static final String KEY_EVALUATE = "rm.transaction.evaluate";
+    
     /** Capability condition name */
     protected String name;
 
@@ -113,6 +121,32 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
         return name;
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public boolean evaluate(NodeRef nodeRef)
+    {
+        boolean result = false;
+        
+        // check transaction cache
+        Map<String, Boolean> map = TransactionalResourceHelper.getMap(KEY_EVALUATE);
+        String key = getName() + "|" + nodeRef.toString() + "|" + AuthenticationUtil.getRunAsUser();
+        if (map.containsKey(key))
+        {
+            result = map.get(key);
+        }
+        else
+        {
+            result = evaluateImpl(nodeRef);
+            map.put(key, result);
+        }
+        
+        return result;
+    }
+    
+    public abstract boolean evaluateImpl(NodeRef nodeRef);
 
     /**
      * @see org.springframework.beans.factory.BeanNameAware#setBeanName(java.lang.String)

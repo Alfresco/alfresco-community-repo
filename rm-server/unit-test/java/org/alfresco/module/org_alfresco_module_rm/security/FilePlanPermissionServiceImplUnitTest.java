@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -128,6 +129,17 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         
         makeChildrenOf(holdContainer, hold);
         makeChildrenOf(hold, heldRecord);
+        
+        doReturn(FilePlanComponentKind.FILE_PLAN).when(filePlanPermissionService).getFilePlanComponentKind(filePlan);
+        doReturn(FilePlanComponentKind.RECORD_CATEGORY).when(filePlanPermissionService).getFilePlanComponentKind(rootRecordCategory);
+        doReturn(FilePlanComponentKind.RECORD_CATEGORY).when(filePlanPermissionService).getFilePlanComponentKind(recordCategory);
+        doReturn(FilePlanComponentKind.RECORD_FOLDER).when(filePlanPermissionService).getFilePlanComponentKind(newRecordFolder);
+        doReturn(FilePlanComponentKind.RECORD).when(filePlanPermissionService).getFilePlanComponentKind(newRecord);
+        doReturn(FilePlanComponentKind.UNFILED_RECORD_FOLDER).when(filePlanPermissionService).getFilePlanComponentKind(unfiledRecordFolder);
+        doReturn(FilePlanComponentKind.UNFILED_RECORD_CONTAINER).when(filePlanPermissionService).getFilePlanComponentKind(unfiledRecordContainer);
+        doReturn(FilePlanComponentKind.RECORD).when(filePlanPermissionService).getFilePlanComponentKind(unfiledRecord);
+        doReturn(FilePlanComponentKind.HOLD_CONTAINER).when(filePlanPermissionService).getFilePlanComponentKind(holdContainer);
+        doReturn(FilePlanComponentKind.HOLD).when(filePlanPermissionService).getFilePlanComponentKind(hold);
     }
     
     /**

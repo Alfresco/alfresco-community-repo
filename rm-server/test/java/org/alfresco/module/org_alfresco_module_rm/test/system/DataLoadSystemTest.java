@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -15,11 +16,15 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteRole;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -40,6 +45,8 @@ public class DataLoadSystemTest
     protected MutableAuthenticationService authenticationService;
     protected PersonService personService;
     protected FilePlanRoleService filePlanRoleService;
+    protected SiteService siteService;
+    protected FileFolderService fileFolderService;
     
     /** config locations */
     protected String[] getConfigLocations()
@@ -62,6 +69,10 @@ public class DataLoadSystemTest
     /** rm user sizing */
     private static final int RM_GROUP_COUNT         = 0;
     private static final int RM_USER_COUNT          = 0;
+    
+    /** inplace sizing */
+    private static final int USER_COUNT             = 0;
+    private static final int INPLACE_RECORD_COUNT   = 5000;
     
     /** application context */    
     private ApplicationContext applicationContext;
@@ -86,13 +97,71 @@ public class DataLoadSystemTest
         authenticationService = (MutableAuthenticationService)applicationContext.getBean("AuthenticationService");
         personService = (PersonService)applicationContext.getBean("personService");
         filePlanRoleService = (FilePlanRoleService)applicationContext.getBean("filePlanRoleService");
+        siteService = (SiteService)applicationContext.getBean("siteService");
+        fileFolderService = (FileFolderService)applicationContext.getBean("fileFolderService");
     }
     
     @Test
-    private void loadAllData()
+    public void loadAllData()
     {
        loadFilePlanData(); 
        loadRMUsersAndGroups();
+       loadInPlace();
+    }
+    
+    private void loadInPlace()
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+           public Void doWork() throws Exception
+           {
+               final SiteInfo site = siteService.getSite("test");
+               if (site == null)
+               {
+                   Assert.fail("The collab site test is not present.");
+               }               
+               
+               final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+               if (filePlan == null)
+               {
+                   Assert.fail("The default RM site is not present.");
+               }
+               
+               // create users and add to site
+               repeatInTransactionBatches(new RunAsWork<Void>()
+               {
+                  public Void doWork() throws Exception
+                  {
+                      // create user
+                      String userName = GUID.generate();
+                      System.out.println("Creating user " + userName);
+                      createPerson(userName, true);
+                      
+                      // add to collab site
+                      siteService.setMembership("test", userName, SiteRole.SiteCollaborator.toString());
+                      
+                      return null;
+                  }
+               }, USER_COUNT);
+        
+               // create content and declare as record
+               repeatInTransactionBatches(new RunAsWork<Void>()
+               {
+                  public Void doWork() throws Exception
+                  {
+                      // create document
+                      NodeRef docLib = siteService.getContainer(site.getShortName(), SiteService.DOCUMENT_LIBRARY);
+                      NodeRef document = fileFolderService.create(docLib, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                      
+                      recordService.createRecord(filePlan, document);
+                      
+                      return null;
+                  }
+               }, INPLACE_RECORD_COUNT);
+               
+               return null;
+           }
+        }, AuthenticationUtil.getAdminUserName());
     }
     
     

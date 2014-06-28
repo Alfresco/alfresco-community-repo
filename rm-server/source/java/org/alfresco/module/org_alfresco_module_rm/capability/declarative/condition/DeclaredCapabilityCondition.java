@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class DeclaredCapabilityCondition extends AbstractCapabilityCondition
 {
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
         if (FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))

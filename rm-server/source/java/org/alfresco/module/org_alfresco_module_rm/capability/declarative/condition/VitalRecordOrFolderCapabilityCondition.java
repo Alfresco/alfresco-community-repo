@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class VitalRecordOrFolderCapabilityCondition extends AbstractCapabilityCondition
 {
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
 

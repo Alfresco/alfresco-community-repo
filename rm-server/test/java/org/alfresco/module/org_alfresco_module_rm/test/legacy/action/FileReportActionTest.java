@@ -55,7 +55,10 @@ public class FileReportActionTest extends BaseRMTestCase
     {
         // create record folder
         final NodeRef recordFolder = recordFolderService.createRecordFolder(rmContainer, GUID.generate());
-
+        
+        // close the record folder
+        recordFolderService.closeRecordFolder(recordFolder);
+        
         // create hold
         final NodeRef hold = holdService.createHold(filePlan, "holdName", "holdReason", "holdDescription");
 
@@ -63,10 +66,7 @@ public class FileReportActionTest extends BaseRMTestCase
         {
             @Override
             public void run() throws Exception
-            {
-                // close the record folder
-                recordFolderService.closeRecordFolder(recordFolder);
-
+            {                
                 // execute action
                 executeAction(mimeType, recordFolder, hold);
             }
@@ -77,14 +77,17 @@ public class FileReportActionTest extends BaseRMTestCase
             public Void run()
             {
                 // reopen the record folder
-                nodeService.setProperty(recordFolder, PROP_IS_CLOSED, false);
-
-                // execute action
-                executeAction(mimeType, recordFolder, hold);
-
+                rmActionService.executeRecordsManagementAction(recordFolder, "openRecordFolder");
                 return null;
             }
-        }, ADMIN_USER);
+            
+            @Override
+            public void test(Void result) throws Exception
+            {
+                // execute action
+                executeAction(mimeType, recordFolder, hold);
+            }
+        });
     }
 
     private void executeAction(String mimeType, NodeRef recordFolder, NodeRef hold)

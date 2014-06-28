@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -97,7 +98,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         
         return internalNodeService;
     }
-
+    
     /**
      * Gets the file plan component kind from the given node reference
      *
@@ -107,53 +108,66 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         FilePlanComponentKind result = null;
 
-        if (isFilePlanComponent(nodeRef))
+        Map<NodeRef, FilePlanComponentKind> map = TransactionalResourceHelper.getMap("rm.transaction.filePlanComponentByNodeRef");
+        if (map.containsKey(nodeRef))
         {
-            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
-
-            if (isFilePlan(nodeRef))
+            result = map.get(nodeRef);
+        }
+        else
+        {
+            if (isFilePlanComponent(nodeRef))
             {
-                result = FilePlanComponentKind.FILE_PLAN;
+                result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
+    
+                if (isFilePlan(nodeRef))
+                {
+                    result = FilePlanComponentKind.FILE_PLAN;
+                }
+                else if (isRecordCategory(nodeRef))
+                {
+                    result = FilePlanComponentKind.RECORD_CATEGORY;
+                }
+                else if (isRecordFolder(nodeRef))
+                {
+                    result = FilePlanComponentKind.RECORD_FOLDER;
+                }
+                else if (isRecord(nodeRef))
+                {
+                    result = FilePlanComponentKind.RECORD;
+                }
+                else if (instanceOf(nodeRef, TYPE_HOLD_CONTAINER))
+                {
+                    result = FilePlanComponentKind.HOLD_CONTAINER;
+                }
+                else if (isHold(nodeRef))
+                {
+                    result = FilePlanComponentKind.HOLD;
+                }
+                else if (instanceOf(nodeRef, TYPE_TRANSFER_CONTAINER))
+                {
+                    result = FilePlanComponentKind.TRANSFER_CONTAINER;
+                }
+                else if (isTransfer(nodeRef))
+                {
+                    result = FilePlanComponentKind.TRANSFER;
+                }
+                else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION))
+                {
+                    result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
+                }
+                else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER))
+                {
+                    result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
+                }
+                else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_FOLDER))
+                {
+                    result = FilePlanComponentKind.UNFILED_RECORD_FOLDER;
+                }
             }
-            else if (isRecordCategory(nodeRef))
+            
+            if (result != null)
             {
-                result = FilePlanComponentKind.RECORD_CATEGORY;
-            }
-            else if (isRecordFolder(nodeRef))
-            {
-                result = FilePlanComponentKind.RECORD_FOLDER;
-            }
-            else if (isRecord(nodeRef))
-            {
-                result = FilePlanComponentKind.RECORD;
-            }
-            else if (instanceOf(nodeRef, TYPE_HOLD_CONTAINER))
-            {
-                result = FilePlanComponentKind.HOLD_CONTAINER;
-            }
-            else if (isHold(nodeRef))
-            {
-                result = FilePlanComponentKind.HOLD;
-            }
-            else if (instanceOf(nodeRef, TYPE_TRANSFER_CONTAINER))
-            {
-                result = FilePlanComponentKind.TRANSFER_CONTAINER;
-            }
-            else if (isTransfer(nodeRef))
-            {
-                result = FilePlanComponentKind.TRANSFER;
-            }
-            else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION))
-            {
-                result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
-            }
-            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER))
-            {
-                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
-            }
-            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_FOLDER))
-            {
-                result = FilePlanComponentKind.UNFILED_RECORD_FOLDER;
+                map.put(nodeRef, result);
             }
         }
 

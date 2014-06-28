@@ -94,7 +94,7 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
         doReturn(Collections.EMPTY_LIST).when(mockedHoldService).heldBy(eq(recordFolder), anyBoolean());
 
         // when
-        boolean result = evaluator.evaluate(recordFolder);
+        boolean result = evaluator.evaluateImpl(recordFolder);
 
         // then
         assertFalse(result);
@@ -114,7 +114,7 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
         doReturn(AccessStatus.DENIED).when(mockedPermissionService).hasPermission(hold2, RMPermissionModel.FILING);  
 
         // when
-        boolean result = evaluator.evaluate(recordFolder);
+        boolean result = evaluator.evaluateImpl(recordFolder);
 
         // then
         assertFalse(result);
@@ -134,7 +134,7 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
         doReturn(AccessStatus.ALLOWED).when(mockedPermissionService).hasPermission(hold2, RMPermissionModel.FILING);  
 
         // when
-        boolean result = evaluator.evaluate(recordFolder);
+        boolean result = evaluator.evaluateImpl(recordFolder);
 
         // then
         assertTrue(result);

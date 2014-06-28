@@ -18,15 +18,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.security;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -40,6 +41,9 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
                                                                       RecordsManagementModel,
                                                                       ApplicationContextAware
 {
+    /** transaction cache key */
+    private static final String KEY_HAS_AUTHORITY_CACHE = "rm.transaction.hasAuthority";
+    
     /** Authority service */
     private AuthorityService authorityService;
 
@@ -132,13 +136,22 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
                     }
                     else if (authority.startsWith("GROUP_"))
                     {
-                        // check group to see if the user is contained
-                        Set<String> contained = getAuthorityService().getContainedAuthorities(AuthorityType.USER, authority, false);
-                        if (!contained.isEmpty() &&
-                            contained.contains(userName))
+                        Map<String, Boolean> transactionCache = TransactionalResourceHelper.getMap(KEY_HAS_AUTHORITY_CACHE);
+                        String key = authority + "|" + userName;
+                        if (transactionCache.containsKey(key))
                         {
-                            result = true;
+                            result = transactionCache.get(key);
                             break;
+                        }
+                        else
+                        {
+                            Set<String> contained = getAuthorityService().getAuthoritiesForUser(userName);
+                            if (contained.contains(authority))
+                            {
+                                result = true;
+                                transactionCache.put(key, result);
+                                break;
+                            }
                         }
                     }
                     else

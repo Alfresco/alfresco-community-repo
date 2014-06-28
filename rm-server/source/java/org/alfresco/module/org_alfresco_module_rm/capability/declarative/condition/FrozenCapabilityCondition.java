@@ -34,7 +34,7 @@ private boolean checkChildren = false;
     }
 
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = freezeService.isFrozen(nodeRef);
         if (!result && checkChildren)

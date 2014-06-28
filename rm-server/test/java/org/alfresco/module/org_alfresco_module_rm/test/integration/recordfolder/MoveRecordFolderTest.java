@@ -415,11 +415,15 @@ public class MoveRecordFolderTest extends BaseRMTestCase
                 // cutoff folder
                 rmActionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
 
+                return testFolder;
+            }
+            
+            @Override
+            public void test(NodeRef testFolder) throws Exception
+            {
                 // take a look at the move capability
                 Capability moveCapability = capabilityService.getCapability("Move");
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(testFolder, destination));
-
-                return testFolder;
             }
         });
 

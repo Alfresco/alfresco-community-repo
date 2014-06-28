@@ -249,8 +249,6 @@ public class HoldServiceImpl extends ServiceBaseImpl
         // get the root hold container
         NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
 
-        // If you remove the "All Records Management Roles" which means users do not have read permissions on hold container
-        // at all, the hold container will not be found for the logged in user. That's why we need to do a check here.
         if (holdContainer != null)
         {
             // get the children of the root hold container
@@ -258,8 +256,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             for (ChildAssociationRef holdAssoc : holdsAssocs)
             {
                 NodeRef hold = holdAssoc.getChildRef();
-                boolean hasPermissionOnHold = (permissionService.hasPermission(hold, RMPermissionModel.FILING) == AccessStatus.ALLOWED);
-                if (isHold(hold) && hasPermissionOnHold)
+                if (isHold(hold)) 
                 {
                     // add to list of holds
                     holds.add(hold);

@@ -27,7 +27,9 @@ import static org.alfresco.module.org_alfresco_module_rm.test.util.WebScriptExce
 import java.util.Collections;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -203,6 +205,40 @@ public class HoldsGetUnitTest extends BaseHoldWebScriptUnitTest
         
         // check the JSON result
         testForBothHolds(json);        
+    }
+    
+    public void getFileOnlyHolds() throws Exception
+    {
+        doReturn(AccessStatus.ALLOWED).when(mockedPermissionService).hasPermission(hold1NodeRef, RMPermissionModel.FILING);
+        doReturn(AccessStatus.DENIED).when(mockedPermissionService).hasPermission(hold2NodeRef, RMPermissionModel.FILING);
+                        
+        // setup web script parameters
+        Map<String, String> parameters = buildParameters
+        (
+                "store_type",       filePlan.getStoreRef().getProtocol(),
+                "store_id",         filePlan.getStoreRef().getIdentifier(),
+                "id",               filePlan.getId(),
+                "itemNodeRef",      record.toString(),
+                "includedInHold",   "false",
+                "fileOnly",         "true"
+        );
+        
+        // execute web script
+        JSONObject json = executeJSONWebScript(parameters);        
+        assertNotNull(json);
+        
+        // check the JSON result
+        assertTrue(json.has("data"));
+        assertTrue(json.getJSONObject("data").has("holds"));
+        
+        JSONArray jsonHolds = json.getJSONObject("data").getJSONArray("holds");
+        assertNotNull(jsonHolds);
+        assertEquals(1, jsonHolds.length());
+        
+        JSONObject hold1 = jsonHolds.getJSONObject(0);
+        assertNotNull(hold1);
+        assertEquals("hold1", hold1.getString("name"));
+        assertEquals(hold1NodeRef.toString(), hold1.getString("nodeRef"));        
     }
     
     /**

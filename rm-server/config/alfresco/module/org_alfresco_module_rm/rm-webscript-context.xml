@@ -593,6 +593,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="nodeService" ref="NodeService" />
       <property name="holdService" ref="HoldService" />
+      <property name="permissionService" ref="PermissionService" />
    </bean>
 
    <!-- Abstract parent bean for many POST and PUT Hold beans -->

@@ -45,6 +45,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -145,11 +146,20 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
         this.recordService = recordService;
     }
 
-    /** Java behaviour */
+    /** on add search aspect behaviour */
     private JavaBehaviour onAddSearchAspect = new JavaBehaviour(this, "rmSearchAspectAdd", NotificationFrequency.TRANSACTION_COMMIT);
+    
+    /** disposition action behaviours */
     private JavaBehaviour jbDispositionActionCreate = new JavaBehaviour(this, "dispositionActionCreate", NotificationFrequency.TRANSACTION_COMMIT);
     private JavaBehaviour jbDispositionActionPropertiesUpdate = new JavaBehaviour(this, "dispositionActionPropertiesUpdate", NotificationFrequency.TRANSACTION_COMMIT);
+    
+    /** disposition lifecycle behaviours */
+    private JavaBehaviour jbDispositionLifeCycleAspect = new JavaBehaviour(this, "onAddDispositionLifecycleAspect", NotificationFrequency.TRANSACTION_COMMIT);
+    
+    /** disposition schedule behaviours */
     private JavaBehaviour jbDispositionSchedulePropertiesUpdate = new JavaBehaviour(this, "dispositionSchedulePropertiesUpdate", NotificationFrequency.TRANSACTION_COMMIT);
+    
+    /** event update behaviours */
     private JavaBehaviour jbEventExecutionUpdate = new JavaBehaviour(this, "eventExecutionUpdate", NotificationFrequency.TRANSACTION_COMMIT);
     private JavaBehaviour jbEventExecutionDelete = new JavaBehaviour(this, "eventExecutionDelete", NotificationFrequency.TRANSACTION_COMMIT);
 
@@ -160,7 +170,8 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             jbDispositionActionPropertiesUpdate,
             jbDispositionSchedulePropertiesUpdate,
             jbEventExecutionUpdate,
-            jbEventExecutionDelete
+            jbEventExecutionDelete,
+            jbDispositionLifeCycleAspect
     };
 
     /**
@@ -198,6 +209,11 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
                 ASPECT_RM_SEARCH,
                 onAddSearchAspect);
+        
+        this.policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
+                ASPECT_DISPOSITION_LIFECYCLE,
+                jbDispositionLifeCycleAspect);        
 
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onAddAspect"),
@@ -355,7 +371,30 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             }
         });
     }
+    
+    /**
+     * On addition of the disposition lifecycle aspect
+     * @param nodeRef
+     * @param aspectTypeQName
+     */
+    public void onAddDispositionLifecycleAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                if (nodeService.exists(nodeRef) && nodeService.hasAspect(nodeRef, ASPECT_RECORD))
+                {
+                    applySearchAspect(nodeRef);
+                    setupDispositionScheduleProperties(nodeRef);
+                }
 
+                return null;
+            }
+        });
+    }
+    
     /**
      * On create record folder behaviour implmentation
      *
@@ -387,21 +426,24 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void setupDispositionScheduleProperties(NodeRef recordOrFolder)
     {
-        DispositionSchedule ds = dispositionService.getDispositionSchedule(recordOrFolder);
-        if (ds == null)
-        {
-            nodeService.setProperty(recordOrFolder, PROP_RS_HAS_DISPOITION_SCHEDULE, false);
-        }
-        else
-        {
-            nodeService.setProperty(recordOrFolder, PROP_RS_HAS_DISPOITION_SCHEDULE, true);
-            setDispositionScheduleProperties(recordOrFolder, ds);
-        }
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Set rma:recordSearchHasDispositionSchedule for node " + recordOrFolder +
-                        " to: " + (ds != null));
+        if (!methodCached("setupDispositionScheduleProperties", recordOrFolder))
+        {        
+            DispositionSchedule ds = dispositionService.getDispositionSchedule(recordOrFolder);
+            if (ds == null)
+            {
+                nodeService.setProperty(recordOrFolder, PROP_RS_HAS_DISPOITION_SCHEDULE, false);
+            }
+            else
+            {
+                nodeService.setProperty(recordOrFolder, PROP_RS_HAS_DISPOITION_SCHEDULE, true);
+                setDispositionScheduleProperties(recordOrFolder, ds);
+            }
+    
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Set rma:recordSearchHasDispositionSchedule for node " + recordOrFolder +
+                            " to: " + (ds != null));
+            }
         }
     }
 
@@ -429,6 +471,28 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
             nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, null);
         }
     }
+    
+    /**
+     * Helper method to determine whether a method has been called in this transaction 
+     * already, or not.
+     * <P>
+     * Prevents work if we get unexpected behaviours firing.
+     * 
+     * @param method    method name (can be any unique string)
+     * @return boolean  true if already called in this transaction, false otherwise
+     */
+    private boolean methodCached(String method, NodeRef nodeRef)
+    {
+        boolean result = true;
+        Set<String> methods = TransactionalResourceHelper.getSet("rm.seachrollup.methodCache");
+        String key = method + "|" + nodeRef;
+        if (!methods.contains(key))
+        {
+            result = false;
+            methods.add(key);
+        }
+        return result;
+    }
 
     /**
      * On update disposition action properties behaviour implementation
@@ -438,44 +502,47 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void updateDispositionActionProperties(NodeRef record, NodeRef dispositionAction)
     {
-        Map<QName, Serializable> props = nodeService.getProperties(record);
-
-        DispositionAction da = new DispositionActionImpl(recordsManagementServiceRegistry, dispositionAction);
-
-        props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
-        props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
-        props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(dispositionAction, PROP_DISPOSITION_EVENTS_ELIGIBLE));
-
-        DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
-        if (daDefinition != null)
+        if (!methodCached("updateDispositionActionProperties", record))
         {
-            Period period = daDefinition.getPeriod();
-            if (period != null)
+            Map<QName, Serializable> props = nodeService.getProperties(record);
+    
+            DispositionAction da = new DispositionActionImpl(recordsManagementServiceRegistry, dispositionAction);
+    
+            props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
+            props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
+            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(dispositionAction, PROP_DISPOSITION_EVENTS_ELIGIBLE));
+    
+            DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
+            if (daDefinition != null)
             {
-                props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
-                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());
+                Period period = daDefinition.getPeriod();
+                if (period != null)
+                {
+                    props.put(PROP_RS_DISPOSITION_PERIOD, period.getPeriodType());
+                    props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, period.getExpression());
+                }
+                else
+                {
+                    props.put(PROP_RS_DISPOSITION_PERIOD, null);
+                    props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
+                }
             }
-            else
+    
+            nodeService.setProperties(record, props);
+    
+            if (logger.isDebugEnabled())
             {
-                props.put(PROP_RS_DISPOSITION_PERIOD, null);
-                props.put(PROP_RS_DISPOSITION_PERIOD_EXPRESSION, null);
+                logger.debug("Set rma:recordSearchDispositionActionName for node " + record + " to: " +
+                            props.get(PROP_RS_DISPOSITION_ACTION_NAME));
+                logger.debug("Set rma:recordSearchDispositionActionAsOf for node " + record + " to: " +
+                            props.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
+                logger.debug("Set rma:recordSearchDispositionEventsEligible for node " + record + " to: " +
+                            props.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
+                logger.debug("Set rma:recordSearchDispositionPeriod for node " + record + " to: " +
+                            props.get(PROP_RS_DISPOSITION_PERIOD));
+                logger.debug("Set rma:recordSearchDispositionPeriodExpression for node " + record + " to: " +
+                            props.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
             }
-        }
-
-        nodeService.setProperties(record, props);
-
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Set rma:recordSearchDispositionActionName for node " + record + " to: " +
-                        props.get(PROP_RS_DISPOSITION_ACTION_NAME));
-            logger.debug("Set rma:recordSearchDispositionActionAsOf for node " + record + " to: " +
-                        props.get(PROP_RS_DISPOSITION_ACTION_AS_OF));
-            logger.debug("Set rma:recordSearchDispositionEventsEligible for node " + record + " to: " +
-                        props.get(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE));
-            logger.debug("Set rma:recordSearchDispositionPeriod for node " + record + " to: " +
-                        props.get(PROP_RS_DISPOSITION_PERIOD));
-            logger.debug("Set rma:recordSearchDispositionPeriodExpression for node " + record + " to: " +
-                        props.get(PROP_RS_DISPOSITION_PERIOD_EXPRESSION));
         }
     }
 
@@ -549,25 +616,28 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void setupDispositionActionEvents(NodeRef nodeRef, DispositionAction da)
     {
-        if (da != null)
+        if (!methodCached("setupDispositionActionEvents", nodeRef))
         {
-            List<String> eventNames = null;
-            List<EventCompletionDetails> eventsList = da.getEventCompletionDetails();
-            if (eventsList.size() > 0)
+            if (da != null)
             {
-                eventNames = new ArrayList<String>(eventsList.size());
-                for (EventCompletionDetails event : eventsList)
+                List<String> eventNames = null;
+                List<EventCompletionDetails> eventsList = da.getEventCompletionDetails();
+                if (eventsList.size() > 0)
                 {
-                    eventNames.add(event.getEventName());
+                    eventNames = new ArrayList<String>(eventsList.size());
+                    for (EventCompletionDetails event : eventsList)
+                    {
+                        eventNames.add(event.getEventName());
+                    }
                 }
-            }
-
-            // set the property
-            nodeService.setProperty(nodeRef, PROP_RS_DISPOSITION_EVENTS, (Serializable)eventNames);
-
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Set rma:recordSearchDispositionEvents for node " + nodeRef + " to: " + eventNames);
+    
+                // set the property
+                nodeService.setProperty(nodeRef, PROP_RS_DISPOSITION_EVENTS, (Serializable)eventNames);
+    
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Set rma:recordSearchDispositionEvents for node " + nodeRef + " to: " + eventNames);
+                }
             }
         }
     }
@@ -659,18 +729,21 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void updateVitalRecordDefinitionValues(NodeRef nodeRef)
     {
-        // ensure the folder itself reflects the correct details
-        applySearchAspect(nodeRef);
-        setVitalRecordDefintionDetails(nodeRef);
-
-        List<NodeRef> records = recordService.getRecords(nodeRef);
-        for (NodeRef record : records)
+        if (!methodCached("updateVitalRecordDefinitionValues", nodeRef))
         {
-            // Apply the search aspect
-            applySearchAspect(record);
-
-            // Set the vital record definition details
-            setVitalRecordDefintionDetails(record);
+            // ensure the folder itself reflects the correct details
+            applySearchAspect(nodeRef);
+            setVitalRecordDefintionDetails(nodeRef);
+    
+            List<NodeRef> records = recordService.getRecords(nodeRef);
+            for (NodeRef record : records)
+            {
+                // Apply the search aspect
+                applySearchAspect(record);
+    
+                // Set the vital record definition details
+                setVitalRecordDefintionDetails(record);
+            }
         }
     }
 
@@ -681,27 +754,30 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      */
     private void setVitalRecordDefintionDetails(NodeRef nodeRef)
     {
-        VitalRecordDefinition vrd = vitalRecordService.getVitalRecordDefinition(nodeRef);
-
-        if (vrd != null && vrd.isEnabled() && vrd.getReviewPeriod() != null)
+        if (!methodCached("setVitalRecordDefinitionDetails", nodeRef))
         {
-            // Set the property values
-            nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, vrd.getReviewPeriod().getPeriodType());
-            nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, vrd.getReviewPeriod().getExpression());
-
-            if (logger.isDebugEnabled())
+            VitalRecordDefinition vrd = vitalRecordService.getVitalRecordDefinition(nodeRef);
+    
+            if (vrd != null && vrd.isEnabled() && vrd.getReviewPeriod() != null)
             {
-                logger.debug("Set rma:recordSearchVitalRecordReviewPeriod for node " + nodeRef + " to: " +
-                            vrd.getReviewPeriod().getPeriodType());
-                logger.debug("Set rma:recordSearchVitalRecordReviewPeriodExpression for node " + nodeRef + " to: " +
-                            vrd.getReviewPeriod().getExpression());
+                // Set the property values
+                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, vrd.getReviewPeriod().getPeriodType());
+                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, vrd.getReviewPeriod().getExpression());
+    
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Set rma:recordSearchVitalRecordReviewPeriod for node " + nodeRef + " to: " +
+                                vrd.getReviewPeriod().getPeriodType());
+                    logger.debug("Set rma:recordSearchVitalRecordReviewPeriodExpression for node " + nodeRef + " to: " +
+                                vrd.getReviewPeriod().getExpression());
+                }
             }
-        }
-        else
-        {
-            // Clear the vital record properties
-            nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, null);
-            nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, null);
+            else
+            {
+                // Clear the vital record properties
+                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD, null);
+                nodeService.setProperty(nodeRef, PROP_RS_VITAL_RECORD_REVIEW_PERIOD_EXPRESSION, null);
+            }
         }
     }
 

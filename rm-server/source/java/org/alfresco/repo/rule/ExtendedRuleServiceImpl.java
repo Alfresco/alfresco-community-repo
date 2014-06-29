@@ -21,7 +21,6 @@ package org.alfresco.repo.rule;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -158,40 +157,42 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     @Override
     public void executeRule(final Rule rule, final NodeRef nodeRef, final Set<ExecutedRuleData> executedRules)
     {
-        QName typeQName = nodeService.getType(nodeRef);
-
-        if (nodeService.exists(nodeRef) && shouldRuleBeAppliedToNode(rule, nodeRef, typeQName))
+        if (nodeService.exists(nodeRef))
         {
-            // check if this is a rm rule on a rm artifact
-            if (filePlanService.isFilePlanComponent(nodeRef) &&
-            	isFilePlanComponentRule(rule))
+            QName typeQName = nodeService.getType(nodeRef);
+            if (shouldRuleBeAppliedToNode(rule, nodeRef, typeQName))        
             {
-            	// ignore and
-                if (!isIgnoredType(typeQName))
-    	        {
-    	        	if (runAsAdmin)
-    	            {
-    	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
-                        {
-                            @Override
-                            public Void doWork()
+                // check if this is a rm rule on a rm artifact
+                if (filePlanService.isFilePlanComponent(nodeRef) &&
+                	isFilePlanComponentRule(rule))
+                {
+                	// ignore and
+                    if (!isIgnoredType(typeQName))
+        	        {
+        	        	if (runAsAdmin)
+        	            {
+        	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
                             {
-                                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-                                return null;
-                            }
-                        }, AuthenticationUtil.getAdminUserName());
-                	}
-                	else
-                	{
-                		// run as current user
-                		ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-                	}
-    	        }
-            }
-            else
-            {
-                // just execute the rule as the current user
-                super.executeRule(rule, nodeRef, executedRules);
+                                @Override
+                                public Void doWork()
+                                {
+                                    ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                                    return null;
+                                }
+                            }, AuthenticationUtil.getAdminUserName());
+                    	}
+                    	else
+                    	{
+                    		// run as current user
+                    		ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                    	}
+        	        }
+                }
+                else
+                {
+                    // just execute the rule as the current user
+                    super.executeRule(rule, nodeRef, executedRules);
+                }
             }
         }
     }
@@ -243,7 +244,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
                        RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(typeQName) ||
                        nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_TRANSFERRING) ||
                        nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FROZEN) ||
-                       (ContentModel.TYPE_CONTENT.equals(typeQName) && !recordService.isFiled(nodeRef)));
+                       !recordService.isFiled(nodeRef));
         }
         return result;
     }

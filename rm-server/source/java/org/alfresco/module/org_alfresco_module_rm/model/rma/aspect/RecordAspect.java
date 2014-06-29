@@ -228,7 +228,8 @@ public class RecordAspect extends    AbstractDisposableItem
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
         // check the records parent has actually changed
-        if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()))
+        if (!oldChildAssocRef.getParentRef().equals(newChildAssocRef.getParentRef()) &&
+            isFilePlanComponent(oldChildAssocRef.getParentRef()))
         {
             final NodeRef record = newChildAssocRef.getChildRef();
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()

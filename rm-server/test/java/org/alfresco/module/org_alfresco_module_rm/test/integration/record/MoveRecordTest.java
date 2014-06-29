@@ -43,6 +43,12 @@ public class MoveRecordTest extends BaseRMTestCase
 {        
     private static final String OTHER_EVENT = "abolished";
     
+    @Override
+    protected boolean isCollaborationSiteTest()
+    {
+        return true;
+    }
+    
     /**
      * Given a record is filed in a event disposition and moved then the 
      * record no longer has any disposition.
@@ -183,7 +189,10 @@ public class MoveRecordTest extends BaseRMTestCase
                 assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
                 assertEquals(CutOffAction.NAME, nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
                 assertNull(nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                assertTrue(((List<String>)nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS)).contains(OTHER_EVENT));                     
+                assertTrue(((List<String>)nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS)).contains(OTHER_EVENT));    
+                assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOITION_INSTRUCTIONS));
+                assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOITION_AUTHORITY)); 
+                assertTrue((Boolean)nodeService.getProperty(record, PROP_RS_HAS_DISPOITION_SCHEDULE));
             }            
         });
         
@@ -265,14 +274,68 @@ public class MoveRecordTest extends BaseRMTestCase
                 assertTrue(nodeService.hasAspect(record, ASPECT_RM_SEARCH));
                 assertEquals(CutOffAction.NAME, nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_NAME));
                 assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOSITION_ACTION_AS_OF));
-                assertNull(((List<String>)nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS)));                    
-            }            
-        });
-        
+                assertNull(((List<String>)nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS)));     
+                assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOITION_INSTRUCTIONS));
+                assertNotNull(nodeService.getProperty(record, PROP_RS_DISPOITION_AUTHORITY));  
+                assertTrue((Boolean)nodeService.getProperty(record, PROP_RS_HAS_DISPOITION_SCHEDULE));               
+            } 
+        });        
     }
     
-    // TODO moveRecordNoDisToEventDis
+    /**
+     * See https://issues.alfresco.com/jira/browse/RM-1502
+     */
+    public void testMoveDMtoRM() 
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {   
+            NodeRef destinationCategory;
+            NodeRef destinationRecordFolder;
+            
+            public void given()
+            {   
+                // destination category
+                destinationCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                DispositionSchedule dis = utils.createBasicDispositionSchedule(destinationCategory, GUID.generate(), GUID.generate(), true, false);
+                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                adParams.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
+                adParams.put(PROP_DISPOSITION_DESCRIPTION, GUID.generate());
+                adParams.put(PROP_DISPOSITION_PERIOD, CommonRMTestUtils.PERIOD_IMMEDIATELY);
+                dispositionService.addDispositionActionDefinition(dis, adParams);
+                destinationRecordFolder = recordFolderService.createRecordFolder(destinationCategory, GUID.generate());
+            }
+            
+            public void when() throws Exception
+            {        
+                // move document to record folder
+                fileFolderService.move(dmDocument, destinationRecordFolder, null);    
+            }
+            
+            public void then()
+            {
+                // check for the lifecycle aspect
+                assertTrue(nodeService.hasAspect(dmDocument, ASPECT_DISPOSITION_LIFECYCLE));
+                
+                // check the disposition action details
+                DispositionAction dispositionAction = dispositionService.getNextDispositionAction(dmDocument);
+                assertNotNull(dispositionAction);
+                assertNotNull(CutOffAction.NAME, dispositionAction.getName());
+                assertNotNull(dispositionAction.getAsOfDate());
+                assertTrue(dispositionService.isNextDispositionActionEligible(dmDocument));  
+                assertNull(dispositionAction.getEventCompletionDetails(CommonRMTestUtils.DEFAULT_EVENT_NAME));
+                
+                // check the search aspect details
+                assertTrue(nodeService.hasAspect(dmDocument, ASPECT_RM_SEARCH));
+                assertEquals(CutOffAction.NAME, nodeService.getProperty(dmDocument, PROP_RS_DISPOSITION_ACTION_NAME));
+                assertNotNull(nodeService.getProperty(dmDocument, PROP_RS_DISPOSITION_ACTION_AS_OF));
+                assertNull(((List<String>)nodeService.getProperty(dmDocument, PROP_RS_DISPOSITION_EVENTS)));     
+                assertNotNull(nodeService.getProperty(dmDocument, PROP_RS_DISPOITION_INSTRUCTIONS));
+                assertNotNull(nodeService.getProperty(dmDocument, PROP_RS_DISPOITION_AUTHORITY));
+                assertTrue((Boolean)nodeService.getProperty(dmDocument, PROP_RS_HAS_DISPOITION_SCHEDULE));
+            }            
+        });                
+    }
     
+    // TODO moveRecordNoDisToEventDis    
     // TODO moveRecordRecordDisToFolderDis
-
 }

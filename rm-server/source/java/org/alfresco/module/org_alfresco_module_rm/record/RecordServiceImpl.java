@@ -153,7 +153,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
         NamespaceService.FORUMS_MODEL_1_0_URI,
         NamespaceService.LINKS_MODEL_1_0_URI,
         NamespaceService.REPOSITORY_VIEW_1_0_URI
-
     };
 
     /** Indentity service */
@@ -1269,7 +1268,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             else if (allowNonRecordEdit && !allowRecordEdit)
             {
                 // can only edit non record properties
-                if (!isRecordMetadata(property))
+                if (!isRecordMetadata(filePlan, property))
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -1289,7 +1288,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             else if (!allowNonRecordEdit && allowRecordEdit)
             {
                 // can only edit record properties
-                if (isRecordMetadata(property))
+                if (isRecordMetadata(filePlan, property))
                 {
                     if (logger.isDebugEnabled())
                     {
@@ -1317,19 +1316,35 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @param property  property
      * @return boolea   true if record metadata, false otherwise
      */
-    private boolean isRecordMetadata(QName property)
+    private boolean isRecordMetadata(NodeRef filePlan, QName property)
     {
-        boolean result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
-
-        if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))
+        boolean result = false;
+        
+        // grab the information about the properties parent type
+        ClassDefinition parent = null;
+        PropertyDefinition def = dictionaryService.getProperty(property);
+        if (def != null)
         {
-            PropertyDefinition def = dictionaryService.getProperty(property);
-            if (def != null)
+            parent = def.getContainerClass();
+        }
+        
+        // non-electronic record is considered a special case
+        // TODO move non-electronic record support to a separate model namespace
+        if (parent != null && TYPE_NON_ELECTRONIC_DOCUMENT.equals(parent.getName()))
+        {
+            result = false;
+        }
+        else
+        {
+            // check the URI's
+            result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
+    
+            // check the custom model
+            if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))
             {
-                ClassDefinition parent = def.getContainerClass();
                 if (parent != null && parent.isAspect())
                 {
-                    result = getRecordMetaDataAspects().contains(parent.getName());
+                    result = getRecordMetadataAspects(filePlan).contains(parent.getName());
                 }
             }
         }

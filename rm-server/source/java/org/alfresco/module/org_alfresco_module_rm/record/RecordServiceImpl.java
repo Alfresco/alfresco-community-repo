@@ -562,8 +562,17 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 boolean propertyUnchanged = false;
                 if (beforeValue instanceof Date && afterValue instanceof Date)
                 {
-                    // deal with date values
-                    propertyUnchanged = (((Date)beforeValue).compareTo((Date)afterValue) == 0);
+                    // deal with date values, remove the seconds and milliseconds for the
+                	// comparison as they are removed from the submitted for data
+                	Calendar beforeCal = Calendar.getInstance();
+                	beforeCal.setTime((Date)beforeValue);
+                	Calendar afterCal = Calendar.getInstance();
+                	afterCal.setTime((Date)afterValue);
+                	beforeCal.set(Calendar.SECOND, 0);
+                	beforeCal.set(Calendar.MILLISECOND, 0);
+                	afterCal.set(Calendar.SECOND, 0);
+                	afterCal.set(Calendar.MILLISECOND, 0);
+                	propertyUnchanged = (beforeCal.compareTo(afterCal) == 0);
                 }
                 else if ((afterValue instanceof Boolean) && (beforeValue == null) && (afterValue == Boolean.FALSE))
                 {
@@ -1087,7 +1096,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 break;
                             }
                         }
-    
+
                         // remove all RM related aspects from the node
                         Set<QName> aspects = nodeService.getAspects(nodeRef);
                         for (QName aspect : aspects)
@@ -1098,45 +1107,45 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 nodeService.removeAspect(nodeRef, aspect);
                             }
                         }
-    
+
                         // get the records primary parent association
                         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-    
+
                         // move the record into the collaboration site
                         nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
-    
+
                         // rename to the origional name
                         if (origionalName != null)
                         {
                             fileFolderService.rename(nodeRef, origionalName);
-    
+
                             if (logger.isDebugEnabled())
                             {
                                 String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                                 logger.debug("Rename " + name + " to " + origionalName);
                             }
                         }
-    
+
                         // save the information about the rejection details
                         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
                         aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
                         aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
                         aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_REJECTION_DETAILS, aspectProperties);
-    
+
                         // Restore the owner of the document
                         if (StringUtils.isBlank(documentOwner))
                         {
                             throw new AlfrescoRuntimeException("Unable to find the creator of document.");
                         }
                         ownableService.setOwner(nodeRef, documentOwner);
-    
+
                         // clear the existing permissions
                         permissionService.clearPermission(nodeRef, null);
-    
+
                         // restore permission inheritance
                         permissionService.setInheritParentPermissions(nodeRef, true);
-    
+
                         // send an email to the record creator
                         notificationHelper.recordRejectedEmailNotification(nodeRef, recordId, documentOwner);
                     }
@@ -1319,7 +1328,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private boolean isRecordMetadata(NodeRef filePlan, QName property)
     {
         boolean result = false;
-        
+
         // grab the information about the properties parent type
         ClassDefinition parent = null;
         PropertyDefinition def = dictionaryService.getProperty(property);
@@ -1327,7 +1336,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             parent = def.getContainerClass();
         }
-        
+
         // non-electronic record is considered a special case
         // TODO move non-electronic record support to a separate model namespace
         if (parent != null && TYPE_NON_ELECTRONIC_DOCUMENT.equals(parent.getName()))
@@ -1338,7 +1347,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             // check the URI's
             result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
-    
+
             // check the custom model
             if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))
             {

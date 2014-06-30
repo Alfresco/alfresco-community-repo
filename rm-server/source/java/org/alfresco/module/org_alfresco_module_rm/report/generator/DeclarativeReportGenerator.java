@@ -19,6 +19,8 @@
 package org.alfresco.module.org_alfresco_module_rm.report.generator;
 
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,6 +31,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -255,6 +258,11 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         // context url's (handy for images and links)
         model.put("url", UrlUtil.getAlfrescoUrl(sysAdminParams));
         model.put(TemplateService.KEY_SHARE_URL, UrlUtil.getShareUrl(sysAdminParams));
+        
+        // who and when the report was generated
+        model.put("reportUser", AuthenticationUtil.getRunAsUser());
+        Calendar now = Calendar.getInstance(I18NUtil.getContentLocale());
+        model.put("reportDate", SimpleDateFormat.getDateInstance(SimpleDateFormat.MEDIUM).format(now.getTime()));
 
         // add additional properties
         model.put("properties", (Serializable) properties);

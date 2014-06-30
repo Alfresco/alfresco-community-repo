@@ -57,6 +57,14 @@
                                                 <td><i>${message("file.report.hold.reason")}:</i></td>
                                                 <td>${node.properties["rma:holdReason"]}</td>
                                              </tr>
+                                             <tr>
+                                                <td><i>${message("file.report.createdby")}:</i></td>
+                                                <td>${reportUser}</td>
+                                             </tr>
+                                             <tr>
+                                                <td><i>${message("file.report.createdon")}:</i></td>
+                                                <td>${reportDate}</td>
+                                             </tr>
                                           </table>
                                           <#if  node.childAssociations["rma:frozenRecords"]??>
                                              <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">

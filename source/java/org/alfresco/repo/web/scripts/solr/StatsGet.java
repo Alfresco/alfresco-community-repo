@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.web.scripts.solr;
 
 import java.util.HashMap;
@@ -24,8 +42,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * You can pass one of these facets in eg. facet=content.creator .  The facet name can be used as a I18n resource bundle key,
  * it also has a predefined structure: group.property[.type] eg. content.created.datetime. The [.type] is optional, the default is String.</description>
  *
- * The facets are configured using Spring config.  For Dates it may be necessary to display a different value from the one you use to query,
- * in this case add the value to the "displayedFacets" map.
  * @author Gethin James
  */
 public class StatsGet extends DeclarativeWebScript
@@ -34,17 +50,11 @@ public class StatsGet extends DeclarativeWebScript
     private StatsService stats;
     private SiteService siteService;
     private Map<String,String> facets;
-   // private Map<String,String> displayedFacets;  //alternative facets to use for display
-    
+
     public void setFacets(Map<String, String> facets)
     {
         this.facets = facets;
     }
-//    
-//    public void setDisplayedFacets(Map<String, String> displayedFacets)
-//    {
-//        this.displayedFacets = displayedFacets;
-//    }
 
     public void setStats(StatsService stats)
     {
@@ -82,7 +92,6 @@ public class StatsGet extends DeclarativeWebScript
 
        String facetKey = req.getParameter("facet");
        if (facetKey == null) facetKey = facets.entrySet().iterator().next().getKey();  //default
-       //boolean usesDateTime = (facetKey != null && facetKey.endsWith(DATE_TIME_SUFFIX));
        String query;
        
        QName propFacet = findFacet(facetKey);
@@ -98,7 +107,6 @@ public class StatsGet extends DeclarativeWebScript
        
        model.put("result", result);
        model.put("resultSize", result.getStats().size());
-       //model.put("isDate", startAndEnd!=null);
        return model;
     }
 
@@ -113,18 +121,8 @@ public class StatsGet extends DeclarativeWebScript
        {
            throw new AccessDeniedException("Invalid facet key:"+facetKey);
        }
-       
-       //If there is an alternative facet to use for display then use it.
-//       if (displayedFacets.containsKey(facetKey))
-//       {
-//           QName propFacet = QName.createQName(displayedFacets.get(facetKey));
-//           return propFacet;       
-//       }
-//       else 
-//       {
-           QName propFacet = QName.createQName(facets.get(facetKey));
-           return propFacet;
-   //    }
+       QName propFacet = QName.createQName(facets.get(facetKey));
+       return propFacet;
 
     }
 
@@ -136,7 +134,7 @@ public class StatsGet extends DeclarativeWebScript
         if (startEndDate != null)
         {
             //QName propFacet = QName.createQName(facets.get(facetKey));
-            String dateFacet = "{http://www.alfresco.org/model/content/1.0}created";//hard coded for now.
+            String dateFacet = ContentModel.PROP_CREATED.toString();//hard coded for now.
             luceneQuery.append(" AND "+dateFacet.toString()+":(\""+startEndDate.getFirst()+"\"..\""+startEndDate.getSecond()+"\")");
         }
         
@@ -164,7 +162,7 @@ public class StatsGet extends DeclarativeWebScript
     /**
      * Allows you to add a facet to the list of available facets for Solr Statistics
      * @param facetKey e.g. content.mimetype
-     * @param facetType e.g. @{http://www.alfresco.org/model/content/1.0}content.mimetype
+     * @param facetType e.g. {http://www.alfresco.org/model/content/1.0}content.mimetype
      */
     public void addFacet(String facetKey, String facetType)
     {

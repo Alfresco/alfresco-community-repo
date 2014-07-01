@@ -4,6 +4,7 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.web.scripts.solr.StatsGetTest;
 import org.alfresco.repo.web.util.PagingCursorTest;
 import org.alfresco.repo.web.util.paging.PagingTest;
 import org.alfresco.repo.webdav.GetMethodTest;
@@ -32,6 +33,7 @@ public class AllUnitTestsSuite extends TestSuite
         webdavTests(suite);
         pagingTests(suite);
 
+        suite.addTest(new JUnit4TestAdapter(StatsGetTest.class));
         return suite;
     }
     

@@ -26,4 +26,7 @@
    <bean id="webscript.org.alfresco.runas.largecontent.put" class="org.alfresco.repo.web.scripts.test.LargeContentTestPut" parent="webscript">
    </bean>
 
+  <!-- Beans used for testing that overide funtionality in the core product -->
+  <bean id="eventPublisher" class="org.alfresco.repo.events.EventPublisherForTestingOnly" />
+  
 </beans>

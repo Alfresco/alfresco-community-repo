@@ -25,6 +25,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.FileFilterMode.Client;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -123,7 +124,9 @@ public class ActivityPosterImpl implements ActivityPoster
                     activityType,
                     siteId,
                     appTool,
-                    json.toString());
+                    json.toString(),
+                    Client.webdav,
+                    contentNodeInfo);
     }
     
     /**

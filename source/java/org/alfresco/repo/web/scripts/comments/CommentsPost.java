@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONStringer;
@@ -149,7 +150,7 @@ public class CommentsPost extends DeclarativeWebScript {
                     
                     String jsonActivityData = jsonWriter.endObject().toString();
                     
-                    activityService.postActivity("org.alfresco.comments.comment-created", siteId, "comments", jsonActivityData);
+                    activityService.postActivity("org.alfresco.comments.comment-created", siteId, "comments", jsonActivityData, Client.webclient);
                 }
                 catch(Exception e)
                 {

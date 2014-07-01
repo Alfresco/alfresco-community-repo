@@ -1100,12 +1100,12 @@ public class WebDAVHelper
                 if (StringUtils.hasText(range))
                 { 
                     return new ContentReadRangeEvent(user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
-                                null, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding, range); 
+                                null, realNodeInfo.getType().toString(), Client.webdav, realNodeInfo.getName(), mimetype, size, contentEncoding, range); 
                 } 
                 else 
                 {
                     return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
-                                null, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding);            
+                                null, realNodeInfo.getType().toString(), Client.webdav, realNodeInfo.getName(), mimetype, size, contentEncoding);            
                 }
             }
         });

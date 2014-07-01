@@ -326,7 +326,7 @@ public class ContentStreamer implements ResourceLoaderAware
                                     final boolean attach,
                                     final Date modified, 
                                     String eTag, 
-                                    String attachFileName, 
+                                    final String attachFileName, 
                                     Map<String, Object> model) throws IOException
     {
         setAttachment(null, res, attach, attachFileName);
@@ -364,7 +364,7 @@ public class ContentStreamer implements ResourceLoaderAware
                         String siteId = siteService.getSiteShortName(nodeRef);
                         
                         return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
-                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.webclient, finalMimetype, size, encoding);
+                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.webclient, attachFileName, finalMimetype, size, encoding);
                     }
                 });
             }

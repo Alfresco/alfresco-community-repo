@@ -309,17 +309,16 @@ public class GetMethod extends WebDAVMethod
         }
     }
 
-    protected void attemptReadContent(FileInfo realNodeInfo, ContentReader reader)
-                throws IOException
+    protected void attemptReadContent(FileInfo realNodeInfo, ContentReader reader) throws IOException
     {
         if (byteRanges != null && byteRanges.startsWith(RANGE_HEADER_UNIT_SPECIFIER))
         {
-            m_davHelper.publishReadEvent(realNodeInfo, reader.getMimetype(), reader.getSize(), byteRanges.substring(6), reader.getEncoding());
             HttpRangeProcessor rangeProcessor = new HttpRangeProcessor(getContentService());
             String userAgent = m_request.getHeader(WebDAV.HEADER_USER_AGENT);
             
             if (m_returnContent)
             {
+                m_davHelper.publishReadEvent(realNodeInfo, reader.getMimetype(), reader.getSize(), byteRanges.substring(6), reader.getEncoding());
                 rangeProcessor.processRange(
                         m_response,
                         reader,

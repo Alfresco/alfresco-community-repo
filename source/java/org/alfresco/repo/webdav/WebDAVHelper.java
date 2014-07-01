@@ -1093,18 +1093,18 @@ public class WebDAVHelper
             @Override
             public Event prepareEvent(String user, String networkId, String transactionId)
             {
-                SiteService siteService = getServiceRegistry().getSiteService();
-                final String siteId = siteService.getSiteShortName(realNodeInfo.getNodeRef());
+//                SiteService siteService = getServiceRegistry().getSiteService();
+//                final String siteId = siteService.getSiteShortName(realNodeInfo.getNodeRef());
                 
                 if (StringUtils.hasText(range))
                 { 
                     return new ContentReadRangeEvent(user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
-                                siteId, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding, range); 
+                                null, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding, range); 
                 } 
                 else 
                 {
                     return new ContentReadEvent(ContentReadEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
-                                siteId, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding);            
+                                null, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding);            
                 }
             }
         });

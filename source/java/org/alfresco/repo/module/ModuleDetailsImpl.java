@@ -134,7 +134,14 @@ public class ModuleDetailsImpl implements ModuleDetails
         }
         else
         {
-            version = new VersionNumber(trimmedProperties.getProperty(PROP_VERSION));
+            try
+            {
+                version = new VersionNumber(trimmedProperties.getProperty(PROP_VERSION));
+            }
+            catch (Throwable e)
+            {
+                throw new AlfrescoRuntimeException("Unable to parse version information: " + trimmedProperties.getProperty(PROP_VERSION), e);
+            }
         }
         // TITLE
         title = trimmedProperties.getProperty(PROP_TITLE);

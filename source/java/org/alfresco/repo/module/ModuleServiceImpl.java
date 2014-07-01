@@ -238,6 +238,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
                 }
                 catch (Throwable e)
                 {
+                    logger.error("Unable to use module information.",e);
                     throw AlfrescoRuntimeException.create(e, ERR_UNABLE_TO_OPEN_MODULE_PROPETIES, resource);
                 }
             }

@@ -18,14 +18,7 @@
  */
 package org.alfresco.repo.events;
 
-import org.alfresco.events.types.BrowserEvent;
 import org.alfresco.events.types.Event;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * An implementation of EventPublisher that does nothing.
@@ -33,39 +26,18 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Gethin James
  * @since 5.0
  */
-public class NoOpEventPublisher implements EventPublisher {
-
-    private static final Logger logger = LoggerFactory.getLogger(NoOpEventPublisher.class);
+public class NoOpEventPublisher extends AbstractEventPublisher implements EventPublisher {
 
     @Override
     public void publishEvent(Event event)
     {
-    	if (logger.isDebugEnabled())
-    	{
-            logger.debug("No event published for [" + event + "]");
-        }
+        //Do nothing
     }
 
     @Override
     public void publishEvent(EventPreparator prep)
     {
-    	if (logger.isDebugEnabled())
-    	{
-            logger.debug("No event published with preparator.");
-        }
-    }
-
-    @Override
-    public void publishBrowserEvent(final WebScriptRequest req, final String siteId, final String component, final String action, final String attributes)
-    {
-        publishEvent(new EventPreparator(){
-            @Override
-            public Event prepareEvent(String user, String networkId, String transactionId)
-            {
-                String agent = req.getHeader("user-agent");
-                return new BrowserEvent(user, networkId, transactionId, siteId, component, action, agent, attributes);
-            }
-        });
+        //Do nothing
     }
 	
 }

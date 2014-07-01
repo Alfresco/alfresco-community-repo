@@ -9,4 +9,6 @@
         <property name="cmisVersion"            value="CMIS_1_0" />
     </bean>
    
+    <!-- Beans used for testing that overide funtionality in the core product -->
+    <bean id="eventPublisher" class="org.alfresco.repo.events.EventPublisherForTestingOnly" />
 </beans>

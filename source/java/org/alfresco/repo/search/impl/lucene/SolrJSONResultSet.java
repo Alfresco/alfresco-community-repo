@@ -47,7 +47,7 @@ import org.json.JSONObject;
 /**
  * @author Andy
  */
-public class SolrJSONResultSet implements ResultSet
+public class SolrJSONResultSet implements ResultSet, JSONResult
 {
     private static final Log logger = LogFactory.getLog(SolrJSONResultSet.class);
     

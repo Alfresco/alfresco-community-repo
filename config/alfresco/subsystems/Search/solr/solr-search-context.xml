@@ -297,5 +297,11 @@
 	
 	<bean id="search.indexConfigurationChecker" class="org.alfresco.repo.admin.DummyIndexConfigurationCheckerImpl">
     </bean>
+    
+   <bean id="search.statsService" class="org.alfresco.repo.search.impl.solr.SolrStatsService">
+     <property name="searcher">
+         <ref bean="search.indexerAndSearcherFactory" />
+     </property>
+   </bean>
 	
 </beans>

@@ -1413,6 +1413,20 @@
       </property>
    </bean>
    
+   <bean id="statsService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.statsService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.StatsService</value>
+         </list>
+      </property>
+   </bean>
+   
     <bean id="solrTrackingComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />

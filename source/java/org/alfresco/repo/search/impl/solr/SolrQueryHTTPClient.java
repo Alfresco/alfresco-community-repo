@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -36,12 +37,16 @@ import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.search.impl.lucene.JSONResult;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
+import org.alfresco.repo.search.impl.lucene.SolrJsonProcessor;
+import org.alfresco.repo.search.impl.lucene.SolrStatsResult;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
+import org.alfresco.service.cmr.search.BasicSearchParameters;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
@@ -50,6 +55,7 @@ import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetMethod;
 import org.alfresco.service.cmr.search.SearchParameters.FieldFacetSort;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
+import org.alfresco.service.cmr.search.StatsParameters;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
@@ -59,12 +65,14 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -200,7 +208,108 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         this.maximumResultsFromUnlimitedQuery = maximumResultsFromUnlimitedQuery;
     }
 
-    public ResultSet executeQuery(SearchParameters searchParameters, String language)
+    /**
+     * Executes a solr query for statistics
+     * 
+     * @param searchParameters
+     * @return SolrStatsResult
+     */
+    public SolrStatsResult executeStatsQuery(StatsParameters searchParameters)
+    {   
+        if(repositoryState.isBootstrapping())
+        {
+            throw new AlfrescoRuntimeException("SOLR stats queries can not be executed while the repository is bootstrapping");
+        }    
+         
+        try 
+        { 
+            StoreRef store = extractStoreRef(searchParameters);            
+            SolrStoreMapping mapping = extractMapping(store);
+            Locale locale = extractLocale(searchParameters);
+            
+            String url = buildStatsUrl(searchParameters, mapping.getBaseUrl(), locale);
+            JSONObject body = buildStatsBody(searchParameters, tenantService.getCurrentUserDomain(), locale);
+            
+            return (SolrStatsResult) postSolrQuery(store, url, body, new SolrJsonProcessor<SolrStatsResult>() {
+
+                @Override
+                public SolrStatsResult getResult(JSONObject json)
+                {
+                    return new SolrStatsResult(json);
+                }
+                
+            });
+            
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new LuceneQueryParserException("stats", e);
+        }
+        catch (HttpException e)
+        {
+            throw new LuceneQueryParserException("stats", e);
+        }
+        catch (IOException e)
+        {
+            throw new LuceneQueryParserException("stats", e);
+        }
+        catch (JSONException e)
+        {
+            throw new LuceneQueryParserException("stats", e);
+        }
+    }
+
+    protected String buildStatsUrl(StatsParameters searchParameters, String baseUrl, Locale locale) throws UnsupportedEncodingException
+    {
+        URLCodec encoder = new URLCodec();
+        StringBuilder url = new StringBuilder();
+        String languageUrlFragment = extractLanguageFragment(searchParameters.getLanguage());
+        
+        url.append(baseUrl);
+        url.append("/select"); //TODO: Ask Andy about this.
+        url.append("?wt=").append(encoder.encode("json", "UTF-8"));
+        url.append("&locale=").append(encoder.encode(locale.toString(), "UTF-8"));
+        
+        url.append(buildSortParameters(searchParameters, encoder));
+        
+        url.append("&stats=true");
+        url.append("&rows=0");
+        url.append("&qt=/").append(languageUrlFragment);
+        if (!StringUtils.isBlank(searchParameters.getFilterQuery()))
+        {
+            url.append("?fq=").append(encoder.encode(searchParameters.getFilterQuery(), "UTF-8")); 
+        }
+
+        for(Entry<String, String> entry : searchParameters.getStatsParameters().entrySet())
+        {
+            url.append("&stats.").append(entry.getKey()).append("=").append(encoder.encode(entry.getValue(), "UTF-8"));
+        }
+        
+        return url.toString();
+    }
+    
+
+    protected JSONObject buildStatsBody(StatsParameters searchParameters, String tenant, Locale locale) throws JSONException
+    {
+        JSONObject body = new JSONObject();
+        body.put("query", searchParameters.getQuery());
+        
+        JSONArray tenants = new JSONArray();
+        tenants.put(tenant);
+        //body.put("tenants", tenants);
+        //TODO: Tenants
+        
+        JSONArray locales = new JSONArray();
+        locales.put(locale);
+        body.put("locales", locales);
+        
+        //&q=TYPE:"cm:content" AND PATH:"/app:company_home/st:sites/cm:swsdp//*"
+            
+        //TODO: Authorities and permissions
+        return body;
+    }
+    
+    public ResultSet executeQuery(final SearchParameters searchParameters, String language)
     {   
 	    if(repositoryState.isBootstrapping())
 	    {
@@ -209,29 +318,15 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 	    
         try
         {
-            if (searchParameters.getStores().size() == 0)
-            {
-                throw new AlfrescoRuntimeException("No store for query");
-            }
-            
-            StoreRef store = searchParameters.getStores().get(0);
-            
-            SolrStoreMapping mapping = mappingLookup.get(store);
-            
-            if (mapping == null)
-            {
-                throw new AlfrescoRuntimeException("No solr query support for store " + searchParameters.getStores().get(0).toString());
-            }
+            StoreRef store = extractStoreRef(searchParameters);            
+            SolrStoreMapping mapping = extractMapping(store);
+            Locale locale = extractLocale(searchParameters);
             
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
             url.append(mapping.getBaseUrl());
          
-            String languageUrlFragment = languageMappings.get(language);
-            if (languageUrlFragment == null)
-            {
-                throw new AlfrescoRuntimeException("No solr query support for language " + language);
-            }
+            String languageUrlFragment = extractLanguageFragment(language);
             url.append("/").append(languageUrlFragment);
 
             // Send the query in JSON only
@@ -267,11 +362,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             url.append("&df=").append(encoder.encode(searchParameters.getDefaultFieldName(), "UTF-8"));
             url.append("&start=").append(encoder.encode("" + searchParameters.getSkipCount(), "UTF-8"));
 
-            Locale locale = I18NUtil.getLocale();
-            if (searchParameters.getLocales().size() > 0)
-            {
-                locale = searchParameters.getLocales().get(0);
-            }
             url.append("&locale=");
             url.append(encoder.encode(locale.toString(), "UTF-8"));
             url.append("&").append(SearchParameters.ALTERNATIVE_DICTIONARY).append("=").append(alternativeDictionary);
@@ -279,29 +369,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             {
             	url.append("&").append(paramName).append("=").append(searchParameters.getExtraParameters().get(paramName));
             }
-            StringBuffer sortBuffer = new StringBuffer();
-            for (SortDefinition sortDefinition : searchParameters.getSortDefinitions())
-            {
-                if (sortBuffer.length() == 0)
-                {
-                    sortBuffer.append("&sort=");
-                }
-                else
-                {
-                    sortBuffer.append(encoder.encode(", ", "UTF-8"));
-                }
-                // MNT-8557 fix, manually replace ' ' with '%20'
-                sortBuffer.append(encoder.encode(sortDefinition.getField().replaceAll(" ", "%20"), "UTF-8")).append(encoder.encode(" ", "UTF-8"));
-                if (sortDefinition.isAscending())
-                {
-                    sortBuffer.append(encoder.encode("asc", "UTF-8"));
-                }
-                else
-                {
-                    sortBuffer.append(encoder.encode("desc", "UTF-8"));
-                }
-
-            }
+            StringBuffer sortBuffer = buildSortParameters(searchParameters, encoder);
             url.append(sortBuffer);
 
             if(searchParameters.getPermissionEvaluation() != PermissionEvaluationMode.NONE)
@@ -429,67 +497,16 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             }
             body.put("textAttributes", textAttributes);
 
-            PostMethod post = new PostMethod(url.toString());
-            if (body.toString().length() > DEFAULT_SAVEPOST_BUFFER)
-            {
-                post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
-            }
-            post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
+            final int maximumResults = maxResults;  //just needed for the final parameter
+            return (ResultSet) postSolrQuery(store, url.toString(), body, new SolrJsonProcessor<SolrJSONResultSet>() {
 
-            try
-            {
-                HttpClient httpClient = httpClients.get(store);
-                
-                if(httpClient == null)
+                @Override
+                public SolrJSONResultSet getResult(JSONObject json)
                 {
-                    throw new AlfrescoRuntimeException("No http client for store " + searchParameters.getStores().get(0).toString());
+                    return new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maximumResults);
                 }
                 
-                httpClient.executeMethod(post);
-
-                if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
-                {
-	    	        Header locationHeader = post.getResponseHeader("location");
-	    	        if (locationHeader != null)
-	    	        {
-	    	            String redirectLocation = locationHeader.getValue();
-	    	            post.setURI(new URI(redirectLocation, true));
-	    	            httpClient.executeMethod(post);
-	    	        }
-                }
-
-                if (post.getStatusCode() != HttpServletResponse.SC_OK)
-                {
-                    throw new LuceneQueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
-                }
-
-                Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
-                // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
-                JSONObject json = new JSONObject(new JSONTokener(reader));
-
-                if (json.has("status"))
-                {
-                    JSONObject status = json.getJSONObject("status");
-                    if (status.getInt("code") != HttpServletResponse.SC_OK)
-                    {
-                        throw new LuceneQueryParserException("SOLR side error: " + status.getString("message"));
-                    }
-                }
-
-                SolrJSONResultSet results = new SolrJSONResultSet(json, searchParameters, nodeService, nodeDAO, limitBy, maxResults);
-                if (s_logger.isDebugEnabled())
-                {
-                    s_logger.debug("Sent :" + url);
-                    s_logger.debug("   with: " + body.toString());
-                    s_logger.debug("Got: " + results.getNumberFound() + " in " + results.getQueryTime() + " ms");
-                }
-                
-                return results;
-            }
-            finally
-            {
-                post.releaseConnection();
-            }
+            });
         }
         catch (UnsupportedEncodingException e)
         {
@@ -507,6 +524,145 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         {
             throw new LuceneQueryParserException("", e);
         }
+    }
+
+    protected JSONResult postSolrQuery(StoreRef store, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor)
+                throws UnsupportedEncodingException, IOException, HttpException, URIException,
+                JSONException
+    {
+        PostMethod post = new PostMethod(url);
+        if (body.toString().length() > DEFAULT_SAVEPOST_BUFFER)
+        {
+            post.getParams().setBooleanParameter(HttpMethodParams.USE_EXPECT_CONTINUE, true);
+        }
+        post.setRequestEntity(new ByteArrayRequestEntity(body.toString().getBytes("UTF-8"), "application/json"));
+
+        try
+        {
+            HttpClient httpClient = httpClients.get(store);
+            
+            if(httpClient == null)
+            {
+                throw new AlfrescoRuntimeException("No http client for store " + store.toString());
+            }
+            
+            httpClient.executeMethod(post);
+
+            if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+            {
+                Header locationHeader = post.getResponseHeader("location");
+                if (locationHeader != null)
+                {
+                    String redirectLocation = locationHeader.getValue();
+                    post.setURI(new URI(redirectLocation, true));
+                    httpClient.executeMethod(post);
+                }
+            }
+
+            if (post.getStatusCode() != HttpServletResponse.SC_OK)
+            {
+                throw new LuceneQueryParserException("Request failed " + post.getStatusCode() + " " + url.toString());
+            }
+
+            Reader reader = new BufferedReader(new InputStreamReader(post.getResponseBodyAsStream(), post.getResponseCharSet()));
+            // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
+            JSONObject json = new JSONObject(new JSONTokener(reader));
+
+            if (json.has("status"))
+            {
+                JSONObject status = json.getJSONObject("status");
+                if (status.getInt("code") != HttpServletResponse.SC_OK)
+                {
+                    throw new LuceneQueryParserException("SOLR side error: " + status.getString("message"));
+                }
+            }
+
+            JSONResult results = jsonProcessor.getResult(json);
+
+            if (s_logger.isDebugEnabled())
+            {
+                s_logger.debug("Sent :" + url);
+                s_logger.debug("   with: " + body.toString());
+                s_logger.debug("Got: " + results.getNumberFound() + " in " + results.getQueryTime() + " ms");
+            }
+            
+            return results;
+        }
+        finally
+        {
+            post.releaseConnection();
+        }
+    }
+
+    private StringBuffer buildSortParameters(BasicSearchParameters searchParameters, URLCodec encoder)
+                throws UnsupportedEncodingException
+    {
+        StringBuffer sortBuffer = new StringBuffer();
+        for (SortDefinition sortDefinition : searchParameters.getSortDefinitions())
+        {
+            if (sortBuffer.length() == 0)
+            {
+                sortBuffer.append("&sort=");
+            }
+            else
+            {
+                sortBuffer.append(encoder.encode(", ", "UTF-8"));
+            }
+            // MNT-8557 fix, manually replace ' ' with '%20'
+            sortBuffer.append(encoder.encode(sortDefinition.getField().replaceAll(" ", "%20"), "UTF-8")).append(encoder.encode(" ", "UTF-8"));
+            if (sortDefinition.isAscending())
+            {
+                sortBuffer.append(encoder.encode("asc", "UTF-8"));
+            }
+            else
+            {
+                sortBuffer.append(encoder.encode("desc", "UTF-8"));
+            }
+
+        }
+        return sortBuffer;
+    }
+
+    private Locale extractLocale(BasicSearchParameters searchParameters)
+    {
+        Locale locale = I18NUtil.getLocale();
+        if (searchParameters.getLocales().size() > 0)
+        {
+            locale = searchParameters.getLocales().get(0);
+        }
+        return locale;
+    }
+
+    private String extractLanguageFragment(String language)
+    {
+        String languageUrlFragment = languageMappings.get(language);
+        if (languageUrlFragment == null)
+        {
+            throw new AlfrescoRuntimeException("No solr query support for language " + language);
+        }
+        return languageUrlFragment;
+    }
+
+    private SolrStoreMapping extractMapping(StoreRef store)
+    {
+        SolrStoreMapping mapping = mappingLookup.get(store);
+        
+        if (mapping == null)
+        {
+            throw new AlfrescoRuntimeException("No solr query support for store " + store);
+        }
+        return mapping;
+    }
+
+    private StoreRef extractStoreRef(BasicSearchParameters searchParameters)
+    {
+        if (searchParameters.getStores().size() == 0)
+        {
+            throw new AlfrescoRuntimeException("No store for query");
+        }
+        
+        StoreRef store = searchParameters.getStores().get(0);
+        return store;
     }
 
     /* (non-Javadoc)

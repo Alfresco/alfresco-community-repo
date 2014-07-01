@@ -19,15 +19,11 @@
 package org.alfresco.repo.webdav;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.List;
 import java.util.UUID;
 
-import org.alfresco.events.types.ContentReadEvent;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.events.EventPublisherForTestingOnly;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -36,10 +32,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.util.FileFilterMode.Client;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -56,7 +50,7 @@ public class WebDAVHelperIntegrationTest
    private NodeRef rootNodeRef;
    private NodeRef rootFolder;
    private NodeService nodeService;
-   private EventPublisherForTestingOnly eventPublisher;
+//   private EventPublisherForTestingOnly eventPublisher;
    
    @BeforeClass
    public static void setUpSpring()
@@ -79,7 +73,7 @@ public class WebDAVHelperIntegrationTest
        rootFolder = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
                    ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
        
-       eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");
+       //eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");
    }
    
    @Test
@@ -139,9 +133,8 @@ public class WebDAVHelperIntegrationTest
        FileInfo found = webDAVHelper.getNodeForPath(rootFolder, "/");
        assertEquals(rootFolder, found.getNodeRef());
    }
-   
+ /*  
    @Test
-   @Ignore
    public void testPublishEvent() 
    {
       FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
@@ -162,4 +155,5 @@ public class WebDAVHelperIntegrationTest
       }
       assertTrue(found);
    }
+   */
 }

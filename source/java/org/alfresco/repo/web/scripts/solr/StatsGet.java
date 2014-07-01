@@ -12,7 +12,6 @@ import org.alfresco.service.cmr.search.StatsResultSet;
 import org.alfresco.service.cmr.search.StatsService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -26,8 +25,15 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class StatsGet extends DeclarativeWebScript
 {
-    StatsService stats;
-    SiteService siteService;
+
+    private StatsService stats;
+    private SiteService siteService;
+    private Map<String,String> facets;
+    
+    public void setFacets(Map<String, String> facets)
+    {
+        this.facets = facets;
+    }
     
     public void setStats(StatsService stats)
     {
@@ -42,8 +48,17 @@ public class StatsGet extends DeclarativeWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) 
     {
+       Map<String, Object> model = new HashMap<String, Object>(2, 1.0f);
        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
        SiteInfo siteInfo = null;
+       
+       String listFacets = req.getParameter("listFacets");
+       if (listFacets != null)
+       {
+           model.put("facets", facets.keySet());
+           model.put("resultSize", 0);
+           return model;
+       }
        
        if (templateVars != null && templateVars.containsKey("siteId") )
        {
@@ -54,24 +69,37 @@ public class StatsGet extends DeclarativeWebScript
          }
        } 
 
-       String contentProp = req.getParameter("contentProp");
-       if (contentProp == null) contentProp = "created";  //default
-       
-       QName prop = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, contentProp);
-       
+       QName propFacet = findFacet(req.getParameter("facet"));
        String query = buildQuery(siteInfo);
        
        StatsParameters params = new StatsParameters(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO, query);
        params.addSort(new SortDefinition(SortDefinition.SortType.FIELD, "contentsize", false));
        params.addStatsParameter(StatsParameters.PARAM_FIELD, "contentsize");
-       params.addStatsParameter(StatsParameters.PARAM_FACET, StatsParameters.FACET_PREFIX+prop.toString());
+       params.addStatsParameter(StatsParameters.PARAM_FACET, StatsParameters.FACET_PREFIX+propFacet.toString());
   
        StatsResultSet result = stats.query(params);
        
-       Map<String, Object> model = new HashMap<String, Object>(1, 1.0f);
        model.put("result", result);
        model.put("resultSize", result.getStats().size());
        return model;
+    }
+
+    /**
+     * Finds a facet based on its key
+     * @param facetKey
+     * @return QName facet
+     */
+    private QName findFacet(String facetKey)
+    {
+       if (facetKey == null) facetKey = facets.entrySet().iterator().next().getKey();  //default
+           
+       if (!facets.containsKey(facetKey))
+       {
+           throw new AccessDeniedException("Invalid facet key:"+facetKey);
+       }
+           
+       QName propFacet = QName.createQName(facets.get(facetKey));
+       return propFacet;
     }
 
     protected String buildQuery(SiteInfo siteInfo)
@@ -85,5 +113,16 @@ public class StatsGet extends DeclarativeWebScript
         }
         return luceneQuery.toString();
     }
+    
+    /**
+     * Allows you to add a facet to the list of available facets for Solr Statistics
+     * @param facetKey e.g. content.mimetype
+     * @param facetType e.g. @{http://www.alfresco.org/model/content/1.0}content.mimetype
+     */
+    public void addFacet(String facetKey, String facetType)
+    {
+        facets.put(facetKey, facetType);
+    }
+
 
 }

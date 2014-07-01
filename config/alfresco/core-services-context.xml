@@ -1090,9 +1090,10 @@
     <!-- Replacement for Spring's multicaster, that queues up events until the application is started -->
     <bean id="applicationEventMulticaster" class="org.alfresco.repo.management.SafeApplicationEventMulticaster"/>
    
-   
-   
    <bean id="repositoryState" class="org.alfresco.repo.admin.RepositoryState" />
+   
+   <!-- Alfresco Events Publisher -->
+   <bean id="eventPublisher" class="org.alfresco.repo.events.NoOpEventPublisher" />
    
    <!-- index subsystem proxies -->
    

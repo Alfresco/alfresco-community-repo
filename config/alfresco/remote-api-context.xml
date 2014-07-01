@@ -88,5 +88,7 @@
       <property name="nodeService" ref="NodeService" />
       <property name="mimetypeService" ref="MimetypeService" />
       <property name="contentService" ref="ContentService" />
+      <property name="eventPublisher" ref="eventPublisher" />
+      <property name="siteService" ref="SiteService" />
    </bean>
 </beans>

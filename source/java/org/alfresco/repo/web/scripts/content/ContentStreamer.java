@@ -13,9 +13,13 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
 import org.alfresco.repo.webdav.WebDAVHelper;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -24,7 +28,9 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.util.FileCopyUtils;
+
 
 /**
  * Can be used when the binary data of a content property needs to be streamed back to the client
@@ -66,7 +73,8 @@ public class ContentStreamer implements ResourceLoaderAware
         protected ContentService contentService;
         protected MimetypeService mimetypeService;
         protected ResourceLoader resourceLoader;
-   
+        protected EventPublisher eventPublisher;
+        protected SiteService siteService;
         /**
          * @param mimetypeService
          */
@@ -81,6 +89,22 @@ public class ContentStreamer implements ResourceLoaderAware
         public void setNodeService(NodeService nodeService)
         {
             this.nodeService = nodeService; 
+        }
+        
+        /**
+         * @param EventPublisher
+         */
+        public void setEventPublisher(EventPublisher eventPublisher)
+        {
+            this.eventPublisher = eventPublisher;
+        }
+        
+        /**
+         * @param SiteService
+         */
+        public void setSiteService(SiteService siteService)
+        {
+            this.siteService = siteService;
         }
         
         @Override
@@ -518,10 +542,10 @@ public class ContentStreamer implements ResourceLoaderAware
     public void streamContentImpl(WebScriptRequest req, 
                                     WebScriptResponse res, 
                                     ContentReader reader, 
-                                    NodeRef nodeRef,
-                                    QName propertyQName,
-                                    boolean attach,
-                                    Date modified, 
+                                    final NodeRef nodeRef,
+                                    final QName propertyQName,
+                                    final boolean attach,
+                                    final Date modified, 
                                     String eTag, 
                                     String attachFileName, 
                                     Map<String, Object> model) throws IOException
@@ -541,12 +565,31 @@ public class ContentStreamer implements ResourceLoaderAware
                 mimetype = mimetypeService.getMimetype(ext);
             }
         }
-    
+        
         res.setHeader(HEADER_ACCEPT_RANGES, "bytes");
         try
         {
             boolean processedRange = false;
             String range = req.getHeader(HEADER_CONTENT_RANGE);
+            final long size = reader.getSize();
+            final String encoding = reader.getEncoding();
+                  
+            if (attach)
+            {
+                final String finalMimetype = mimetype;
+                
+                eventPublisher.publishEvent(new EventPreparator(){
+                    @Override
+                    public Event prepareEvent(String user, String networkId, String transactionId)
+                    {
+                        String siteId = siteService.getSiteShortName(nodeRef);
+                        
+                        return new ContentReadEvent(ContentReadEvent.DOWNLOAD, user, networkId, transactionId,
+                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.webclient, finalMimetype, size, encoding);
+                    }
+                });
+            }
+            
             if (range == null)
             {
                range = req.getHeader(HEADER_RANGE);
@@ -579,10 +622,9 @@ public class ContentStreamer implements ResourceLoaderAware
                
                // set mimetype for the content and the character encoding for the stream
                res.setContentType(mimetype);
-               res.setContentEncoding(reader.getEncoding());
+               res.setContentEncoding(encoding);
                
                // return the complete entity range
-               long size = reader.getSize();
                res.setHeader(HEADER_CONTENT_RANGE, "bytes 0-" + Long.toString(size-1L) + "/" + Long.toString(size));
                res.setHeader(HEADER_CONTENT_LENGTH, Long.toString(size));
                

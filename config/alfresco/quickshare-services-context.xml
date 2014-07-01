@@ -62,6 +62,7 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="thumbnailService" ref="ThumbnailService"/>
+        <property name="eventPublisher" ref="eventPublisher" />
  	</bean>
 
 </beans>

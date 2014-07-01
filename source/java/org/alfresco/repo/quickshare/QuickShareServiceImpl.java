@@ -20,16 +20,21 @@ package org.alfresco.repo.quickshare;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.events.types.ActivityEvent;
+import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -59,6 +64,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -90,6 +96,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     private PolicyComponent policyComponent;
     private TenantService tenantService;
     private ThumbnailService thumbnailService;
+    private EventPublisher eventPublisher;
     
     /**
      * Enable or disable this service.
@@ -164,6 +171,14 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     }
     
     /**
+     * Set the eventPublisher
+     */
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
+    }
+    
+    /**
      * The initialise method. Register our policies.
      */
     public void init()
@@ -188,7 +203,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         checkEnabled();
         
         //Check the node is the correct type
-        QName typeQName = nodeService.getType(nodeRef);
+        final QName typeQName = nodeService.getType(nodeRef);
         if (isSharable(typeQName) == false)
         {
             throw new InvalidNodeRefException(nodeRef);
@@ -225,6 +240,19 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
                 {
                     attributeService.setAttribute(tenantNodeRef, ATTR_KEY_SHAREDIDS_ROOT, sharedId);
                     return null;
+                }
+            });
+            
+            final StringBuffer sb = new StringBuffer();
+            sb.append("{").append("\"sharedId\":\"").append(sharedId).append("\"").append("}");
+            
+            eventPublisher.publishEvent(new EventPreparator(){
+                @Override
+                public Event prepareEvent(String user, String networkId, String transactionId)
+                {            
+                    return new ActivityEvent("quickshare", transactionId, networkId, new Date().getTime(),
+                                user, nodeRef.toString(),
+                                null, typeQName.toString(), Client.webclient, sb.toString());
                 }
             });
             
@@ -531,4 +559,5 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         }, tenantDomain);
         
     }
+
 }

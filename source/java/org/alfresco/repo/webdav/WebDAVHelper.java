@@ -32,8 +32,13 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.ContentReadRangeEvent;
+import org.alfresco.events.types.Event;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -56,6 +61,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.EqualsHelper;
+import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
@@ -86,7 +92,7 @@ public class WebDAVHelper
     
     // Logging
     protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol");
-    
+
     // Service registry TODO: eliminate this - not dependency injection!
     private ServiceRegistry m_serviceRegistry;
 
@@ -103,6 +109,7 @@ public class WebDAVHelper
     private PermissionService m_permissionService;
     private TenantService m_tenantService;
     private HiddenAspect m_hiddenAspect;
+    private EventPublisher eventPublisher;
     
     // pattern is tested against full path after it has been lower cased.
     private Pattern m_renameShufflePattern = Pattern.compile("(.*/\\..*)|(.*[a-f0-9]{8}+$)|(.*\\.tmp$)|(.*\\.wbk$)|(.*\\.bak$)|(.*\\~$)|(.*backup.*\\.do[ct]{1}[x]?[m]?$)|(.*\\.sb\\-\\w{8}\\-\\w{6}$)");
@@ -318,6 +325,14 @@ public class WebDAVHelper
         this.m_namespaceService = namespaceService;
     }
 
+    /**
+     * @param eventPublisher the eventPublisher service
+     */
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
+    }
+    
     /**
      * @param dictionaryService the dictionary service
      */
@@ -1061,6 +1076,39 @@ public class WebDAVHelper
         }
         
         return urlStr.toString();
+    }
+    
+    /**
+     * Notifies listeners that a read has taken place
+     * @param nodeRef
+     * @param propertyQName
+     * @param attach
+     * @param mimetype
+     * @param size
+     */
+    protected void publishReadEvent(final FileInfo realNodeInfo, final String mimetype, final Long size, final String contentEncoding, final String range)
+    {
+     
+        eventPublisher.publishEvent(new EventPreparator(){
+            @Override
+            public Event prepareEvent(String user, String networkId, String transactionId)
+            {
+                SiteService siteService = getServiceRegistry().getSiteService();
+                final String siteId = siteService.getSiteShortName(realNodeInfo.getNodeRef());
+                
+                if (StringUtils.hasText(range))
+                { 
+                    return new ContentReadRangeEvent(user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
+                                siteId, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding, range); 
+                } 
+                else 
+                {
+                    return new ContentReadEvent(ContentReadEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
+                                siteId, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding);            
+                }
+            }
+        });
+
     }
     
     public String getRepositoryPath(HttpServletRequest request)

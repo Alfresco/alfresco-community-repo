@@ -95,5 +95,7 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.schemacomp.validator.SchemaVersionValidatorTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.schemacomp.validator.TypeNameOnlyValidatorTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.test.junitrules.TemporaryMockOverrideTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.SolrQueryHTTPClientTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.SolrStatsResultTest.class));
     }
 }

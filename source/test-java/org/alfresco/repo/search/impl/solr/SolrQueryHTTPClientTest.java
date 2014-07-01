@@ -1,6 +1,6 @@
 package org.alfresco.repo.search.impl.solr;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -11,6 +11,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.Before;
@@ -21,6 +22,7 @@ import org.junit.Test;
  * Basic test of SolrQueryHTTPClient
  *
  * @author Gethin James
+ * @since 5.0
  */
 public class SolrQueryHTTPClientTest
 {
@@ -49,6 +51,10 @@ public class SolrQueryHTTPClientTest
         StatsParameters params = getParameters();
         String url = client.buildStatsUrl(params, "http://localhost:8080/solr/alfresco/select", Locale.CANADA_FRENCH);
         assertNotNull(url);
+        assertTrue(url.contains("locale=fr_CA"));
+        assertTrue(url.contains("sort=contentsize"));
+        assertTrue(url.contains("fq=ANCESTOR"));
+
     }
     
     @Test
@@ -58,6 +64,13 @@ public class SolrQueryHTTPClientTest
         StatsParameters params = getParameters();
         JSONObject body = client.buildStatsBody(params, "myTenant", Locale.US);
         assertNotNull(body);
+        JSONArray tenant = body.getJSONArray("tenants");
+        assertEquals("myTenant",tenant.get(0).toString());
+        JSONArray locale = body.getJSONArray("locales");
+        assertEquals("en_US",locale.get(0).toString());
+        String query = body.getString("query");
+        assertTrue(query.contains("TYPE:"));
+        assertTrue(query.contains("{http://www.alfresco.org/model/content/1.0}content"));
     }
     
     private StatsParameters getParameters() {

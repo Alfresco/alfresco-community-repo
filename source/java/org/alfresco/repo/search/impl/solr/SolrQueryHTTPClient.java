@@ -296,16 +296,12 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         
         JSONArray tenants = new JSONArray();
         tenants.put(tenant);
-        //body.put("tenants", tenants);
-        //TODO: Tenants
+        body.put("tenants", tenants);
         
         JSONArray locales = new JSONArray();
         locales.put(locale);
         body.put("locales", locales);
         
-        //&q=TYPE:"cm:content" AND PATH:"/app:company_home/st:sites/cm:swsdp//*"
-            
-        //TODO: Authorities and permissions
         return body;
     }
     

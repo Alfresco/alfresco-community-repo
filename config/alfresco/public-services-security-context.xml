@@ -517,6 +517,17 @@
         </property>
     </bean>
 
+    <bean id="StasService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref local="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref local="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.search.StatsService.query=ACL_ALLOW,AFTER_ACL_NODE.sys:base.Read
+                org.alfresco.service.cmr.search.StatsService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
     <!-- ================ -->
     <!-- Category Service -->
     <!-- ================ -->

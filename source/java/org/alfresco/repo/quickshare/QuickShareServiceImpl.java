@@ -251,7 +251,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
                 public Event prepareEvent(String user, String networkId, String transactionId)
                 {            
                     return new ActivityEvent("quickshare", transactionId, networkId, new Date().getTime(),
-                                user, nodeRef.toString(),
+                                user, nodeRef.getId(),
                                 null, typeQName.toString(), Client.webclient, sb.toString());
                 }
             });

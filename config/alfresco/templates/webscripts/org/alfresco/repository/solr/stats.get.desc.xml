@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Get solr statistics</shortname>
+  <description>Get some basic statics from solr</description>
+  <url>/api/solr/site/{siteId}/stats</url>
+  <url>/api/solr/stats</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <family>SOLR</family>
+</webscript>

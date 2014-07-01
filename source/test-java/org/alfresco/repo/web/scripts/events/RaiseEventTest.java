@@ -35,16 +35,17 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.PropertyMap;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 
 /**
- * Tests the {@link RaiseBrowserEventGet} endpoint
+ * Tests the {@link RaiseBrowserEventPost} endpoint
  */
 public class RaiseEventTest extends BaseWebScriptTest
 {
     
     private static final String USER_ONE = "RaiseEventTestuser1";
-    private static final String SITE_EVENTS_TEST = "RaiseEventTestSite";
-    private static final String GET_URL = "/api/events/";
+    private static final String SITE_EVENTS_TEST = "Site_Raise_Event_Test";
+    private static final String POST_URL = "/api/events/";
     
     private EventPublisherForTestingOnly eventPublisher;
     private AuthenticationComponent authenticationComponent;
@@ -70,7 +71,7 @@ public class RaiseEventTest extends BaseWebScriptTest
         SiteInfo siteInfo = this.siteService.getSite(SITE_EVENTS_TEST);
         if (siteInfo == null)
         {
-            this.siteService.createSite("RaiseEventSitePreset", SITE_EVENTS_TEST, SITE_EVENTS_TEST+" Title", "SiteDescription", SiteVisibility.PRIVATE);
+            this.siteService.createSite("RaiseEventSitePreset", SITE_EVENTS_TEST, SITE_EVENTS_TEST+" Title", "SiteDescription", SiteVisibility.PUBLIC);
         }
         
         createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
@@ -96,18 +97,19 @@ public class RaiseEventTest extends BaseWebScriptTest
     }
     
     /**
-     * Tests GET requests to create browser events.
+     * Tests POST requests to create browser events.
      * 
      * @throws Exception
      */
     public void testRaiseEvent() throws Exception
     {
-       sendRequest(new GetRequest(GET_URL+"mypage/edit"), Status.STATUS_OK);
-       sendRequest(new GetRequest(GET_URL), Status.STATUS_NOT_FOUND);
-       sendRequest(new GetRequest(GET_URL+"mypage"), Status.STATUS_NOT_FOUND);
-       sendRequest(new GetRequest(GET_URL+SITE_EVENTS_TEST+"/sitepage/view"), Status.STATUS_OK);
-       sendRequest(new GetRequest(GET_URL+SITE_EVENTS_TEST+"/sitepage/view?attributes=xyz"), Status.STATUS_BAD_REQUEST);
-       sendRequest(new GetRequest(GET_URL+SITE_EVENTS_TEST+"/specialpage/view?attributes={\"source\": \"bob\", \"target\": \"hope\"}"), Status.STATUS_OK);
+       sendRequest(new PostRequest(POST_URL+"mypage/edit", "", "application/json"), Status.STATUS_OK);
+       sendRequest(new PostRequest(POST_URL, "", "application/json"), Status.STATUS_NOT_FOUND);
+       sendRequest(new PostRequest(POST_URL+"mypage", "", "application/json"), Status.STATUS_NOT_FOUND);
+       sendRequest(new GetRequest(POST_URL+SITE_EVENTS_TEST+"/sitepage/view"), Status.STATUS_METHOD_NOT_ALLOWED);
+       sendRequest(new PostRequest(POST_URL+SITE_EVENTS_TEST+"/sitepage/view", "", "application/json"), Status.STATUS_OK);
+       sendRequest(new PostRequest(POST_URL+SITE_EVENTS_TEST+"/sitepage/view", "rubbish", "application/json"), Status.STATUS_BAD_REQUEST);
+       sendRequest(new PostRequest(POST_URL+SITE_EVENTS_TEST+"/specialpage/view", "{\"source\": \"bob\", \"target\": \"hope\"}", "application/json"), Status.STATUS_OK);
        
        List<BrowserEvent> browserEvents = eventPublisher.getQueueByType(BrowserEvent.class);
        int found = 0;

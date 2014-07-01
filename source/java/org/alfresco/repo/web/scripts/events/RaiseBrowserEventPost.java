@@ -41,7 +41,7 @@ import org.springframework.util.StringUtils;
 * @author Gethin James
 * @since 5.0
  */
-public class RaiseBrowserEventGet extends AbstractWebScript
+public class RaiseBrowserEventPost extends AbstractWebScript
 {
     private EventPublisher eventPublisher;
     private SiteService siteService;
@@ -79,13 +79,22 @@ public class RaiseBrowserEventGet extends AbstractWebScript
          action = templateVars.get("action");
        }
        
-       String attributes = req.getParameter("attributes");
+       String attributes = req.getContent().getContent();
        if (attributes != null)
        {
-           if (!validJsonMap(attributes))
+           if (StringUtils.hasText(attributes))
            {
-               throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON Object: " + attributes);
+               if (!validJsonMap(attributes))
+               {
+                   throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON Object: " + attributes);
+               }            
            }
+           else
+           {
+               //No valid attributes passed in so reset it
+               attributes = null;
+           }
+
        }
        
        if (StringUtils.hasText(component) && StringUtils.hasText(action))

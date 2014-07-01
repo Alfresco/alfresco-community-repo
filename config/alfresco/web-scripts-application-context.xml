@@ -1581,7 +1581,7 @@
       </property>  
    </bean>
    
-  <bean id="webscript.org.alfresco.repository.events.raiseevent.get" class="org.alfresco.repo.web.scripts.events.RaiseBrowserEventGet"
+  <bean id="webscript.org.alfresco.repository.events.raiseevent.post" class="org.alfresco.repo.web.scripts.events.RaiseBrowserEventPost"
          parent="webscript">
       <property name="siteService" ref="SiteService" />
       <property name="eventPublisher" ref="eventPublisher" />

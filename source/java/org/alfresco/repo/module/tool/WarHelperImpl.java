@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
 import org.alfresco.repo.module.ModuleDetailsImpl;
@@ -54,12 +53,14 @@ public class WarHelperImpl implements WarHelper
         TFile propsFile = new TFile(war+VERSION_PROPERTIES);
         if (propsFile != null && propsFile.exists())
         {
+            log.info("INFO: Checking the war version using "+VERSION_PROPERTIES);
             Properties warVers = loadProperties(propsFile);
             VersionNumber warVersion = new VersionNumber(warVers.getProperty("version.major")+"."+warVers.getProperty("version.minor")+"."+warVers.getProperty("version.revision"));
             checkVersions(warVersion, installingModuleDetails);
         }
         else 
         {
+            log.info("INFO: Checking the war version using the manifest.");
         	checkCompatibleVersionUsingManifest(war,installingModuleDetails);
         }
     }
@@ -142,10 +143,12 @@ public class WarHelperImpl implements WarHelper
 	private void checkVersions(VersionNumber warVersion, ModuleDetails installingModuleDetails) throws ModuleManagementToolException
 	{
 		if(warVersion.compareTo(installingModuleDetails.getRepoVersionMin())==-1) {
-		    throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a war version greater than "+installingModuleDetails.getRepoVersionMin());
+		    throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") must be installed on a war version greater than "
+		                +installingModuleDetails.getRepoVersionMin()+". This war is version:"+warVersion+".");
 		}
 		if(warVersion.compareTo(installingModuleDetails.getRepoVersionMax())==1) {
-		    throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") cannot be installed on a war version greater than "+installingModuleDetails.getRepoVersionMax());
+		    throw new ModuleManagementToolException("The module ("+installingModuleDetails.getTitle()+") cannot be installed on a war version greater than "
+		                +installingModuleDetails.getRepoVersionMax()+". This war is version:"+warVersion+".");
 		}
 	}
 

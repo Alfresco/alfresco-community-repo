@@ -13,11 +13,14 @@
       </#list>   
     ],
     "queryInfo": {
-      "numberFound": "${result.numberFound?c}",
-      "totalRows": "${resultSize?c}",
-      "sum": "${result.sum?c}",
-      "max": "${result.max?c}",
-      "mean": "${result.mean?c}"    
+       "numberFound": "${result.numberFound?c}",
+       "totalRows": "${resultSize?c}"
+       <#if result.sum??>
+       ,
+       "sum": "${result.sum?c}",
+       "max": "${result.max?c}",
+       "mean": "${result.mean?c}"
+       </#if>
     },
     "metadata": [
         {

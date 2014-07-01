@@ -5,9 +5,8 @@ function main()
     var sitePreset = args["spf"];
     var sizeString = args["size"];
     
-    if (nameFilter !== null && nameFilter[0] !== '*') nameFilter = "*" + nameFilter;
     // Get the list of sites
-    var sites = siteService.getSites(nameFilter, sitePreset, sizeString != null ? parseInt(sizeString) : -1);
+    var sites = siteService.findSites(nameFilter, sizeString != null ? parseInt(sizeString) : -1);
     model.sites = sites;
     model.roles = (args["roles"] !== null ? args["roles"] : "managers");
 }

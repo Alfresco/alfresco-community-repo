@@ -18,8 +18,10 @@
  */
 package org.alfresco.opencmis;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.Calendar;
@@ -30,12 +32,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 
+import org.alfresco.events.types.ContentEvent;
+import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.ContentReadRangeEvent;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.events.EventPublisherForTestingOnly;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -77,6 +85,7 @@ public class OpenCmisLocalTest extends TestCase
     																};
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
     private ThresholdOutputStreamFactory streamFactory;
+    private EventPublisherForTestingOnly eventPublisher;
     
     /**
      * Test class to provide the service factory
@@ -129,6 +138,7 @@ public class OpenCmisLocalTest extends TestCase
     {
         File tempDir = new File(TempFileProvider.getTempDir(), GUID.generate());
         this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDir, 1024, 1024, false);
+        this.eventPublisher = (EventPublisherForTestingOnly) ctx.getBean("eventPublisher");
     }
     
     public void testVoid()
@@ -169,6 +179,86 @@ public class OpenCmisLocalTest extends TestCase
             fileContent.setStream(reader.getContentInputStream());
         }
         folder.createDocument(fileProps, fileContent, VersioningState.MAJOR);
+    }
+    
+    public void testDownloadEvent() throws InterruptedException
+    {
+        Repository repository = getRepository("admin", "admin");
+        Session session = repository.createSession();
+        Folder rootFolder = session.getRootFolder();
+        String docname = "mydoc-" + GUID.generate() + ".txt";
+        Map<String, String> props = new HashMap<String, String>();
+        {
+            props.put(PropertyIds.OBJECT_TYPE_ID, "D:cmiscustom:document");
+            props.put(PropertyIds.NAME, docname);
+        }
+        
+        // content
+        byte[] byteContent = "Hello from Download testing class".getBytes();
+        InputStream stream = new ByteArrayInputStream(byteContent);
+        ContentStream contentStream = new ContentStreamImpl(docname, BigInteger.valueOf(byteContent.length), "text/plain", stream);
+
+        Document doc1 = rootFolder.createDocument(props, contentStream, VersioningState.MAJOR);
+        NodeRef doc1NodeRef = cmisIdToNodeRef(doc1.getId());
+        
+        ContentStream content = doc1.getContentStream();
+        assertNotNull(content);
+        
+        //range request
+        content = doc1.getContentStream(BigInteger.valueOf(2),BigInteger.valueOf(4));
+        assertNotNull(content);
+        List<ContentReadEvent> events = eventPublisher.getQueueByType(ContentReadEvent.class);
+        int found = 0;
+        
+        for (ContentReadEvent cre : events)
+        {
+           if (doc1NodeRef.getId().equals(cre.getNodeId()))
+           {
+               found ++;
+               commonAsserts(byteContent, cre);
+               continue;      
+           }
+        } 
+        assertEquals(1, found);
+        
+        List<ContentReadRangeEvent> revents = eventPublisher.getQueueByType(ContentReadRangeEvent.class);
+        for (ContentReadRangeEvent cre : revents)
+        {
+           if (doc1NodeRef.getId().equals(cre.getNodeId()))
+           {
+               found ++;
+               commonAsserts(byteContent, cre);
+               assertEquals("2 - 4", cre.getRange());
+               continue;      
+           }
+        } 
+        
+        assertEquals(2, found);
+        //Found and validated 2 events.
+        
+    }
+
+    private void commonAsserts(byte[] byteContent,ContentReadEvent cre)
+    {
+        assertEquals(Client.cmis, cre.getClient());
+        assertEquals(byteContent.length, cre.getSize());
+        assertEquals("text/plain", cre.getMimeType());
+    }
+
+    /**
+     * Turns a CMIS id into a node ref
+     * @param nodeId
+     * @return
+     */
+    private NodeRef cmisIdToNodeRef(String nodeId)
+    {
+        int idx = nodeId.indexOf(";");
+        if(idx != -1)
+        {
+            nodeId = nodeId.substring(0, idx);
+        }
+        NodeRef nodeRef = new NodeRef(nodeId);
+        return nodeRef;
     }
     
     public void testALF10085() throws InterruptedException

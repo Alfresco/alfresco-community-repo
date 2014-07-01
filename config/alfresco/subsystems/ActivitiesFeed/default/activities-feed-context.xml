@@ -9,6 +9,7 @@
       <property name="postDAO" ref="postDAO"/>
       <property name="tenantService" ref="tenantService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
+      <property name="eventPublisher" ref="eventPublisher" />
    </bean>
    
    <bean id="activityService" class="org.alfresco.repo.activities.ActivityServiceImpl">

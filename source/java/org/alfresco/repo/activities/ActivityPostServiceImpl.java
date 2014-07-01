@@ -22,9 +22,13 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.events.types.ActivityEvent;
+import org.alfresco.events.types.Event;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityPostService;
@@ -46,9 +50,10 @@ import org.springframework.extensions.surf.util.ParameterCheck;
 public class ActivityPostServiceImpl implements ActivityPostService
 {
     private static final Log logger = LogFactory.getLog(ActivityServiceImpl.class);
-    
+
     private ActivityPostDAO postDAO;
     private TenantService tenantService;
+    private EventPublisher eventPublisher;
     private int estGridSize = 1;
     
     private boolean userNamesAreCaseSensitive = false;
@@ -73,12 +78,17 @@ public class ActivityPostServiceImpl implements ActivityPostService
         this.estGridSize = estGridSize;
     }
     
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     public void postActivity(String activityType, String siteId, String appTool, String activityData)
     {
-        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, getCurrentUser());
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, getCurrentUser(), null);
     }
     
     /* (non-Javadoc)
@@ -86,7 +96,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
      */
     public void postActivity(String activityType, String siteId, String appTool, String activityData, String userId)
     {
-        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, userId);
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, userId, null);
     }
     
     /* (non-Javadoc)
@@ -99,7 +109,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
         StringBuffer sb = new StringBuffer();
         sb.append("{").append("\""+PostLookup.JSON_NODEREF_LOOKUP+"\":\"").append(nodeRef.toString()).append("\"").append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser());
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(), nodeRef);
     }
     
     /* (non-Javadoc)
@@ -114,7 +124,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
                       .append("\"name\":\"").append(name).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser());
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(),nodeRef);
     }
 
     /* (non-Javadoc)
@@ -135,10 +145,10 @@ public class ActivityPostServiceImpl implements ActivityPostService
                       .append("\""+PostLookup.JSON_NODEREF_PARENT+"\":\"").append(parentNodeRef.toString()).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser());
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(), nodeRef);
     }
     
-    private void postActivity(String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status, String userId)
+    private void postActivity(final String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status, String userId, NodeRef nodeRef)
     {
         
         try
@@ -231,16 +241,19 @@ public class ActivityPostServiceImpl implements ActivityPostService
         
         try
         {
-            Date postDate = new Date();
-            ActivityPostEntity activityPost = new ActivityPostEntity();
+            final Date postDate = new Date();
+            final ActivityPostEntity activityPost = new ActivityPostEntity();
+            final String network = tenantService.getName(siteId);
+            final String nodeId = nodeRef!=null?nodeRef.toString():null;
+            final String site = siteId;
+            
             //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
             if (! userNamesAreCaseSensitive)
             {
                 userId = userId.toLowerCase();
             }
-            activityPost.setUserId(userId);
-            
-            activityPost.setSiteNetwork(tenantService.getName(siteId));
+            activityPost.setUserId(userId);          
+            activityPost.setSiteNetwork(network);
             
             activityPost.setAppTool(appTool);
             activityPost.setActivityData(activityData);
@@ -248,6 +261,15 @@ public class ActivityPostServiceImpl implements ActivityPostService
             activityPost.setPostDate(postDate);
             activityPost.setStatus(status.toString());
             activityPost.setLastModified(postDate);
+            
+            eventPublisher.publishEvent(new EventPreparator(){
+                @Override
+                public Event prepareEvent(String user, String networkId, String transactionId)
+                {            
+                    return new ActivityEvent(activityType, transactionId, networkId, postDate.getTime(), user, nodeId,
+                                site, null, null, activityPost.getActivityData());
+                }
+            });
             
             // hash the userid to generate a job task node
             int nodeCount = estGridSize;

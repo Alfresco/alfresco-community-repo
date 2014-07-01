@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.events;
 
+import org.alfresco.events.types.BrowserEvent;
 import org.alfresco.events.types.Event;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * EventPublisher can be used to broadcast events.
@@ -35,6 +37,17 @@ public interface EventPublisher
      * @param event Event
      */
     public void publishEvent(Event event);
+    
+    /**
+     * A special type of Event that occurs in a web browser
+     * @see BrowserEvent
+     * @param req - WebScriptRequest
+     * @param siteId - optional site id
+     * @param component - page eg. "documentdetails"
+     * @param action - eg. "view"
+     * @param attributes - optional additional attributes as a json map eg. {"liked":"true"}
+     */
+    public void publishBrowserEvent(WebScriptRequest req, String siteId, String component, String action, String attributes);
     
     /**
      * Publish the event using an EventPreparator

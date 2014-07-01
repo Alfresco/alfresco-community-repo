@@ -1581,6 +1581,12 @@
       </property>  
    </bean>
    
+  <bean id="webscript.org.alfresco.repository.events.raiseevent.get" class="org.alfresco.repo.web.scripts.events.RaiseBrowserEventGet"
+         parent="webscript">
+      <property name="siteService" ref="SiteService" />
+      <property name="eventPublisher" ref="eventPublisher" />
+   </bean>
+   
    <bean id="webscript.org.alfresco.repository.solr.nodes.post"
          class="org.alfresco.repo.web.scripts.solr.NodesGet"
          parent="webscript">

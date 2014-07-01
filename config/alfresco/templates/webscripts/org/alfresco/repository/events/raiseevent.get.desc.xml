@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>alfresco-browser-event</shortname>
+  <description>Raises an alfresco browser event, e.g /api/events/mysite/documentdetails/view</description>
+  <url>/api/events/{siteId}/{component}/{action}</url>
+  <url>/api/events/{component}/{action}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

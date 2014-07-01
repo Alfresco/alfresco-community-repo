@@ -85,7 +85,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("must be installed on a war version greater than 10.1"));
+            assertTrue(exception.getMessage().contains("must be installed on a war version greater than 10.1"));
         }
 
         installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));
@@ -99,7 +99,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 3.0"));
+            assertTrue(exception.getMessage().contains("cannot be installed on a war version greater than 3.0"));
         }        
 
         installingModuleDetails.setRepoVersionMax(new VersionNumber("99"));
@@ -122,7 +122,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 4.0.999"));
+            assertTrue(exception.getMessage().contains("cannot be installed on a war version greater than 4.0.999"));
         }
     }
     
@@ -140,7 +140,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("must be installed on a war version greater than 10.1"));
+            assertTrue(exception.getMessage().contains("must be installed on a war version greater than 10.1"));
         }
 
         installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));
@@ -154,7 +154,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 3.0"));
+            assertTrue(exception.getMessage().contains("cannot be installed on a war version greater than 3.0"));
         }        
 
         installingModuleDetails.setRepoVersionMax(new VersionNumber("99"));
@@ -177,7 +177,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().endsWith("cannot be installed on a war version greater than 3.4.10"));
+            assertTrue(exception.getMessage().contains("cannot be installed on a war version greater than 3.4.10"));
         }
         
     	theWar = getFile(".war", "module/share-4.2.a.war");

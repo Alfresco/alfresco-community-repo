@@ -277,6 +277,7 @@
 					<execution>
 						<id>pre-exploded-war</id>
 						<goals>
+                            <goal>manifest</goal>
 							<goal>exploded</goal>
 						</goals>
 						<phase>prepare-package</phase>

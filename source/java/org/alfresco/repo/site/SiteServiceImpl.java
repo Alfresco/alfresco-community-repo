@@ -35,6 +35,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.events.types.Event;
+import org.alfresco.events.types.SiteManagementEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQuery;
 import org.alfresco.query.CannedQueryFactory;
@@ -48,6 +50,8 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.node.NodeArchiveServicePolicies;
 import org.alfresco.repo.node.NodeArchiveServicePolicies.BeforePurgeNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -185,6 +189,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private SitesPermissionCleaner sitesPermissionsCleaner;
     private PolicyComponent policyComponent;
     private PublicServiceAccessService publicServiceAccessService;
+    private EventPublisher eventPublisher;
     
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
 
@@ -549,6 +554,14 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Create the relevant groups and assign permissions
         setupSitePermissions(siteNodeRef, shortName, visibility, null);
 
+        eventPublisher.publishEvent(new EventPreparator(){
+            @Override
+            public Event prepareEvent(String user, String networkId, String transactionId)
+            {            
+                return new SiteManagementEvent("site.create", transactionId, networkId, new Date().getTime(),
+                            user, shortName,title,description, visibility.toString(),sitePreset);
+            }
+        });
         // Return created site information
         Map<QName, Serializable> customProperties = getSiteCustomProperties(siteNodeRef);
         SiteInfo siteInfo = new SiteInfoImpl(sitePreset, shortName, title, description, visibility, customProperties, siteNodeRef);
@@ -3143,6 +3156,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         return this.authorityService.isAdminAuthority(userName)
                     || this.authorityService.getAuthoritiesForUser(userName).contains(
                                 GROUP_SITE_ADMINISTRATORS_AUTHORITY);
+    }
+
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
     }
 
 }

@@ -176,6 +176,7 @@
        <property name="tenantService" ref="tenantService"/>
        <property name="singletonCache" ref="immutableSingletonCache"/>
        <property name="siteNodeRefCache" ref="siteNodeRefCache"/>
+       <property name="eventPublisher" ref="eventPublisher" />
     </bean>
     
     <bean id="siteServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.site.script.ScriptSiteService">

@@ -32,7 +32,6 @@ import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityPostService;
-import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -58,7 +57,6 @@ public class ActivityPostServiceImpl implements ActivityPostService
     private ActivityPostDAO postDAO;
     private TenantService tenantService;
     private EventPublisher eventPublisher;
-    private FileFolderService fileFolderService;
     
     private int estGridSize = 1;
     
@@ -89,10 +87,6 @@ public class ActivityPostServiceImpl implements ActivityPostService
         this.eventPublisher = eventPublisher;
     }
 
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
@@ -297,15 +291,14 @@ public class ActivityPostServiceImpl implements ActivityPostService
                     String nodeId = finalNodeRef!=null?finalNodeRef.getId():null;
                     FileInfo fileInfo = contentNodeInfo;
                     
-                    //Get content info if available
-                    if (fileInfo == null && finalNodeRef !=null)
-                    {
-                        fileInfo = fileFolderService.getFileInfo(finalNodeRef);
-                    }
-                    
                     //Use content info
                     if (fileInfo != null)
                     {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Enhancing the Activity Event with fileInfo provided for node "+nodeId);
+                        }
+                        
                         if (nodeId == null)
                         {
                             nodeId = fileInfo.getNodeRef().getId();

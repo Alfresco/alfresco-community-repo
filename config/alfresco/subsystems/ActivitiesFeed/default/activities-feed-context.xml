@@ -10,7 +10,6 @@
       <property name="tenantService" ref="tenantService"/>
       <property name="userNamesAreCaseSensitive" value="${user.name.caseSensitive}"/>
       <property name="eventPublisher" ref="eventPublisher" />
-      <property name="fileFolderService" ref="FileFolderService"/>
    </bean>
    
    <bean id="activityService" class="org.alfresco.repo.activities.ActivityServiceImpl">

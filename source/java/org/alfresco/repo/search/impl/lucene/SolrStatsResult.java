@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.util.StringUtils;
 
 /**
  * The results of executing a solr stats query 
@@ -31,10 +32,13 @@ public class SolrStatsResult implements JSONResult, StatsResultSet
     private Long mean;
     
     private List<StatsResultStat> stats;
-    public SolrStatsResult(JSONObject json)
+    private boolean nameIsADate;
+    
+    public SolrStatsResult(JSONObject json, boolean nameIsADate)
     {
         try 
         {
+            this.nameIsADate = nameIsADate;
             stats = new ArrayList<>();
             processJson(json);
         }
@@ -109,12 +113,35 @@ public class SolrStatsResult implements JSONResult, StatsResultSet
      */
     private StatsResultStat processStat(String name, JSONObject facetVal) throws JSONException
     {
-        return new StatsResultStat(name,
+        return new StatsResultStat(nameIsADate?formatAsDate(name):name,
                     facetVal.getLong("sum"),
                     facetVal.getLong("count"),
                     facetVal.getLong("min"),
                     facetVal.getLong("max"),
                     facetVal.getLong("mean"));
+    }
+
+    public static String formatAsDate(String name)
+    {
+        if (StringUtils.hasText(name))
+        {
+            try
+            {
+                //LocalDate d = LocalDate.parse(name);
+                //return d.toString();
+                return name.substring(0,10);
+            }
+            catch (IllegalArgumentException iae)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Can't parse reponse: "+iae.getMessage());
+                }
+            }
+        }
+
+        //Default
+        return "";
     }
 
     @Override

@@ -7,6 +7,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.junit.Test;
+import org.springframework.util.StringUtils;
 
 public class SolrStatsResultTest
 {
@@ -26,10 +27,22 @@ public class SolrStatsResultTest
         SolrStatsResult resultMod = testProcessing(TEST_MODIFIER, 9, 4, 188);
         SolrStatsResult resultV = testProcessing(TEST_VERSIONLABEL_DOT, 6, 0, 190);
     }
+    
+    @Test
+    public void testSolrStatsResultDateFormat() throws JSONException
+    {
+        String date = SolrStatsResult.formatAsDate(null);
+        assertNotNull(date);
+        assertTrue(!StringUtils.hasText(date));
+        
+        assertEquals("2011-03-03", SolrStatsResult.formatAsDate("2011-03-03T10:34:53.551Z"));
+        assertEquals("2014-05-12", SolrStatsResult.formatAsDate("2014-05-12T16:26:53.292Z"));
+    }
+    
     private SolrStatsResult testProcessing(String testData, long queryTime, int statsSize, long numberFound) throws JSONException
     {
         JSONObject json = new JSONObject(new JSONTokener(testData));
-        SolrStatsResult result = new SolrStatsResult(json);
+        SolrStatsResult result = new SolrStatsResult(json, false);
 
         assertNotNull(result);
         assertEquals(numberFound, result.getNumberFound());
@@ -39,7 +52,6 @@ public class SolrStatsResultTest
         assertTrue(result.getMax()==3737049);
         assertTrue(result.getMean()==82362);
         assertEquals(statsSize, result.getStats().size());
-        System.out.println(result);
         return result;
     }
 

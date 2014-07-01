@@ -214,7 +214,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
      * @param searchParameters
      * @return SolrStatsResult
      */
-    public SolrStatsResult executeStatsQuery(StatsParameters searchParameters)
+    public SolrStatsResult executeStatsQuery(final StatsParameters searchParameters)
     {   
         if(repositoryState.isBootstrapping())
         {
@@ -235,7 +235,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                 @Override
                 public SolrStatsResult getResult(JSONObject json)
                 {
-                    return new SolrStatsResult(json);
+                    return new SolrStatsResult(json, searchParameters.isDateSearch());
                 }
                 
             });

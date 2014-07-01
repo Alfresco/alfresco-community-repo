@@ -46,6 +46,14 @@ public abstract class AbstractEventPublisher implements EventPublisher
         });
     }
     
+    @Override
+    public void publishEvent(EventPreparator prep)
+    {
+        ThreadInfo info = getThreadInfo();
+        Event event = prep.prepareEvent(info.user, info.network, info.transaction);
+        publishEvent(event);
+    }
+    
     /**
      * Gets userful information from the current thread for use when creating an event
      * @return ThreadInfo
@@ -62,10 +70,10 @@ public abstract class AbstractEventPublisher implements EventPublisher
      * Basic information from a thread
      *
      */
-    protected static class ThreadInfo {
-        protected final String user;
-        protected final String transaction;
-        protected final String network;
+    public static class ThreadInfo {
+        public final String user;
+        public final String transaction;
+        public final String network;
         
         public ThreadInfo(String user, String transaction, String network)
         {

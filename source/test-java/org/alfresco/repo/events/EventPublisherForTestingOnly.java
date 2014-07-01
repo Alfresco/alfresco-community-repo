@@ -18,25 +18,34 @@
  */
 package org.alfresco.repo.events;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.SimpleFormatter;
 
 import org.alfresco.events.types.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
 
 /**
  * An implementation of EventPublisher that is used for testing
- *
+ * Uses a java.util.logging.FileHandler for logging Events to a file.
+ * It also uses the standard log4j logging for Alfresco.
+ * 
  * @author Gethin James
  * @since 5.0
  */
-public class EventPublisherForTestingOnly extends AbstractEventPublisher implements EventPublisher
+public class EventPublisherForTestingOnly extends AbstractEventPublisher implements EventPublisher, InitializingBean
 {
     private static final Logger logger = LoggerFactory.getLogger(EventPublisherForTestingOnly.class);
     Queue<Event> queue = new ConcurrentLinkedQueue<Event>();
+    FileHandler fileHandler;
     
     @Override
     public void publishEvent(Event event)
@@ -59,7 +68,8 @@ public class EventPublisherForTestingOnly extends AbstractEventPublisher impleme
         if (logger.isDebugEnabled())
         {
             logger.debug(logMessage);
-        }  
+        }
+        fileHandler.publish(new LogRecord(Level.INFO, logMessage));  
     }
     
     public Queue<Event> getQueue()
@@ -79,6 +89,15 @@ public class EventPublisherForTestingOnly extends AbstractEventPublisher impleme
            }
         }
         return (List<T>) toReturn;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        File eventLog = new File("alfresco-events.log");
+        fileHandler = new FileHandler(eventLog.getAbsolutePath(), true);
+        fileHandler.setLevel(Level.INFO);
+        fileHandler.setFormatter(new SimpleFormatter());
     }
 
 }

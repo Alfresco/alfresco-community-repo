@@ -40,6 +40,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityPostService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -49,6 +50,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
@@ -192,6 +194,21 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
     {
         // delegate
         activityPostService.postActivity(activityType, siteId, appTool, nodeRef, name, typeQName, parentNodeRef);
+    }
+    
+
+    @Override
+    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData, Client client)
+    {
+        // delegate
+        activityPostService.postActivity(activityType, siteId, appTool, jsonActivityData, client);
+    }
+
+    @Override
+    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData, Client client, FileInfo contentNodeInfo)
+    {
+        // delegate
+        activityPostService.postActivity(activityType, siteId, appTool, jsonActivityData, client, contentNodeInfo);
     }
     
     /* (non-Javadoc)

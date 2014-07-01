@@ -18,8 +18,10 @@
  */
 package org.alfresco.service.cmr.activities;
 
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode.Client;
 
 public interface ActivityPostService
 {
@@ -37,6 +39,27 @@ public interface ActivityPostService
      * @param jsonActivityData - required
      */
     public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData);
+
+    /**
+     * Post a custom activity type
+     *
+     * @param activityType - required
+     * @param siteId - optional, if null will be stored as empty string
+     * @param appTool - optional, if null will be stored as empty string
+     * @param jsonActivityData - required
+     */
+    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData,  Client client);
+    
+    /**
+     * Post a custom activity type
+     *
+     * @param activityType - required
+     * @param siteId - optional, if null will be stored as empty string
+     * @param appTool - optional, if null will be stored as empty string
+     * @param jsonActivityData - required
+     * @param contentNodeInfo FileInfo
+     */
+    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData,  Client client, FileInfo contentNodeInfo);
     
     /**
      * Post a custom activity type

@@ -32,8 +32,12 @@ import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityPostService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
@@ -54,6 +58,8 @@ public class ActivityPostServiceImpl implements ActivityPostService
     private ActivityPostDAO postDAO;
     private TenantService tenantService;
     private EventPublisher eventPublisher;
+    private FileFolderService fileFolderService;
+    
     private int estGridSize = 1;
     
     private boolean userNamesAreCaseSensitive = false;
@@ -82,13 +88,30 @@ public class ActivityPostServiceImpl implements ActivityPostService
     {
         this.eventPublisher = eventPublisher;
     }
-    
+
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.activities.ActivityService#postActivity(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     public void postActivity(String activityType, String siteId, String appTool, String activityData)
     {
-        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, getCurrentUser(), null);
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, getCurrentUser(), null, null);
+    }
+    
+
+    @Override
+    public void postActivity(String activityType, String siteId, String appTool, String activityData, Client client)
+    {
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, getCurrentUser(), client, null);
+    }
+
+    @Override
+    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData,  Client client, FileInfo contentNodeInfo)
+    {
+        postActivity(activityType, siteId, appTool, jsonActivityData, ActivityPostEntity.STATUS.PENDING, getCurrentUser(), client, contentNodeInfo);
     }
     
     /* (non-Javadoc)
@@ -96,7 +119,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
      */
     public void postActivity(String activityType, String siteId, String appTool, String activityData, String userId)
     {
-        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, userId, null);
+        postActivity(activityType, siteId, appTool, activityData, ActivityPostEntity.STATUS.PENDING, userId,null, null);
     }
     
     /* (non-Javadoc)
@@ -109,7 +132,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
         StringBuffer sb = new StringBuffer();
         sb.append("{").append("\""+PostLookup.JSON_NODEREF_LOOKUP+"\":\"").append(nodeRef.toString()).append("\"").append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(), nodeRef);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(),null, null);
     }
     
     /* (non-Javadoc)
@@ -124,7 +147,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
                       .append("\"name\":\"").append(name).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(),nodeRef);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(),null,null);
     }
 
     /* (non-Javadoc)
@@ -145,11 +168,13 @@ public class ActivityPostServiceImpl implements ActivityPostService
                       .append("\""+PostLookup.JSON_NODEREF_PARENT+"\":\"").append(parentNodeRef.toString()).append("\"")
                       .append("}");
         
-        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(), nodeRef);
+        postActivity(activityType, siteId, appTool, sb.toString(), ActivityPostEntity.STATUS.PENDING, getCurrentUser(), null,null);
     }
     
-    private void postActivity(final String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status, String userId, NodeRef nodeRef)
+    private void postActivity(final String activityType, String siteId, String appTool, String activityData, ActivityPostEntity.STATUS status, String userId, final Client client, final FileInfo contentNodeInfo)
     {
+        
+        NodeRef nodeRef = null;
         
         try
         {
@@ -198,7 +223,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
                         jo.put(PostLookup.JSON_TENANT_DOMAIN, tenantService.getCurrentUserDomain());
                         activityData = jo.toString();
                     }
-                    checkNodeRef(jo);
+                    nodeRef = checkNodeRef(jo);
                     
                     // ALF-10362 - belts-and-braces (note: Share sets "title" from cm:name)
                     if (jo.has(PostLookup.JSON_TITLE))
@@ -244,8 +269,8 @@ public class ActivityPostServiceImpl implements ActivityPostService
             final Date postDate = new Date();
             final ActivityPostEntity activityPost = new ActivityPostEntity();
             final String network = tenantService.getName(siteId);
-            final String nodeId = nodeRef!=null?nodeRef.toString():null;
             final String site = siteId;
+            final NodeRef finalNodeRef = nodeRef;
             
             //MNT-9104 If username contains uppercase letters the action of joining a site will not be displayed in "My activities" 
             if (! userNamesAreCaseSensitive)
@@ -263,11 +288,47 @@ public class ActivityPostServiceImpl implements ActivityPostService
             activityPost.setLastModified(postDate);
             
             eventPublisher.publishEvent(new EventPreparator(){
+                
                 @Override
                 public Event prepareEvent(String user, String networkId, String transactionId)
-                {            
-                    return new ActivityEvent(activityType, transactionId, networkId, postDate.getTime(), user, nodeId,
-                                site, null, null, activityPost.getActivityData());
+                {   
+                    String filename = null, nodeType = null, mime = null, encoding = null;
+                    long size = 0l;
+                    String nodeId = finalNodeRef!=null?finalNodeRef.getId():null;
+                    FileInfo fileInfo = contentNodeInfo;
+                    
+                    //Get content info if available
+                    if (fileInfo == null && finalNodeRef !=null)
+                    {
+                        fileInfo = fileFolderService.getFileInfo(finalNodeRef);
+                    }
+                    
+                    //Use content info
+                    if (fileInfo != null)
+                    {
+                        if (nodeId == null)
+                        {
+                            nodeId = fileInfo.getNodeRef().getId();
+                        }
+                        filename = fileInfo.getName();
+                        nodeType = fileInfo.getType().toString();
+                        
+                        if (!fileInfo.isFolder())
+                        {
+                            //It's a file so get more info
+                            ContentData contentData = fileInfo.getContentData();
+                            if (contentData!=null)
+                            {
+                                mime = contentData.getMimetype();
+                                size = contentData.getSize();
+                                encoding = contentData.getEncoding();
+                            }
+                        }
+
+                    }
+                    
+                    return new ActivityEvent(activityType, transactionId, networkId, user, nodeId,
+                                site, nodeType, client, activityPost.getActivityData(), filename, mime, size, encoding);
                 }
             });
             
@@ -323,7 +384,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
      * @param activityPost
      * @throws JSONException 
      */
-    private void checkNodeRef(JSONObject jo) throws JSONException
+    private NodeRef checkNodeRef(JSONObject jo) throws JSONException
     {
         String nodeRefStr = null;
         try
@@ -331,12 +392,14 @@ public class ActivityPostServiceImpl implements ActivityPostService
             if (jo.has(PostLookup.JSON_NODEREF))
             {
                 nodeRefStr = jo.getString(PostLookup.JSON_NODEREF);
-                new NodeRef(nodeRefStr);
+                return new NodeRef(nodeRefStr);
             }
         }
         catch (Exception e)
         {
             throw new IllegalArgumentException("Invalid node ref: " + nodeRefStr);
         }
+        return null;
     }
+
 }

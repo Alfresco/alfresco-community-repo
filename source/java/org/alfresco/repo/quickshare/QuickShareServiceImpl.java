@@ -20,7 +20,6 @@ package org.alfresco.repo.quickshare;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,8 +62,8 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.Pair;
 import org.alfresco.util.FileFilterMode.Client;
+import org.alfresco.util.Pair;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -250,9 +249,9 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
                 @Override
                 public Event prepareEvent(String user, String networkId, String transactionId)
                 {            
-                    return new ActivityEvent("quickshare", transactionId, networkId, new Date().getTime(),
-                                user, nodeRef.getId(),
-                                null, typeQName.toString(), Client.webclient, sb.toString());
+                    return new ActivityEvent("quickshare", transactionId, networkId, user, nodeRef.getId(),
+                                null, typeQName.toString(), Client.webclient, sb.toString(),
+                                null, null, 0l, null);
                 }
             });
             

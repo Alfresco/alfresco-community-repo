@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -290,12 +291,15 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
             String name)
     {
     	JSONObject json = createActivityJSON(getCurrentTenantDomain(), path, parentNodeRef, nodeRef, name);
-
+    	FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
+    	
     	activityService.postActivity(
     			activityType,
     			siteId,
     			APP_TOOL,
-    			json.toString());
+    			json.toString(),
+    			Client.cmis,
+    			fileInfo);
     }
     
     /**

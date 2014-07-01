@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.FileFilterMode.Client;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -72,7 +73,7 @@ public final class Activity extends BaseScopableProcessorExtension
     */
    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData)
    {
-       activityService.postActivity(activityType, siteId, appTool, jsonActivityData);
+       activityService.postActivity(activityType, siteId, appTool, jsonActivityData, Client.webclient);
    }
    
    /**

@@ -1662,7 +1662,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 result.setStream(contentReader.getContentInputStream());
                 result.setLength(BigInteger.valueOf(contentSize));
-                publishReadEvent(streamNodeRef, result.getMimeType(), contentSize, contentReader.getEncoding(), null);
+                publishReadEvent(streamNodeRef, info.getName(), result.getMimeType(), contentSize, contentReader.getEncoding(), null);
             }
             else
             {
@@ -1675,7 +1675,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
                 result.setStream(new RangeInputStream(contentReader.getContentInputStream(), off, len));
                 result.setLength(BigInteger.valueOf(len));
-                publishReadEvent(streamNodeRef, result.getMimeType(), contentSize, contentReader.getEncoding(), off+" - "+len);
+                publishReadEvent(streamNodeRef, info.getName(), result.getMimeType(), contentSize, contentReader.getEncoding(), off+" - "+len);
             }
         }
         catch (Exception e)
@@ -1711,7 +1711,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      * @param encoding
      * @param string
      */
-    protected void publishReadEvent(final NodeRef nodeRef, final String mimeType, final long contentSize, final String encoding, final String range)
+    protected void publishReadEvent(final NodeRef nodeRef, final String name, final String mimeType, final long contentSize, final String encoding, final String range)
     {
         final QName nodeType = nodeRef==null?null:nodeService.getType(nodeRef);
         
@@ -1722,12 +1722,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 if (StringUtils.hasText(range))
                 {
                     return new ContentReadRangeEvent(user, networkId, transactionId,
-                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, mimeType, contentSize, encoding, range); 
+                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, name, mimeType, contentSize, encoding, range); 
                 } 
                 else 
                 {
                     return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
-                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, mimeType, contentSize, encoding);            
+                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, name, mimeType, contentSize, encoding);            
                 }
             }
         });

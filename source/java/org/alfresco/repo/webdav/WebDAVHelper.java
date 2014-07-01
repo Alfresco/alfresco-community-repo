@@ -32,7 +32,8 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.ContentEvent;
+import org.alfresco.events.types.ContentEventImpl;
 import org.alfresco.events.types.ContentReadRangeEvent;
 import org.alfresco.events.types.Event;
 import org.alfresco.jlan.util.IPAddress;
@@ -1103,7 +1104,7 @@ public class WebDAVHelper
                 } 
                 else 
                 {
-                    return new ContentReadEvent(ContentReadEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
+                    return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
                                 null, realNodeInfo.getType().toString(), Client.webdav, mimetype, size, contentEncoding);            
                 }
             }

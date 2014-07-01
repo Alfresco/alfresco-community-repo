@@ -13,7 +13,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.ContentEvent;
+import org.alfresco.events.types.ContentEventImpl;
 import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -362,7 +363,7 @@ public class ContentStreamer implements ResourceLoaderAware
                     {
                         String siteId = siteService.getSiteShortName(nodeRef);
                         
-                        return new ContentReadEvent(ContentReadEvent.DOWNLOAD, user, networkId, transactionId,
+                        return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
                                     nodeRef.getId(), siteId, propertyQName.toString(), Client.webclient, finalMimetype, size, encoding);
                     }
                 });

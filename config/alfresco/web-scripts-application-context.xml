@@ -428,10 +428,12 @@
    <!--  Authentication APIs -->
    <bean id="webscript.org.alfresco.repository.login.get" class="org.alfresco.repo.web.scripts.bean.Login" parent="webscript">
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="eventPublisher" ref="eventPublisher" />
    </bean>
    
    <bean id="webscript.org.alfresco.repository.login.post" class="org.alfresco.repo.web.scripts.bean.LoginPost" parent="webscript">
       <property name="authenticationService" ref="AuthenticationService" />
+      <property name="eventPublisher" ref="eventPublisher" />
    </bean>
    
    <bean id="webscript.org.alfresco.repository.loginticket.get" class="org.alfresco.repo.web.scripts.bean.LoginTicket" parent="webscript">

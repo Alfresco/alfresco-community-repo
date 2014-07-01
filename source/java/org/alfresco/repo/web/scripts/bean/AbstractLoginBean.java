@@ -18,11 +18,16 @@
  */
 package org.alfresco.repo.web.scripts.bean;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.events.types.Event;
+import org.alfresco.events.types.RepositoryEventImpl;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthenticationService;
@@ -39,6 +44,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 {
     // dependencies
     private AuthenticationService authenticationService;
+    protected EventPublisher eventPublisher;
     
     /**
      * @param authenticationService
@@ -48,6 +54,13 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
         this.authenticationService = authenticationService;
     }
 
+    /**
+     * @param eventPublisher
+     */
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
@@ -58,13 +71,21 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
     	return null;
     }
     
-    protected Map<String, Object> login(String username, String password)
+    protected Map<String, Object> login(final String username, String password)
     {
         try
         {
             // get ticket
             authenticationService.authenticate(username, password.toCharArray());
 
+            eventPublisher.publishEvent(new EventPreparator(){
+                @Override
+                public Event prepareEvent(String user, String networkId, String transactionId)
+                {                
+                    return new RepositoryEventImpl("login", transactionId, networkId, new Date().getTime(), username);
+                }
+            });
+            
             // add ticket to model for javascript and template access
             Map<String, Object> model = new HashMap<String, Object>(7, 1.0f);
             model.put("username", username);
@@ -81,5 +102,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
             AuthenticationUtil.clearCurrentSecurityContext();
         }
     }
+
 
 }

@@ -25,6 +25,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.search.StatsParameters;
+import org.alfresco.service.cmr.search.StatsProcessor;
 import org.alfresco.service.cmr.search.StatsResultSet;
 import org.alfresco.service.cmr.search.StatsService;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -50,6 +51,7 @@ public class StatsGet extends DeclarativeWebScript
     private StatsService stats;
     private SiteService siteService;
     private Map<String,String> facets;
+    private Map<String,? extends StatsProcessor> postProcessors;
 
     public void setFacets(Map<String, String> facets)
     {
@@ -64,6 +66,11 @@ public class StatsGet extends DeclarativeWebScript
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
+    }
+    
+    public void setPostProcessors(Map<String, ? extends StatsProcessor> postProcessors)
+    {
+        this.postProcessors = postProcessors;
     }
     
     @Override
@@ -105,6 +112,11 @@ public class StatsGet extends DeclarativeWebScript
   
        StatsResultSet result = stats.query(params);
        
+       if (postProcessors.containsKey(facetKey))
+       {
+           StatsProcessor processor = postProcessors.get(facetKey);
+           result = processor.process(result);
+       }
        model.put("result", result);
        model.put("resultSize", result.getStats().size());
        return model;
@@ -168,6 +180,5 @@ public class StatsGet extends DeclarativeWebScript
     {
         facets.put(facetKey, facetType);
     }
-
 
 }

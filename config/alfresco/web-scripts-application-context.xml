@@ -1569,7 +1569,16 @@
             <entry key="exif.focalLength" value="{http://www.alfresco.org/model/exif/1.0}focalLength" />
             <entry key="exif.software" value="{http://www.alfresco.org/model/exif/1.0}software.__" />
           </map>
-      </property>
+      </property>     
+      <property name="postProcessors">
+         <map>
+           <entry key="content.mimetype">
+              <bean class="org.alfresco.service.cmr.search.StatsProcessorUsingMap">
+                 <constructor-arg value="#{MimetypeService.getDisplaysByMimetype()}" />
+              </bean>
+           </entry>
+        </map>
+      </property>  
    </bean>
    
    <bean id="webscript.org.alfresco.repository.solr.nodes.post"

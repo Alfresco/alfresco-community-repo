@@ -173,6 +173,7 @@
         <property name="searchService"          ref="SearchService" />
         <property name="dictionaryService"      ref="DictionaryService" />
         <property name="behaviourFilter"        ref="policyBehaviourFilter" />
+        <property name="eventPublisher"         ref="eventPublisher" />
     </bean>
 
     <bean id="OpenCMISQueryService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">

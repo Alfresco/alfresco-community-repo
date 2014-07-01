@@ -49,6 +49,9 @@ import javax.xml.datatype.DatatypeFactory;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.ContentReadRangeEvent;
+import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.ActivityPosterImpl.ActivityInfo;
 import org.alfresco.opencmis.dictionary.CMISActionEvaluator;
@@ -71,6 +74,8 @@ import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.model.filefolder.GetChildrenCannedQuery;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
@@ -224,6 +229,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.util.StringUtils;
 
 /**
  * Bridge connecting Alfresco and OpenCMIS.
@@ -238,7 +244,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
 {
     private static Log logger = LogFactory.getLog(CMISConnector.class);
-    
+
     // mappings from cmis property names to their Alfresco property name counterparts (used by getChildren)
     private static Map<String, QName> SORT_PROPERTY_MAPPINGS = new HashMap<String, QName>();
     
@@ -312,6 +318,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private ActionService actionService;
     private ThumbnailService thumbnailService;
     private ServiceRegistry serviceRegistry;
+    private EventPublisher eventPublisher;
 
     private ActivityPoster activityPoster;
 
@@ -555,7 +562,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         return contentService;
     }
-
+    
+    /**
+     * Sets the event publisher
+     */
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
+    }
+    
     /**
      * Sets the rendition service.
      */
@@ -1640,23 +1655,26 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
 
             result.setMimeType(contentReader.getMimetype());
-
+            long contentSize = contentReader.getSize();
+            
             if ((offset == null) && (length == null))
             {
                 result.setStream(contentReader.getContentInputStream());
-                result.setLength(BigInteger.valueOf(contentReader.getSize()));
+                result.setLength(BigInteger.valueOf(contentSize));
+                publishReadEvent(streamNodeRef, result.getMimeType(), contentSize, contentReader.getEncoding(), null);
             }
             else
             {
                 long off = (offset == null ? 0 : offset.longValue());
-                long len = (length == null ? contentReader.getSize() : length.longValue());
-                if (off + len > contentReader.getSize())
+                long len = (length == null ? contentSize : length.longValue());
+                if (off + len > contentSize)
                 {
                     len = contentReader.getSize() - off;
                 }
 
                 result.setStream(new RangeInputStream(contentReader.getContentInputStream(), off, len));
                 result.setLength(BigInteger.valueOf(len));
+                publishReadEvent(streamNodeRef, result.getMimeType(), contentSize, contentReader.getEncoding(), off+" - "+len);
             }
         }
         catch (Exception e)
@@ -1680,6 +1698,40 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
 
         return result;
+    }
+
+    /**
+     * Notifies listeners that a read has taken place.
+     * 
+     * @param streamNodeRef
+     * @param type
+     * @param mimeType
+     * @param contentSize
+     * @param encoding
+     * @param string
+     */
+    protected void publishReadEvent(final NodeRef nodeRef, final String mimeType, final long contentSize, final String encoding, final String range)
+    {
+        final QName nodeType = nodeRef==null?null:nodeService.getType(nodeRef);
+        
+        eventPublisher.publishEvent(new EventPreparator(){
+            @Override
+            public Event prepareEvent(String user, String networkId, String transactionId)
+            {
+                if (StringUtils.hasText(range))
+                {
+                    return new ContentReadRangeEvent(user, networkId, transactionId,
+                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, mimeType, contentSize, encoding, range); 
+                } 
+                else 
+                {
+                    return new ContentReadEvent(ContentReadEvent.DOWNLOAD, user, networkId, transactionId,
+                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, mimeType, contentSize, encoding);            
+                }
+            }
+        });
+        
+
     }
 
     public void appendContent(CMISNodeInfo nodeInfo, ContentStream contentStream, boolean isLastChunk) throws IOException

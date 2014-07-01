@@ -66,6 +66,7 @@ import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStream;
 import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.context.ApplicationContext;
@@ -181,6 +182,7 @@ public class OpenCmisLocalTest extends TestCase
         folder.createDocument(fileProps, fileContent, VersioningState.MAJOR);
     }
     
+    @Ignore
     public void testDownloadEvent() throws InterruptedException
     {
         Repository repository = getRepository("admin", "admin");

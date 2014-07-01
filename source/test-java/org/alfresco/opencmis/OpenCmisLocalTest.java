@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestCase;
 
-import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.ContentEventImpl;
 import org.alfresco.events.types.ContentReadRangeEvent;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -206,10 +206,10 @@ public class OpenCmisLocalTest extends TestCase
         //range request
         content = doc1.getContentStream(BigInteger.valueOf(2),BigInteger.valueOf(4));
         assertNotNull(content);
-        List<ContentReadEvent> events = eventPublisher.getQueueByType(ContentReadEvent.class);
+        List<ContentEventImpl> events = eventPublisher.getQueueByType(ContentEventImpl.class);
         int found = 0;
         
-        for (ContentReadEvent cre : events)
+        for (ContentEventImpl cre : events)
         {
            if (doc1NodeRef.getId().equals(cre.getNodeId()))
            {
@@ -237,7 +237,7 @@ public class OpenCmisLocalTest extends TestCase
         
     }
 
-    private void commonAsserts(byte[] byteContent,ContentReadEvent cre)
+    private void commonAsserts(byte[] byteContent,ContentEventImpl cre)
     {
         assertEquals(Client.cmis, cre.getClient());
         assertEquals(byteContent.length, cre.getSize());

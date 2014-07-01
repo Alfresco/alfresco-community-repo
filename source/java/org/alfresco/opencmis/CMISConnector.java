@@ -49,7 +49,8 @@ import javax.xml.datatype.DatatypeFactory;
 
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.events.types.ContentReadEvent;
+import org.alfresco.events.types.ContentEvent;
+import org.alfresco.events.types.ContentEventImpl;
 import org.alfresco.events.types.ContentReadRangeEvent;
 import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
@@ -1725,7 +1726,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 } 
                 else 
                 {
-                    return new ContentReadEvent(ContentReadEvent.DOWNLOAD, user, networkId, transactionId,
+                    return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
                                 nodeRef.getId(), null, nodeType.toString(), Client.cmis, mimeType, contentSize, encoding);            
                 }
             }

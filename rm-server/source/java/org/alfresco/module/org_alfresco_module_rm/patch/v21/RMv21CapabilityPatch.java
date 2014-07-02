@@ -21,12 +21,12 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
-import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 
 /**
  * RM v2.1 patch to updated modified capabilities.
@@ -39,28 +39,12 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
 {
     /** File plan service */
     private FilePlanService filePlanService;
-
-    /** File plan role service */
-    private FilePlanRoleService filePlanRoleService;
-
-    /** Capability service */
-    private CapabilityService capabilityService;
-
-    /**
-     * @param filePlanRoleService   file plan role service
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-
-    /**
-     * @param capabilityService capability service
-     */
-    public void setCapabilityService(CapabilityService capabilityService)
-    {
-        this.capabilityService = capabilityService;
-    }
+    
+    /** authority service */
+    private AuthorityService authorityService;
+    
+    /** permission service */
+    private PermissionService permissionService;
 
     /**
      * @param filePlanService   file plan service
@@ -78,6 +62,22 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
     protected Set<NodeRef> getFilePlans()
     {
         return filePlanService.getFilePlans();
+    }   
+    
+    /**
+     * @param authorityService authority service
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
+    /**
+     * @param permissionService permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -87,34 +87,19 @@ public class RMv21CapabilityPatch extends RMv21PatchComponent
      * @param capabilityName    capability name
      * @param roles             roles
      */
-    protected void addCapability(NodeRef filePlan, String capabilityName, String ... roles)
+    private void addCapability(NodeRef filePlan, String capabilityName, String ... roles)
     {
-        Capability capability = capabilityService.getCapability(capabilityName);
-        if (capability == null)
+        for (String role : roles)
         {
-            throw new AlfrescoRuntimeException("Unable to bootstrap RMv21 capabilities, because capability " + capabilityName + " does not exist.");
-        }
-
-        for (String roleName : roles)
-        {
-            Role role = filePlanRoleService.getRole(filePlan, roleName);
-
-            if (role != null)
+            String fullRoleName = role + filePlan.getId();
+            String roleAuthority = authorityService.getName(AuthorityType.GROUP, fullRoleName);
+            if (roleAuthority == null)
             {
-                // get the roles current capabilities
-                Set<Capability> capabilities = role.getCapabilities();
-
-                // only update if the capability is missing
-                if (!capabilities.contains(capability))
-                {
-                    if (LOGGER.isDebugEnabled())
-                    {
-                        LOGGER.debug("  ... adding capability " + capabilityName + " to role " + role.getName());
-                    }
-
-                    capabilities.add(capability);
-                    filePlanRoleService.updateRole(filePlan, role.getName(), role.getDisplayLabel(), capabilities);
-                }
+                throw new AlfrescoRuntimeException("Role " + role + " does not exist.");
+            }
+            else
+            {
+                permissionService.setPermission(filePlan, roleAuthority, capabilityName, true);
             }
         }
     }

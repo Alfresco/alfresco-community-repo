@@ -93,7 +93,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
             {
                 LOGGER.info("Module patch component '" + getName() + "' is executing ...");
             }
-
+            
             // execute path within an isolated transaction
             retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {

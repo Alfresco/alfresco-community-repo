@@ -146,6 +146,9 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
         return moduleId;
     }
 
+    /**
+     * @param fixesFromSchema   fixes from schema value
+     */
     public void setFixesFromSchema(int fixesFromSchema)
     {
         this.fixesFromSchema = fixesFromSchema;
@@ -160,6 +163,9 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
         return fixesFromSchema;
     }
 
+    /**
+     * @param fixesToSchema fixes to schema value
+     */
     public void setFixesToSchema(int fixesToSchema)
     {
         this.fixesToSchema = fixesToSchema;
@@ -206,15 +212,16 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
                                ",to=" + fixesToSchema +
                                ",target=" + targetSchema);
         }
-
+               
+        // do patch in transaction
         transactionService.getRetryingTransactionHelper().doInTransaction(
                 new ApplyCallback(),
                 true,
                 false);
-
-        if (LOGGER.isDebugEnabled())
+        
+        if (LOGGER.isInfoEnabled())
         {
-            LOGGER.debug("   ... module patch applied");
+            LOGGER.info("   ... module patch applied");
         }
     }
 

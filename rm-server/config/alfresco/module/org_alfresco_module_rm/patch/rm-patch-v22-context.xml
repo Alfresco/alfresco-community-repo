@@ -22,8 +22,8 @@
       <property name="fixesToSchema" value="1001"/>
       <property name="targetSchema" value="1002"/>
       <property name="filePlanService" ref="FilePlanService"/>
-      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-      <property name="capabilityService" ref="CapabilityService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
    </bean>
 
    <bean id="rm.dodModelSeparationModulePatch"
@@ -77,8 +77,8 @@
       <property name="fixesToSchema" value="1006"/>
       <property name="targetSchema" value="1007"/>
       <property name="filePlanService" ref="FilePlanService"/>
-      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-      <property name="capabilityService" ref="CapabilityService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
    </bean>
    
    <bean id="rm.removeInPlaceRolesFromAllPatch"
@@ -99,8 +99,8 @@
       <property name="fixesToSchema" value="1008"/>
       <property name="targetSchema" value="1009"/>
       <property name="filePlanService" ref="FilePlanService"/>
-      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-      <property name="capabilityService" ref="CapabilityService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
    </bean>
 
 </beans>

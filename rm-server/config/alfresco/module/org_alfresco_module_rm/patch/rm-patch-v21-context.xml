@@ -48,8 +48,8 @@
       <property name="sinceVersion" value="2.1"/>
       <property name="appliesFromVersion" value="2.1"/>
       <property name="filePlanService" ref="FilePlanService"/>
-      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
-      <property name="capabilityService" ref="CapabilityService"/>
+      <property name="authorityService" ref="authorityService"/>
+      <property name="permissionService" ref="permissionService"/>
    </bean>
 
    <bean id="org_alfresco_module_rm_RMv21RecordInheritancePatch"

@@ -77,8 +77,19 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug(" ... adding template root folder");
-            }
+            }            
 
+            NodeRef reportTemplates = createNode(
+                    RM_CONFIG_FOLDER,
+                    ContentModel.TYPE_FOLDER,
+                    "rm_report_templates",
+                    "Records Management Report Templates",
+                    "rm_report_templates",
+                    "Records Management Report Templates",
+                    "Records Management Report Templates");
+            nodeService.addAspect(reportTemplates, ContentModel.ASPECT_TITLED, null);
+            nodeService.addAspect(reportTemplates, ContentModel.ASPECT_AUTHOR, null); 
+            
             if (LOGGER.isDebugEnabled())
             {
                 LOGGER.debug(" ... adding destruction report template");
@@ -86,6 +97,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
 
             // create report templates
             NodeRef destructionTemplate = createNode(
+                    TEMPLATE_ROOT,
                     ContentModel.TYPE_CONTENT,
                     "rmr_destructionReport",
                     "report_rmr_destructionReport.html.ftl",
@@ -104,7 +116,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
         }
     }
 
-    private NodeRef createNode(QName type, String id, String name, String assocName,  String title, String description)
+    private NodeRef createNode(NodeRef parent, QName type, String id, String name, String assocName,  String title, String description)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(4);
         props.put(ContentModel.PROP_DESCRIPTION, description);
@@ -119,7 +131,7 @@ public class RMv21ReportServicePatch extends RMv21PatchComponent
 
         // create the node
        return nodeService.createNode(
-                RM_CONFIG_FOLDER,
+                parent,
                 ContentModel.ASSOC_CONTAINS,
                 assocQName,
                 type,

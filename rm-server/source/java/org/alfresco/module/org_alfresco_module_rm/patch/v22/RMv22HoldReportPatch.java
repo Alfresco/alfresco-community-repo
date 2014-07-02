@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -99,6 +100,8 @@ public class RMv22HoldReportPatch extends AbstractModulePatch
 
             // put the content
             ContentWriter writer = contentService.getWriter(node.getChildRef(), ContentModel.PROP_CONTENT, true);
+            writer.setEncoding("UTF-8");
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
             InputStream is = getClass().getClassLoader().getResourceAsStream(REPORT_TEMPLATE_PATH);
             writer.putContent(is);
         }

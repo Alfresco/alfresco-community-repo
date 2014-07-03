@@ -18,8 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v22;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -53,14 +55,14 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
 
     /** qnames to update (switch to dod namespace) */
     private QName[] qnames =
-        {
-            DOD5015Model.PROP_ORIGINATOR,
-            DOD5015Model.PROP_ORIGINATING_ORGANIZATION,
-            DOD5015Model.PROP_PUBLICATION_DATE,
-            DOD5015Model.PROP_MEDIA_TYPE,
-            DOD5015Model.PROP_FORMAT,
-            DOD5015Model.PROP_DATE_RECEIVED
-        };
+    {
+        DOD5015Model.PROP_ORIGINATOR,
+        DOD5015Model.PROP_ORIGINATING_ORGANIZATION,
+        DOD5015Model.PROP_PUBLICATION_DATE,
+        DOD5015Model.PROP_MEDIA_TYPE,
+        DOD5015Model.PROP_FORMAT,
+        DOD5015Model.PROP_DATE_RECEIVED
+    };
 
     /**
      * @param qnameDAO  QName DAO
@@ -93,17 +95,6 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     public void applyInternal()
     {
         Long maxNodeId = patchDAO.getMaxAdmNodeID();
-
-        // switch each qname from the rma namespace to the dod namespace
-        for (QName qname : qnames)
-        {
-            QName origional = QName.createQName(RecordsManagementModel.RM_URI, qname.getLocalName());
-            if (qnameDAO.getQName(origional) != null)
-            {
-                qnameDAO.updateQName(origional, qname);
-            }
-        }
-
         long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
         if (LOGGER.isDebugEnabled())
         {
@@ -120,6 +111,24 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
                 List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(recordAspect.getFirst(), i, i + BATCH_SIZE);
                 for (Long nodeId : nodeIds)
                 {
+                    // get the records properties
+                    Map<QName, Serializable> properties = nodeDAO.getNodeProperties(nodeId);
+                    
+                    for (QName qname : qnames)
+                    {
+                        // if the record has any of the moved properties
+                        QName origional = QName.createQName(RecordsManagementModel.RM_URI, qname.getLocalName());
+                        if (properties.containsKey(origional))
+                        {
+                            // move the property value
+                            Serializable value = properties.get(origional);
+                            properties.put(qname, value);
+                            properties.remove(origional);
+                        }
+                    }
+                    
+                    // set properties and add aspect
+                    nodeDAO.setNodeProperties(nodeId, properties);
                     nodeDAO.addNodeAspects(nodeId, Collections.singleton(DOD5015Model.ASPECT_DOD_5015_RECORD));
                 }
 

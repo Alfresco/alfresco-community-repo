@@ -452,24 +452,32 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
      *
      * @param childAssocRef child association reference
      */
-    public void dispositionActionCreate(ChildAssociationRef childAssocRef)
+    public void dispositionActionCreate(final ChildAssociationRef childAssocRef)
     {
-        NodeRef child = childAssocRef.getChildRef();
-        if (nodeService.exists(child) &&
-            childAssocRef.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
-        {
-            // Get the record (or record folder)
-            NodeRef record = childAssocRef.getParentRef();
+    	AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+    	{
+			public Void doWork() throws Exception 
+			{
+				NodeRef child = childAssocRef.getChildRef();
+		        if (nodeService.exists(child) &&
+		            childAssocRef.getTypeQName().equals(ASSOC_NEXT_DISPOSITION_ACTION))
+		        {
+		            // Get the record (or record folder)
+		            NodeRef record = childAssocRef.getParentRef();
 
-            // Apply the search aspect
-            applySearchAspect(record);
+		            // Apply the search aspect
+		            applySearchAspect(record);
 
-            // Update disposition properties
-            updateDispositionActionProperties(record, childAssocRef.getChildRef());
+		            // Update disposition properties
+		            updateDispositionActionProperties(record, childAssocRef.getChildRef());
 
-            // Clear the events
-            nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, null);
-        }
+		            // Clear the events
+		            nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, null);
+		        }
+		        
+		        return null;
+			}
+    	});        
     }
     
     /**

@@ -780,8 +780,16 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // get the documents primary parent assoc
                         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
-                        // move the document into the file plan
-                        nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+                        behaviourFilter.disableBehaviour();
+                        try
+                        {
+                        	// move the document into the file plan
+                        	nodeService.moveNode(nodeRef, newRecordContainer, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
+                        }
+                        finally
+                        {
+                        	behaviourFilter.enableBehaviour();
+                        }
 
                         // save the information about the originating details
                         Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
@@ -928,7 +936,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 postfix = name.substring(dotIndex);
             }
             String recordName = prefix + " (" + recordId + ")" + postfix;
-            fileFolderService.rename(document, recordName);
+            behaviourFilter.disableBehaviour();
+            try
+            {
+            	fileFolderService.rename(document, recordName);
+            }
+            finally
+            {
+            	behaviourFilter.enableBehaviour();
+            }
 
             if (logger.isDebugEnabled())
             {

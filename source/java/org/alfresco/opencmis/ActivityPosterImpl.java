@@ -207,7 +207,8 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     	                }
     	            }
     			}
-    			postFileFolderActivity((isFolder ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED), path, parentNodeRef, nodeRef, siteId, name);
+    		    FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef); 
+    			postFileFolderActivity((isFolder ? ActivityType.FOLDER_ADDED : ActivityType.FILE_ADDED), path, parentNodeRef, nodeRef, siteId, name, fileInfo);
     		}
     	}
     }
@@ -229,7 +230,8 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
     			
     		    if (!isFolder)
     		    {
-    		        postFileFolderActivity(ActivityType.FILE_UPDATED, null, null, nodeRef, siteId, fileName);
+    	            FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef); 
+    		        postFileFolderActivity(ActivityType.FILE_UPDATED, null, null, nodeRef, siteId, fileName, fileInfo);
     		    }
     		}
     	}
@@ -245,7 +247,7 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
 		{
     		// post only for nodes within sites
     		postFileFolderActivity((activityInfo.isFolder() ? ActivityType.FOLDER_DELETED : ActivityType.FILE_DELETED), activityInfo.getParentPath(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
-    				activityInfo.getSiteId(), activityInfo.getFileName());
+    				activityInfo.getSiteId(), activityInfo.getFileName(), null);
     	}
     }
 
@@ -288,10 +290,10 @@ public class ActivityPosterImpl implements ActivityPoster, InitializingBean
             NodeRef parentNodeRef,
             NodeRef nodeRef,
             String siteId,
-            String name)
+            String name,
+            FileInfo fileInfo)
     {
-    	JSONObject json = createActivityJSON(getCurrentTenantDomain(), path, parentNodeRef, nodeRef, name);
-    	FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
+    	JSONObject json = createActivityJSON(getCurrentTenantDomain(), path, parentNodeRef, nodeRef, name); 	
     	
     	activityService.postActivity(
     			activityType,

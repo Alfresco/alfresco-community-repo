@@ -489,7 +489,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
             NodeRef currentDispositionAction = null;
             if (this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
             {
-                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
                 if (assocs.size() > 0)
                 {
                     currentDispositionAction = assocs.get(0).getChildRef();

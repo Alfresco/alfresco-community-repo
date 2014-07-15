@@ -46,6 +46,7 @@ import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagement
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -84,9 +85,6 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Record service implementation.
@@ -94,12 +92,12 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-public class RecordServiceImpl implements RecordService,
+public class RecordServiceImpl extends ServiceBaseImpl
+ 							   implements RecordService,
                                           RecordsManagementModel,
                                           RecordsManagementCustomModel,
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                          ApplicationContextAware,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy
 {
@@ -142,9 +140,6 @@ public class RecordServiceImpl implements RecordService,
         NamespaceService.REPOSITORY_VIEW_1_0_URI
 
     };
-    
-    /** Application context */
-    private ApplicationContext applicationContext;
 
     /** Node service **/
     private NodeService nodeService;
@@ -208,12 +203,6 @@ public class RecordServiceImpl implements RecordService,
                                                             this,
                                                             "onDeleteDeclaredRecordLink",
                                                             NotificationFrequency.FIRST_EVENT);
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
 
     /**
      * @param nodeService node service
@@ -622,28 +611,6 @@ public class RecordServiceImpl implements RecordService,
             }
         }
         return recordMetaDataAspects;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecord(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean isRecord(NodeRef nodeRef)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-
-        return nodeService.hasAspect(nodeRef, ASPECT_RECORD);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isDeclared(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean isDeclared(NodeRef record)
-    {
-        ParameterCheck.mandatory("record", record);
-
-        return nodeService.hasAspect(record, ASPECT_DECLARED_RECORD);
     }
 
     /**

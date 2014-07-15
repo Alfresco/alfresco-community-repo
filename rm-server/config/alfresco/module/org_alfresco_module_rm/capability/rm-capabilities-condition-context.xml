@@ -8,8 +8,8 @@
     <bean id="capabilityCondition.base"
           abstract="true">
         <property name="recordsManagementService" ref="recordsManagementService" />
-        <property name="permissionService" ref="PermissionService" />
-        <property name="nodeService" ref="NodeService" />
+        <property name="permissionService" ref="permissionService" />  <!--  user lower case service to enhance performance -->
+        <property name="nodeService" ref="nodeService" />              <!--  user lower case service to enhance performance --> 
         <property name="freezeService" ref="FreezeService" />
         <property name="recordService" ref="recordService" />
         <property name="filePlanService" ref="FilePlanService" />

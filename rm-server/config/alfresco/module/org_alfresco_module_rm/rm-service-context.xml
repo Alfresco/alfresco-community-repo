@@ -1130,9 +1130,7 @@
 
     <!--  Record Service -->
 
-    <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" init-method="init">
-        <property name="nodeService" ref="NodeService"/>
-        <property name="dictionaryService" ref="DictionaryService"/>
+    <bean id="recordService" class="org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl" parent="baseService" init-method="init">
         <property name="identifierService" ref="recordsManagementIdentifierService"/>
         <property name="permissionService" ref="ExtendedPermissionService"/>
         <property name="extendedSecurityService" ref="ExtendedSecurityService" />

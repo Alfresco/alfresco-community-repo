@@ -55,10 +55,10 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Namespace;
 import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -80,7 +80,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1155,8 +1154,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	 */
 	public List<AssociationRef> getCustomReferencesFrom(NodeRef node)
 	{
-    	List<AssociationRef> retrievedAssocs = nodeService.getTargetAssocs(node, RegexQNamePattern.MATCH_ALL);
-    	return retrievedAssocs;
+    	return nodeService.getTargetAssocs(node, null);
 	}
 
 	/**
@@ -1173,8 +1171,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	 */
     public List<AssociationRef> getCustomReferencesTo(NodeRef node)
     {
-        List<AssociationRef> retrievedAssocs = nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL);
-        return retrievedAssocs;
+        return nodeService.getSourceAssocs(node, null);
     }
 
     /**

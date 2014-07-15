@@ -164,7 +164,7 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
             public Void doWork() throws Exception
             {
                 if (nodeService.exists(nodeRef) == true &&
-                    filePlanService.isFilePlanComponent(nodeRef) == true)
+                    nodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
                 {
                     if (isFrozen(nodeRef) == true)
                     {

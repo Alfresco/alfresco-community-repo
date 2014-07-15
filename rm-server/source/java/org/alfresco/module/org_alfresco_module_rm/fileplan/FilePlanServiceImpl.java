@@ -52,9 +52,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -65,8 +62,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class FilePlanServiceImpl extends ServiceBaseImpl
                                  implements FilePlanService, 
-                                            RecordsManagementModel,
-                                            ApplicationContextAware
+                                            RecordsManagementModel
 {
 	/** I18N */
     private final static String MSG_DUP_ROOT = "rm.service.dup-root";
@@ -85,18 +81,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     
     /** RM site file plan container */
     private static final String FILE_PLAN_CONTAINER = "documentLibrary";
-    
-    /** Application context */
-    private ApplicationContext applicationContext;
-    
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
     
     /**
      * NOTE:  for some reason spring couldn't cope with the circular references between these two 
@@ -174,121 +158,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanComponent(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isFilePlanComponent(NodeRef nodeRef)
-    {
-        boolean result = false;
-        if (getInternalNodeService().exists(nodeRef) == true &&
-            getInternalNodeService().hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT) == true)
-        {
-            result = true;
-        }
-        return result;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlanComponentKind(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public FilePlanComponentKind getFilePlanComponentKind(NodeRef nodeRef)
-    {
-        FilePlanComponentKind result = null;
-        
-        if (isFilePlanComponent(nodeRef) == true)
-        {
-            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
-            
-            if (isFilePlan(nodeRef) == true)
-            {
-                result = FilePlanComponentKind.FILE_PLAN;
-            }
-            else if (isRecordCategory(nodeRef) == true)
-            {
-                result = FilePlanComponentKind.RECORD_CATEGORY;
-            }
-            else if (getRecordsManagementService().isRecordFolder(nodeRef) == true)
-            {
-                result = FilePlanComponentKind.RECORD_FOLDER;
-            }
-            else if (getRecordService().isRecord(nodeRef) == true)
-            {
-                result = FilePlanComponentKind.RECORD;
-            }
-            else if (getFreezeService().isHold(nodeRef) == true)
-            {
-                result = FilePlanComponentKind.HOLD;
-            }
-            else if (getRecordsManagementService().isTransfer(nodeRef) == true)
-            {
-                result = FilePlanComponentKind.TRANSFER;
-            }
-            else if (instanceOf(nodeRef, TYPE_DISPOSITION_SCHEDULE) == true || instanceOf(nodeRef, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
-            {
-                result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
-            }
-            else if (instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER) == true)
-            {
-                result = FilePlanComponentKind.UNFILED_RECORD_CONTAINER;
-            }
-        }
-        
-        return result;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementService#getFilePlanComponentKindFromType(org.alfresco.service.namespace.QName)
-     */
-    @Override
-    public FilePlanComponentKind getFilePlanComponentKindFromType(QName type)
-    {
-        FilePlanComponentKind result = null;
-        
-        if (ASPECT_FILE_PLAN_COMPONENT.equals(type) == true)
-        {
-            result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
-        }
-        else if (dictionaryService.isSubClass(type, ASPECT_RECORD) == true)
-        {
-            result = FilePlanComponentKind.RECORD;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_FILE_PLAN) == true)
-        {
-            result = FilePlanComponentKind.FILE_PLAN;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_RECORD_CATEGORY) == true)
-        {
-            result = FilePlanComponentKind.RECORD_CATEGORY;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_RECORD_FOLDER) == true)
-        {
-            result = FilePlanComponentKind.RECORD_FOLDER;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_HOLD) == true)
-        {
-            result = FilePlanComponentKind.HOLD;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_TRANSFER) == true)
-        {
-            result = FilePlanComponentKind.TRANSFER;
-        }
-        else if (dictionaryService.isSubClass(type, TYPE_DISPOSITION_SCHEDULE) == true || 
-                 dictionaryService.isSubClass(type, TYPE_DISPOSITION_ACTION_DEFINITION) == true)
-        {
-            result = FilePlanComponentKind.DISPOSITION_SCHEDULE;
-        }
-        
-        return result;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlan(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isFilePlan(NodeRef nodeRef)
-    {
-        return instanceOf(nodeRef, TYPE_FILE_PLAN);
-    }
-    
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlans()
      */
     @Override
@@ -323,36 +192,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             }
         });
         return results;
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlan(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public NodeRef getFilePlan(NodeRef nodeRef)
-    {
-        NodeRef result = null;        
-        if (nodeRef != null)
-        {
-             result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
-             if (result == null)
-             {
-                 if (instanceOf(nodeRef, TYPE_FILE_PLAN) == true)
-                 {
-                     result = nodeRef;
-                 }
-                 else
-                 {
-                     ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
-                     if (parentAssocRef != null)
-                     {
-                         result = getFilePlan(parentAssocRef.getParentRef());
-                     }
-                 }
-             }
-        }      
-         
-        return result;
     }
     
     /**
@@ -638,23 +477,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             nodeRef = assocRef.getParentRef();
             getNodeRefPathRecursive(nodeRef, nodeRefPath);
         }
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isFilePlanContainer(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public boolean isFilePlanContainer(NodeRef nodeRef)
-    {
-        return instanceOf(nodeRef, TYPE_RECORDS_MANAGEMENT_CONTAINER);
-    }
-    
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#isRecordCategory(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    public boolean isRecordCategory(NodeRef nodeRef)
-    {
-        return instanceOf(nodeRef, TYPE_RECORD_CATEGORY);
     }
     
     /**

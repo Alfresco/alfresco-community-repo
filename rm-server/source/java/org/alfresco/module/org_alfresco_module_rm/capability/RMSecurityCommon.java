@@ -204,19 +204,6 @@ public class RMSecurityCommon
             return result;
         }
         
-        // Get the file plan for the node
-        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-        
-        // Admin role
-        //if (permissionService.hasPermission(filePlan, RMPermissionModel.ROLE_ADMINISTRATOR) == AccessStatus.ALLOWED)
-        //{
-        //    if (logger.isDebugEnabled())
-        //    {
-        //        logger.debug("\t\tAdmin user, access granted.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-        //    }
-        //    return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_GRANTED);            
-       // }
-
         if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
         {
             if (logger.isDebugEnabled())
@@ -226,6 +213,9 @@ public class RMSecurityCommon
             return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED); 
         }
 
+        // Get the file plan for the node
+        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+        
         if (permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS) == AccessStatus.DENIED)
         {
             if (logger.isDebugEnabled())

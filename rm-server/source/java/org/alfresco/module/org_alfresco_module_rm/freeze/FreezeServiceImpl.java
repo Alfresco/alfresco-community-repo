@@ -42,11 +42,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -191,10 +193,10 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
         for (ChildAssociationRef assoc : assocs)
         {
             // we only care about primary children
-            if (assoc.isPrimary() == true)
+            if (assoc.isPrimary())
             {
                 NodeRef nodeRef = assoc.getChildRef();
-                if (isFrozen(nodeRef) == true)
+                if (isFrozen(nodeRef))
                 {
                     // never allowed to delete a node with a frozen child
                     throw new AccessDeniedException("Can not delete node, because it contains a frozen child node.");
@@ -531,21 +533,68 @@ public class FreezeServiceImpl extends    ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService#hasFrozenChildren(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean hasFrozenChildren(NodeRef nodeRef)
+    public boolean hasFrozenChildren(final NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
-        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS,
-                RegexQNamePattern.MATCH_ALL);
-        if (childAssocs != null && !childAssocs.isEmpty())
-        {
-            for (ChildAssociationRef childAssociationRef : childAssocs)
+        boolean result = false;
+        
+        // check that we are dealing with a record folder
+        if (isRecordFolder(nodeRef))
+        {        
+            int heldCount = 0;
+            
+            if (nodeService.hasAspect(nodeRef, ASPECT_HELD_CHILDREN))
             {
-                if (isFrozen(childAssociationRef.getChildRef())) { return true; }
+                heldCount = (Integer)getInternalNodeService().getProperty(nodeRef, PROP_HELD_CHILDREN_COUNT);
             }
+            else
+            {  
+                final TransactionService transactionService = (TransactionService)applicationContext.getBean("transactionService");
+                
+                heldCount = AuthenticationUtil.runAsSystem(new RunAsWork<Integer>()
+                {
+                    @Override
+                    public Integer doWork()
+                    {    
+                        return transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>()
+                        {
+                            public Integer execute() throws Throwable
+                            {
+                                int heldCount = 0;
+                                
+                                // NOTE: this process remains to 'patch' older systems to improve performance next time around            
+                                List<ChildAssociationRef> childAssocs = getInternalNodeService().getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, null);
+                                if (childAssocs != null && !childAssocs.isEmpty())
+                                {
+                                    for (ChildAssociationRef childAssociationRef : childAssocs)
+                                    {
+                                        NodeRef record = childAssociationRef.getChildRef();
+                                        if (childAssociationRef.isPrimary() && isRecord(record) && isFrozen(record)) 
+                                        { 
+                                            heldCount ++;
+                                        }
+                                    }
+                                } 
+                                
+                                // add aspect and set count
+                                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                                props.put(PROP_HELD_CHILDREN_COUNT, heldCount);
+                                getInternalNodeService().addAspect(nodeRef, ASPECT_HELD_CHILDREN, props);
+                                
+                                return heldCount;
+                            }
+                        }, 
+                        false, true);
+                    }
+                });
+            }
+            
+            // true if more than one child held
+            result = (heldCount > 0);
         }
 
-        return false;
+        return result;
     }
 
     /**

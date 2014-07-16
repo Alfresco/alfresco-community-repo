@@ -47,7 +47,7 @@ public class FileableCapabilityCondition extends AbstractCapabilityCondition
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         QName type = nodeService.getType(nodeRef);        
         // TODO and not already a record?

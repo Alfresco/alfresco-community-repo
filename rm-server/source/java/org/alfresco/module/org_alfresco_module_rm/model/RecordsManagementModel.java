@@ -253,6 +253,11 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     public static final QName PROP_RECORD_REJECTION_DATE = QName.createQName(RM_URI, "recordRejectionDate");
     public static final QName PROP_RECORD_REJECTION_REASON = QName.createQName(RM_URI, "recordRejectionReason");
     
+    // Held children aspect
+    // @since 2.2
+    QName ASPECT_HELD_CHILDREN = QName.createQName(RM_URI, "heldChildren");
+    QName PROP_HELD_CHILDREN_COUNT = QName.createQName(RM_URI, "heldChildrenCount");
+    
     // Countable aspect
     public static final QName ASPECT_COUNTABLE = QName.createQName(RM_URI, "countable");
     public static final QName PROP_COUNT = QName.createQName(RM_URI, "count");

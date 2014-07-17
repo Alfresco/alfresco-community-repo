@@ -39,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -81,6 +82,9 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     
     /** RM site file plan container */
     private static final String FILE_PLAN_CONTAINER = "documentLibrary";
+    
+    /** root container cache */
+    private SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache;
     
     /**
      * NOTE:  for some reason spring couldn't cope with the circular references between these two 
@@ -165,6 +169,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     {
         return getFilePlans(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
     }
+    
+    /**
+     * @param rootContainerCache	root container cache
+     */
+    public void setRootContainerCache(SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache) 
+    {
+		this.rootContainerCache = rootContainerCache;
+	}
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlans(org.alfresco.service.cmr.repository.StoreRef)
@@ -255,10 +267,11 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Get the file root container for the given type.
      * 
-     * @param filePlan
-     * @param containerName
-     * @return
+     * @param filePlan			file plan
+     * @param containerName		container type
+     * @return {@link NodeRef}	file plan container
      */
     private NodeRef getFilePlanRootContainer(NodeRef filePlan, String containerName)
     {
@@ -269,16 +282,25 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
 
         NodeRef result = null;
-             
-        // try and get the unfiled record container
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, containerName));
-        if (assocs.size() > 1)
+        Pair<NodeRef, String> key = new Pair<NodeRef, String>(filePlan, containerName);
+        
+        if (!rootContainerCache.contains(key))
         {
-            throw new AlfrescoRuntimeException("Unable to get unfiled conatiner " + containerName  + ".");
+	        // try and get the unfiled record container
+	        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, containerName));
+	        if (assocs.size() > 1)
+	        {
+	            throw new AlfrescoRuntimeException("Unable to get unfiled conatiner " + containerName  + ".");
+	        }
+	        else if (assocs.size() == 1)
+	        {
+	            result = assocs.get(0).getChildRef();
+	            rootContainerCache.put(key, result);
+	        }
         }
-        else if (assocs.size() == 1)
+        else
         {
-            result = assocs.get(0).getChildRef();
+        	result = rootContainerCache.get(key);
         }
         
         return result;

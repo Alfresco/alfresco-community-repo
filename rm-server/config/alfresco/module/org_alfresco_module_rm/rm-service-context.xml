@@ -438,6 +438,8 @@
 
     <!--  File Plan Service -->
 
+	<bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+
 	<bean id="filePlanService"
 	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
@@ -446,6 +448,7 @@
         <!-- <property name="nodeDAO" ref="nodeDAO"/> -->
         <!-- <property name="internalNodeService" ref="nodeService"/> -->
         <!-- <property name="siteService" ref="SiteService" />  -->
+        <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">

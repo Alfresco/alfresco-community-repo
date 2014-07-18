@@ -28,6 +28,7 @@ import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.util.Pair;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -42,9 +43,6 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
                                                                       RecordsManagementModel, 
                                                                       ApplicationContextAware
 {
-    /** transaction cache key */
-    private static final String KEY_HAS_AUTHORITY_CACHE = "rm.transaction.hasAuthority";
-    
     /** Authority service */
     private AuthorityService authorityService;
     
@@ -95,6 +93,11 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
         }
         return nodeService;
     }
+    
+    /**
+     * @return	String transaction cache name
+     */
+    protected abstract String getTransactionCacheName();
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -122,51 +125,38 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     {
         boolean result = false;
         
-        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY) == true)
+        Map<Pair<NodeRef, String>, Boolean> transactionCache = TransactionalResourceHelper.getMap(getTransactionCacheName());
+        Pair<NodeRef, String> key = new Pair<NodeRef, String>(nodeRef, userName);
+        
+        if (transactionCache.containsKey(key))
         {
-            Set<String> authorities = getAuthorites(nodeRef);
-            if (authorities != null)
-            {
-                for (String authority : authorities)
-                {
-                    if ("GROUP_EVERYONE".equals(authority) == true)
-                    {
-                        // 'eveyone' is there so break
-                        result = true;
-                        break;
-                    }
-                    else if (authority.startsWith("GROUP_") == true)
-                    {
-                        Map<String, Boolean> transactionCache = TransactionalResourceHelper.getMap(KEY_HAS_AUTHORITY_CACHE);
-                        String key = authority + "|" + userName;
-                        if (transactionCache.containsKey(key))
-
-                        {
-                            result = transactionCache.get(key);
-                            break;
-                        }
-                        else
-                        {
-                            Set<String> contained = getAuthorityService().getAuthoritiesForUser(userName);
-                            if (contained.contains(authority))
-                            {
-                                result = true;
-                                transactionCache.put(key, result);
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // presume we have a user
-                        if (authority.equals(userName) == true)
-                        {
-                            result = true;
-                            break;
-                        }
-                    }
-                }
-            }
+            result = transactionCache.get(key);
+        }
+        else
+        {
+	        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY) == true)
+	        {
+	            Set<String> authorities = getAuthorites(nodeRef);
+	            if (authorities != null)
+	            {
+	            	// check for everyone or the user
+	            	if (authorities.contains("GROUP_EVEYONE") ||
+	            		authorities.contains(userName))
+	            	{
+	            		result = true;
+	            	}
+	            	else
+	            	{
+	            		// determine whether any of the users groups are in the extended security
+	            		Set<String> contained = getAuthorityService().getAuthoritiesForUser(userName);
+	            		authorities.retainAll(contained);
+	            		result = (authorities.size() != 0);
+	            	}
+	            }
+	        }
+	        
+	        // cache result 
+	        transactionCache.put(key, result);
         }
         
         return result;

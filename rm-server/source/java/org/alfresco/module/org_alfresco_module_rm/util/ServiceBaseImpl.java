@@ -338,24 +338,35 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     public NodeRef getFilePlan(final NodeRef nodeRef)
     {
         NodeRef result = null;
-        if (nodeRef != null)
+        if (nodeRef != null)        	
         {       
-            result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
-            if (result == null || !instanceOf(result, TYPE_FILE_PLAN))
-            {
-                if (instanceOf(nodeRef, TYPE_FILE_PLAN))
-                {
-                    result = nodeRef;
-                }
-                else
-                {
-                    ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
-                    if (parentAssocRef != null)
-                    {
-                        result = getFilePlan(parentAssocRef.getParentRef());
-                    }
-                }
-            }
+        	Map<NodeRef, NodeRef> transactionCache = TransactionalResourceHelper.getMap("rm.servicebase.getFilePlan");
+        	if (transactionCache.containsKey(nodeRef))
+        	{
+        		result = transactionCache.get(nodeRef);        		
+        	}
+        	else
+        	{
+	            result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
+	            if (result == null || !instanceOf(result, TYPE_FILE_PLAN))
+	            {
+	                if (instanceOf(nodeRef, TYPE_FILE_PLAN))
+	                {
+	                    result = nodeRef;
+	                }
+	                else
+	                {
+	                    ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
+	                    if (parentAssocRef != null)
+	                    {
+	                        result = getFilePlan(parentAssocRef.getParentRef());
+	                    }
+	                }
+	            }
+	            
+	            // cache result in transaction
+	            transactionCache.put(nodeRef, result);
+        	}
         }
 
         return result;

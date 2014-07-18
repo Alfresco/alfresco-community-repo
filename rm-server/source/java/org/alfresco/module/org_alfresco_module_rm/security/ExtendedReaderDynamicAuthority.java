@@ -49,4 +49,13 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     {
         return getExtendedSecurityService().getExtendedReaders(nodeRef);
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityBaseDynamicAuthority#getTransactionCacheName()
+     */
+    @Override
+    protected String getTransactionCacheName() 
+    {
+    	return "rm.extendedreaderdynamicauthority";
+    }
 }

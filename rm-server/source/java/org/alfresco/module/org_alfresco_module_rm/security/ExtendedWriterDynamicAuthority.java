@@ -48,5 +48,14 @@ public class ExtendedWriterDynamicAuthority extends ExtendedSecurityBaseDynamicA
     protected Set<String> getAuthorites(NodeRef nodeRef) 
     {
         return getExtendedSecurityService().getExtendedWriters(nodeRef);
-    }    
+    }  
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityBaseDynamicAuthority#getTransactionCacheName()
+     */
+    @Override
+    protected String getTransactionCacheName() 
+    {
+    	return "rm.extendedwriterdynamicauthority";
+    }  
 }

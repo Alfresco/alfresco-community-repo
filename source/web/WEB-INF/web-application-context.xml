@@ -5,7 +5,6 @@
     <import resource="classpath:alfresco/application-context.xml" />
     <import resource="classpath:alfresco/web-scripts-application-context.xml" />
     <import resource="classpath*:alfresco/enterprise-web-scripts-application-context.xml" />
-    <import resource="classpath:alfresco/web-services-application-context.xml" />
     <!--
         To give final control over the tuning of the custom environment, the custom-web-context.xml file is processed
         last (note: custom-web-context.xml isn't part of the source tree itself).

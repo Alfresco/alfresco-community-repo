@@ -45,10 +45,10 @@ xmlns:f="http://java.sun.com/jsf/core">
          <h:outputText style="font-weight: bold" value="#{msg.forexample_title}"/>
       </h:panelGroup><h:panelGroup/>		
 
-      <f:verbatim><tt style="font-weight:bold;">${name}.xml</tt></f:verbatim>                       <h:outputText value="form_name.xml"/>
-      <f:verbatim><tt style="font-weight:bold;">${name}.${extension}</tt></f:verbatim>              <h:outputText value="form_name.html"/>
-      <f:verbatim><tt style="font-weight:bold;">${webapp}/content/${name}.xml</tt></f:verbatim>     <h:outputText value="/ROOT/content/form_name.xml"/>
-      <f:verbatim><tt style="font-weight:bold;">${date?string("yyyy-MM-dd")}.xml</tt></f:verbatim>  <h:outputText value="2007-01-09.xml"/>
+      <f:verbatim><tt style="font-weight:bold;"><h:outputText value="#{msg.description_example_expression1}"/></tt></f:verbatim>  <h:outputText value="form_name.xml"/>
+      <f:verbatim><tt style="font-weight:bold;"><h:outputText value="#{msg.description_example_expression2}"/></tt></f:verbatim>  <h:outputText value="form_name.html"/>
+      <f:verbatim><tt style="font-weight:bold;"><h:outputText value="#{msg.description_example_expression3}"/></tt></f:verbatim>  <h:outputText value="/ROOT/content/form_name.xml"/>
+      <f:verbatim><tt style="font-weight:bold;"><h:outputText value="#{msg.description_example_expression4}"/></tt></f:verbatim>  <h:outputText value="2007-01-09.xml"/>
    </h:panelGrid>
 	
    <h:panelGroup>

@@ -10,7 +10,7 @@
 
     <bean id="saajOutInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor" />
 
-    <bean id="checkPasswordTypeInterceptor" class="org.alfresco.repo.cmis.ws.PasswordTypeInterceptor" />
+    <bean id="checkPasswordTypeInterceptor" class="org.alfresco.repo.ws.PasswordTypeInterceptor" />
 
     <bean id="wss4jInInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
         <constructor-arg>
@@ -46,14 +46,14 @@
         <property name="allowMTOM" value="true" />
     </bean>
 
-    <bean id="authenticationTokenCallback" class="org.alfresco.repo.cmis.ws.AuthenticationTokenCallbackHandler" />
+    <bean id="authenticationTokenCallback" class="org.alfresco.repo.ws.AuthenticationTokenCallbackHandler" />
 
-    <bean id="authenticationInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationInterceptor">
+    <bean id="authenticationInterceptor" class="org.alfresco.repo.ws.AuthenticationInterceptor">
       <property name="authenticationService" ref="authenticationService" />
       <property name="transactionService" ref="transactionService" />
     </bean>
 
-    <bean id="authenticationClearInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationClearInterceptor"/>
+    <bean id="authenticationClearInterceptor" class="org.alfresco.repo.ws.AuthenticationClearInterceptor"/>
    
    
    <!-- Axis handler to validate the ticket sent with the web service request -->

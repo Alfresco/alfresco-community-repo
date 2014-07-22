@@ -1,4 +1,4 @@
-package org.alfresco.repo.cmis.ws;
+package org.alfresco.repo.ws;
 
 import java.util.Arrays;
 

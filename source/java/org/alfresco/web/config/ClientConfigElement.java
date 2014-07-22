@@ -87,7 +87,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    private boolean checkContextAgainstPath = false;
    private boolean allowUserScriptExecute = false;
    private boolean isBulkFetchEnabled = true;
-   
+   private String emailRegExp = "^([-A-Za-z0-9\\xc0-\\xff!#$%&'*+\\/=?^_`{}~|]+\\.)*[-A-Za-z0-9\\xc0-\\xff!#$%&'*+\\/=?^_`{}|~_]+@([\\.A-Za-z0-9_-])*[A-Za-z0-9_-]$";
    
    /**
     * Default Constructor
@@ -979,6 +979,14 @@ public class ClientConfigElement extends ConfigElementAdapter
    /*package*/ void setBulkFetchEnabled(boolean isBulkFetchEnabled)
    {
        this.isBulkFetchEnabled = isBulkFetchEnabled;
+   }
+   
+   /**
+    * @return regexp for email validation
+    */
+   public String getEmailRegExp()
+   {
+       return emailRegExp;
    }
    
 }

@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.component.UIComponent;
@@ -122,7 +123,6 @@ public class CreateUserWizard extends BaseWizardBean
 
     /** ref to the default home location */
     private NodeRef defaultHomeSpaceRef;
-
 
     /**
      * @param authenticationService The AuthenticationService to set.
@@ -633,8 +633,9 @@ public class CreateUserWizard extends BaseWizardBean
      */
     public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException
     {
-        EmailValidator emailValidator = EmailValidator.getInstance();
-        if (!emailValidator.isValid((String) value))
+    	String emailRegExp = Application.getClientConfig(context).getEmailRegExp();
+    	Pattern pattern = Pattern.compile(emailRegExp, Pattern.CASE_INSENSITIVE);
+    	if (!pattern.matcher((CharSequence) value).matches())
         {
             String err = Application.getMessage(context, MSG_ERROR_MAIL_NOT_VALID);
             throw new ValidatorException(new FacesMessage(err));

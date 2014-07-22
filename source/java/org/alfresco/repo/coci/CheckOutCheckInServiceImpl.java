@@ -728,12 +728,16 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         {
             List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
             // It is a 1:1 relationship
-            if (assocs.size() > 0)
+            if (assocs.size() == 0)
             {
-                if (assocs.size() > 1)
-                {
-                    logger.warn("Found multiple " + ContentModel.ASSOC_WORKING_COPY_LINK + " association from node: " + nodeRef);
-                }
+                logger.warn("Found node with cm:checkedOut aspect but no association.  Current node state: " + nodeService.getNodeStatus(nodeRef));
+            }
+            else if (assocs.size() > 1)
+            {
+                logger.warn("Found multiple " + ContentModel.ASSOC_WORKING_COPY_LINK + " association from node: " + nodeRef);
+            }
+            else
+            {
                 workingCopy = assocs.get(0).getTargetRef();
             }
         }
@@ -749,12 +753,16 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         {
             List<AssociationRef> assocs = nodeService.getSourceAssocs(nodeRef, ContentModel.ASSOC_WORKING_COPY_LINK);
             // It is a 1:1 relationship
-            if (assocs.size() > 0)
+            if (assocs.size() == 0)
             {
-                if (assocs.size() > 1)
-                {
-                    logger.warn("Found multiple " + ContentModel.ASSOC_WORKING_COPY_LINK + " associations to node: " + nodeRef);
-                }
+                logger.warn("Found node with cm:workingcopy aspect but no association.  Current node state: " + nodeService.getNodeStatus(nodeRef));
+            }
+            else if (assocs.size() > 1)
+            {
+                logger.warn("Found multiple " + ContentModel.ASSOC_WORKING_COPY_LINK + " association to node: " + nodeRef);
+            }
+            else
+            {
                 original = assocs.get(0).getSourceRef();
             }
         }

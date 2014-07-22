@@ -1420,6 +1420,30 @@ public class AuthorityServiceTest extends TestCase
         assertEquals("Count of groups must increment", (groupCountBefore+1), groupCountAfter);
     }
 
+    public void testMNT_11766()
+    {
+        Set<String> admins = authenticationComponent.getDefaultAdministratorUserNames();
+        
+        for (String admin : admins)
+        {
+            // create user with MT format name (i.e. username@domain)
+            String user = admin + "@" + System.currentTimeMillis();
+
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
+            props.put(ContentModel.PROP_USERNAME, user);
+            props.put(ContentModel.PROP_FIRSTNAME, user);
+            props.put(ContentModel.PROP_LASTNAME, user);
+            props.put(ContentModel.PROP_EMAIL, user + "@gmail.com");
+
+            personService.createPerson(props);
+            authenticationService.createAuthentication(user, "123123".toCharArray());
+            
+            authenticationComponent.setCurrentUser(user);
+            assertFalse("User should not have administrator role.", authorityService.hasAdminAuthority());
+            assertFalse("User should not have administrator role.", pubAuthorityService.hasAdminAuthority());
+        }
+    }
+
     private void assertContains(List<String> results, List<String> checklist, boolean included)
     {
         for (String check : checklist)

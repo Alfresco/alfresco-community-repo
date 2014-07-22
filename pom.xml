@@ -62,11 +62,6 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.facebook.api</groupId>
-            <artifactId>facebook-java-api</artifactId>
-            <version>070716</version>
-        </dependency>
-        <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
             <version>0.9</version>

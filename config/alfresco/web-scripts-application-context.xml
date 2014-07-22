@@ -201,18 +201,6 @@
       <property name="transactionService" ref="TransactionService" />
    </bean>
 
-   <!--  Facebook Authenticator -->
-   <bean id="webscripts.authenticator.facebook" class="org.alfresco.repo.web.scripts.facebook.FacebookAuthenticatorFactory" />
-
-
-   <!--                   -->
-   <!--  Facebook Runtime -->
-   <!--                   -->
-
-   <bean id="facebook.service" class="org.alfresco.repo.web.scripts.facebook.FacebookService">
-      <property name="container" ref="webscripts.container" />
-   </bean>
-
 
    <!--            -->
    <!--  API Beans -->

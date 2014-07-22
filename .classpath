@@ -10,11 +10,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/3rd Party"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Core"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Alfresco JLAN"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-core-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-extensions-json-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-i18n-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-parser-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
-	<classpathentry kind="lib" path="/3rd Party/lib/abdera/abdera-client-0.4.0-incubating.jar" sourcepath="/3rd Party/src/apache-abdera-0.4.0-incubating-src.zip"/>
 	<classpathentry exported="true" kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.2.1-SNAPSHOT.jar" sourcepath="/3rd Party/src/spring-webscripts-1.2.1-SNAPSHOT-sources.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.2.1-SNAPSHOT-tests.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/j2ee/servlet.jar"/>

@@ -23,10 +23,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -100,6 +102,7 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionEleme
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ExtensionDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
+import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyDecimalDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIdImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerDefinitionImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertyIntegerImpl;
@@ -2249,6 +2252,65 @@ public class CMISTest
             {
                 authorityService.deleteAuthority(testGroup);
             }
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    /**
+     * MNT-11304: Test that Alfresco has no default boundaries for decimals
+     * @throws Exception
+     */
+    @Test
+    public void testDecimalDefaultBoundaries() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        try
+        {
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
+                    
+                    TypeDefinition decimalTypeDef = cmisService.getTypeDefinition(repositoryId, "D:tcdm:testdecimalstype", null);
+                    
+                    PropertyDecimalDefinitionImpl floatNoBoundsTypeDef = 
+                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:float");
+                    PropertyDecimalDefinitionImpl doubleNoBoundsTypeDef = 
+                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:double");
+                    
+                    PropertyDecimalDefinitionImpl floatWithBoundsTypeDef = 
+                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:floatwithbounds");
+                    PropertyDecimalDefinitionImpl doubleWithBoundsTypeDef = 
+                            (PropertyDecimalDefinitionImpl)decimalTypeDef.getPropertyDefinitions().get("tcdm:doublewithbounds");
+                    
+                    // test that there is not default boundaries for decimals
+                    assertNull(floatNoBoundsTypeDef.getMinValue());
+                    assertNull(floatNoBoundsTypeDef.getMaxValue());
+                    
+                    assertNull(doubleNoBoundsTypeDef.getMinValue());
+                    assertNull(doubleNoBoundsTypeDef.getMaxValue());
+                    
+                    // test for pre-defined boundaries
+                    assertTrue(floatWithBoundsTypeDef.getMinValue().equals(BigDecimal.valueOf(-10f)));
+                    assertTrue(floatWithBoundsTypeDef.getMaxValue().equals(BigDecimal.valueOf(10f)));
+                    
+                    assertTrue(doubleWithBoundsTypeDef.getMinValue().equals(BigDecimal.valueOf(-10d)));
+                    assertTrue(doubleWithBoundsTypeDef.getMaxValue().equals(BigDecimal.valueOf(10d)));
+
+                    return null;
+                }
+            }, CmisVersion.CMIS_1_1);
+            
+        }
+        finally
+        {
             AuthenticationUtil.popAuthentication();
         }
     }

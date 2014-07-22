@@ -81,6 +81,7 @@ public class RemoteApi01TestSuite extends TestSuite
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class));
+        suite.addTestSuite(org.alfresco.rest.workflow.api.impl.ProcessesImplTest.class);
     }
     
     static void tests7(TestSuite suite) // 

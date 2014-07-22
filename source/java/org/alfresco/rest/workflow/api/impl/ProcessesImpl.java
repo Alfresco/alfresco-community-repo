@@ -495,7 +495,7 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             page.add(processInfo);
         }
         
-        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
+        return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) != totalCount, totalCount);
     }
 
     @Override

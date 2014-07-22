@@ -19,5 +19,6 @@
 	<classpathentry kind="lib" path="/3rd Party/lib/spring-surf/spring-webscripts-1.2.1-SNAPSHOT-tests.jar"/>
 	<classpathentry kind="lib" path="/3rd Party/lib/j2ee/servlet.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DataModel"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/alfresco-events"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

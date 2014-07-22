@@ -23,7 +23,6 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseSpringTest;
-import org.apache.cxf.endpoint.ServerRegistryImpl;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -96,18 +95,6 @@ public class SubsystemsTest extends BaseSpringTest
         assertEquals(false, testBeans[2].isBoolProperty());
         assertEquals(123456789123456789L, testBeans[2].getLongProperty());
         assertEquals("Global Instance Default", testBeans[2].getAnotherStringProperty());
-    }
-
-    public void testALF6058() throws Exception
-    {
-    	ServerRegistryImpl serverRegistry = getApplicationContext().getBean(ServerRegistryImpl.class);
-        ApplicationContextFactory subsystem = (ApplicationContextFactory) getApplicationContext().getBean("testsubsystem");
-        int beforeStop = serverRegistry.getServers().size();
-        subsystem.stop();
-        //Make sure CXF doesn't remove its endpoints after subsystem stops
-        assertEquals(beforeStop, serverRegistry.getServers().size());
-        subsystem.start();
-
     }
 
 }

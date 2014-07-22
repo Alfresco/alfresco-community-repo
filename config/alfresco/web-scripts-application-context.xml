@@ -11,10 +11,7 @@
       <constructor-arg>
          <list>
             <value>classpath:alfresco/web-scripts-config.xml</value>
-            <value>classpath:alfresco/web-scripts-cmis-config.xml</value>
-            <value>classpath:alfresco/extension/web-api-config-custom.xml</value>  <!--  for backwards compatibility -->
             <value>classpath:alfresco/extension/web-scripts-config-custom.xml</value>
-            <value>classpath:alfresco/extension/web-scripts-cmis-config.xml</value>
          </list>
       </constructor-arg>
    </bean>
@@ -30,12 +27,12 @@
    <!--  Web Script Storage -->
    <!--                     -->
 
-    <!-- Get bulk node metadata -->
-    <bean id="webscript.org.alfresco.repository.metadata.bulkmetadata.post"
-          class="org.alfresco.repo.web.scripts.metadata.BulkMetadataGet"
-          parent="webscript">
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
-    </bean>
+   <!-- Get bulk node metadata -->
+   <bean id="webscript.org.alfresco.repository.metadata.bulkmetadata.post"
+         class="org.alfresco.repo.web.scripts.metadata.BulkMetadataGet"
+         parent="webscript">
+       <property name="serviceRegistry" ref="ServiceRegistry"/>
+   </bean>
 
    <bean id="webscripts.repostore" class="org.alfresco.repo.web.scripts.RepoStore" abstract="true" init-method="init">
       <property name="transactionHelper" ref="retryingTransactionHelper" />
@@ -145,16 +142,6 @@
            <entry key="paging">
               <ref bean="webscripts.js.paging"/>
            </entry>
-           <entry key="cmis">
-              <ref bean="webscripts.js.cmis.client" />
-           </entry>
-         </map>
-      </property>
-      <property name="templateObjects">
-         <map merge="true">
-           <entry key="cmisconstants">
-              <bean class="org.alfresco.repo.cmis.rest.CMISConstantsFactory"/>
-           </entry>
          </map>
       </property>
       <property name="webScriptsRegistryCache" ref="webScriptsRegistryCache"/>
@@ -227,61 +214,10 @@
    </bean>
 
 
-   <!--          -->
-   <!-- CMIS API -->
-   <!--          -->
-
-   <!-- CMIS Abdera Extension -->
-   <bean id="webscripts.cmis.atom.extension" class="org.springframework.extensions.webscripts.atom.AbderaExtension">
-      <property name="abderaService" ref="webscripts.abdera"/>
-      <property name="QNames">
-         <props>
-            <prop key="cmisra_object">{http://docs.oasis-open.org/ns/cmis/restatom/200908/}object</prop>
-            <prop key="cmisra_content">{http://docs.oasis-open.org/ns/cmis/restatom/200908/}content</prop>
-            <prop key="cmisra_repositoryInfo">{http://docs.oasis-open.org/ns/cmis/restatom/200908/}repositoryInfo</prop>
-            <prop key="alf_setAspects">{http://www.alfresco.org}setAspects</prop>
-         </props>
-      </property>
-      <property name="extensionFactories">
-         <list>
-           <bean class="org.alfresco.repo.cmis.rest.AlfrescoCMISExtensionFactory"/>
-         </list>
-      </property>
-   </bean>
-
-   <!-- CMIS custom mimetypes -->
-   <bean id="webscripts.cmis.adaptors" parent="webscripts.adaptorset">
-      <property name="readers">
-         <list>
-           <bean class="org.alfresco.repo.cmis.rest.CMISQueryReader" />
-         </list>
-      </property>
-   </bean>
-
-   <!--  Default Formats -->
-   <bean id="webscripts.cmis.formats" parent="webscripts.formatmap">
-      <property name="formats">
-         <props>
-            <prop key="cmisquery">application/cmisquery+xml</prop>
-            <prop key="cmisallowableactions">application/cmisallowableactions+xml</prop>
-            <prop key="cmisacl">application/cmisacl+xml</prop>
-         </props>
-      </property>
-      <property name="mimetypes">
-         <props>
-            <prop key="application/cmisquery+xml">cmisquery</prop>
-            <prop key="application/cmisallowableactions+xml">application/cmisallowableactions+xml</prop>
-            <prop key="application/cmisacl+xml">cmisacl</prop>
-         </props>
-      </property>
-   </bean>
-
-   <!-- CMIS Web Script Kind -->
-   <bean id="webscript.org.alfresco.cmiskind" class="org.alfresco.repo.cmis.rest.CMISWebScript" parent="webscript" scope="prototype" />
-
-   <!-- CMIS Test Runner Web Script -->
-   <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
-
+   <!--            -->
+   <!--  API Beans -->
+   <!--            -->
+   
    <!--  Content Retrieval -->
    <bean id="webscript.org.alfresco.content.content.get" class="org.alfresco.repo.web.scripts.content.ContentGet" parent="webscript">
       <property name="namespaceService" ref="NamespaceService" />
@@ -302,31 +238,6 @@
       <property name="delegate" ref="webscript.content.streamer" />
       <property name="repository" ref="repositoryHelper" />
    </bean>
-   
-   <!--              -->
-   <!--  CMIS Client -->
-   <!--              -->
-
-   <bean id="webscript.org.alfresco.cmis.client.content.get" class="org.alfresco.repo.cmis.client.CMISContentStreamWebScript" parent="webscript">
-      <property name="connectionManager" ref="webscripts.js.cmis.client" />
-   </bean>
-   
-   <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISLocalConnectionManagerImpl" init-method="init">
-      <property name="authenticationService" ref="AuthenticationService" />
-      <property name="configService" ref="webscripts.config" />
-      <property name="cmisConnector" ref="CMISConnector" />
-   </bean>
-
-   <!--   
-   <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISRemoteConnectionManagerImpl" init-method="init">
-      <property name="authenticationService" ref="AuthenticationService" />
-     <property name="configService" ref="webscripts.config" />
-   </bean>
-   -->
-
-   <!--            -->
-   <!--  API Beans -->
-   <!--            -->
 
    <!--  Javascript APIs -->
    <bean id="webscript.org.alfresco.jsdebugger.get" class="org.springframework.extensions.webscripts.bean.JavascriptDebugger" parent="webscript">

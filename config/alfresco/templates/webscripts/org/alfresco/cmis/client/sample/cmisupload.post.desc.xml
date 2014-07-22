@@ -1,5 +1,0 @@
-<webscript>
-  <shortname>CMIS Document Upload</shortname>
-  <url>/cmissamples/upload</url>
-  <authentication>user</authentication>
-</webscript>

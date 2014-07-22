@@ -639,9 +639,9 @@
 
     <!-- API webscripts -->
 
-	<bean class="org.alfresco.rest.api.sites.SiteEntityResource">
+	 <bean class="org.alfresco.rest.api.sites.SiteEntityResource">
 		<property name="sites" ref="Sites" />
-	</bean>
+	 </bean>
 
     <bean class="org.alfresco.rest.api.networks.NetworksEntityResource">
         <property name="networks" ref="Networks" />
@@ -655,17 +655,17 @@
         <property name="sites" ref="Sites" />
     </bean>
 
-	<bean class="org.alfresco.rest.api.people.PeopleEntityResource">
+	 <bean class="org.alfresco.rest.api.people.PeopleEntityResource">
 		<property name="people" ref="People" />
-	</bean>
+	 </bean>
 	
-	<bean class="org.alfresco.rest.api.tags.TagsEntityResource">
+	 <bean class="org.alfresco.rest.api.tags.TagsEntityResource">
         <property name="tags" ref="Tags" />
     </bean>
 	
-	<bean class="org.alfresco.rest.api.people.PersonSitesRelation">
+	 <bean class="org.alfresco.rest.api.people.PersonSitesRelation">
 		<property name="sites" ref="Sites" />
-	</bean>
+	 </bean>
 
     <bean class="org.alfresco.rest.api.people.PersonNetworksRelation">
         <property name="networks" ref="Networks" />
@@ -683,13 +683,13 @@
         <property name="sites" ref="Sites" />
     </bean>
 
-	<bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
+	 <bean class="org.alfresco.rest.api.nodes.NodesEntityResource">
         <property name="nodes" ref="Nodes" />
-	</bean>
+	 </bean>
 	
-	<bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">
+	 <bean class="org.alfresco.rest.api.nodes.NodeCommentsRelation">
         <property name="comments" ref="Comments" />
-	</bean>
+	 </bean>
 
     <bean class="org.alfresco.rest.api.nodes.NodeRatingsRelation">
         <property name="nodeRatings" ref="NodeRatings" />
@@ -707,13 +707,13 @@
         <property name="siteMembershipRequests" ref="SiteMembershipRequests" />
     </bean>
 
-    <bean   id="getNetworksWebScript" 
+    <bean id="getNetworksWebScript" 
            class="org.alfresco.rest.api.NetworksWebScriptGet" parent="apiWebScriptParent">
         <property name="networks" ref="Networks" />
         <property name="helper" ref="webscriptHelper" />
     </bean>
 
-    <bean   id="getNetworkWebScript" 
+    <bean id="getNetworkWebScript" 
            class="org.alfresco.rest.api.NetworkWebScriptGet" parent="apiWebScriptParent">
         <property name="networks" ref="Networks" />
         <property name="helper" ref="webscriptHelper" />

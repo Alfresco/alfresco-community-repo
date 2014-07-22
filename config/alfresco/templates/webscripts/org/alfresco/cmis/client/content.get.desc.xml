@@ -1,6 +1,0 @@
-<webscript>
-  <shortname>CMIS Content Stream</shortname>
-  <url>/cmis/content</url>
-  <authentication>user</authentication>
-  <lifecycle>deprecated</lifecycle>
-</webscript>

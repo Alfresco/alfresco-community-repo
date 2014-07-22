@@ -3,9 +3,59 @@
 
 <beans>
 
-   <!--  Import CXF support and CMIS WS -->
-   <import resource="classpath*:alfresco/cmis-ws-context.xml" />
+   <!--  Import CXF support -->
+   <import resource="classpath:alfresco/cxf/cxf.xml" />
+   
+    <bean id="saajInInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJInInterceptor" />
 
+    <bean id="saajOutInterceptor" class="org.apache.cxf.binding.soap.saaj.SAAJOutInterceptor" />
+
+    <bean id="checkPasswordTypeInterceptor" class="org.alfresco.repo.cmis.ws.PasswordTypeInterceptor" />
+
+    <bean id="wss4jInInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="UsernameToken Timestamp" />
+                <entry key="passwordType" value="PasswordText" />
+                <entry>
+                    <key>
+                        <value>passwordCallbackRef</value>
+                    </key>
+                    <ref local="authenticationTokenCallback" />
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="wss4jOutInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="Timestamp" />
+                <entry key="mustUnderstand" value="false" />
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="wss4jOutInterceptorWithMTOM" class="org.apache.cxf.ws.security.wss4j.WSS4JOutInterceptor">
+        <constructor-arg>
+            <map>
+                <entry key="action" value="Timestamp" />
+                <entry key="mustUnderstand" value="false" />
+            </map>
+        </constructor-arg>
+        <property name="allowMTOM" value="true" />
+    </bean>
+
+    <bean id="authenticationTokenCallback" class="org.alfresco.repo.cmis.ws.AuthenticationTokenCallbackHandler" />
+
+    <bean id="authenticationInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationInterceptor">
+      <property name="authenticationService" ref="authenticationService" />
+      <property name="transactionService" ref="transactionService" />
+    </bean>
+
+    <bean id="authenticationClearInterceptor" class="org.alfresco.repo.cmis.ws.AuthenticationClearInterceptor"/>
+   
+   
    <!-- Axis handler to validate the ticket sent with the web service request -->
    <bean id="ticketCallbackHandler" class="org.alfresco.repo.webservice.axis.TicketCallbackHandler">
       <property name="authenticationService">

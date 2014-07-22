@@ -1,5 +1,0 @@
-<webscript>
-  <shortname>CMIS Document Download</shortname>
-  <url>/cmissamples/download</url>
-  <authentication>user</authentication>
-</webscript>

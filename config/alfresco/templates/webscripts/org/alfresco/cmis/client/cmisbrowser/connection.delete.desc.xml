@@ -1,5 +1,0 @@
-<webscript>
-  <shortname>CMIS Connections</shortname>
-  <url>/cmis-browser-app/c/{conn}</url>
-  <authentication>user</authentication>
-</webscript>

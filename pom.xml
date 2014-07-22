@@ -18,7 +18,6 @@
         <bitrock.arguments>
            --license
            ${binaries.folder}/build-classpath/license.xml
-           --verbose
            --setvars
            project.outputDirectory=${project.build.directory}
            project.version=${project.version}
@@ -136,6 +135,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipWinInstaller}</skip>
                             <commandlineArgs>
                                build project.xml
                                windows
@@ -154,6 +154,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipWinInstaller}</skip>
                             <commandlineArgs>
                                build project.xml
                                windows
@@ -172,6 +173,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipLinInstaller}</skip>
                             <commandlineArgs>
                                build project.xml
                                linux-x64
@@ -190,6 +192,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
+                            <skip>${skipOSXInstaller}</skip>
                             <commandlineArgs>
                                build project.xml
                                osx

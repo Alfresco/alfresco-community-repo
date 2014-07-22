@@ -536,6 +536,10 @@
          <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
       </init-param>
       <init-param>
+         <param-name>stylesheet:application/atom+xml; type=feed</param-name>
+         <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
+      </init-param>
+      <init-param>
          <param-name>stylesheet:application/cmistree+xml</param-name>
          <param-value>/cmisfs/stylesheets/feed.xsl</param-value>
       </init-param>

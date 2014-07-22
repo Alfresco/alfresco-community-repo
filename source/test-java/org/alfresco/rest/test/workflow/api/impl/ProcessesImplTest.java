@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.rest.workflow.api.impl;
+package org.alfresco.rest.test.workflow.api.impl;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -39,6 +39,7 @@ import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.alfresco.rest.workflow.api.Processes;
+import org.alfresco.rest.workflow.api.impl.ProcessesImpl;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -121,7 +122,7 @@ public class ProcessesImplTest extends TestCase
     {
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(WorkflowModel.ASSOC_ASSIGNEE, (Serializable) Collections.singletonList(assignee));
-        parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
+        //parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
 
         workflowService.startWorkflow(neededDefinition.getId(), parameters);
     }

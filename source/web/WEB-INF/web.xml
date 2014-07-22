@@ -1,10 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<!DOCTYPE web-app PUBLIC
-  "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
-  "http://java.sun.com/dtd/web-app_2_3.dtd">
-
-<web-app>
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+    version="2.4">
    <display-name>Alfresco Web Client</display-name>
 
    <description>Alfresco Web Client</description>
@@ -35,32 +34,30 @@
    </context-param>
 
    <context-param>
+      <description>This is an EXPERIMENTAL feature, so leave it off for now!</description>
       <param-name>org.apache.myfaces.DETECT_JAVASCRIPT</param-name>
       <param-value>false</param-value>
-      <description>This is an EXPERIMENTAL feature, so leave it off for now!</description>
    </context-param>
 
    <context-param>
+      <description>Stop MyFaces from Serializing the state to the session</description>
       <param-name>org.apache.myfaces.SERIALIZE_STATE_IN_SESSION</param-name>
       <param-value>false</param-value>
-      <description>Stop MyFaces from Serializing the state to the session</description>
    </context-param>
 
     <!-- TODO: Change this to false for production -->
     <context-param>
-        <param-name>org.apache.myfaces.PRETTY_HTML</param-name>
-        <param-value>true</param-value>
         <description>
             If true, rendered HTML code will be formatted, so that it is "human readable".
             i.e. additional line separators and whitespace will be written, that do not
             influence the HTML code.
             Default: "true"
         </description>
+        <param-name>org.apache.myfaces.PRETTY_HTML</param-name>
+        <param-value>true</param-value>
     </context-param>
 
     <context-param>
-        <param-name>org.apache.myfaces.AUTO_SCROLL</param-name>
-        <param-value>false</param-value>
         <description>
             If true, a javascript function will be rendered that is able to restore the
             former vertical scroll on every request. Convenient feature if you have pages
@@ -68,19 +65,21 @@
             if you trigger a link or button action that stays on the same page.
             Default: "false"
         </description>
+        <param-name>org.apache.myfaces.AUTO_SCROLL</param-name>
+        <param-value>false</param-value>
     </context-param>
 
    <!-- Spring Application Context location -->
    <context-param>
+      <description>Spring config file location</description>
       <param-name>contextConfigLocation</param-name>
       <param-value>/WEB-INF/web-application-context.xml</param-value>
-      <description>Spring config file location</description>
    </context-param>
    
    <context-param>
+      <description>Do not try to resolve web app root as file</description>
       <param-name>log4jExposeWebAppRoot</param-name>
       <param-value>false</param-value>
-      <description>Do not try to resolve web app root as file</description>
    </context-param>
 
 	<!--  These were previously init params for the WebDAV servlet,
@@ -103,14 +102,14 @@
    <!-- Activiti context param placeholder -->
 
    <filter>
-      <filter-name>CMIS security context cleaning filter</filter-name>
       <description>Cleans security context before authentication via the CMIS services or filters. Mapped only for CMIS</description>
+      <filter-name>CMIS security context cleaning filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.CmisSecurityContextCleanerFilter</filter-class>
    </filter>
 
    <filter>
-      <filter-name>Authentication Filter</filter-name>
       <description>Authentication filter mapped only to faces URLs. Other URLs generally use proprietary means to talk to the AuthenticationComponent</description>
+      <filter-name>Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
@@ -119,8 +118,8 @@
    </filter>
 
    <filter>
-      <filter-name>Global Authentication Filter</filter-name>
       <description>Authentication filter mapped to all authenticated URLs. Mainly for SSO support</description>
+      <filter-name>Global Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
@@ -129,8 +128,8 @@
    </filter>
 
    <filter>
-      <filter-name>WebScript Authentication Filter</filter-name>
       <description>Authentication filter mapped to web script URLs. Mainly for SSO support</description>
+      <filter-name>WebScript Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
@@ -139,8 +138,8 @@
    </filter>
 
    <filter>
-      <filter-name>WebScript Cookie Authentication Filter</filter-name>
       <description>Directly handles login script calls, allowing Surf to establish a cookie for a manual login</description>
+      <filter-name>WebScript Cookie Authentication Filter</filter-name>
       <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
       <init-param>
          <param-name>beanName</param-name>
@@ -163,19 +162,19 @@
    </filter>
    
    <filter>
-      <filter-name>CacheExpiresFilter</filter-name>
       <description>Set HTTP cache Expires header 30 days forward for a mapping.</description>
+      <filter-name>CacheExpiresFilter</filter-name>
       <filter-class>org.alfresco.web.scripts.servlet.StaticAssetCacheFilter</filter-class>
       <init-param>
+         <description>Add an Expires Header 30 days forward</description>
          <param-name>expires</param-name>
          <param-value>30</param-value>
-         <description>Add an Expires Header 30 days forward</description>
       </init-param>
    </filter>
 
    <filter>
-      <filter-name>Global Localization Filter</filter-name>
       <description>Sets fallback default locale for ALL requests</description>
+      <filter-name>Global Localization Filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.GlobalLocalizationFilter</filter-class>
    </filter>
 
@@ -930,16 +929,16 @@
    <env-entry>
       <description>A flag that globally enables or disables startup of the major Alfresco subsystems.</description>
       <env-entry-name>properties/startup.enable</env-entry-name>
-      <env-entry-value>true</env-entry-value>
       <env-entry-type>java.lang.Boolean</env-entry-type>
+      <env-entry-value>true</env-entry-value>
    </env-entry>
 
    <env-entry>
       <description>The filesystem directory below which content and index data is stored. Should be on a shared disk
          if this is a clustered installation.</description>
       <env-entry-name>properties/dir.root</env-entry-name>
-      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
    </env-entry>
 
    <env-entry>
@@ -950,16 +949,16 @@
          org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect,
          org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect, org.hibernate.dialect.PostgreSQLDialect</description>
       <env-entry-name>properties/hibernate.dialect</env-entry-name>
-      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
    </env-entry>
 
    <env-entry>
       <description>Mapping from tokens in Hibernate queries to SQL tokens. For PostgreSQL, set this to "true
          TRUE, false FALSE".</description>
       <env-entry-name>properties/hibernate.query.substitutions</env-entry-name>
-      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
    </env-entry>
 
    <env-entry>
@@ -967,25 +966,16 @@
          after insert. Requires JDBC3+ driver. Set to false if your driver has problems with the Hibernate identifier
          generators. By default, tries to determine the driver capabilities using connection metadata. </description>
       <env-entry-name>properties/hibernate.jdbc.use_get_generated_keys</env-entry-name>
-      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
    </env-entry>
 
    <env-entry>
       <description>Qualify unqualified table names with the given schema/tablespace in generated SQL. It may be
          necessary to set this when the target database has more than one schema.</description>
       <env-entry-name>properties/hibernate.default_schema</env-entry-name>
-      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
       <env-entry-type>java.lang.String</env-entry-type>
+      <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
    </env-entry>
 
-   <taglib>
-      <taglib-uri>http://alfresco.com/alfresco</taglib-uri>
-      <taglib-location>/WEB-INF/alfresco.tld</taglib-location>
-   </taglib>
-
-   <taglib>
-      <taglib-uri>http://alfresco.com/wcm</taglib-uri>
-      <taglib-location>/WEB-INF/wcm.tld</taglib-location>
-   </taglib>	   
 </web-app>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -220,6 +220,19 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
         // Build the actual query string
         String queryTemplate = getQueryTemplate();
+
+        // MNT-11598 workaround: de-escape \$\{foo\} or \#\{foo\}
+        if (queryTemplate.contains("\\$\\{") || queryTemplate.contains("\\#\\{"))
+        {
+            queryTemplate = queryTemplate.replace("\\$\\{", "${");
+            queryTemplate = queryTemplate.replace("\\#\\{", "#{");
+
+            if (queryTemplate.contains("\\}"))
+            {
+                queryTemplate = queryTemplate.replace("\\}", "}");
+            }
+        }
+
         String query = templateService.processTemplateString(getTemplateActionModelFactory().getTemplateEngine(),
                 queryTemplate, getTemplateActionModelFactory().getModel());
 

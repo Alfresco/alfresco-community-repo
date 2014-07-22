@@ -368,6 +368,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.transfer.TransferVersionCheckerImplTest.class);
         suite.addTestSuite(org.alfresco.repo.transfer.manifest.ManifestIntegrationTest.class);
         suite.addTestSuite(org.alfresco.repo.transfer.script.ScriptTransferServiceTest.class);
+        suite.addTestSuite(org.alfresco.repo.action.scheduled.CronScheduledQueryBasedTemplateActionDefinitionTest.class);
     }
     
     static void tests58(TestSuite suite)

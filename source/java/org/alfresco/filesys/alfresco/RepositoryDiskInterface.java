@@ -96,7 +96,7 @@ public interface RepositoryDiskInterface
      * @throws FileNotFoundException
      * @return node ref of deleted file or null if no file deleted
      */
-    public NodeRef closeFile(NodeRef rootNode, String Path, NetworkFile file) throws IOException;
+    public NodeRef closeFile(TreeConnection tree, NodeRef rootNode, String Path, NetworkFile file) throws IOException;
     
     
     /**

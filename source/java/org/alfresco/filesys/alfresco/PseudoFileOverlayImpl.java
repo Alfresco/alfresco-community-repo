@@ -18,9 +18,12 @@
  */
 package org.alfresco.filesys.alfresco;
 
+import java.io.Serializable;
 import java.util.Enumeration;
+import java.util.Map;
 
 import org.alfresco.filesys.repo.ContentDiskDriver2;
+import org.alfresco.jlan.server.filesys.FileInfo;
 import org.alfresco.jlan.server.filesys.FileName;
 import org.alfresco.jlan.server.filesys.pseudo.MemoryPseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
@@ -28,6 +31,7 @@ import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.util.WildCard;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -47,6 +51,7 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
     private SysAdminParams sysAdminParams;
     private AlfrescoContext context;
     private NodeService nodeService;
+    private SimpleCache<String, String> deletePseudoFileCache;
     
     private static final Log logger = LogFactory.getLog(PseudoFileOverlayImpl.class);
     
@@ -57,6 +62,7 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         PropertyCheck.mandatory(this, "nodeService", getNodeService());
         PropertyCheck.mandatory(this, "context", context);
         PropertyCheck.mandatory(this, "sysAdminParams", sysAdminParams);
+        PropertyCheck.mandatory(this, "deletePseudoFileCache", deletePseudoFileCache);
     
         DesktopActionTable actions = context.getDesktopActions();
 
@@ -322,23 +328,39 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                 for ( int i = 0; i < pl.numberOfFiles(); i++)
                 {
                     PseudoFile pseudoFile = pl.getFileAt(i);
-                    filterList.addFile(pseudoFile);
+                    if(!isDeleted(parentDir, pseudoFile.getFileName()))
+                    {
+                    	// File is not deleted
+                        filterList.addFile(pseudoFile);
+                    }
                 }
                 
                 // The URL file is dependent upon the parent dir
                 if(context.isAlfrescoURLEnabled())
                 {
-                    filterList.addFile(generateAlfrescoURLShortcut(parentDir));
+                    if(!isDeleted(parentDir, context.getURLFileName()))
+                    {
+                    	filterList.addFile(generateAlfrescoURLShortcut(parentDir));
+                    }
+                    else
+                    {
+                    	if(logger.isDebugEnabled())
+                    	{
+                    		logger.debug("alfresco URL pseudo file deleted");
+                    	}
+                    }
                 }
                 
                 if(context.isShareURLEnabled())
                 {
-                    PseudoFile sharePseudoFile = generateShareURLShortcut(parentDir);
-                    
-                    if(sharePseudoFile != null)
+                    if(!isDeleted(parentDir, context.getShareURLFileName()))
                     {
-                        filterList.addFile(sharePseudoFile);
-                    }
+                    	PseudoFile sharePseudoFile = generateShareURLShortcut(parentDir);
+                    	 if(sharePseudoFile != null)
+                         {
+                             filterList.addFile(sharePseudoFile);
+                         }
+                    }                   
                 }
                     
                 return filterList;
@@ -355,8 +377,11 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                     PseudoFile pseudoFile = pl.getFileAt( i);
                     if ( wildCard.matchesPattern( pseudoFile.getFileName()))
                     {
-                        // Add the pseudo file to the filtered list        
-                        filterList.addFile( pseudoFile);
+                        if(!isDeleted(parentDir, pseudoFile.getFileName()))
+                        {
+                        	// Add the pseudo file to the filtered list
+                        	filterList.addFile( pseudoFile);
+                        }
                     }
                 }
                 
@@ -365,7 +390,10 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                 {
                     if(wildCard.matchesPattern(context.getURLFileName()))
                     {
-                        filterList.addFile(generateAlfrescoURLShortcut(parentDir));
+                        if(!isDeleted(parentDir, context.getURLFileName()))
+                        {
+                        	filterList.addFile(generateAlfrescoURLShortcut(parentDir));
+                        }
                     }
                 }
                 
@@ -373,12 +401,15 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
                 {
                     if(wildCard.matchesPattern(context.getShareURLFileName()))
                     {
-                        PseudoFile sharePseudoFile = generateShareURLShortcut(parentDir);
+                    	if(!isDeleted(parentDir, context.getShareURLFileName()))
+                    	{
+                            PseudoFile sharePseudoFile = generateShareURLShortcut(parentDir);
                         
-                        if(sharePseudoFile != null)
-                        {
-                            filterList.addFile(sharePseudoFile);
-                        }
+                            if(sharePseudoFile != null)
+                            {
+                                filterList.addFile(sharePseudoFile);
+                            }
+                    	}
                     }
                 }
                 
@@ -392,7 +423,7 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
             PseudoFileList filterList = new PseudoFileList();
             PseudoFile file = getPseudoFile(parentDir, fname);
             
-            if(file != null)
+            if(file != null && !isDeleted(parentDir, fname))
             {
                filterList.addFile(file);       
             }
@@ -400,6 +431,32 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
             return filterList;
         }
     }
+    
+	@Override
+	public void delete(NodeRef parentDir, String name) 
+	{
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("delete pseudo file parentDir:" + parentDir + ", name: " + name);
+		}
+		getDeletePseudoFileCache().put(toDeleteKey(parentDir, name), "Deleted");
+	}
+	
+	private String toDeleteKey(NodeRef parentNoderef, String name)
+	{
+		return (parentNoderef.toString() + "/" + name + ":" + context.getDeviceName()).toLowerCase();
+	}
+	
+	private boolean isDeleted(NodeRef parentDir, String name)
+	{
+		String key = toDeleteKey(parentDir, name);
+        boolean isDeleted = getDeletePseudoFileCache().contains(key);
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("pseudoFile isDeleted: " + isDeleted + ", for name:" + name);
+		}   
+		return isDeleted;
+	}
    
     //
     public void setNodeService(NodeService nodeService)
@@ -440,4 +497,13 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
     {
         return sysAdminParams;
     }
+
+	public SimpleCache<String, String> getDeletePseudoFileCache() 
+	{
+		return deletePseudoFileCache;
+	}
+
+	public void setDeletePseudoFileCache(SimpleCache<String, String> deletePseudoFileCache) {
+		this.deletePseudoFileCache = deletePseudoFileCache;
+	}
 }

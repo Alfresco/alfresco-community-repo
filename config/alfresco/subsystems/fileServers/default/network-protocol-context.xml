@@ -408,6 +408,7 @@
       <property name="nodeArchiveService" ><ref bean="nodeArchiveService"/></property>
       <property name="hiddenAspect" ><ref bean="hiddenAspect"/></property>
       <property name="alfrescoLockKeeper" ><ref bean="lockKeeper"/></property>
+      <property name="deletePseudoFileCache" ><ref bean="deletePseudoFileCache"/></property>
 
    </bean>
 

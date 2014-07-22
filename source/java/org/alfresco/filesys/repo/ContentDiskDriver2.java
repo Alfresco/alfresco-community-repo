@@ -59,6 +59,7 @@ import org.alfresco.jlan.server.filesys.SearchContext;
 import org.alfresco.jlan.server.filesys.SrvDiskInfo;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.server.filesys.cache.FileState;
+import org.alfresco.jlan.server.filesys.pseudo.MemoryNetworkFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFile;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoFileList;
 import org.alfresco.jlan.server.filesys.pseudo.PseudoNetworkFile;
@@ -74,6 +75,7 @@ import org.alfresco.jlan.smb.server.SMBSrvSession;
 import org.alfresco.jlan.util.DataBuffer;
 import org.alfresco.jlan.util.MemorySize;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -178,6 +180,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
         PropertyCheck.mandatory(this, "nodeArchiveService", nodeArchiveService);
         PropertyCheck.mandatory(this, "hiddenAspect", hiddenAspect);
         PropertyCheck.mandatory(this, "lockKeeper", lockKeeper);
+        PropertyCheck.mandatory(this, "deletePseudoFileCache",  deletePseudoFileCache);
     }
     
     /**
@@ -601,6 +604,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
          ps.setContext(context);
          ps.setNodeService(nodeService);
          ps.setSysAdminParams(context.getSysAdminParams());
+         ps.setDeletePseudoFileCache(deletePseudoFileCache);
          context.setPseudoFileOverlay(ps);
          ps.init();
     }
@@ -1231,9 +1235,11 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // lookup parent directory
                 NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
               
-                // Check whether we are opening a pseudo file
+                // Check whether we are closing a pseudo file
                 if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
                 {
+                	// pseudo delete a pseudo file
+              	    ctx.getPseudoFileOverlay().delete(dirNodeRef, paths[1]);
                     return null;
                 }
             }
@@ -2863,16 +2869,34 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * @exception java.io.IOException If an error occurs.
      * @return node ref of deleted file
      */
-    public NodeRef closeFile(NodeRef rootNode, String path, NetworkFile file) throws IOException
+    public NodeRef closeFile(TreeConnection tree, NodeRef rootNode, String path, NetworkFile file) throws IOException
     {   
         if ( logger.isDebugEnabled())
         {
             logger.debug("Close file:" + path + ", readOnly=" + file.isReadOnly() );
         }
         
-        if( file instanceof PseudoNetworkFile)
+        if( file instanceof PseudoNetworkFile || file instanceof MemoryNetworkFile)
         {
             file.close();
+            
+            if(file.hasDeleteOnClose())
+            {
+            	if(logger.isDebugEnabled())
+            	{
+            		logger.debug("delete on close a pseudo file");
+            	}
+            	final ContentContext ctx = (ContentContext) tree.getContext();
+            	 
+            	String[] paths = FileName.splitPath(path);
+                 
+                if (paths[0] != null && paths[0].length() > 1)
+                {  
+                     // lookup parent directory
+                     NodeRef dirNodeRef = getNodeForPath(tree, paths[0]);
+                     ctx.getPseudoFileOverlay().delete(dirNodeRef, paths[1]);
+                }
+            }
             return null;
         }
         
@@ -3205,4 +3229,12 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     {
         return nodeArchiveService;
     }
+    
+    private SimpleCache<String, String> deletePseudoFileCache;
+    
+	public void setDeletePseudoFileCache(SimpleCache<String, String> deletePseudoFileCache) 
+	{
+		this.deletePseudoFileCache = deletePseudoFileCache;
+	}
+
 }

@@ -44,5 +44,16 @@ public interface PseudoFileOverlay
      * @return list of pseudo files.
      */
     public PseudoFileList searchPseudoFiles(NodeRef parentDir, String name);
+    
+    /**
+     * Delete a pseudo file.   
+     * 
+     * Pseudo files may need to be deleted for delete folder operations to work 
+     * correctly.  
+     * 
+     * A pseudo file can be deleted for a short time.  However it may re-appear at some point 
+     * later since there is no permanent persistence of pseudo files which are ephemeral!     
+     */
+    public void delete(NodeRef parentDir, String name);
  
 }

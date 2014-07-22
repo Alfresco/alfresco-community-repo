@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.acegisecurity.Authentication;
 
-import org.alfresco.cmis.CMISInvalidArgumentException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.opencmis.dictionary.CMISObjectVariant;
@@ -1523,7 +1522,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             if (!found)
             {
                 throw new IllegalArgumentException(
-                        new CMISInvalidArgumentException(
+                        new CmisInvalidArgumentException(
                                 "Document is not a child of the source folder that was specified!"));
             }
         }

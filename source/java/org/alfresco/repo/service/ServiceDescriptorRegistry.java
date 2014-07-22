@@ -20,10 +20,9 @@ package org.alfresco.repo.service;
 
 import java.util.Collection;
 
-import org.alfresco.cmis.CMISDictionaryService;
-import org.alfresco.cmis.CMISQueryService;
-import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
@@ -474,12 +473,6 @@ public class ServiceDescriptorRegistry
     public InvitationService getInvitationService() 
     {
          return (InvitationService)getService(INVITATION_SERVICE);
-    }
-
-    @Override
-    public CMISServices getCMISService() 
-    {
-         return (CMISServices)getService(CMIS_SERVICE);
     }
 
     @Override

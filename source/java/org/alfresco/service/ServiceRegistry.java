@@ -21,10 +21,9 @@ package org.alfresco.service;
 import java.util.Collection;
 
 import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.cmis.CMISDictionaryService;
-import org.alfresco.cmis.CMISQueryService;
-import org.alfresco.cmis.CMISServices;
 import org.alfresco.mbeans.VirtServerRegistry;
+import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
@@ -557,13 +556,6 @@ public interface ServiceRegistry
     @NotAuditable
     InvitationService getInvitationService();
 
-    /**
-     * Get the CMIS service (or null if one is not provided)
-     * @return the CMIS service
-     */
-    @NotAuditable
-    CMISServices getCMISService();
-    
     /**
      * Get the CMIS Dictionary service (or null if one is not provided)
      * @return the CMIS Dictionary service

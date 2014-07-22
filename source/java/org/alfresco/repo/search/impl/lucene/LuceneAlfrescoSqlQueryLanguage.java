@@ -18,16 +18,12 @@
  */
 package org.alfresco.repo.search.impl.lucene;
 
-import java.util.List;
-
-import org.alfresco.cmis.CMISQueryOptions;
-import org.alfresco.cmis.CMISQueryService;
-import org.alfresco.cmis.CMISResultSetMetaData;
-import org.alfresco.cmis.CMISResultSetRow;
-import org.alfresco.cmis.CMISQueryOptions.CMISQueryMode;
-import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
+import org.alfresco.opencmis.search.CMISQueryOptions;
+import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
+import org.alfresco.opencmis.search.CMISQueryService;
+import org.alfresco.opencmis.search.CMISResultSetMetaData;
+import org.alfresco.opencmis.search.CMISResultSetRow;
 import org.alfresco.repo.search.results.ResultSetSPIWrapper;
-import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;

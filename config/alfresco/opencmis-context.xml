@@ -4,6 +4,15 @@
 <beans>
     <import resource="classpath:alfresco/opencmis-qnamefilter-context.xml" />
 
+    <bean id="CMIS.DictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>alfresco/model/cmisModel.xml</value>
+                <value>alfresco/model/cmisTestModel.xml</value>
+            </list>
+        </property>
+    </bean>
+
     <bean id="OpenCMISPropertyAccessorMapping" class="org.alfresco.opencmis.mapping.RuntimePropertyAccessorMapping" init-method="init">
         <property name="serviceRegistry"           ref="ServiceRegistry" />
         <property name="cmisConnector"             ref="CMISConnector" />

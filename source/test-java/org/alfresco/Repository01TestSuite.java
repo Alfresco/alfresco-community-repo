@@ -49,15 +49,6 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.RepositoryStartStopTest.class);
     }
     
-    static void tests2(TestSuite suite)
-    {
-        suite.addTestSuite(org.alfresco.cmis.acl.CMISAccessControlServiceTest.class);
-        suite.addTestSuite(org.alfresco.cmis.dictionary.CMISDictionaryTest.class);
-        suite.addTestSuite(org.alfresco.cmis.mapping.CMISPropertyServiceTest.class);
-        suite.addTestSuite(org.alfresco.cmis.renditions.CMISRenditionServiceTest.class);
-        suite.addTestSuite(org.alfresco.cmis.search.QueryTest.class);
-    }
-    
     static void tests3(TestSuite suite) // tests="76" time="82.566"
     {
         suite.addTestSuite(org.alfresco.email.server.EmailServiceImplTest.class);

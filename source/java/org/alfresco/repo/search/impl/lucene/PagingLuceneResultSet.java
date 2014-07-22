@@ -58,7 +58,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#close()
+     * @see org.alfresco.opencmis.search.CMISResultSet#close()
      */
     public void close()
     {
@@ -68,7 +68,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#getRow(int)
+     * @see org.alfresco.opencmis.search.CMISResultSet#getRow(int)
      */
     public ResultSetRow getRow(int i)
     {
@@ -78,7 +78,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#hasMore()
+     * @see org.alfresco.opencmis.search.CMISResultSet#hasMore()
      */
     public boolean hasMore()
     {
@@ -104,7 +104,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#length()
+     * @see org.alfresco.opencmis.search.CMISResultSet#length()
      */
     public int getLength()
     {
@@ -125,7 +125,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /*
      * (non-Javadoc)
      * 
-     * @see org.alfresco.cmis.search.CMISResultSet#start()
+     * @see org.alfresco.opencmis.search.CMISResultSet#start()
      */
     public int getStart()
     {

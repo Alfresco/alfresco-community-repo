@@ -37,11 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.CMISAccessControlService;
 import org.alfresco.cmis.CMISChangeEvent;
 import org.alfresco.cmis.CMISChangeLog;
 import org.alfresco.cmis.CMISChangeLogService;
-import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
@@ -81,6 +79,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.apache.chemistry.opencmis.commons.BasicPermissions;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
@@ -404,15 +403,15 @@ public class CMISTest
         PropertyData<?> propIsLatestMajorVersion = null;
         for (PropertyData<?> property : properties)
         {
-            if (property.getId().equals(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION))
+            if (property.getId().equals(PropertyIds.IS_LATEST_MAJOR_VERSION))
             {
                 found = true;
                 propIsLatestMajorVersion = property;
                 break;
             }
         }
-        //properties..contains(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION);
-        assertTrue("The CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION property was not found", found);
+        //properties..contains(PropertyIds.IS_LATEST_MAJOR_VERSION);
+        assertTrue("The PropertyIds.IS_LATEST_MAJOR_VERSION property was not found", found);
         if (found)
         {
             return propIsLatestMajorVersion;
@@ -1667,7 +1666,7 @@ public class CMISTest
                 PropertyData<?> propIsLatestMajorVersion = null;
                 for (PropertyData<?> property : properties)
                 {
-                    if (property.getId().equals(CMISDictionaryModel.PROP_IS_LATEST_MAJOR_VERSION))
+                    if (property.getId().equals(PropertyIds.IS_LATEST_MAJOR_VERSION))
                     {
                         found = true;
                         propIsLatestMajorVersion = property;
@@ -2122,9 +2121,9 @@ public class CMISTest
                     AccessControlEntryImpl ace = new AccessControlEntryImpl();
                     ace.setPrincipal(new AccessControlPrincipalDataImpl(testGroup));
                     List<String> putPermissions = new ArrayList<String>();
-                    putPermissions.add(CMISAccessControlService.CMIS_ALL_PERMISSION);
-                    putPermissions.add(CMISAccessControlService.CMIS_READ_PERMISSION);
-                    putPermissions.add(CMISAccessControlService.CMIS_WRITE_PERMISSION);
+                    putPermissions.add(BasicPermissions.ALL);
+                    putPermissions.add(BasicPermissions.READ);
+                    putPermissions.add(BasicPermissions.WRITE);
                     ace.setPermissions(putPermissions);
                     ace.setDirect(true);
                     acesList.add(ace);

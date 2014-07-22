@@ -47,7 +47,6 @@ import java.util.TreeSet;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
-import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.events.types.ContentEvent;
 import org.alfresco.events.types.ContentEventImpl;
@@ -860,7 +859,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         PropertyDefinitionWrapper propDef = getOpenCMISDictionaryService().findPropertyByQueryName(cmisPropertyName);
         if (propDef != null)
         {
-	        if (propDef.getPropertyId().equals(CMISDictionaryModel.PROP_BASE_TYPE_ID))
+	        if (propDef.getPropertyId().equals(PropertyIds.BASE_TYPE_ID))
 	        {
 	            // special-case (see also ALF-13968) - for getChildren, using "cmis:baseTypeId" allows sorting of folders first and vice-versa (cmis:folder <-> cmis:document)
 	        	sortPropName = GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER;

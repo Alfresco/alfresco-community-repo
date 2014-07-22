@@ -254,6 +254,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <skip>${skipWinInstaller}</skip>
                             <target>
                             	<ant antfile="sign.xml" />
                             </target>

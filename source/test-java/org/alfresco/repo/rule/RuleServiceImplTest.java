@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1186,5 +1186,54 @@ public class RuleServiceImplTest extends BaseRuleTest
         this.nodeService.deleteNode(folder1NodeRef);
         this.nodeService.deleteNode(folder2NodeRef);
         txn.commit();
+    }
+    
+    /**
+     * MNT-11670
+     */
+    public void testRuleExecutionWhenSecurityContextIsEmpty() throws Exception
+    {
+        // Create parent and child folders
+        NodeRef parentNodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+        
+        // rule is created and added to pending execution by any user
+        assertNotNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        
+        // Create rule for child node
+        Rule testRule = new Rule();
+        testRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+        testRule.setTitle("RuleServiceTest" + GUID.generate());
+        testRule.setDescription(DESCRIPTION);
+        testRule.applyToChildren(true);
+        Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
+        testRule.setAction(action);
+        this.ruleService.saveRule(parentNodeRef, testRule);
+        assertNotNull("Rule was not saved", testRule.getNodeRef());
+
+        // Search rules
+        List<Rule> rules = this.ruleService.getRules(parentNodeRef, true, testRule.getRuleTypes().get(0));
+        assertNotNull("No rules found", rules);
+        assertTrue("Created rule is not found", new HashSet<Rule>(rules).contains(testRule));
+
+        // New node
+        NodeRef actionedUponNodeRef = this.nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("actioneduponnode" + GUID.generate()),
+                ContentModel.TYPE_CONTENT).getChildRef();
+
+        // Queue the rule to be executed later and execute pending rules
+        if (this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            this.nodeService.removeAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
+        ((RuntimeRuleService) ruleService).addRulePendingExecution(parentNodeRef, actionedUponNodeRef, testRule);
+        
+        // no security context in case of the issue
+        AuthenticationUtil.clearCurrentSecurityContext();
+        assertNull(AuthenticationUtil.getFullyAuthenticatedUser());
+        assertNull(AuthenticationUtil.getRunAsUser());
+        
+        ((RuntimeRuleService) ruleService).executePendingRules();
+        assertTrue("Pending rule was not executed", this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE));
     }
 }

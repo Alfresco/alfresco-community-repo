@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1033,6 +1033,7 @@ public class RuleServiceImpl
             this.disabledRules.contains(rule) == false)
         {
             PendingRuleData pendingRuleData = new PendingRuleData(actionableNodeRef, actionedUponNodeRef, rule, executeAtEnd);
+            pendingRuleData.setRunAsUser(AuthenticationUtil.getRunAsUser());
 
             List<PendingRuleData> pendingRules =
                 (List<PendingRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_PENDING);
@@ -1134,8 +1135,28 @@ public class RuleServiceImpl
      * 
 	 * @param pendingRule	the pending rule data object
      */
+    private void executePendingRule(final PendingRuleData pendingRule) 
+    {
+        if (AuthenticationUtil.getRunAsAuthentication() == null && pendingRule.getRunAsUser() != null)
+        {
+            // MNT-11670: runAsUser was set previously
+            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                public Void doWork() throws Exception
+                {
+                    executePendingRuleImpl(pendingRule);
+                    return null;
+                }
+            }, pendingRule.getRunAsUser());
+        }
+        else
+        {
+            executePendingRuleImpl(pendingRule);
+        }
+    }
+    
     @SuppressWarnings("unchecked")
-    private void executePendingRule(PendingRuleData pendingRule) 
+    private void executePendingRuleImpl(PendingRuleData pendingRule) 
     {
         Set<ExecutedRuleData> executedRules =
                (Set<ExecutedRuleData>) AlfrescoTransactionSupport.getResource(KEY_RULES_EXECUTED);
@@ -1408,6 +1429,7 @@ public class RuleServiceImpl
     {
         private NodeRef actionedUponNodeRef;
         private boolean executeAtEnd = false;
+        private String runAsUserName = null;
             
         public PendingRuleData(NodeRef actionableNodeRef, NodeRef actionedUponNodeRef, Rule rule, boolean executeAtEnd) 
         {
@@ -1424,6 +1446,16 @@ public class RuleServiceImpl
         public boolean getExecuteAtEnd()
         {
             return this.executeAtEnd;
+        }
+        
+        public String getRunAsUser()
+        {
+            return this.runAsUserName;
+        }
+
+        public void setRunAsUser(String runAsUserName)
+        {
+            this.runAsUserName = runAsUserName;
         }
         
         @Override

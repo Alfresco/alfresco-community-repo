@@ -575,15 +575,6 @@
             <value>true</value>
         </property>
     </bean>
-    
-    <!--  GoogleDocsV1 subsystem (deprecated and disabled (since 4.2): superceded by GoogleDocsV2 module) -->
-    <!--
-    <bean id="googledocs" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
-        <property name="autoStart">
-            <value>false</value>
-        </property>
-    </bean>
-    -->
    
     <!--  Subscription Service subsystem -->
     <bean id="subscriptions" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">

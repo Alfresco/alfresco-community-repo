@@ -18,29 +18,23 @@
  */
 package org.alfresco.repo.web.scripts.tagging;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.json.JSONArray;
 
 /**
  * Unit test to test tagging Web Script API
@@ -56,7 +50,6 @@ public class TaggingServiceTest extends BaseWebScriptTest
     private FileFolderService fileFolderService;
     private Repository repositoryHelper;
     private NodeService nodeService;
-    private TransactionService transactionService;
     
     private static final String TEST_USER = "TaggingServiceTestUser";
     
@@ -81,7 +74,6 @@ public class TaggingServiceTest extends BaseWebScriptTest
         this.fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
         this.repositoryHelper = (Repository)getServer().getApplicationContext().getBean("repositoryHelper");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
-        this.transactionService = (TransactionService) getServer().getApplicationContext().getBean("TransactionService");
         
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -190,107 +182,6 @@ public class TaggingServiceTest extends BaseWebScriptTest
         
         assertNotNull(jsonArray);
         assertEquals(0, jsonArray.length());
-        
-    }
-    
-    public void testTagCountSearch() throws Exception
-    {
-        boolean removeTestFolder = false;
-        boolean removeTagScope = false;
-        FileInfo testFolderInfo = null;
-        NodeRef testRoot = this.repositoryHelper.getCompanyHome();
-        AuthenticationUtil.pushAuthentication();
-        AuthenticationUtil.setRunAsUserSystem();
-        
-        try
-        {
-            String guid = GUID.generate();
-            testFolderInfo = this.fileFolderService.create(testRoot, "testFldr" + guid, ContentModel.TYPE_FOLDER);
-            removeTestFolder = true;
-            String tagName = GUID.generate();
-            boolean isTagScope = nodeService.hasAspect(testRoot, ContentModel.ASPECT_TAGSCOPE);
-            
-            //generate content with tag
-            UserTransaction transaction = transactionService.getUserTransaction();
-            transaction.begin();
-            for (int i = 0; i < 1200; i++)
-            {
-                FileInfo file = this.fileFolderService.create(testFolderInfo.getNodeRef(), "testDoc" + i + ".txt", ContentModel.TYPE_CONTENT);
-                this.taggingService.addTag(file.getNodeRef(), tagName);
-            }
-            transaction.commit();
-            
-            
-            
-            Response response = null;
-            JSONObject jsonObj = null;
-            JSONArray tagsArr = null;
-            int number = -1;
-            
-            // tagScope API: if container isn't tagScope
-            if (!isTagScope)
-            {
-                response = sendRequest(new GetRequest("api/tagscopes/node/" + testRoot.toString().replace(":/", "") + "/tags"), 200);
-                jsonObj = new JSONObject(response.getContentAsString());
-                tagsArr = jsonObj.getJSONArray("tags");
-                number = getTagNumber(tagName, tagsArr);
-                assertEquals("Checking a search via tagScope API: Tag number must be -1, because node isn't  a tag scope.", -1, number);
-            }
-            
-            // tag count via search engine
-            response = sendRequest(new GetRequest("collaboration/tagQuery?s=count&n=alfresco%3A%2F%2Fcompany%2Fhome"), 200);
-            jsonObj = new JSONObject(response.getContentAsString());
-            tagsArr = jsonObj.getJSONArray("tags");
-            number = getTagNumber(tagName, tagsArr);
-            assertTrue("Checking a search via search engine: Tag number must be more then 0", number > 0);
-            
-            if (!isTagScope)
-            {
-                this.taggingService.addTagScope(testRoot);
-                removeTagScope = true;
-            }
-            
-            // tag count via tagScope API
-            response = sendRequest(new GetRequest("api/tagscopes/node/" + testRoot.toString().replace(":/", "") + "/tags"), 200);
-            jsonObj = new JSONObject(response.getContentAsString());
-            tagsArr = jsonObj.getJSONArray("tags");
-            number = getTagNumber(tagName, tagsArr);
-            assertEquals("Checking a search via tagScope API: Tag number must be 1200, because node is a tag scope.", 1200, number);
-            
-        }
-        finally
-        {
-            if (removeTestFolder)
-            {
-                this.fileFolderService.delete(testFolderInfo.getNodeRef());
-            }
-            if (removeTagScope)
-            {
-                taggingService.removeTagScope(testRoot);
-            }
-            AuthenticationUtil.popAuthentication();
-        }
-    }
-    
-    private int getTagNumber(String tagName, JSONArray jsonTagsArray) throws JSONException
-    {
-        int result = -1;
-        if (jsonTagsArray.length() == 0)
-        {
-            return result;
-        }
-        
-        for (int i = 0; i < jsonTagsArray.length(); i++)
-        {
-            JSONObject tagObj = jsonTagsArray.getJSONObject(i);
-            if (tagName.equalsIgnoreCase(tagObj.getString("name")))
-            {
-                result = tagObj.getInt("count");
-                break;
-            }
-        }
-        
-        return result;
         
     }
     

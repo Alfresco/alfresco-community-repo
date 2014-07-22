@@ -198,6 +198,7 @@
     </dependencies>
 
     <build>
+        <finalName>alfresco</finalName>
         <plugins>
             <!-- CLOUD-1967 Put core log4j config in WEB-INF/classes, so that it's first in classloader -->
             <plugin>

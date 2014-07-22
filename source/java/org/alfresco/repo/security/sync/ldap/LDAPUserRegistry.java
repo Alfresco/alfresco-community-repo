@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -992,14 +992,21 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                     String name = result.getNameInNamespace();
 
                     // Close the contexts, see ALF-20682
-                    ((Context)result.getObject()).close();
+                    Context context = (Context) result.getObject();
+                    if (context != null)
+                    {
+                        context.close();
+                    }
                     result = null;
-
                     return name;
                 }
 
                 // Close the contexts, see ALF-20682
-                ((Context)result.getObject()).close();
+                Context context = (Context) result.getObject();
+                if (context != null)
+                {
+                    context.close();
+                }
                 result = null;
             }
             
@@ -1025,7 +1032,11 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             {
                 try
                 {
-                    ((Context)result.getObject()).close();
+                    Context context = (Context) result.getObject();
+                    if (context != null)
+                    {
+                        context.close();
+                    }
                 }
                 catch (Exception e)
                 {

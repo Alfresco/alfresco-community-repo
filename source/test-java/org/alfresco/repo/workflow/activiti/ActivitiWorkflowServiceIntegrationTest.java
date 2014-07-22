@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.WorkflowModel;
@@ -282,6 +283,37 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals(veryLongTextValue, startTask.getProperties().get(WorkflowModel.PROP_COMMENT));
     }
     
+    /**
+     * Test for MNT-11247
+     */
+    public void testAssignmentListener()
+    {
+        WorkflowDefinition definition = deployDefinition(getAssignmentListenerDefinitionPath());
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(ContentModel.PROP_OWNER, USER1);
+        NodeRef assignee = personManager.get(USER1);
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), params);
+
+        // end start task
+        List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
+        workflowService.endTask(tasks.get(0).getId(), null);
+
+        // end user task 1
+        tasks = workflowService.getTasksForWorkflowPath(path.getId());
+        workflowService.updateTask(tasks.get(0).getId(), params, null, null);
+        workflowService.endTask(tasks.get(0).getId(), null);
+
+        WorkflowTask result = workflowService.getTaskById(tasks.get(0).getId());
+        Map<QName, Serializable> props = result.getProperties();
+        Double create1 = (Double) props.get(QName.createQName("http://www.alfresco.org/model/bpm/1.0", "create1"));
+        assertEquals("Create listener was not triggered", new Double(1), create1);
+        Double complete1 = (Double) props.get(QName.createQName("http://www.alfresco.org/model/bpm/1.0", "complete1"));
+        assertEquals("Complete listener was not triggered", new Double(1), complete1);
+        Double assignment1 = (Double) props.get(QName.createQName("http://www.alfresco.org/model/bpm/1.0", "assignment1"));
+        assertEquals("Assign listener was not triggered", new Double(1), assignment1);
+    }
+    
     protected String getLongString(int numberOfCharacters) {
         StringBuffer stringBuffer = new StringBuffer();
         for(int i=0; i<numberOfCharacters/10;i++) {
@@ -386,6 +418,11 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         return "activiti/testTimer.bpmn20.xml";
     }
 
+    protected String getAssignmentListenerDefinitionPath()
+    {
+        return "activiti/testAssignmentListener.bmn20.xml";
+    }
+    
     @Override
     protected QName getAdhocProcessName() 
     {

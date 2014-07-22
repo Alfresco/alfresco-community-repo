@@ -12,5 +12,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/Alfresco JLAN"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/DataModel"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/Legacy Lucene"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/alfresco-events"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

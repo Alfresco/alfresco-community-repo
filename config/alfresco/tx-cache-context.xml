@@ -401,21 +401,6 @@
    </bean>
    
    
-   <!-- Transactional cache for WebService query sessions -->
-
-   <bean name="webServicesQuerySessionCache" class="org.alfresco.repo.cache.TransactionalCache">
-       <property name="sharedCache">
-           <ref bean="webServicesQuerySessionSharedCache"/>
-       </property>
-       <property name="name">
-           <value>org.alfresco.repo.webservices.querySessionTransactionalCache</value>
-       </property>
-      <property name="maxCacheSize" value="${cache.webServicesQuerySessionSharedCache.tx.maxItems}" />
-      <property name="mutable" value="true" />
-      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
-   </bean>
-   
-   
    <!-- The transactional cache for Node Ownership -->
    
    <bean name="aclCache" class="org.alfresco.repo.cache.TransactionalCache">

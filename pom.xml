@@ -29,18 +29,6 @@
             <version>${project.version}</version>
             <exclusions>
                 <exclusion>
-                    <groupId>org.apache.abdera</groupId>
-                    <artifactId>abdera-extensions-main</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.abdera</groupId>
-                    <artifactId>abdera-extensions-html</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.abdera</groupId>
-                    <artifactId>abdera-server</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>org.apache.axis</groupId>
                     <artifactId>axis-jaxrpc</artifactId>
                 </exclusion>

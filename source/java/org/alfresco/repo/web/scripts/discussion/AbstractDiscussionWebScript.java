@@ -533,10 +533,10 @@ public abstract class AbstractDiscussionWebScript extends DeclarativeWebScript
           }
           else
           {
-             // MNT-11854 Consumer allowed to create Discussion, Wiki, Blog and Link if she/he creates the first item
+             // The NodeRef is the container (if it exists)
              if (siteService.hasContainer(siteName, DiscussionServiceImpl.DISCUSSION_COMPONENT))
              {
-                nodeRef = site.getNodeRef();
+                nodeRef = siteService.getContainer(siteName, DiscussionServiceImpl.DISCUSSION_COMPONENT);
              }
           }
        }

@@ -59,6 +59,16 @@ import org.springframework.context.ApplicationContext;
  */
 public class ProcessesImplTest extends TestCase
 {
+    private static final String[] CONFIG_LOCATIONS = new String[ApplicationContextHelper.CONFIG_LOCATIONS.length + 2];
+    static
+    {
+        System.arraycopy(ApplicationContextHelper.CONFIG_LOCATIONS, 0, CONFIG_LOCATIONS, 0, ApplicationContextHelper.CONFIG_LOCATIONS.length);
+        int index = ApplicationContextHelper.CONFIG_LOCATIONS.length;
+        CONFIG_LOCATIONS[index++] = "classpath:alfresco/public-rest-context.xml";
+        CONFIG_LOCATIONS[index++] = "classpath:alfresco/web-scripts-application-context.xml";
+    }
+
+
     private static final int ACTIVE_WORKFLOWS_INITIAL_AMOUNT = 25;
 
 
@@ -70,7 +80,7 @@ public class ProcessesImplTest extends TestCase
     private static final String QUERY_STATUS_ACTIVE = "(status=active)";
 
 
-    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
 
     private WorkflowService workflowService;
 

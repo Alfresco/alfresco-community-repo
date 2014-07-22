@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -921,7 +921,10 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(2l, paginationJSON.get("count"));
             assertEquals(3l, paginationJSON.get("totalItems"));
             assertEquals(1l, paginationJSON.get("skipCount"));
-            assertEquals(true, paginationJSON.get("hasMoreItems"));
+
+            // MNT-10977: Workflow process retrieval returns incorrect hasMoreItems value
+            // Repository must answer 'false' for 'hasMoreItems' since the total number of items is 3, 2 items are requested and 1 is skipped
+            assertEquals(false, paginationJSON.get("hasMoreItems"));
             jsonEntries = (JSONArray) processListJSONObject.get("entries");
             assertEquals(2, jsonEntries.size());
             
@@ -936,7 +939,10 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(1l, paginationJSON.get("count"));
             assertEquals(3l, paginationJSON.get("totalItems"));
             assertEquals(2l, paginationJSON.get("skipCount"));
-            assertEquals(true, paginationJSON.get("hasMoreItems"));
+
+            // MNT-10977: Workflow process retrieval returns incorrect hasMoreItems value
+            // Repository must answer 'false' for 'hasMoreItems' since the total number of items is 3 and 2 items are skipped
+            assertEquals(false, paginationJSON.get("hasMoreItems"));
             jsonEntries = (JSONArray) processListJSONObject.get("entries");
             assertEquals(1, jsonEntries.size());
         } 

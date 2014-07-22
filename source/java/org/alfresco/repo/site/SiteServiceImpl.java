@@ -1733,9 +1733,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
         for (String permission : permissions)
         {
-            if (roleFilter == null || roleFilter.length() == 0 || roleFilter.equals(permission))
+            String groupName = getSiteRoleGroup(shortName, permission, true);
+            
+            if ((roleFilter == null || roleFilter.length() == 0 || roleFilter.equals(permission)) && this.authorityService.authorityExists(groupName))
             {
-                String groupName = getSiteRoleGroup(shortName, permission, true);
                 Set<String> authorities = this.authorityService.getContainedAuthorities(null, groupName, true);
                 for (String authority : authorities)
                 {

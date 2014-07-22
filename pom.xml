@@ -258,6 +258,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <skip>${skipWinInstaller}</skip>
                             <target>
                             	<ant antfile="${highest.basedir}/packaging/installer/sign.xml">
                                      <property name="installer.name" value="alfresco-enterprise" />

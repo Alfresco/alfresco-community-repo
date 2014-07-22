@@ -23,4 +23,31 @@
   <transaction allow="readwrite">required</transaction>
   <lifecycle>public_api</lifecycle>
   <family>Authentication</family>
+  <args>
+    <arg>
+      <shortname>username</shortname>
+      <description>Cleartext username (must be URL encoded).</description>
+    </arg>
+    <arg>
+      <shortname>password</shortname>
+      <description>Cleartext password (must be URL encoded).</description>
+    </arg>
+  </args>
+  <responses>
+    <response>
+      <format>json</format>
+      <type>
+        <![CDATA[
+        {
+          "data":
+          [
+            {
+              "ticket": string
+            }
+          ]
+        }
+        ]]>
+      </type>
+    </response>
+  </responses>
 </webscript>

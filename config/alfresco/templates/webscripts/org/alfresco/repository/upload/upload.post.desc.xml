@@ -35,4 +35,23 @@
   <authentication>user</authentication>
   <transaction>required</transaction>
   <lifecycle>public_api</lifecycle>
+  <responses>
+    <response>
+      <format>json</format>
+      <type>
+      <![CDATA[
+      {
+        "nodeRef": string,
+        "fileName": string,
+        "status":
+        {
+          "code": 200,
+          "name": "OK",
+          "description": "File uploaded successfully"
+        }
+      }
+      ]]>
+      </type>
+    </response>
+  </responses>
 </webscript>

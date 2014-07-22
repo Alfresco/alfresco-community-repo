@@ -33,4 +33,146 @@
          </type>
       </request>
    </requests>
+   <responses>
+      <response>
+         <format>json</format>
+         <type>
+         <![CDATA[
+            {
+               "data":
+               {
+                  "publishingEvents":
+                  [
+                     {
+                        "id": string,
+                        "url": string,
+                        "status": string,
+                        "comment": string,
+                        "eventType": string,
+                        "scheduledTime":
+                        {
+                           "dateTime": string,
+                           "format": string,
+                           "timeZone": string
+                        }
+                        "creator": string,
+                        "createdTime":
+                        {
+                           "dateTime": string,
+                           "format": string
+                        },
+                        "publishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                         ],
+                        "unpublishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                        ]
+                        "channel":
+                        {
+                           "url": string,
+                           "id": string,
+                           "name": string,
+                           "title": string,
+                           "authorised": boolean,
+                           "canPublish": boolean,
+                           "canPublishStatusUpdates": boolean,
+                           "canUnpublish": boolean,
+                           "channelType":
+                           {
+                              "id": string,
+                              "title": string,
+                              "url": string,
+                              "channelNodeType": string,
+                              "contentRootNodeType": string,
+                              "supportedContentTypes": [string, ...],
+                              "supportedMimeTypes": [string, ...],
+                              "canPublish": boolean,
+                              "canPublishStatusUpdates": boolean,
+                              "canUnpublish": boolean,
+                              "maxStatusLength": number,
+                              "icon": string
+                           }
+                        }
+                     },
+                     ...
+                  ]
+                  unpublishingEvents:
+                  [
+                     {
+                        "id": string,
+                        "url": string,
+                        "status": string,
+                        "comment": string,
+                        "scheduledTime":
+                        {
+                           "dateTime": string,
+                           "format": string,
+                           "timeZone": string
+                        }
+                        "creator": string,
+                        "createdTime":
+                        {
+                           "dateTime": string,
+                           "format": string
+                        },
+                        "publishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                         ],
+                        "unpublishNodes":
+                        [
+                           {
+                              "nodeRef": string,
+                              "name": string,
+                              "version": string
+                           },
+                           ...
+                        ]
+                        "channel":
+                        {
+                           "url": string,
+                           "name": string,
+                           "title": string,
+                           "channelType":
+                           {
+                              "id": string,
+                              "title": string,
+                              "url": string,
+                              "channelNodeType": string,
+                              "contentRootNodeType": string,
+                              "supportedContentTypes": [string, ...],
+                              "supportedMimeTypes": [string, ...],
+                              "canPublish": boolean,
+                              "canPublishStatusUpdates": boolean,
+                              "canUnpublish": boolean,
+                              "maxStatusLength": number,
+                              "icon": string
+                           }
+                        }
+                     },
+                     ...
+                  ]
+               }
+            }
+         ]]>
+         </type>
+      </response>
+   </responses>
 </webscript>

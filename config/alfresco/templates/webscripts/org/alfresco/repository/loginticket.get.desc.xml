@@ -20,4 +20,10 @@
   <transaction>required</transaction>
   <lifecycle>public_api</lifecycle>
   <family>Authentication</family>
+  <args>
+    <arg>
+      <shortname>ticket</shortname>
+      <description>The login ticket to invalidate.</description>
+    </arg>
+  </args>
 </webscript>

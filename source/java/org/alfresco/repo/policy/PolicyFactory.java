@@ -271,6 +271,25 @@ import org.alfresco.service.cmr.repository.StoreRef;
                 throw e.getTargetException();
             }
         }
+        
+        public boolean equals(Object obj)
+        {
+            if (obj != null && Proxy.isProxyClass(obj.getClass()))
+            {
+                InvocationHandler handler = Proxy.getInvocationHandler(obj);
+                if (handler instanceof SingleHandler)
+                {
+                    return ((SingleHandler)handler).policyInterface.equals(policyInterface);
+                }
+            }
+            
+            return obj.equals(policyInterface);
+        }
+        
+        public int hashCode()
+        {
+            return policyInterface.hashCode();
+        }
     }
     
 

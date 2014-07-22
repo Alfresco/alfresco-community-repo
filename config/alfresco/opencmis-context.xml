@@ -208,11 +208,13 @@
         <property name="nodeService"            ref="NodeService" />    
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />
         <property name="registry"               ref="auditModel.extractorRegistry" />        
+        <property name="cmisConnector"          ref="CMISConnector" />
     </bean>
 
     <bean id="CMISChangeLogDataExtractor1.1" class="org.alfresco.opencmis.CMISChangeLogDataExtractor">
         <property name="nodeService"            ref="NodeService" />    
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService1.1" />
         <property name="registry"               ref="auditModel.extractorRegistry" />        
+        <property name="cmisConnector"          ref="CMISConnector" />
     </bean>
 </beans>

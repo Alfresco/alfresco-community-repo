@@ -38,12 +38,19 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.cmis.CMISAccessControlService;
+import org.alfresco.cmis.CMISChangeEvent;
+import org.alfresco.cmis.CMISChangeLog;
+import org.alfresco.cmis.CMISChangeLogService;
 import org.alfresco.cmis.CMISDictionaryModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
+import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.audit.AuditServiceImpl;
+import org.alfresco.repo.audit.UserAuditFilter;
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.model.Repository;
@@ -134,6 +141,8 @@ public class CMISTest
     private TaggingService taggingService;
     private NamespaceService namespaceService;
     private AuthorityService authorityService;
+    private AuditModelRegistryImpl auditSubsystem;
+    private CMISChangeLogService changeLogService;
     private PermissionService permissionService;
 
 	private AlfrescoCmisServiceFactory factory;
@@ -302,6 +311,8 @@ public class CMISTest
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
         this.nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         this.authorityService = (AuthorityService)ctx.getBean("AuthorityService");
+        this.changeLogService = (CMISChangeLogService) ctx.getBean("CMISChangeLogService");
+        this.auditSubsystem = (AuditModelRegistryImpl) ctx.getBean("Audit");
         this.permissionService = (PermissionService) ctx.getBean("permissionService");
     }
     
@@ -2148,5 +2159,91 @@ public class CMISTest
             }
             AuthenticationUtil.popAuthentication();
         }
+    }
+    
+    /**
+     * MNT-11726: Test that {@link CMISChangeEvent} contains objectId of node in short form (without StoreRef).
+     */
+    @Test
+    public void testCMISChangeLogObjectIds() throws Exception
+    {
+        // setUp audit subsystem
+        setupAudit();
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                    String changeToken = changeLogService.getLastChangeLogToken();
+
+                    // perform CREATED, UPDATED, SECURITY, DELETED CMIS change type actions
+                    String folder = GUID.generate();
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folder, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folder);
+                    assertNotNull(folderInfo);
+
+                    String content = GUID.generate();
+                    FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), content, ContentModel.TYPE_CONTENT);
+                    assertNotNull(document);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, content);
+
+                    permissionService.setPermission(document.getNodeRef(), "SomeAuthority", PermissionService.EXECUTE_CONTENT, true);
+
+                    fileFolderService.delete(document.getNodeRef());
+                    fileFolderService.delete(folderInfo.getNodeRef());
+
+                    CMISChangeLog changeLogEvents = changeLogService.getChangeLogEvents(changeToken, 10);
+                    // get all recent events
+                    for (CMISChangeEvent event : changeLogEvents.getChangeEvents())
+                    {
+                        String objectId = event.getObjectId();
+                        NodeRef nodeRef = event.getChangedNode();
+                        
+                        assertFalse("CMISChangeEvent " + event.getChangeType() + " should store short form of objectId " + objectId, 
+                                objectId.contains(nodeRef.getStoreRef().toString()));
+                    }
+                    
+                    return null;
+                }
+            });
+            
+        }
+        finally
+        {
+            auditSubsystem.destroy();
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    private void setupAudit()
+    {
+        UserAuditFilter userAuditFilter = new UserAuditFilter();
+        userAuditFilter.setUserFilterPattern("System;.*");
+        userAuditFilter.afterPropertiesSet();
+        AuditComponent auditComponent = (AuditComponent) ctx.getBean("auditComponent");
+        auditComponent.setUserAuditFilter(userAuditFilter);
+        AuditServiceImpl auditServiceImpl = (AuditServiceImpl) ctx.getBean("auditService");
+        auditServiceImpl.setAuditComponent(auditComponent);
+        
+        RetryingTransactionCallback<Void> initAudit = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Exception
+            {
+                auditSubsystem.stop();
+                auditSubsystem.setProperty("audit.enabled", "true");
+                auditSubsystem.setProperty("audit.cmischangelog.enabled", "true");
+                auditSubsystem.start();
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(initAudit, false, true); 
     }
 }

@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
-import org.alfresco.opencmis.dictionary.CMISPropertyAccessor;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -30,7 +29,6 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 
 /**
@@ -46,6 +44,7 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
 
     private NodeService nodeService;
     private CMISDictionaryService cmisDictionaryService;
+    private CMISConnector cmisConnector;
 
     /**
      * Extracts relevant node refs and Ids from auditing data
@@ -57,15 +56,10 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
     {
         NodeRef nodeRef = getNodeRef(value);
 
-        QName typeQName = nodeService.getType(nodeRef);
-        TypeDefinitionWrapper type = cmisDictionaryService.findNodeType(typeQName);
-
         HashMap<String, Serializable> result = new HashMap<String, Serializable>(5);
         result.put(KEY_NODE_REF, nodeRef);
-        // Support version nodes by recording the object ID
-        CMISPropertyAccessor accessor = type.getPropertyById(PropertyIds.OBJECT_ID).getPropertyAccessor();
-        result.put(KEY_OBJECT_ID, accessor.getValue(accessor.createNodeInfo(nodeRef)));
-        
+        result.put(KEY_OBJECT_ID, cmisConnector.createObjectId(nodeRef, true));
+
         return result;
     }
 
@@ -124,5 +118,9 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
     public void setOpenCMISDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
         this.cmisDictionaryService = cmisDictionaryService;
+    }
+
+    public void setCmisConnector(CMISConnector cmisConnector) {
+        this.cmisConnector = cmisConnector;
     }
 }

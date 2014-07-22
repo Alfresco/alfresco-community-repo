@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Audit xmlns="http://www.alfresco.org/repo/audit/model/3.2"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.alfresco.org/repo/audit/model/3.2 alfresco-audit-3.2.xsd">
+
+    <DataExtractors>
+       <DataExtractor name="simpleValue" registeredName="auditModel.extractor.simpleValue"/>
+       <DataExtractor name="nullValue" registeredName="auditModel.extractor.nullValue"/>
+       <DataExtractor name="changeLog" registeredName="CMISChangeLogDataExtractor"/>
+    </DataExtractors>
+
+    <PathMappings>
+        <PathMap source="/CMISChangeLog" target="/CMISChangeLog" />
+        <PathMap source="/alfresco-api/post/FileFolderService/create" target="/CMISChangeLog/CREATED" />
+        <PathMap source="/alfresco-api/post/NodeService/createNode" target="/CMISChangeLog/CREATED" />
+        <PathMap source="/alfresco-api/post/NodeService/setProperties" target="/CMISChangeLog/UPDATED" />
+        <PathMap source="/alfresco-api/post/NodeService/addProperties" target="/CMISChangeLog/UPDATED" />
+        <PathMap source="/alfresco-api/post/NodeService/setProperty" target="/CMISChangeLog/UPDATED" />
+        <PathMap source="/alfresco-api/post/NodeService/removeProperty" target="/CMISChangeLog/UPDATED" />
+        <PathMap source="/alfresco-node/beforeDeleteNode" target="/CMISChangeLog/DELETED" />
+        <PathMap source="/alfresco-api/post/PermissionService/setPermission" target="/CMISChangeLog/SECURITY" />
+        <PathMap source="/alfresco-api/post/PermissionService/setInheritParentPermissions" target="/CMISChangeLog/SECURITY" />
+        <PathMap source="/alfresco-api/post/PermissionService/clearPermission" target="/CMISChangeLog/SECURITY" />
+        <PathMap source="/alfresco-api/post/PermissionService/deletePermission" target="/CMISChangeLog/SECURITY" />
+    </PathMappings>
+
+    <Application name="CMISChangeLog" key="CMISChangeLog">
+        <AuditPath key="CREATED">
+            <AuditPath key="result">
+                <RecordValue key="value" dataExtractor="changeLog" />
+            </AuditPath>
+            <AuditPath key="error">
+                <RecordValue key="value" dataExtractor="nullValue" />
+            </AuditPath>
+        </AuditPath>
+
+        <AuditPath key="UPDATED">
+            <AuditPath key="args">
+                 <AuditPath key="nodeRef">
+                    <RecordValue key="value" dataExtractor="changeLog" />
+                 </AuditPath>
+            </AuditPath>
+            <AuditPath key="error">
+                <RecordValue key="value" dataExtractor="nullValue" />
+            </AuditPath>
+        </AuditPath>
+
+        <AuditPath key="DELETED">
+            <AuditPath key="node">
+                <RecordValue key="value" dataExtractor="changeLog" />
+            </AuditPath>
+        </AuditPath>
+        
+        <AuditPath key="SECURITY">
+            <AuditPath key="args">
+                 <AuditPath key="nodeRef">
+                    <RecordValue key="value" dataExtractor="changeLog" />
+                 </AuditPath>
+            </AuditPath>
+            <AuditPath key="error">
+                <RecordValue key="value" dataExtractor="nullValue" />
+            </AuditPath>
+        </AuditPath>        
+    </Application>
+
+</Audit>

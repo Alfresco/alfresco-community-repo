@@ -27,6 +27,8 @@ import java.util.Map;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import junit.framework.TestCase;
+
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -46,16 +48,16 @@ import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
 /**
+ * Test for {@link ProcessesImpl} class
  * 
  * @author Dmitry Velichkevich
  */
-public class ProcessesImplTest extends Assert
+public class ProcessesImplTest extends TestCase
 {
     private static final int ACTIVE_WORKFLOWS_INITIAL_AMOUNT = 25;
 

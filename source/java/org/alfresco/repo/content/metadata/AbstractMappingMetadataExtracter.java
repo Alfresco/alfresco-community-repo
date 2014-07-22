@@ -1581,9 +1581,16 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
                         // We must want to map tag string values instead of nodeRefs
                         // ContentMetadataExtracter will take care of tagging by string
                         ArrayList<Object> list = new ArrayList<Object>(1);
-                        for (Object value : (Object[]) propertyValue)
+                        if (propertyValue instanceof Object[])
                         {
-                            list.add(value);
+                            for (Object value : (Object[]) propertyValue)
+                            {
+                                list.add(value);
+                            }
+                        }
+                        else
+                        {
+                            list.add(propertyValue);
                         }
                         convertedProperties.put(propertyQName, list);
                     }

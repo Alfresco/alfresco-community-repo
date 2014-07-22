@@ -282,6 +282,27 @@
    <!-- CMIS Test Runner Web Script -->
    <bean id="webscript.org.alfresco.cmis.test.post" class="org.alfresco.repo.cmis.rest.test.CMISTestRunnerWebScript" parent="webscript" />
 
+   <!--  Content Retrieval -->
+   <bean id="webscript.org.alfresco.content.content.get" class="org.alfresco.repo.web.scripts.content.ContentGet" parent="webscript">
+      <property name="namespaceService" ref="NamespaceService" />
+      <property name="permissionService" ref="PermissionService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="delegate" ref="webscript.content.streamer" />
+      <property name="contentService" ref="contentService" />
+      <property name="repository" ref="repositoryHelper" />
+   </bean>
+   
+   <!--  Content Info -->
+   <bean id="webscript.org.alfresco.content.content.head" class="org.alfresco.repo.web.scripts.content.ContentInfo" parent="webscript">
+      <property name="permissionService" ref="PermissionService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="mimetypeService" ref="MimetypeService" />
+      <property name="delegate" ref="webscript.content.streamer" />
+      <property name="repository" ref="repositoryHelper" />
+   </bean>
+   
    <!--              -->
    <!--  CMIS Client -->
    <!--              -->
@@ -299,7 +320,7 @@
    <!--   
    <bean id="webscripts.js.cmis.client" class="org.alfresco.repo.cmis.client.CMISRemoteConnectionManagerImpl" init-method="init">
       <property name="authenticationService" ref="AuthenticationService" />
-      <property name="configService" ref="webscripts.config" />
+     <property name="configService" ref="webscripts.config" />
    </bean>
    -->
 

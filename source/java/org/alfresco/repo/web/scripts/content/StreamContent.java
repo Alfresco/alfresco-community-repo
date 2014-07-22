@@ -26,10 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -61,6 +63,7 @@ public class StreamContent extends AbstractWebScript
     protected NodeService nodeService;
     protected MimetypeService mimetypeService;
     protected ContentStreamer delegate;
+    protected Repository repository;
     
     /**
      * @param mimetypeService
@@ -91,6 +94,14 @@ public class StreamContent extends AbstractWebScript
     public void setDelegate(ContentStreamer delegate)
     {
         this.delegate = delegate;
+    }
+    
+    /**
+     * @param repository
+     */
+    public void setRepository(Repository repository)
+    {
+        this.repository = repository;
     }
     
     /**
@@ -366,4 +377,78 @@ public class StreamContent extends AbstractWebScript
         renderTemplate(templatePath, model, writer);
     }
 
+    protected ObjectReference createObjectReferenceFromUrl(Map<String, String> args, Map<String, String> templateArgs)
+    {
+        String objectId = args.get("noderef");
+        if (objectId != null)
+        {
+            return new ObjectReference(objectId);
+        }
+        
+        StoreRef storeRef = null;
+        String store_type = templateArgs.get("store_type");
+        String store_id = templateArgs.get("store_id");
+        if (store_type != null && store_id != null)
+        {
+            storeRef = new StoreRef(store_type, store_id);
+        }
+        
+        String id = templateArgs.get("id");
+        if (storeRef != null && id != null)
+        {
+            return new ObjectReference(storeRef, id);
+        }
+        
+        String nodepath = templateArgs.get("nodepath");
+        if (nodepath == null)
+        {
+            nodepath = args.get("nodepath");
+        }
+        if (storeRef != null && nodepath != null)
+        {
+            return new ObjectReference(storeRef, nodepath.split("/"));
+        }
+        
+        return null;
+    }
+    
+    
+    class ObjectReference
+    {
+        private NodeRef ref;
+        
+        ObjectReference(String nodeRef)
+        {
+            this.ref = new NodeRef(nodeRef);
+        }
+        
+        ObjectReference(StoreRef ref, String id)
+        {
+            if (id.indexOf('/') != -1)
+            {
+                id = id.substring(0, id.indexOf('/'));
+            }
+            this.ref = new NodeRef(ref, id);
+        }
+        
+        ObjectReference(StoreRef ref, String[] path)
+        {
+            String[] reference = new String[path.length + 2];
+            reference[0] = ref.getProtocol();
+            reference[1] = ref.getIdentifier();
+            System.arraycopy(path, 0, reference, 2, path.length);
+            this.ref = repository.findNodeRef("path", reference);
+        }
+        
+        public NodeRef getNodeRef()
+        {
+            return this.ref;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return ref != null ? ref.toString() : super.toString();
+        }
+    }
 }

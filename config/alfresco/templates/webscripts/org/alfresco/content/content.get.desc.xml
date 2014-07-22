@@ -1,0 +1,44 @@
+<webscript>
+  <shortname>Get Content (getContent)</shortname>
+  <description>
+  <![CDATA[
+  Gets the content stream for the specified document.
+  ]]>
+  </description>
+  
+  <url>/api/node/content{property}/{store_type}/{store_id}/{id}?a={attach?}</url>
+  <url>/api/path/content{property}/{store_type}/{store_id}/{nodepath}?a={attach?}</url>
+  <url>/api/node/{store_type}/{store_id}/{id}/content{property}?a={attach?}</url>
+  <url>/api/path/{store_type}/{store_id}/{nodepath}/content{property}?a={attach?}</url>
+  
+  <args>
+    <arg>
+        <shortname>store</shortname>
+        <description>the store name</description>
+    </arg>
+    <arg>
+        <shortname>id</shortname>
+        <description>the node id of the object</description>
+    </arg>
+    <arg>
+        <shortname>nodepath</shortname>
+        <description>the path of the object (relative to root of Alfresco store)</description>
+    </arg>
+    <arg>
+        <shortname>property</shortname>
+        <description>the name of the content property to retrieve content from</description>
+        <default>cm:content</default>
+    </arg>
+    <arg>
+        <shortname>attach</shortname>
+        <description>if true, force download of content as attachment</description>
+        <default>false</default>
+    </arg>
+  </args>
+  
+  <format default="">argument</format>
+  
+  <authentication>guest</authentication>
+  <transaction allow="readonly"/>
+  <lifecycle>internal</lifecycle>
+</webscript>

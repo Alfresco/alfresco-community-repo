@@ -132,18 +132,21 @@ var Common =
             if (siteNode != null)
             {
                var containerNode = siteNode.getContainer(containerId);
-               location = 
+               if (containerNode != null)
                {
-                  site: siteId,
-                  siteNode: siteNode,
-                  siteTitle: siteNode.title,
-                  sitePreset: siteNode.sitePreset,
-                  container: containerId,
-                  containerNode: containerNode,
-                  containerType: containerNode.typeShort,
-                  path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
-                  file: node.name
-               };
+                  location = 
+                  {
+                     site: siteId,
+                     siteNode: siteNode,
+                     siteTitle: siteNode.title,
+                     sitePreset: siteNode.sitePreset,
+                     container: containerId,
+                     containerNode: containerNode,
+                     containerType: containerNode.typeShort,
+                     path: "/" + displayPaths.slice(5, displayPaths.length).join("/"),
+                     file: node.name
+                  };
+               }
             }
          }
          

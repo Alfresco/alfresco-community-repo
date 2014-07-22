@@ -2877,12 +2877,34 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public ScriptThumbnail createThumbnail(String thumbnailName, boolean async)
     {
+        return createThumbnail(thumbnailName, async, false);
+    }	
+    
+    /**
+     * Creates a thumbnail for the content property of the node.
+     * 
+     * The thumbnail name corresponds to pre-set thumbnail details stored in the 
+     * repository.
+     * 
+     * If the thumbnail is created asynchronously then the result will be null and creation
+     * of the thumbnail will occure at some point in the background.
+     * 
+     * If foce param specified system.thumbnail.generate is ignoring. Could be used for preview creation
+     * 
+     * @param  thumbnailName    the name of the thumbnail
+     * @param  async            indicates whether the thumbnail is create asynchronously or not
+     * @param  force            ignore system.thumbnail.generate=false
+     * @return ScriptThumbnail  the newly create thumbnail node or null if async creation occures
+     */
+    public ScriptThumbnail createThumbnail(String thumbnailName, boolean async, boolean force)
+    {
         final ThumbnailService thumbnailService = services.getThumbnailService();
         
         ScriptThumbnail result = null;
         
         // If thumbnail generation has been configured off, then don't bother with any of this.
-        if ( thumbnailService.getThumbnailsEnabled())
+        // We need to create preview for node even if system.thumbnail.generate=false
+        if (force || thumbnailService.getThumbnailsEnabled())
         {
             // Use the thumbnail registy to get the details of the thumbail
             ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();

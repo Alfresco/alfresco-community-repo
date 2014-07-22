@@ -64,7 +64,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
 public class JSONConversionComponent
 {
     /** Content download API URL template */
-    private final static String CONTENT_DOWNLOAD_API_URL = "/api/node/content/{0}/{1}/{2}/{3}";
+    private final static String CONTENT_DOWNLOAD_API_URL = "/slingshot/node/content/{0}/{1}/{2}/{3}";
     
     /** Logger */
     private static Log logger = LogFactory.getLog(JSONConversionComponent.class);

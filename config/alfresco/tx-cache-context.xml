@@ -18,6 +18,21 @@
       <property name="tenantAware" value="false" />
    </bean>
    
+   <!-- The transactional cache for Property Class entities -->
+   
+   <bean name="propertyClassCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="propertyClassSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.propertyClassTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="${cache.propertyClassCache.tx.maxItems}" />
+      <property name="mutable" value="true" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+      <property name="tenantAware" value="false" />
+   </bean>
+   
    <!-- The transactional cache for Property Unique Contexts -->
    
    <bean name="propertyUniqueContextCache" class="org.alfresco.repo.cache.TransactionalCache">

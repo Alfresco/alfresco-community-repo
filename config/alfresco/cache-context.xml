@@ -56,6 +56,16 @@
    </bean>
    
    <!-- ===================================== -->
+   <!-- Property Class Cache                  -->
+   <!-- ===================================== -->
+
+   <!-- The cross-transaction shared cache for Property Class entities -->
+   
+   <bean name="propertyClassSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.propertyClassCache"/>
+   </bean>
+
+   <!-- ===================================== -->
    <!-- Property Unique Context Cache         -->
    <!-- ===================================== -->
 

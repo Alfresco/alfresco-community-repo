@@ -200,8 +200,8 @@
          <bean class="org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter"/>
       </property>
       <property name="controlDAO" ref="controlDAO"/>
+      <property name="propertyClassCache" ref="propertyClassCache"/>
       <!--
-      <property name="propertyClassCache" ref="propertyValueCache"/>
       <property name="propertyDateValueCache" ref="propertyValueCache"/>
       <property name="propertyStringValueCache" ref="propertyValueCache"/>
       <property name="propertyDoubleValueCache" ref="propertyValueCache"/>

@@ -27,6 +27,9 @@ RRULE:${event.recurrenceRule}
 <#if event.description?exists>
 DESCRIPTION:${event.description?replace("\\", "\\\\")?replace(",", "\\,")?replace(";", "\\;")?replace("\r?\n", "\\n", "r")}
 </#if>
+<#if event.location?exists>
+LOCATION:${event.location}
+</#if>
 END:VEVENT
 </#list>
 END:VCALENDAR

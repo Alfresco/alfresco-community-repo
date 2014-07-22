@@ -258,6 +258,8 @@
                 <value>org.alfresco.documentlibrary.file-created</value>
                 <value>org.alfresco.documentlibrary.file-deleted</value>
                 <value>org.alfresco.documentlibrary.file-liked</value>
+                <value>org.alfresco.documentlibrary.file-previewed</value>
+                <value>org.alfresco.documentlibrary.file-downloaded</value>
                 <value>org.alfresco.documentlibrary.inline-edit</value>
                 <value>org.alfresco.documentlibrary.folder-liked</value>
                 <value>org.alfresco.documentlibrary.folder-added</value>

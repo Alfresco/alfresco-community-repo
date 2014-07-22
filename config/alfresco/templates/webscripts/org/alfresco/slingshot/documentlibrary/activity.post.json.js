@@ -82,6 +82,8 @@ function postActivity()
       case "file-added":
       case "file-updated":
       case "file-liked":
+      case "file-previewed":
+      case "file-downloaded":
       case "folder-liked":
       case "google-docs-checkout":
       case "google-docs-checkin":

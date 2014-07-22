@@ -289,6 +289,10 @@ public class RestVariableHelper
         {
             ref = ((ScriptNode) value).getNodeRef();
         }
+        else if (value instanceof String)
+        {
+            return (String) value;
+        }
         
         if(ref != null)
         {

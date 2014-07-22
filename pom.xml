@@ -166,12 +166,12 @@
       <dependency>
         <groupId>org.springframework.extensions.surf</groupId>
         <artifactId>spring-surf</artifactId>
-        <version>${dependency.surf.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.extensions.surf</groupId>
         <artifactId>spring-surf-api</artifactId>
-        <version>${dependency.surf.version}</version>
+        <version>${project.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

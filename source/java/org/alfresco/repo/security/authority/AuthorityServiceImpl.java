@@ -596,12 +596,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         checkTypeIsMutable(type);
         String name = getName(type, shortName);
 
-        //MNT-9794 fix. If authority with 'name' exists it is an error - in line with person creation
-        if (authorityExists(name))
-        {
-            throw new AlfrescoRuntimeException("Authority '" + name + "' already exists.");
-        }
-       
         authorityDAO.createAuthority(name, authorityDisplayName, authorityZones);
        
         return name;

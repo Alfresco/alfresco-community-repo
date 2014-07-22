@@ -50,6 +50,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -566,7 +567,7 @@ public class AuthorityServiceTest extends TestCase
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
     }
 
-    public void testCreateAuth()
+    public void testCreateAuth() throws Exception
     {
         String auth1;
         String auth2;
@@ -649,7 +650,10 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.deleteAuthority(auth1);
         assertEquals(0, getAllAuthorities(AuthorityType.ROLE).size());
         assertEquals(0, pubAuthorityService.getAllRootAuthorities(AuthorityType.ROLE).size());
-
+        
+        tx.rollback();
+        startNewTransaction();
+        
         // Testing MNT-9794 fix.  Creates authority 'DUPLICATEDGROUP' twice. Only one authority with such name should be created.
         String dublicatedAuthorityShortName = "DUPLICATEDGROUP";
         AuthorityType dublicatedAuthorityType = AuthorityType.GROUP;
@@ -658,22 +662,49 @@ public class AuthorityServiceTest extends TestCase
         pubAuthorityService.createAuthority(dublicatedAuthorityType, dublicatedAuthorityShortName);
         try
         {
+            commitAndStartNewTransaction();
             pubAuthorityService.createAuthority(dublicatedAuthorityType, dublicatedAuthorityShortName);
+            
+            tx.commit();
+            
             fail();
         }
-        catch(AlfrescoRuntimeException are)
+        catch(DuplicateChildNodeNameException dcnne)
         {
-            
+            tx.rollback();
         }
-
-        List<String> duplicatedGroupAuthorities = getAuthorityByTypeAndShortName(dublicatedAuthorityType, dublicatedAuthorityShortName);
-
+        
+        startNewTransaction();
+        
         //Only one authority should be created with duplicated name
+        List<String> duplicatedGroupAuthorities = getAuthorityByTypeAndShortName(dublicatedAuthorityType, dublicatedAuthorityShortName);
         assertEquals(1, duplicatedGroupAuthorities.size());
-
+        
+        // we should be able to create authorities with different charcases
+        String differentCasesAuthorityShofrName = dublicatedAuthorityShortName.toLowerCase();
+        pubAuthorityService.createAuthority(dublicatedAuthorityType, differentCasesAuthorityShofrName);
+        
+        // delete created authorities
         pubAuthorityService.deleteAuthority("GROUP_DUPLICATEDGROUP");
+        pubAuthorityService.deleteAuthority(pubAuthorityService.getName(AuthorityType.GROUP, differentCasesAuthorityShofrName));
+        
+        commitAndStartNewTransaction();
+        
         List<String> duplicatedAuthoritiesAfterDelete = getAuthorityByTypeAndShortName(dublicatedAuthorityType, dublicatedAuthorityShortName);
         assertEquals(0, duplicatedAuthoritiesAfterDelete.size());
+        assertEquals(GRP_CNT, getAllAuthorities(AuthorityType.GROUP).size());
+    }
+    
+    private void commitAndStartNewTransaction() throws Exception
+    {
+       tx.commit();
+       startNewTransaction();
+    }
+    
+    private void startNewTransaction() throws Exception
+    {
+        tx = transactionService.getUserTransaction();
+        tx.begin();
     }
 
     /**

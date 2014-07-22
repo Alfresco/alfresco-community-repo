@@ -162,6 +162,30 @@
             </plugins>
          </build>
       </profile>
+      <profile>
+         <id>Alfresco42</id>
+         <!-- 'config' dependencies -->
+         <dependencies>
+            <dependency>
+               <groupId>org.alfresco</groupId>
+               <artifactId>alfresco-data-model</artifactId>
+               <version>${alfresco.base.version}</version>
+               <classifier>config</classifier>
+            </dependency>
+            <dependency>
+               <groupId>org.alfresco</groupId>
+               <artifactId>alfresco-repository</artifactId>
+               <version>${alfresco.base.version}</version>
+               <classifier>config</classifier>
+            </dependency>
+            <dependency>
+               <groupId>org.alfresco</groupId>
+               <artifactId>alfresco-remote-api</artifactId>
+               <version>${alfresco.base.version}</version>
+               <classifier>config</classifier>
+            </dependency>
+         </dependencies>
+      </profile>
    </profiles>
    <dependencies>
       <dependency>
@@ -174,25 +198,6 @@
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-remote-api</artifactId>
          <version>${alfresco.base.version}</version>
-      </dependency>
-      <!-- 'config' dependencies -->
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-data-model</artifactId>
-         <version>${alfresco.base.version}</version>
-         <classifier>config</classifier>
-      </dependency>
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.base.version}</version>
-         <classifier>config</classifier>
-      </dependency>
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco.base.version}</version>
-         <classifier>config</classifier>
       </dependency>
       <!-- Test dependencies -->
       <dependency>

@@ -70,13 +70,6 @@ var Evaluator =
                      {
                         workingCopy["workingCopyVersion"] = wcNode.properties["cm:versionLabel"];
                      }
-
-                     // Google Doc?
-                     if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
-                     {
-                        // Property is duplicated here for convenience
-                        workingCopy["googleDocUrl"] = node.properties["gd:url"];
-                     }
                   }
                   else
                   {
@@ -89,15 +82,6 @@ var Evaluator =
                   var srcNode = node.assocs["cm:workingcopylink"][0];
                   workingCopy["hasWorkingCopy"] = true;
                   workingCopy["workingCopyNodeRef"] = srcNode.nodeRef;
-
-                  if (srcNode.hasPermission("Read"))
-                  {
-                     // Google Doc?
-                     if (srcNode.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
-                     {
-                        workingCopy["googleDocUrl"] = srcNode.properties["gd:url"];
-                     }
-                  }
                }
          }
 

@@ -1,6 +1,0 @@
-{
-   "data" :
-   {
-      "enabled" : ${enabled?string}      
-   }
-}

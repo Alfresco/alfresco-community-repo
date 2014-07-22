@@ -175,23 +175,6 @@ var Evaluator =
                }
                permissions["view-original"] = true;
 
-               // Google Doc?
-               if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
-               {
-                  custom["googleDocUrl"] = node.properties["gd:url"];
-                  permissions["view-google-doc"] = true;
-                  if (lockOwnerUser == person.properties.userName)
-                  {
-                     permissions["checkin-from-google"] = true;
-                     wcStatus = "google-docs-owner";
-                     actionSet = "googleDocOwner";
-                  }
-                  else
-                  {
-                     wcStatus = "google-docs-locked " + lockedBy.displayName + "|" + lockedBy.userName;
-                     actionSet = "googleDocLocked";
-                  }
-               }
                status[wcStatus] = true;
             }
             // Locked?
@@ -216,24 +199,6 @@ var Evaluator =
                   custom["hasWorkingCopy"] = true;
                   custom["workingCopyNode"] = srcNode.nodeRef;
                   permissions["view-working-copy"] = true;
-
-                  // Google Doc?
-                  if (srcNode.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleResource"))
-                  {
-                     custom["googleDocUrl"] = srcNode.properties["gd:url"];
-                     permissions["view-google-doc"] = true;
-                     if (lockOwnerUser == person.properties.userName)
-                     {
-                        permissions["checkin-from-google"] = true;
-                        lockStatus = "google-docs-owner";
-                        actionSet = "googleDocOwner";
-                     }
-                     else
-                     {
-                        lockStatus = "google-docs-locked " + lockedBy.displayName + "|" + lockedBy.userName;
-                        actionSet = "googleDocLocked";
-                     }
-                  }
                }
                status[lockStatus] = true;
             }
@@ -242,12 +207,6 @@ var Evaluator =
             if (node.hasAspect("app:inlineeditable"))
             {
                permissions["inline-edit"] = true;
-            }
-            
-            // Google Docs editable aspect?
-            if (node.hasAspect("{http://www.alfresco.org/model/googledocs/1.0}googleEditable"))
-            {
-               permissions["googledocs-edit"] = true;
             }
 
             /* Transferred Nodes */

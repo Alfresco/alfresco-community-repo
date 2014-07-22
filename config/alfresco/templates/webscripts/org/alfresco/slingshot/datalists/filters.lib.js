@@ -28,7 +28,8 @@ var Filters =
       "fm:forums",
       "fm:forum",
       "fm:topic",
-      "fm:post"
+      "fm:post",
+      "cm:workingcopy"
    ],
 
    /**

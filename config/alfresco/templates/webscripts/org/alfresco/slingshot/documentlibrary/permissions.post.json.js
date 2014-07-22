@@ -35,6 +35,23 @@ function main()
       status.setCode(status.STATUS_BAD_REQUEST, "Permissions value missing from request.");
    }
    
+   // Inherited permissions flag
+   // First set inherit and then modify permissions
+   // See MNT-11725
+   if (json.has("isInherited"))
+   {
+      var isInherited = json.getBoolean("isInherited");
+      if (location.site != null)
+      {
+         if (isInherited == false)
+         {
+            // Insure Site Managers can still manage content.
+            node.setPermission("SiteManager", siteManagerAuthority);
+         }
+      }
+      node.setInheritsPermissions(isInherited);
+   }
+   
    var permissions = json.getJSONArray("permissions");
    for (var i = 0; i < permissions.length(); i++)
    {
@@ -62,21 +79,6 @@ function main()
       {
          node.setPermission(role, authority);
       }
-   }
-
-   // Inherited permissions flag
-   if (json.has("isInherited"))
-   {
-      var isInherited = json.getBoolean("isInherited");
-      if (location.site != null)
-      {
-         if (isInherited == false)
-         {
-            // Insure Site Managers can still manage content.
-            node.setPermission("SiteManager", siteManagerAuthority);
-         }
-      }
-      node.setInheritsPermissions(isInherited);
    }
 }
 

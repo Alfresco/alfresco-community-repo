@@ -46,28 +46,16 @@ public class RemoteApi01TestSuite extends TestSuite
     
     static void tests1(TestSuite suite)
     {
-        suite.addTestSuite(org.alfresco.cmis.changelog.CMISChangeLogServiceTest.class);
-        suite.addTestSuite(org.alfresco.repo.cmis.rest.test.AspectTest.class);
-        suite.addTestSuite(org.alfresco.repo.cmis.rest.test.CMISAtomTemplatesTest.class);
-    }
-    
-    static void tests2(TestSuite suite) // 
-    {
-        suite.addTestSuite(org.alfresco.repo.cmis.rest.test.PolicyTest.class);
-    }
-    
-    static void tests3(TestSuite suite) // 
-    {
         suite.addTestSuite(org.alfresco.repo.management.subsystems.test.SubsystemsTest.class);
         suite.addTestSuite(org.alfresco.repo.remoteticket.RemoteAlfrescoTicketServiceTest.class);
     }
     
-    static void tests4(TestSuite suite) // 
+    static void tests2(TestSuite suite) // 
     {
         suite.addTest(org.alfresco.repo.web.scripts.WebScriptTestSuite.suite());
     }
     
-    static void tests5(TestSuite suite) // 
+    static void tests3(TestSuite suite) // 
     {
         suite.addTestSuite(org.alfresco.repo.webdav.GetMethodRegressionTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.MoveMethodTest.class));
@@ -77,25 +65,25 @@ public class RemoteApi01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.webdav.WebDAVMethodTest.class));
     }
     
-    static void tests6(TestSuite suite) // 
+    static void tests4(TestSuite suite) // 
     {
         // TestNodeComments.testNodeComments() fails 50% of the time we with previous tests
         // TestCMIS.testCMIS()                 fails 30% of the time with previous tests
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.ApiTest.class));
     }
     
-    static void tests7(TestSuite suite) // 
+    static void tests5(TestSuite suite) // 
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.TestCMISAPI.class)); // Fails with previous or following tests
     }
     
-    static void tests8(TestSuite suite) // 
+    static void tests6(TestSuite suite) // 
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.DeploymentWorkflowApiTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.ProcessDefinitionWorkflowApiTest.class));
     }
     
-    static void tests9(TestSuite suite) // 
+    static void tests7(TestSuite suite) // 
     {
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.ProcessWorkflowApiTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.workflow.api.tests.TaskWorkflowApiTest.class));

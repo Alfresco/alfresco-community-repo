@@ -225,9 +225,10 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         assertEquals(TEST_MIMETYPE_JPEG, mimetype);
         
         // get content for node (authenticated)
-        rsp = sendRequest(new GetRequest(AUTH_CONTENT_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusOK, USER_ONE);
-        byte[] content = rsp.getContentAsByteArray();
-        checkBytes(TEST_CONTENT, content);
+// Commented out when removing original CMIS impl
+//        rsp = sendRequest(new GetRequest(AUTH_CONTENT_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusOK, USER_ONE);
+//        byte[] content = rsp.getContentAsByteArray();
+//        checkBytes(TEST_CONTENT, content);
         
         // get content thumbnail for node (authenticated)
         rsp = sendRequest(new GetRequest(AUTH_CONTENT_THUMBNAIL_URL.replace("{node_ref_3}", testNodeRef_3).replace("{thumbnailname}", "doclib")), expectedStatusOK, USER_ONE);
@@ -237,7 +238,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         // As user two ...
         
         rsp = sendRequest(new GetRequest(AUTH_METADATA_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusServerError, USER_TWO);
-        rsp = sendRequest(new GetRequest(AUTH_CONTENT_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusForbidden, USER_TWO);
+// Commented out when removing original CMIS impl
+//      rsp = sendRequest(new GetRequest(AUTH_CONTENT_URL.replace("{node_ref_3}", testNodeRef_3)), expectedStatusForbidden, USER_TWO);
         rsp = sendRequest(new GetRequest(AUTH_CONTENT_THUMBNAIL_URL.replace("{node_ref_3}", testNodeRef_3).replace("{thumbnailname}", "doclib")), expectedStatusServerError, USER_TWO);
         
         // As user one ...
@@ -261,7 +263,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         
         // get content for share (note: can be unauthenticated)
         rsp = sendRequest(new GetRequest(SHARE_CONTENT_URL.replace("{shared_id}", sharedId)), expectedStatusOK, USER_TWO);
-        content = rsp.getContentAsByteArray();
+        byte[] content = rsp.getContentAsByteArray();
         checkBytes(TEST_CONTENT, content);
         
         // get content thumbnail for share (note: can be unauthenticated)

@@ -21,13 +21,14 @@ package org.alfresco.repo.web.scripts.quickshare;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
-import org.alfresco.repo.web.scripts.content.ContentGet;
+import org.alfresco.repo.web.scripts.content.StreamContent;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -41,6 +42,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.web.context.ServletContextAware;
 
 
 /**
@@ -53,7 +55,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  * @author janv
  * @since Cloud/4.2
  */
-public class QuickShareContentGet extends ContentGet
+public class QuickShareContentGet extends StreamContent implements ServletContextAware
 {
     private static final Log logger = LogFactory.getLog(QuickShareContentGet.class);
     
@@ -64,6 +66,10 @@ public class QuickShareContentGet extends ContentGet
     private boolean enabled = true;
     
     
+    public void setServletContext(ServletContext servletContext)
+    {
+    }
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -73,7 +79,6 @@ public class QuickShareContentGet extends ContentGet
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
-        super.setNamespaceService(namespaceService);
     }
     
     public void setQuickShareService(QuickShareService quickShareService)

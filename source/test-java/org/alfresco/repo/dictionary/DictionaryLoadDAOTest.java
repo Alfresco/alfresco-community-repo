@@ -113,20 +113,18 @@ public class DictionaryLoadDAOTest
 
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService) throws Exception
     {
-        dictionaryDAO.setDictionaryRegistryCache(new MemoryCache<String, DictionaryRegistry>());
+        CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
+        compiledModelsCache.setDictionaryDAO(dictionaryDAO);
+        compiledModelsCache.setTenantService(tenantService);
+        compiledModelsCache.setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
+        TraceableThreadFactory threadFactory = new TraceableThreadFactory();
+        threadFactory.setThreadDaemon(true);
+        threadFactory.setThreadPriority(Thread.NORM_PRIORITY);
 
-//        CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
-//        compiledModelsCache.setDictionaryDAO(dictionaryDAO);
-//        compiledModelsCache.setTenantService(tenantService);
-//        compiledModelsCache.setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
-//        TraceableThreadFactory threadFactory = new TraceableThreadFactory();
-//        threadFactory.setThreadDaemon(true);
-//        threadFactory.setThreadPriority(Thread.NORM_PRIORITY);
-//
-//        ThreadPoolExecutor threadPoolExecutor = new DynamicallySizedThreadPoolExecutor(20, 20, 90, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory,
-//                new ThreadPoolExecutor.CallerRunsPolicy());
-//        compiledModelsCache.setThreadPoolExecutor(threadPoolExecutor);
-//        dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
+        ThreadPoolExecutor threadPoolExecutor = new DynamicallySizedThreadPoolExecutor(20, 20, 90, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory,
+                new ThreadPoolExecutor.CallerRunsPolicy());
+        compiledModelsCache.setThreadPoolExecutor(threadPoolExecutor);
+        dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
         dictionaryDAO.init();
     }
 

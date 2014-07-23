@@ -23,6 +23,7 @@ import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.MemoryCache;
@@ -33,6 +34,10 @@ import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.util.DynamicallySizedThreadPoolExecutor;
+import org.alfresco.util.TraceableThreadFactory;
+import org.alfresco.util.ThreadPoolExecutorFactoryBean;
+import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.QName;
@@ -64,7 +69,7 @@ public class DictionaryDAOTest
         this.dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
 
-        initDictionaryCaches(dictionaryDAO);
+        initDictionaryCaches(dictionaryDAO, tenantService);
 
         new AuthenticationUtil().afterPropertiesSet();
 
@@ -87,19 +92,27 @@ public class DictionaryDAOTest
         service = component;
     }
     
-    private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
+    private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService) throws Exception
     {
-        dictionaryDAO.setDictionaryRegistryCache(new MemoryCache<String, DictionaryRegistry>());
+        CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
+        compiledModelsCache.setDictionaryDAO(dictionaryDAO);
+        compiledModelsCache.setTenantService(tenantService);
+        compiledModelsCache.setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
+        ThreadPoolExecutorFactoryBean threadPoolfactory = new ThreadPoolExecutorFactoryBean();
+        threadPoolfactory.afterPropertiesSet();
+        compiledModelsCache.setThreadPoolExecutor((ThreadPoolExecutor) threadPoolfactory.getObject());
+        dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
+        dictionaryDAO.init();
     }
 
     @Test
-    public void testBootstrap()
+    public void testBootstrap() throws Exception
     {
         TenantService tenantService = new SingleTServiceImpl();   
         
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO);
+        initDictionaryCaches(dictionaryDAO, tenantService);
         
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();

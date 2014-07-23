@@ -476,7 +476,13 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
 
         NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
-
+        if(nodeService.exists(rootNodeRef) == false)
+        {
+            //Tenant is deleted. But cache refresh was called to inform another cluster nodes
+            //Should be reworked when MNT-11638 will be implemented
+            return nodeRefs;
+        }
+		
         if(repositoryLocation instanceof DynamicCreateRepositoryLocation)
         {
         	((DynamicCreateRepositoryLocation)repositoryLocation).checkAndCreate(rootNodeRef);

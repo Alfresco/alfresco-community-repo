@@ -742,9 +742,6 @@
         <property name="defaultAnalyserResourceBundleName">
             <value>${lucene.defaultAnalyserResourceBundleName}</value>
         </property>
-        <property name="tryLockTimeout">
-            <value>${system.lockTryTimeout.DictionaryDAOImpl}</value>
-        </property>
     </bean>
 
     <bean id="dictionaryService" class="org.alfresco.repo.dictionary.DictionaryComponent" depends-on="dictionaryBootstrap">

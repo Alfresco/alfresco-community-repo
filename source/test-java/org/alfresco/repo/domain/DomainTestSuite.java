@@ -50,7 +50,6 @@ import org.junit.runners.Suite;
     LockDAOTest.class,
     MimetypeDAOTest.class,
     LocaleDAOTest.class,
-    PropertyValueTest.class,
     QNameDAOTest.class,
     PropertyValueDAOTest.class,
     AuditDAOTest.class,

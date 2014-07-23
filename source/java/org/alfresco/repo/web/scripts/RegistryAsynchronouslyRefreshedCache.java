@@ -18,7 +18,7 @@
  */
 package org.alfresco.repo.web.scripts;
 
-import org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache;
+import org.alfresco.repo.cache.AbstractMTAsynchronouslyRefreshedCache;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.PropertyCheck;
@@ -38,7 +38,7 @@ import org.springframework.extensions.webscripts.Registry;
  * @author Derek Hulley
  * @since 4.2.0
  */
-public class RegistryAsynchronouslyRefreshedCache extends AbstractAsynchronouslyRefreshedCache<Registry> implements InitializingBean
+public class RegistryAsynchronouslyRefreshedCache extends  AbstractMTAsynchronouslyRefreshedCache<Registry> implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(RegistryAsynchronouslyRefreshedCache.class);
     

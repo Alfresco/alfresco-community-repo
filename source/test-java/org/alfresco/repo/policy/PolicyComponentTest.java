@@ -21,12 +21,10 @@ package org.alfresco.repo.policy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import junit.framework.TestCase;
 
 import org.alfresco.repo.cache.NullCache;
-import org.alfresco.repo.dictionary.CompiledModelsCache;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
@@ -34,8 +32,6 @@ import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ThreadPoolExecutorFactoryBean;
-import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 
 
 public class PolicyComponentTest extends TestCase
@@ -66,7 +62,7 @@ public class PolicyComponentTest extends TestCase
         initNamespaceCaches(namespaceDAO);
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
         dictionaryDAO.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO, tenantService);
+        initDictionaryCaches(dictionaryDAO);
         
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
@@ -86,17 +82,10 @@ public class PolicyComponentTest extends TestCase
     }
 
     @SuppressWarnings("unchecked")
-    private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService) throws Exception
+    private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
-        CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
-        compiledModelsCache.setDictionaryDAO(dictionaryDAO);
-        compiledModelsCache.setTenantService(tenantService);
-        compiledModelsCache.setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
-        ThreadPoolExecutorFactoryBean threadPoolfactory = new ThreadPoolExecutorFactoryBean();
-        threadPoolfactory.afterPropertiesSet();
-        compiledModelsCache.setThreadPoolExecutor((ThreadPoolExecutor) threadPoolfactory.getObject());
-        dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
-        dictionaryDAO.init();
+        // note: unit tested here with null cache
+        dictionaryDAO.setDictionaryRegistryCache(new NullCache());
     }
     
     @SuppressWarnings("unchecked")
@@ -104,7 +93,6 @@ public class PolicyComponentTest extends TestCase
     {
         // note: unit tested here with null cache
         namespaceDAO.setNamespaceRegistryCache(new NullCache());
-        namespaceDAO.init();
     }
 
     public void testJavaBehaviour()

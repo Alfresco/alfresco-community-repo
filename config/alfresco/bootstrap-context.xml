@@ -147,6 +147,7 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="messageService" ref="messageService"/>
       <property name="tenantAdminService" ref="tenantAdminService"/>
+      <property name="policyComponent" ref="policyComponent"/>
       
       <property name="repositoryModelsLocations">
          <list>

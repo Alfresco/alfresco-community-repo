@@ -251,6 +251,10 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
      */
     public void init()
     {
+    	if(logger.isDebugEnabled())
+    	{
+    		logger.debug("init : bind class behaviours for " + ContentModel.TYPE_DICTIONARY_MODEL);
+    	}
         // Register interest in the onContentUpdate policy for the dictionary model type
         policyComponent.bindClassBehaviour(
                 ContentServicePolicies.OnContentUpdatePolicy.QNAME,
@@ -298,12 +302,16 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
      */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
-        if (logger.isTraceEnabled())
+    	if (logger.isTraceEnabled())
         {
             logger.trace("onContentUpdate: nodeRef="+nodeRef+ " ["+AlfrescoTransactionSupport.getTransactionId()+"]");
         }
         
-        queueModel(nodeRef);
+        Boolean value = (Boolean)nodeService.getProperty(nodeRef, ContentModel.PROP_MODEL_ACTIVE);
+        if ((value != null) && (value == true))
+        {
+        	queueModel(nodeRef);
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -679,6 +687,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                         props.put(ContentModel.PROP_MODEL_AUTHOR, modelDefinition.getAuthor());
                                         props.put(ContentModel.PROP_MODEL_PUBLISHED_DATE, modelDefinition.getPublishedDate());
                                         props.put(ContentModel.PROP_MODEL_VERSION, modelDefinition.getVersion());
+                                       
                                         nodeService.setProperties(nodeRef, props);
                                         
                                         // Validate model against dictionary - could be new, unchanged or updated

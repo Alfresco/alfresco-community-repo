@@ -18,40 +18,28 @@
  */
 package org.alfresco.repo.transaction;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.jlan.client.AsynchRequest;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
-import org.alfresco.util.GUID;
 import org.alfresco.util.transaction.TransactionListener;
 import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Repo Specific Helper class to manage transaction synchronization.  This provides helpers to
  * ensure that the necessary <code>TransactionSynchronization</code> instances
  * are registered on behalf of the application code.
- * 
- * This class remains for backward API compatibility,
- * @deprecated use the Core Project TransactionSupportUtil instead
+ * <p>
+ * This class remains for backward API compatibility, the majority of transaction support has been moved to
+ * TransactionSupportUtil in the Core project.
  * 
  * @author Derek Hulley
+ * @author mrogers
  */
 public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
 {
@@ -195,6 +183,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * implements <tt>equals</tt> and <tt>hashCode</tt>.
      * 
      * @param daoService
+     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindDaoService(TransactionalDao daoService)
     {
@@ -219,6 +208,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * implements <tt>equals</tt> and <tt>hashCode</tt>.
      * 
      * @param integrityChecker
+     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindIntegrityChecker(IntegrityChecker integrityChecker)
     {
@@ -244,6 +234,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * 
      * @param indexerAndSearcher the Lucene indexer to perform transaction completion
      *      tasks on
+     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindLucene(LuceneIndexerAndSearcher indexerAndSearcher)
     {
@@ -266,6 +257,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * 
      * @param indexerAndSearcher the Lucene indexer to perform transaction completion
      *      tasks on
+     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindListener(TransactionListener listener)
     {

@@ -2,17 +2,62 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
  
 <beans>
-   
-   <bean id="fileContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
-      <constructor-arg>
-         <value>${dir.contentstore}</value>
-      </constructor-arg>
-      
-      <!-- Uncomment the property below to add content filesize limit.
-      <property name="contentLimitProvider" ref="defaultContentLimitProvider"/>
-      -->
-   </bean>
-   
+
+    <!-- ContentStore subsystem that allows switching between different types e.g. unencrypted and encrypted -->
+    <bean id="ContentStore" class="org.alfresco.repo.management.subsystems.CryptodocSwitchableApplicationContextFactory"
+        parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+        <property name="category">
+            <value>ContentStore</value>
+        </property>
+        <property name="sourceBeanName">
+            <!-- default subsystem's bean name -->
+            <value>${filecontentstore.subsystem.name}</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>manager</value>
+            </list>
+        </property>
+        <property name="unencryptedContentStoreBeanName" value="unencryptedContentStore"/>
+    </bean>
+
+    <!-- Default ContentStore subsystem, that does not use encryption -->
+    <bean id="unencryptedContentStore" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>true</value>
+        </property>
+        <property name="category">
+            <value>ContentStore</value>
+        </property>
+        <property name="typeName">
+            <value>unencrypted</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>unencrypted</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- Import the selected ContentStore subsystem's fileContentStore bean for use in the main repository context -->
+    <bean id="fileContentStore" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="ContentStore" />
+        </property>
+        <property name="sourceBeanName">
+            <value>fileContentStore</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.repo.content.ContentStore</value>
+            </list>
+        </property>
+    </bean>
+       
    <!-- This content limit provider is used above (and can also be overriden, eg. by modules). -->
    <bean id="defaultContentLimitProvider" class="org.alfresco.repo.content.ContentLimitProvider$SimpleFixedLimitProvider">
        <property name="sizeLimitString" value="${system.content.maximumFileSizeLimit}"/>

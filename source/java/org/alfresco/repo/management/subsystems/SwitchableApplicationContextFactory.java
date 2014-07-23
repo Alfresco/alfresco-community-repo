@@ -37,7 +37,7 @@ public class SwitchableApplicationContextFactory extends AbstractPropertyBackedB
     private static final String SOURCE_BEAN_PROPERTY = "sourceBeanName";
 
     /** The default bean name of the source {@link ApplicationContextFactory}. */
-    private String sourceBeanName;
+    protected String sourceBeanName;
 
     /**
      * Sets the default bean name of the source {@link ApplicationContextFactory}.

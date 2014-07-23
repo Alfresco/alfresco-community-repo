@@ -43,6 +43,7 @@ import org.alfresco.repo.web.scripts.rule.RuleServiceTest;
 import org.alfresco.repo.web.scripts.search.PersonSearchTest;
 import org.alfresco.repo.web.scripts.site.SiteServiceTest;
 import org.alfresco.repo.web.scripts.solr.SOLRWebScriptTest;
+import org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceRestApiTest;
 import org.alfresco.repo.web.scripts.tagging.TaggingServiceTest;
 import org.alfresco.repo.web.scripts.thumbnail.ThumbnailServiceTest;
 import org.alfresco.repo.web.scripts.transfer.TransferWebScriptTest;
@@ -93,6 +94,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( JBPMWorkflowRestApiTest.class );
         suite.addTestSuite( PublishingRestApiTest.class );
         suite.addTestSuite( SOLRWebScriptTest.class );
+        suite.addTestSuite( SubscriptionServiceRestApiTest.class );
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

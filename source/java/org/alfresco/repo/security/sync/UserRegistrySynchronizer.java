@@ -44,35 +44,7 @@ public interface UserRegistrySynchronizer
     /**
      * Retrieves timestamped user and group information from configured external sources and compares it with the local
      * users and groups last retrieved from the same sources. Any updates and additions made to those users and groups
-     * are applied to the local Alfresco copies.
-     * <p>
-     *     This method is <b>deprecated</b>, use {@link #synchronize(boolean forceUpdate, boolean isFullSync)} instead.
-     * </p>
-     * 
-     * @param forceUpdate
-     *            Should the complete set of users and groups be updated / created locally or just those known to have
-     *            changed since the last sync? When <code>true</code> then <i>all</i> users and groups are queried from
-     *            the user registry and updated locally. When <code>false</code> then each source is only queried for
-     *            those users and groups modified since the most recent modification date of all the objects last
-     *            queried from that same source.
-     * @param isFullSync
-     *            Should a complete set of user and group IDs be queried from the user registries in order to determine
-     *            deletions? This parameter is independent of <code>force</code> as a separate query is run to process
-     *            updates.
-     * @param splitTxns
-     *            Can the modifications to Alfresco be split across multiple transactions for maximum performance? If
-     *            <code>true</code>, users and groups are created/updated in batches of 10 for increased performance. If
-     *            <code>false</code>, all users and groups are processed in the current transaction. This is required if
-     *            calling synchronously (e.g. in response to an authentication event in the same transaction).
-     */
-    @Deprecated
-    public void synchronize(boolean forceUpdate, boolean isFullSync, boolean splitTxns);
-
-    /**
-     * Retrieves timestamped user and group information from configured external sources and compares it with the local
-     * users and groups last retrieved from the same sources. Any updates and additions made to those users and groups
-     * are applied to the local Alfresco copies. Unlike deprecated {@link #synchronize(boolean, boolean, boolean)},
-     * this process is always run in different transactions and threads.
+     * are applied to the local Alfresco copies. This process is always run in different transactions and threads.
      *
      * @param forceUpdate
      *            Should the complete set of users and groups be updated / created locally or just those known to have

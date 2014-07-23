@@ -126,9 +126,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     private static final String LAST_ERROR_ATTRIBUTE = "LAST_ERROR";
 
     /** The label under which the status is stored for each zone. */
-    private static final String LAST_HOST_ATTRIBUTE = "LAST_HOST";
-    
-    /** The label under which the status is stored for each zone. */
     private static final String START_TIME_ATTRIBUTE = "START_TIME";
     
     /** The label under which the status is stored for each zone. */
@@ -424,16 +421,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         
         Object params[] = {authenticatorName};
         throw new AuthenticationException("authentication.err.validation.authenticator.notfound", params);
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#synchronize(boolean, boolean, boolean)
-     */
-    @Override
-    public void synchronize(boolean forceUpdate, boolean isFullSync, final boolean splitTxns)
-    {
-        synchronizeInternal(forceUpdate, isFullSync, splitTxns);
     }
 
     @Override
@@ -813,26 +800,22 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         return Collections.emptySet();
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.security.sync.UserRegistrySynchronizer#createMissingPerson(java.lang.String)
-     */
+    @Override
     public boolean createMissingPerson(String userName)
     {
-        // synchronize or auto-create the missing person if we are allowed
+        // synchronise or auto-create the missing person if we are allowed
         if (userName != null && !userName.equals(AuthenticationUtil.getSystemUserName()))
         {
             if (this.syncWhenMissingPeopleLogIn)
             {
                 try
                 {
-                    synchronize(false, false, false);
+                    synchronizeInternal(false, false, false);
                 }
                 catch (Exception e)
                 {
                     // We don't want to fail the whole login if we can help it
-                    ChainingUserRegistrySynchronizer.logger.warn(
-                            "User authenticated but failed to sync with user registry", e);
+                    ChainingUserRegistrySynchronizer.logger.warn("User authenticated but failed to sync with user registry", e);
                 }
                 if (this.personService.personExists(userName))
                 {
@@ -968,8 +951,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         final BatchProcessor<NodeDescription> groupProcessor = new BatchProcessor<NodeDescription>(
                 SyncProcess.GROUP_ANALYSIS.getTitle(zone),
                 this.transactionService.getRetryingTransactionHelper(), 
-                userRegistry
-                .getGroups(lastModified), 
+                userRegistry.getGroups(lastModified), 
                 this.workerThreads, 
                 20, 
                 this.applicationEventPublisher,
@@ -1565,8 +1547,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     // Batch 5 Group Association Creation
                     BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
                             SyncProcess.GROUP_ASSOCIATION_CREATION.getTitle(zone),
-                            ChainingUserRegistrySynchronizer.this.transactionService
-                                    .getRetryingTransactionHelper(), this.groupParentAssocsToCreate.entrySet(),
+                            ChainingUserRegistrySynchronizer.this.transactionService.getRetryingTransactionHelper(),
+                            this.groupParentAssocsToCreate.entrySet(),
                             ChainingUserRegistrySynchronizer.this.workerThreads, 20,
                             ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
                             ChainingUserRegistrySynchronizer.logger,
@@ -1597,8 +1579,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                     // Batch 6 Person Association
                     BatchProcessor<Map.Entry<String, Set<String>>> groupCreator = new BatchProcessor<Map.Entry<String, Set<String>>>(
                             SyncProcess.PERSON_ASSOCIATION.getTitle(zone),
-                            ChainingUserRegistrySynchronizer.this.transactionService
-                                    .getRetryingTransactionHelper(), this.personParentAssocsToDelete.entrySet(),
+                            ChainingUserRegistrySynchronizer.this.transactionService.getRetryingTransactionHelper(),
+                            this.personParentAssocsToDelete.entrySet(),
                             ChainingUserRegistrySynchronizer.this.workerThreads, 20,
                             ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
                             ChainingUserRegistrySynchronizer.logger,
@@ -1719,8 +1701,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         final BatchProcessor<NodeDescription> personProcessor = new BatchProcessor<NodeDescription>(
                 SyncProcess.USER_CREATION.getTitle(zone),
                 this.transactionService.getRetryingTransactionHelper(),
-                userRegistry.getPersons(lastModified), this.workerThreads, 10, this.applicationEventPublisher,
-                ChainingUserRegistrySynchronizer.logger, this.loggingInterval);
+                userRegistry.getPersons(lastModified),
+                this.workerThreads,
+                10,
+                this.applicationEventPublisher,
+                ChainingUserRegistrySynchronizer.logger,
+                this.loggingInterval);
         class PersonWorker extends BaseBatchProcessWorker<NodeDescription>
         {
             private long latestTime;
@@ -1856,8 +1842,12 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             BatchProcessor<String> authorityDeletionProcessor = new BatchProcessor<String>(
                     SyncProcess.AUTHORITY_DELETION.getTitle(zone), 
                     this.transactionService.getRetryingTransactionHelper(),
-                    deletionCandidates, this.workerThreads, 10, this.applicationEventPublisher,
-                    ChainingUserRegistrySynchronizer.logger, this.loggingInterval);
+                    deletionCandidates,
+                    this.workerThreads,
+                    10,
+                    this.applicationEventPublisher,
+                    ChainingUserRegistrySynchronizer.logger,
+                    this.loggingInterval);
             class AuthorityDeleter extends BaseBatchProcessWorker<String>
             {
                 private int personProcessedCount;
@@ -2007,10 +1997,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     /**
      * Modifies an authority's zone set from oldZones to newZones in the most efficient manner (avoiding unnecessary
      * reindexing cost).
-     * 
-     * @param authorityName
-     * @param oldZones
-     * @param newZones
      */
     private void updateAuthorityZones(String authorityName, Set<String> oldZones, final Set<String> newZones)
     {
@@ -2031,11 +2017,6 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         }
     }
     
-    /*
-     * (non-Javadoc)
-     * @seeorg.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.context.
-     * ApplicationEvent)
-     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -2049,7 +2030,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 {
                     try
                     {
-                        synchronize(false, false, true);
+                        synchronizeInternal(false, false, true);
                     }
                     catch (Exception e)
                     {
@@ -2409,5 +2390,4 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     		 super.onApplicationEvent(event);
     	 }
     }
-      
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -34,25 +34,18 @@ import org.quartz.JobExecutionException;
  */
 public class UserRegistrySynchronizerJob implements Job
 {
-    /*
-     * (non-Javadoc)
-     * @see org.quartz.Job#execute(org.quartz.JobExecutionContext)
-     */
     public void execute(JobExecutionContext executionContext) throws JobExecutionException
     {
         final UserRegistrySynchronizer userRegistrySynchronizer = (UserRegistrySynchronizer) executionContext
                 .getJobDetail().getJobDataMap().get("userRegistrySynchronizer");
-        final String synchronizeChangesOnly = (String) executionContext.getJobDetail().getJobDataMap().get(
-                "synchronizeChangesOnly");
+        final String synchronizeChangesOnly = (String) executionContext.getJobDetail().getJobDataMap().get("synchronizeChangesOnly");
         AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
-                userRegistrySynchronizer.synchronize(synchronizeChangesOnly == null
-                        || !Boolean.parseBoolean(synchronizeChangesOnly), true, true);
+                userRegistrySynchronizer.synchronize(synchronizeChangesOnly == null || !Boolean.parseBoolean(synchronizeChangesOnly), true);
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-
 }

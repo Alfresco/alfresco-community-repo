@@ -173,7 +173,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
         }));
-        this.synchronizer.synchronize(true, true, true);
+        this.synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -216,13 +216,13 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newGroup("G7")
         }), new MockUserRegistry("Z1", new NodeDescription[] {}, new NodeDescription[] {}), new MockUserRegistry("Z2",
                 new NodeDescription[] {}, new NodeDescription[] {}));
-        this.synchronizer.synchronize(true, true, true);
+        this.synchronizer.synchronize(true, true);
         // Wipe out everything that was in Z0 - Z2
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z1", new NodeDescription[] {},
                 new NodeDescription[] {}), new MockUserRegistry("Z2", new NodeDescription[] {},
                 new NodeDescription[] {}));
-        this.synchronizer.synchronize(true, true, true);
+        this.synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -371,7 +371,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             newGroup("G2", "U1", "U3", "U4", "U6"), newGroup("G6", "U3", "U4", "G7"),
             newGroupWithDisplayName("G7", "Late Arrival", "U4", "U5"), newGroup("G8", "U1", "U8")
         }));
-        this.synchronizer.synchronize(true, true, true);
+        this.synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -426,7 +426,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             newPerson("U6"),
         }, new NodeDescription[] {}));
-        synchronizer.synchronize(true, true, true);
+        synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -482,7 +482,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         {
             newGroup("G2", "U1", "U3", "U4"), newGroup("G6", "U3", "U4", "G7"), newGroup("G7", "U5")
         }));
-        this.synchronizer.synchronize(true, true, true);
+        this.synchronizer.synchronize(true, true);
         this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
         {
 
@@ -546,7 +546,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         List<NodeDescription> persons = new ArrayList<NodeDescription>(new RandomPersonCollection(100));
         List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(50, persons));
         this.applicationContextManager.setUserRegistries(new MockUserRegistry("Z0", persons, groups));
-        this.synchronizer.synchronize(true, true, true);
+        this.synchronizer.synchronize(true, true);
         tearDownTestUsersAndGroups();
     }
     
@@ -623,7 +623,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             List<NodeDescription> groups = new ArrayList<NodeDescription>(new RandomGroupCollection(4, persons));
             MockUserRegistry testRegistry = new MockUserRegistry("Z0", persons, groups);
             this.applicationContextManager.setUserRegistries(testRegistry);
-            this.synchronizer.synchronize(true, true, true);
+            this.synchronizer.synchronize(true, true);
             
             if(this.synchronizer instanceof ChainingUserRegistrySynchronizerStatus)
             {
@@ -651,7 +651,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             testStart = new Date();
             try
             {
-                this.synchronizer.synchronize(true, true, true);
+                this.synchronizer.synchronize(true, true);
                 fail("error not thrown");
             }
             catch (AlfrescoRuntimeException e)
@@ -697,7 +697,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
                 }, true, true);
         ChainingUserRegistrySynchronizerTest.this.applicationContextManager.setUserRegistries(new MockUserRegistry(
                 "Z0", Collections.<NodeDescription> emptyList(), groups));
-        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true, true);
+        ChainingUserRegistrySynchronizerTest.this.synchronizer.synchronize(true, true);
         tearDownTestUsersAndGroups();
     }
 

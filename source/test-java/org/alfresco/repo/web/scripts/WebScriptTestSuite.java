@@ -33,15 +33,16 @@ import org.alfresco.repo.web.scripts.forms.FormRestApiJsonPost_Test;
 import org.alfresco.repo.web.scripts.groups.GroupsTest;
 import org.alfresco.repo.web.scripts.invitation.InvitationWebScriptTest;
 import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
-import org.alfresco.repo.web.scripts.publishing.PublishingRestApiTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
+import org.alfresco.repo.web.scripts.publishing.PublishingRestApiTest;
 import org.alfresco.repo.web.scripts.quickshare.QuickShareRestApiTest;
 import org.alfresco.repo.web.scripts.rating.RatingRestApiTest;
 import org.alfresco.repo.web.scripts.replication.ReplicationRestApiTest;
 import org.alfresco.repo.web.scripts.rule.RuleServiceTest;
 import org.alfresco.repo.web.scripts.search.PersonSearchTest;
 import org.alfresco.repo.web.scripts.site.SiteServiceTest;
+import org.alfresco.repo.web.scripts.solr.SOLRWebScriptTest;
 import org.alfresco.repo.web.scripts.tagging.TaggingServiceTest;
 import org.alfresco.repo.web.scripts.thumbnail.ThumbnailServiceTest;
 import org.alfresco.repo.web.scripts.transfer.TransferWebScriptTest;
@@ -91,6 +92,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( ActivitiWorkflowRestApiTest.class );
         suite.addTestSuite( JBPMWorkflowRestApiTest.class );
         suite.addTestSuite( PublishingRestApiTest.class );
+        suite.addTestSuite( SOLRWebScriptTest.class );
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

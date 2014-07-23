@@ -202,6 +202,20 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
     
     public void testAclReadersGet() throws Exception
     {
+        txnHelper.doInTransaction(
+            new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    aclReadersGetImpl();
+                    return null;
+                }
+            }
+        );
+    }
+    
+    public void aclReadersGetImpl() throws Exception
+    {
         List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 1024);
         List<Long> aclChangeSetIds = new ArrayList<Long>(50);
         for (AclChangeSet aclChangeSet : aclChangeSets)

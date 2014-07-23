@@ -35,6 +35,8 @@ import org.alfresco.repo.solr.NodeMetaData;
 import org.alfresco.repo.solr.NodeMetaDataParameters;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent.NodeMetaDataQueryCallback;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
@@ -252,7 +254,8 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         private Set<String> ancestors;
         private String tenantDomain;
         
-        public FreemarkerNodeMetaData(SOLRSerializer solrSerializer, NodeMetaData nodeMetaData) throws IOException, JSONException
+        public FreemarkerNodeMetaData(final SOLRSerializer solrSerializer, final NodeMetaData nodeMetaData)
+        		throws IOException, JSONException
         {
             setNodeId(nodeMetaData.getNodeId());
             setTenantDomain(nodeMetaData.getTenantDomain());
@@ -287,15 +290,25 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             setParentAssocs(nodeMetaData.getParentAssocs());
             setParentAssocsCrc(nodeMetaData.getParentAssocsCrc());
             setAspects(nodeMetaData.getAspects());
-            Map<QName, Serializable> props = nodeMetaData.getProperties();
+            final Map<QName, Serializable> props = nodeMetaData.getProperties();
             if(props != null)
             {
-                Map<String, PropertyValue> properties = (props != null ? new HashMap<String, PropertyValue>(props.size()) : null);
-                for(QName propName : props.keySet())
+                final Map<String, PropertyValue> properties = (props != null ? new HashMap<String, PropertyValue>(props.size()) : null);
+                for(final QName propName : props.keySet())
                 {
-                    Serializable value = props.get(propName);
-                    properties.put(solrSerializer.serializeValue(String.class, propName),
-                            solrSerializer.serialize(propName, value));
+                	// need to run this in tenant context because types may be in a tenant-specific
+                	// dictionary registry
+                    TenantUtil.runAsTenant(new TenantRunAsWork<Void>()
+                    {
+                    	@Override
+                    	public Void doWork() throws Exception 
+                    	{
+                    		Serializable value = props.get(propName);
+                    		properties.put(solrSerializer.serializeValue(String.class, propName),
+                    				solrSerializer.serialize(propName, value));
+                    		return null;
+                    	}
+                    }, tenantDomain);
                 }
                 setProperties(properties);
             }

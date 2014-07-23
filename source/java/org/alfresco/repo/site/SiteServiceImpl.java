@@ -1091,13 +1091,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             final String tenantDomain = tenantService.getUserDomain(userName);
             
-                return TenantUtil.runAsSystemTenant(new TenantRunAsWork<List<SiteInfo>>()
+            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<List<SiteInfo>>()
+            {
+                public List<SiteInfo> doWork() throws Exception
                 {
-                    public List<SiteInfo> doWork() throws Exception
-                    {
-                        return listSitesImpl(userName, size);
-                    }
-                }, tenantDomain);
+                    return listSitesImpl(userName, size);
+                }
+            }, tenantDomain);
         }
         else
         {

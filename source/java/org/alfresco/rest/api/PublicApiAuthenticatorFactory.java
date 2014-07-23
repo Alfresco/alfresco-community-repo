@@ -38,7 +38,10 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
     private static Log logger = LogFactory.getLog(PublicApiAuthenticatorFactory.class);
     
     public static final String DEFAULT_AUTHENTICATOR_KEY_HEADER = "X-Alfresco-Authenticator-Key"; 
-    
+
+    public static final String DEFAULT_REMOTE_USER_HEADER = "X-Alfresco-Remote-User"; 
+
+    private String remoteUserHeader = DEFAULT_REMOTE_USER_HEADER;
     private String authenticatorKeyHeader = DEFAULT_AUTHENTICATOR_KEY_HEADER;
     private RemoteUserMapper remoteUserMapper;
     private RetryingTransactionHelper retryingTransactionHelper;
@@ -170,6 +173,12 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
             {
                 userId = remoteUserMapper.getRemoteUser(this.servletReq.getHttpServletRequest());
             }
+            else
+            {
+            	// fall back to extracting the header
+            	userId = servletReq.getHeader(remoteUserHeader);
+            }
+
             if (logger.isDebugEnabled())
             {
                 if (userId == null)

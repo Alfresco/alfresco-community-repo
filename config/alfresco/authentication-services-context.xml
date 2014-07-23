@@ -149,6 +149,9 @@
 	<!-- authentication against the default authentication mechanism. -->
 
 	<bean id="passwordEncoder" class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl" />
+	
+	<!--  No Op Password Encoder Does not encode a password - used to replace an obsolete encoder e.g. the MD4 one -->
+	<bean id="noOpPasswordEncoder" class="org.alfresco.repo.security.authentication.NoOpPasswordEncoderImpl" />
 
     <bean id="sha256PasswordEncoder" class="org.alfresco.repo.security.authentication.ShaPasswordEncoderImpl">
         <constructor-arg index="0"><value>256</value></constructor-arg>

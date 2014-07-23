@@ -158,23 +158,6 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
             this.encoding = encoding;
         }
         
-        public boolean equals(Object o)
-        {
-            if (o instanceof ClassPathTemplateSource)
-            {
-                return url.equals(((ClassPathTemplateSource)o).url);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        
-        public int hashCode()
-        {
-            return url.hashCode();
-        }
-        
         public String toString()
         {
             return url.toString();
@@ -214,9 +197,6 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
             }
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.template.ClassPathRepoTemplateLoader.BaseTemplateSource#getRelativeResource(java.lang.String)
-         */
         @Override
         protected InputStream getRelativeResource(String name)
         {
@@ -305,9 +285,6 @@ public class ClassPathRepoTemplateLoader implements TemplateLoader
             }
         }
 
-        /* (non-Javadoc)
-         * @see org.alfresco.repo.template.ClassPathRepoTemplateLoader.BaseTemplateSource#getRelativeResource(java.lang.String)
-         */
         @Override
         protected InputStream getRelativeResource(String name)
         {

@@ -7,6 +7,7 @@
     <import resource="classpath:alfresco/tx-cache-context.xml" />
     <import resource="classpath:alfresco/cache-context.xml" />
     <import resource="classpath*:alfresco/enterprise/cluster/cluster-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/spring/*-context.xml" />
     <import resource="classpath*:alfresco/dbscripts/*-context.xml" />
     <import resource="classpath:alfresco/st-context.xml"/>
     <import resource="classpath*:alfresco/extension/mt/mt-context.xml"/>

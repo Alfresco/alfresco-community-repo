@@ -2228,9 +2228,9 @@ public class CMISTest
                     AccessControlEntryImpl ace = new AccessControlEntryImpl();
                     ace.setPrincipal(new AccessControlPrincipalDataImpl(testGroup));
                     List<String> putPermissions = new ArrayList<String>();
-                    putPermissions.add(CMISAccessControlService.CMIS_ALL_PERMISSION);
-                    putPermissions.add(CMISAccessControlService.CMIS_READ_PERMISSION);
-                    putPermissions.add(CMISAccessControlService.CMIS_WRITE_PERMISSION);
+                    putPermissions.add(BasicPermissions.ALL);
+                    putPermissions.add(BasicPermissions.READ);
+                    putPermissions.add(BasicPermissions.WRITE);
                     ace.setPermissions(putPermissions);
                     ace.setDirect(true);
                     acesList.add(ace);
@@ -2266,6 +2266,38 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
+
+	@Test
+	public void dictionaryTest()
+	{
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+        {
+			@Override
+			public Void doWork() throws Exception
+			{
+				M2Model customModel = M2Model.createModel(
+						Thread.currentThread().getContextClassLoader().
+						getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
+				dictionaryDAO.putModel(customModel);
+				assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
+				TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
+				assertNotNull(td);
+				return null;
+			}
+		}, "user1", "tenant1");
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+        {
+			@Override
+			public Void doWork() throws Exception
+			{
+				assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
+				TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
+				assertNull(td);
+				return null;
+			}
+		}, "user2", "tenant2");
+	}
     
     /**
      * MNT-11304: Test that Alfresco has no default boundaries for decimals
@@ -2325,37 +2357,4 @@ public class CMISTest
             AuthenticationUtil.popAuthentication();
         }
     }
-
-	@Test
-	public void dictionaryTest()
-	{
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
-			@Override
-			public Void doWork() throws Exception
-			{
-				M2Model customModel = M2Model.createModel(
-						Thread.currentThread().getContextClassLoader().
-						getResourceAsStream("dictionary/dictionarydaotest_model1.xml"));
-				dictionaryDAO.putModel(customModel);
-				assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
-				TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
-				assertNotNull(td);
-				return null;
-			}
-		}, "user1", "tenant1");
-
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-        {
-			@Override
-			public Void doWork() throws Exception
-			{
-				assertNotNull(cmisDictionaryService.findType("P:cm:dublincore"));
-				TypeDefinitionWrapper td = cmisDictionaryService.findType("D:daotest1:type1");
-				assertNull(td);
-				return null;
-			}
-		}, "user2", "tenant2");
-	}
-    
 }

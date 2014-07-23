@@ -23,7 +23,6 @@ public class AllUnitTestsSuite extends TestSuite
 
     static void unitTests(TestSuite suite)
     {
-        suite.addTestSuite(org.alfresco.cmis.PropertyFilterTest.class);
         suite.addTestSuite(org.alfresco.encryption.EncryptorTest.class);
         suite.addTestSuite(org.alfresco.encryption.KeyStoreKeyProviderTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.filesys.config.ServerConfigurationBeanTest.class));

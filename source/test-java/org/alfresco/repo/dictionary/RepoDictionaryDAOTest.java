@@ -31,10 +31,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.DefaultSimpleCache;
-import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceRegistry;
 import org.alfresco.repo.dictionary.constraint.AbstractConstraint;
 import org.alfresco.repo.dictionary.constraint.ConstraintRegistry;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;
@@ -89,11 +86,11 @@ public class RepoDictionaryDAOTest extends TestCase
         
         // Instantiate Dictionary Service
         TenantService tenantService = new SingleTServiceImpl();   
-        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-        namespaceDAO.setTenantService(tenantService);
-        initNamespaceCaches(namespaceDAO);
+//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+//        namespaceDAO.setTenantService(tenantService);
+//        initNamespaceCaches(namespaceDAO);
         
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO);
 
@@ -122,21 +119,21 @@ public class RepoDictionaryDAOTest extends TestCase
         dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
     
-    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
-    {
-        SimpleCache<String, NamespaceRegistry> namespaceCache = new DefaultSimpleCache<String, NamespaceRegistry>(11, getClass().getName() + ".namespace");
-        namespaceDAO.setNamespaceRegistryCache(namespaceCache);
-    }
+//    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
+//    {
+//        SimpleCache<String, NamespaceRegistry> namespaceCache = new DefaultSimpleCache<String, NamespaceRegistry>(11, getClass().getName() + ".namespace");
+//        namespaceDAO.setNamespaceRegistryCache(namespaceCache);
+//    }
     
 
     public void testBootstrap()
     {
-        TenantService tenantService = new SingleTServiceImpl();   
-        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-        namespaceDAO.setTenantService(tenantService);
-        initNamespaceCaches(namespaceDAO);
+        TenantService tenantService = new SingleTServiceImpl();
+//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+//        namespaceDAO.setTenantService(tenantService);
+//        initNamespaceCaches(namespaceDAO);
         
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO);
         
@@ -419,18 +416,18 @@ public class RepoDictionaryDAOTest extends TestCase
     {
         // source dictionary
         TenantService tenantService = new SingleTServiceImpl();   
-        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-        namespaceDAO.setTenantService(tenantService);
-        initNamespaceCaches(namespaceDAO);
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+//        namespaceDAO.setTenantService(tenantService);
+//        initNamespaceCaches(namespaceDAO);
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO);
 
         // destination dictionary
-        NamespaceDAOImpl namespaceDAO2 = new NamespaceDAOImpl();
-        namespaceDAO2.setTenantService(tenantService);
-        initNamespaceCaches(namespaceDAO2);
-        DictionaryDAOImpl dictionaryDAO2 = new DictionaryDAOImpl(namespaceDAO2);
+//        NamespaceDAOImpl namespaceDAO2 = new NamespaceDAOImpl();
+//        namespaceDAO2.setTenantService(tenantService);
+//        initNamespaceCaches(namespaceDAO2);
+        DictionaryDAOImpl dictionaryDAO2 = new DictionaryDAOImpl();
         dictionaryDAO2.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO2);
 

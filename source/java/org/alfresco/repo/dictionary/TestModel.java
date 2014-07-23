@@ -23,8 +23,6 @@ import java.util.List;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceRegistry;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 
@@ -81,12 +79,11 @@ public class TestModel
         // construct dictionary dao        
         TenantService tenantService = new SingleTServiceImpl();
         
-        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-        namespaceDAO.setTenantService(tenantService);
+//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+//        namespaceDAO.setTenantService(tenantService);
+//        initNamespaceCaches(namespaceDAO);
         
-        initNamespaceCaches(namespaceDAO);
-        
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         
         initDictionaryCaches(dictionaryDAO);
@@ -122,9 +119,9 @@ public class TestModel
         dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
     
-    private static void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
-    {
-        SimpleCache<String, NamespaceRegistry> namespaceCache = new DefaultSimpleCache<String, NamespaceRegistry>();
-        namespaceDAO.setNamespaceRegistryCache(namespaceCache);
-    }
+//    private static void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
+//    {
+//        SimpleCache<String, NamespaceRegistry> namespaceCache = new DefaultSimpleCache<String, NamespaceRegistry>();
+//        namespaceDAO.setNamespaceRegistryCache(namespaceCache);
+//    }
 }

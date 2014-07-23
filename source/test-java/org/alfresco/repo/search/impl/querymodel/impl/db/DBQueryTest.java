@@ -42,7 +42,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.search.impl.lucene.ADMLuceneTest.UnknownDataType;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
@@ -130,7 +130,7 @@ public class DBQueryTest  implements DictionaryListener
     
     private DictionaryDAO dictionaryDAO;
     
-    private NamespaceDAOImpl namespaceDao;
+    private NamespaceDAO namespaceDao;
     
     private ServiceRegistry serviceRegistry;
     
@@ -236,7 +236,7 @@ public class DBQueryTest  implements DictionaryListener
         retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         tenantService = (TenantService) ctx.getBean("tenantService");
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
+        namespaceDao = (NamespaceDAO) ctx.getBean("namespaceDAO");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         contentService = (ContentService) ctx.getBean("contentService");
 
@@ -250,7 +250,7 @@ public class DBQueryTest  implements DictionaryListener
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/MetadataQueryTest_model.xml");
         assertNotNull(modelStream);
         model = M2Model.createModel(modelStream);
-        dictionaryDAO.register(this);
+        dictionaryDAO.registerListener(this);
         dictionaryDAO.reset();
         assertNotNull(dictionaryDAO.getClass(TEST_SUPER_CONTENT_TYPE));
     }

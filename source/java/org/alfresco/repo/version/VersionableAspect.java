@@ -255,7 +255,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 ContentModel.ASPECT_VERSIONABLE,
                 new JavaBehaviour(this, "getCopyCallback"));
         
-        this.dictionaryDAO.register(this);
+        this.dictionaryDAO.registerListener(this);
     }
     
     /**

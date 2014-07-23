@@ -141,7 +141,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         
         List<RepoModelDefinition> modelsInRepo = new ArrayList<RepoModelDefinition>();
         
-        Collection<QName> models = dictionaryDAO.getModels();  
+        Collection<QName> models = dictionaryDAO.getModels(true);  
         
         List<String> dictionaryModels = new ArrayList<String>();
         for (QName model : models)

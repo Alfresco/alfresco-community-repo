@@ -29,7 +29,7 @@ import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.mapping.CMISMapping;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.dictionary.DictionaryDAO;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -105,7 +105,7 @@ public abstract class BaseCMISTest extends TestCase
 
     protected DictionaryDAO dictionaryDAO;
 
-    protected NamespaceDAOImpl namespaceDao;
+    protected NamespaceDAO namespaceDao;
 
     protected VersionService versionService;
 
@@ -145,7 +145,7 @@ public abstract class BaseCMISTest extends TestCase
         permissionModelDao = (ModelDAO) ctx.getBean("permissionsModelDAO");
         
         dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
-        namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
+        namespaceDao = (NamespaceDAO) ctx.getBean("namespaceDAO");
         luceneFTS = (FullTextSearchIndexer)ctx.getBean("LuceneFullTextSearchIndexer");
         
         testTX = transactionService.getUserTransaction();

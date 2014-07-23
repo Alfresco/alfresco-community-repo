@@ -62,20 +62,10 @@
       <property name="nodeService" ref="nodeService"/>
       <property name="contentService" ref="contentService"/>
       <property name="policyComponent" ref="policyComponent"/>
-      <property name="workflowService" ref="WorkflowService"/>
-      <property name="searchService" ref="SearchService"/>
-      <property name="namespaceService" ref="namespaceService"/>
       <property name="tenantService" ref="tenantService"/>
-      <property name="tenantAdminService" ref="tenantAdminService"/>
+      <property name="modelValidator" ref="modelValidator"/>
       <property name="transactionService" ref="TransactionService"/>
       <property name="jobLockService" ref="jobLockService"/>
-      
-      <property name="storeUrls">
-            <list>
-                <value>${spaces.store}</value>
-                <value>${spaces.archive.store}</value>
-            </list>
-      </property>
     </bean>
     
 </beans>

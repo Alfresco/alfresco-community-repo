@@ -57,10 +57,10 @@ public class PolicyComponentTest extends TestCase
     {
         // Instantiate Dictionary Service
     	TenantService tenantService = new SingleTServiceImpl();
-        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-        namespaceDAO.setTenantService(tenantService);
-        initNamespaceCaches(namespaceDAO);
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+//        namespaceDAO.setTenantService(tenantService);
+//        initNamespaceCaches(namespaceDAO);
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO);
         
@@ -88,12 +88,12 @@ public class PolicyComponentTest extends TestCase
         dictionaryDAO.setDictionaryRegistryCache(new NullCache());
     }
     
-    @SuppressWarnings("unchecked")
-    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
-    {
-        // note: unit tested here with null cache
-        namespaceDAO.setNamespaceRegistryCache(new NullCache());
-    }
+//    @SuppressWarnings("unchecked")
+//    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
+//    {
+//        // note: unit tested here with null cache
+//        namespaceDAO.setNamespaceRegistryCache(new NullCache());
+//    }
 
     public void testJavaBehaviour()
     {

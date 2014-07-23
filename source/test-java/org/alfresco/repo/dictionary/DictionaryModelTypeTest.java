@@ -51,7 +51,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.PropertyMap;
 import org.junit.experimental.categories.Category;
@@ -375,9 +374,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         
         List<String> storeUrlsToValidate = new ArrayList<String>(1);
         storeUrlsToValidate.add(this.storeRef.toString());
-        DictionaryModelType dictionaryModelType = (DictionaryModelType)this.applicationContext.getBean("dictionaryModelType");
-        dictionaryModelType.setStoreUrls(storeUrlsToValidate);
-        
+        ModelValidatorImpl modelValidator = (ModelValidatorImpl)this.applicationContext.getBean("modelValidator");
+        modelValidator.setStoreUrls(storeUrlsToValidate);
+
         DictionaryRepositoryBootstrap bootstrap = new DictionaryRepositoryBootstrap();
         bootstrap.setContentService(this.contentService);
         bootstrap.setDictionaryDAO(this.dictionaryDAO);

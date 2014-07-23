@@ -713,20 +713,25 @@
            <ref bean="cm:constraintRegistry" />
        </property>
     </bean>
-    
-    <bean id="namespaceDAO" class="org.alfresco.repo.dictionary.NamespaceDAOImpl">
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-        <property name="namespaceRegistryCache">
-            <ref bean="prefixesCache"/>
-        </property>
+
+    <alias name="dictionaryDAO" alias="namespaceDAO"/>
+
+    <bean id="modelValidator" class="org.alfresco.repo.dictionary.ModelValidatorImpl">
+        <property name="dictionaryDAO" ref="dictionaryDAO"/>
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="workflowService" ref="WorkflowService"/>
+        <property name="tenantService" ref="tenantService"/>
+        <property name="tenantAdminService" ref="tenantAdminService"/>
+        <property name="searchService" ref="searchService"/>
+	      <property name="storeUrls">
+	            <list>
+	                <value>${spaces.store}</value>
+	                <value>${spaces.archive.store}</value>
+	            </list>
+	      </property>
     </bean>
 
     <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">
-        <constructor-arg index="0">
-            <ref bean="namespaceDAO" />
-        </constructor-arg>
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>

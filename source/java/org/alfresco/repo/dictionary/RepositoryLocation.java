@@ -39,11 +39,10 @@ public class RepositoryLocation
     
     /** Search Language */
     private String queryLanguage = "xpath"; // default
-    
+
     public static final String LANGUAGE_PATH = "path"; // lookup directly using node (prefix qname) path
     public static final String LANGUAGE_CLASSPATH = "classpath";
-    
-    
+
     /**
      */
     public RepositoryLocation()
@@ -66,7 +65,7 @@ public class RepositoryLocation
         setQueryLanguage(queryLanguage);
     }
 
-    /**
+	/**
      * Set the store protocol
      *
      * @param storeProtocol     the store protocol

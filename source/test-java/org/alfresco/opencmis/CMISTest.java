@@ -201,7 +201,7 @@ public class CMISTest
         }
     }
 
-    private static class SimpleCallContext implements CallContext
+    public static class SimpleCallContext implements CallContext
     {
     	private final Map<String, Object> contextMap = new HashMap<String, Object>();
     	private CmisVersion cmisVersion;

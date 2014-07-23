@@ -64,9 +64,10 @@ import org.alfresco.repo.dictionary.DynamicModelPolicies.OnLoadDynamicModel;
 /**
  * Bootstrap the dictionary from specified locations within the repository
  * 
- * @author Roy Wetherall, JanV
+ * @author Roy Wetherall, JanV, sglover
  */
-public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean implements TenantDeployer, DictionaryListener, MessageDeployer
+public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean
+implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */MessageDeployer
 {
     // Logging support
     private static Log logger = LogFactory.getLog(DictionaryRepositoryBootstrap.class);
@@ -131,7 +132,17 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     {
         this.nodeService = nodeService;
     }
-    
+
+	public PolicyComponent getPolicyComponent()
+	{
+		return policyComponent;
+	}
+
+	public void setPolicyComponent(PolicyComponent policyComponent)
+	{
+		this.policyComponent = policyComponent;
+	}
+
     /**
      * Set the tenant admin service
      * 
@@ -231,29 +242,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     {    
         // NOOP - will be destroyed directly via DictionaryComponent
     }
-    
-    /**
-     * Initialise the dictionary, ensuring that a transaction is available
-     */
-    @Override
-    public void onDictionaryInit()
-    {
-    	if(onLoadDynamicModelDelegate == null)
-    	{
-    		onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
-    	}
-        RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                onDictionaryInitInTxn();
-                return null;
-            }
-        };
-        transactionService.getRetryingTransactionHelper().doInTransaction(initCallback, true, false);
-    }
-    
+
     /**
      * Perform the actual repository access, checking for the existence of a valid transaction
      */
@@ -272,7 +261,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             logger.trace("onDictionaryInit: ["+Thread.currentThread()+"]"+(tenantDomain.equals(TenantService.DEFAULT_DOMAIN) ? "" : " (Tenant: "+tenantDomain+")"));
         }
         
-        Collection<QName> modelsBefore = dictionaryDAO.getModels(); // note: re-entrant
+        Collection<QName> modelsBefore = dictionaryDAO.getModels(true); // note: re-entrant
         int modelsBeforeCnt = (modelsBefore != null ? modelsBefore.size() : 0);
         
         List<String> loadedModels = new ArrayList<String>();
@@ -312,7 +301,8 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
                             try
                             {
                                 // Ignore if the node is a working copy or archived, or if its inactive
-                                if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) || nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
+                                if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) ||
+                                		nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
                                 {
                                     Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
                                     
@@ -363,7 +353,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             }
         }
         
-        Collection<QName> modelsAfter = dictionaryDAO.getModels();
+        Collection<QName> modelsAfter = dictionaryDAO.getModels(true);
         int modelsAfterCnt = (modelsAfter != null ? modelsAfter.size() : 0);
         
         if (logger.isDebugEnabled())
@@ -383,23 +373,7 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
     	DynamicModelPolicies.OnLoadDynamicModel policy = onLoadDynamicModelDelegate.get(ContentModel.TYPE_CONTENT);
     	policy.onLoadDynamicModel(entry.model, entry.nodeRef);
     }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#afterInit()
-     */
-    public void afterDictionaryInit()
-    {
-    }
-    
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#onDictionaryDestroy()
-     */
-    public void afterDictionaryDestroy()
-    {
-    }
-    
+
     public void initMessages()
     {
         if (this.repositoryMessagesLocations != null)
@@ -496,14 +470,20 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         
         return modelRefs;
     }
-    
-    protected List<NodeRef> getNodes(StoreRef storeRef, RepositoryLocation repositoryLocation, QName nodeType)
+
+	protected List<NodeRef> getNodes(StoreRef storeRef, RepositoryLocation repositoryLocation, QName nodeType)
     {
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
-        
+
         NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+        if(repositoryLocation instanceof DynamicCreateRepositoryLocation)
+        {
+        	((DynamicCreateRepositoryLocation)repositoryLocation).checkAndCreate(rootNodeRef);
+        }
+
         String[] pathElements = repositoryLocation.getPathElements();
-        
+
         NodeRef folderNodeRef = rootNodeRef;
         if (pathElements.length > 0)
         {
@@ -575,10 +555,12 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
             {
                 if (logger.isDebugEnabled())
                 {
-                    logger.debug("Loading model: " + modelName + " (from ["+ modelLocation.getStoreRef() + "]"+ modelLocation.getPath() + ")");
+                    logger.debug("Loading model: " + modelName
+                    		+ " (from ["+ modelLocation.getStoreRef() + "]"+ modelLocation.getPath() + ")");
                 }
-                
+
                 dictionaryDAO.putModel(model);
+
                 loadedModels.add(modelName);
             }
             catch (AlfrescoRuntimeException e)
@@ -666,8 +648,8 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         dictionaryDAO.destroy();
         
         // register with Dictionary Service to allow (re-)init
-        dictionaryDAO.register(this);
-        
+        dictionaryDAO.registerListener(this);
+
         // register with Message Service to allow (re-)init
         messageService.register(this);
         
@@ -742,13 +724,36 @@ public class DictionaryRepositoryBootstrap extends AbstractLifecycleBean impleme
         }
         return parentNodeRef;
     }
-    
-   
-	public PolicyComponent getPolicyComponent() {
-		return policyComponent;
+
+    /**
+     * Initialise the dictionary, ensuring that a transaction is available
+     */
+    @Override
+    public void onDictionaryInit()
+    {
+    	if(onLoadDynamicModelDelegate == null)
+    	{
+    		onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
+    	}
+        RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                onDictionaryInitInTxn();
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(initCallback, true, false);
+    }
+
+	@Override
+	public void afterDictionaryDestroy()
+	{
 	}
 
-	public void setPolicyComponent(PolicyComponent policyComponent) {
-		this.policyComponent = policyComponent;
+	@Override
+	public void afterDictionaryInit()
+	{
 	}
 }

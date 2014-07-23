@@ -26,7 +26,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.Collator;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -39,11 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -54,7 +49,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.dictionary.DictionaryNamespaceComponent;
 import org.alfresco.repo.dictionary.M2Model;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl;
+import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.search.IndexerAndSearcher;
@@ -102,16 +97,15 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.CachingDateFormat;
+import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
 import org.alfresco.util.GUID;
 import org.alfresco.util.ISO9075;
-import org.alfresco.util.CachingDateFormat.SimpleDateFormatAndResolution;
 import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.TermEnum;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.junit.experimental.categories.Category;
@@ -220,7 +214,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
     private NodeRef[] documentOrder;
 
-    private NamespaceDAOImpl namespaceDao;
+    private NamespaceDAO namespaceDao;
 
     private Date testDate;
 
@@ -291,7 +285,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
 
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
-        namespaceDao = (NamespaceDAOImpl) ctx.getBean("namespaceDAO");
+        namespaceDao = (NamespaceDAO) ctx.getBean("namespaceDAO");
 
         I18NUtil.setLocale(Locale.UK);
 
@@ -310,7 +304,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/search/impl/lucene/LuceneTest_model.xml");
         assertNotNull(modelStream);
         model = M2Model.createModel(modelStream);
-        dictionaryDAO.register(this);
+        dictionaryDAO.registerListener(this);
         dictionaryDAO.reset();
         assertNotNull(dictionaryDAO.getClass(testSuperType));
 

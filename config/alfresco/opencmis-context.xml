@@ -37,22 +37,24 @@
         <property name="cmisDictionaryService"     ref="OpenCMISDictionaryService1.1" />
     </bean>
     
-    <bean id="OpenCMISDictionaryService" class="org.alfresco.opencmis.dictionary.CMISStrictDictionaryService" >
+    <bean id="OpenCMISDictionaryService" class="org.alfresco.opencmis.dictionary.CMISStrictDictionaryService" init-method="init">
         <property name="cmisMapping"                  ref="OpenCMISMapping" />
         <property name="dictionaryService"            ref="dictionaryService" />
         <property name="dictionaryDAO"                ref="dictionaryDAO" />
         <property name="singletonCache"               ref="immutableSingletonCache"/>
         <property name="propertyLuceneBuilderMapping" ref="OpenCMISPropertyLuceneBuilderMapping" />
         <property name="propertyAccessorMapping"      ref="OpenCMISPropertyAccessorMapping" />
+        <property name="tenantService"                ref="tenantService" />
     </bean>
 
-    <bean id="OpenCMISDictionaryService1.1" class="org.alfresco.opencmis.dictionary.CMISStrictDictionaryService" >
+    <bean id="OpenCMISDictionaryService1.1" class="org.alfresco.opencmis.dictionary.CMISStrictDictionaryService" init-method="init">
         <property name="cmisMapping"                  ref="OpenCMISMapping1.1" />
         <property name="dictionaryService"            ref="dictionaryService" />
         <property name="dictionaryDAO"                ref="dictionaryDAO" />
         <property name="singletonCache"               ref="immutableSingletonCache"/>
         <property name="propertyLuceneBuilderMapping" ref="OpenCMISPropertyLuceneBuilderMapping1.1" />
         <property name="propertyAccessorMapping"      ref="OpenCMISPropertyAccessorMapping1.1" />
+        <property name="tenantService"                ref="tenantService" />
     </bean>
     
     <bean id="OpenCMISMapping" class="org.alfresco.opencmis.mapping.CMISMapping" >

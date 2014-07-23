@@ -279,16 +279,17 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         List<TypeDefinitionWrapper> childrenList;
         if (typeId == null)
         {
-            childrenList = connector.getOpenCMISDictionaryService().getBaseTypes();
+            childrenList = connector.getOpenCMISDictionaryService().getBaseTypes(true);
         }
         else
         {
-            TypeDefinitionWrapper tdw = connector.getOpenCMISDictionaryService().findType(typeId);
-            if (tdw == null)
-            {
-                throw new CmisObjectNotFoundException("Type '" + typeId + "' is unknown!");
-            }
-            childrenList = tdw.getChildren();
+        	TypeDefinitionWrapper tdw = connector.getOpenCMISDictionaryService().findType(typeId);
+        	if (tdw == null)
+        	{
+        		throw new CmisObjectNotFoundException("Type '" + typeId + "' is unknown!");
+        	}
+        	childrenList = connector.getOpenCMISDictionaryService().getChildren(typeId);
+//            childrenList = tdw.getChildren();
         }
 
         // create result
@@ -341,7 +342,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         if (typeId == null)
         {
-            for (TypeDefinitionWrapper tdw : connector.getOpenCMISDictionaryService().getBaseTypes())
+            for (TypeDefinitionWrapper tdw : connector.getOpenCMISDictionaryService().getBaseTypes(true))
             {
                 result.add(getTypesDescendants(d, tdw, includePropertyDefinitions));
             }
@@ -353,10 +354,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             {
                 throw new CmisObjectNotFoundException("Type '" + typeId + "' is unknown!");
             }
-
-            if (tdw.getChildren() != null)
+        	List<TypeDefinitionWrapper> children = connector.getOpenCMISDictionaryService().getChildren(typeId);
+            if(children != null)
             {
-                for (TypeDefinitionWrapper child : tdw.getChildren())
+                for (TypeDefinitionWrapper child : children)
                 {
                     result.add(getTypesDescendants(d, child, includePropertyDefinitions));
                 }
@@ -378,10 +379,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         if (depth != 0)
         {
-            if (tdw.getChildren() != null)
+        	String typeId = tdw.getTypeId();
+        	List<TypeDefinitionWrapper> children = connector.getOpenCMISDictionaryService().getChildren(typeId);
+            if (children != null)
             {
                 result.setChildren(new ArrayList<TypeDefinitionContainer>());
-                for (TypeDefinitionWrapper tdc : tdw.getChildren())
+                for (TypeDefinitionWrapper tdc : children)
                 {
                     result.getChildren().add(
                             getTypesDescendants(depth < 0 ? -1 : depth - 1, tdc, includePropertyDefinitions));

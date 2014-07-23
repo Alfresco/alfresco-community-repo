@@ -83,10 +83,10 @@ public class MTPolicyComponentTest extends TestCase
     	when(mockTenantService.getBaseName(any(StoreRef.class))).thenReturn(new StoreRef(BASE_PROTOCOL, BASE_IDENTIFIER));
 
     	
-        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-        namespaceDAO.setTenantService(mockTenantService);
-        initNamespaceCaches(namespaceDAO);
-        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
+//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
+//        namespaceDAO.setTenantService(mockTenantService);
+//        initNamespaceCaches(namespaceDAO);
+        DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(mockTenantService);
         initDictionaryCaches(dictionaryDAO);
         
@@ -116,12 +116,12 @@ public class MTPolicyComponentTest extends TestCase
         dictionaryDAO.setDictionaryRegistryCache(new NullCache());
     }
     
-    @SuppressWarnings("unchecked")
-    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
-    {
-        // note: unit tested here with null cache
-        namespaceDAO.setNamespaceRegistryCache(new NullCache());
-    }
+//    @SuppressWarnings("unchecked")
+//    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
+//    {
+//        // note: unit tested here with null cache
+//        namespaceDAO.setNamespaceRegistryCache(new NullCache());
+//    }
 
     public void testJavaBehaviour()
     {

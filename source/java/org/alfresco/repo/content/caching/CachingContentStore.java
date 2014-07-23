@@ -92,81 +92,42 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         eventPublisher.publishEvent(new CachingContentStoreCreatedEvent(this));
     }
     
-    /*
-     * @see org.alfresco.repo.content.ContentStore#isContentUrlSupported(java.lang.String)
-     */
     @Override
     public boolean isContentUrlSupported(String contentUrl)
     {
         return backingStore.isContentUrlSupported(contentUrl);
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#isWriteSupported()
-     */
     @Override
     public boolean isWriteSupported()
     {
         return backingStore.isWriteSupported();
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getTotalSize()
-     */
-    @Override
-    public long getTotalSize()
-    {
-        return backingStore.getTotalSize();
-    }
-
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getSpaceUsed()
-     */
-    @Override
-    public long getSpaceUsed()
-    {
-        return backingStore.getSpaceUsed();
-    }
-
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getSpaceFree()
-     */
     @Override
     public long getSpaceFree()
     {
         return backingStore.getSpaceFree();
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getSpaceTotal()
-     */
     @Override
     public long getSpaceTotal()
     {
         return backingStore.getSpaceTotal();
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getRootLocation()
-     */
     @Override
     public String getRootLocation()
     {
         return backingStore.getRootLocation();
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#exists(java.lang.String)
-     */
     @Override
     public boolean exists(String contentUrl)
     {
         return backingStore.exists(contentUrl);
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getReader(java.lang.String)
-     */
     @Override
     public ContentReader getReader(String contentUrl)
     {
@@ -284,9 +245,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         return reader;
     }
     
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getWriter(org.alfresco.repo.content.ContentContext)
-     */
     @Override
     public ContentWriter getWriter(final ContentContext context)
     {
@@ -335,28 +293,14 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         }
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getWriter(org.alfresco.service.cmr.repository.ContentReader, java.lang.String)
-     */
-    @Override
-    public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl)
-    {
-        ContentContext ctx = new ContentContext(existingContentReader, newContentUrl);
-        return getWriter(ctx);
-    }
-
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getUrls(org.alfresco.repo.content.ContentStore.ContentUrlHandler)
-     */
+    @SuppressWarnings("deprecation")
     @Override
     public void getUrls(ContentUrlHandler handler) throws ContentIOException
     {
         backingStore.getUrls(handler);
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#getUrls(java.util.Date, java.util.Date, org.alfresco.repo.content.ContentStore.ContentUrlHandler)
-     */
+    @SuppressWarnings("deprecation")
     @Override
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler)
                 throws ContentIOException
@@ -364,9 +308,6 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
         backingStore.getUrls(createdAfter, createdBefore, handler);
     }
 
-    /*
-     * @see org.alfresco.repo.content.ContentStore#delete(java.lang.String)
-     */
     @Override
     public boolean delete(String contentUrl)
     {

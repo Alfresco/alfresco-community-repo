@@ -123,7 +123,7 @@ public class FileContentStore
     {
         this(rootDirectoryStr);
         setApplicationContext(context);
-        publishEvent(context, Collections.EMPTY_MAP);
+        publishEvent(context, Collections.<String, Serializable> emptyMap());
     }
 
     /**
@@ -138,7 +138,7 @@ public class FileContentStore
     {
         this(rootDirectory);        
         setApplicationContext(context);
-        publishEvent(context, Collections.EMPTY_MAP);
+        publishEvent(context, Collections.<String, Serializable> emptyMap());
     }
     
     public FileContentStore(ApplicationContext context, File rootDirectory, Map<String, Serializable> extendedEventParams)
@@ -513,6 +513,7 @@ public class FileContentStore
      *            the handler
      * @return the urls
      */
+    @SuppressWarnings("deprecation")
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler)
     {
         // recursively get all files within the root
@@ -533,6 +534,7 @@ public class FileContentStore
      * @param createdBefore only get URLs for content created before this date
      * @return a list of all files within the given directory and all subdirectories
      */
+    @SuppressWarnings("deprecation")
     private void getUrls(File directory, ContentUrlHandler handler, Date createdAfter, Date createdBefore)
     {
         File[] files = directory.listFiles();
@@ -662,7 +664,7 @@ public class FileContentStore
         // (e.g. for monitoring purposes)
         if (event instanceof ContextRefreshedEvent && event.getSource() == this.applicationContext)
         {
-            publishEvent(((ContextRefreshedEvent) event).getApplicationContext(), Collections.EMPTY_MAP);
+            publishEvent(((ContextRefreshedEvent) event).getApplicationContext(), Collections.<String, Serializable> emptyMap());
         }
     }
 

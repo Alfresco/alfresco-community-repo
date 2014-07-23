@@ -252,23 +252,6 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     }
 
     /**
-     * Uses {@link #getSpaceUsed()}, which is the equivalent method.  This method is now
-     * final in order to catch any implementations that should switch over to {@link #getSpaceUsed()}.
-     */
-    public final long getTotalSize()
-    {
-        return getSpaceUsed();
-    }
-
-    /**
-     * @return      Returns <tt>-1</tt> always
-     */
-    public long getSpaceUsed()
-    {
-        return -1L;
-    }
-
-    /**
      * @return      Returns <tt>-1</tt> always
      */
     @Override
@@ -406,6 +389,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
     /**
      * @see #getUrls(Date, Date, ContentUrlHandler)
      */
+    @SuppressWarnings("deprecation")
     public void getUrls(ContentUrlHandler handler) throws ContentIOException
     {
         getUrls(null, null, handler);
@@ -416,6 +400,7 @@ public abstract class AbstractRoutingContentStore implements ContentStore
      * 
      * @see ContentStore#getUrls(Date, Date, ContentUrlHandler)
      */
+    @SuppressWarnings("deprecation")
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
     {
         List<ContentStore> stores = getAllStores();

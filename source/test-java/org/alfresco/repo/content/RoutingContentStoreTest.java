@@ -212,6 +212,7 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
             return fileStore.getReader(contentUrl);
         }
 
+        @SuppressWarnings("deprecation")
         @Override
         public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
         {
@@ -238,12 +239,6 @@ public class RoutingContentStoreTest extends AbstractWritableContentStoreTest
         public ContentReader getReader(String contentUrl)
         {
             throw new UnsupportedContentUrlException(this, contentUrl);
-        }
-
-        @Override
-        public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
-        {
-            throw new UnsupportedOperationException("getUrls not supported");
         }
     }
 }

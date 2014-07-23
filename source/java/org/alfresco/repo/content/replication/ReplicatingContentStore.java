@@ -377,6 +377,7 @@ public class ReplicatingContentStore extends AbstractContentStore
      * Iterates over results as given by the primary store and all secondary stores.  It is up to the handler to eliminate
      * duplicates that will occur between the primary and secondary stores.
      */
+    @SuppressWarnings("deprecation")
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
     {
         // add in URLs from primary store
@@ -399,8 +400,6 @@ public class ReplicatingContentStore extends AbstractContentStore
     /**
      * Replicates the content upon stream closure.  If the thread pool is available,
      * then the process will be asynchronous.
-     * <p>
-    
      * 
      * @author Derek Hulley
      */

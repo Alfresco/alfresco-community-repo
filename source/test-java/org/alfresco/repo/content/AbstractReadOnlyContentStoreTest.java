@@ -109,6 +109,7 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
      * @return
      *      Return any valid URL for the store, or <tt>null</tt> if the store is empty.
      */
+    @SuppressWarnings("deprecation")
     protected String getExistingContentUrl()
     {
         ContentStore store = getStore();

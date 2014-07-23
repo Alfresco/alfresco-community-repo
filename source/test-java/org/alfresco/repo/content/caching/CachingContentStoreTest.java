@@ -34,12 +34,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Locale;
 
 import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
-import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -399,22 +397,6 @@ public class CachingContentStoreTest
     
  
     @Test
-    public void delegatedGetTotalSize()
-    {
-        when(backingStore.getTotalSize()).thenReturn(234L);
-        assertEquals(234L, cachingStore.getTotalSize());
-    }
-    
-    
-    @Test
-    public void delegatedGetSpaceUsed()
-    {
-        when(backingStore.getSpaceUsed()).thenReturn(453L);
-        assertEquals(453L, cachingStore.getSpaceUsed());
-    }
-    
- 
-    @Test
     public void delegatedGetSpaceFree()
     {
         when(backingStore.getSpaceFree()).thenReturn(124L);
@@ -450,30 +432,6 @@ public class CachingContentStoreTest
     
     
     @Test
-    public void delegatedGetUrls1()
-    {
-        ContentUrlHandler handler = createDummyUrlHandler();
-        
-        cachingStore.getUrls(handler);
-        
-        verify(backingStore).getUrls(handler);
-    }
-    
-    
-    @Test
-    public void delegatedGetUrls2()
-    {
-        ContentUrlHandler handler = createDummyUrlHandler();
-        Date after = new Date(123L);
-        Date before = new Date(456L);
-        
-        cachingStore.getUrls(after, before, handler);
-        
-        verify(backingStore).getUrls(after, before, handler);
-    }
-
-    
-    @Test
     public void delegatedDelete()
     {
         when(backingStore.delete("url")).thenReturn(true);
@@ -482,23 +440,4 @@ public class CachingContentStoreTest
         when(backingStore.delete("url")).thenReturn(false);
         assertFalse(cachingStore.delete("url"));
     }
-    
-    
-    /**
-     * Create a stub handler - just so we can check it has been passed around correctly.
-     * 
-     * @return ContentUrlHandler
-     */
-    private ContentUrlHandler createDummyUrlHandler()
-    {
-        ContentUrlHandler handler = new ContentUrlHandler()
-        {
-            @Override
-            public void handle(String contentUrl)
-            {
-            }
-        };
-        return handler;
-    }
-
 }

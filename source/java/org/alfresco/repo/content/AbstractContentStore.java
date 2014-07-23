@@ -78,6 +78,14 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     protected ContentLimitProvider contentLimitProvider = new NoLimitProvider();
+
+    /**
+     * An object that prevents abuse of the underlying store(s)
+     */
+    public void setContentLimitProvider(ContentLimitProvider contentLimitProvider)
+    {
+        this.contentLimitProvider = contentLimitProvider;
+    }
     
     /**
      * Splits the content URL into its component parts as separated by
@@ -119,6 +127,7 @@ public abstract class AbstractContentStore implements ContentStore
      * 
      * @since 2.1
      */
+    @Override
     public boolean isContentUrlSupported(String contentUrl)
     {
         try
@@ -140,6 +149,7 @@ public abstract class AbstractContentStore implements ContentStore
      * 
      * @since 2.1
      */
+    @Override
     public boolean delete(String contentUrl)
     {
         throw new UnsupportedOperationException();
@@ -148,6 +158,8 @@ public abstract class AbstractContentStore implements ContentStore
     /**
      * @see #getUrls(Date, Date, ContentUrlHandler)
      */
+    @SuppressWarnings("deprecation")
+    @Override
     public final void getUrls(ContentUrlHandler handler) throws ContentIOException
     {
         getUrls(null, null, handler);
@@ -159,6 +171,8 @@ public abstract class AbstractContentStore implements ContentStore
      * 
      * @throws UnsupportedOperationException always
      */
+    @SuppressWarnings("deprecation")
+    @Override
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException
     {
         throw new UnsupportedOperationException();
@@ -193,6 +207,7 @@ public abstract class AbstractContentStore implements ContentStore
      * @see #getWriterInternal(ContentReader, String)
      * @since 2.1
      */
+    @Override
     public ContentWriter getWriter(ContentContext context)
     {
         ContentReader existingContentReader = context.getExistingContentReader();
@@ -250,41 +265,15 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * @see ContentContext
-     * @see ContentStore#getWriter(ContentContext)
-     */
-    public final ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl)
-    {
-        ContentContext ctx = new ContentContext(existingContentReader, newContentUrl);
-        return getWriter(ctx);
-    }
-    
-    /**
      * Simple implementation that uses the
      * {@link ContentReader#exists() reader's exists} method as its implementation.
      * Override this method if a more efficient implementation is possible.
      */
+    @Override
     public boolean exists(String contentUrl)
     {
         ContentReader reader = getReader(contentUrl);
         return reader.exists();
-    }
-
-    /**
-     * Uses {@link #getSpaceUsed()}, which is the equivalent method.  This method is now
-     * final in order to catch any implementations that should switch over to {@link #getSpaceUsed()}.
-     */
-    public final long getTotalSize()
-    {
-        return getSpaceUsed();
-    }
-
-    /**
-     * @return      Returns <tt>-1</tt> always
-     */
-    public long getSpaceUsed()
-    {
-        return -1L;
     }
 
     /**
@@ -306,15 +295,11 @@ public abstract class AbstractContentStore implements ContentStore
     }
 
     /**
-     * {@inheritDoc}
+     * @return      Returns a '.' (period) always
      */
+    @Override
     public String getRootLocation()
     {
         return ".";
-    }
-
-    public void setContentLimitProvider(ContentLimitProvider contentLimitProvider)
-    {
-        this.contentLimitProvider = contentLimitProvider;
     }
 }

@@ -97,32 +97,7 @@ public interface ContentStore
     public boolean isWriteSupported();
     
     /**
-     * @deprecated      Since 3.3.3 use {@link #getSpaceUsed()}.
-     * @see #getSpaceFree()
-     * @see #getSpaceTotal()
-     */
-    public long getTotalSize();
-    
-    /**
-     * Calculates the total size of <b>stored content</b>, excluding any other data in the underlying
-     * storage.
-     * <p/>
-     * <b>NOTE:</b> Calculating this value can be time-consuming - use sparingly.
-     * <p/>
-     * <b>NOTE:</b> For efficiency, some implementations may provide a guess.  If not, this call could
-     * take a long time.
-     * 
-     * @return
-     *      Returns the total, possibly approximate size (in bytes) of the binary data stored or <tt>-1</tt>
-     *      if no size data is available.
-     * 
-     * @since 3.3.3
-     * @deprecated This method takes too long to complete in many situations (see ALF-12410).
-     */
-    public long getSpaceUsed();
-    
-    /**
-     * Calcualates the remaing <i>free</i> space in the underlying store.
+     * Calculates the remaning <i>free</i> space in the underlying store.
      * <p>
      * <b>NOTE:</b> For efficiency, some implementations may provide a guess.
      * <p>
@@ -232,15 +207,6 @@ public interface ContentStore
     public ContentWriter getWriter(ContentContext context);
     
     /**
-     * Shortcut method to {@link #getWriter(ContentContext)}.
-     * 
-     * @see #getWriter(ContentContext)
-     * 
-     * @deprecated
-     */
-    public ContentWriter getWriter(ContentReader existingContentReader, String newContentUrl);
-
-    /**
      * Get all URLs for the store, regardless of creation time.
      * @return
      *      Returns a set of all unique content URLs in the store
@@ -250,7 +216,11 @@ public interface ContentStore
      *      if the store is unable to provide the information
      * 
      * @see #getUrls(Date, Date)
+     * 
+     * @deprecated              in 5.0.  The API is no longer used by Alfresco;
+     *                          efficient APIs can be provided by the implementations, if required
      */
+    @Deprecated
     public void getUrls(ContentUrlHandler handler) throws ContentIOException;
 
     /**
@@ -266,7 +236,11 @@ public interface ContentStore
      *      if an error occurs
      * @throws UnsupportedOperationException
      *      if the store is unable to provide the information
+     * 
+     * @deprecated              in 5.0.  The API is no longer used by Alfresco;
+     *                          efficient APIs can be provided by the implementations, if required
      */
+    @Deprecated
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler) throws ContentIOException;
     
     /**
@@ -294,7 +268,9 @@ public interface ContentStore
      * 
      * @author Derek Hulley
      * @since 2.0
+     * @deprecated              in 5.0
      */
+    @Deprecated
     public interface ContentUrlHandler
     {
         void handle(String contentUrl);

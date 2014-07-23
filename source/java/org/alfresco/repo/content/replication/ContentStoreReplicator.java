@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.replication;
 
+import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.repo.node.index.IndexRecovery;
@@ -41,6 +42,7 @@ import org.quartz.JobExecutionException;
  * 
  * @author Derek Hulley
  */
+@SuppressWarnings("deprecation")
 public class ContentStoreReplicator
 {
     private static Log logger = LogFactory.getLog(ContentStoreReplicator.class);
@@ -54,6 +56,7 @@ public class ContentStoreReplicator
     public ContentStoreReplicator()
     {
         this.busy = false;
+        logger.warn("DEPRECATION: The ContentStoreReplicator component has been deprecated in 5.0 as it only works against optionally-implemented, deprecated APIs.");
     }
     
     /**
@@ -192,7 +195,8 @@ public class ContentStoreReplicator
                 return;
             }
             // get a writer to the target store - this can fail if the content is there now
-            ContentWriter writer = targetStore.getWriter(null, contentUrl);
+            ContentContext ctx = new ContentContext(null, contentUrl);
+            ContentWriter writer = targetStore.getWriter(ctx);
             // get the source reader
             ContentReader reader = sourceStore.getReader(contentUrl);
             if (!reader.exists())

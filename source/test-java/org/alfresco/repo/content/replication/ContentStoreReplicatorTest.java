@@ -42,7 +42,7 @@ import org.springframework.context.support.StaticApplicationContext;
  * 
  * @author Derek Hulley
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "deprecation"})
 public class ContentStoreReplicatorTest extends TestCase
 {
     private static final String SOME_CONTENT = "The No. 1 Ladies' Detective Agency";

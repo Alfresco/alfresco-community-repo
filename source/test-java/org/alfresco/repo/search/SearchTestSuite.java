@@ -26,11 +26,11 @@ import org.alfresco.repo.search.impl.lucene.ADMLuceneTest;
 import org.alfresco.repo.search.impl.lucene.ALF947Test;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexBackupComponentTest;
 import org.alfresco.repo.search.impl.lucene.MultiReaderTest;
-import org.alfresco.repo.search.impl.lucene.analysis.NumericEncodingTest;
 import org.alfresco.repo.search.impl.lucene.index.IndexInfoTest;
 import org.alfresco.repo.search.impl.parsers.CMISTest;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSTest;
 import org.alfresco.repo.search.impl.parsers.FTSTest;
+import org.alfresco.util.NumericEncodingTest;
 
 /**
  * @author Andy Hind

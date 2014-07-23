@@ -378,8 +378,8 @@
 
    <!-- The cross-transaction shared cache for Dictionary Models -->
    
-   <bean name="compiledModelsCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.compiledModelsSharedCache"/>
+   <bean name="compiledModelsCache" class="org.alfresco.repo.dictionary.CompiledModelsCache" parent="abstractAsynchronouslyRefreshedCache">
+	  <property name="dictionaryDAO" ref="dictionaryDAO" /> 	
    </bean>
 
    <!-- The cross-transaction shared cache for Dictionary Namespaces [Must be non-clustered, non-txn and UNLIMITED IN SIZE]-->

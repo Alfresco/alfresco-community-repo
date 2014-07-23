@@ -20,13 +20,15 @@ package org.alfresco.repo.dictionary;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.dictionary.DictionaryDAOImpl.DictionaryRegistry;
 import org.alfresco.repo.dictionary.NamespaceDAOImpl.NamespaceRegistry;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.util.ThreadPoolExecutorFactoryBean;
+import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 
 
 /**
@@ -44,8 +46,9 @@ public class TestModel
      * TestModel [-h] [model filename]*
      * <p>
      * Returns 0 for success.
+     * @throws Exception 
      */
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
         if (args != null && args.length > 0 && args[0].equals("-h"))
         {
@@ -89,7 +92,7 @@ public class TestModel
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl(namespaceDAO);
         dictionaryDAO.setTenantService(tenantService);
         
-        initDictionaryCaches(dictionaryDAO);
+        initDictionaryCaches(dictionaryDAO, tenantService);
 
         // bootstrap dao
         try
@@ -116,15 +119,23 @@ public class TestModel
         }
     }
     
-    private static void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
+    private static void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService) throws Exception
     {
-        SimpleCache<String, DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>();
-        dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
+        CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
+        compiledModelsCache.setDictionaryDAO(dictionaryDAO);
+        compiledModelsCache.setTenantService(tenantService);
+        compiledModelsCache.setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
+        ThreadPoolExecutorFactoryBean threadPoolfactory = new ThreadPoolExecutorFactoryBean();
+        threadPoolfactory.afterPropertiesSet();
+        compiledModelsCache.setThreadPoolExecutor((ThreadPoolExecutor) threadPoolfactory.getObject());
+        dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
+        dictionaryDAO.init();
     }
     
     private static void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
     {
         SimpleCache<String, NamespaceRegistry> namespaceCache = new DefaultSimpleCache<String, NamespaceRegistry>();
         namespaceDAO.setNamespaceRegistryCache(namespaceCache);
+        namespaceDAO.init();
     }
 }

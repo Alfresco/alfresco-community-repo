@@ -25,7 +25,7 @@ package org.alfresco.repo.transaction;
  * 
  * @author Derek Hulley
  */
-public interface TransactionListener
+public interface TransactionListener extends org.alfresco.util.transaction.TransactionListener
 {
     /**
      * @deprecated      No longer supported
@@ -71,4 +71,5 @@ public interface TransactionListener
      * be used only for cleaning up resources after a rollback has occured.
      */
     void afterRollback();
+    
 }

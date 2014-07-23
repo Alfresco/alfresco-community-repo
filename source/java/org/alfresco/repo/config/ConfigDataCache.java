@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache;
+import org.alfresco.repo.cache.AbstractMTAsynchronouslyRefreshedCache;
 import org.alfresco.repo.config.ConfigDataCache.ConfigData;
 import org.alfresco.repo.config.xml.RepoXMLConfigService;
 import org.apache.commons.logging.Log;
@@ -50,7 +50,7 @@ import com.sun.star.uno.RuntimeException;
  * @author Andy Hind
  * @since 4.1.5
  */
-public class ConfigDataCache extends AbstractAsynchronouslyRefreshedCache<ConfigData>
+public class ConfigDataCache extends  AbstractMTAsynchronouslyRefreshedCache<ConfigData>
 {
     private static Log logger = LogFactory.getLog(ConfigDataCache.class);
     

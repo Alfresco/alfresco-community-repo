@@ -28,10 +28,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.jlan.client.AsynchRequest;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.search.impl.lucene.LuceneIndexerAndSearcher;
 import org.alfresco.util.GUID;
+import org.alfresco.util.transaction.TransactionListener;
+import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -41,13 +44,16 @@ import org.springframework.transaction.support.TransactionSynchronizationAdapter
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
- * Helper class to manage transaction synchronization.  This provides helpers to
+ * Repo Specific Helper class to manage transaction synchronization.  This provides helpers to
  * ensure that the necessary <code>TransactionSynchronization</code> instances
  * are registered on behalf of the application code.
  * 
+ * This class remains for backward API compatibility,
+ * @deprecated use the Core Project TransactionSupportUtil instead
+ * 
  * @author Derek Hulley
  */
-public abstract class AlfrescoTransactionSupport
+public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
 {
     /*
      * The registrations of services is very explicit on the interface.  This
@@ -56,6 +62,12 @@ public abstract class AlfrescoTransactionSupport
      * list of types of services that need registration, this is still
      * OK.
      */
+	
+	private static int COMMIT_ORDER_NORMAL=0;
+	private static int COMMIT_ORDER_INTEGRITY=1;
+	private static int COMMIT_ORDER_LUCENE=2;
+	private static int COMMIT_ORDER_DAO=3;
+	private static int COMMIT_ORDER_CACHE=4;
     
     /**
      * The order of synchronization set to be 100 less than the Hibernate synchronization order
@@ -63,73 +75,8 @@ public abstract class AlfrescoTransactionSupport
     public static final int SESSION_SYNCHRONIZATION_ORDER =
         SessionFactoryUtils.SESSION_SYNCHRONIZATION_ORDER - 100;
 
-    /** resource key to store the transaction synchronizer instance */
-    private static final String RESOURCE_KEY_TXN_SYNCH = "txnSynch";
-    /** resource binding during after-completion phase */
-    private static final String RESOURCE_KEY_TXN_COMPLETING = "AlfrescoTransactionSupport.txnCompleting";
     
     private static Log logger = LogFactory.getLog(AlfrescoTransactionSupport.class);
-    
-    /**
-     * @return Returns the system time when the transaction started, or -1 if there is no current transaction.
-     */
-    public static long getTransactionStartTime()
-    {
-        /*
-         * This method can be called outside of a transaction, so we can go direct to the synchronizations.
-         */
-        TransactionSynchronizationImpl txnSynch =
-            (TransactionSynchronizationImpl) TransactionSynchronizationManager.getResource(RESOURCE_KEY_TXN_SYNCH);
-        if (txnSynch == null)
-        {
-            if (TransactionSynchronizationManager.isSynchronizationActive())
-            {
-                // need to lazily register synchronizations
-                return registerSynchronizations().getTransactionStartTime();
-            }
-            else
-            {
-                return -1;   // not in a transaction
-            }
-        }
-        else
-        {
-            return txnSynch.getTransactionStartTime();
-        }
-    }
-    
-    /**
-     * Get a unique identifier associated with each transaction of each thread.  Null is returned if
-     * no transaction is currently active.
-     * 
-     * @return Returns the transaction ID, or null if no transaction is present
-     */
-    public static String getTransactionId()
-    {
-        /*
-         * Go direct to the synchronizations as we don't want to register a resource if one doesn't exist.
-         * This method is heavily used, so the simple Map lookup on the ThreadLocal is the fastest.
-         */
-        
-        TransactionSynchronizationImpl txnSynch =
-                (TransactionSynchronizationImpl) TransactionSynchronizationManager.getResource(RESOURCE_KEY_TXN_SYNCH);
-        if (txnSynch == null)
-        {
-            if (TransactionSynchronizationManager.isSynchronizationActive())
-            {
-                // need to lazily register synchronizations
-                return registerSynchronizations().getTransactionId();
-            }
-            else
-            {
-                return null;   // not in a transaction
-            }
-        }
-        else
-        {
-            return txnSynch.getTransactionId();
-        }
-    }
     
     /**
      * 
@@ -146,10 +93,7 @@ public abstract class AlfrescoTransactionSupport
         TXN_READ_WRITE
     }
     
-    public static boolean isActualTransactionActive()
-    {
-    	return TransactionSynchronizationManager.isActualTransactionActive();
-    }
+
     
     /**
      * @return      Returns the read-write state of the current transaction
@@ -162,7 +106,7 @@ public abstract class AlfrescoTransactionSupport
             return TxnReadState.TXN_NONE;
         }
         // Find the read-write state of the txn
-        if (AlfrescoTransactionSupport.getResource(RESOURCE_KEY_TXN_COMPLETING) != null)
+        if (getResource(RESOURCE_KEY_TXN_COMPLETING) != null)
         {
             // Transaction is completing.  For all intents and purposes, we are not in a transaction.
             return TxnReadState.TXN_NONE;
@@ -212,93 +156,35 @@ public abstract class AlfrescoTransactionSupport
      * 
      * @deprecated  To be replaced by {@link DirtySessionMethodInterceptor}
      */
-    public static boolean isDirty()
+    public static boolean isDirty() 
     {
-        TransactionSynchronizationImpl synch = getSynchronization();
-        
-        Set<TransactionalDao> services = synch.getDaoServices();
-        for (TransactionalDao service : services)
-        {
-           if (service.isDirty())
-           {
-               return true;
-           }
-        }
-        
+    	Set<TransactionListener> allListeners = getListeners();
+    	for(TransactionListener listener : allListeners)
+    	{
+    		if(listener instanceof TransactionalDao)
+    		{
+    			TransactionalDao service = (TransactionalDao)listener;
+    	        if (service.isDirty())
+    	        {
+    	            return true;
+    	        }
+    			
+    		}
+    		else if (listener instanceof DAOAdapter)
+    		{
+    			DAOAdapter adapter = (DAOAdapter)listener;
+    			TransactionalDao service = adapter.getService();
+    	        if (service.isDirty())
+    	        {
+    	            return true;
+    	        }
+    		}
+    		
+    	}
+    	       
         return false;
     }
     
-    /**
-     * Gets a resource associated with the current transaction, which must be active.
-     * <p>
-     * All necessary synchronization instances will be registered automatically, if required.
-     * 
-     *  
-     * @param key the thread resource map key
-     * @return Returns a thread resource of null if not present
-     * 
-     * @see TransactionalResourceHelper         for helper methods to create and bind common collection types
-     */
-    @SuppressWarnings("unchecked")
-    public static <R extends Object> R getResource(Object key)
-    {
-        // get the synchronization
-        TransactionSynchronizationImpl txnSynch = getSynchronization();
-        // get the resource
-        Object resource = txnSynch.resources.get(key);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Fetched resource: \n" +
-                    "   key: " + key + "\n" +
-                    "   resource: " + resource);
-        }
-        return (R) resource;
-    }
-    
-    /**
-     * Binds a resource to the current transaction, which must be active.
-     * <p>
-     * All necessary synchronization instances will be registered automatically, if required.
-     * 
-     * @param key
-     * @param resource
-     */
-    public static void bindResource(Object key, Object resource)
-    {
-        // get the synchronization
-        TransactionSynchronizationImpl txnSynch = getSynchronization();
-        // bind the resource
-        txnSynch.resources.put(key, resource);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Bound resource: \n" +
-                    "   key: " + key + "\n" +
-                    "   resource: " + resource);
-        }
-    }
-    
-    /**
-     * Unbinds a resource from the current transaction, which must be active.
-     * <p>
-     * All necessary synchronization instances will be registered automatically, if required.
-     * 
-     * @param key
-     */
-    public static void unbindResource(Object key)
-    {
-        // get the synchronization
-        TransactionSynchronizationImpl txnSynch = getSynchronization();
-        // remove the resource
-        txnSynch.resources.remove(key);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Unbound resource: \n" +
-                    "   key: " + key);
-        }
-    }
     
     /**
      * Method that registers a <tt>NodeDaoService</tt> against the transaction.
@@ -312,11 +198,10 @@ public abstract class AlfrescoTransactionSupport
      */
     public static void bindDaoService(TransactionalDao daoService)
     {
-        // get transaction-local synchronization
-        TransactionSynchronizationImpl synch = getSynchronization();
         
-        // bind the service in
-        boolean bound = synch.getDaoServices().add(daoService);
+        DAOAdapter adapter = new DAOAdapter(daoService);
+        
+        boolean bound = bindListener(adapter, COMMIT_ORDER_DAO);
         
         // done
         if (logger.isDebugEnabled())
@@ -337,13 +222,10 @@ public abstract class AlfrescoTransactionSupport
      */
     public static void bindIntegrityChecker(IntegrityChecker integrityChecker)
     {
-        // get transaction-local synchronization
-        TransactionSynchronizationImpl synch = getSynchronization();
-        
+       
         // bind the service in
-        boolean bound = synch.getIntegrityCheckers().add(integrityChecker);
+        boolean bound = bindListener((TransactionListener) integrityChecker, COMMIT_ORDER_INTEGRITY);
         
-        // done
         if (logger.isDebugEnabled())
         {
             logBoundService(integrityChecker, bound); 
@@ -365,12 +247,10 @@ public abstract class AlfrescoTransactionSupport
      */
     public static void bindLucene(LuceneIndexerAndSearcher indexerAndSearcher)
     {
-        // get transaction-local synchronization
-        TransactionSynchronizationImpl synch = getSynchronization();
+        LuceneIndexerAndSearcherAdapter adapter = new LuceneIndexerAndSearcherAdapter(indexerAndSearcher);
         
-        // bind the service in
-        boolean bound = synch.getLucenes().add(indexerAndSearcher);
-        
+        boolean bound = bindListener(adapter, COMMIT_ORDER_LUCENE);
+       
         // done
         if (logger.isDebugEnabled())
         {
@@ -379,13 +259,9 @@ public abstract class AlfrescoTransactionSupport
     }
     
     /**
-     * Method that registers a <tt>LuceneIndexerAndSearcherFactory</tt> against
+     * Method that registers a <tt>Listener</tt> against
      * the transaction.
-     * <p>
-     * Setting this will ensure that the pre- and post-commit operations perform
-     * the necessary cleanups against the <tt>LuceneIndexerAndSearcherFactory</tt>.
-     * <p>
-     * Although bound within a <tt>Set</tt>, it would still be better for the caller
+     * <p> will be better for the caller
      * to only bind once per transaction, if possible.
      * 
      * @param indexerAndSearcher the Lucene indexer to perform transaction completion
@@ -393,13 +269,21 @@ public abstract class AlfrescoTransactionSupport
      */
     public static void bindListener(TransactionListener listener)
     {
-        // get transaction-local synchronization
-        TransactionSynchronizationImpl synch = getSynchronization();
-        
-        // bind the service in
-        boolean bound = synch.addListener(listener);
-        
-        // done
+    	boolean bound = false;
+    	
+        if (listener instanceof IntegrityChecker)
+        {
+            bound = bindListener(listener, COMMIT_ORDER_INTEGRITY);
+        }
+        else if (listener instanceof TransactionalCache)
+        {
+            bound = bindListener(listener, COMMIT_ORDER_CACHE);
+        }
+        else
+        {
+            bound = bindListener(listener,  COMMIT_ORDER_NORMAL);
+        }
+
         if (logger.isDebugEnabled())
         {
             logBoundService(listener, bound); 
@@ -437,426 +321,5 @@ public abstract class AlfrescoTransactionSupport
     {
         // No-op
     }
-
-    /**
-     * Gets the current transaction synchronization instance, which contains the locally bound
-     * resources that are available to {@link #getResource(Object) retrieve} or
-     * {@link #bindResource(Object, Object) add to}.
-     * <p>
-     * This method also ensures that the transaction binding has been performed.
-     * 
-     * @return Returns the common synchronization instance used
-     */
-    private static TransactionSynchronizationImpl getSynchronization()
-    {
-        // ensure synchronizations
-        return registerSynchronizations();
-    }
-    
-    /**
-     * Binds the Alfresco-specific to the transaction resources
-     * 
-     * @return Returns the current or new synchronization implementation
-     */
-    private static TransactionSynchronizationImpl registerSynchronizations()
-    {
-        /*
-         * No thread synchronization or locking required as the resources are all threadlocal
-         */
-        if (!TransactionSynchronizationManager.isSynchronizationActive())
-        {
-            Thread currentThread = Thread.currentThread();
-            throw new AlfrescoRuntimeException("Transaction must be active and synchronization is required: " + currentThread);
-        }
-        TransactionSynchronizationImpl txnSynch =
-            (TransactionSynchronizationImpl) TransactionSynchronizationManager.getResource(RESOURCE_KEY_TXN_SYNCH);
-        if (txnSynch != null)
-        {
-            // synchronization already registered
-            return txnSynch;
-        }
-        // we need a unique ID for the transaction
-        String txnId = GUID.generate();
-        // register the synchronization
-        txnSynch = new TransactionSynchronizationImpl(txnId);
-        TransactionSynchronizationManager.registerSynchronization(txnSynch);
-        // register the resource that will ensure we don't duplication the synchronization
-        TransactionSynchronizationManager.bindResource(RESOURCE_KEY_TXN_SYNCH, txnSynch);
-        // done
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Bound txn synch: " + txnSynch);
-        }
-        return txnSynch;
-    }
-    
-    /**
-     * Cleans out transaction resources if present
-     */
-    private static void clearSynchronization()
-    {
-        if (TransactionSynchronizationManager.hasResource(RESOURCE_KEY_TXN_SYNCH))
-        {
-            Object txnSynch = TransactionSynchronizationManager.unbindResource(RESOURCE_KEY_TXN_SYNCH);
-            // done
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Unbound txn synch:" + txnSynch);
-            }
-        }
-    }
-    
-    /**
-     * Helper method to rebind the synchronization to the transaction
-     * 
-     * @param txnSynch
-     */
-    private static void rebindSynchronization(TransactionSynchronizationImpl txnSynch)
-    {
-        TransactionSynchronizationManager.bindResource(RESOURCE_KEY_TXN_SYNCH, txnSynch);
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Bound txn synch: " + txnSynch);
-        }
-    }
-    
-    /**
-     * Handler of txn synchronization callbacks specific to internal
-     * application requirements
-     */
-    private static class TransactionSynchronizationImpl extends TransactionSynchronizationAdapter
-    {
-        private long txnStartTime;
-        private final String txnId;
-        private final Set<TransactionalDao> daoServices;
-        private final Set<IntegrityChecker> integrityCheckers;
-        private final Set<LuceneIndexerAndSearcher> lucenes;
-        private final LinkedHashSet<TransactionListener> listeners;
-        private final Set<TransactionalCache<Serializable, Object>> transactionalCaches;
-        private final Map<Object, Object> resources;
-        
-        /**
-         * Sets up the resource map
-         * 
-         * @param txnId
-         */
-        public TransactionSynchronizationImpl(String txnId)
-        {
-            this.txnStartTime = System.currentTimeMillis();
-            this.txnId = txnId;
-            daoServices = new HashSet<TransactionalDao>(3);
-            integrityCheckers = new HashSet<IntegrityChecker>(3);
-            lucenes = new HashSet<LuceneIndexerAndSearcher>(3);
-            listeners = new LinkedHashSet<TransactionListener>(5);
-            transactionalCaches = new HashSet<TransactionalCache<Serializable, Object>>(3);
-            resources = new HashMap<Object, Object>(17);
-        }
-        
-        public long getTransactionStartTime()
-        {
-            return txnStartTime;
-        }
-
-        public String getTransactionId()
-        {
-            return txnId;
-        }
-
-        /**
-         * @return Returns a set of <tt>TransactionalDao</tt> instances that will be called
-         *      during end-of-transaction processing
-         */
-        public Set<TransactionalDao> getDaoServices()
-        {
-            return daoServices;
-        }
-        
-        /**
-         * @return Returns a set of <tt>IntegrityChecker</tt> instances that will be called
-         *      during end-of-transaction processing
-         */
-        public Set<IntegrityChecker> getIntegrityCheckers()
-        {
-            return integrityCheckers;
-        }
-
-        /**
-         * @return Returns a set of <tt>LuceneIndexerAndSearcherFactory</tt> that will be called
-         *      during end-of-transaction processing
-         */
-        public Set<LuceneIndexerAndSearcher> getLucenes()
-        {
-            return lucenes;
-        }
-        
-        /**
-         * @return Returns a set of <tt>TransactionListener<tt> instances that will be called
-         *      during end-of-transaction processing
-         */
-        @SuppressWarnings("unchecked")
-        public boolean addListener(TransactionListener listener)
-        {
-            ParameterCheck.mandatory("listener", listener);
-            
-            if (listener instanceof TransactionalCache)
-            {
-                return transactionalCaches.add((TransactionalCache<Serializable, Object>)listener);
-            }
-            else
-            {
-                return listeners.add(listener);
-            }
-        }
-        
-        /**
-         * @return Returns the listeners in a list disconnected from the original set
-         */
-        private List<TransactionListener> getListenersIterable()
-        {
-            return new ArrayList<TransactionListener>(listeners);
-        }
-
-        public String toString()
-        {
-            StringBuilder sb = new StringBuilder(50);
-            sb.append("TransactionSychronizationImpl")
-              .append("[ txnId=").append(txnId)
-              .append(", daos=").append(daoServices.size())
-              .append(", integrity=").append(integrityCheckers.size())
-              .append(", indexers=").append(lucenes.size())
-              .append(", resources=").append(resources)
-              .append("]");
-            return sb.toString();
-        }
-
-        /**
-         * @see AlfrescoTransactionSupport#SESSION_SYNCHRONIZATION_ORDER
-         */
-        @Override
-        public int getOrder()
-        {
-            return AlfrescoTransactionSupport.SESSION_SYNCHRONIZATION_ORDER;
-        }
-
-        @Override
-        public void suspend()
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Suspending transaction: " + this);
-            }
-            AlfrescoTransactionSupport.clearSynchronization();
-        }
-
-        @Override
-        public void resume()
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Resuming transaction: " + this);
-            }
-            AlfrescoTransactionSupport.rebindSynchronization(this);
-        }
-
-        /**
-         * Pre-commit cleanup.
-         * <p>
-         * Ensures that the session transaction listeners are property executed.
-         * The Lucene indexes are then prepared.
-         */
-        @Override
-        public void beforeCommit(boolean readOnly)
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Before commit " + (readOnly ? "read-only" : "" ) + ": " + this);
-            }
-            // get the txn ID
-            TransactionSynchronizationImpl synch = (TransactionSynchronizationImpl)
-                    TransactionSynchronizationManager.getResource(RESOURCE_KEY_TXN_SYNCH);
-            if (synch == null)
-            {
-                throw new AlfrescoRuntimeException("No synchronization bound to thread");
-            }
-
-            // These are still considered part of the transaction so are executed here
-            doBeforeCommit(readOnly);
-            
-            // Check integrity
-            for (IntegrityChecker integrityChecker : integrityCheckers)
-            {
-                integrityChecker.checkIntegrity();
-            }
-            
-            // prepare the indexes
-            for (LuceneIndexerAndSearcher lucene : lucenes)
-            {
-                lucene.prepare();
-            }
-            
-            // Flush the DAOs
-            for (TransactionalDao dao : daoServices)
-            {
-                dao.beforeCommit(readOnly);
-            }
-            
-            // Flush the transactional caches
-            for (TransactionalCache<Serializable, Object> cache : transactionalCaches)
-            {
-                cache.beforeCommit(readOnly);
-            }
-        }
-        
-        /**
-         * Execute the beforeCommit event handlers for the registered listeners
-         * 
-         * @param readOnly	is read only
-         */
-        private void doBeforeCommit(boolean readOnly)
-        {
-        	doBeforeCommit(new HashSet<TransactionListener>(listeners.size()), readOnly);
-        }
-        
-        /**
-         * Executes the beforeCommit event handlers for the outstanding listeners.
-         * This process is iterative as the process of calling listeners may lead to more listeners
-         * being added.  The new listeners will be processed until there no listeners remaining.
-         * 
-         * @param visitedListeners	a set containing the already visited listeners
-         * @param readOnly			is read only
-         */
-        private void doBeforeCommit(Set<TransactionListener> visitedListeners, boolean readOnly)
-        {
-        	Set<TransactionListener> pendingListeners = new HashSet<TransactionListener>(listeners);
-        	pendingListeners.removeAll(visitedListeners);
-        	
-        	if (pendingListeners.size() != 0)
-        	{
-	        	for (TransactionListener listener : pendingListeners) 
-	        	{
-	        		listener.beforeCommit(readOnly);
-	        		visitedListeners.add(listener);
-				}
-	        	
-	        	doBeforeCommit(visitedListeners, readOnly);
-        	}
-        }
-        
-        @Override
-        public void beforeCompletion()
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Before completion: " + this);
-            }
-            // notify listeners
-            for (TransactionListener listener : getListenersIterable())
-            {
-                listener.beforeCompletion();
-            }
-        }
-               
-
-        @Override
-        public void afterCompletion(int status)
-        {
-            String statusStr = "unknown";
-            switch (status)
-            {
-                case TransactionSynchronization.STATUS_COMMITTED:
-                    statusStr = "committed";
-                    break;
-                case TransactionSynchronization.STATUS_ROLLED_BACK:
-                    statusStr = "rolled-back";
-                    break;
-                default:
-            }
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("After completion (" + statusStr + "): " + this);
-            }
-            
-            // Force any queries for read-write state to return TXN_READ_ONLY
-            // This will be cleared with the synchronization, so we don't need to clear it out
-            AlfrescoTransactionSupport.bindResource(RESOURCE_KEY_TXN_COMPLETING, Boolean.TRUE);
-            
-            // Clean up the transactional caches
-            for (TransactionalCache<Serializable, Object> cache : transactionalCaches)
-            {
-                try
-                {
-                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
-                    {
-                        cache.afterCommit();
-                    }
-                    else
-                    {
-                        cache.afterRollback();
-                    }
-                }
-                catch (RuntimeException e)
-                {
-                    logger.error("After completion (" + statusStr + ") TransactionalCache exception", e);
-                }
-            }
-            
-            // commit/rollback Lucene
-            for (LuceneIndexerAndSearcher lucene : lucenes)
-            {
-                try
-                {
-                    if (status  == TransactionSynchronization.STATUS_COMMITTED)
-                    {
-                        lucene.commit();
-                    }
-                    else
-                    {
-                        lucene.rollback();
-                    }
-                }
-                catch (RuntimeException e)
-                {
-                    logger.error("After completion (" + statusStr + ") Lucene exception", e);
-                }
-            }
-            
-            List<TransactionListener> iterableListeners = getListenersIterable();
-            // notify listeners
-            if (status  == TransactionSynchronization.STATUS_COMMITTED)
-            {
-                for (TransactionListener listener : iterableListeners)
-                {
-                    try
-                    {
-                        listener.afterCommit();
-                    }
-                    catch (RuntimeException e)
-                    {
-                        logger.error("After completion (" + statusStr + ") listener exception: \n" +
-                                "   listener: " + listener,
-                                e);
-                    }
-                }
-            }
-            else
-            {
-                for (TransactionListener listener : iterableListeners)
-                {
-                    try
-                    {
-                        listener.afterRollback();
-                    }
-                    catch (RuntimeException e)
-                    {
-                        logger.error("After completion (" + statusStr + ") listener exception: \n" +
-                                "   listener: " + listener,
-                                e);
-                    }
-                }
-            }
-            
-            // clear the thread's registrations and synchronizations
-            AlfrescoTransactionSupport.clearSynchronization();
-        }
-    }
-}
+     
+}    

@@ -26,10 +26,10 @@
       <property name="threadPriority" value="5" />
     </bean>
 
-   <bean name="asynchronouslyRefreshedCacheRegistry" class="org.alfresco.repo.cache.DefaultAsynchronouslyRefreshedCacheRegistry" >
+   <bean name="asynchronouslyRefreshedCacheRegistry" class="org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry" >
    </bean>
 
-   <bean name="abstractAsynchronouslyRefreshedCache" class="org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache" abstract="true">
+   <bean name="abstractAsynchronouslyRefreshedCache" class="org.alfresco.util.cache.AbstractAsynchronouslyRefreshedCache" abstract="true">
       <property name="threadPoolExecutor" ref="asynchronouslyRefreshedCacheThreadPoolExecutor" />
       <property name="tenantService" ref="tenantService" />
       <property name="registry" ref="asynchronouslyRefreshedCacheRegistry" />

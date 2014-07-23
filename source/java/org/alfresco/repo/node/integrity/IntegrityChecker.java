@@ -43,6 +43,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.transaction.TransactionListener;
+import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -86,7 +88,8 @@ public class IntegrityChecker
                     NodeServicePolicies.OnCreateChildAssociationPolicy,
                     NodeServicePolicies.OnDeleteChildAssociationPolicy,
                     NodeServicePolicies.OnCreateAssociationPolicy,
-                    NodeServicePolicies.OnDeleteAssociationPolicy
+                    NodeServicePolicies.OnDeleteAssociationPolicy,
+                    TransactionListener
 {
     private static Log logger = LogFactory.getLog(IntegrityChecker.class);
     
@@ -113,7 +116,7 @@ public class IntegrityChecker
      */
     public static void setWarnInTransaction()
     {
-        AlfrescoTransactionSupport.bindResource(KEY_WARN_IN_TRANSACTION, Boolean.TRUE);
+        TransactionSupportUtil.bindResource(KEY_WARN_IN_TRANSACTION, Boolean.TRUE);
     }
     
     /**
@@ -124,7 +127,7 @@ public class IntegrityChecker
      */
     public static boolean isWarnInTransaction()
     {
-        Boolean warnInTransaction = (Boolean) AlfrescoTransactionSupport.getResource(KEY_WARN_IN_TRANSACTION);
+        Boolean warnInTransaction = (Boolean) TransactionSupportUtil.getResource(KEY_WARN_IN_TRANSACTION);
         if (warnInTransaction == null || warnInTransaction == Boolean.FALSE)
         {
             return false;
@@ -755,5 +758,29 @@ public class IntegrityChecker
         }
         // done
         return allIntegrityResults;
+    }
+
+	@Override
+    public void beforeCommit(boolean readOnly)
+    {
+		checkIntegrity();  
+    }
+
+	@Override
+    public void beforeCompletion()
+    {
+		// NO-OP
+    }
+
+	@Override
+    public void afterCommit()
+    {
+		// NO-OP
+    }
+
+	@Override
+    public void afterRollback()
+    {
+		// NO-OP
     }
 }

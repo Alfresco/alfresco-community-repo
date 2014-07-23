@@ -20,7 +20,7 @@ package org.alfresco.repo.security.authority;
 
 import java.util.List;
 
-import org.alfresco.repo.cache.AbstractAsynchronouslyRefreshedCache;
+import org.alfresco.repo.cache.AbstractMTAsynchronouslyRefreshedCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantAdminService;
@@ -34,7 +34,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Andy
  * @since 4.1.3
  */
-public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends AbstractAsynchronouslyRefreshedCache<BridgeTable<String>> implements InitializingBean
+public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractMTAsynchronouslyRefreshedCache<BridgeTable<String>> implements InitializingBean
 {
     private AuthorityBridgeDAO authorityBridgeDAO;
     private RetryingTransactionHelper retryingTransactionHelper;

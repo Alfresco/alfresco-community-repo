@@ -23,19 +23,7 @@ package org.alfresco.repo.cache;
  * 
  * @author Andy
  */
-public interface RefreshableCacheListener
+public interface RefreshableCacheListener extends org.alfresco.util.cache.RefreshableCacheListener
 {
-    /**
-     * Callback made when a cache refresh occurs
-     * 
-     * @param               the cache event
-     */
-    public void onRefreshableCacheEvent(RefreshableCacheEvent refreshableCacheEvent);
-
-    /**
-     * Cache id so broadcast can be constrained to matching caches
-     *  
-     * @return              the cache ID
-     */
-    public String getCacheId();
+   
 }

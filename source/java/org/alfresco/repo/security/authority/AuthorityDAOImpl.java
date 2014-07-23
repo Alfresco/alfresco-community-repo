@@ -42,8 +42,8 @@ import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.cache.AsynchronouslyRefreshedCache;
-import org.alfresco.repo.cache.RefreshableCacheEvent;
-import org.alfresco.repo.cache.RefreshableCacheListener;
+import org.alfresco.util.cache.RefreshableCacheEvent;
+import org.alfresco.util.cache.RefreshableCacheListener;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.TransactionalCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
@@ -121,7 +121,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
     private SimpleCache<String, Set<String>> userAuthorityCache;
     private SimpleCache<Pair<String, String>, List<ChildAssociationRef>> zoneAuthorityCache;
     private SimpleCache<NodeRef, Pair<Map<NodeRef,String>, List<NodeRef>>> childAuthorityCache;
-    private AsynchronouslyRefreshedCache<BridgeTable<String>> authorityBridgeTableCache;
+    private AuthorityBridgeTableAsynchronouslyRefreshedCache authorityBridgeTableCache;
     private SimpleCache<String, Object> singletonCache; // eg. for system container nodeRefs (authorityContainer and zoneContainer)
     private final String KEY_SYSTEMCONTAINER_NODEREF = "key.systemcontainer.noderef";
     /** Limit the number of copies of authority names floating about by keeping them in a pool **/

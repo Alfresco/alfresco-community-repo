@@ -73,7 +73,8 @@ public class DirectProperty extends AbstractProperty
                     Object element = resultList.get(index);
                     if (element instanceof NodeRef)
                     {
-                        resultList.set(index, element.toString());
+                    	NodeRef nodeRef = (NodeRef)element;
+                        resultList.set(index, nodeRef.getId());
                     }
                 }
             }

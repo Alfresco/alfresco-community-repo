@@ -212,6 +212,12 @@ public class PermissionServiceNOOPImpl implements PermissionServiceSPI
     }
 
     @Override
+    public Set<String> getReadersDenied(Long aclId)
+    {
+        return Collections.emptySet();
+    }
+
+    @Override
     public void setPermission(NodePermissionEntry nodePermissionEntry)
     {
         // Do Nothing.

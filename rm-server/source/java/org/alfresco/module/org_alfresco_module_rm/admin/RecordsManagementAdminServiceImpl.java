@@ -80,6 +80,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1154,7 +1155,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	 */
 	public List<AssociationRef> getCustomReferencesFrom(NodeRef node)
 	{
-    	return nodeService.getTargetAssocs(node, null);
+    	return nodeService.getTargetAssocs(node, RegexQNamePattern.MATCH_ALL);
 	}
 
 	/**
@@ -1171,7 +1172,7 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	 */
     public List<AssociationRef> getCustomReferencesTo(NodeRef node)
     {
-        return nodeService.getSourceAssocs(node, null);
+        return nodeService.getSourceAssocs(node, RegexQNamePattern.MATCH_ALL);
     }
 
     /**

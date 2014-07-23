@@ -35,15 +35,12 @@ public enum LockType
      * <p>
      * No one can add children to the locked node.
      *
-     * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
+    * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
      */
     @Deprecated
     READ_ONLY_LOCK,
-
     /**
-     * The owner can update or delete the locked node. 
-     * <p>
-     * The owner can add children to the locked node.
+     * READ_ONLY_LOCK - no-one can update or delete the locked node. No one can add children to the locked node.
      * 
      * @deprecated Deprecated in 4.1.6.  Will be replaced by a more descriptive name.
      */
@@ -51,6 +48,7 @@ public enum LockType
     WRITE_LOCK,
 
     /**
+
 
      * No-one can update or delete the locked node.    
      * <p>

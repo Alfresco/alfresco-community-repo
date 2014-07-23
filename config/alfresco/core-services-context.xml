@@ -723,12 +723,13 @@
         <property name="tenantService" ref="tenantService"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="searchService" ref="searchService"/>
-	      <property name="storeUrls">
-	            <list>
-	                <value>${spaces.store}</value>
-	                <value>${spaces.archive.store}</value>
-	            </list>
-	      </property>
+	    <property name="storeUrls">
+	        <list>
+	            <value>${spaces.store}</value>
+	            <value>${spaces.archive.store}</value>
+	        </list>
+	    </property>
+        <property name="enforceTenantInNamespace" value="${models.enforceTenantInNamespace}"/>
     </bean>
 
     <bean id="dictionaryDAO" class="org.alfresco.repo.dictionary.DictionaryDAOImpl">

@@ -48,10 +48,16 @@ public class ModelValidatorImpl implements ModelValidator
 	private TenantService tenantService;
 	private TenantAdminService tenantAdminService;
 	private SearchService searchService;
+	private boolean enforceTenantInNamespace = false;
 
     private List<String> storeUrls; // stores against which model deletes should be validated
 
-    public void setStoreUrls(List<String> storeUrls)
+    public void setEnforceTenantInNamespace(boolean enforceTenantInNamespace)
+    {
+		this.enforceTenantInNamespace = enforceTenantInNamespace;
+	}
+
+	public void setStoreUrls(List<String> storeUrls)
     {
         this.storeUrls = storeUrls;
     }
@@ -88,7 +94,7 @@ public class ModelValidatorImpl implements ModelValidator
 
     private void checkCustomModelNamespace(M2Model model, String tenantDomain)
     {
-    	if(tenantDomain != null && !tenantDomain.equals(""))
+    	if(tenantDomain != null && !tenantDomain.equals("") && enforceTenantInNamespace)
     	{
     		// check only for "real" tenants
 	        for(M2Namespace namespace : model.getNamespaces())

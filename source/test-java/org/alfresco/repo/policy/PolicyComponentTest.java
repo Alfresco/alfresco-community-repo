@@ -24,7 +24,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.cache.NullCache;
+import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
@@ -77,11 +77,11 @@ public class PolicyComponentTest extends TestCase
         policyComponent = new PolicyComponentImpl(dictionary); 
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
         // note: unit tested here with null cache
-        dictionaryDAO.setDictionaryRegistryCache(new NullCache());
+        dictionaryDAO.setDictionaryRegistryCache(new MemoryCache());
     }
 
     public void testJavaBehaviour()

@@ -23,9 +23,6 @@ public class AllUnitTestsSuite extends TestSuite
 
     static void unitTests(TestSuite suite)
     {
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.opencmis.AlfrescoCmisExceptionInterceptorTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.opencmis.CMISDictionaryTest.class));
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.opencmis.CMISTest.class));
         suite.addTestSuite(org.alfresco.cmis.PropertyFilterTest.class);
         suite.addTestSuite(org.alfresco.encryption.EncryptorTest.class);
         suite.addTestSuite(org.alfresco.encryption.KeyStoreKeyProviderTest.class);

@@ -11,7 +11,9 @@
          for anything to work
     -->
     <import resource="classpath:alfresco/application-context-core.xml" />
-    
+
+    <import resource="classpath*:alfresco/mt/mt-*context.xml"/>
+        
     <!-- required to bring up the search subsystem -->
     <import resource="classpath:alfresco/opencmis-context.xml" />
     <import resource="classpath:alfresco/thumbnail-service-context.xml"/>

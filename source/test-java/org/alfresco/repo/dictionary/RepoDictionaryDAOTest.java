@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import junit.framework.TestCase;
 
@@ -55,8 +54,6 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ThreadPoolExecutorFactoryBean;
-import org.alfresco.util.cache.DefaultAsynchronouslyRefreshedCacheRegistry;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 
@@ -71,7 +68,7 @@ public class RepoDictionaryDAOTest extends TestCase
     
     
     @Override
-    public void setUp() throws Exception
+    public void setUp()
     {
         // Registered the required constraints
         ConstraintRegistry constraintRegistry = ConstraintRegistry.getInstance();
@@ -92,7 +89,7 @@ public class RepoDictionaryDAOTest extends TestCase
 
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO, tenantService);
+        initDictionaryCaches(dictionaryDAO);
 
         // Populate with appropriate models
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
@@ -113,26 +110,19 @@ public class RepoDictionaryDAOTest extends TestCase
         service = component;
     }
     
-    private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO, TenantService tenantService) throws Exception 
+    private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
-        CompiledModelsCache compiledModelsCache = new CompiledModelsCache();
-        compiledModelsCache.setDictionaryDAO(dictionaryDAO);
-        compiledModelsCache.setTenantService(tenantService);
-        compiledModelsCache.setRegistry(new DefaultAsynchronouslyRefreshedCacheRegistry());
-        ThreadPoolExecutorFactoryBean threadPoolfactory = new ThreadPoolExecutorFactoryBean();
-        threadPoolfactory.afterPropertiesSet();
-        compiledModelsCache.setThreadPoolExecutor((ThreadPoolExecutor) threadPoolfactory.getObject());
-        dictionaryDAO.setDictionaryRegistryCache(compiledModelsCache);
-        dictionaryDAO.init();
+        SimpleCache<String,DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>(11, getClass().getName() + ".dictionary");
+        dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
 
-    public void testBootstrap() throws Exception 
+    public void testBootstrap()
     {
         TenantService tenantService = new SingleTServiceImpl();
 
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO, tenantService);
+        initDictionaryCaches(dictionaryDAO);
         
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
@@ -409,18 +399,18 @@ public class RepoDictionaryDAOTest extends TestCase
         assertTrue("Expected 'true' for timestamp propagation", childAssocDef.getPropagateTimestamps());
     }
 
-    public void testADB159() throws Exception
+    public void testADB159() throws UnsupportedEncodingException
     {
         // source dictionary
         TenantService tenantService = new SingleTServiceImpl();   
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO, tenantService);
+        initDictionaryCaches(dictionaryDAO);
 
         // destination dictionary
         DictionaryDAOImpl dictionaryDAO2 = new DictionaryDAOImpl();
         dictionaryDAO2.setTenantService(tenantService);
-        initDictionaryCaches(dictionaryDAO2, tenantService);
+        initDictionaryCaches(dictionaryDAO2);
 
         List<String> models = new ArrayList<String>();
         models.add("alfresco/model/dictionaryModel.xml");

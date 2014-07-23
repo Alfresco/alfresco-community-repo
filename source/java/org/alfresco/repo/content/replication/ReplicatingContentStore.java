@@ -54,8 +54,7 @@ import org.apache.commons.logging.LogFactory;
  * from first to last.  The stores should therefore be arranged in order of
  * speed.
  * <p>
- * It supports the notion of inbound and/or outbound replication, both of which can be
- * operational at the same time.
+ * It supports outbound replication for duplication of data.
  * 
  * </h2><u>Outbound Replication</u></h2>
  * <p>
@@ -70,7 +69,7 @@ import org.apache.commons.logging.LogFactory;
  * occurs during the replication.  Depending on the configuration of the server,
  * further action may need to be taken to rectify the problem manually.
  *  
- * </h2><u>Inbound Replication</u></h2>
+ * </h2><u>Inbound Replication</u> [DEPRECATED: Usage {@link CachingContentStore}]</h2>
  * <p>
  * This can be used to lazily replicate content onto the primary store.  When
  * content can't be found in the primary store, the other stores are checked
@@ -169,9 +168,11 @@ public class ReplicatingContentStore extends AbstractContentStore
      *  
      * @param inbound true to pull content onto the primary store when found
      *      on one of the other stores
+     * @deprecated Use {@link CachingContentStore}
      */
     public void setInbound(boolean inbound)
     {
+        logger.warn("The 'inbound' property has been deprecated in the ReplicatingContentStore in 5.0.  Use the CachingContentStore.");
         this.inbound = inbound;
     }
     

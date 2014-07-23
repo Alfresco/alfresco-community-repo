@@ -32,11 +32,8 @@
             <ref bean="networkContentStore" />
          </list>
       </property>
-      <property name="inbound">
-         <value>true</value>
-      </property>
       <property name="outbound">
-         <value>true</value>
+         <value>false</value>
       </property>
       <property name="retryingTransactionHelper">
          <ref bean="retryingTransactionHelper"/>

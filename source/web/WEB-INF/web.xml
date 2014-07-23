@@ -98,8 +98,8 @@
       <param-name>org.apache.myfaces.ERROR_HANDLING</param-name>
       <param-value>false</param-value>
    </context-param>
-   
-   <!-- Activiti context param placeholder -->
+
+   <!-- Enterprise context-param placeholder -->
 
    <filter>
       <description>Cleans security context before authentication via the CMIS services or filters. Mapped only for CMIS</description>
@@ -183,6 +183,8 @@
       <filter-class>org.alfresco.repo.web.filter.beans.SessionSynchronizedFilter</filter-class>
    </filter>
 
+   <!-- Enterprise filter placeholder -->
+
    <filter-mapping>
       <filter-name>Global Localization Filter</filter-name>
       <url-pattern>/*</url-pattern>
@@ -238,10 +240,10 @@
       <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/d/*</url-pattern>
    </filter-mapping>
- 
+
    <!-- Activiti Global Authentication Filter mapping placeholder -->
 
-    <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
+   <!-- The Cookie WebScript Authentication filter sits in front of web service URLs in addition to the global authentication filter -->  
    <filter-mapping>
       <filter-name>WebScript Cookie Authentication Filter</filter-name>
       <url-pattern>/wcservice/*</url-pattern>
@@ -337,22 +339,28 @@
       <filter-name>CacheExpiresFilter</filter-name>
       <url-pattern>*.jpg</url-pattern>
    </filter-mapping>
+
    <filter-mapping>
       <filter-name>CacheExpiresFilter</filter-name>
       <url-pattern>*.png</url-pattern>
    </filter-mapping>
+
    <filter-mapping>
       <filter-name>CacheExpiresFilter</filter-name>
       <url-pattern>*.gif</url-pattern>
    </filter-mapping>
+
    <filter-mapping>
       <filter-name>CacheExpiresFilter</filter-name>
       <url-pattern>*.css</url-pattern>
    </filter-mapping>
+
    <filter-mapping>
       <filter-name>CacheExpiresFilter</filter-name>
       <url-pattern>*.js</url-pattern>
    </filter-mapping>
+
+   <!-- Enterprise filter-mapping placeholder -->
 
    <listener>
       <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
@@ -381,9 +389,8 @@
    <listener>
         <listener-class>com.sun.xml.ws.transport.http.servlet.WSServletContextListener</listener-class>
    </listener> 
-   
-   <!-- Activiti listener placeholder -->
 
+   <!-- Enterprise listener placeholder -->
 
    <!-- Faces Servlet -->
    <servlet>
@@ -603,9 +610,9 @@
          <param-value>publicapi.authenticator</param-value>
       </init-param>
    </servlet>
-   
-   <!-- Activiti servlet placeholder -->
-	
+
+   <!-- Enterprise servlet placeholder -->
+
    <servlet-mapping>
       <servlet-name>Faces Servlet</servlet-name>
       <url-pattern>/faces/*</url-pattern>
@@ -773,8 +780,8 @@
       <url-pattern>/cmistck</url-pattern>
    </servlet-mapping>
    CMISTCK -->
-   
-   <!-- Activiti servlet mapping placeholder -->
+
+   <!-- Enterprise servlet-mapping placeholder -->
 
    <session-config>
       <session-timeout>60</session-timeout>

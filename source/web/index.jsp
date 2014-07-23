@@ -36,6 +36,8 @@
 <%@ page import="org.alfresco.web.bean.repository.PreferencesService" %>
 <%@ page import="org.alfresco.web.config.ClientConfigElement" %>
 
+<!-- Enterprise index-jsp placeholder -->
+
 <%-- redirect to the web application's appropriate start page --%>
 <%
 // get the start location as configured by the web-client config

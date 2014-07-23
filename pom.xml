@@ -14,6 +14,7 @@
     <properties>
         <maven.tomcat.path>/alfresco</maven.tomcat.path>
         <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
+        <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
         <maven.webapp.classifier>webapp</maven.webapp.classifier>
         <project.build.patchesDirectory>${project.build.directory}/patches</project.build.patchesDirectory>
     </properties>

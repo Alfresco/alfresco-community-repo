@@ -183,7 +183,6 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * implements <tt>equals</tt> and <tt>hashCode</tt>.
      * 
      * @param daoService
-     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindDaoService(TransactionalDao daoService)
     {
@@ -208,7 +207,6 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * implements <tt>equals</tt> and <tt>hashCode</tt>.
      * 
      * @param integrityChecker
-     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindIntegrityChecker(IntegrityChecker integrityChecker)
     {
@@ -234,7 +232,6 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * 
      * @param indexerAndSearcher the Lucene indexer to perform transaction completion
      *      tasks on
-     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindLucene(LuceneIndexerAndSearcher indexerAndSearcher)
     {
@@ -257,7 +254,6 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * 
      * @param indexerAndSearcher the Lucene indexer to perform transaction completion
      *      tasks on
-     * @deprecated use TransactionSupportUtil directly
      */
     public static void bindListener(TransactionListener listener)
     {

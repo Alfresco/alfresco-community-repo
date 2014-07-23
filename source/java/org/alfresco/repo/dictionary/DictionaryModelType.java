@@ -36,6 +36,8 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -463,8 +465,7 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 for (NodeRef nodeRef : pendingModels)
                 {
                     String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
-                    String tenantSystemUserName = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-                    systemTenants.add(tenantSystemUserName);
+                    systemTenants.add(tenantDomain);
                 }
             }
             
@@ -476,40 +477,37 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                 for (NodeRef nodeRef : pendingDeleteModels)
                 {
                     String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
-                    String tenantSystemUserName = tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), tenantDomain);
-                    systemTenants.add(tenantSystemUserName);
+                    systemTenants.add(tenantDomain);
                 }
             }
             
             if (systemTenants.size() > 0)
             {
-                for (final String tenantSystemUserName : systemTenants)
+                for (final String tenantName : systemTenants)
                 {
                     RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>()
                     {
                         public Void execute() throws Throwable
                         {
-                            AuthenticationUtil.runAs(new RunAsWork<Object>()
+                            return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+                            {
+                                public Void doWork()
+                                {
+                                    // invalidate - to force lazy re-init
+                                    // note: since afterCommit - need to either clear shared cache or destroy in separate txn
+                                    dictionaryDAO.destroy();
+                                    
+                                    if (logger.isTraceEnabled())
                                     {
-                                        public Object doWork()
-                                        {
-                                            // invalidate - to force lazy re-init
-                                            // note: since afterCommit - need to either clear shared cache or destroy in separate txn
-                                            dictionaryDAO.destroy();
-                                            
-                                            if (logger.isTraceEnabled())
-                                            {
-                                                logger.trace("afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");
-                                            }
-                                            
-                                            return null; 
-                                        }
-                                    }, tenantSystemUserName);
-                            
-                            return null;
+                                        logger.trace("afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                                    }
+
+                                    return null; 
+                                }
+                            }, tenantName);
                         }
                     };
-                    
+
                     transactionService.getRetryingTransactionHelper().doInTransaction(work, true, true);
                 }
             }

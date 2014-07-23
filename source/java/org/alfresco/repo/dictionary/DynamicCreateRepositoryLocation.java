@@ -66,25 +66,13 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
 
     public void checkAndCreate(NodeRef rootNodeRef)
     {
-//    	try
-//    	{
-//    		String[] pathElements = getPathElements();
-    		List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, getPath(), null, namespaceService, false);
-    		if(nodes.size() == 0)
-    		{
-	    		logger.info("Repository location " + getPath() + " does not exist for tenant "
-	    				+ TenantUtil.getCurrentDomain() + ", creating");
-	    		create();
-    		}
-
-//    		fileFolderService.resolveNamePath(rootNodeRef, Arrays.asList(pathElements));
-//    	}
-//    	catch(FileNotFoundException e)
-//    	{
-//    		logger.info("Repository location " + getPath() + " does not exist for tenant "
-//    				+ TenantUtil.getCurrentDomain() + ", creating");
-//    		create();
-//    	}
+		List<NodeRef> nodes = searchService.selectNodes(rootNodeRef, getPath(), null, namespaceService, false);
+		if(nodes.size() == 0)
+		{
+    		logger.info("Repository location " + getPath() + " does not exist for tenant "
+    				+ TenantUtil.getCurrentDomain() + ", creating");
+    		create();
+		}
     }
 
     protected String getParentPath()

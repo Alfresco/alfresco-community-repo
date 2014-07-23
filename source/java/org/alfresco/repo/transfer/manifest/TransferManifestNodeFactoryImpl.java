@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transfer.TransferContext;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -60,12 +62,12 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
         //NOOP
     }
 
-    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition)
+    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition, TransferContext transferContext)
     {
-        return createTransferManifestNode(nodeRef, definition, false);
+        return createTransferManifestNode(nodeRef, definition, transferContext, false);
     }
         
-    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition, boolean forceDelete)
+    public TransferManifestNode createTransferManifestNode(NodeRef nodeRef, TransferDefinition definition, TransferContext transferContext, boolean forceDelete)
     {
         NodeRef.Status status = nodeService.getNodeStatus(nodeRef);
 
@@ -203,6 +205,57 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
                }
             }
             acl.setPermissions(mps);
+            
+            /**
+             * Expand d:category information so we can re-create on target
+             */
+            Map<NodeRef, ManifestCategory> categories = new HashMap<NodeRef, ManifestCategory>();
+            
+            Map<QName, Serializable> properties = node.getProperties();
+            
+            for(Map.Entry<QName, Serializable> val : properties.entrySet())
+            {
+                PropertyDefinition def = dictionaryService.getProperty(val.getKey());
+                if(def != null)
+                {
+                	if(def.getDataType().getName().isMatch(DataTypeDefinition.CATEGORY))
+                	{
+                		if(def.isMultiValued())
+                		{
+                			Serializable thing = val.getValue();
+                			if(thing instanceof java.util.Collection)
+                			{
+                				java.util.Collection<NodeRef> c = (java.util.Collection<NodeRef>)thing;
+                				for(NodeRef categoryNodeRef : c)
+                				{
+                					if(categoryNodeRef != null)
+                					{
+                						categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
+                					}
+                				}
+                			}
+                			else
+                			{
+            						NodeRef categoryNodeRef = (NodeRef)val.getValue();
+                					if(categoryNodeRef != null)
+                					{
+                						categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
+                					}
+                			}
+                		}
+                		else
+                		{
+                			NodeRef categoryNodeRef = (NodeRef)val.getValue();
+        					if(categoryNodeRef != null)
+        					{
+        						categories.put(categoryNodeRef, getManifestCategory(transferContext, categoryNodeRef));
+        					}
+                		}
+                	}
+                }
+            }
+
+            node.setManifestCategories(categories);
 
             return node;
         }
@@ -263,6 +316,22 @@ public class TransferManifestNodeFactoryImpl implements TransferManifestNodeFact
             }
             return filteredProperties;
         }
+    }
+    
+    private ManifestCategory getManifestCategory(TransferContext transferContext, NodeRef categoryNodeRef)
+    {
+     	ManifestCategory c = transferContext.getManifestCategoriesCache().get(categoryNodeRef);
+    	
+     	if(c != null)
+     	{
+    		return c;
+    	}
+      	c = new ManifestCategory();
+      	  	
+    	Path p = nodeService.getPath(categoryNodeRef);
+    	c.setPath(p.toString());
+    	transferContext.getManifestCategoriesCache().put(categoryNodeRef, c);
+    	return c;
     }
 
     public void setNodeService(NodeService nodeService)

@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.MLText;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
@@ -281,6 +282,8 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         {
             writePrimaryParent(node.getPrimaryParentAssoc(), node.getParentPath());
         }
+        
+        writeCategories(node.getManifestCategories());
 
         writeAspects(node.getAspects());
 
@@ -300,6 +303,42 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
                     ManifestModel.LOCALNAME_ELEMENT_NODE, PREFIX + ":"
                                 + ManifestModel.LOCALNAME_ELEMENT_NODE);
     }
+    
+    private void writeCategories(Map<NodeRef, ManifestCategory> categories) throws SAXException
+    {
+        writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_ELEMENT_PROPERTIES, PREFIX + ":"
+                                + ManifestModel.LOCALNAME_ELEMENT_CATEGORIES, EMPTY_ATTRIBUTES);
+        if (categories != null)
+        {
+            for (Entry<NodeRef, ManifestCategory> entry : categories.entrySet())
+            {
+                writeCategory(entry.getKey(), entry.getValue());
+            }
+        }
+
+        writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_ELEMENT_PROPERTIES, PREFIX + ":"
+                                + ManifestModel.LOCALNAME_ELEMENT_CATEGORIES);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void writeCategory (NodeRef nodeRef, ManifestCategory value) throws SAXException
+    {
+        
+        AttributesImpl attributes = new AttributesImpl();
+        attributes.addAttribute(TransferModel.TRANSFER_MODEL_1_0_URI, "path", "path", "String",
+                        value.getPath());
+        writer.startElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                        ManifestModel.LOCALNAME_ELEMENT_CATEGORY, PREFIX + ":"
+                                    + ManifestModel.LOCALNAME_ELEMENT_CATEGORY, attributes);
+        writeValue(nodeRef);
+            
+        writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
+                    ManifestModel.LOCALNAME_ELEMENT_CATEGORY, PREFIX + ":"
+                                + ManifestModel.LOCALNAME_ELEMENT_CATEGORY);    
+    }
+
 
     private void writeProperties(Map<QName, Serializable> properties) throws SAXException
     {

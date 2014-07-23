@@ -36,6 +36,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transfer.TransferContext;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -157,7 +158,7 @@ public class ManifestIntegrationTest extends BaseAlfrescoSpringTest
             formatter.writeTransferManifestHeader(header);
             for(NodeRef nodeRef : nodes)
             {
-                TransferManifestNode node = nodeFactory.createTransferManifestNode(nodeRef, null);
+                TransferManifestNode node = nodeFactory.createTransferManifestNode(nodeRef, null, new TransferContext());
                 formatter.writeTransferManifestNode(node);
                 sentNodes.put(nodeRef, node);
             }

@@ -69,6 +69,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.search.CategoryService.Depth;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchService;
@@ -76,6 +78,7 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.transfer.TransferCallback;
 import org.alfresco.service.cmr.transfer.TransferDefinition;
 import org.alfresco.service.cmr.transfer.TransferEvent;
@@ -125,6 +128,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
     private DescriptorService descriptorService;
     private CopyService copyService;
     private Descriptor serverDescriptor;
+    private TaggingService taggingService; 
+    private CategoryService categoryService;
     
     String COMPANY_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home";
     String GUEST_HOME_XPATH_QUERY = "/{http://www.alfresco.org/model/application/1.0}company_home/{http://www.alfresco.org/model/application/1.0}guest_home";
@@ -159,6 +164,8 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         this.personService = (PersonService)this.applicationContext.getBean("PersonService");
         this.descriptorService = (DescriptorService)this.applicationContext.getBean("DescriptorService");
         this.copyService = (CopyService)this.applicationContext.getBean("CopyService");
+        this.taggingService = ((TaggingService)this.applicationContext.getBean("TaggingService"));
+        this.categoryService = (CategoryService)this.applicationContext.getBean("CategoryService");
         
         this.serverDescriptor = descriptorService.getServerDescriptor();
         
@@ -1886,7 +1893,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
          */
         String guestHomeQuery = "/app:company_home/app:guest_home";
         ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
-        assertEquals("", 1, guestHomeResult.length());
+        assertEquals("unable to find guest home", 1, guestHomeResult.length());
         final NodeRef guestHome = guestHomeResult.getNodeRef(0); 
 
         final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
@@ -3156,7 +3163,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 nodeService.setProperty(testContext.folderNodeRef, ContentModel.PROP_NAME, name);
 
                 // Side effect - initialisee nodeid mapping
-                testNodeFactory.createTransferManifestNode(testContext.folderNodeRef, def);
+                testNodeFactory.createTransferManifestNode(testContext.folderNodeRef, def, new TransferContext());
 
                 child = nodeService.createNode(testContext.folderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("source"), ContentModel.TYPE_CONTENT);
                 testContext.sourceNodeRef = child.getChildRef();
@@ -3164,17 +3171,17 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 nodeService.setProperty(testContext.sourceNodeRef, ContentModel.PROP_NAME, "source");
 
                 // Side effect - initialise nodeid mapping
-                testNodeFactory.createTransferManifestNode(testContext.sourceNodeRef, def);
+                testNodeFactory.createTransferManifestNode(testContext.sourceNodeRef, def, new TransferContext());
 
                 child = nodeService.createNode(testContext.folderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("target"), ContentModel.TYPE_CONTENT);
                 testContext.targetNodeRef = child.getChildRef();
                 nodeService.setProperty(testContext.targetNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
                 nodeService.setProperty(testContext.targetNodeRef, ContentModel.PROP_NAME, "target");
-                testNodeFactory.createTransferManifestNode(testContext.folderNodeRef, def);
+                testNodeFactory.createTransferManifestNode(testContext.folderNodeRef, def, new TransferContext());
                 nodeService.createAssociation(testContext.sourceNodeRef, testContext.targetNodeRef,  ContentModel.ASSOC_REFERENCES);
 
                 // Side effect - initialise nodeid mapping
-                testNodeFactory.createTransferManifestNode(testContext.targetNodeRef, def);
+                testNodeFactory.createTransferManifestNode(testContext.targetNodeRef, def, new TransferContext());
 
                 /**
                  * Make sure the transfer target exists and is enabled.
@@ -3378,7 +3385,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 nodeService.setProperty(testContext.rootNodeRef, ContentModel.PROP_NAME, name);
 
                 // Side effect - initialisee nodeid mapping
-                testNodeFactory.createTransferManifestNode(testContext.rootNodeRef, def);
+                testNodeFactory.createTransferManifestNode(testContext.rootNodeRef, def, new TransferContext());
 
                 child = nodeService.createNode(testContext.rootNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A1"), ContentModel.TYPE_FOLDER);
                 testContext.folderNodeRef = child.getChildRef();
@@ -3386,7 +3393,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 nodeService.setProperty(testContext.folderNodeRef, ContentModel.PROP_NAME, "A1");
 
                 // Side effect - initialise nodeid mapping
-                testNodeFactory.createTransferManifestNode(testContext.folderNodeRef, def);
+                testNodeFactory.createTransferManifestNode(testContext.folderNodeRef, def, new TransferContext());
 
                 child = nodeService.createNode(testContext.folderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("A2"), ContentModel.TYPE_CONTENT);
                 testContext.contentNodeRef = child.getChildRef();
@@ -3394,7 +3401,7 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
                 nodeService.setProperty(testContext.contentNodeRef, ContentModel.PROP_NAME, "A2");
            
                 // Side effect - initialise nodeid mapping
-                testNodeFactory.createTransferManifestNode(testContext.contentNodeRef, def);
+                testNodeFactory.createTransferManifestNode(testContext.contentNodeRef, def, new TransferContext());
                 
       
                 // Put nodes into destination
@@ -3465,7 +3472,280 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         tran.doInTransaction(transferCB);
         tran.doInTransaction(validateCB);
 
-    } // testExistingNodes    
+    } // testExistingNodes   
+    
+    /**
+     * Test categories and tags (CRUD).
+     * 
+     * Step 1: Create a new node with a tag
+     * transfer
+     * 
+     * Step 2: Add another tag
+     * transfer
+     *  
+     * Step 3: Delete a tag
+     * transfer
+     * 
+     * Step 4: Add a category
+     * transfer
+     * 
+     * Step 5: Add another category this one deep
+     * transfer
+     * 
+     * Step 6: Delete a category
+     * transfer
+     * 
+     * This is a unit test so it does some shenanigans to send to the same instance of alfresco.
+     */
+    public void testCategoriesAndTags() throws Exception
+    {
+        final String CONTENT_TITLE = "ContentTitle";
+        final String CONTENT_TITLE_UPDATED = "ContentTitleUpdated";
+        final Locale CONTENT_LOCALE = Locale.GERMAN; 
+        final String CONTENT_STRING = "Hello World";
+        final String CONTENT_UPDATE_STRING = "Foo Bar";
+        final String targetName = "testCategoriesAndTags";
+        final String TAG_1_NAME = "tag1";
+        final String TAG_2_NAME = "tag2";
+
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+        class TestContext
+        {
+            TransferTarget transferMe;
+            NodeRef contentNodeRef;
+            NodeRef destNodeRef;
+        };
+
+        /**
+         * Unit test kludge to transfer from guest home to company home
+         */
+        final UnitTestTransferManifestNodeFactory testNodeFactory = unitTestKludgeToTransferGuestHomeToCompanyHome();
+        
+        DescriptorService mockedDescriptorService = getMockDescriptorService(REPO_ID_A);
+        transferServiceImpl.setDescriptorService(mockedDescriptorService);
+        
+        RetryingTransactionCallback<TestContext> setupCB = new RetryingTransactionCallback<TestContext>()
+        {
+            @Override
+            public TestContext execute() throws Throwable
+            {
+                TestContext ctx = new TestContext();
+                
+                /**
+                 * Get guest home
+                 */
+                String guestHomeQuery = "/app:company_home/app:guest_home";
+                ResultSet guestHomeResult = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, guestHomeQuery);
+                assertEquals("", 1, guestHomeResult.length());
+                NodeRef guestHome = guestHomeResult.getNodeRef(0); 
+
+                /**
+                 * Create a test node that we will read and write
+                 */
+                String name = GUID.generate();
+                ChildAssociationRef child = nodeService.createNode(guestHome, ContentModel.ASSOC_CONTAINS, QName.createQName(name), ContentModel.TYPE_CONTENT);
+                ctx.contentNodeRef = child.getChildRef();
+                nodeService.setProperty(ctx.contentNodeRef, ContentModel.PROP_TITLE, CONTENT_TITLE);   
+                nodeService.setProperty(ctx.contentNodeRef, ContentModel.PROP_NAME, name);
+
+                // Add the TAG to be transferred
+                taggingService.addTag(ctx.contentNodeRef, TAG_1_NAME);
+                
+                if(!transferService.targetExists(targetName))
+                {
+                    ctx.transferMe = createTransferTarget(targetName);
+                }
+                else
+                {
+                    ctx.transferMe = transferService.getTransferTarget(targetName);
+                }
+                transferService.enableTransferTarget(targetName, true);
+
+                return ctx;
+            } 
+        };
+        final TestContext testContext = tran.doInTransaction(setupCB); 
+
+        /**
+         * Step 1: Transfer our which has a tag
+         */ 
+        logger.debug("First transfer - create new node with a tag");
+        RetryingTransactionCallback<Void> transferCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                TransferDefinition definition = new TransferDefinition();
+                Set<NodeRef>nodes = new HashSet<NodeRef>();
+                nodes.add(testContext.contentNodeRef);
+                definition.setNodes(nodes);
+                transferService.transfer(targetName, definition);
+                return null;
+            }
+        };
+        tran.doInTransaction(transferCB);
+        
+        RetryingTransactionCallback<Void> validateStep1CB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                // Now validate that the target node exists and has similar properties to the source
+                testContext.destNodeRef = testNodeFactory.getMappedNodeRef( testContext.contentNodeRef);
+                assertFalse("unit test stuffed up - comparing with self",  testContext.destNodeRef.equals( testContext.transferMe.getNodeRef()));
+                assertTrue("dest node ref does not exist", nodeService.exists( testContext.destNodeRef));
+                assertEquals("title is wrong", (String)nodeService.getProperty( testContext.destNodeRef, ContentModel.PROP_TITLE), CONTENT_TITLE); 
+                assertEquals("type is wrong", nodeService.getType( testContext.contentNodeRef), nodeService.getType( testContext.destNodeRef));
+                
+                List<String> tags = taggingService.getTags(testContext.contentNodeRef);
+                assertNotNull(tags);
+                assertTrue(tags.size() == 1);
+                assertTrue(tags.contains(TAG_1_NAME));
+                
+                // Now add another tag for step number 2
+                taggingService.addTag(testContext.contentNodeRef, TAG_2_NAME);
+                return null;
+           
+            }
+        };
+        tran.doInTransaction(validateStep1CB);
+        
+        /**
+         * Step 2:
+         * Transfer our node again - With another tag 
+         */
+        logger.debug("Second transfer - add a second tag");
+        tran.doInTransaction(transferCB);
+     
+        RetryingTransactionCallback<Void> validateStep2CB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+
+                // Now validate that the target node exists and has similar properties to the source
+                assertFalse("unit test stuffed up - comparing with self", testContext.destNodeRef.equals(testContext.transferMe.getNodeRef()));
+                assertTrue("dest node ref does not exist", nodeService.exists(testContext.destNodeRef));
+                
+                List<String> tags = taggingService.getTags(testContext.contentNodeRef);
+                
+                assertNotNull(tags);
+                assertTrue(tags.size() == 2);
+                assertTrue(tags.contains(TAG_1_NAME));
+                assertTrue(tags.contains(TAG_2_NAME));
+              
+                return null;
+            }
+        };
+
+        tran.doInTransaction(validateStep2CB);
+        
+        /**
+         * Step 3 - delete a tag
+         */
+        
+        RetryingTransactionCallback<Void> deleteTagCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                taggingService.removeTag(testContext.contentNodeRef, TAG_2_NAME);
+                return null;
+            }
+        };
+
+        tran.doInTransaction(deleteTagCB);
+
+       
+        logger.debug("Transfer again - this is to delete a tag");
+        tran.doInTransaction(transferCB);
+        
+        // should probably be in contentModel
+        final QName ASPECT_GENERAL_CLASSIFIABLE = ContentModel.ASPECT_GEN_CLASSIFIABLE;
+        
+        RetryingTransactionCallback<Void> validateStep3CB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                assertFalse("unit test stuffed up - comparing with self", testContext.destNodeRef.equals(testContext.transferMe.getNodeRef()));
+                assertTrue("dest node ref does not exist", nodeService.exists(testContext.destNodeRef));
+
+                List<String> tags = taggingService.getTags(testContext.destNodeRef);
+                assertNotNull(tags);
+                assertTrue(tags.size() == 1);
+                assertTrue(tags.contains(TAG_1_NAME));
+             
+                return null;
+            }
+        };
+
+        tran.doInTransaction(validateStep3CB);
+        
+        /**
+         * Step 4 - update to add a category that already exists
+         */
+        logger.debug("Step 4 - add a category");
+        
+        RetryingTransactionCallback<Void> step4WriteContentCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+            	// 
+                StoreRef workspaceSpacesStore = new StoreRef("workspace", "SpacesStore");
+              	Collection<ChildAssociationRef> rootCategories = categoryService.getRootCategories(workspaceSpacesStore, ASPECT_GENERAL_CLASSIFIABLE);
+              	
+            	NodeRef languageCategory = null; 
+              	for (ChildAssociationRef ref : rootCategories)
+              	{
+              		if(ref.getQName().getLocalName().equalsIgnoreCase("LANGUAGES"))
+              		{
+              			languageCategory = ref.getChildRef();
+              		}
+              	}
+              	
+              	assertNotNull("language category is null", languageCategory);
+        
+              	ChildAssociationRef categoryRef = categoryService.getCategory(languageCategory, ASPECT_GENERAL_CLASSIFIABLE, "English");
+              	
+  //            	Collection<ChildAssociationRef> allCategories = categoryService.getCategories(workspaceSpacesStore, ASPECT_GENERAL_CLASSIFIABLE, Depth.ANY);
+              	
+              	assertNotNull("ENGLISH CATEGORY REF is null", categoryRef);
+              	
+              	List<NodeRef> newCats = new ArrayList<NodeRef>();
+              	newCats.add(categoryRef.getChildRef());
+              	
+              	nodeService.setProperty(testContext.contentNodeRef, ContentModel.PROP_CATEGORIES, (Serializable)newCats);
+              	
+                return null;
+            }
+        };
+        
+        RetryingTransactionCallback<Void> validateStep4CB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+             public Void execute() throws Throwable
+             {
+                assertFalse("unit test stuffed up - comparing with self", testContext.destNodeRef.equals(testContext.transferMe.getNodeRef()));
+                assertTrue("dest node ref does not exist", nodeService.exists(testContext.destNodeRef));
+
+         	    assertTrue("destination node is missing aspect general classifiable", nodeService.hasAspect(testContext.destNodeRef, ContentModel.ASPECT_GEN_CLASSIFIABLE));
+         	    Serializable categories = nodeService.getProperty(testContext.destNodeRef, ContentModel.PROP_CATEGORIES);
+         	    assertNotNull("categories is missing on destination node", categories);
+              
+                return null;
+             }
+         };
+
+        tran.doInTransaction(step4WriteContentCB);
+
+        tran.doInTransaction(transferCB);
+
+        tran.doInTransaction(validateStep4CB);
+
+     } // testCategoriesAndTags
     
     // Utility methods below.
     private TransferTarget createTransferTarget(String name)
@@ -3495,5 +3775,5 @@ public class TransferServiceImplTest extends BaseAlfrescoSpringTest
         when(descriptorService.getServerDescriptor()).thenReturn(serverDescriptor);
         
         return descriptorService;
-    }    
+    }
 }

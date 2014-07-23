@@ -62,6 +62,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transfer.TransferContext;
 import org.alfresco.repo.transfer.manifest.TransferManifestNodeFactory;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.version.VersionModel;
@@ -572,7 +573,7 @@ public class PublishingEventHelper
             versionService.ensureVersioningEnabled(node, props);
         }
         versionService.createVersion(node, null);
-        TransferManifestNormalNode payload = (TransferManifestNormalNode) transferManifestNodeFactory.createTransferManifestNode(node, excludedAspectsTransferDefinition);
+        TransferManifestNormalNode payload = (TransferManifestNormalNode) transferManifestNodeFactory.createTransferManifestNode(node, excludedAspectsTransferDefinition, new TransferContext());
         NodeSnapshotTransferImpl snapshot = new NodeSnapshotTransferImpl(payload);
         return snapshot;
     }

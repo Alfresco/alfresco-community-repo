@@ -22,22 +22,27 @@ package org.alfresco.repo.transfer;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transfer.CorrespondingNodeResolver.ResolvedParentChildPair;
 import org.alfresco.repo.transfer.manifest.ManifestAccessControl;
+import org.alfresco.repo.transfer.manifest.ManifestCategory;
 import org.alfresco.repo.transfer.manifest.ManifestPermission;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
 import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -48,10 +53,14 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -92,6 +101,9 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     private DictionaryService dictionaryService;
     private CorrespondingNodeResolver nodeResolver;
     private AlienProcessor alienProcessor;
+    private SearchService searchService;
+    private CategoryService categoryService;
+    private TaggingService taggingService;
        
     // State within this class
     /**
@@ -104,6 +116,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
      * If at the end of processing there are still orphans then an exception will be thrown.
      */
     private Map<NodeRef, List<ChildAssociationRef>> orphans = new HashMap<NodeRef, List<ChildAssociationRef>>(89);
+    
+    /**
+     * node ref mapping from source to destination categories
+     */
+    private Map<NodeRef, NodeRef> categoryMap = new HashMap<NodeRef, NodeRef>();
 
     /**
      * @param transferId
@@ -276,6 +293,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // We need to process content properties separately.
         // First, create a shallow copy of the supplied property map...
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
+        
+        processCategories(props, node.getManifestCategories());
         
         injectTransferred(props);
 
@@ -531,6 +550,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             // First, create a shallow copy of the supplied property map...
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(node.getProperties());
             Map<QName, Serializable> existingProps = nodeService.getProperties(nodeToUpdate);
+            
+            processCategories(props, node.getManifestCategories());
             
             // inject transferred properties/aspect here
             injectTransferred(props);
@@ -966,6 +987,181 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     {
         return permissionService;
     }
+    
+    /**
+     * Process categories.
+     * 
+     * CRUD of Categories and Tags - also maps noderefs of type d:content from source to target
+     * 
+     * 
+     * @param properties
+     * @param manifestCategories
+     */
+    private void processCategories(Map<QName, Serializable> properties, Map<NodeRef, ManifestCategory> manifestCategories)
+    {   
+    	if(manifestCategories != null)
+    	{
+    		for(Map.Entry<QName, Serializable> val : properties.entrySet())
+    		{
+    			PropertyDefinition def = dictionaryService.getProperty(val.getKey());
+    			if(def != null)
+    			{
+    			if(def.getDataType().getName().isMatch(DataTypeDefinition.CATEGORY))
+    			{
+    				Serializable thing = val.getValue();
+    				if(thing != null)
+    				{
+    					if(def.isMultiValued())
+    					{
+    						if(thing instanceof java.util.Collection)
+    						{
+    							List<NodeRef> newCategories = new ArrayList<NodeRef>();
+    							java.util.Collection<NodeRef> c = (java.util.Collection<NodeRef>)thing;
+    							for(NodeRef sourceCategoryNodeRef : c)
+    							{
+    								if(log.isDebugEnabled())
+    								{
+    									log.debug("sourceCategoryNodeRef" + sourceCategoryNodeRef);
+    								}
+    								// substitute target node ref fot source node ref
+    								NodeRef targetNodeRef = processCategory(sourceCategoryNodeRef, manifestCategories);
+    								newCategories.add(targetNodeRef);
+    							}
+    							// substitute target node refs for source node refs
+    							properties.put(val.getKey(), (Serializable)newCategories);
+    						}
+    						else
+    						{
+    							throw new AlfrescoRuntimeException("Multi valued object is not a collection" + val.getKey() );
+    						}
+    					}
+    					else
+    					{
+    						NodeRef sourceCategoryNodeRef = (NodeRef)thing;
+    						if(log.isDebugEnabled())
+    						{
+    							log.debug("sourceCategoryNodeRef:" + sourceCategoryNodeRef);
+    						}
+    						NodeRef targetNodeRef = processCategory(sourceCategoryNodeRef, manifestCategories);	
+    						// substitute target node ref for source node ref
+    						properties.put(val.getKey(), targetNodeRef);
+    					}
+    				}
+    			}
+    			}
+    		}   	
+    	}
+    }
+    
+    /**
+     * process category - maps the category node ref from the source system to the target system.
+     * 
+     * It will lazily create any missing categories and tags as it executes.
+     * 
+     * @param sourceCategoryNodeRef
+     * @param manifestCategories
+     * @return targetNodeRef
+     */
+    private NodeRef processCategory(final NodeRef sourceCategoryNodeRef, final Map<NodeRef, ManifestCategory> manifestCategories)
+    {
+    	
+    	// first check cache to see whether we have already mapped this category
+    	NodeRef destinationNodeRef = categoryMap.get(sourceCategoryNodeRef);
+    	if(destinationNodeRef != null)
+    	{
+    		return destinationNodeRef;
+    	}
+    	
+    	// No we havn't seen this category before, have we got the details in the manifest
+		ManifestCategory category = manifestCategories.get(sourceCategoryNodeRef);
+		if(category != null)
+		{
+			final String path = category.getPath();
+			final Path catPath = PathHelper.stringToPath(path);
+			
+			final Path.Element aspectName = catPath.get(2);
+			final QName aspectQName = QName.createQName(aspectName.getElementString());
+			
+			if(aspectQName.equals(ContentModel.ASPECT_TAGGABLE))
+			{
+				Path.Element tagName = catPath.get(3);
+				// Category is a tag
+				QName tagQName = QName.createQName(tagName.getElementString());
+				destinationNodeRef = taggingService.getTagNodeRef(sourceCategoryNodeRef.getStoreRef(), tagQName.getLocalName());
+				if(destinationNodeRef != null)
+				{
+					log.debug("found existing tag" + tagQName.getLocalName());
+					categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
+					return destinationNodeRef;
+				}
+				destinationNodeRef = taggingService.createTag(sourceCategoryNodeRef.getStoreRef(), tagQName.getLocalName());
+				if(destinationNodeRef != null)
+				{
+					log.debug("created new tag" + tagQName.getLocalName());
+					categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
+					return destinationNodeRef;
+				}
+			}
+			else
+			{
+				// Categories are finniky about permissions, so run as system
+				RunAsWork<NodeRef> processCategory = new RunAsWork<NodeRef>()
+				{
+					@Override
+                    public NodeRef doWork() throws Exception
+                    {
+						QName rootCatName = QName.createQName(catPath.get(3).getElementString());
+						
+						Collection<ChildAssociationRef> roots = categoryService.getRootCategories(sourceCategoryNodeRef.getStoreRef(), aspectQName);
+						
+						/**
+						 * Get the root category node ref
+						 */
+						NodeRef rootCategoryNodeRef = null;
+						for(ChildAssociationRef ref : roots)
+						{
+							if(ref.getQName().equals(rootCatName))
+							{
+								rootCategoryNodeRef = ref.getChildRef();
+								break;
+							}					
+						}
+						
+						if(rootCategoryNodeRef == null)
+						{
+							// Root category does not exist
+							rootCategoryNodeRef = categoryService.createRootCategory(sourceCategoryNodeRef.getStoreRef(), aspectQName, rootCatName.getLocalName());
+						}
+						
+						NodeRef workingNodeRef = rootCategoryNodeRef;
+						// Root category does already exist - step through any sub-categories
+						for(int i = 4; i < catPath.size(); i++)
+						{
+							Path.Element element = catPath.get(i);
+							QName subCatName = QName.createQName(element.toString());
+							ChildAssociationRef child = categoryService.getCategory(workingNodeRef, aspectQName, subCatName.getLocalName());
+							if(child != null)
+							{
+								workingNodeRef = child.getChildRef();
+							}
+							else
+							{
+								workingNodeRef = categoryService.createCategory(workingNodeRef, subCatName.getLocalName());
+							}
+						}
+	                    return workingNodeRef;
+                    }
+					
+				};
+				destinationNodeRef = AuthenticationUtil.runAs(processCategory, AuthenticationUtil.SYSTEM_USER_NAME);
+			    categoryMap.put(sourceCategoryNodeRef, destinationNodeRef);
+			    return destinationNodeRef;
+			}
+		} // if manifest category exists
+		
+		return sourceCategoryNodeRef;
+    
+    }
 
     /**
      * inject transferred
@@ -1008,6 +1204,26 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     public AlienProcessor getAlienProcessor()
     {
         return alienProcessor;
+    }
+
+	public CategoryService getCategoryService()
+    {
+	    return categoryService;
+    }
+
+	public void setCategoryService(CategoryService categoryService)
+    {
+	    this.categoryService = categoryService;
+    }
+
+	public TaggingService getTaggingService()
+    {
+	    return taggingService;
+    }
+
+	public void setTaggingService(TaggingService taggingService)
+    {
+	    this.taggingService = taggingService;
     }
 
 }

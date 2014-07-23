@@ -153,6 +153,8 @@
         <property name="permissionService" ref="PermissionService" />
 		<property name="nodeResolverFactory" ref="transferNodeResolverFactory" />
 		<property name="alienProcessor" ref="alienProcessor" />
+		<property name="categoryService" ref="CategoryService" />
+	    <property name="taggingService" ref="TaggingService" />  
 	</bean>
 
 	<bean id="transferNodeResolverFactory"

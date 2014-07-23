@@ -27,7 +27,9 @@ import org.alfresco.repo.transfer.requisite.TransferRequsiteWriter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
 
 /**
@@ -41,6 +43,8 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     private PermissionService permissionService;
     private CorrespondingNodeResolverFactory nodeResolverFactory;
     private AlienProcessor alienProcessor;
+    private CategoryService categoryService;
+    private TaggingService taggingService;
 
     /*
      * (non-Javadoc)
@@ -59,6 +63,8 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         primaryProcessor.setDictionaryService(dictionaryService);
         primaryProcessor.setPermissionService(getPermissionService());
         primaryProcessor.setAlienProcessor(getAlienProcessor());
+        primaryProcessor.setCategoryService(categoryService);
+        primaryProcessor.setTaggingService(getTaggingService());
         processors.add(primaryProcessor);
         
         RepoSecondaryManifestProcessorImpl secondaryProcessor = new RepoSecondaryManifestProcessorImpl(receiver, transferId);
@@ -141,6 +147,26 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     public AlienProcessor getAlienProcessor()
     {
         return alienProcessor;
+    }
+
+	public CategoryService getCategoryService()
+    {
+	    return categoryService;
+    }
+
+	public void setCategoryService(CategoryService categoryService)
+    {
+	    this.categoryService = categoryService;
+    }
+
+	public TaggingService getTaggingService()
+    {
+	    return taggingService;
+    }
+
+	public void setTaggingService(TaggingService taggingService)
+    {
+	    this.taggingService = taggingService;
     }
 
 }

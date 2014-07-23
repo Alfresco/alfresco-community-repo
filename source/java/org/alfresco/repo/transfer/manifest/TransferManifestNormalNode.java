@@ -51,6 +51,9 @@ public class TransferManifestNormalNode implements TransferManifestNode
     private List<AssociationRef> targetAssocs;
     private Path parentPath;
     private ManifestAccessControl accessControl;
+    
+    // NodeRef is noderef of type d:category  ManifestCategory provides the extra meta-data
+    private Map<NodeRef, ManifestCategory> categories;
 
     public void setNodeRef(NodeRef nodeRef)
     {
@@ -190,5 +193,15 @@ public class TransferManifestNormalNode implements TransferManifestNode
     {
         this.ancestorType = ancestorType;
     }
-
+    
+    public void setManifestCategories(Map<NodeRef, ManifestCategory> categories)
+    {
+    	this.categories = categories;
+    }
+    
+    public Map<NodeRef, ManifestCategory> getManifestCategories()
+    {
+    	return this.categories;
+    }
+    
 }

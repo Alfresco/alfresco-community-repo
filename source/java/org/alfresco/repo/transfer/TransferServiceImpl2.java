@@ -576,6 +576,8 @@ public class TransferServiceImpl2 implements TransferService2
             } 
         };
         eventProcessor.addObserver(reportCallback);
+        
+        TransferContext transferContext = new TransferContext();
 
         // start transfer
         ClientTransferState clientState = ClientTransferState.Begin;
@@ -589,7 +591,7 @@ public class TransferServiceImpl2 implements TransferService2
                     {
                         eventProcessor.start();
                      
-                        manifest = createManifest(definition, localRepositoryId, fromVersion);
+                        manifest = createManifest(definition, localRepositoryId, fromVersion, transferContext);
                         logger.debug("transfer begin");
                         target = getTransferTarget(targetName);
                         checkTargetEnabled(target);
@@ -919,7 +921,7 @@ public class TransferServiceImpl2 implements TransferService2
         }
     }
     
-    private File createManifest(TransferDefinition definition, String repositoryId, TransferVersion fromVersion)
+    private File createManifest(TransferDefinition definition, String repositoryId, TransferVersion fromVersion, TransferContext transferContext)
         throws IOException, SAXException
     {
         // which nodes to write to the snapshot
@@ -966,7 +968,7 @@ public class TransferServiceImpl2 implements TransferService2
         {
             for (NodeRef nodeRef : nodes)
             {
-                TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition);
+                TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition, transferContext);
                 formatter.writeTransferManifestNode(node);
             }
         }
@@ -974,7 +976,7 @@ public class TransferServiceImpl2 implements TransferService2
         {
             for (NodeRef nodeRef : nodesToRemove)
             {
-                TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition,
+                TransferManifestNode node = transferManifestNodeFactory.createTransferManifestNode(nodeRef, definition, transferContext,
                         true);
                 formatter.writeTransferManifestNode(node);
             }

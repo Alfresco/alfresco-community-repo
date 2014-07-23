@@ -349,6 +349,18 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 perm.setStatus(status);
                 props.put("permission", perm);
             }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CATEGORIES))
+            {
+            	 props.put("categories", new HashMap<NodeRef, ManifestCategory>());
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CATEGORY))
+            {
+            	ManifestCategory cat = new ManifestCategory();
+                String path = (String)atts.getValue("", "path");
+                cat.setPath(path);
+            	props.put("category", cat);
+            }
+            
         } // if transfer URI
     } // startElement
 
@@ -633,6 +645,18 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
                 ManifestAccessControl acl = (ManifestAccessControl)props.get("acl");
                 ManifestPermission permission = (ManifestPermission)props.get("permission");
                 acl.addPermission(permission);
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CATEGORIES))
+            {
+            	 TransferManifestNormalNode node = (TransferManifestNormalNode)props.get("node");
+            	 Map<NodeRef, ManifestCategory>  categories = (Map<NodeRef, ManifestCategory> )props.get("categories");
+            	 node.setManifestCategories(categories);       
+            }
+            else if(elementName.equals(ManifestModel.LOCALNAME_ELEMENT_CATEGORY))
+            {
+            	 Map<NodeRef, ManifestCategory>  categories = (Map<NodeRef, ManifestCategory> )props.get("categories");
+            	 ManifestCategory category = (ManifestCategory)props.get("category");
+                 categories.put(new NodeRef(buffer.toString().trim()),category);
             }
 
 

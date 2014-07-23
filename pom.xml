@@ -64,6 +64,43 @@
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/solr</outputDirectory>
                                 </artifactItem>
+                                <!-- Tomcat -->
+                                <artifactItem>
+                                    <groupId>org.apache.tomcat</groupId>
+                                    <artifactId>tomcat</artifactId>
+                                    <version>7.0.53-alfresco</version>
+                                    <classifier>win32</classifier>
+                                    <type>zip</type>
+                                    <excludes>**/ROOT/**</excludes>
+                                    <outputDirectory>${project.build.directory}/binaries-windows</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.tomcat</groupId>
+                                    <artifactId>tomcat</artifactId>
+                                    <version>7.0.53-alfresco</version>
+                                    <classifier>win64</classifier>
+                                    <type>zip</type>
+                                    <excludes>**/ROOT/**</excludes>
+                                    <outputDirectory>${project.build.directory}/binaries-windows-x64</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.tomcat</groupId>
+                                    <artifactId>tomcat</artifactId>
+                                    <version>7.0.53-alfresco</version>
+                                    <classifier>unix</classifier>
+                                    <type>zip</type>
+                                    <excludes>**/ROOT/**</excludes>
+                                    <outputDirectory>${project.build.directory}/binaries-linux-x64</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.apache.tomcat</groupId>
+                                    <artifactId>tomcat</artifactId>
+                                    <version>7.0.53-alfresco</version>
+                                    <classifier>unix</classifier>
+                                    <type>zip</type>
+                                    <excludes>**/ROOT/**</excludes>
+                                    <outputDirectory>${project.build.directory}/binaries-osx-x64</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -145,6 +182,7 @@
                                windows
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-windows
+                               local_binaries_folder=${project.build.directory}/binaries-windows
                                project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x32.exe
                             </commandlineArgs>
                         </configuration>
@@ -164,6 +202,7 @@
                                windows
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64
+                               local_binaries_folder=${project.build.directory}/binaries-windows-x64
                                project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x64.exe
                             </commandlineArgs>
                         </configuration>
@@ -183,6 +222,7 @@
                                linux-x64
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64
+                               local_binaries_folder=${project.build.directory}/binaries-linux-x64
                                project.installerFilename=alfresco-enterprise-${project.version}-installer-linux-x64.bin
                             </commandlineArgs>
                         </configuration>
@@ -202,6 +242,7 @@
                                osx
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64
+                               local_binaries_folder=${project.build.directory}/binaries-osx-x64
                                project.installerFilename=alfresco-enterprise-${project.version}-installer-osx-x64.app
                             </commandlineArgs>
                         </configuration>

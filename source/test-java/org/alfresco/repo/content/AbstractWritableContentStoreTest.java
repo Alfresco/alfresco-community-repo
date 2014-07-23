@@ -374,17 +374,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         getStore().getUrls(from, to, handler);
         return found[0];
     }
-    
-    public void testGetUrls()
-    {
-        ContentWriter writer = getWriter();
-        writer.putContent("Content for " + getName());
-        final String contentUrl = writer.getContentUrl();
-        ContentStore store = getStore();
-        boolean inStore = searchForUrl(store, contentUrl, null, null);
-        assertTrue("New content not found in URL set", inStore);
-    }
-    
+
     public void testDeleteSimple() throws Exception
     {
         ContentStore store = getStore();

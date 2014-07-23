@@ -78,11 +78,7 @@ public class TestModel
         
         // construct dictionary dao        
         TenantService tenantService = new SingleTServiceImpl();
-        
-//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-//        namespaceDAO.setTenantService(tenantService);
-//        initNamespaceCaches(namespaceDAO);
-        
+
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         
@@ -118,10 +114,4 @@ public class TestModel
         SimpleCache<String, DictionaryRegistry> dictionaryCache = new DefaultSimpleCache<String, DictionaryRegistry>();
         dictionaryDAO.setDictionaryRegistryCache(dictionaryCache);
     }
-    
-//    private static void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
-//    {
-//        SimpleCache<String, NamespaceRegistry> namespaceCache = new DefaultSimpleCache<String, NamespaceRegistry>();
-//        namespaceDAO.setNamespaceRegistryCache(namespaceCache);
-//    }
 }

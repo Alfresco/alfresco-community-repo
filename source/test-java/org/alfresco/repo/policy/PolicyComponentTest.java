@@ -28,7 +28,6 @@ import org.alfresco.repo.cache.NullCache;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl;
 import org.alfresco.repo.tenant.SingleTServiceImpl;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.namespace.QName;
@@ -57,9 +56,6 @@ public class PolicyComponentTest extends TestCase
     {
         // Instantiate Dictionary Service
     	TenantService tenantService = new SingleTServiceImpl();
-//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-//        namespaceDAO.setTenantService(tenantService);
-//        initNamespaceCaches(namespaceDAO);
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(tenantService);
         initDictionaryCaches(dictionaryDAO);
@@ -87,13 +83,6 @@ public class PolicyComponentTest extends TestCase
         // note: unit tested here with null cache
         dictionaryDAO.setDictionaryRegistryCache(new NullCache());
     }
-    
-//    @SuppressWarnings("unchecked")
-//    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
-//    {
-//        // note: unit tested here with null cache
-//        namespaceDAO.setNamespaceRegistryCache(new NullCache());
-//    }
 
     public void testJavaBehaviour()
     {

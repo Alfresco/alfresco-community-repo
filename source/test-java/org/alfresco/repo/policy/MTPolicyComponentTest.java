@@ -18,30 +18,26 @@
  */
 package org.alfresco.repo.policy;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.TestCase;
 
-import org.alfresco.repo.cache.NullCache;
-import org.alfresco.repo.dictionary.CompiledModel;
+import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.dictionary.DictionaryDAOImpl;
-import org.alfresco.repo.dictionary.NamespaceDAOImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * Policy Component Tests
@@ -83,13 +79,10 @@ public class MTPolicyComponentTest extends TestCase
     	when(mockTenantService.getBaseName(any(StoreRef.class))).thenReturn(new StoreRef(BASE_PROTOCOL, BASE_IDENTIFIER));
 
     	
-//        NamespaceDAOImpl namespaceDAO = new NamespaceDAOImpl();
-//        namespaceDAO.setTenantService(mockTenantService);
-//        initNamespaceCaches(namespaceDAO);
         DictionaryDAOImpl dictionaryDAO = new DictionaryDAOImpl();
         dictionaryDAO.setTenantService(mockTenantService);
         initDictionaryCaches(dictionaryDAO);
-        
+
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
@@ -109,19 +102,12 @@ public class MTPolicyComponentTest extends TestCase
         policyComponent = x;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void initDictionaryCaches(DictionaryDAOImpl dictionaryDAO)
     {
         // note: unit tested here with null cache
-        dictionaryDAO.setDictionaryRegistryCache(new NullCache());
+        dictionaryDAO.setDictionaryRegistryCache(new MemoryCache());
     }
-    
-//    @SuppressWarnings("unchecked")
-//    private void initNamespaceCaches(NamespaceDAOImpl namespaceDAO)
-//    {
-//        // note: unit tested here with null cache
-//        namespaceDAO.setNamespaceRegistryCache(new NullCache());
-//    }
 
     public void testJavaBehaviour()
     {

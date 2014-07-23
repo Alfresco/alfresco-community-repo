@@ -238,63 +238,68 @@ public class NodesMetaDataGet extends DeclarativeWebScript
      */
     public static class FreemarkerNodeMetaData
     {
-        private Long nodeId;
-        private NodeRef nodeRef;
-        private QName nodeType;
-        private Long aclId;
-        private Map<String, PropertyValue> properties;
-        private Set<QName> aspects;
-        private List<String> paths;
-        private List<ChildAssociationRef> childAssocs;
-        private List<ChildAssociationRef> parentAssocs;
-        private Long parentAssocsCrc;
-        private List<Long> childIds;
-        private String owner;
-        private Long txnId;
-        private Set<String> ancestors;
-        private String tenantDomain;
+        private final Long nodeId;
+        private final NodeRef nodeRef;
+        private final QName nodeType;
+        private final Long aclId;
+        private final Map<String, PropertyValue> properties;
+        private final Set<QName> aspects;
+        private final List<String> paths;
+        private final List<String> namePaths;
+        private final List<ChildAssociationRef> childAssocs;
+        private final List<ChildAssociationRef> parentAssocs;
+        private final Long parentAssocsCrc;
+        private final List<Long> childIds;
+        private final String owner;
+        private final Long txnId;
+        private final Set<String> ancestors;
+        private final String tenantDomain;
         
         public FreemarkerNodeMetaData(final SOLRSerializer solrSerializer, final NodeMetaData nodeMetaData)
         		throws IOException, JSONException
         {
-            setNodeId(nodeMetaData.getNodeId());
-            setTenantDomain(nodeMetaData.getTenantDomain());
-            setAclId(nodeMetaData.getAclId());
-            setNodeRef(nodeMetaData.getNodeRef());
-            setNodeType(nodeMetaData.getNodeType());
-            setTxnId(nodeMetaData.getTxnId());
+            this.nodeId = nodeMetaData.getNodeId();
+            this.tenantDomain = nodeMetaData.getTenantDomain();
+            this.aclId = nodeMetaData.getAclId();
+            this.nodeRef = nodeMetaData.getNodeRef();
+            this.nodeType = nodeMetaData.getNodeType();
+            this.txnId = nodeMetaData.getTxnId();
             
             // convert Paths to Strings
             List<String> paths = new ArrayList<String>();
             HashSet<String> ancestors = new HashSet<String>();
             if(nodeMetaData.getPaths() != null)
             {
-            for(Pair<Path, QName> pair : nodeMetaData.getPaths())
-            {
-                JSONObject o = new JSONObject();
-                o.put("path", solrSerializer.serializeValue(String.class, pair.getFirst()));
-                o.put("qname", solrSerializer.serializeValue(String.class, pair.getSecond()));
-                paths.add(o.toString(3));
-                
-                for (NodeRef ancestor : getAncestors(pair.getFirst()))
+                for(Pair<Path, QName> pair : nodeMetaData.getPaths())
                 {
-                    ancestors.add(ancestor.toString());
+                    JSONObject o = new JSONObject();
+                    o.put("path", solrSerializer.serializeValue(String.class, pair.getFirst()));
+                    o.put("qname", solrSerializer.serializeValue(String.class, pair.getSecond()));
+                    paths.add(o.toString(3));
+                    
+                    for (NodeRef ancestor : getAncestors(pair.getFirst()))
+                    {
+                        ancestors.add(ancestor.toString());
+                    }
                 }
             }
-            }
-            setAncestors(ancestors);
-            setPaths(paths);
+            this.ancestors = ancestors;
+            this.paths = paths;
+            // TODO: Convert name paths to required strings
+            this.namePaths = null;              // TODO: use a JSON-friendly string
 
-            setChildAssocs(nodeMetaData.getChildAssocs());
-            setChildIds(nodeMetaData.getChildIds());
-            setParentAssocs(nodeMetaData.getParentAssocs());
-            setParentAssocsCrc(nodeMetaData.getParentAssocsCrc());
-            setAspects(nodeMetaData.getAspects());
+            this.owner = nodeMetaData.getOwner();
+            this.childAssocs = nodeMetaData.getChildAssocs();
+            this.childIds = nodeMetaData.getChildIds();
+            this.parentAssocs = nodeMetaData.getParentAssocs();
+            this.parentAssocsCrc = nodeMetaData.getParentAssocsCrc();
+            this.aspects = nodeMetaData.getAspects();
+
             final Map<QName, Serializable> props = nodeMetaData.getProperties();
-            if(props != null)
+            if (props != null)
             {
-                final Map<String, PropertyValue> properties = (props != null ? new HashMap<String, PropertyValue>(props.size()) : null);
-                for(final QName propName : props.keySet())
+                final Map<String, PropertyValue> properties = new HashMap<String, PropertyValue>(props.size());
+                for (final QName propName : props.keySet())
                 {
                 	// need to run this in tenant context because types may be in a tenant-specific
                 	// dictionary registry
@@ -310,139 +315,74 @@ public class NodesMetaDataGet extends DeclarativeWebScript
                     	}
                     }, tenantDomain);
                 }
-                setProperties(properties);
+                this.properties = properties;
             }
-            setOwner(nodeMetaData.getOwner());
+            else
+            {
+                this.properties = null;
+            }
         }
         
         public NodeRef getNodeRef()
         {
             return nodeRef;
         }
-        public void setNodeRef(NodeRef nodeRef)
-        {
-            this.nodeRef = nodeRef;
-        }
         public List<String> getPaths()
         {
             return paths;
-        }
-        public void setPaths(List<String> paths)
-        {
-            this.paths = paths;
         }
         public QName getNodeType()
         {
             return nodeType;
         }
-        public void setNodeType(QName nodeType)
-        {
-            this.nodeType = nodeType;
-        }
         public Long getNodeId()
         {
             return nodeId;
-        }
-        public void setNodeId(Long nodeId)
-        {
-            this.nodeId = nodeId;
         }
         public Long getAclId()
         {
             return aclId;
         }
-        public void setAclId(Long aclId)
-        {
-            this.aclId = aclId;
-        }
         public Map<String, PropertyValue> getProperties()
         {
             return properties;
-        }
-        public void setProperties(Map<String, PropertyValue> properties)
-        {
-            this.properties = properties;
         }
         public Set<QName> getAspects()
         {
             return aspects;
         }
-        public void setAspects(Set<QName> aspects)
-        {
-            this.aspects = aspects;
-        }
         public List<ChildAssociationRef> getChildAssocs()
         {
             return childAssocs;
-        }
-        public void setChildAssocs(List<ChildAssociationRef> childAssocs)
-        {
-            this.childAssocs = childAssocs;
         }
         public List<ChildAssociationRef> getParentAssocs()
         {
             return parentAssocs;
         }
-        public void setParentAssocs(List<ChildAssociationRef> parentAssocs)
-        {
-            this.parentAssocs = parentAssocs;
-        }
         public Long getParentAssocsCrc()
         {
             return parentAssocsCrc;
-        }
-        public void setParentAssocsCrc(Long parentAssocsCrc)
-        {
-            this.parentAssocsCrc = parentAssocsCrc;
-        }
-        public void setAncestors(Set<String> ancestors)
-        {
-            this.ancestors = ancestors;
         }
         public Set<String> getAncestors()
         {
             return ancestors;
         }
-
         public List<Long> getChildIds()
         {
             return childIds;
         }
-
-        public void setChildIds(List<Long> childIds)
-        {
-            this.childIds = childIds;
-        }
-
         public String getOwner()
         {
             return owner;
         }
-
-        public void setOwner(String owner)
-        {
-            this.owner = owner;
-        }
-
         public Long getTxnId()
         {
             return txnId;
         }
-
-        public void setTxnId(Long txnId)
-        {
-            this.txnId = txnId;
-        }
-        
         public String getTenantDomain()
         {
             return tenantDomain;
         }
-        public void setTenantDomain(String tenantDomain)
-        {
-            this.tenantDomain = tenantDomain;
-        }
-        
         private ArrayList<NodeRef> getAncestors(Path path)
         {
             ArrayList<NodeRef> ancestors = new ArrayList<NodeRef>(8);

@@ -214,7 +214,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         );
     }
     
-    public void aclReadersGetImpl() throws Exception
+    private void aclReadersGetImpl() throws Exception
     {
         List<AclChangeSet> aclChangeSets = solrTrackingComponent.getAclChangeSets(null, null, null, null, 1024);
         List<Long> aclChangeSetIds = new ArrayList<Long>(50);
@@ -252,6 +252,13 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
             readersByAclId.put(aclReaders.getAclId(), aclReaders.getReaders());
         }
         
+        Map<Long, Set<String>> deniedByAclId = new HashMap<Long, Set<String>>();
+        for (AclReaders aclReaders : aclsReaders)
+        {
+            assertNotNull("AclReaders should not contain null denial set", aclReaders.getDenied());
+            deniedByAclId.put(aclReaders.getAclId(), aclReaders.getDenied());
+        }
+        
         // Now query using the webscript
         String url = "/api/solr/aclsReaders";
         TestWebScriptServer.PostRequest req = new TestWebScriptServer.PostRequest(url, json.toString(), "application/json");
@@ -278,6 +285,15 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
             {
                 String readerJSON = readersJSON.getString(j);
                 assertTrue("Found reader not in check set: " + readerJSON, readersCheck.contains(readerJSON));
+            }
+            
+            Set<String> deniedCheck = deniedByAclId.get(aclIdJSON);
+            JSONArray deniedJSON = aclReadersJSON.getJSONArray("denied");
+            assertEquals("Denied list for ACL " + aclIdJSON + " is wrong. ", deniedCheck.size(), deniedJSON.length());
+            for (int j = 0; j < deniedJSON.length(); j++)
+            {
+                String denyJSON = deniedJSON.getString(j);
+                assertTrue("Found denied authority not in check set: " + denyJSON, deniedCheck.contains(denyJSON));
             }
         }
     }
@@ -559,6 +575,8 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
         GetNodesParameters params = new GetNodesParameters();
         params.setTransactionIds(transactionIds);
+        params.setStoreProtocol(storeRef.getProtocol());
+        params.setStoreIdentifier(storeRef.getIdentifier());
         JSONArray nodes = getNodes(params, 0, 2);
         
         List<Long> nodeIds = new ArrayList<Long>(nodes.length());
@@ -640,6 +658,8 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
 
         GetNodesParameters params = new GetNodesParameters();
         params.setTransactionIds(transactionIds);
+        params.setStoreProtocol(storeRef.getProtocol());
+        params.setStoreIdentifier(storeRef.getIdentifier());
         JSONArray nodes = getNodes(params, 0, 2);
         
         List<Long> nodeIds = new ArrayList<Long>(nodes.length());
@@ -679,6 +699,8 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
         List<Long> transactionIds = getTransactionIds(transactions);
 
         GetNodesParameters params = new GetNodesParameters();
+        params.setStoreProtocol(storeRef.getProtocol());
+        params.setStoreIdentifier(storeRef.getIdentifier());
         params.setTransactionIds(transactionIds);
         JSONArray nodes = getNodes(params, 0, 2001);
         

@@ -26,6 +26,13 @@
                "${reader?string}"
                <#if reader_has_next>,</#if>
             </#list>
+         ],
+         "denied" :
+         [
+            <#list aclReaders.denied as denied>
+               "${denied?string}"
+               <#if denied_has_next>,</#if>
+            </#list>
          ]
       }
 </#macro>

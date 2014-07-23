@@ -1217,9 +1217,10 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     
     /**
      * @param aclId
-     * @return set of authorities with read permission on the ACL
+     * @return set of authorities denied permission on the ACL
      */
-    private Set<String> getReadersDenied(Long aclId)
+    @Override
+    public Set<String> getReadersDenied(Long aclId)
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
 

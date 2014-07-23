@@ -428,7 +428,7 @@ public class FavouritesServiceImpl implements FavouritesService, InitializingBea
 				{
 					isFavourited = Boolean.valueOf((String)value);
 				}
-				else if(value instanceof String)
+				else if(value instanceof Boolean)
 				{
 					isFavourited = (Boolean)value;
 				}

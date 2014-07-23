@@ -20,6 +20,7 @@ package org.alfresco.service.license;
 
 import java.security.Principal;
 import java.util.Date;
+import java.util.Map;
 
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 
@@ -134,12 +135,21 @@ public interface LicenseDescriptor
     public boolean isClusterEnabled();
     
     /**
+     * Does this license allow cryptodoc
+     * @return <code>true</code> if the license allows cryptodoc
+     */
+    boolean isCryptodocEnabled();
+    
+    /**
      * ATS Transformation Server Expiry Date
      * @return the ATS Transformation Server Expiry Date or <code>null</code>
      */
     public String getTransformationServerExpiryDate();
 
-
-    
+    /**
+     * Get the extra public parameters in the license.
+     * @return the parameters
+     */
+    public Map<String, Object> getExtras();
     
 }

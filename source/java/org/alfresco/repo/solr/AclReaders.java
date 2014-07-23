@@ -32,13 +32,14 @@ public class AclReaders
 {
     private Long aclId;
     private Set<String> readers;
+    private Set<String> denied;    
     private long aclChangeSetId;
     private String tenantDomain = TenantService.DEFAULT_DOMAIN;
     
     @Override
     public String toString()
     {
-        return "AclReaders [aclId=" + aclId + ", readers=" + readers + ", aclChangeSetId=" + aclChangeSetId + ", tenantDomain=" + tenantDomain + "]";
+        return "AclReaders [aclId=" + aclId + ", readers=" + readers + ", denied=" + denied + ", aclChangeSetId=" + aclChangeSetId + ", tenantDomain=" + tenantDomain + "]";
     }
     public Long getAclId()
     {
@@ -55,6 +56,14 @@ public class AclReaders
     public void setReaders(Set<String> aclReaders)
     {
         this.readers = aclReaders;
+    }
+    public Set<String> getDenied()
+    {
+        return denied;
+    }
+    public void setDenied(Set<String> denied)
+    {
+        this.denied = denied;
     }
     public long getAclChangeSetId()
     {

@@ -257,10 +257,12 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             List<AclReaders> aclsReaders = new ArrayList<AclReaders>(aclIds.size() * 10);
             for (Long aclId : aclIds)
             {
-                Set<String> readersSet = permissionService.getReaders(aclId);
                 AclReaders readers = new AclReaders();
                 readers.setAclId(aclId);
+                Set<String> readersSet = permissionService.getReaders(aclId);
                 readers.setReaders(readersSet);
+                Set<String> deniedSet = permissionService.getReadersDenied(aclId);
+                readers.setDenied(deniedSet);
                 
                 Long aclChangeSetId = aclDAO.getAccessControlList(aclId).getProperties().getAclChangeSetId();
                 readers.setAclChangeSetId(aclChangeSetId);

@@ -167,7 +167,8 @@ public class ResourceWebScriptHelper
 			{
 				return Arrays.asList(selectedPropsTree.getText());
 			}
-			List<Tree> children = selectedPropsTree.getChildren();
+			@SuppressWarnings("unchecked")
+            List<Tree> children = (List<Tree>)selectedPropsTree.getChildren();
 			if (children!= null && !children.isEmpty())
 			{
 				List<String> properties = new ArrayList<String>(children.size());

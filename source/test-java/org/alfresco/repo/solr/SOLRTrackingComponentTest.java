@@ -21,7 +21,6 @@ package org.alfresco.repo.solr;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -243,6 +242,7 @@ public class SOLRTrackingComponentTest extends TestCase
     /**
      * Call {@link SOLRTrackingComponent#getAcls(List, Long, int)} in a transaction
      */
+    @SuppressWarnings("unused")
     private List<Acl> getAcls(final List<Long> aclChangeSetIds, final Long minAclId, final int maxResults)
     {
         RetryingTransactionCallback<List<Acl>> callback = new RetryingTransactionCallback<List<Acl>>()
@@ -959,7 +959,8 @@ public class SOLRTrackingComponentTest extends TestCase
         }
 
         @Override
-        public boolean handleNodeMetaData(NodeMetaData nodeMetaData) {
+        public boolean handleNodeMetaData(NodeMetaData nodeMetaData)
+        {
             actualNodeMetaDataCount++;
 
             if(doMetaDataChecks)
@@ -1008,6 +1009,32 @@ public class SOLRTrackingComponentTest extends TestCase
                     //                List<Path> actualPaths = nodeMetaData.getPaths();
                     //                List<Path> expectedPaths = nodeService.getPaths(nodeRef, false);
                     //                assertEquals("Paths are incorrect", expectedPaths, actualPaths);
+                    
+                    // Include negative checks i.e. make sure we get null if we do NOT expect paths
+                    boolean expectPaths = assertions.isExpectPaths();
+                    assertTrue("Expecting paths but didn't get any.", expectPaths == (nodeMetaData.getPaths() != null));
+                    assertTrue("Expecting name path but didn't get it.", expectPaths == (nodeMetaData.getNamePaths() != null));
+                    if (expectPaths)
+                    {
+                        // Check QName paths
+                            // TODO: Check paths
+                        // Check name paths
+                        Collection<Collection<String>> namePaths = nodeMetaData.getNamePaths();
+                        if (nodeService.getProperty(nodeRef, ContentModel.PROP_NAME) == null)
+                        {
+                            assertEquals("Expect an empty list where there is no cm:name on the node. ", 0, namePaths.size());
+                        }
+                        else
+                        {
+                            assertTrue("Expect some name paths for the node. ", namePaths.size() > 0);
+                            // Check that the last entry is the name of the current node
+                            String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                            String namePathStr = namePaths.toString();
+                            assertTrue(
+                                    "Did not find node name at end.  Have " + namePathStr + " and wanted to see " + name,
+                                    namePathStr.endsWith(name + "]]"));
+                        }
+                    }
 
                     boolean expectAspects = assertions.isExpectAspects();
                     if(expectAspects && nodeMetaData.getAspects() == null)
@@ -1047,16 +1074,6 @@ public class SOLRTrackingComponentTest extends TestCase
                     else if(!expectAclId && nodeMetaData.getAclId() != null)
                     {
                         fail("Not expecting acl id but got acl id");
-                    }
-
-                    boolean expectPaths = assertions.isExpectPaths();
-                    if(expectPaths && nodeMetaData.getPaths() == null)
-                    {
-                        fail("Expecting paths but got no paths");
-                    }
-                    else if(!expectPaths && nodeMetaData.getPaths() != null)
-                    {
-                        fail("Not expecting paths but got paths");
                     }
 
                     boolean expectAssociations = assertions.isExpectAssociations();

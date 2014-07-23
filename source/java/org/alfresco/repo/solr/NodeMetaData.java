@@ -44,6 +44,7 @@ public class NodeMetaData
     private Map<QName, Serializable> properties;
     private Set<QName> aspects;
     private Collection<Pair<Path, QName>> paths;
+    private Collection<Collection<String>> namePaths;
     private List<ChildAssociationRef> childAssocs;
     private List<ChildAssociationRef> parentAssocs;
     private Long parentAssocsCrc;
@@ -74,6 +75,14 @@ public class NodeMetaData
     public void setPaths(Collection<Pair<Path, QName>> paths)
     {
         this.paths = paths;
+    }
+    public Collection<Collection<String>> getNamePaths()
+    {
+        return namePaths;
+    }
+    public void setNamePaths(Collection<Collection<String>> namePaths)
+    {
+        this.namePaths = namePaths;
     }
     public QName getNodeType()
     {

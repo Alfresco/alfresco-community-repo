@@ -26,6 +26,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
@@ -96,6 +97,8 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
     /** The message service */
     private MessageService messageService;
     
+    private PolicyComponent policyComponent;
+    
     /**
      * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
      */
@@ -113,6 +116,8 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         this.tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
         this.messageService = (MessageService)this.applicationContext.getBean("messageService");
+        this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
+        
         
         this.bootstrap = new DictionaryRepositoryBootstrap();
         this.bootstrap.setContentService(this.contentService);
@@ -122,6 +127,7 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         this.bootstrap.setNodeService(this.nodeService);
         this.bootstrap.setNamespaceService(this.namespaceService);
         this.bootstrap.setMessageService(this.messageService);
+        this.bootstrap.setPolicyComponent(this.policyComponent);
         
         RepositoryLocation location = new RepositoryLocation();
         location.setStoreProtocol(this.storeRef.getProtocol());

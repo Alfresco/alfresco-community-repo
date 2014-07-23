@@ -37,6 +37,7 @@ import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -141,6 +142,7 @@ public class ScriptNodeTest
     private static MessageService              MESSAGE_SERVICE;
     private static TransactionService          TRANSACTION_SERVICE;
     private static DictionaryModelType         DICTIONARY_MODEL_TYPE;
+    private static PolicyComponent             POLICY_COMPONENT;
     
     private static TestSiteAndMemberInfo USER_ONES_TEST_SITE;
     private static NodeRef               USER_ONES_TEST_FILE;
@@ -179,6 +181,7 @@ public class ScriptNodeTest
         MESSAGE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("messageService", MessageService.class);
         TRANSACTION_SERVICE   = APP_CONTEXT_INIT.getApplicationContext().getBean("transactionComponent", TransactionService.class);
         DICTIONARY_MODEL_TYPE = APP_CONTEXT_INIT.getApplicationContext().getBean("dictionaryModelType", DictionaryModelType.class);
+        POLICY_COMPONENT      = APP_CONTEXT_INIT.getApplicationContext().getBean("policyComponent", PolicyComponent.class);
 		
         USER_ONES_TEST_SITE = STATIC_TEST_SITES.createTestSiteWithUserPerRole(GUID.generate(), "sitePreset", SiteVisibility.PRIVATE, USER_ONE_NAME);
         USER_ONES_TEST_FILE = STATIC_TEST_NODES.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, USER_ONES_TEST_SITE.doclib, "test.txt", USER_ONE_NAME);		
@@ -220,6 +223,7 @@ public class ScriptNodeTest
         bootstrap.setNodeService(NODE_SERVICE);
         bootstrap.setNamespaceService(NAMESPACE_SERVICE);
         bootstrap.setMessageService(MESSAGE_SERVICE);
+        bootstrap.setPolicyComponent(POLICY_COMPONENT);
 
         List<String> storeUrlsToValidate = new ArrayList<String>(1);
         storeUrlsToValidate.add(this.storeRef.toString());

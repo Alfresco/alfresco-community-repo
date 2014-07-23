@@ -91,6 +91,28 @@ import org.springframework.util.StringUtils;
  * 
  * @author Roy Wetherall
  */
+
+/*
+ * mrogers
+Thinking over MNT-11488 last night I was considering the requirements for a single message for each action and the possibility of a "bulk mail action." that sends many messages. However it occurs to me that we already have this split in the API (Although i couldn't find any documentation which has left the expected functionality confused and the implementation adrift.) So I'm changing my guidance.
+There is a need to document (javadoc) the interface so we tie down expected behaviour. And then refactor since the code is confused.
+Here's my thinking:
+If the to_many parameter is set then it should be a "bulk" email which sends many individual messages.
+If the to_many parameter is incompatible with the TO parameter which will be is ignored or will throw an Illegal Argument Exception.
+If the to_many parameter is incompatible with the proposed CC parameter which will be is ignored or will throw an Illegal Argument Exception.
+If the to_many parameter is incompatible with the proposed BCC parameter which will be is ignored or will throw an Illegal Argument Exception.
+If the to_many parameter is not specified then it results in a single message regardless of other settings. 
+We should probably add CC and BCC parameters which can be specified alonside TO
+We should make TO multi-valued
+If we allow multiple TO then the single message is only in the locale appropriate to the first TO.
+We should allow a list of USER authority name or a email address in TO or TO_MANY.
+We should probably also allow GROUP authority names in TO and TO_MANY however for now lets just make sure it works with TO_MANY
+Other implications follow through from this big switch approach and affect the implementation.
+For example should we allow PARAM_SEND_AFTER_COMMIT for bulk email (since it makes implementation hard.) 
+Likewise the template handling with locale is clarified. For bulk its an individual message so it has an individual locale.
+And with a bulk email we should probably carry on sending even after errors and then have some sort of bulk report of errors.
+TEMPLATES can be used with either TO and TO_MANY
+*/
 public class MailActionExecuter extends ActionExecuterAbstractBase
                                 implements InitializingBean, TestModeable
 {

@@ -85,7 +85,7 @@ public class SiteAdminSitesGet extends DeclarativeWebScript
         if (!siteService.isSiteAdmin(currentUser))
         {
             // Note: security, no message to indicate why
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Resource no found.");
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Resource not found.");
         }
 
         // Create paging

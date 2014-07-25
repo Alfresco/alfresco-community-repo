@@ -189,7 +189,7 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
      * @param aclId
      * @return
      */
-    private Set<String> getReadersDenied(Long aclId)
+    public Set<String> getReadersDenied(Long aclId)
     {
         AccessControlList acl = aclDaoComponent.getAccessControlList(aclId);
 

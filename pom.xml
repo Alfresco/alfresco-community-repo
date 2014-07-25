@@ -89,7 +89,7 @@
    </properties>
 
    <build>
-      <finalName>${project.artifactId}-${project.version}-b${buildNumber}-${buildKey}</finalName>
+      <finalName>${project.artifactId}-${project.version}${buildNumber}${buildKey}</finalName>
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>

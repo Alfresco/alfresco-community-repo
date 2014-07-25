@@ -82,9 +82,14 @@
 
       <!-- Sonar specific properties -->
       <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
+
+      <!-- Bamboo build number and build key. These property values are empty. The values will be passed on bamboo configuration -->
+      <buildNumber></buildNumber>
+      <buildKey></buildKey>
    </properties>
 
    <build>
+      <finalName>${project.artifactId}-${project.version}-b${buildNumber}-${buildKey}</finalName>
       <plugins>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>

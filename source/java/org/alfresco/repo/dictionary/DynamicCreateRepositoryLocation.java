@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
@@ -19,6 +20,7 @@ import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -37,6 +39,7 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
     private ResourceBundle bundle;
     private NamespaceService namespaceService;
     private SearchService searchService;
+    private TransactionService transactionService;
 
 	public void setSearchService(SearchService searchService)
 	{
@@ -95,6 +98,20 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
 
     protected void create()
     {
+        RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                onCreateInTxn();
+                return null;
+            }
+        };
+        getTransactionService().getRetryingTransactionHelper().doInTransaction(initCallback, false, true);
+
+    }
+    private void onCreateInTxn()
+    {       
         final File viewFile = ImporterBootstrap.getFile(contentViewLocation);
         ImportPackageHandler acpHandler = new ACPImportPackageHandler(viewFile, null);
         Location location = new Location(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -135,4 +152,14 @@ public class DynamicCreateRepositoryLocation extends RepositoryLocation
 
         importerService.importView(acpHandler, location, binding, (ImporterProgress) null);
     }
+
+	public TransactionService getTransactionService() 
+	{
+		return transactionService;
+	}
+
+	public void setTransactionService(TransactionService transactionService) 
+	{
+		this.transactionService = transactionService;
+	}
 }

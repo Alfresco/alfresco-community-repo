@@ -21,7 +21,6 @@ package org.alfresco.repo.dictionary;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +30,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.cache.DefaultSimpleCache;
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.dictionary.constraint.AbstractConstraint;
 import org.alfresco.repo.dictionary.constraint.ConstraintRegistry;
 import org.alfresco.repo.dictionary.constraint.RegexConstraint;

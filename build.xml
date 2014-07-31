@@ -8,17 +8,15 @@
 
    <property environment="env" />
 
-   <target name="cleanTarget">
-      <delete dir="${ant.build.directory}" failonerror="true" />
-   </target>
-
    <target name="install">
       <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="clean" />
          <arg value="install" />
          <arg value="-DskipTests" />
+         <arg value="-PfullBuild" />
       </exec>
    </target>
-   
+
    <target name="fetchWarFile">
       <xmlproperty file="../pom.xml" keepRoot="false"/>
       <exec executable="${mvn.exec}" failonerror="true">
@@ -39,7 +37,7 @@
       <delete dir="${app.folder}" failonerror="true" />
    </target>
 
-   <target name="alfresco:amp" depends="cleanTarget, unitTest">
+   <target name="alfresco:amp" depends="install, unitTest">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="alfresco:amp" />
       </exec>
@@ -55,7 +53,7 @@
       <copy file="${ant.build.directory}/${app.package}" todir="${app.tomcat.webapps}" failonerror="true" />
    </target>
 
-   <target name="buildAndDeploy" depends="alfresco:install, copyWarFileToTomcat" description=""/>
+   <target name="fullBuild" depends="alfresco:install, copyWarFileToTomcat" description=""/>
 
    <target name="getSvnRevision">
       <mkdir dir="${ant.build.directory}"/>
@@ -66,31 +64,13 @@
       <property file="${svnInfoFile}"/>
    </target>
 
-   <target name="assembleLocalisationPackage" depends="getSvnRevision" description="">
-      <property name="i18n" value="${ant.build.directory}/i18n" />
-      <delete dir="${i18n}" failonerror="true" />
-      <copy todir="${i18n}/${ant.project.name}/${ant.config.directory}" failonerror="true">
-         <fileset dir="${ant.config.directory}">
-            <include name="**/*.properties" />
-            <exclude name="**/*_*.properties" />
-            <exclude name="**/rm-method-security.properties" />
-            <exclude name="**/alfresco-global.properties" />
-            <exclude name="**/log4j.properties" />
-            <exclude name="**/module.properties" />
-            <exclude name="**/file-mapping.properties" />
-         </fileset>
-      </copy>
-      <xmlproperty file="../pom.xml" keepRoot="false"/>
-      <zip destfile="${i18n}/${ant.project.name}-${version}-r${Revision}.zip" basedir="${i18n}" />
-   </target>
-
    <target name="copyWebDirectory" if="${web.directory.exists}">
       <copy todir="${app.folder}" failonerror="true">
          <fileset dir="${ant.source.web.directory}" />
       </copy>
    </target>
 
-   <target name="deployExploded" depends="cleanTarget, install" description="">
+   <target name="package">
       <fail message="Exploded webapp directory '${app.war.artifactId}' does not exist.">
          <condition>
             <not>
@@ -98,11 +78,16 @@
             </not>
          </condition>
       </fail>
-      <copy todir="${app.folder}/WEB-INF/lib" failonerror="true">
-         <fileset dir="${ant.build.directory}">
-            <include name="*.jar" />
-         </fileset>
-      </copy>
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="package" />
+         <arg value="-DskipTests" />
+      </exec>
+   </target>
+
+   <target name="incrementalBuild" depends="package, unitTest" description="">
+      <xmlproperty file="pom.xml" keepRoot="false"/>
+      <copy file="${ant.build.directory}/${artifactId}-${parent.version}.jar" tofile="${ant.build.directory}/${artifactId}-${parent.version}-amp.jar" failonerror="true" />
+      <move file="${ant.build.directory}/${artifactId}-${parent.version}-amp.jar" todir="${app.folder}/WEB-INF/lib" failonerror="true" />
       <copy todir="${app.folder}/WEB-INF/classes" failonerror="true">
          <fileset dir="${ant.config.directory}">
             <exclude name="**/module.properties" />

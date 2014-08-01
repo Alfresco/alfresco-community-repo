@@ -28,6 +28,7 @@
            solr_folder=${project.build.directory}/solr
            alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
+        <alfresco.googledocs.version>2.0.8-22</alfresco.googledocs.version>
     </properties>
 
     <build>

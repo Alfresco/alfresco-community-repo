@@ -36,6 +36,8 @@
                 <value>listContainers</value>
                 <value>isFavouriteSite</value>
                 <value>getFavouriteSites</value>
+                <value>getSiteShortName</value>
+                <value>isSiteAdmin</value>
                 <value>addFavouriteSite</value>
             </list>
         </property>

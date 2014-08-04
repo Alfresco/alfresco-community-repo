@@ -344,6 +344,6 @@ function doclist_main()
          documents: documentNodesCount
       },
       items: items,
-      customJSON: slingshotDocLib.getJSON()
+      customJSON: slingshotDocLib.getJSON(url)
    });
 }

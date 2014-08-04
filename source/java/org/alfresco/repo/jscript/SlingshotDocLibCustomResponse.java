@@ -21,6 +21,7 @@ package org.alfresco.repo.jscript;
 import org.alfresco.repo.jscript.app.CustomResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.webscripts.DefaultURLModel;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -49,9 +50,9 @@ public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorEx
      *
      * @return The JSON string
      */
-    public String getJSON()
+    public String getJSON(DefaultURLModel url)
     {
-        return this.getJSONObj().toString();
+        return this.getJSONObj(url).toString();
     }
 
     /**
@@ -59,7 +60,7 @@ public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorEx
      *
      * @return The JSON object
      */
-    protected Object getJSONObj()
+    protected Object getJSONObj(DefaultURLModel url)
     {
         JSONObject json = new JSONObject();
 
@@ -68,7 +69,7 @@ public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorEx
         {
             try
             {
-                Serializable response = ((CustomResponse) entry.getValue()).populate();
+                Serializable response = ((CustomResponse) entry.getValue()).populate(url);
                 json.put(entry.getKey(), response == null ? JSONObject.NULL: response);
             }
             catch (JSONException error)

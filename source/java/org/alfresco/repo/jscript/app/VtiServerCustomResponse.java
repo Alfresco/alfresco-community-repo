@@ -23,7 +23,6 @@ import org.alfresco.repo.jscript.ScriptUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
-import org.springframework.extensions.webscripts.DefaultURLModel;
 
 import java.io.Serializable;
 import java.util.LinkedHashMap;
@@ -112,7 +111,7 @@ public class VtiServerCustomResponse implements CustomResponse
      *
      * @return JSONObject or null
      */
-    public Serializable populate(DefaultURLModel url)
+    public Serializable populate()
     {
         try
         {

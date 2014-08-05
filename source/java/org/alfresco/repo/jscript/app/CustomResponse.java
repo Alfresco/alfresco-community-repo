@@ -21,8 +21,6 @@ package org.alfresco.repo.jscript.app;
 
 import java.io.Serializable;
 
-import org.springframework.extensions.webscripts.DefaultURLModel;
-
 /**
  * Interface for custom properties used by SlingshotDocLibCustomResponse
  *
@@ -32,8 +30,6 @@ public interface CustomResponse
 {
     /**
      * Populates the DocLib webscript response with custom metadata
-     * 
-     * @param url the URL that initiated the webscript request
      */
-    Serializable populate(DefaultURLModel url);
+    Serializable populate();
 }

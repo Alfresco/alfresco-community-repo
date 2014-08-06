@@ -55,4 +55,11 @@
        <property name="customResponses" ref="slingshotDocLibCustomResponsesMap" />
     </bean>
 
+    <bean name="registerSlingshotCustomResponse" class="org.alfresco.repo.jscript.SlingshotDocLibCustomResponseRegistrar"
+           init-method="addCustomResponse" abstract="true">
+       <property name="responsesMap">
+           <ref bean="slingshotDocLibCustomResponsesMap" />
+       </property>
+    </bean>
+
 </beans>

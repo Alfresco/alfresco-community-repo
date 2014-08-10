@@ -21,9 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.HideRecordAction;
-import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -49,19 +47,6 @@ public class HideRecordActionTest extends BaseRMTestCase
 
     public void testHideRecordAction()
     {
-        doTestInTransaction(new Test<Void>()
-        {
-            public Void run()
-            {
-                // The user must have the appropriate rights
-                Role role = filePlanRoleService.getRole(filePlan, "RecordsManager");
-                authorityService.addAuthority(role.getRoleGroupName(), dmCollaborator);
-
-                return null;
-            }
-        },
-        AuthenticationUtil.getAdminUserName());
-
         doTestInTransaction(new Test<Void>()
         {
             public Void run()

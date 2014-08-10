@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -27,26 +28,27 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * Hides a record within a collaboration site.
- *
- * Note: This is a 'normal' dm action, rather than a records management action.
+ * Moves a record within a collaboration site.
+ * The record can be moved only within the collaboration site where it was declared.
  *
  * @author Tuna Aksoy
- * @since 2.1
+ * @since 2.3
  */
-public class HideRecordAction extends AuditableActionExecuterAbstractBase
-                              implements RecordsManagementModel
+public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase implements RecordsManagementModel
 {
-
     /** Logger */
-    private static Log logger = LogFactory.getLog(HideRecordAction.class);
+    private static Log logger = LogFactory.getLog(MoveDmRecordAction.class);
 
     /** Action name */
-    public static final String NAME = "hide-record";
+    public static final String NAME = "move-dm-record";
+
+    /** Constant for target node reference parameter */
+    public static final String PARAM_TARGET_NODE_REF = "targetNodeRef";
 
     /** Node service */
     private NodeService nodeService;
@@ -55,7 +57,19 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     private RecordService recordService;
 
     /**
-     * @param nodeService node service
+     * Gets the node service
+     *
+     * @return Node service
+     */
+    protected NodeService getNodeService()
+    {
+        return this.nodeService;
+    }
+
+    /**
+     * Sets the node service
+     *
+     * @param nodeService Node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -63,7 +77,19 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param recordService record service
+     * Gets the record service
+     *
+     * @return Record service
+     */
+    protected RecordService getRecordService()
+    {
+        return this.recordService;
+    }
+
+    /**
+     * Sets the record service
+     *
+     * @param recordService Record service
      */
     public void setRecordService(RecordService recordService)
     {
@@ -76,19 +102,34 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (!nodeService.hasAspect(actionedUponNodeRef, ASPECT_RECORD))
+        // Cannot move a document which is not a record
+        if (!getNodeService().hasAspect(actionedUponNodeRef, ASPECT_RECORD) && logger.isDebugEnabled())
         {
-            // we cannot hide a document which is not a record
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Cannot hide the document, because '" + actionedUponNodeRef.toString() + "' is not a record.");
-            }
+            logger.debug("Cannot move the document, because '" + actionedUponNodeRef.toString() + "' is not a record.");
         }
         else
         {
-            // hide the record from the collaboration site
-            recordService.hideRecord(actionedUponNodeRef);
+            // Move the record within the collaboration site
+            getRecordService().moveRecord(actionedUponNodeRef, getTargetNodeRef(action));
         }
+    }
+
+    /**
+     * Helper method to get the target node reference from the action parameter
+     *
+     * @param action The action
+     * @return Node reference of the target
+     */
+    private NodeRef getTargetNodeRef(Action action)
+    {
+        String targetNodeRef = (String) action.getParameterValue(PARAM_TARGET_NODE_REF);
+
+        if (StringUtils.isBlank(targetNodeRef))
+        {
+            throw new AlfrescoRuntimeException("Could not find target node reference.");
+        }
+
+        return new NodeRef(targetNodeRef);
     }
 
     /**

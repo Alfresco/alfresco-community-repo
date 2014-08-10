@@ -1039,6 +1039,7 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
+        <property name="siteService" ref="SiteService" />
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
@@ -1100,6 +1101,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.addRecordType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.link=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.moveRecord=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

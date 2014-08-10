@@ -80,6 +80,8 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -193,6 +195,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Permission service */
     private PermissionService permissionService;
+
+    /** Site service */
+    private SiteService siteService;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
@@ -313,6 +318,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    /**
+     * @param siteService site service
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
     }
 
     /**
@@ -1474,5 +1487,69 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
             nodeService.addChild(folder, nodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).toString()));
         }
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#moveRecord(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void moveRecord(final NodeRef nodeRef, final NodeRef targetNodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("targetNodeRef", targetNodeRef);
+
+        NodeRef sourceParentNodeRef = null;
+
+        NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
+        for (ChildAssociationRef parentAssoc : nodeService.getParentAssocs(nodeRef))
+        {
+            if (!parentAssoc.isPrimary() && parentAssoc.getParentRef().equals(originatingLocation))
+            {
+                sourceParentNodeRef = parentAssoc.getParentRef();
+                break;
+            }
+        }
+
+        if (sourceParentNodeRef == null)
+        {
+            throw new AlfrescoRuntimeException("Could not find source parent node reference.");
+        }
+
+        SiteInfo sourceSite = siteService.getSite(sourceParentNodeRef);
+        SiteInfo targetSite = siteService.getSite(targetNodeRef);
+
+        if (!sourceSite.equals(targetSite))
+        {
+            throw new AlfrescoRuntimeException("The record can only be moved within the same collaboration site.");
+        }
+
+        if (!sourceSite.getSitePreset().equals("site-dashboard"))
+        {
+            throw new AlfrescoRuntimeException("Only records within a collaboration site can be moved.");
+        }
+
+        final NodeRef source = sourceParentNodeRef;
+
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                try
+                {
+                    // Move the record
+                    fileFolderService.moveFrom(nodeRef, source, targetNodeRef, null);
+
+                    // Update the originating location property
+                    nodeService.setProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION, targetNodeRef);
+                }
+                catch (FileExistsException | FileNotFoundException ex)
+                {
+                    throw new AlfrescoRuntimeException("Can't move node: " +  ex);
+                }
+
+                return null;
+            }
+        });
     }
 }

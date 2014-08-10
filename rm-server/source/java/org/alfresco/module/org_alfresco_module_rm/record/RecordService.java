@@ -56,10 +56,10 @@ public interface RecordService
      * Disables the property editable check.
      */
     void disablePropertyEditableCheck();
-    
+
     /**
      * Disables the property editable check for a given node in this transaction only.
-     * 
+     *
      * @param nodeRef   node reference
      * @since 2.2
      */
@@ -231,4 +231,12 @@ public interface RecordService
     * @param folder     The folder in which the link will be created
     */
    void link(NodeRef nodeRef, NodeRef folder);
+
+   /**
+    * Moves a record within a collaboration site
+    *
+    * @param nodeRef                The record which should be moved
+    * @param targetNodeRef          The target node reference where it should be moved to
+    */
+   void moveRecord(NodeRef nodeRef, NodeRef targetNodeRef);
 }

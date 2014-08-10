@@ -860,7 +860,7 @@
       </property>
       <property name="capability" value ="DeleteHold"/>
    </bean>
-   
+
    <bean id="jsonConversionComponent.editHold"
       parent="jsonConversionComponent.baseAction">
       <property name="name" value="editHold"/>
@@ -870,5 +870,16 @@
          </set>
       </property>
       <property name="capability" value ="EditHold"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.moveDmRecordAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="moveDmRecord"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="MoveDmRecords"/>
    </bean>
 </beans>

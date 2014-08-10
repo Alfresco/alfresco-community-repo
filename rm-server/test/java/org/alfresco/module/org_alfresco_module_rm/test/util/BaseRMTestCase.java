@@ -723,7 +723,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         // create collaboration site
         collabSiteId = GUID.generate();
-        collaborationSite = siteService.createSite("preset", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
+        collaborationSite = siteService.createSite("site-dashboard", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
         documentLibrary = SiteServiceImpl.getSiteContainer(
                 collabSiteId,
                 SiteService.DOCUMENT_LIBRARY,
@@ -818,7 +818,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected abstract class BehaviourDrivenTest
     {
         protected boolean runInTransactionTests = true;
-        
+
         protected Class<?> expectedException;
 
         public BehaviourDrivenTest()
@@ -829,7 +829,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             this.expectedException = expectedException;
         }
-        
+
         public BehaviourDrivenTest(boolean runInTransactionTests)
         {
             this.runInTransactionTests = runInTransactionTests;
@@ -875,7 +875,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                                 when();
                             }
                         });
-    
+
                         doTestInTransaction(new VoidTest()
                         {
                             @Override

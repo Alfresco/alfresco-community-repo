@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.lock.JobLockService;
@@ -256,20 +255,16 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     @SuppressWarnings("unchecked")
     private void queueModel(NodeRef nodeRef)
     {
-        // Temp kludge for ACE-2487 - prevent all dynamic models being loaded.  
-        // Do not release community or enterprise with this in place.
-        throw new AlfrescoRuntimeException("dynamic models not allowed");
+        Set<NodeRef> pendingModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
+        if (pendingModels == null)
+        {
+            //pendingModels = Collections.newSetFromMap(new ConcurrentHashMap()); // Java 6
+            pendingModels = new CopyOnWriteArraySet<NodeRef>();
+            AlfrescoTransactionSupport.bindResource(KEY_PENDING_MODELS, pendingModels);
+        }
+        pendingModels.add(tenantService.getName(nodeRef));
         
-//        Set<NodeRef> pendingModels = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_MODELS);
-//        if (pendingModels == null)
-//        {
-//            //pendingModels = Collections.newSetFromMap(new ConcurrentHashMap()); // Java 6
-//            pendingModels = new CopyOnWriteArraySet<NodeRef>();
-//            AlfrescoTransactionSupport.bindResource(KEY_PENDING_MODELS, pendingModels);
-//        }
-//        pendingModels.add(tenantService.getName(nodeRef));
-//        
-//        AlfrescoTransactionSupport.bindListener(this.transactionListener);
+        AlfrescoTransactionSupport.bindListener(this.transactionListener);
     }
     
     /**

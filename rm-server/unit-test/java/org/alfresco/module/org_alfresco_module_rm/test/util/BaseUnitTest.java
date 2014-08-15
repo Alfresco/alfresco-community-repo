@@ -23,6 +23,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -41,11 +42,15 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -77,7 +82,7 @@ import org.springframework.context.ApplicationContext;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class BaseUnitTest implements RecordsManagementModel
+public class BaseUnitTest implements RecordsManagementModel, ContentModel
 {
     protected NodeRef filePlanComponent;
     protected NodeRef filePlan;
@@ -95,6 +100,9 @@ public class BaseUnitTest implements RecordsManagementModel
     @Mock(name="searchService")                  protected SearchService                mockedSearchService;
     @Mock(name="retryingTransactionHelper")      protected RetryingTransactionHelper    mockedRetryingTransactionHelper;
     @Mock(name="authorityService")               protected AuthorityService             mockedAuthorityService;
+    @Mock(name="policyComponent")                protected PolicyComponent              mockedPolicyComponent; 
+    @Mock(name="copyService")                    protected CopyService                  mockedCopyService;
+    @Mock(name="fileFolderService")              protected FileFolderService            mockedFileFolderService;
     
     /** rm service mocks */
     @Mock(name="filePlanService")                protected FilePlanService              mockedFilePlanService;
@@ -105,6 +113,7 @@ public class BaseUnitTest implements RecordsManagementModel
     @Mock(name="reportService")                  protected ReportService                mockedReportService;
     @Mock(name="filePlanRoleService")            protected FilePlanRoleService          mockedFilePlanRoleService;
     @Mock(name="recordsManagementAuditService")  protected RecordsManagementAuditService mockedRecordsManagementAuditService;
+    @Mock(name="policyBehaviourFilter")          protected BehaviourFilter              mockedBehaviourFilter;
     
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;
@@ -118,7 +127,7 @@ public class BaseUnitTest implements RecordsManagementModel
      */
     @SuppressWarnings("unchecked")
     @Before
-    public void before()
+    public void before() throws Exception
     {
         MockitoAnnotations.initMocks(this);
         
@@ -161,7 +170,7 @@ public class BaseUnitTest implements RecordsManagementModel
         doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
         doReturn(result).when(mockedNodeService).getParentAssocs(record);
         doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
-        doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);        
+        doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);      
     }
     
     /**
@@ -251,6 +260,19 @@ public class BaseUnitTest implements RecordsManagementModel
     }
     
     /**
+     * Helper method to generate a cm:content node reference with a given name.
+     * 
+     * @param name      content name
+     * @return NodeRef  node reference
+     */
+    protected NodeRef generateCmContent(String name)
+    {
+        NodeRef nodeRef = generateNodeRef(ContentModel.TYPE_CONTENT, true);
+        doReturn(name).when(mockedNodeService).getProperty(nodeRef, ContentModel.PROP_NAME);
+        return nodeRef;
+    }
+    
+    /**
      * Helper method to generate a node reference of a particular type with a given existence characteristic.
      * 
      * @param type  content type qualified name
@@ -267,6 +289,30 @@ public class BaseUnitTest implements RecordsManagementModel
             when(mockedNodeService.getType(eq(nodeRef))).thenReturn(type);
         }
         return nodeRef;
+    }
+
+    /**
+     * Helper method to generate a mocked child association reference.
+     * 
+     * @param parent                        parent node (optional)
+     * @param child                         child node (optional)
+     * @return {@link ChildAssociationRef}  mocked to return the parent and child nodes
+     */
+    protected ChildAssociationRef generateChildAssociationRef(NodeRef parent, NodeRef child)
+    {
+        ChildAssociationRef mockedChildAssociationRef = mock(ChildAssociationRef.class);
+        
+        if (parent != null)
+        {
+            doReturn(parent).when(mockedChildAssociationRef).getParentRef();
+        }
+        
+        if (child != null)
+        {
+            doReturn(child).when(mockedChildAssociationRef).getChildRef();
+        }
+        
+        return mockedChildAssociationRef;
     }
     
     /**

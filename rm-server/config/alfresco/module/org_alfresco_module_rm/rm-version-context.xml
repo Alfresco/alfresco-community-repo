@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--  Recordable Version Model -->
+   <bean id="org_alfresco_module_rm_version_dictionaryBootstrap" parent="dictionaryModelBootstrap">
+      <property name="models">
+         <list>
+            <value>alfresco/module/org_alfresco_module_rm/model/recordableVersionModel.xml</value>
+         </list>
+      </property>
+   </bean>
+
+   <!-- extended version service bean definition -->
+   <bean id="rm.versionService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl">
+      <property name="filePlanService" ref="FilePlanService" />
+      <property name="fileFolderService" ref="fileFolderService" />
+   </bean>   
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+      <property name="beanName" value="versionService" />
+      <property name="extendingBeanName" value="rm.versionService" />
+   </bean>
+   
+   <!-- extended version node service bean definition -->
+   <bean id="rm.versionNodeService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionNodeServiceImpl">
+   </bean>   
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+      <property name="beanName" value="versionNodeService" />
+      <property name="extendingBeanName" value="rm.versionNodeService" />
+   </bean>
+
+</beans>

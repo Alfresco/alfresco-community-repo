@@ -77,7 +77,7 @@ public class HoldServiceImplUnitTest extends BaseUnitTest
 
     @Before
     @Override
-    public void before()
+    public void before() throws Exception
     {
         super.before();
 

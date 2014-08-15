@@ -72,7 +72,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
      */
     @Override
     @Before
-    public void before()
+    public void before() throws Exception
     {
         super.before();
         

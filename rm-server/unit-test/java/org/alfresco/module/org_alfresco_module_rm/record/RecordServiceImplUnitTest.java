@@ -55,7 +55,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     @SuppressWarnings("unchecked")
     @Before
     @Override
-    public void before()
+    public void before() throws Exception
     {
         super.before();
         

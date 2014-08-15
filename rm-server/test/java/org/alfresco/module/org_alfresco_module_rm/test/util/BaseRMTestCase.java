@@ -72,6 +72,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -105,6 +106,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected QName TYPE_CUSTOM_TYPE = QName.createQName(URI, "customType");
     protected QName ASPECT_CUSTOM_ASPECT = QName.createQName(URI, "customAspect");
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
+    
+    /** test data */
+    protected String NAME_DM_DOCUMENT = "collabDocument.txt";
 
     /** admin user */
     protected static final String ADMIN_USER = "admin";
@@ -130,6 +134,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected TaggingService taggingService;
     protected ActionService actionService;
     protected OwnableService ownableService;
+    protected VersionService versionService;
 
     /** RM Services */
     protected DispositionService dispositionService;
@@ -364,6 +369,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         taggingService = (TaggingService)applicationContext.getBean("TaggingService");
         actionService = (ActionService)applicationContext.getBean("ActionService");
         ownableService = (OwnableService)applicationContext.getBean("OwnableService");
+        versionService = (VersionService)applicationContext.getBean("VersionService");
 
         // Get RM services
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
@@ -736,7 +742,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
         // create a folder and documents
         dmFolder = fileFolderService.create(documentLibrary, "collabFolder", ContentModel.TYPE_FOLDER).getNodeRef();
-        dmDocument = fileFolderService.create(dmFolder, "collabDocument.txt", ContentModel.TYPE_CONTENT).getNodeRef();
+        dmDocument = fileFolderService.create(dmFolder, NAME_DM_DOCUMENT, ContentModel.TYPE_CONTENT).getNodeRef();
 
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);

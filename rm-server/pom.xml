@@ -252,6 +252,12 @@
          <version>0.1-incubating-unreleased</version>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>org.apache.myfaces.core</groupId>
+         <artifactId>myfaces-api</artifactId>
+         <version>2.1.9</version>
+         <scope>test</scope>
+      </dependency>
       <!-- Database drivers -->
       <dependency>
          <groupId>postgresql</groupId>

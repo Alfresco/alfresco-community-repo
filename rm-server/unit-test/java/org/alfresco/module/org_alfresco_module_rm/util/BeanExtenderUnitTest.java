@@ -61,7 +61,7 @@ public class BeanExtenderUnitTest extends BaseUnitTest
     @InjectMocks private BeanExtender beanExtender;
     
     @Override
-    public void before()
+    public void before() throws Exception
     {
         super.before();
         

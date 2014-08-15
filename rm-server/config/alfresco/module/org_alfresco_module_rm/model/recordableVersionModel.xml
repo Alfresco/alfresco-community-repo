@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Recordable Version Model 						-->
+<!-- 												-->
+<!-- @since 2.3 									-->
+<!-- @author Roy Wetherall							-->
+
+<!-- Note: the rma: namespace is defined further on in the document -->
+<model name="rmv:recordableVersion" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Recordable Version Model</description>
+   <author>Roy Wetherall</author>
+   <version>1.0</version>
+
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <!--  Import Alfresco Site Model Definitions -->
+      <import uri="http://www.alfresco.org/model/site/1.0" prefix="st"/>
+      <!--  Import Alfresco RM Model Definitions -->
+      <import uri="http://www.alfresco.org/model/recordsmanagement/1.0" prefix="rma"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/recordableversion/1.0" prefix="rmv"/>
+   </namespaces>
+   
+   <constraints>
+      <constraint name="rmv:recordableVersionPolicyList" type="LIST">
+         <title>Recordable Version Policy List</title>
+         <parameter name="allowedValues">
+            <list>
+               <value>NONE</value>
+               <value>MAJOR_ONLY</value>
+               <value>ALL</value>
+            </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>false</value></parameter>
+      </constraint>
+   </constraints>
+
+   <aspects>
+   
+      <aspect name="rmv:versionable">
+         <properties>
+            <property name="rmv:filePlan">
+               <title>File Plan</title>
+               <type>d:noderef</type>
+               <index enabled="false"/>
+            </property>
+            <property name="rmv:recordableVersionPolicy">
+               <title>Recordable Version Policy</title>
+               <type>d:text</type>
+               <default>disabled</default>
+               <index enabled="false"/>
+               <constraints>
+                  <constraint ref="rmv:recordableVersionPolicyList" />
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+      
+      <aspect name="rmv:recordedVersion">
+         <properties>
+            <property name="rmv:recordNodeRef">
+               <title>Record Node Reference</title>
+               <type>d:noderef</type>
+               <index enabled="false"/>
+            </property>
+         </properties>
+      </aspect>
+      
+   </aspects>
+
+</model>

@@ -51,7 +51,7 @@ public class TransferEvaluatorUnitTest extends BaseUnitTest
     @Spy @InjectMocks TransferEvaluator transferEvaluator;
     
     @Override
-    public void before()
+    public void before() throws Exception
     {
         super.before();
         

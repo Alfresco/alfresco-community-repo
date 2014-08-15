@@ -83,7 +83,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
     @Override
-    public void before()
+    public void before() throws Exception
     {
         super.before();
         

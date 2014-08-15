@@ -46,7 +46,7 @@
       <unzip src="${solr.directory}/${solr.package}" dest="${solr.directory}"/>
    </target>
 
-   <target name="configure-solr" depends="fetchSOLR" 
+   <target name="configureSOLR" depends="fetchSOLR" 
            description="Configures Tomcat and the Alfresco repository to use SOLR">
 
       <dirname property="temp.dir" file="${ant.file}"/>

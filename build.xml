@@ -55,15 +55,6 @@
 
    <target name="fullBuild" depends="alfresco:install, copyWarFileToTomcat" description=""/>
 
-   <target name="getSvnRevision">
-      <mkdir dir="${ant.build.directory}"/>
-      <property name="svnInfoFile" value="${ant.build.directory}/svninfo.properties" />
-      <exec executable="svn" output="${svnInfoFile}" failonerror="true">
-         <arg value="info" />
-      </exec>
-      <property file="${svnInfoFile}"/>
-   </target>
-
    <target name="copyWebDirectory" if="${web.directory.exists}">
       <copy todir="${app.folder}" failonerror="true">
          <fileset dir="${ant.source.web.directory}" />

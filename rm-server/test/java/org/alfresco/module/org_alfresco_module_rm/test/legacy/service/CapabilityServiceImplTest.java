@@ -109,7 +109,7 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
             public Void run() throws Exception
             {
                 int initialSize = capabilityService.getGroups().size();
-                
+
                 GroupImpl testGroup = new GroupImpl();
                 testGroup.setId("testGroup");
                 testGroup.setIndex(140);
@@ -155,30 +155,30 @@ public class CapabilityServiceImplTest extends BaseRMTestCase
                 List<Group> groups = capabilityService.getGroups();
                 assertNotNull(groups);
 
-                Group auditGroup = groups.get(0);
-                assertNotNull(auditGroup);
+                Group recordsGroup = groups.get(0);
+                assertNotNull(recordsGroup);
 
-                List<Capability> auditCapabilities = capabilityService.getCapabilitiesByGroup(auditGroup);
-                assertNotNull(auditCapabilities);
+                List<Capability> recordCapabilities = capabilityService.getCapabilitiesByGroup(recordsGroup);
+                assertNotNull(recordCapabilities);
 
-                int vitalRecordCapabilitiesSize = auditCapabilities.size();
-                assertTrue(vitalRecordCapabilitiesSize > 1);
+                int recordCapabilitiesSize = recordCapabilities.size();
+                assertTrue(recordCapabilitiesSize > 1);
 
-                for (int i = 1; i == vitalRecordCapabilitiesSize; i++)
+                for (int i = 1; i == recordCapabilitiesSize; i++)
                 {
-                    Capability capability = auditCapabilities.get(i);
+                    Capability capability = recordCapabilities.get(i);
                     assertNotNull(capability);
                     assertEquals(i * 10, capability.getIndex());
                 }
 
-                Group vitalRecordsGroup = groups.get(groups.size() - 1);
-                assertNotNull(vitalRecordsGroup);
+                Group rulesGroup = groups.get(groups.size() - 2);
+                assertNotNull(rulesGroup);
 
-                List<Capability> vitalRecordCapabilities = capabilityService.getCapabilitiesByGroupId(vitalRecordsGroup.getId());
-                assertNotNull(vitalRecordCapabilities);
+                List<Capability> ruleCapabilities = capabilityService.getCapabilitiesByGroupId(rulesGroup.getId());
+                assertNotNull(ruleCapabilities);
 
-                vitalRecordCapabilitiesSize = vitalRecordCapabilities.size();
-                assertTrue(vitalRecordCapabilitiesSize > 0);
+                int ruleCapabilitiesSize = ruleCapabilities.size();
+                assertTrue(ruleCapabilitiesSize > 0);
 
                 return null;
             }

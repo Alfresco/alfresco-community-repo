@@ -33,6 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.property.Dispositi
 import org.alfresco.module.org_alfresco_module_rm.event.RecordsManagementEvent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -86,6 +87,9 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
 
     /** Record Service */
     private RecordService recordService;
+
+    /** Freeze Service */
+    private FreezeService freezeService;
 
     /** Disposition properties */
     private Map<QName, DispositionProperty> dispositionProperties = new HashMap<QName, DispositionProperty>(4);
@@ -154,6 +158,14 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
     public void setRecordService(RecordService recordService)
     {
         this.recordService =  recordService;
+    }
+
+    /**
+     * @param freezeService     freeze service
+     */
+    public void setFreezeService(FreezeService freezeService)
+    {
+        this.freezeService = freezeService;
     }
 
     /**
@@ -965,7 +977,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (FilePlanComponentKind.RECORD_FOLDER.equals(filePlanService.getFilePlanComponentKind(nodeRef)) ||
             FilePlanComponentKind.RECORD.equals(filePlanService.getFilePlanComponentKind(nodeRef)))
         {
-            if (!isDisposableItemCutoff(nodeRef))
+            if (!isDisposableItemCutoff(nodeRef) && !isFrozenOrHasFrozenChildren(nodeRef))
             {
                 if (recordFolderService.isRecordFolder(nodeRef))
                 {
@@ -997,6 +1009,32 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         {
             throw new AlfrescoRuntimeException("Unable to peform cutoff, because node is not a disposible item. (nodeRef=" + nodeRef.toString() + ")");
         }
+    }
+
+    /**
+     * Helper method to determine if a node is frozen or has frozen children
+     *
+     * @param nodeRef Node to be checked
+     * @return <code>true</code> if the node is frozen or has frozen children, <code>false</code> otherwise
+     */
+    private boolean isFrozenOrHasFrozenChildren(NodeRef nodeRef)
+    {
+        boolean result = false;
+
+        if (recordFolderService.isRecordFolder(nodeRef))
+        {
+            result = freezeService.isFrozen(nodeRef) || freezeService.hasFrozenChildren(nodeRef);
+        }
+        else if (recordService.isRecord(nodeRef))
+        {
+            result = freezeService.isFrozen(nodeRef);
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("The nodeRef '" + nodeRef + "' is neither a record nor a record folder.");
+        }
+
+        return result;
     }
 
     /**

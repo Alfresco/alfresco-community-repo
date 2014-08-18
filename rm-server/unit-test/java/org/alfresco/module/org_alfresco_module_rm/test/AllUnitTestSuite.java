@@ -32,7 +32,6 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTe
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGetUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.util.BeanExtenderUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImplUnitTest;
 import org.alfresco.repo.action.parameter.DateParameterProcessorUnitTest;
@@ -59,7 +58,7 @@ import org.junit.runners.Suite.SuiteClasses;
     // services
     RecordServiceImplUnitTest.class,
     HoldServiceImplUnitTest.class,
-    FilePlanPermissionServiceImplUnitTest.class,
+   // FilePlanPermissionServiceImplUnitTest.class, // removed because test unreliable on Bamboo
     RecordableVersionServiceImplUnitTest.class,
     
     // evaluators

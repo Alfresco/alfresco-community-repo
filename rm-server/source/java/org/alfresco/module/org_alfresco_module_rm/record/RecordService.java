@@ -170,13 +170,6 @@ public interface RecordService
    void file(NodeRef record);
 
    /**
-    * Hides a record within a collaboration site
-    *
-    * @param nodeRef   The record which should be hidden
-    */
-   void hideRecord(NodeRef nodeRef);
-
-   /**
     * Rejects a record with the provided reason
     *
     * @param nodeRef   The record which will be rejected
@@ -231,12 +224,4 @@ public interface RecordService
     * @param folder     The folder in which the link will be created
     */
    void link(NodeRef nodeRef, NodeRef folder);
-
-   /**
-    * Moves a record within a collaboration site
-    *
-    * @param nodeRef                The record which should be moved
-    * @param targetNodeRef          The target node reference where it should be moved to
-    */
-   void moveRecord(NodeRef nodeRef, NodeRef targetNodeRef);
 }

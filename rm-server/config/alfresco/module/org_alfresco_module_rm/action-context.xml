@@ -28,14 +28,14 @@
    <!--  Hide record action -->
    <bean id="hide-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.HideRecordAction">
       <property name="nodeService" ref="NodeService" />
-      <property name="recordService" ref="RecordService" />
+      <property name="inplaceRecordService" ref="InplaceRecordService" />
       <property name="publicAction" value="false"/>
    </bean>
 
    <!-- Move DM record action -->
    <bean id="move-dm-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.MoveDmRecordAction">
       <property name="nodeService" ref="NodeService"/>
-      <property name="recordService" ref="RecordService"/>
+      <property name="inplaceRecordService" ref="InplaceRecordService"/>
       <property name="publicAction" value="false"/>
       <property name="adhocPropertiesAllowed" value="true" />
    </bean>

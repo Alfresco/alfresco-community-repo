@@ -1040,7 +1040,6 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
-        <property name="siteService" ref="SiteService" />
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
@@ -1094,7 +1093,6 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromContent=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.file=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.hideRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isPropertyEditable=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isMetadataStub=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.rejectRecord=RM_ALLOW
@@ -1102,12 +1100,63 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.addRecordType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.link=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.moveRecord=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
         </property>
     </bean>
+
+   <!--  Inplace Record Service -->
+   
+   <bean id="inplaceRecordService" class="org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordServiceImpl">
+      <property name="siteService" ref="SiteService" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+      <property name="fileFolderService" ref="FileFolderService" />
+    </bean>
+    
+   <bean id="InplaceRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService</value>
+      </property>
+      <property name="targetSource">
+         <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+            <property name="targetBeanName">
+               <idref bean="inplaceRecordService"/>
+            </property>
+         </bean>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="InplaceRecordService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="InplaceRecordService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="InplaceRecordService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="InplaceRecordService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+               org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService.hideRecord=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService.moveRecord=RM.Write.0
+               org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
+   </bean>
 
    <!--  File Plan Authentication Service -->
    <bean id="filePlanAuthenticationService"

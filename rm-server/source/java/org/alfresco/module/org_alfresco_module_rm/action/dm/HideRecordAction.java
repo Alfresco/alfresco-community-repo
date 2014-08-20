@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -51,8 +51,8 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     /** Node service */
     private NodeService nodeService;
 
-    /** Record service */
-    private RecordService recordService;
+    /** Inplace record service */
+    private InplaceRecordService inplaceRecordService;
 
     /**
      * @param nodeService node service
@@ -63,11 +63,11 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param recordService record service
+     * @param inplaceRecordService inplace record service
      */
-    public void setRecordService(RecordService recordService)
+    public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
     {
-        this.recordService = recordService;
+        this.inplaceRecordService = inplaceRecordService;
     }
 
     /**
@@ -87,7 +87,7 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
         else
         {
             // hide the record from the collaboration site
-            recordService.hideRecord(actionedUponNodeRef);
+            inplaceRecordService.hideRecord(actionedUponNodeRef);
         }
     }
 

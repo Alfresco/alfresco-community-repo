@@ -23,7 +23,7 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,8 +53,8 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
     /** Node service */
     private NodeService nodeService;
 
-    /** Record service */
-    private RecordService recordService;
+    /** Inplace record service */
+    private InplaceRecordService inplaceRecordService;
 
     /**
      * Gets the node service
@@ -77,23 +77,23 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
     }
 
     /**
-     * Gets the record service
+     * Gets the inplace record service
      *
-     * @return Record service
+     * @return Inplace record service
      */
-    protected RecordService getRecordService()
+    protected InplaceRecordService getInplaceRecordService()
     {
-        return this.recordService;
+        return this.inplaceRecordService;
     }
 
     /**
-     * Sets the record service
+     * Sets the inplace record service
      *
-     * @param recordService Record service
+     * @param InplaceRecordService Inplace record service
      */
-    public void setRecordService(RecordService recordService)
+    public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
     {
-        this.recordService = recordService;
+        this.inplaceRecordService = inplaceRecordService;
     }
 
     /**
@@ -110,7 +110,7 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
         else
         {
             // Move the record within the collaboration site
-            getRecordService().moveRecord(actionedUponNodeRef, getTargetNodeRef(action));
+            getInplaceRecordService().moveRecord(actionedUponNodeRef, getTargetNodeRef(action));
         }
     }
 

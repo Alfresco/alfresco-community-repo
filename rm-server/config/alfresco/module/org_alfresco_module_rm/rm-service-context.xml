@@ -1107,14 +1107,13 @@
     </bean>
 
    <!--  Inplace Record Service -->
-   
-   <bean id="inplaceRecordService" class="org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordServiceImpl">
+
+   <bean id="inplaceRecordService" parent="baseService" class="org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordServiceImpl">
       <property name="siteService" ref="SiteService" />
-      <property name="nodeService" ref="NodeService" />
       <property name="extendedSecurityService" ref="ExtendedSecurityService" />
       <property name="fileFolderService" ref="FileFolderService" />
     </bean>
-    
+
    <bean id="InplaceRecordService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
          <value>org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService</value>

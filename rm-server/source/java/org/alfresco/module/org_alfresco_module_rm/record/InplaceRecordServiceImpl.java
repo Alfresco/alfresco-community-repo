@@ -23,14 +23,13 @@ import java.util.List;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.ParameterCheck;
@@ -41,13 +40,10 @@ import org.alfresco.util.ParameterCheck;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class InplaceRecordServiceImpl implements InplaceRecordService, RecordsManagementModel
+public class InplaceRecordServiceImpl extends ServiceBaseImpl implements InplaceRecordService, RecordsManagementModel
 {
     /** Site service */
     private SiteService siteService;
-
-    /** Node service */
-    private NodeService nodeService;
 
     /** Extended security service */
     private ExtendedSecurityService extendedSecurityService;
@@ -61,14 +57,6 @@ public class InplaceRecordServiceImpl implements InplaceRecordService, RecordsMa
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
-    }
-
-    /**
-     * @param nodeService node service
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
     }
 
     /**
@@ -97,7 +85,7 @@ public class InplaceRecordServiceImpl implements InplaceRecordService, RecordsMa
         ParameterCheck.mandatory("NodeRef", nodeRef);
 
         // do the work of hiding the record as the system user
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
@@ -164,7 +152,7 @@ public class InplaceRecordServiceImpl implements InplaceRecordService, RecordsMa
 
         final NodeRef source = sourceParentNodeRef;
 
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
@@ -186,5 +174,4 @@ public class InplaceRecordServiceImpl implements InplaceRecordService, RecordsMa
             }
         });
     }
-
 }

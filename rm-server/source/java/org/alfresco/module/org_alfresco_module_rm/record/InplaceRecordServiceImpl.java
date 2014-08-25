@@ -85,7 +85,7 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
         ParameterCheck.mandatory("NodeRef", nodeRef);
 
         // do the work of hiding the record as the system user
-        runAsSystem(new RunAsWork<Void>()
+        authenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
@@ -152,7 +152,7 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
 
         final NodeRef source = sourceParentNodeRef;
 
-        runAsSystem(new RunAsWork<Void>()
+        authenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()

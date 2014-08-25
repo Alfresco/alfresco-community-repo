@@ -70,6 +70,10 @@
                <title>Record Node Reference</title>
                <type>d:noderef</type>
                <index enabled="false"/>
+            </property><property name="rmv:frozenOwner">
+               <title>Frozen Owner</title>
+               <type>d:text</type>
+               <index enabled="false"/>
             </property>
          </properties>
       </aspect>

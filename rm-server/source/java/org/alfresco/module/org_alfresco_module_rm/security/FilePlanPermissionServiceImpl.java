@@ -225,7 +225,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
             if (nodeService.exists(parent))
             {
-                runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+                authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
                 {
                     public Object doWork()
                     {
@@ -300,7 +300,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void onAddRecord(final NodeRef record, final QName aspectTypeQName)
     {
-        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork()
             {
@@ -375,7 +375,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         if (nodeService.exists(nodeRef))
         {
-            runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
@@ -410,7 +410,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("authority", authority);
         ParameterCheck.mandatory("permission", permission);
 
-        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Void doWork()
             {
@@ -557,7 +557,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
      */
     public void deletePermission(final NodeRef nodeRef, final String authority, final String permission)
     {
-        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Void doWork()
             {

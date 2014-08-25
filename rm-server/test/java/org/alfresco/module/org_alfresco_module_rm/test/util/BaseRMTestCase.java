@@ -823,10 +823,18 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected abstract class BehaviourDrivenTest
     {
+        /** run in transaction */
         protected boolean runInTransactionTests = true;
+        
+        /** run as user */
+        protected String runAsUser = AuthenticationUtil.getAdminUserName();
 
+        /** expected exception */
         protected Class<?> expectedException;
 
+        /**
+         * Default constructor
+         */
         public BehaviourDrivenTest()
         {
         }
@@ -835,10 +843,25 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             this.expectedException = expectedException;
         }
+        
+        public BehaviourDrivenTest(Class<?> expectedException, String runAsUser)
+        {
+            this.expectedException = expectedException;
+            this.runAsUser = runAsUser;
+        }
 
-        public BehaviourDrivenTest(boolean runInTransactionTests)
+        public BehaviourDrivenTest(String runAsUser)
+        {
+            this.runAsUser = runAsUser;
+        }
+        
+        public BehaviourDrivenTest(String runAsUser, boolean runInTransactionTests)
         {
             this.runInTransactionTests = runInTransactionTests;
+            if (runAsUser != null)
+            {
+                this.runAsUser = runAsUser;
+            }
         }
 
         public void given() throws Exception { /** empty implementation */ }
@@ -862,7 +885,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         {
                            given();
                         }
-                    });
+                    }, runAsUser);
                 }
                 else
                 {
@@ -880,7 +903,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                             {
                                 when();
                             }
-                        });
+                        }, runAsUser);
 
                         doTestInTransaction(new VoidTest()
                         {
@@ -889,7 +912,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                             {
                                 then();
                             }
-                        });
+                        }, runAsUser);
                     }
                     else
                     {
@@ -906,7 +929,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         {
                             when();
                         }
-                    });
+                    }, runAsUser);
                 }
             }
             finally
@@ -920,7 +943,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         {
                            after();
                         }
-                    });
+                    }, runAsUser);
                 }
                 else
                 {

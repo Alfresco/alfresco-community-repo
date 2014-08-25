@@ -31,6 +31,7 @@
      <bean id="baseService" abstract="true">
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
+        <property name="authenticationUtil" ref="rm.authenticationUtil"/>
      </bean>
 
     <!-- Records Management Service Registry -->
@@ -1086,6 +1087,8 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.disablePropertyEditableCheck=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.enablePropertyEditableCheck=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetaDataAspects=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecordMetadataAspect=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecordMetadataProperty=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.getRecordMetadataAspects=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isRecord=ACL_ALLOW,RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0

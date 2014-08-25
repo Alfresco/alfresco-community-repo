@@ -195,7 +195,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             };
 
             // run as system user
-            runAsSystem(work);
+            authenticationUtil.runAsSystem(work);
         }
     }
 
@@ -561,7 +561,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             if (!getHeld(hold).contains(nodeRef))
             {
                 // run as system to ensure we have all the appropriate permissions to perform the manipulations we require
-                runAsSystem(new RunAsWork<Void>()
+                authenticationUtil.runAsSystem(new RunAsWork<Void>()
                 {
                     @Override
                     public Void doWork()
@@ -684,7 +684,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
                 {
                     // run as system so we don't run into further permission issues
                     // we already know we have to have the correct capability to get here
-                    runAsSystem(new RunAsWork<Void>()
+                    authenticationUtil.runAsSystem(new RunAsWork<Void>()
                     {
                         @Override
                         public Void doWork()
@@ -703,7 +703,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
 
             // run as system as we can't be sure if have remove aspect rights on node
-            runAsSystem(new RunAsWork<Void>()
+            authenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
                 public Void doWork()

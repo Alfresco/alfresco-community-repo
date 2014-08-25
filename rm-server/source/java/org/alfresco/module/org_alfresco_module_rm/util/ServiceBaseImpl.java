@@ -26,8 +26,6 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -58,6 +56,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     
     /** internal node service */
     private NodeService internalNodeService;
+    
+    /** authentication helper */
+    protected AuthenticationUtil authenticationUtil;
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -82,6 +83,14 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
+    }
+    
+    /**
+     * @param authenticationUtil    authentication util helper
+     */
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
     }
     
     /**
@@ -469,31 +478,5 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         Set<QName> result = nodeService.getAspects(nodeRef);
         result.add(nodeService.getType(nodeRef));
         return result;
-    }
-
-    /**
-     * Helper method that executed work as system user.
-     * <p>
-     * Useful when testing using mocks.
-     *
-     * @param runAsWork work to execute as system user
-     * @return
-     */
-    public <R> R runAsSystem(RunAsWork<R> runAsWork)
-    {
-        return AuthenticationUtil.runAsSystem(runAsWork);
-    }
-
-    /**
-     * Helper method that executed work as given user.
-     * <p>
-     * Useful when testing using mocks.
-     *
-     * @param runAsWork work to execute as given user
-     * @return
-     */
-    public <R> R runAs(RunAsWork<R> runAsWork, String uid)
-    {
-        return AuthenticationUtil.runAs(runAsWork, uid);
     }
 }

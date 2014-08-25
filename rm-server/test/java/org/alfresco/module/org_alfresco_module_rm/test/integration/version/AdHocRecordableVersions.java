@@ -22,93 +22,153 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
-import org.alfresco.service.namespace.NamespaceService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.PropertyMap;
 
 /**
- *
- * 
+ * AdHoc Recordable Versions Integration Test
+ *  
  * @author Roy Wetherall
  * @since 2.3
  */
-public class AdHocRecordableVersions extends BaseRMTestCase implements RecordableVersionModel
+public class AdHocRecordableVersions extends RecordableVersionsBaseTest
 {
-    private static final QName QNAME_PUBLISHER = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "publisher");
-    private static final QName QNAME_SUBJECT = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "subject");
-    
-    private static final String DESCRIPTION = "description";
-    private static final String PUBLISHER = "publisher";
-    private static final String SUBJECT = "subject";
-    
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
-    
+    /**
+     * Adhoc recorded version creation, with no policy defined as site collaborator
+     */
     public void testRecordAdHocVersionNoPolicy()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
         {
-            private Version version;
-            private Map<String, Serializable> versionProperties;            
+            private Map<String, Serializable> versionProperties;    
             
             public void given() throws Exception
             {
-                // add Dublin core aspect
-                PropertyMap dublinCoreProperties = new PropertyMap(2);
-                dublinCoreProperties.put(QNAME_PUBLISHER, PUBLISHER);
-                dublinCoreProperties.put(QNAME_SUBJECT, SUBJECT);
-                nodeService.addAspect(documentLibrary, ContentModel.ASPECT_DUBLINCORE, dublinCoreProperties);
-                
                 // setup version properties
                 versionProperties = new HashMap<String, Serializable>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
-
             }
             
             public void when()
             {                
                 // create version
-                version = versionService.createVersion(dmDocument, versionProperties);
+                versionService.createVersion(dmDocument, versionProperties);
             }            
             
             public void then()
             {
-                // version has been created
-                assertNotNull(version);
+                // check that the record has been recorded
+                checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
+            }
+        });        
+    } 
+    
+    /**
+     * Adhoc recordable version with recordable set as false
+     */
+    public void testRecordableVersionFalseNoPolicy()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
+        {
+            private Map<String, Serializable> versionProperties;    
+            
+            public void given() throws Exception
+            {
+                // setup version properties
+                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, false);
+                versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
+            }
+            
+            public void when()
+            {                
+                // create version
+                versionService.createVersion(dmDocument, versionProperties);
+            }            
+            
+            public void then()
+            {
+                // check that the record has been recorded
+                checkNotRecordedAspect(dmDocument, DESCRIPTION, "0.1");
+            }
+        });         
+    }
+    
+    /**
+     * Test no file plan specified (and no default available)
+     */
+    public void testNoFilePlan()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, dmCollaborator)
+        {
+            private Map<String, Serializable> versionProperties;    
+            
+            public void given() throws Exception
+            {
+                // setup version properties
+                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
+            }
+            
+            public void when()
+            {                
+                // create version
+                versionService.createVersion(dmDocument, versionProperties);
+            }            
+      
+        });            
+    }
+    
+    /**
+     * Test recorded version with record metadata aspect (want to ensure additional non-rm URI properties and aspects
+     * don't find their way into the frozen state)
+     */
+    public void testRecordedVersionWithRecordMetadataAspect()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
+        {
+            private Map<String, Serializable> versionProperties;    
+            
+            public void given() throws Exception
+            {
+                // setup version properties
+                versionProperties = new HashMap<String, Serializable>(4);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
+                versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
+            }
+            
+            public void when()
+            {                
+                // create version
+                Version version = versionService.createVersion(dmDocument, versionProperties);
                 
-                // check the version properties
-                assertEquals(DESCRIPTION, version.getDescription());
-                assertEquals("0.1", version.getVersionLabel());
-                
-                assertEquals(NAME_DM_DOCUMENT, nodeService.getProperty(dmDocument, ContentModel.PROP_NAME));
-                
-                NodeRef frozen = version.getFrozenStateNodeRef();
-                assertEquals(NAME_DM_DOCUMENT, nodeService.getProperty(frozen, ContentModel.PROP_NAME));
-                
-                // record version node reference is available on version
+                // add custom meta-data to record
                 NodeRef record = (NodeRef)version.getVersionProperties().get("RecordVersion");
                 assertNotNull(record);
-                
-                // record version is an unfiled record
-                assertTrue(recordService.isRecord(record));
-                assertFalse(recordService.isFiled(record));
+                recordService.addRecordType(record, TestModel.ASPECT_RECORD_METADATA);
+                nodeService.setProperty(record, TestModel.PROPERTY_RECORD_METADATA, "Peter Wetherall");
+            }            
+            
+            public void then()
+            {
+                // check that the record has been recorded
+                checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
             }
-        });
-        
+        });  
     }
     
 }

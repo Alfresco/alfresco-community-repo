@@ -40,4 +40,5 @@ public interface RecordableVersionModel
     /** recorded version aspect */
     public QName ASPECT_RECORDED_VERSION = QName.createQName(RMV_URI, "recordedVersion");
     public QName PROP_RECORD_NODE_REF = QName.createQName(RMV_URI, "recordNodeRef");
+    public QName PROP_FROZEN_OWNER = QName.createQName(RMV_URI, "frozenOwner");
 }

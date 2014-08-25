@@ -16,24 +16,19 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.integration.version;
+package org.alfresco.module.org_alfresco_module_rm.test.util;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.alfresco.service.namespace.QName;
 
 /**
- * Recordable Version Test Suite
- *
  * @author Roy Wetherall
  * @since 2.3
  */
-@RunWith(Suite.class)
-@SuiteClasses(
+public interface TestModel
 {
-    AdHocRecordableVersions.class,
-    AutoRecordableVersions.class
-})
-public class VersionTestSuite
-{
+    public static final String TEST_URI = "http://www.alfresco.org/model/rmtest/1.0";
+    public static final String TEST_PREFIX = "rmt";
+    
+    public static final QName ASPECT_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaData");
+    public static final QName PROPERTY_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaDataProperty");
 }

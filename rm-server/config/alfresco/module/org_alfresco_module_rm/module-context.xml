@@ -18,6 +18,9 @@
       <property name="namespaceService" ref="NamespaceService"/>
    </bean>
    
+   <!--  Authentication Helper -->   
+   <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>
+   
    <!-- Import extended repository context -->
 
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/extended-repository-context.xml"/>

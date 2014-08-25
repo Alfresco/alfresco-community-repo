@@ -41,10 +41,12 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -114,6 +116,9 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @Mock(name="filePlanRoleService")            protected FilePlanRoleService          mockedFilePlanRoleService;
     @Mock(name="recordsManagementAuditService")  protected RecordsManagementAuditService mockedRecordsManagementAuditService;
     @Mock(name="policyBehaviourFilter")          protected BehaviourFilter              mockedBehaviourFilter;
+    @Mock(name="authenticationUtil")             protected AuthenticationUtil           mockedAuthenticationUtil;
+    @Mock(name="extendedPermissionService")      protected ExtendedPermissionService    mockedExtendedPermissionService;
+    @Mock(name="extendedSecurityService")        protected ExtendedSecurityService      mockedExtendedSecurityService;
     
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;
@@ -146,6 +151,9 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
             }
         };
         doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).doInTransaction(any(RetryingTransactionCallback.class));
+        
+        // setup mocked authentication util
+        setupAuthenticationUtilMock();
 
         // setup file plan 
         filePlan = generateNodeRef(TYPE_FILE_PLAN);
@@ -171,6 +179,43 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         doReturn(result).when(mockedNodeService).getParentAssocs(record);
         doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
         doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);      
+    }
+    
+    /**
+     * Setup authentication util mock
+     */
+    @SuppressWarnings("unchecked")
+    private void setupAuthenticationUtilMock()
+    {
+        // just do the work
+        doAnswer(new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
+                return work.doWork();
+            }
+            
+        }).when(mockedAuthenticationUtil).runAsSystem(any(RunAsWork.class));        
+        
+        // just do the work
+        doAnswer(new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
+                return work.doWork();
+            }
+            
+        }).when(mockedAuthenticationUtil).runAs(any(RunAsWork.class), anyString());
+        
+        // assume admin
+        doReturn("admin").when(mockedAuthenticationUtil).getAdminUserName();        
+        doReturn("admin").when(mockedAuthenticationUtil).getFullyAuthenticatedUser();
     }
     
     /**
@@ -347,40 +392,6 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         }
         
         doReturn(assocs).when(mockedNodeService).getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-    }
-    
-    /**
-     * Helper method to mock up calls to 'run as' methods
-     * on base service implementation.
-     * 
-     * @param service
-     */
-    @SuppressWarnings("unchecked")
-    protected void mockRunAsMethods(ServiceBaseImpl service)
-    {
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
-                return work.doWork();
-            }
-            
-        }).when(service).runAsSystem(any(RunAsWork.class));
-        
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
-                return work.doWork();
-            }
-            
-        }).when(service).runAs(any(RunAsWork.class), anyString());
     }
     
     @SuppressWarnings("unchecked")

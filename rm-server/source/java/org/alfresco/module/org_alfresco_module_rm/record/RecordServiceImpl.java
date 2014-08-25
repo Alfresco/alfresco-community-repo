@@ -47,9 +47,11 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -136,10 +138,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
      };
 
     /** record model URI's */
-    private static final String[] RECORD_MODEL_URIS = new String[]
+    public static final String[] RECORD_MODEL_URIS = new String[]
     {
        RM_URI,
        RM_CUSTOM_URI,
+       ReportModel.RMR_URI,
+       RecordableVersionModel.RMV_URI,
        DOD5015Model.DOD_URI
     };
 
@@ -682,6 +686,35 @@ public class RecordServiceImpl extends BaseBehaviourBean
         return getRecordMetadataAspects(TYPE_FILE_PLAN);
     }
 
+    /**
+     *  @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataAspect(org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public boolean isRecordMetadataAspect(QName aspect)
+    {
+        return getRecordMetadataAspectsMap().containsKey(aspect);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataProperty(org.alfresco.service.namespace.QName)
+     */
+    @Override
+    public boolean isRecordMetadataProperty(QName property)
+    {
+        boolean result = false;        
+        PropertyDefinition propertyDefinition = dictionaryService.getProperty(property); 
+        if (propertyDefinition != null)
+        {
+            ClassDefinition classDefinition = propertyDefinition.getContainerClass();
+            if (classDefinition != null &&
+                getRecordMetadataAspectsMap().containsKey(classDefinition.getName()))
+            {
+                result = true;
+            }
+        }
+        return result;
+    }
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects(org.alfresco.service.cmr.repository.NodeRef)
      */

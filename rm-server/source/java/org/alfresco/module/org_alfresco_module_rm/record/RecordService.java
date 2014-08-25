@@ -79,6 +79,29 @@ public interface RecordService
     */
    @Deprecated
    Set<QName> getRecordMetaDataAspects();
+   
+   /**
+    * Indicates whether the provided aspect is a registered record meta-data
+    * aspect.
+    * 
+    * @param aspect     aspect {@link QName}
+    * @return boolean   true if the aspect is a registered record meta-data aspect, false otherwise 
+    * 
+    * @since 2.3
+    */
+   boolean isRecordMetadataAspect(QName aspect);
+   
+   /**
+    * Indicates whther the provided property is declared on a registered record 
+    * meta-data aspect.
+    * 
+    * @param  property  property {@link QName}
+    * @return boolean   true if the property is declared on a registered record meta-data aspect, 
+    *                   false otherwise
+    * 
+    * @since 2.3
+    */
+   boolean isRecordMetadataProperty(QName property);
 
    /**
     * Gets a list of all the record metadata aspects relevant to the file plan type of the

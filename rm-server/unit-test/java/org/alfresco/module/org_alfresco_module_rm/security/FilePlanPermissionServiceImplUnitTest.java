@@ -87,9 +87,6 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
     {
         super.before();
         
-        // mock up run as methods
-        mockRunAsMethods(filePlanPermissionService);
-        
         // initialize node's        
         unfiledRecordContainer = generateContainerNodeRef(TYPE_UNFILED_RECORD_CONTAINER);
         unfiledRecordFolder = generateContainerNodeRef(TYPE_UNFILED_RECORD_FOLDER);

@@ -47,7 +47,12 @@
 		</properties>         	         
       </aspect>
      
-      <aspect name="rmt:recordMetaData">       
+      <aspect name="rmt:recordMetaData">  
+      	<properties>
+            <property name="rmt:recordMetaDataProperty">
+               <type>d:text</type>               
+            </property>          
+		</properties>       
       </aspect>
        
    </aspects>

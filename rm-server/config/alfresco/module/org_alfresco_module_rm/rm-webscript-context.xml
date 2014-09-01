@@ -613,4 +613,16 @@
    <bean id="webscript.org.alfresco.rma.hold.put"
          class="org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPut"
          parent="rmBaseHold" />
+
+   <!-- REST impl for POST recorded version config -->
+   <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.post"
+      class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost"
+      parent="rmBaseWebscript">
+   </bean>
+
+   <!-- REST impl for GET recorded version config -->
+   <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet"
+      parent="rmBaseWebscript">
+   </bean>
 </beans>

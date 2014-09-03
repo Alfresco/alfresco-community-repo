@@ -21,6 +21,8 @@ package org.alfresco.repo.content.transform.magick;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
@@ -29,6 +31,7 @@ import org.alfresco.service.cmr.repository.CropSourceOptions;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.VersionNumber;
 import org.alfresco.util.exec.RuntimeExec;
 import org.alfresco.util.exec.RuntimeExec.ExecutionResult;
 import org.apache.commons.logging.Log;
@@ -165,6 +168,11 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
             {
                 commandOptions = "";
             }
+            // MNT-10882 :  JPEG File Format, does not save the alpha (transparency) channel.
+            if (MimetypeMap.MIMETYPE_IMAGE_JPEG.equalsIgnoreCase(targetMimetype) && isAlphaOptionSupported())
+            {
+                commandOptions += " -alpha remove";
+            }
             if (imageOptions.isAutoOrient())
             {
                 commandOptions = commandOptions + " -auto-orient"; 
@@ -195,6 +203,47 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         {
             logger.debug("ImageMagic executed successfully: \n" + executer);
         }
+    }
+    
+    protected String getImageMagickVersionNumber()
+    {
+        Pattern verisonNumPattern = Pattern.compile("Version: ImageMagick ((\\d|\\.)+)(-.*){0,1}");
+        try
+        {
+            Matcher versionNumMatcher = verisonNumPattern.matcher(this.versionString);
+            if (versionNumMatcher.find())
+            {
+                return versionNumMatcher.group(1);
+            }
+        }
+        catch (Throwable e)
+        {
+            logger.info("Could not determine version of ImageMagick: " + e.getMessage());
+        }
+        // version isn't extracted
+        return "";
+    }
+    
+    /*
+     * MNT-10882 : Transparent PNG->JPG Transform Produces Ugly JPG Rendition
+     */
+    protected boolean isAlphaOptionSupported()
+    {
+        // the "-alpha" option was only introduced in ImageMagick v6.7.5 and will fail in older versions.
+        String ALPHA_PROP_SUPPORTED_VERSION = "6.7.5";
+
+        try
+        {
+           VersionNumber supportedVersion = new VersionNumber(ALPHA_PROP_SUPPORTED_VERSION);
+           VersionNumber checkedVersion = new VersionNumber(getImageMagickVersionNumber());
+        
+           return supportedVersion.compareTo(checkedVersion) > 0 ? false : true;
+        }
+        catch (Exception e)
+        {
+            logger.warn("Could not extract version of ImageMagick. Alpha-compatibility will be disabled: " + e.getMessage());
+        }
+        return false;
     }
     
     /**

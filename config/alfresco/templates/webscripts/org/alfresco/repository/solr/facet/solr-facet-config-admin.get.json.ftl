@@ -16,7 +16,7 @@
                   </#list>
              ],
              </#if>
-             <#if facet.customProperties?size != 0>
+             <#if facet.customProperties?? && facet.customProperties?size != 0>
              "customProperties" : 
              {
                 <#list facet.customProperties as propDetails>

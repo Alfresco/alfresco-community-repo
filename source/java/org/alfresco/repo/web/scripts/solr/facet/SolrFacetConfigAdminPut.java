@@ -19,16 +19,24 @@
 
 package org.alfresco.repo.web.scripts.solr.facet;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.collections.CollectionUtils;
 import org.alfresco.util.collections.Function;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -47,7 +55,7 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
 
     protected static final String PARAM_RELATIVE_POS  = "relativePos";
     protected static final String URL_PARAM_FILTER_ID = "filterID";
-    
+
     @Override
     protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache)
     {
@@ -119,4 +127,52 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
         return model;
     }
 
+    private SolrFacetProperties parseRequestForFacetProperties(WebScriptRequest req)
+    {
+        JSONObject json = null;
+        try
+        {
+            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+
+            final String filterID = json.getString(PARAM_FILTER_ID); // Must exist
+
+            final String facetQNameStr = getValue(String.class, json.opt(PARAM_FACET_QNAME), null);
+            final QName facetQName = (facetQNameStr == null) ? null : QName.createQName(facetQNameStr);
+            final String displayName = getValue(String.class, json.opt(PARAM_DISPLAY_NAME), null);
+            final String displayControl = getValue(String.class, json.opt(PARAM_DISPLAY_CONTROL), null);
+            final int maxFilters = getValue(Integer.class, json.opt(PARAM_MAX_FILTERS), -1);
+            final int hitThreshold = getValue(Integer.class, json.opt(PARAM_HIT_THRESHOLD), -1);
+            final int minFilterValueLength = getValue(Integer.class, json.opt(PARAM_MIN_FILTER_VALUE_LENGTH), -1);
+            final String sortBy = getValue(String.class, json.opt(PARAM_SORT_BY), null);
+            final String scope = getValue(String.class, json.opt(PARAM_SCOPE), null);
+            final Boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), null);
+            JSONArray scopedSitesJsonArray = getValue(JSONArray.class, json.opt(PARAM_SCOPED_SITES), null);
+            final Set<String> scopedSites = getScopedSites(scopedSitesJsonArray);
+            final JSONObject customPropJsonObj = getValue(JSONObject.class, json.opt(PARAM_CUSTOM_PROPERTIES), null);
+            final Set<CustomProperties> customProps = getCustomProperties(customPropJsonObj);
+
+            SolrFacetProperties fp = new SolrFacetProperties.Builder()
+                        .filterID(filterID)
+                        .facetQName(facetQName)
+                        .displayName(displayName)
+                        .displayControl(displayControl)
+                        .maxFilters(maxFilters)
+                        .hitThreshold(hitThreshold)
+                        .minFilterValueLength(minFilterValueLength)
+                        .sortBy(sortBy)
+                        .scope(scope)
+                        .isEnabled(isEnabled)
+                        .scopedSites(scopedSites)
+                        .customProperties(customProps).build();
+            return fp;
+        }
+        catch (IOException e)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", e);
+        }
+        catch (JSONException e)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", e);
+        }
+    }
 }

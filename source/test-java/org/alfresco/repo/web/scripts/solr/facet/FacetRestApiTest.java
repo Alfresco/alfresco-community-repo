@@ -46,7 +46,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.*;
 
 /**
  * This class tests the ReST API of the {@link SolrFacetService}.
- *
+ * 
  * @author Neil Mc Erlean
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
@@ -472,6 +472,124 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         }, SEARCH_ADMIN_USER);
 
+    }
+
+    public void testUpdateSingleValue() throws Exception
+    {
+        // Build the Filter object
+        final JSONObject filter = new JSONObject();
+        final String filterName = "filter" + System.currentTimeMillis();
+        filters.add(filterName);
+        filter.put("filterID", filterName);
+        filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test");
+        filter.put("displayName", "facet-menu.facet.test1");
+        filter.put("displayControl", "alfresco/search/FacetFilters/test");
+        filter.put("maxFilters", 5);
+        filter.put("hitThreshold", 1);
+        filter.put("minFilterValueLength", 4);
+        filter.put("sortBy", "ALPHABETICALLY");
+        filter.put("isEnabled", true);
+
+        JSONObject customProp = new JSONObject();
+        // 1st custom prop
+        JSONObject blockIncludeRequest = new JSONObject();
+        blockIncludeRequest.put("name", "blockIncludeFacetRequest");
+        blockIncludeRequest.put("value", "true");
+        customProp.put("blockIncludeFacetRequest", blockIncludeRequest);
+        filter.put("customProperties", customProp);
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Post the filter
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 200);
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+
+        // Admin updates displayName and facetQName in 2 put requests
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Retrieve the created filter
+                Response response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterName), 200);
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+
+                assertEquals(filterName, jsonRsp.getString("filterID"));
+                assertEquals("facet-menu.facet.test1", jsonRsp.getString("displayName"));
+                assertEquals("{http://www.alfresco.org/model/content/1.0}test", jsonRsp.getString("facetQName"));
+                assertTrue(jsonRsp.getBoolean("isEnabled"));
+
+                // Just supply the filterID and the required value
+                JSONObject singleValueJson = new JSONObject();
+                singleValueJson.put("filterID", filterName);
+                // Change the displayName value and update
+                singleValueJson.put("displayName", "facet-menu.facet.modifiedValue");
+                sendRequest(new PutRequest(PUT_FACETS_URL, singleValueJson.toString(), "application/json"), 200);
+
+                // Change the isEnabled value and update
+                // We simulate two PUT requests without refreshing the page in
+                // between updates
+                singleValueJson = new JSONObject();
+                singleValueJson.put("filterID", filterName);
+                singleValueJson.put("isEnabled", false);
+                sendRequest(new PutRequest(PUT_FACETS_URL, singleValueJson.toString(), "application/json"), 200);
+
+                response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterName), 200);
+                jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+
+                // Now see if the two changes have been persisted
+                assertEquals("facet-menu.facet.modifiedValue", jsonRsp.getString("displayName"));
+                assertFalse(jsonRsp.getBoolean("isEnabled"));
+                // Make sure the rest of values haven't been changed
+                assertEquals(filterName, jsonRsp.getString("filterID"));
+                assertEquals("{http://www.alfresco.org/model/content/1.0}test", jsonRsp.getString("facetQName"));
+                assertEquals("alfresco/search/FacetFilters/test", jsonRsp.getString("displayControl"));
+                assertEquals(5, jsonRsp.getInt("maxFilters"));
+                assertEquals(1, jsonRsp.getInt("hitThreshold"));
+                assertEquals(4, jsonRsp.getInt("minFilterValueLength"));
+                assertEquals("ALPHABETICALLY", jsonRsp.getString("sortBy"));
+                assertEquals("ALL", jsonRsp.getString("scope"));
+                assertFalse(jsonRsp.getBoolean("isDefault"));
+                // Make sure custom properties haven't been deleted
+                JSONObject retrievedCustomProp = jsonRsp.getJSONObject("customProperties");
+                JSONObject retrievedBlockIncludeRequest = retrievedCustomProp.getJSONObject("blockIncludeFacetRequest");
+                assertEquals("{http://www.alfresco.org/model/solrfacetcustomproperty/1.0}blockIncludeFacetRequest", retrievedBlockIncludeRequest.get("name"));
+                assertEquals("true", retrievedBlockIncludeRequest.get("value"));
+
+                // Change the facetQName value and update
+                singleValueJson = new JSONObject();
+                singleValueJson.put("filterID", filterName);
+                singleValueJson.put("facetQName", "{http://www.alfresco.org/model/content/1.0}testModifiedValue");
+                // We simulate that 'testModifiedValue' QName doesn't have custom properties
+                singleValueJson.put("customProperties", new JSONObject());
+                sendRequest(new PutRequest(PUT_FACETS_URL, singleValueJson.toString(), "application/json"), 200);
+
+                response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterName), 200);
+                jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+
+                // Now see if the facetQName and its side-effect have been persisted
+                assertEquals("{http://www.alfresco.org/model/content/1.0}testModifiedValue",jsonRsp.getString("facetQName"));
+                assertNull("Custom properties should have been deleted.", jsonRsp.opt("customProperties"));
+                // Make sure the rest of values haven't been changed
+                assertEquals(filterName, jsonRsp.getString("filterID"));
+                assertEquals("facet-menu.facet.modifiedValue", jsonRsp.getString("displayName"));
+                assertEquals("alfresco/search/FacetFilters/test", jsonRsp.getString("displayControl"));
+                assertEquals(5, jsonRsp.getInt("maxFilters"));
+                assertEquals(1, jsonRsp.getInt("hitThreshold"));
+                assertEquals(4, jsonRsp.getInt("minFilterValueLength"));
+                assertEquals("ALPHABETICALLY", jsonRsp.getString("sortBy"));
+                assertFalse(jsonRsp.getBoolean("isDefault"));
+                assertEquals("ALL", jsonRsp.getString("scope"));
+                assertFalse(jsonRsp.getBoolean("isEnabled"));
+
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
     }
 
     private List<String> getListFromJsonArray(JSONArray facetsArray) throws JSONException

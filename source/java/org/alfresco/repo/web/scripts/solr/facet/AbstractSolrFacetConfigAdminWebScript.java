@@ -19,9 +19,9 @@
 
 package org.alfresco.repo.web.scripts.solr.facet;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +29,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetModel;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -39,7 +38,6 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -100,69 +98,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         }
     }
 
-    protected SolrFacetProperties parseRequestForFacetProperties(WebScriptRequest req)
-    {
-        JSONObject json = null;
-        try
-        {
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-
-            final String filterID = json.getString(PARAM_FILTER_ID);
-            final String facetQNameStr = json.getString(PARAM_FACET_QNAME);
-            if (filterID == null || facetQNameStr == null)
-            {
-                String requiredProp = (filterID == null) ? "filterID" : "facetQName";
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, requiredProp + " not provided.");
-            }
-
-            final QName facetQName = QName.createQName(facetQNameStr);
-            final String displayName = json.getString(PARAM_DISPLAY_NAME);
-            final String displayControl = json.getString(PARAM_DISPLAY_CONTROL);
-            final int maxFilters = json.getInt(PARAM_MAX_FILTERS);
-            final int hitThreshold = json.getInt(PARAM_HIT_THRESHOLD);
-            final int minFilterValueLength = json.getInt(PARAM_MIN_FILTER_VALUE_LENGTH);
-            final String sortBy = json.getString(PARAM_SORT_BY);
-            final String scope = getValue(String.class, json.opt(PARAM_SCOPE), "ALL");
-            final boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), false);
-            JSONArray scopedSitesJsonArray = getValue(JSONArray.class, json.opt(PARAM_SCOPED_SITES), null);
-            Set<String> scopedSites = null;
-            if (scopedSitesJsonArray != null)
-            {
-                scopedSites = new HashSet<String>(scopedSitesJsonArray.length());
-                for (int i = 0, length = scopedSitesJsonArray.length(); i < length; i++)
-                {
-                    String site = scopedSitesJsonArray.getString(i);
-                    scopedSites.add(site);
-                }
-            }
-            final JSONObject customPropJsonObj = getValue(JSONObject.class, json.opt(PARAM_CUSTOM_PROPERTIES), null);
-            Set<CustomProperties> customProps = getCustomProperties(customPropJsonObj);
-            SolrFacetProperties fp = new SolrFacetProperties.Builder()
-                        .filterID(filterID)
-                        .facetQName(facetQName)
-                        .displayName(displayName)
-                        .displayControl(displayControl)
-                        .maxFilters(maxFilters)
-                        .hitThreshold(hitThreshold)
-                        .minFilterValueLength(minFilterValueLength)
-                        .sortBy(sortBy)
-                        .scope(scope)
-                        .isEnabled(isEnabled)
-                        .scopedSites(scopedSites)
-                        .customProperties(customProps).build();
-            return fp;
-        }
-        catch (IOException e)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", e);
-        }
-        catch (JSONException e)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", e);
-        }
-    }
-
-    private <T> T getValue(Class<T> clazz, Object value, T defaultValue) throws JSONException
+    protected <T> T getValue(Class<T> clazz, Object value, T defaultValue) throws JSONException
     {
         if (JSONObject.NULL.equals(value))
         {
@@ -179,7 +115,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         }
     }
 
-    private Set<CustomProperties> getCustomProperties(JSONObject customPropsJsonObj) throws JSONException
+    protected Set<CustomProperties> getCustomProperties(JSONObject customPropsJsonObj) throws JSONException
     {
         if (customPropsJsonObj == null)
         {
@@ -188,9 +124,9 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         JSONArray keys = customPropsJsonObj.names();
         if (keys == null)
         {
-            return null;
+            return Collections.emptySet();
         }
-        
+
         Set<CustomProperties> customProps = new HashSet<>(keys.length());
         for (int i = 0, length = keys.length(); i < length; i++)
         {
@@ -227,6 +163,22 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         }
 
         return customProps;
+    }
+
+    protected Set<String> getScopedSites(JSONArray scopedSitesJsonArray) throws JSONException
+    {
+        if (scopedSitesJsonArray == null)
+        {
+            return null;
+        }
+
+        Set<String> scopedSites = new HashSet<String>(scopedSitesJsonArray.length());
+        for (int i = 0, length = scopedSitesJsonArray.length(); i < length; i++)
+        {
+            String site = scopedSitesJsonArray.getString(i);
+            scopedSites.add(site);
+        }
+        return scopedSites;
     }
 
     private void validateMandatoryCustomProps(Object obj, String paramName) throws JSONException

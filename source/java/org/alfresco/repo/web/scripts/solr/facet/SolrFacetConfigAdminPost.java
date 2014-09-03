@@ -19,12 +19,20 @@
 
 package org.alfresco.repo.web.scripts.solr.facet;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -59,5 +67,54 @@ public class SolrFacetConfigAdminPost extends AbstractSolrFacetConfigAdminWebScr
 
         Map<String, Object> model = new HashMap<String, Object>(1);
         return model;
+    }
+
+    private SolrFacetProperties parseRequestForFacetProperties(WebScriptRequest req)
+    {
+        JSONObject json = null;
+        try
+        {
+            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+
+            final String filterID = json.getString(PARAM_FILTER_ID);
+            final String facetQNameStr = json.getString(PARAM_FACET_QNAME);
+            final QName facetQName = QName.createQName(facetQNameStr);
+            final String displayName = json.getString(PARAM_DISPLAY_NAME);
+            final String displayControl = json.getString(PARAM_DISPLAY_CONTROL);
+            final int maxFilters = json.getInt(PARAM_MAX_FILTERS);
+            final int hitThreshold = json.getInt(PARAM_HIT_THRESHOLD);
+            final int minFilterValueLength = json.getInt(PARAM_MIN_FILTER_VALUE_LENGTH);
+            final String sortBy = json.getString(PARAM_SORT_BY);
+            // Optional params
+            final String scope = getValue(String.class, json.opt(PARAM_SCOPE), "ALL");
+            final boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), false);
+            JSONArray scopedSitesJsonArray = getValue(JSONArray.class, json.opt(PARAM_SCOPED_SITES), null);
+            final Set<String> scopedSites = getScopedSites(scopedSitesJsonArray);
+            final JSONObject customPropJsonObj = getValue(JSONObject.class, json.opt(PARAM_CUSTOM_PROPERTIES), null);
+            final Set<CustomProperties> customProps = getCustomProperties(customPropJsonObj);
+
+            SolrFacetProperties fp = new SolrFacetProperties.Builder()
+                        .filterID(filterID)
+                        .facetQName(facetQName)
+                        .displayName(displayName)
+                        .displayControl(displayControl)
+                        .maxFilters(maxFilters)
+                        .hitThreshold(hitThreshold)
+                        .minFilterValueLength(minFilterValueLength)
+                        .sortBy(sortBy)
+                        .scope(scope)
+                        .isEnabled(isEnabled)
+                        .scopedSites(scopedSites)
+                        .customProperties(customProps).build();
+            return fp;
+        }
+        catch (IOException e)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not read content from req.", e);
+        }
+        catch (JSONException e)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", e);
+        }
     }
 }

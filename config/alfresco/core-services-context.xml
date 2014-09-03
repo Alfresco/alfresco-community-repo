@@ -717,6 +717,9 @@
                         <property name="targetBeanName">
                             <idref bean="messageService" />
                         </property>
+                        <property name="targetClass">
+                            <value>org.alfresco.repo.i18n.MessageService</value>
+                        </property>
                     </bean>
                 </property> 
                 <property name="proxyInterfaces">

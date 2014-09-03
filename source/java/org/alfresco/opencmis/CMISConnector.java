@@ -1568,18 +1568,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             	});
             }
 
-            CmisVersion cmisVersion = getRequestCmisVersion();
-            if(cmisVersion.equals(CmisVersion.CMIS_1_0))
+            // add aspects
+            List<CmisExtensionElement> extensions = getAspectExtensions(info, filter, result.getProperties()
+                    .getProperties().keySet());
+            if (!extensions.isEmpty())
             {
-	            // add aspects (cmis 1.0)
-	            List<CmisExtensionElement> extensions = getAspectExtensions(info, filter, result.getProperties()
-	                    .getProperties().keySet());
-	            if (!extensions.isEmpty())
-	            {
-	                result.getProperties().setExtensions(
-	                        Collections.singletonList((CmisExtensionElement) new CmisExtensionElementImpl(
-	                                ALFRESCO_EXTENSION_NAMESPACE, ASPECTS, null, extensions)));
-	            }
+                result.getProperties().setExtensions(
+                        Collections.singletonList((CmisExtensionElement) new CmisExtensionElementImpl(
+                                ALFRESCO_EXTENSION_NAMESPACE, ASPECTS, null, extensions)));
             }
         }
         return result;
@@ -1983,13 +1979,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 continue;
             }
+            
+            AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
+            Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> aspectProperties = aspectDefinition.getProperties();
 
             extensions.add(new CmisExtensionElementImpl(ALFRESCO_EXTENSION_NAMESPACE, APPLIED_ASPECTS, null, aspectType
                     .getTypeId()));
 
             for (PropertyDefinitionWrapper propDef : aspectType.getProperties())
             {
-                if (propertyIds.contains(propDef.getPropertyId()))
+                boolean addPropertyToExtensionList = getRequestCmisVersion().equals(CmisVersion.CMIS_1_1) && aspectProperties.keySet().contains(propDef.getAlfrescoName());
+                // MNT-11876 : add property to extension even if it has been returned (CMIS 1.1)
+                if (propertyIds.contains(propDef.getPropertyId()) && !addPropertyToExtensionList)
                 {
                     // skip properties that have already been added
                     continue;

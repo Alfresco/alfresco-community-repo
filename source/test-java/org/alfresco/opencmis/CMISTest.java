@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2433,6 +2434,100 @@ public class CMISTest
                 }
             }, CmisVersion.CMIS_1_1);
             
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    /**
+     * MNT-11876 : Test that Alfresco CMIS 1.1 Implementation is returning aspect and aspect properties as extension data
+     * @throws Exception
+     */
+    @Test
+    public void testExtensionDataIsReturnedViaCmis1_1() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final String FOLDER = "testExtensionDataIsReturnedViaCmis1_1-" + GUID.generate();
+        final String CONTENT   = FOLDER + "-file";
+        
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // create folder
+                    FileInfo folderInfo = fileFolderService.create(repositoryHelper.getCompanyHome(), FOLDER, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, FOLDER);
+                    assertNotNull(folderInfo);
+
+                    // create document
+                    FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), CONTENT, ContentModel.TYPE_CONTENT);
+                    assertNotNull(document);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, CONTENT);
+
+                    // apply aspect with properties
+                    Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                    props.put(ContentModel.PROP_LATITUDE, Double.valueOf(1.0d));
+                    props.put(ContentModel.PROP_LONGITUDE, Double.valueOf(1.0d));
+                    nodeService.addAspect(document.getNodeRef(), ContentModel.ASPECT_GEOGRAPHIC, props);
+
+                    return null;
+                }
+            });
+            
+            final ObjectData objectData = withCmisService(new CmisServiceCallback<ObjectData>()
+            {
+                @Override
+                public ObjectData execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.get(0);
+                    String repositoryId = repo.getId();
+                    // get object data 
+                    ObjectData objectData = cmisService.getObjectByPath(repositoryId, "/" + FOLDER + "/" + CONTENT, null, true,
+                            IncludeRelationships.NONE, null, false, true, null);
+                    return objectData;
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            // get extension data from object properties
+            List<CmisExtensionElement> extensions = objectData.getProperties().getExtensions().iterator().next().getChildren();
+            
+            Set<String> appliedAspects   = new HashSet<String>();
+            Set<String> aspectProperties = new HashSet<String>();
+            
+            for (CmisExtensionElement extension : extensions)
+            {
+                if (CMISConnector.PROPERTIES.equals(extension.getName()))
+                {
+                    // check properties extension
+                    List<CmisExtensionElement> propExtensions = extension.getChildren();
+                    assertTrue("cmisObject should contain aspect properties", propExtensions.size() > 0);
+                    for (CmisExtensionElement prop : propExtensions)
+                    {
+                        Map<String, String> cmisAspectProperty = prop.getAttributes();
+                        Set<String> cmisAspectPropertyNames = cmisAspectProperty.keySet();
+                        assertTrue("propertyDefinitionId attribute should be present", cmisAspectPropertyNames.contains("propertyDefinitionId"));
+                        aspectProperties.add(cmisAspectProperty.get("propertyDefinitionId"));
+                    }
+                }
+                else if (CMISConnector.APPLIED_ASPECTS.equals(extension.getName()))
+                {
+                    appliedAspects.add(extension.getValue());
+                }
+            }
+            
+            // extension data should contain applied aspects and aspect properties
+            assertTrue("Extensions should contain " + ContentModel.ASPECT_GEOGRAPHIC, appliedAspects.contains("P:cm:geographic"));
+            assertTrue("Extensions should contain " + ContentModel.PROP_LATITUDE, aspectProperties.contains("cm:latitude"));
+            assertTrue("Extensions should contain " + ContentModel.PROP_LONGITUDE, aspectProperties.contains("cm:longitude"));
         }
         finally
         {

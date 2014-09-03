@@ -165,6 +165,7 @@
         <property name="server"      ref="alfrescoMBeanServer"/>
         <property name="objectName"  value="connector:name=rmi"/>
         <property name="serviceUrl"  ref="jmxUrl" />
+        <property name="enabled"     value="${alfresco.jmx.connector.enabled}" />
 
         <property name="environment">
             <map>

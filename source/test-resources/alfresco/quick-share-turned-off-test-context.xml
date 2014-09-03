@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN 2.0//EN' 'http://www.springframework.org/dtd/spring-beans-2.0.dtd'>
+<beans>
+    <bean id="org.alfresco.repository.quickshare.abstract" class="org.alfresco.repo.web.scripts.quickshare.AbstractQuickShareContent" abstract="true">
+        <property name="quickShareService" ref="QuickShareService" />
+        <property name="enabled" value="false" />
+    </bean>
+</beans>

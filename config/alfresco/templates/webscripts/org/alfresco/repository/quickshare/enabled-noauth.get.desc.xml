@@ -1,0 +1,11 @@
+<webscript>
+<shortname>QuickShare - indicates is enabled</shortname>
+  <description>
+  <![CDATA[
+  Unauthenticated: indicates if QuickShare enabled.
+  ]]>
+  </description>
+  <url>/quickshare/enabled</url>
+  <format default="json" />
+  <authentication>none</authentication>
+</webscript>

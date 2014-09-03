@@ -1747,6 +1747,10 @@
     
     <bean id="org.alfresco.repository.quickshare.abstract" class="org.alfresco.repo.web.scripts.quickshare.AbstractQuickShareContent" abstract="true">
         <property name="quickShareService" ref="QuickShareService" />
+        <property name="enabled" value="${system.quickshare.enabled}" />
+    </bean>
+    
+    <bean id="webscript.org.alfresco.repository.quickshare.enabled-noauth.get" class="org.alfresco.repo.web.scripts.quickshare.QuickShareEnabledGet" parent="org.alfresco.repository.quickshare.abstract">
     </bean>
     
     <!-- unauthenticated (note: equivalent to authenticated "metadata.get" (limited version with thumbnail data - see below) -->

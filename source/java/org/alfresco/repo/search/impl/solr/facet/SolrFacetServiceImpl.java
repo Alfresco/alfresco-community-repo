@@ -86,7 +86,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     private static final StoreRef FACET_STORE = new StoreRef("workspace://SpacesStore");
 
     private AuthorityService authorityService;
-    private NodeService nodeService;
+    protected NodeService nodeService;
     private NamespaceService namespaceService;
     private SearchService searchService;
     private RetryingTransactionHelper retryingTransactionHelper;

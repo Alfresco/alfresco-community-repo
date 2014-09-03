@@ -230,7 +230,7 @@ function doclist_main()
    {
       // Get evaluated properties.
       item = Evaluator.run(node);
-      if (item !== null)
+      if (item !== null &&  (filter!=="editingMe" && filter!=="editingOthers" || node.getIsLocked() || item.workingCopy.isWorkingCopy ) )
       {
          item.isFavourite = (favourites[item.node.nodeRef] === true);
          item.likes = Common.getLikes(node);

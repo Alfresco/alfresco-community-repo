@@ -70,7 +70,7 @@ function main()
       if (remove)
       {
          //Prevent the removal of the SiteManager group authority
-         if (role != siteManagerAuthority)
+         if (!(role == "SiteManager" && authority == siteManagerAuthority))
          {
             node.removePermission(role, authority);
          }

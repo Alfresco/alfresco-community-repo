@@ -123,25 +123,6 @@
         </property>
     </bean>
 
-    <!-- Bootstrap the AVM -->
-    
-    <!-- Sparta: disable WCM/AVM
-    <bean id="avmBootstrap" class="org.alfresco.repo.avm.AvmBootstrap" >
-       <property name="avmLockingAwareService">
-            <ref bean="avmLockingAwareService"/>
-       </property>
-       <property name="avmRepository">
-         <ref bean="avmRepository"/>
-       </property>
-       <property name="permissionService">
-         <ref bean="permissionService"/>
-       </property>
-       <property name="avmSyncService">
-            <ref bean="avmSyncService"/>
-       </property>
-    </bean>
-    -->
-
     <!-- Load models -->
     <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
 
@@ -233,26 +214,6 @@
                     <prop key="redeploy">false</prop>
                 </props>
                 
-                <!-- WCM workflow definitions -->
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/submit_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-               </props>
-               <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/changerequest_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-               </props>
-               <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/submitdirect_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-            
                 <!-- Invitation service workflow definition -->
                 <props>
                     <prop key="engineId">jbpm</prop>

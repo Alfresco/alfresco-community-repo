@@ -59,7 +59,7 @@
         <dependency>
             <groupId>org.alfresco.cmis.client</groupId>
             <artifactId>alfresco-opencmis-extension</artifactId>
-            <version>0.9</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.ws.commons.schema</groupId>
@@ -85,6 +85,10 @@
                     <groupId>org.apache.geronimo.specs</groupId>
                     <artifactId>geronimo-javamail_1.4_spec</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.codehaus.woodstox</groupId>
+                    <artifactId>wstx-asl</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -105,6 +109,11 @@
                     <artifactId>chemistry-opencmis-client-impl</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-client-impl</artifactId>
+            <version>${dependency.opencmis.version}</version>
         </dependency>
         <!-- ALF-19407 chemistry-tck-atompub and junit are dependencies of CMISTestRunnerWebScript, which is not a test -->
         <dependency>

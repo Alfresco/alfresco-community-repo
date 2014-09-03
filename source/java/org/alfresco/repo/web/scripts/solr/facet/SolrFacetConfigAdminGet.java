@@ -19,9 +19,7 @@
 
 package org.alfresco.repo.web.scripts.solr.facet;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
@@ -52,8 +50,7 @@ public class SolrFacetConfigAdminGet extends AbstractSolrFacetConfigAdminWebScri
 
         if (filterID == null)
         {
-            List<SolrFacetProperties> filters = new ArrayList<>(facetService.getFacets().values());
-            model.put("filters", filters);
+            model.put("filters", facetService.getFacets());
         }
         else
         {

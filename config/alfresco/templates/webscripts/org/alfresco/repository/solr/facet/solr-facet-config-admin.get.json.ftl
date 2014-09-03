@@ -9,13 +9,35 @@
              "minFilterValueLength" : ${facet.minFilterValueLength?c},
              "sortBy" : "${facet.sortBy}",
              "scope" : "${facet.scope}",
+             <#if facet.scopedSites?size != 0>
              "scopedSites" : [
-              <#if facet.scopedSites??>
                   <#list facet.scopedSites as site>
                      "${site}"<#if site_has_next>,</#if>
                   </#list>
-              </#if>
-              ],
+             ],
+             </#if>
+             <#if facet.customProperties?size != 0>
+             "customProperties" : 
+             {
+                <#list facet.customProperties as propDetails>
+                "${propDetails.name.localName?string}":
+                {
+                    "name" : "${propDetails.name?string}",
+                    <#if propDetails.value?is_enumerable>
+                    "value" : [
+                    <#list propDetails.value as v>
+                    "${v?string}"<#if v_has_next>,</#if>
+                    </#list>
+                    ],
+                    <#else>
+                    "value" : "${propDetails.value?string}",
+                    </#if>
+                    "type" : <#if propDetails.type??>"${propDetails.type}"<#else>null</#if>, 
+                    "title" : <#if propDetails.title??>"${propDetails.title}"<#else>null</#if>
+                }<#if propDetails_has_next>,</#if>
+                </#list>
+             },   
+             </#if>
              "index" : ${facet.index?c},
              "isEnabled" : ${facet.enabled?c},
              "isDefault" : ${facet.default?c}

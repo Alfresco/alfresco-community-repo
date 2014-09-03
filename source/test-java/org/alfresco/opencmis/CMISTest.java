@@ -96,6 +96,7 @@ import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
 import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.ChangeType;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -2298,6 +2299,87 @@ public class CMISTest
 			}
 		}, "user2", "tenant2");
 	}
+    
+    /**
+     * MNT-11727: move and rename operations should be shown as an UPDATE in the CMIS change log
+     */
+    @Test
+    public void tesMoveRenameWithCMISshouldBeAuditedAsUPDATE() throws Exception
+    {
+        // setUp audit subsystem
+        setupAudit();
+
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            assertTrue("Audit is not enabled", auditSubsystem.isAuditEnabled());
+            assertNotNull("CMIS audit is not enabled", auditSubsystem.getAuditApplicationByName("CMISChangeLog"));
+
+            NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+            String folder = GUID.generate();
+            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folder, ContentModel.TYPE_FOLDER);
+
+            final String actualToken = changeLogService.getLastChangeLogToken();
+
+            String content = GUID.generate();
+            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), content, ContentModel.TYPE_CONTENT);
+            assertNotNull(document);
+            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, content);
+
+            Holder<String> changeLogToken = new Holder<String>();
+            changeLogToken.setValue(actualToken);
+            ObjectList changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            List<ObjectData> events = changeLog.getObjects();
+            int count = events.size();
+            // it should be 3 entries: 1 for previous folder create, 1 new CREATE (for document create)
+            // and 1 NEW UPDATE
+            assertEquals(3, count);
+
+            assertEquals(events.get(0).getProperties().getPropertyList().get(0).getValues().get(0), folderInfo.getNodeRef().getId());
+            assertEquals(events.get(0).getChangeEventInfo().getChangeType(), ChangeType.CREATED);
+
+            assertTrue(((String) events.get(1).getProperties().getPropertyList().get(0).getValues().get(0)).contains(document.getNodeRef().getId()));
+            assertEquals(events.get(1).getChangeEventInfo().getChangeType(), ChangeType.CREATED);
+
+            assertTrue(((String) events.get(2).getProperties().getPropertyList().get(0).getValues().get(0)).contains(document.getNodeRef().getId()));
+            assertEquals(events.get(2).getChangeEventInfo().getChangeType(), ChangeType.UPDATED);
+
+            // test rename
+            final String actualToken2 = changeLogService.getLastChangeLogToken();
+            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, content + "-updated");
+
+            changeLogToken = new Holder<String>();
+            changeLogToken.setValue(actualToken2);
+            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            events = changeLog.getObjects();
+            count = events.size();
+            assertEquals(2, count);
+            assertEquals("Rename operation should be shown as an UPDATE in the CMIS change log", events.get(1).getChangeEventInfo().getChangeType(), ChangeType.UPDATED);
+
+            // test move
+            String targetFolder = GUID.generate();
+            FileInfo targetFolderInfo = fileFolderService.create(companyHomeNodeRef, targetFolder, ContentModel.TYPE_FOLDER);
+
+            final String actualToken3 = changeLogService.getLastChangeLogToken();
+            nodeService.moveNode(document.getNodeRef(), targetFolderInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+
+            changeLogToken = new Holder<String>();
+            changeLogToken.setValue(actualToken3);
+            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            events = changeLog.getObjects();
+            count = events.size();
+            assertEquals(2, count);
+            assertEquals("Move operation should be shown as an UPDATE in the CMIS change log", events.get(1).getChangeEventInfo().getChangeType(), ChangeType.UPDATED);
+        }
+        finally
+        {
+            auditSubsystem.destroy();
+            AuthenticationUtil.popAuthentication();
+        }
+    }
     
     /**
      * MNT-11304: Test that Alfresco has no default boundaries for decimals

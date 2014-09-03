@@ -29,7 +29,6 @@ import java.util.List;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;

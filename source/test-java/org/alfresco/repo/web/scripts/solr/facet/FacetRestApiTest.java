@@ -472,6 +472,35 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         }, SEARCH_ADMIN_USER);
 
+        // Admin tries to create a filter with a malicious FilterID
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                Response response = sendRequest(new GetRequest(GET_FACETS_URL), 200);
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+                JSONArray facetsArray = (JSONArray) jsonRsp.get(FACETS);
+                assertNotNull("JSON 'facets' array was null", facetsArray);
+                final List<String> facets = getListFromJsonArray(facetsArray);
+
+                filter.put("filterID", "<script>alert('Maliciouse-FilterID')</script>");
+                // Post the filter
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 500);
+
+                // Retrieve all filters
+                response = sendRequest(new GetRequest(GET_FACETS_URL), 200);
+                jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+                facetsArray = (JSONArray) jsonRsp.get(FACETS);
+
+                assertNotNull("JSON 'facets' array was null", facetsArray);
+                final List<String> newFacets = getListFromJsonArray(facetsArray);
+                assertEquals(facets, newFacets);
+
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+
     }
 
     public void testUpdateSingleValue() throws Exception

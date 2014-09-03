@@ -818,6 +818,16 @@ public class NodePropertyValue implements Cloneable, Serializable
         return valueType.getOrdinalNumber();
     }
     
+    /**
+     * If property value of the type <code>QName</code> is supported
+     * 
+     * @param typeQName the type qualified name
+     */
+    public static boolean isDataTypeSupported(QName typeQName)
+    {
+        return valueTypesByPropertyType.keySet().contains(typeQName);
+    }
+    
     /** the type of the property, prior to serialization persistence */
     private ValueType actualType;
     /** the type of persistence used */

@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.dictionary.constraint.RegisteredConstraint;
+import org.alfresco.repo.domain.node.NodePropertyValue;
 import org.alfresco.repo.forms.Field;
 import org.alfresco.repo.forms.FieldGroup;
 import org.alfresco.repo.forms.PropertyFieldDefinition;
@@ -166,7 +167,15 @@ public class PropertyFieldProcessor extends QNameFieldProcessor<PropertyDefiniti
         PropertyDefinition propDef = data.getPropertyDefinition(name);
         if (propDef != null)
         {
-            return propDef.getDefaultValue();
+            QName typeQName = propDef.getDataType().getName();
+            String strDefaultValue = propDef.getDefaultValue();
+            if (NodePropertyValue.isDataTypeSupported(typeQName))
+            {
+                // convert to the appropriate type
+                NodePropertyValue pv = new NodePropertyValue(typeQName, strDefaultValue);
+                return pv.getValue(typeQName);
+            }
+            return strDefaultValue;
         }
         return null;
     }

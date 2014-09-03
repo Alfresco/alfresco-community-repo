@@ -139,13 +139,6 @@
                                     <version>${alfresco.googledocs.version}</version>
                                     <type>amp</type>
                                 </artifactItem>
-                                <artifactItem>
-                                    <groupId>${project.groupId}</groupId>
-                                    <artifactId>alfresco-spp</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>amp</type>
-                                    <destFileName>alfresco-spp.amp</destFileName>
-                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -97,7 +96,6 @@ public class NodeBrowserScript extends DeclarativeWebScript
     transient private NamespaceService namespaceService;
     transient private PermissionService permissionService;
     transient private OwnableService ownableService;
-    transient private AVMService avmService;
 
     /**
      * @param transactionService        transaction service
@@ -186,19 +184,6 @@ public class NodeBrowserScript extends DeclarativeWebScript
     {
 		return ownableService;
 	}
-
-	/**
-     * @param avmService AVM service
-     */
-    public void setAVMService(AVMService avmService)
-    {
-        this.avmService = avmService;
-    }
-
-    private AVMService getAVMService()
-    {
-        return avmService;
-    }
 
     /**
      * Gets the list of repository stores
@@ -354,22 +339,8 @@ public class NodeBrowserScript extends DeclarativeWebScript
      */
     public List<Permission> getStorePermissionMasks(NodeRef nodeRef)
     {
-        List<Permission> permissionMasks = null;
-        if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-        {
-        	permissionMasks = new ArrayList<Permission>();
-            for (Iterator<AccessPermission> iterator = getPermissionService().getAllSetPermissions(nodeRef.getStoreRef()).iterator(); iterator
-                    .hasNext();)
-            {
-            	AccessPermission ap = iterator.next();
-            	permissionMasks.add(new Permission(ap.getPermission(), ap.getAuthority(), ap.getAccessStatus().toString()));
-            }
-        }
-        else
-        {
-        	permissionMasks = new ArrayList<Permission>(1);
-        	permissionMasks.add(new NoStoreMask());
-        }
+        List<Permission> permissionMasks = new ArrayList<Permission>(1);
+    	permissionMasks.add(new NoStoreMask());
         return permissionMasks;
     }
 
@@ -435,39 +406,6 @@ public class NodeBrowserScript extends DeclarativeWebScript
     		assocs.add(new PeerAssociation(ref.getTypeQName(), ref.getSourceRef(), ref.getTargetRef()));
 		}
         return assocs;
-    }
-
-    public boolean getInAVMStore(NodeRef nodeRef)
-    {
-        return nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM);
-    }
-
-    public List<Map<String, String>> getAVMStoreProperties(NodeRef nodeRef)
-    {
-        List<Map<String, String>> avmStoreProps = null;
-        // work out the store name from current nodeRef
-        String store = nodeRef.getStoreRef().getIdentifier();
-        Map<QName, PropertyValue> props = getAVMService().getStoreProperties(store);
-        List<Map<String, String>> storeProperties = new ArrayList<Map<String, String>>();
-
-        for (Map.Entry<QName, PropertyValue> property : props.entrySet())
-        {
-            Map<String, String> map = new HashMap<String, String>(2);
-            map.put("name", property.getKey().toString());
-            map.put("type", property.getValue().getActualTypeString());
-            String val = property.getValue().getStringValue();
-            if (val == null)
-            {
-                val = "null";
-            }
-            map.put("value", val);
-
-            storeProperties.add(map);
-        }
-
-        avmStoreProps = storeProperties;
-
-        return avmStoreProps;
     }
 
     /**

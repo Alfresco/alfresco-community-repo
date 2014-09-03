@@ -24,7 +24,6 @@ import org.alfresco.cmis.client.AlfrescoFolder;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.cmis.client.type.AlfrescoType;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.opencmis.dictionary.QNameFilter;
@@ -1222,9 +1221,6 @@ public class TestCMIS extends EnterpriseTestApi
     @Test
     public void testTypeFiltering() throws Exception
     {
-        // check that the parent type is excluded
-        assertTrue(cmisTypeExclusions.isExcluded(WCMModel.TYPE_AVM_CONTENT));
-
         // Test that a type defined with this excluded parent type does not break the CMIS dictionary
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();

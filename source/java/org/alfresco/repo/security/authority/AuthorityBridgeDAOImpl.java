@@ -54,7 +54,7 @@ public class AuthorityBridgeDAOImpl extends AbstractAuthorityBridgeDAO
         
         AuthorityBridgeParametersEntity authorityBridgeParametersEntity = new AuthorityBridgeParametersEntity(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId);
         
-        List<AuthorityBridgeLink> links = (List<AuthorityBridgeLink>) template.selectList(QUERY_SELECT_GET_AUTHORITY_BRIDGE_ENTRIES, authorityBridgeParametersEntity);
+        List<AuthorityBridgeLink> links = template.selectList(QUERY_SELECT_GET_AUTHORITY_BRIDGE_ENTRIES, authorityBridgeParametersEntity);
         
         if (start != null)
         {
@@ -76,7 +76,7 @@ public class AuthorityBridgeDAOImpl extends AbstractAuthorityBridgeDAO
         
         AuthorityBridgeParametersEntity authorityBridgeParametersEntity = new AuthorityBridgeParametersEntity(authorityContainerTypeQNameId, memberAssocQNameId, authorityNameQNameId, storeId, nodeId);
         
-        List<AuthorityBridgeLink> links = (List<AuthorityBridgeLink>) template.selectList(QUERY_SELECT_GET_DIRECT_AUTHORITIES_FOR_UESR, authorityBridgeParametersEntity);
+        List<AuthorityBridgeLink> links = template.selectList(QUERY_SELECT_GET_DIRECT_AUTHORITIES_FOR_UESR, authorityBridgeParametersEntity);
         
         if (start != null)
         {

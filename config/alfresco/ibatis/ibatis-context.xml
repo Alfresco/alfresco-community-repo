@@ -27,7 +27,6 @@
     
     <!-- MyBatis config for Alfresco (using common datasource) -->
     <bean id="repoSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
-        <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
         <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="dataSource"/>
         <property name="configLocation">

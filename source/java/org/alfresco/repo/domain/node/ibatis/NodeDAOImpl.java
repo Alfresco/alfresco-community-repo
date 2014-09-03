@@ -98,9 +98,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
     private static final String SELECT_PROPERTIES_BY_TYPES = "alfresco.node.select_PropertiesByTypes";
     private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
-    private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert.insert_NodeProperty";
+    private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert_NodeProperty";
     private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update.update_PrimaryChildrenSharedAcl";
-    private static final String INSERT_NODE_ASPECT = "alfresco.node.insert.insert_NodeAspect";
+    private static final String INSERT_NODE_ASPECT = "alfresco.node.insert_NodeAspect";
     private static final String DELETE_NODE_ASPECTS = "alfresco.node.delete_NodeAspects";
     private static final String DELETE_NODE_PROPERTIES = "alfresco.node.delete_NodeProperties";
     private static final String SELECT_NODES_WITH_ASPECT_IDS = "alfresco.node.select_NodesWithAspectIds";
@@ -212,7 +212,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         ServerEntity entity = new ServerEntity();
         entity.setIpAddress(ipAddress);
         // Potentially more results if there is a case issue (unlikely)
-        List<ServerEntity> results = (List<ServerEntity>) template.selectList(SELECT_SERVER_BY_IPADDRESS, entity);
+        List<ServerEntity> results = template.selectList(SELECT_SERVER_BY_IPADDRESS, entity);
         for (ServerEntity serverEntity : results)
         {
             // Take the first one that matches regardless of case
@@ -270,7 +270,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected List<StoreEntity> selectAllStores()
     {
-        return (List<StoreEntity>) template.selectList(SELECT_STORE_ALL);
+        return template.selectList(SELECT_STORE_ALL);
     }
 
     @Override
@@ -279,7 +279,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         StoreEntity store = new StoreEntity();
         store.setProtocol(storeRef.getProtocol());
         store.setIdentifier(storeRef.getIdentifier());
-        return (StoreEntity) template.selectOne(SELECT_STORE_BY_REF, store);
+        return template.selectOne(SELECT_STORE_BY_REF, store);
     }
 
     @Override
@@ -288,7 +288,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         StoreEntity store = new StoreEntity();
         store.setProtocol(storeRef.getProtocol());
         store.setIdentifier(storeRef.getIdentifier());
-        return (NodeEntity) template.selectOne(SELECT_STORE_ROOT_NODE_BY_REF, store);
+        return template.selectOne(SELECT_STORE_ROOT_NODE_BY_REF, store);
     }
 
     @Override
@@ -399,7 +399,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeEntity node = new NodeEntity();
         node.setId(id);
         
-        return (NodeEntity) template.selectOne(SELECT_NODE_BY_ID, node);
+        return template.selectOne(SELECT_NODE_BY_ID, node);
     }
 
     @Override
@@ -421,7 +421,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         node.setUuid(uuid);
         
-        return (NodeEntity) template.selectOne(SELECT_NODE_BY_NODEREF, node);
+        return template.selectOne(SELECT_NODE_BY_NODEREF, node);
     }
 
     @SuppressWarnings("unchecked")
@@ -434,7 +434,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // UUID
         nodeBatchLoadEntity.setUuids(new ArrayList<String>(uuids));
         
-        return (List<Node>) template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
+        return template.selectList(SELECT_NODES_BY_UUIDS, nodeBatchLoadEntity);
     }
 
     @SuppressWarnings("unchecked")
@@ -445,7 +445,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // IDs
         nodeBatchLoadEntity.setIds(new ArrayList<Long>(ids));
         
-        return (List<Node>) template.selectList(SELECT_NODES_BY_IDS, nodeBatchLoadEntity);
+        return template.selectList(SELECT_NODES_BY_IDS, nodeBatchLoadEntity);
     }
 
     
@@ -505,7 +505,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodePropertyEntity prop = new NodePropertyEntity();
         prop.setNodeIds(new ArrayList<Long>(nodeIds));
 
-        List<NodePropertyEntity> rows = (List<NodePropertyEntity>) template.selectList(SELECT_NODE_PROPERTIES, prop);
+        List<NodePropertyEntity> rows = template.selectList(SELECT_NODE_PROPERTIES, prop);
         return makePersistentPropertiesMap(rows);
     }
     @Override
@@ -534,7 +534,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             prop.setQnameIds(new ArrayList<Long>(qnameIds));
         }
 
-        List<NodePropertyEntity> rows = (List<NodePropertyEntity>) template.selectList(SELECT_NODE_PROPERTIES, prop);
+        List<NodePropertyEntity> rows = template.selectList(SELECT_NODE_PROPERTIES, prop);
         return makePersistentPropertiesMap(rows);
     }
 
@@ -624,7 +624,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeAspectsEntity aspects = new NodeAspectsEntity();
         aspects.setNodeIds(new ArrayList<Long>(nodeIds));
 
-        List<NodeAspectsEntity> rows = (List<NodeAspectsEntity>) template.selectList(SELECT_NODE_ASPECTS, aspects);
+        List<NodeAspectsEntity> rows = template.selectList(SELECT_NODE_ASPECTS, aspects);
         
         Map<NodeVersionKey, Set<QName>> results = new HashMap<NodeVersionKey, Set<QName>>(rows.size()*2);
         for (NodeAspectsEntity nodeAspectsEntity : rows)
@@ -751,7 +751,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeEntity node = new NodeEntity();
         node.setId(nodeId);
         
-        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS, node);
+        return template.selectList(SELECT_NODE_ASSOCS, node);
     }
 
     @SuppressWarnings("unchecked")
@@ -766,7 +766,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Type
         assoc.setTypeQNameId(typeQNameId);
         
-        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE, assoc);
+        return template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE, assoc);
     }
 
     @SuppressWarnings("unchecked")
@@ -781,7 +781,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Type
         assoc.setTypeQNameId(typeQNameId);
         
-        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_TARGET, assoc);
+        return template.selectList(SELECT_NODE_ASSOCS_BY_TARGET, assoc);
     }
 
     @Override
@@ -790,7 +790,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         NodeAssocEntity assoc = new NodeAssocEntity();
         assoc.setId(assocId);
         
-        return (NodeAssocEntity) template.selectOne(SELECT_NODE_ASSOC_BY_ID, assoc);
+        return template.selectOne(SELECT_NODE_ASSOC_BY_ID, assoc);
     }
 
     @Override
@@ -804,7 +804,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Assoc
         assoc.setTypeQNameId(assocTypeQNameId);
         
-        Integer maxIndex = (Integer) template.selectOne(SELECT_NODE_ASSOCS_MAX_INDEX, assoc);
+        Integer maxIndex = template.selectOne(SELECT_NODE_ASSOCS_MAX_INDEX, assoc);
         return maxIndex == null ? 0 : maxIndex.intValue();
     }
 
@@ -869,7 +869,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         ChildAssocEntity assoc = new ChildAssocEntity();
         assoc.setId(assocId);
         
-        return (ChildAssocEntity) template.selectOne(SELECT_CHILD_ASSOC_BY_ID, assoc);
+        return template.selectOne(SELECT_CHILD_ASSOC_BY_ID, assoc);
     }
     
     @SuppressWarnings("unchecked")
@@ -888,7 +888,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setId(minAssocIdInclusive);
         
         RowBounds rowBounds = new RowBounds(0, maxResults);
-        return (List<ChildAssocEntity>) template.selectList(SELECT_CHILD_NODE_IDS, assoc, rowBounds);
+        return template.selectList(SELECT_CHILD_NODE_IDS, assoc, rowBounds);
     }
 
     @SuppressWarnings("unchecked")
@@ -903,7 +903,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Primary
         assoc.setPrimary(true);
 
-        return (List<NodeIdAndAclId>) template.selectList(SELECT_NODE_PRIMARY_CHILD_ACLS, assoc);
+        return template.selectList(SELECT_NODE_PRIMARY_CHILD_ACLS, assoc);
     }
 
     @SuppressWarnings("unchecked")
@@ -936,7 +936,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Ordered
         assoc.setOrdered(false);
         
-        return (List<ChildAssocEntity>) template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
+        return template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT, assoc);
     }
 
     /**
@@ -1156,7 +1156,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setOrdered(false);
         
         // Note: This single results was assumed from inception of the original method.  It's correct.
-        return (ChildAssocEntity) template.selectOne(SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME, assoc);
+        return template.selectOne(SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME, assoc);
     }
 
     @Override
@@ -1313,7 +1313,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         // Primary
         assoc.setPrimary(Boolean.TRUE);
         
-        return (List<ChildAssocEntity>) template.selectList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
+        return template.selectList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
     }
 
     @Override
@@ -1370,7 +1370,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         childNode.setId(childNodeId);
         assoc.setChildNode(childNode);
         
-        return (List<ChildAssocEntity>) template.selectList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
+        return template.selectList(SELECT_PARENT_ASSOCS_OF_CHILD, assoc);
     }
 
     @Override
@@ -1455,7 +1455,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         TransactionQueryEntity query = new TransactionQueryEntity();
         query.setMaxCommitTime(maxCommitTime);
         
-        List<Transaction> txns = (List<Transaction>) template.selectList(SELECT_TXN_LAST, query, new RowBounds(0, 1));
+        List<Transaction> txns = template.selectList(SELECT_TXN_LAST, query, new RowBounds(0, 1));
         if (txns.size() > 0)
         {
             return txns.get(0);
@@ -1469,7 +1469,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected int selectTransactionCount()
     {
-        return (Integer) template.selectOne(SELECT_TXN_COUNT);
+        return template.selectOne(SELECT_TXN_COUNT);
     }
 
     @Override
@@ -1478,7 +1478,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         TransactionQueryEntity query = new TransactionQueryEntity();
         query.setId(txnId);
         
-        return (Transaction) template.selectOne(SELECT_TXNS, query);
+        return template.selectOne(SELECT_TXNS, query);
     }
 
     @SuppressWarnings("unchecked")
@@ -1493,7 +1493,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         }
         
         // TODO: Return List<Node> for quicker node_deleted access
-        return (List<NodeEntity>) template.selectList(SELECT_TXN_NODES, query);
+        return template.selectList(SELECT_TXN_NODES, query);
     }
 
     @SuppressWarnings("unchecked")
@@ -1526,11 +1526,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         
         if (count == null)
         {
-            return (List<Transaction>) template.selectList(SELECT_TXNS, query);
+            return template.selectList(SELECT_TXNS, query);
         }
         else
         {
-            return (List<Transaction>) template.selectList(SELECT_TXNS, query, new RowBounds(0, count));
+            return template.selectList(SELECT_TXNS, query, new RowBounds(0, count));
         }
     }
 
@@ -1543,11 +1543,11 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         query.setMaxCommitTime(maxCommitTime);
         if (count == null)
         {
-            return (List<Long>) template.selectList(SELECT_TXNS_UNUSED, query);
+            return template.selectList(SELECT_TXNS_UNUSED, query);
         }
         else
         {
-            return (List<Long>) template.selectList(SELECT_TXNS_UNUSED, query, new RowBounds(0, count));
+            return template.selectList(SELECT_TXNS_UNUSED, query, new RowBounds(0, count));
         }
     }
 
@@ -1564,31 +1564,31 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     protected Long selectMinTxnCommitTime()
     {
-        return (Long) template.selectOne(SELECT_TXN_MIN_COMMIT_TIME);
+        return template.selectOne(SELECT_TXN_MIN_COMMIT_TIME);
     }
 
     @Override
     protected Long selectMaxTxnCommitTime()
     {
-        return (Long) template.selectOne(SELECT_TXN_MAX_COMMIT_TIME);
+        return template.selectOne(SELECT_TXN_MAX_COMMIT_TIME);
     }
     
     @Override
     protected Long selectMinTxnId()
     {
-        return (Long) template.selectOne(SELECT_TXN_MIN_ID);
+        return template.selectOne(SELECT_TXN_MIN_ID);
     }
 
     @Override
     protected Long selectMinUnusedTxnCommitTime()
     {
-        return (Long) template.selectOne(SELECT_TXN_UNUSED_MIN_COMMIT_TIME);
+        return template.selectOne(SELECT_TXN_UNUSED_MIN_COMMIT_TIME);
     }
     
     @Override
     protected Long selectMaxTxnId()
     {
-        return (Long) template.selectOne(SELECT_TXN_MAX_ID);
+        return template.selectOne(SELECT_TXN_MAX_ID);
     }
 
     @Override
@@ -1629,7 +1629,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         ChildAssocEntity childAssoc = new ChildAssocEntity();
         childAssoc.setParentNode(parentNode);
         childAssoc.setPrimary(Boolean.valueOf(isPrimary));
-        return (Integer)template.selectOne(COUNT_CHILD_ASSOC_BY_PARENT_ID, childAssoc);
+        return template.selectOne(COUNT_CHILD_ASSOC_BY_PARENT_ID, childAssoc);
     }
     
     /*
@@ -1699,7 +1699,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         query.setMinCommitTime(fromTimeInclusive);
         query.setMaxCommitTime(toTimeExclusive);
         query.setExcludeServerId(serverId);
-        return (List<Transaction>) template.selectList(SELECT_ONE_TXNS_BY_COMMIT_TIME_DESC, query);
+        return template.selectList(SELECT_ONE_TXNS_BY_COMMIT_TIME_DESC, query);
     }
 
 }

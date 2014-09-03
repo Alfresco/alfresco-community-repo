@@ -60,7 +60,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         LockResourceEntity lockResource = new LockResourceEntity();
         lockResource.setQnameNamespaceId(qnameNamespaceId);
         lockResource.setQnameLocalName(qnameLocalName == null ? null : qnameLocalName.toLowerCase());
-        lockResource = (LockResourceEntity) template.selectOne(SELECT_LOCKRESOURCE_BY_QNAME, lockResource);
+        lockResource = template.selectOne(SELECT_LOCKRESOURCE_BY_QNAME, lockResource);
         // Could be null
         return lockResource;
     }
@@ -81,7 +81,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     @Override
     protected List<LockEntity> getLocksBySharedResourceIds(List<Long> sharedLockResourceIds)
     {
-        List<LockEntity> locks = (List<LockEntity>) template.selectList(SELECT_LOCK_BY_SHARED_IDS, sharedLockResourceIds);
+        List<LockEntity> locks = template.selectList(SELECT_LOCK_BY_SHARED_IDS, sharedLockResourceIds);
         // Done
         return locks;
     }
@@ -91,7 +91,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
     {
         LockEntity lock = new LockEntity();
         lock.setId(id);
-        lock = (LockEntity) template.selectOne(SELECT_LOCK_BY_ID, lock);
+        lock = template.selectOne(SELECT_LOCK_BY_ID, lock);
         // Done
         return lock;
     }
@@ -102,7 +102,7 @@ public class LockDAOImpl extends AbstractLockDAOImpl
         LockEntity lock = new LockEntity();
         lock.setSharedResourceId(sharedResourceId);
         lock.setExclusiveResourceId(exclusiveResourceId);
-        lock = (LockEntity) template.selectOne(SELECT_LOCK_BY_KEY, lock);
+        lock = template.selectOne(SELECT_LOCK_BY_KEY, lock);
         // Done
         return lock;
     }

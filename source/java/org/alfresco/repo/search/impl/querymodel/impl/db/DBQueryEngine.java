@@ -180,7 +180,7 @@ public class DBQueryEngine implements QueryEngine
         dbQuery.setSinceTxId(sinceTxId);
         
         dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, null, functionContext);
-        List<Node> nodes = (List<Node>)template.selectList(SELECT_BY_DYNAMIC_QUERY, dbQuery);
+        List<Node> nodes = template.selectList(SELECT_BY_DYNAMIC_QUERY, dbQuery);
         LinkedHashSet<Long> set = new LinkedHashSet<Long>(nodes.size());
         for(Node node : nodes)
         {

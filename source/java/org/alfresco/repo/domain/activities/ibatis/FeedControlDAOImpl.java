@@ -43,12 +43,12 @@ public class FeedControlDAOImpl extends ActivitiesDAOImpl implements FeedControl
     {
         FeedControlEntity params = new FeedControlEntity(feedUserId);
 
-        return (List<FeedControlEntity>)template.selectList("alfresco.activities.select_activity_feedcontrols_for_user", params);
+        return template.selectList("alfresco.activities.select_activity_feedcontrols_for_user", params);
     }
     
     public long selectFeedControl(FeedControlEntity activityFeedControl) throws SQLException
     {
-        Long id = (Long)template.selectOne("alfresco.activities.select_activity_feedcontrol", activityFeedControl);
+        Long id = template.selectOne("alfresco.activities.select_activity_feedcontrol", activityFeedControl);
         return (id != null ? id : -1);
     }
 }

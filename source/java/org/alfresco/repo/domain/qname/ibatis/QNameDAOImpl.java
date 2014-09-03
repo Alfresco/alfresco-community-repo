@@ -53,7 +53,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
     {
         NamespaceEntity entity = new NamespaceEntity();
         entity.setId(id);
-        entity = (NamespaceEntity) template.selectOne(SELECT_NS_BY_ID, entity);
+        entity = template.selectOne(SELECT_NS_BY_ID, entity);
         return entity;
     }
 
@@ -62,7 +62,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
     {
         NamespaceEntity entity = new NamespaceEntity();
         entity.setUriSafe(uri);
-        entity = (NamespaceEntity) template.selectOne(SELECT_NS_BY_URI, entity);
+        entity = template.selectOne(SELECT_NS_BY_URI, entity);
         return entity;
     }
 
@@ -89,7 +89,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
     {
         QNameEntity entity = new QNameEntity();
         entity.setId(id);
-        entity = (QNameEntity) template.selectOne(SELECT_QNAME_BY_ID, entity);
+        entity = template.selectOne(SELECT_QNAME_BY_ID, entity);
         return entity;
     }
     
@@ -99,7 +99,7 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
         QNameEntity entity = new QNameEntity();
         entity.setNamespaceId(nsId);
         entity.setLocalNameSafe(localName);
-        entity = (QNameEntity) template.selectOne(SELECT_QNAME_BY_NS_AND_LOCALNAME, entity);
+        entity = template.selectOne(SELECT_QNAME_BY_NS_AND_LOCALNAME, entity);
         return entity;
     }
 

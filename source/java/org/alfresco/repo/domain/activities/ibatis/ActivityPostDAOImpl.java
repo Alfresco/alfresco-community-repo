@@ -44,11 +44,11 @@ public class ActivityPostDAOImpl extends ActivitiesDAOImpl implements ActivityPo
             (activityPost.getMaxId() != -1) &&
             (activityPost.getStatus() != null))
         {
-            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_params", activityPost, rowBounds);
+            return template.selectList("alfresco.activities.select_activity_posts_by_params", activityPost, rowBounds);
         }
         else if (activityPost.getStatus() != null)
         {
-            return (List<ActivityPostEntity>)template.selectList("alfresco.activities.select_activity_posts_by_status", activityPost, rowBounds);
+            return template.selectList("alfresco.activities.select_activity_posts_by_status", activityPost, rowBounds);
         }
         else
         {
@@ -58,17 +58,17 @@ public class ActivityPostDAOImpl extends ActivitiesDAOImpl implements ActivityPo
     
     public Long getMaxActivitySeq() throws SQLException 
     {
-        return (Long)template.selectOne("alfresco.activities.select_activity_post_max_seq");
+        return template.selectOne("alfresco.activities.select_activity_post_max_seq");
     }
     
     public Long getMinActivitySeq() throws SQLException 
     {
-        return (Long)template.selectOne("alfresco.activities.select_activity_post_min_seq");
+        return template.selectOne("alfresco.activities.select_activity_post_min_seq");
     }
     
     public Integer getMaxNodeHash() throws SQLException 
     {
-        return (Integer)template.selectOne("alfresco.activities.select_activity_post_max_jobtasknode");
+        return template.selectOne("alfresco.activities.select_activity_post_max_jobtasknode");
     }
 
     public int updatePost(long id, String siteNetwork, String activityData, ActivityPostEntity.STATUS status) throws SQLException

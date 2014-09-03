@@ -4,14 +4,14 @@
 
 <mapper namespace="alfresco.node.select.children">
 
-    <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
+    <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssoc">
         <include refid="alfresco.node.select_ChildAssocsOfParent_Query"/>
         <if test="ordered == true">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
         </if>
     </select>
 
-    <select id="select_ChildNodeIds_Limited" parameterType="ChildAssoc" resultMap="result_ChildAssocIds">
+    <select id="select_ChildNodeIds_Limited" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssocIds">
         <![CDATA[
         select
             ca.id               as id,

@@ -40,6 +40,7 @@ import org.alfresco.repo.domain.propval.PropertyValueEntity;
 import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.repo.domain.schema.script.ScriptBundleExecutor;
 import org.alfresco.util.Pair;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -60,7 +61,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     
     private static final String SELECT_PROPERTY_DATE_VALUE_BY_ID = "alfresco.propval.select_PropertyDateValueByID";
     private static final String SELECT_PROPERTY_DATE_VALUE_BY_VALUE = "alfresco.propval.select_PropertyDateValueByValue";
-    private static final String INSERT_PROPERTY_DATE_VALUE = "alfresco.propval.insert.insert_PropertyDateValue";
+    private static final String INSERT_PROPERTY_DATE_VALUE = "alfresco.propval.insert_PropertyDateValue";
     
     private static final String SELECT_PROPERTY_STRING_VALUE_BY_ID = "alfresco.propval.select_PropertyStringValueByID";
     private static final String SELECT_PROPERTY_STRING_VALUE_BY_VALUE = "alfresco.propval.select_PropertyStringValueByValue";
@@ -93,7 +94,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_ID = "alfresco.propval.delete_PropertyUniqueContextById";
     private static final String DELETE_PROPERTY_UNIQUE_CTX_BY_VALUES = "alfresco.propval.delete_PropertyUniqueContextByValues";
     
-    private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert.insert_PropertyLink";
+    private static final String INSERT_PROPERTY_LINK = "alfresco.propval.insert_PropertyLink";
     private static final String DELETE_PROPERTY_LINKS_BY_ROOT_ID = "alfresco.propval.delete_PropertyLinksByRootId";
     
     
@@ -121,7 +122,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyClassEntity entity = new PropertyClassEntity();
         entity.setId(id);
-        entity = (PropertyClassEntity) template.selectOne(
+        entity = template.selectOne(
                 SELECT_PROPERTY_CLASS_BY_ID,
                 entity);
         // Done
@@ -133,7 +134,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyClassEntity entity = new PropertyClassEntity();
         entity.setJavaClass(value);
-        entity = (PropertyClassEntity) template.selectOne(
+        entity = template.selectOne(
                 SELECT_PROPERTY_CLASS_BY_NAME,
                 entity);
         // Done
@@ -157,7 +158,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     @Override
     protected PropertyDateValueEntity findDateValueById(Long id)
     {
-        PropertyDateValueEntity entity = (PropertyDateValueEntity) template.selectOne(
+        PropertyDateValueEntity entity = template.selectOne(
                 SELECT_PROPERTY_DATE_VALUE_BY_ID,
                 id);
         // Done
@@ -167,7 +168,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     @Override
     protected PropertyDateValueEntity findDateValueByValue(Date value)
     {
-        PropertyDateValueEntity result = (PropertyDateValueEntity) template.selectOne(
+        PropertyDateValueEntity result = template.selectOne(
                 SELECT_PROPERTY_DATE_VALUE_BY_VALUE,
                 new Long(value.getTime()));
         // The ID is the actual time in ms (GMT)
@@ -193,7 +194,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setId(id);
-        String value = (String) template.selectOne(
+        String value = template.selectOne(
                 SELECT_PROPERTY_STRING_VALUE_BY_ID,
                 entity);
         // Done
@@ -206,7 +207,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyStringValueEntity entity = new PropertyStringValueEntity();
         entity.setValue(value);
-        List<Long> rows = (List<Long>) template.selectList(
+        List<Long> rows = template.selectList(
                 SELECT_PROPERTY_STRING_VALUE_BY_VALUE,
                 entity,
                 new RowBounds(0, 1));
@@ -241,7 +242,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyDoubleValueEntity entity = new PropertyDoubleValueEntity();
         entity.setId(id);
-        entity = (PropertyDoubleValueEntity) template.selectOne(
+        entity = template.selectOne(
                 SELECT_PROPERTY_DOUBLE_VALUE_BY_ID,
                 entity);
         // Done
@@ -254,7 +255,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyDoubleValueEntity entity = new PropertyDoubleValueEntity();
         entity.setDoubleValue(value);
-        List<PropertyDoubleValueEntity> results = (List<PropertyDoubleValueEntity>) template.selectList(
+        List<PropertyDoubleValueEntity> results = template.selectList(
                 SELECT_PROPERTY_DOUBLE_VALUE_BY_VALUE,
                 entity,
                 new RowBounds(0, 1));
@@ -289,7 +290,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertySerializableValueEntity entity = new PropertySerializableValueEntity();
         entity.setId(id);
-        entity = (PropertySerializableValueEntity) template.selectOne(
+        entity = template.selectOne(
                 SELECT_PROPERTY_SERIALIZABLE_VALUE_BY_ID,
                 entity);
         // Done
@@ -316,7 +317,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyValueEntity entity = new PropertyValueEntity();
         entity.setId(id);
-        List<PropertyValueEntity> results = (List<PropertyValueEntity>) template.selectList(
+        List<PropertyValueEntity> results =  template.selectList(
                 SELECT_PROPERTY_VALUE_BY_ID,
                 entity);
         // At most one of the results represents a real value
@@ -397,7 +398,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         if (query != null)
         {
             // Uniqueness is guaranteed by the tables, so we get one value only
-            result = (PropertyValueEntity) template.selectOne(query, queryObject);
+            result = template.selectOne(query, queryObject);
         }
         
         // Done
@@ -460,7 +461,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyValueEntity entity = new PropertyValueEntity();
         entity.setId(id);
-        List<PropertyIdSearchRow> results = (List<PropertyIdSearchRow>) template.selectList(
+        List<PropertyIdSearchRow> results = template.selectList(
                 SELECT_PROPERTY_BY_ID,
                 entity);
         return results;
@@ -483,7 +484,9 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
             }
         };
         // A row handler to roll up individual rows
+        Configuration configuration = template.getConfiguration();
         RollupResultHandler rollupResultHandler = new RollupResultHandler(
+                configuration,
                 KEY_COLUMNS_FINDBYIDS,
                 "propValues",
                 valueResultHandler);
@@ -510,7 +513,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyRootEntity entity = new PropertyRootEntity();
         entity.setId(id);
-        return (PropertyRootEntity) template.selectOne(SELECT_PROPERTY_ROOT_BY_ID, entity);
+        return template.selectOne(SELECT_PROPERTY_ROOT_BY_ID, entity);
     }
 
     @Override
@@ -553,7 +556,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     {
         PropertyUniqueContextEntity entity = new PropertyUniqueContextEntity();
         entity.setId(id);
-        entity = (PropertyUniqueContextEntity) template.selectOne(SELECT_PROPERTY_UNIQUE_CTX_BY_ID, entity);
+        entity = template.selectOne(SELECT_PROPERTY_UNIQUE_CTX_BY_ID, entity);
         return entity;
     }
 
@@ -564,7 +567,7 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         entity.setValue1PropId(valueId1);
         entity.setValue2PropId(valueId2);
         entity.setValue3PropId(valueId3);
-        entity = (PropertyUniqueContextEntity) template.selectOne(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
+        entity = template.selectOne(SELECT_PROPERTY_UNIQUE_CTX_BY_VALUES, entity);
         return entity;
     }
     

@@ -96,7 +96,7 @@ public class SOLRDAOImpl implements SOLRDAO
         params.setToIdExclusive(maxAclChangeSetId);
         params.setToCommitTimeExclusive(toCommitTime);
 
-        return (List<AclChangeSet>) template.selectList(SELECT_CHANGESETS_SUMMARY, params, new RowBounds(0, maxResults));
+        return template.selectList(SELECT_CHANGESETS_SUMMARY, params, new RowBounds(0, maxResults));
     }
 
     /**
@@ -127,11 +127,11 @@ public class SOLRDAOImpl implements SOLRDAO
         List<Acl> source;
         if (maxResults <= 0 || maxResults == Integer.MAX_VALUE)
         {
-            source = (List<Acl>) template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params);
+            source = template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params);
         }
         else
         {
-            source = (List<Acl>) template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params, new RowBounds(0, maxResults));
+            source = template.selectList(SELECT_ACLS_BY_CHANGESET_IDS, params, new RowBounds(0, maxResults));
         }
         // Add any unlinked shared ACLs from defining nodes to index them now
         TreeSet<Acl> sorted = new TreeSet<Acl>(source);
@@ -183,7 +183,7 @@ public class SOLRDAOImpl implements SOLRDAO
 	    params.setToIdExclusive(maxTxnId);
         params.setToCommitTimeExclusive(toCommitTime);
 
-        return (List<Transaction>) template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
+        return template.selectList(SELECT_TRANSACTIONS, params, new RowBounds(0, maxResults));
 	}
 
     /**
@@ -196,13 +196,13 @@ public class SOLRDAOImpl implements SOLRDAO
 
 	    if(nodeParameters.getMaxResults() != 0 && nodeParameters.getMaxResults() != Integer.MAX_VALUE)
 	    {
-	        return (List<Node>) template.selectList(
+	        return template.selectList(
 	                SELECT_NODES, params,
 	                new RowBounds(0, nodeParameters.getMaxResults()));
 	    }
 	    else
 	    {
-	        return (List<Node>) template.selectList(SELECT_NODES, params);
+	        return template.selectList(SELECT_NODES, params);
 	    }
 	}
 }

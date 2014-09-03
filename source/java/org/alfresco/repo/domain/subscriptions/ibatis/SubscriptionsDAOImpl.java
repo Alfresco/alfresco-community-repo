@@ -87,7 +87,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
                 : pagingRequest.getMaxItems() + 1);
 
         @SuppressWarnings("unchecked")
-        List<SubscriptionNodeEntity> nodeList = (List<SubscriptionNodeEntity>) template.selectList(
+        List<SubscriptionNodeEntity> nodeList = template.selectList(
                 "alfresco.subscriptions.select_Subscriptions", map, new RowBounds(pagingRequest.getSkipCount(),
                         maxItems + 1));
 
@@ -136,7 +136,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("userNodeId", dbid);
 
-        Number count = (Number) template.selectOne("alfresco.subscriptions.select_countSubscriptions", map);
+        Number count = template.selectOne("alfresco.subscriptions.select_countSubscriptions", map);
         return count == null ? 0 : count.intValue();
     }
 
@@ -166,7 +166,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         se.setUserNodeId(dbid);
         se.setNodeId(nodedbid);
 
-        Number count = (Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
+        Number count = template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
         if (count == null || count.intValue() == 0)
         {
             template.insert("alfresco.subscriptions.insert_Subscription", se);
@@ -228,7 +228,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         se.setUserNodeId(dbid);
         se.setNodeId(nodedbid);
 
-        Number count = (Number) template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
+        Number count = template.selectOne("alfresco.subscriptions.select_hasSubscribed", se);
         return count == null ? false : count.intValue() > 0;
     }
 
@@ -262,7 +262,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
                 : pagingRequest.getMaxItems() + 1);
 
         @SuppressWarnings("unchecked")
-        List<String> userList = (List<String>) template.selectList("alfresco.subscriptions.select_Following", map,
+        List<String> userList = template.selectList("alfresco.subscriptions.select_Following", map,
                 new RowBounds(pagingRequest.getSkipCount(), maxItems + 1));
 
         boolean hasMore = userList.size() > maxItems;
@@ -310,7 +310,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
                 : pagingRequest.getMaxItems() + 1);
 
         @SuppressWarnings("unchecked")
-        List<String> userList = (List<String>) template.selectList("alfresco.subscriptions.select_Followers", map,
+        List<String> userList = template.selectList("alfresco.subscriptions.select_Followers", map,
                 new RowBounds(pagingRequest.getSkipCount(), maxItems + 1));
 
         boolean hasMore = userList.size() > maxItems;
@@ -347,7 +347,7 @@ public class SubscriptionsDAOImpl extends AbstractSubscriptionsDAO
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("userNodeId", dbid);
 
-        Number count = (Number) template.selectOne("alfresco.subscriptions.select_countFollowers", map);
+        Number count = template.selectOne("alfresco.subscriptions.select_countFollowers", map);
         return count == null ? 0 : count.intValue();
     }
 }

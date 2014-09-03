@@ -5,7 +5,6 @@
 
     <!-- MyBatis config for Alfresco testing (using common datasource) -->
     <bean id="repoSqlSessionFactoryTesting" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
-        <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
         <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="dataSource"/>
         <property name="mapperLocations">

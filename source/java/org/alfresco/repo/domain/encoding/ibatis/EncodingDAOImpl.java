@@ -49,7 +49,7 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
     {
         EncodingEntity encodingEntity = new EncodingEntity();
         encodingEntity.setId(id);
-        encodingEntity = (EncodingEntity) template.selectOne(SELECT_ENCODING_BY_ID, encodingEntity);
+        encodingEntity = template.selectOne(SELECT_ENCODING_BY_ID, encodingEntity);
         // Done
         return encodingEntity;
     }
@@ -59,7 +59,7 @@ public class EncodingDAOImpl extends AbstractEncodingDAOImpl
     {
         EncodingEntity encodingEntity = new EncodingEntity();
         encodingEntity.setEncoding(encoding == null ? null : encoding.toLowerCase());
-        encodingEntity = (EncodingEntity) template.selectOne(SELECT_ENCODING_BY_KEY, encodingEntity);
+        encodingEntity = template.selectOne(SELECT_ENCODING_BY_KEY, encodingEntity);
         // Could be null
         return encodingEntity;
     }

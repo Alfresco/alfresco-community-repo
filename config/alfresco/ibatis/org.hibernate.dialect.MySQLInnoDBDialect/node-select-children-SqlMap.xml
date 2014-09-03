@@ -7,7 +7,7 @@
     <!-- Note the MySQL specific fetch size limitation (Integer.MIN_VALUE). fetchSize activates resultset streaming. -->
     <!-- '1=1': Makes the SQL string unique WRT the prepared statement cache -->
 
-    <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="result_ChildAssoc" fetchSize="-2147483648">
+    <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssoc" fetchSize="-2147483648">
         <include refid="alfresco.node.select_ChildAssocsOfParent_Query"/>
         and 1=1
         <if test="ordered == true">
@@ -15,7 +15,7 @@
         </if>
     </select>
 
-    <select id="select_ChildNodeIds_Limited" parameterType="Ids" resultMap="result_ChildAssocIds" fetchSize="-2147483648">
+    <select id="select_ChildNodeIds_Limited" parameterType="Ids" resultMap="alfresco.node.result_ChildAssocIds" fetchSize="-2147483648">
         <![CDATA[
         select
             ca.id               as id,

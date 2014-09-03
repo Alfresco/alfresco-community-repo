@@ -50,7 +50,7 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
     {
         MimetypeEntity mimetypeEntity = new MimetypeEntity();
         mimetypeEntity.setId(id);
-        mimetypeEntity = (MimetypeEntity) template.selectOne(SELECT_MIMETYPE_BY_ID, mimetypeEntity);
+        mimetypeEntity = template.selectOne(SELECT_MIMETYPE_BY_ID, mimetypeEntity);
         // Done
         return mimetypeEntity;
     }
@@ -60,7 +60,7 @@ public class MimetypeDAOImpl extends AbstractMimetypeDAOImpl
     {
         MimetypeEntity mimetypeEntity = new MimetypeEntity();
         mimetypeEntity.setMimetype(mimetype == null ? null : mimetype.toLowerCase());
-        mimetypeEntity = (MimetypeEntity) template.selectOne(SELECT_MIMETYPE_BY_KEY, mimetypeEntity);
+        mimetypeEntity = template.selectOne(SELECT_MIMETYPE_BY_KEY, mimetypeEntity);
         // Could be null
         return mimetypeEntity;
     }

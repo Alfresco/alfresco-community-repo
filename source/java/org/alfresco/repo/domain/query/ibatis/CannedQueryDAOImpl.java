@@ -69,7 +69,7 @@ public class CannedQueryDAOImpl extends AbstractCannedQueryDAOImpl
         String query = makeQueryName(sqlNamespace, queryName);
         try
         {
-            Long result = (Long) template.selectOne(query, parameterObj);
+            Long result = template.selectOne(query, parameterObj);
             if (result == null)
             {
                 result = 0L;

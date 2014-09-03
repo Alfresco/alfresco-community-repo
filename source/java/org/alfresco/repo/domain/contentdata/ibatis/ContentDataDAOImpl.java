@@ -103,7 +103,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setId(id);
-        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_ID, contentUrlEntity);
+        contentUrlEntity = template.selectOne(SELECT_CONTENT_URL_BY_ID, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
@@ -117,7 +117,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         {
             contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
         }
-        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_KEY, contentUrlEntity);
+        contentUrlEntity = template.selectOne(SELECT_CONTENT_URL_BY_KEY, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
@@ -132,7 +132,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         
         ContentUrlOrphanQuery query = new ContentUrlOrphanQuery();
         query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
-        List<ContentUrlEntity> results = (List<ContentUrlEntity>) template.selectList(SELECT_CONTENT_URLS_ORPHANED, 
+        List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED,
                                                                                       query, 
                                                                                       new RowBounds(0, maxResults));
         // Pass the result to the callback
@@ -171,7 +171,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         {
             contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
         }
-        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
+        contentUrlEntity = template.selectOne(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
@@ -206,7 +206,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", id);
-        ContentDataEntity contentDataEntity = (ContentDataEntity) template.selectOne(SELECT_CONTENT_DATA_BY_ID, params);
+        ContentDataEntity contentDataEntity = template.selectOne(SELECT_CONTENT_DATA_BY_ID, params);
         // Done
         return contentDataEntity;
     }
@@ -222,7 +222,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         }
         IdsEntity idsEntity = new IdsEntity();
         idsEntity.setIds(new ArrayList<Long>(nodeIds));
-        return (List<ContentDataEntity>)template.selectList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
+        return template.selectList(SELECT_CONTENT_DATA_BY_NODE_IDS, idsEntity);
     }
     
     @Override
@@ -267,7 +267,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         idsEntity.setIdOne(nodeId);
         idsEntity.setIds(new ArrayList<Long>(qnameIds));
         @SuppressWarnings("unchecked")
-        List<Long> ids = (List<Long>) template.selectList(SELECT_CONTENT_DATA_BY_NODE_AND_QNAME, idsEntity);
+        List<Long> ids = template.selectList(SELECT_CONTENT_DATA_BY_NODE_AND_QNAME, idsEntity);
         // Delete each one
         for (Long id : ids)
         {

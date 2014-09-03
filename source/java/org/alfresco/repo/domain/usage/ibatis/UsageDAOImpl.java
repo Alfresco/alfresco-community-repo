@@ -83,14 +83,14 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", nodeEntityId);
         
-        return (UsageDeltaEntity) template.selectOne(SELECT_USAGE_DELTA_TOTAL_SIZE_BY_NODE, params);
+        return template.selectOne(SELECT_USAGE_DELTA_TOTAL_SIZE_BY_NODE, params);
     }
     
     @SuppressWarnings("unchecked")
     @Override
     protected List<Long> selectUsageDeltaNodes()
     {
-        return (List<Long>) template.selectList(SELECT_USAGE_DELTA_NODES);
+        return template.selectList(SELECT_USAGE_DELTA_NODES);
     }
     
     @Override
@@ -228,7 +228,7 @@ public class UsageDAOImpl extends AbstractUsageDAOImpl
         params.put("userName2", userName);
         
         // Query for the 'new' (FK) style content data properties (stored in 'string_value')
-        return (Long)template.selectOne(SELECT_CONTENT_SIZE_NEW_USER, params);
+        return template.selectOne(SELECT_CONTENT_SIZE_NEW_USER, params);
     }
    
     /**

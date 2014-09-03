@@ -62,7 +62,7 @@ public class AppliedPatchDAOImpl extends AbstractAppliedPatchDAOImpl
     {
         AppliedPatchEntity entity = new AppliedPatchEntity();
         entity.setId(id);
-        entity = (AppliedPatchEntity) template.selectOne(SELECT_APPLIED_PATCH_BY_ID, entity);
+        entity = template.selectOne(SELECT_APPLIED_PATCH_BY_ID, entity);
         // Could be null
         return entity;
     }
@@ -71,6 +71,6 @@ public class AppliedPatchDAOImpl extends AbstractAppliedPatchDAOImpl
     @Override
     protected List<AppliedPatchEntity> getAppliedPatchEntities()
     {
-        return (List<AppliedPatchEntity>) template.selectList(SELECT_ALL_APPLIED_PATCH);
+        return template.selectList(SELECT_ALL_APPLIED_PATCH);
     }
 }

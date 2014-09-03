@@ -19,10 +19,8 @@
 package org.alfresco.repo.tenant;
 
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
@@ -123,12 +121,6 @@ public class TenantRoutingDataSource extends AbstractRoutingDataSource
         tenantDataSources.remove(tenantDomain);
         
         super.afterPropertiesSet(); // to update resolved data sources
-    }
-
-    @Override
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException
-    {
-        throw new SQLFeatureNotSupportedException();
     }
 }
 

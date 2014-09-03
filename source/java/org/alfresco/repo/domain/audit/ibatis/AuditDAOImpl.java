@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.audit.AuditQueryParameters;
 import org.alfresco.repo.domain.audit.AuditQueryResult;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
 import org.alfresco.util.Pair;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -77,7 +78,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     {
         AuditModelEntity entity = new AuditModelEntity();
         entity.setContentCrc(crc);
-        entity = (AuditModelEntity) template.selectOne(
+        entity = template.selectOne(
                 SELECT_MODEL_BY_CRC,
                 entity);
         // Done
@@ -99,7 +100,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", id);
-        AuditApplicationEntity entity = (AuditApplicationEntity) template.selectOne(
+        AuditApplicationEntity entity = template.selectOne(
                 SELECT_APPLICATION_BY_ID,
                 params);
         // Done
@@ -123,7 +124,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
         
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", appNamePair.getFirst());
-        AuditApplicationEntity entity = (AuditApplicationEntity) template.selectOne(
+        AuditApplicationEntity entity = template.selectOne(
                 SELECT_APPLICATION_BY_NAME_ID,
                 params);
         // Done
@@ -281,7 +282,7 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
                 }
             };
             
-            List<AuditQueryResult> rows = (List<AuditQueryResult>) template.selectList(SELECT_ENTRIES_WITHOUT_VALUES, params, new RowBounds(0, maxResults));
+            List<AuditQueryResult> rows = template.selectList(SELECT_ENTRIES_WITHOUT_VALUES, params, new RowBounds(0, maxResults));
             for (AuditQueryResult row : rows)
             {
                 resultsByValueId.put(row.getAuditValuesId(), row);
@@ -317,7 +318,9 @@ public class AuditDAOImpl extends AbstractAuditDAOImpl
                     rowHandler.processResult((AuditQueryResult)context.getResultObject());
                 }
             };
+            Configuration configuration = template.getConfiguration();
             RollupResultHandler rollupResultHandler = new RollupResultHandler(
+                    configuration,
                     new String[] {"auditEntryId"},
                     "auditValueRows",
                     queryResultHandler,

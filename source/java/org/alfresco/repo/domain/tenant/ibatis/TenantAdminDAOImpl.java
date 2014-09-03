@@ -63,7 +63,7 @@ public class TenantAdminDAOImpl extends AbstractTenantAdminDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("tenantDomain", tenantDomain);
         
-        return (TenantEntity)template.selectOne(SELECT_TENANT, params);
+        return template.selectOne(SELECT_TENANT, params);
     }
     
     @SuppressWarnings("unchecked")
@@ -72,7 +72,7 @@ public class TenantAdminDAOImpl extends AbstractTenantAdminDAOImpl
     {
         TenantQueryEntity entity = new TenantQueryEntity();
         entity.setEnabled(enabled);
-        return (List<TenantEntity>)template.selectList(SELECT_TENANTS, entity);
+        return template.selectList(SELECT_TENANTS, entity);
     }
     
     @Override

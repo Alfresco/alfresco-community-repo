@@ -13,6 +13,9 @@ Inbound settings from iBatis
     maxSessions="500"
     /> 
  -->
+    <settings>
+        <setting name="safeResultHandlerEnabled" value="false"/>
+    </settings>
 
     <typeAliases>
     

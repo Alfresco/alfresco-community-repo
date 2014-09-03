@@ -52,7 +52,7 @@ public class LocaleDAOImpl extends AbstractLocaleDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("id", id);
         
-        return (LocaleEntity) template.selectOne(SELECT_LOCALE_BY_ID, params);
+        return template.selectOne(SELECT_LOCALE_BY_ID, params);
     }
 
     @Override
@@ -61,7 +61,7 @@ public class LocaleDAOImpl extends AbstractLocaleDAOImpl
         Map<String, Object> params = new HashMap<String, Object>(1);
         params.put("str", localeStr);
         
-        return (LocaleEntity) template.selectOne(SELECT_LOCALE_BY_NAME, params);
+        return template.selectOne(SELECT_LOCALE_BY_NAME, params);
     }
 
     @Override

@@ -3,9 +3,15 @@
 {
    "forumPermissions":
    {
-      "create": ${forum.hasPermission("CreateChildren")?string},
-      "edit": ${forum.hasPermission("Write")?string},
-      "delete": ${forum.hasPermission("Delete")?string}
+      <#if forum.getParent()?? >
+        "create": ${(forum.getParent()).hasPermission("CreateChildren")?string},
+        "edit": ${(forum.getParent()).hasPermission("Write")?string},
+        "delete": ${(forum.getParent()).hasPermission("Delete")?string}
+      <#else>
+        "create": ${forum.hasPermission("CreateChildren")?string},
+        "edit": ${forum.hasPermission("Write")?string},
+        "delete": ${forum.hasPermission("Delete")?string}
+      </#if>
    },
 <@gen.pagedResults data=data ; item>
 	<@postLib.postJSON postData=item />

@@ -57,7 +57,11 @@
    {
       "linkPermissions":
       {
-         "create": "${links.hasPermission("CreateChildren")?string}"
+         <#if links.getParent()?? >
+            "create": "${(links.getParent()).hasPermission("CreateChildren")?string}"
+         <#else>
+            "create": "${links.hasPermission("CreateChildren")?string}"
+         </#if>
       }
    },
    "totalRecordsUpper": ${data.totalRecordsUpper?string("true","false")},

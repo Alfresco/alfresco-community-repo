@@ -16,9 +16,15 @@
    "password": "${item.properties["blg:password"]!''}",
    "permissions":
    {
-      "create": ${item.hasPermission("CreateChildren")?string},
-      "edit": ${item.hasPermission("Write")?string},
-      "delete": ${item.hasPermission("Delete")?string}
+      <#if item.getParent()?? >
+        "create": ${(item.getParent()).hasPermission("CreateChildren")?string},
+        "edit": ${(item.getParent()).hasPermission("Write")?string},
+        "delete": ${(item.getParent()).hasPermission("Delete")?string}
+      <#else>
+        "create": ${item.hasPermission("CreateChildren")?string},
+        "edit": ${item.hasPermission("Write")?string},
+        "delete": ${item.hasPermission("Delete")?string}
+      </#if>
    }
 }
 </#escape>

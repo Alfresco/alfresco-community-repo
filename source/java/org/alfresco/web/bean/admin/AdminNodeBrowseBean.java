@@ -102,7 +102,6 @@ public class AdminNodeBrowseBean implements Serializable
     transient private DataModel assocs = null;
     transient private DataModel permissions = null;
     transient private DataModel permissionMasks = null;
-    transient private DataModel avmStoreProps = null;
 
     // supporting repository services
     transient private TransactionService transactionService;
@@ -111,8 +110,6 @@ public class AdminNodeBrowseBean implements Serializable
     transient private SearchService searchService;
     transient private NamespaceService namespaceService;
     transient private PermissionService permissionService;
-//    // WCM
-//    transient private AVMService avmService;
 
     /**
      * @param transactionService        transaction service
@@ -216,24 +213,6 @@ public class AdminNodeBrowseBean implements Serializable
         return permissionService;
     }
 
-//    // WCM
-//    /**
-//     * @param avmService AVM service
-//     */
-//    public void setAVMService(AVMService avmService)
-//    {
-//        this.avmService = avmService;
-//    }
-//
-//    private AVMService getAVMService()
-//    {
-//        if (avmService == null)
-//        {
-//            avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
-//        }
-//        return avmService;
-//    }
-//
     /**
      * Gets the list of repository stores
      * 
@@ -424,18 +403,9 @@ public class AdminNodeBrowseBean implements Serializable
     {
         if (permissionMasks == null)
         {
-//            // WCM
-//            if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-//            {
-//                List<AccessPermission> nodePermissions = new ArrayList<AccessPermission>(getPermissionService().getAllSetPermissions(nodeRef.getStoreRef()));
-//                permissionMasks = new ListDataModel(nodePermissions);
-//            }
-//            else
-//            {
-                List<NoStoreMask> noReadPermissions = new ArrayList<NoStoreMask>(1);
-                noReadPermissions.add(new NoStoreMask());
-                permissionMasks = new ListDataModel(noReadPermissions);
-//            }
+            List<NoStoreMask> noReadPermissions = new ArrayList<NoStoreMask>(1);
+            noReadPermissions.add(new NoStoreMask());
+            permissionMasks = new ListDataModel(noReadPermissions);
         }
         return permissionMasks;
     }
@@ -476,43 +446,6 @@ public class AdminNodeBrowseBean implements Serializable
         }
         return assocs;
     }
-//
-//    // WCM
-//    public boolean getInAVMStore()
-//    {
-//        return nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM);
-//    }
-//
-//    // WCM
-//    public DataModel getAVMStoreProperties()
-//    {
-//        if (avmStoreProps == null)
-//        {
-//            // work out the store name from current nodeRef
-//            String store = nodeRef.getStoreRef().getIdentifier();
-//            Map<QName, PropertyValue> props = getAVMService().getStoreProperties(store);
-//            List<Map<String, String>> storeProperties = new ArrayList<Map<String, String>>();
-//
-//            for (Map.Entry<QName, PropertyValue> property : props.entrySet())
-//            {
-//                Map<String, String> map = new HashMap<String, String>(2);
-//                map.put("name", property.getKey().toString());
-//                map.put("type", property.getValue().getActualTypeString());
-//                String val = property.getValue().getStringValue();
-//                if (val == null)
-//                {
-//                    val = "null";
-//                }
-//                map.put("value", val);
-//
-//                storeProperties.add(map);
-//            }
-//
-//            avmStoreProps = new ListDataModel(storeProperties);
-//        }
-//
-//        return avmStoreProps;
-//    }
 
     /**
      * Gets the current query language
@@ -584,8 +517,6 @@ public class AdminNodeBrowseBean implements Serializable
         StoreRef storeRef = (StoreRef) getStores().getRowData();
         NodeRef rootNode = getNodeService().getRootNode(storeRef);
         setNodeRef(rootNode);
-
-        this.avmStoreProps = null;
 
         return "success";
     }

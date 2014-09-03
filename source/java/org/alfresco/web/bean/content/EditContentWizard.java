@@ -28,9 +28,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.ui.common.Utils;
 
 /**
  * Bean implementation for the "Edit Content Wizard" dialog
@@ -40,7 +37,6 @@ public class EditContentWizard extends CreateContentWizard
    private static final long serialVersionUID = 1640754719164511019L;
    
    private NodeRef nodeRef;
-   private Form form;
 
    // ------------------------------------------------------------------------------
    // Wizard implementation
@@ -48,7 +44,6 @@ public class EditContentWizard extends CreateContentWizard
    @Override
    public void init(final Map<String, String> parameters)
    {
-      // TODO - currently assumes this is form content
       super.init(parameters);
       Node node = this.navigator.getDispatchContextNode();
       if (node == null)
@@ -56,17 +51,6 @@ public class EditContentWizard extends CreateContentWizard
          throw new IllegalArgumentException("Edit Form wizard requires action node context.");
       }
       this.nodeRef = node.getNodeRef();
-      try
-      {
-//          // WCM
-//         formName = (String)getNodeService().getProperty(nodeRef, WCMAppModel.PROP_PARENT_FORM_NAME); // getFormName() ...
-         form = formsService.getForm(this.formName);
-      }
-      catch (FormNotFoundException fnfe)
-      {
-         Utils.addErrorMessage(fnfe.getMessage(), fnfe);
-         throw new IllegalArgumentException(fnfe);
-      }
 
       this.content = this.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT).getContentString();
       
@@ -91,11 +75,5 @@ public class EditContentWizard extends CreateContentWizard
    protected String doPostCommitProcessing(FacesContext context, String outcome)
    {
       return outcome;
-   }
-
-   @Override 
-   public Form getForm()
-   {
-      return this.form;
    }
 }

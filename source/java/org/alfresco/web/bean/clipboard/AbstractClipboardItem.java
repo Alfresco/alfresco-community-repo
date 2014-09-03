@@ -59,9 +59,6 @@ abstract class AbstractClipboardItem implements ClipboardItem
    private QName type;
    private String icon;
    
-//   // WCM
-//   transient protected AVMService avmService;
-//   
    private List<String> customPasteViewIds;
    
    
@@ -93,21 +90,6 @@ abstract class AbstractClipboardItem implements ClipboardItem
        this.customPasteViewIds = customPasteViewIds;
    }
 
-//   // WCM
-//   public void setAvmService(AVMService avmService)
-//   {
-//      this.avmService = avmService;
-//   }
-//   
-//   protected AVMService getAvmService()
-//   {
-//      if (avmService == null)
-//      {
-//         avmService = getServiceRegistry().getAVMLockingAwareService();
-//      }
-//      return avmService;
-//   }
-//   
    public ClipboardStatus getMode()
    {
       return this.mode;
@@ -226,29 +208,4 @@ abstract class AbstractClipboardItem implements ClipboardItem
       
       return (nodeRefs.size() != 0);
    }
-//   
-//   // WCM
-//   protected void recursiveFormCheck(AVMNodeDescriptor desc)
-//   {
-//       if (desc.isFile())
-//       {
-//           String filePath = desc.getPath();
-//           if (avmService.hasAspect(-1, filePath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-//           {
-//               avmService.removeAspect(filePath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
-//           }
-//           if (avmService.hasAspect(-1, filePath, WCMAppModel.ASPECT_RENDITION))
-//           {
-//               avmService.removeAspect(filePath, WCMAppModel.ASPECT_RENDITION);
-//           }
-//       }
-//       else
-//       {
-//           Map<String, AVMNodeDescriptor> listing = getAvmService().getDirectoryListing(desc);
-//           for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
-//           {
-//               recursiveFormCheck(entry.getValue());
-//           }
-//       }
-//   }
 }

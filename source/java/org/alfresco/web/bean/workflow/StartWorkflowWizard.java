@@ -84,7 +84,6 @@ public class StartWorkflowWizard extends BaseWizardBean
    transient protected List<SelectItem> availableWorkflows;
    transient private Map<String, WorkflowDefinition> workflows;
    
-   protected List<String> wcmWorkflows;
    protected List<String> excludedWorkflows;
    protected List<String> invitationWorkflows;
    protected List<String> publishingWorkflows;
@@ -570,9 +569,6 @@ public class StartWorkflowWizard extends BaseWizardBean
       this.availableWorkflows = new ArrayList<SelectItem>(4);
       this.workflows = new HashMap<String, WorkflowDefinition>(4);
       
-      // get the list of configured WCM workflows and filter these from
-      // the list as these workflows are specific to WCM functionality and AVM stores
-      List<String> configuredWcmWorkflows = this.getWCMWorkflowNames();
       List<String> configuredInvitationWorkflows = this.getInvitationServiceWorkflowNames();
       List<String> publishingWorkflows = this.getPublishingWorkflowNames();
       List<String> excludedWorkflows = this.getExcludedWorkflows();
@@ -582,8 +578,7 @@ public class StartWorkflowWizard extends BaseWizardBean
       {
          String name = workflowDef.name;
          
-         if (configuredWcmWorkflows.contains(name) == false &&
-        	 configuredInvitationWorkflows.contains(name) == false &&
+         if (configuredInvitationWorkflows.contains(name) == false &&
         	 publishingWorkflows.contains(name) == false &&
         	 excludedWorkflows.contains(name) == false)
          {
@@ -734,63 +729,6 @@ public class StartWorkflowWizard extends BaseWizardBean
          this.packageItemsRichList.setValue(null);
          this.packageItemsRichList = null;
       }
-   }
-   
-   /**
-    * Get the Names of the WCM workflows.
-    * 
-    * @return The names of the WCM workflows.
-    */
-   protected List<String> getWCMWorkflowNames()   
-   {
-      if ((wcmWorkflows == null) || (Application.isDynamicConfig(FacesContext.getCurrentInstance())))
-      {
-         FacesContext fc = FacesContext.getCurrentInstance();
-         ConfigElement config = Application.getConfigService(fc).getGlobalConfig().getConfigElement("wcm");
-         if (config != null)
-         {
-            // get the main WCM workflows
-            ConfigElement workflowConfig = config.getChild("workflows");
-            if (workflowConfig != null)
-            {
-               StringTokenizer t = new StringTokenizer(workflowConfig.getValue().trim(), ", ");
-               wcmWorkflows = new ArrayList<String>(t.countTokens());
-               while (t.hasMoreTokens())
-               {
-                  String wfName = "jbpm$" + t.nextToken();
-                  wcmWorkflows.add(wfName);
-               }
-            }
-            else
-            {
-               if (logger.isWarnEnabled())
-                  logger.warn("WARNING: Unable to find WCM 'workflows' config element definition.");
-            }
-            
-            // get the admin WCM workflows
-            ConfigElement adminWorkflowConfig = config.getChild("admin-workflows");
-            if (adminWorkflowConfig != null)
-            {
-               StringTokenizer t = new StringTokenizer(adminWorkflowConfig.getValue().trim(), ", ");
-               while (t.hasMoreTokens())
-               {
-                  String wfName = "jbpm$" + t.nextToken();
-                  wcmWorkflows.add(wfName);
-               }
-            }
-            else
-            {
-               if (logger.isWarnEnabled())
-                  logger.warn("WARNING: Unable to find WCM 'admin-workflows' config element definition.");
-            }
-         }
-         else
-         {
-            logger.warn("WARNING: Unable to find 'wcm' config element definition.");
-         }
-      }
-      
-      return wcmWorkflows;
    }
    
    /**

@@ -317,24 +317,7 @@ public class CheckinCheckoutDialog extends BaseDialogBean
     	  {
     		  boolean editingInline = false;
     		  Node node = setupContentDocument(id);
-         
-//    		  // WCM
-//    		  if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-//    		  {
-//    			  editingInline = true;
-//            
-//    			  // editable form document
-//    			  FacesContext fc = FacesContext.getCurrentInstance();
-//    			  this.navigator.setupDispatchContext(node);
-//            
-//    			  // TODO - rename editContent Wizard since it only deals with editing form content
-//    			  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:editContent");
-//    		  }
-//         
-//    		  // detect the inline editing aspect to see which edit mode to use
-//    		  else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
-//    				  node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
-//    				  ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
+    		  
 		      if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
 		              node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
 		              ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)

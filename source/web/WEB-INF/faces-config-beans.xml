@@ -824,10 +824,6 @@
          <property-name>dictionaryService</property-name>
          <value>#{DictionaryService}</value>
       </managed-property>
-      <managed-property>
-         <property-name>formsService</property-name>
-         <value>#{FormsService}</value>
-      </managed-property>
    </managed-bean>
    
    <managed-bean>
@@ -864,10 +860,6 @@
       <managed-property>
          <property-name>dictionaryService</property-name>
          <value>#{DictionaryService}</value>
-      </managed-property>
-      <managed-property>
-         <property-name>formsService</property-name>
-         <value>#{FormsService}</value>
       </managed-property>
    </managed-bean>
 

@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.ExpiringValueCache;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.config.ConfigElement;
@@ -61,8 +60,6 @@ public class ClientConfigElement extends ConfigElementAdapter
    private String homeSpacePermission = null;
    private boolean nodeSummaryEnabled = true;
    private String initialLocation = "myalfresco";
-   private ExpiringValueCache<String> wcmDomain = new ExpiringValueCache<String>(1000*10L);
-   private ExpiringValueCache<String> wcmPort = new ExpiringValueCache<String>(1000*10L);
    private String defaultHomeSpacePath = "/app:company_home/app:user_homes";
    private boolean clipboardStatusVisible = true;
    private boolean pasteAllAndClear = true;
@@ -664,56 +661,6 @@ public class ClientConfigElement extends ConfigElementAdapter
       this.initialLocation = initialLocation;
    }
 
-//   // WCM
-//   /**
-//    * @return Returns the WCM Domain obtained from the Virtualisation Server registry.
-//    */
-//   public String getWCMDomain()
-//   {
-//      String value = this.wcmDomain.get();
-//      if (value == null)
-//      {
-//         VirtServerRegistry vServerRegistry = Repository.getServiceRegistry(
-//                 FacesContext.getCurrentInstance()).getVirtServerRegistry();
-//         value = vServerRegistry.getVirtServerFQDN();
-//         if (value == null)
-//         {
-//            value = JNDIConstants.DEFAULT_VSERVER_IP;
-//            if (logger.isDebugEnabled())
-//            {
-//                logger.debug("Virtualisation Server not started - reverting to default IP: " + value);
-//            }
-//         }
-//         this.wcmDomain.put(value);
-//      }
-//      return value;
-//   }
-//
-//   /**
-//    * @return Returns the WCM Port obtained from the Virtualisation Server registry.
-//    */
-//   public String getWCMPort()
-//   {
-//      String value = this.wcmPort.get();
-//      if (value == null)
-//      {
-//         VirtServerRegistry vServerRegistry = Repository.getServiceRegistry(
-//                 FacesContext.getCurrentInstance()).getVirtServerRegistry();
-//         Integer iValue = vServerRegistry.getVirtServerHttpPort();
-//         if (iValue == null)
-//         {
-//            iValue = JNDIConstants.DEFAULT_VSERVER_PORT;
-//            if (logger.isDebugEnabled())
-//            {
-//               logger.debug("Virtualisation Server not started - reverting to default port: " + iValue);
-//            }
-//         }
-//         value = iValue.toString();
-//         this.wcmPort.put(value);
-//      }
-//      return value;
-//   }
-//   
    /*package*/ void setAllowGuestConfig(boolean allow)
    {
       this.allowGuestConfig = allow;

@@ -140,121 +140,13 @@
          <dialog name="reassignTask" page="/jsp/workflow/reassign-task-dialog.jsp"
                  managed-bean="ReassignTaskDialog" icon="/images/icons/reassign_workflow_task_large.gif" 
                  title-id="reassign_task_title" description-id="reassign_task_desc" />
-                 
-         <dialog name="workflowShowFileDetails" page="/jsp/wcm/workflow-file-details.jsp" managed-bean="FileDetailsBean"
-                 icon="/images/icons/details_large.gif" title-id="details_of" 
-                 description-id="file_details_desc" show-ok-button="false" 
-                 error-message-id="empty_message"/>
    
-
          <!--               -->
          <!-- Other Dialogs -->
          
-         <!-- Definition of the create forums dialog -->
          <dialog name="emailSpaceUsers" page="/jsp/users/email-space-users.jsp" managed-bean="EmailSpaceUsersDialog"
                  icon="/images/icons/email_users_large.gif" title-id="email_space_users" 
                  description-id="email_space_users_desc" />
-         
-         <!--             -->
-         <!-- WCM Dialogs -->
-         
-         <dialog name="snapshotSandbox" page="/jsp/wcm/snapshot-sandbox.jsp" managed-bean="SnapshotSandboxDialog"
-                 icon="/images/icons/create_snapshot_large.gif" title-id="sandbox_snapshot" 
-                 description-id="sandbox_snapshot_info" />
-         
-         <dialog name="deleteSandbox" page="/jsp/dialog/delete.jsp" managed-bean="DeleteSandboxDialog"
-                 icon="/images/icons/delete_sandbox_large.gif" title-id="delete_sandbox" 
-                 description-id="delete_sandbox_info" />
-         
-         <dialog name="deleteAvmFile" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFileDialog"
-                 icon="/images/icons/delete_large.gif" title-id="delete_file" 
-                 description-id="delete_avm_file_info" />
-         
-         <dialog name="deleteAvmFolder" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFolderDialog"
-                 icon="/images/icons/delete_large.gif" title-id="delete_folder" 
-                 description-id="delete_avm_folder_info" />
-                 
-         <dialog name="deleteAvmFileBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFileBrowseDialog"
-                 icon="/images/icons/delete_large.gif" title-id="delete_file" 
-                 description-id="delete_avm_file_info" />
-         
-         <dialog name="deleteAvmFolderBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteFolderBrowseDialog"
-                 icon="/images/icons/delete_large.gif" title-id="delete_folder" 
-                 description-id="delete_avm_folder_info" />
-                 
-         <dialog name="deleteLayeredFolderBrowse" page="/jsp/dialog/delete.jsp" managed-bean="DeleteLayeredFolderBrowseDialog"
-                 icon="/images/icons/delete_large.gif" title-id="delete_layered_folder" 
-                 description-id="delete_layered_folder_info" />
-                 
-         <dialog name="unlockAvmFile" page="/jsp/dialog/delete.jsp" managed-bean="UnlockFileDialog"
-                 icon="/images/icons/unlock_large.gif" title-id="unlock_file" 
-                 description-id="unlock_file_info" />
-
-         <dialog name="promptForWebForm" page="/jsp/wcm/prompt-for-web-form.jsp" managed-bean="PromptForWebFormDialog"
-                 icon="/images/icons/details_large.gif" title-id="prompt_for_web_form" 
-                 description-id="prompt_for_web_form_info" />
-         
-         <dialog name="createAvmFolder" page="/jsp/wcm/create-folder-dialog.jsp" managed-bean="CreateFolderDialog"
-                 icon="/images/icons/create_space_large.gif" title-id="create_folder" 
-                 description-id="create_avm_folder_info" />
-                 
-         <dialog name="createLayeredFolder" page="/jsp/wcm/create-layered-folder-dialog.jsp" 
-                 managed-bean="CreateLayeredFolderDialog" icon="/images/icons/create_space_large.gif" 
-                 title-id="create_layered_folder" description-id="create_layered_folder_info" />
-         
-         <dialog name="editAvmFile" page="/jsp/wcm/edit-file.jsp" 
-                 managed-bean="EditAvmFileDialog" icon="/images/icons/edit_large.gif"
-                 title-id="title_edit_file" description-id="editfile_description" 
-                 show-ok-button="false"/>
-
-<!--
-         <dialog name="updateAvmFile" page="/jsp/wcm/update-file.jsp" 
-                 managed-bean="EditAvmFileDialog" icon="/images/icons/update_large.gif"
-                 title-id="title_update_file" description-id="update_avm-file_desc" />
--->
-		<dialog name="updateAvmFile" page="/jsp/wcm/update-file.jsp" 
-                 managed-bean="AVMEditBean" icon="/images/icons/update_large.gif"
-                 title-id="title_update_file" description-id="update_avm_file_desc" />
-
-         <dialog name="editAvmFileProperties" page="/jsp/content/edit-content-properties.jsp" 
-                 managed-bean="EditFilePropertiesDialog" icon="/images/icons/details_large.gif"
-                 title-id="edit_file_properties" description-id="edit_file_description" />
-                 
-         <dialog name="editAvmFolderProperties" page="/jsp/wcm/edit-folder-properties.jsp" 
-                 managed-bean="EditFolderPropertiesDialog" icon="/images/icons/details_large.gif"
-                 title-id="edit_folder_properties" description-id="edit_folder_description" />
-         
-         <dialog name="formTemplateDetails" page="/jsp/wcm/create-website-wizard/form-details.jsp" managed-bean="FormDetailsDialog"
-                 icon="/images/icons/webform_large.gif" title-id="form_template_details" 
-                 description-id="form_template_details_desc" />
-         
-         <dialog name="formTemplateTemplates" page="/jsp/wcm/create-website-wizard/form-templates.jsp" managed-bean="FormTemplatesDialog"
-                 icon="/images/icons/template_large.gif" title-id="form_template_templates" 
-                 description-id="form_template_templates_desc" />
-         
-         <dialog name="formTemplateWorkflow" page="/jsp/wcm/create-website-wizard/form-workflow.jsp" managed-bean="FormWorkflowDialog"
-                 icon="/images/icons/manage_workflow_task_large.gif" title-id="form_template_workflow" 
-                 description-id="form_template_workflow_desc" />
-         
-         <dialog name="editFormTemplateDetails" page="/jsp/wcm/create-website-wizard/form-details.jsp" managed-bean="EditFormDetailsDialog"
-                 icon="/images/icons/webform_large.gif" title-id="form_template_details" 
-                 description-id="form_template_details_desc" />
-         
-         <dialog name="importContent" page="/jsp/wcm/import-content-dialog.jsp" managed-bean="ImportWebsiteDialog"
-                 icon="/images/icons/import_website_large.gif" title-id="import_website_content_title" 
-                 description-id="import_website_content_desc" show-ok-button="false">
-            <buttons>
-               <button id="ok-button" 
-                  label-id="ok" 
-                  action="#{DialogManager.finish}" 
-                  disabled="#{DialogManager.finishButtonDisabled}"
-                  onclick="javascript:document.getElementById('progress').style.display='inline';" />
-            </buttons>
-         </dialog>
-         
-         <dialog name="addAvmContent" page="/jsp/wcm/add-content-dialog.jsp" managed-bean="AddAvmContentDialog"
-                 icon="/images/icons/add_content_large.gif" title-id="add_content_dialog_title" 
-                 description-id="add_avm_content_dialog_desc"/>
          
          <dialog name="addContent" page="/jsp/content/add-content-dialog.jsp" managed-bean="AddContentDialog"
                  icon="/images/icons/add_content_large.gif" title-id="add_content_dialog_title" 
@@ -264,54 +156,6 @@
                  icon="/images/icons/import_large.gif" title-id="import"
                  description-id="import_info" /> 
          
-         <dialog name="editFormTemplateTemplates" page="/jsp/wcm/create-website-wizard/form-templates.jsp" managed-bean="EditFormTemplatesDialog"
-                 icon="/images/icons/template_large.gif" title-id="form_template_templates" 
-                 description-id="form_template_templates_desc" />
-         
-         <dialog name="editFormTemplateWorkflow" page="/jsp/wcm/create-website-wizard/form-workflow.jsp" managed-bean="EditFormWorkflowDialog"
-                 icon="/images/icons/manage_workflow_task_large.gif" title-id="form_template_workflow" 
-                 description-id="form_template_workflow_desc" />
-         
-         <dialog name="submitSandboxItems" page="/jsp/wcm/submit-dialog.jsp" managed-bean="SubmitDialog"
-                 icon="/images/icons/submit_large.gif" title-id="submit_items_title" 
-                 description-id="submit_items_desc" />
-         
-         <dialog name="submitConfigureWorkflow" page="/jsp/wcm/submit-config-workflow.jsp" managed-bean="SubmitConfigureWorkflowDialog"
-                 icon="/images/icons/manage_workflow_task_large.gif" title-id="submit_configure_workflow" 
-                 description-id="submit_configure_workflow_desc" />
-                 
-         <dialog name="changeExpirationDate" page="/jsp/wcm/change-expiration-date.jsp" managed-bean="ChangeExpirationDateDialog"
-                 icon="/images/icons/change_expire_date_large.gif" title-id="change_expiration_date_title" 
-                 description-id="change_expiration_date_desc" />        
-         
-         <dialog name="createWebappFolder" page="/jsp/wcm/create-webapp.jsp" managed-bean="CreateWebappDialog"
-                 icon="/images/icons/create_webapp_large.gif" title-id="create_webapp_title" 
-                 description-id="create_webapp_desc" />
-         
-         <dialog name="revertSelectedItems" page="/jsp/wcm/revert.jsp" managed-bean="RevertSelectedDialog"
-                 icon="/images/icons/revert_all_large.gif" title-id="revert_selected_title" 
-                 description-id="revert_selected_desc" />
-         
-         <dialog name="revertAllItems" page="/jsp/wcm/revert.jsp" managed-bean="RevertAllDialog"
-                 icon="/images/icons/revert_all_large.gif" title-id="revert_all_title" 
-                 description-id="revert_all_desc" />
-                 
-         <dialog name="revertSnapshot" page="/jsp/wcm/revert.jsp" managed-bean="RevertSnapshotDialog"
-                 icon="/images/icons/revert_large.gif" title-id="revert_snapshot_title" 
-                 description-id="revert_snapshot_desc" />
-                 
-         <dialog name="deployWebsite" page="/jsp/wcm/deploy.jsp" managed-bean="DeployWebsiteDialog"
-                 icon="/images/icons/deploy_large.gif" />
-                 
-         <dialog name="viewDeploymentReport" page="/jsp/wcm/deployment-report.jsp" 
-                 managed-bean="ViewDeploymentReportDialog" icon="/images/icons/deployment_report_large.gif"  
-                 show-ok-button="false" />
-                 
-         <dialog name="monitorDeployment" page="/jsp/wcm/monitor-deployment.jsp" 
-                 managed-bean="MonitorDeploymentDialog"
-                 icon="/images/icons/deploy_large.gif" title-id="monitor_deployment_title" 
-                 description-id="monitor_deployment_desc" show-ok-button="false" />
-                 
          <dialog name="deleteDeploymentReports" page="/jsp/dialog/delete.jsp" 
                  managed-bean="DeleteDeploymentReportsDialog" icon="/images/icons/delete_deploy_reports_large.gif"
                  title-id="delete_all_deploy_reports" description-id="delete_reports_info" />
@@ -320,48 +164,6 @@
                  managed-bean="ReleaseTestServerDialog" icon="/images/icons/release_server_large.gif"
                  title-id="release_server_title" description-id="release_server_info" />
                  
-         <!-- AVM Compare -->              
-         <dialog name="compareToCurrentSnapshot" page="/jsp/wcm/compare-to-current-snapshot.jsp"
-                 managed-bean="CompareToCurrentSnapshot" icon="/images/icons/comparetocurrent_large.png"
-                 show-ok-button="false" 
-                 title-id="snapshot_compare_to_current" description-id="snapshot_compare_to_current_description" />
-                 
-                 <!-- AVM Compare -->              
-         <dialog name="compareToPreviousSnapshot" page="/jsp/wcm/compare-to-current-snapshot.jsp"
-                 managed-bean="CompareToPreviousSnapshot" icon="/images/icons/comparetoprevious_large.png"
-                 show-ok-button="false" 
-                 title-id="snapshot_compare_to_previous" description-id="snapshot_compare_to_previous_description" />
-
-          <!-- CompareToAnySnapshot -->
-         <dialog name="compareToAnySnapshot" page="/jsp/wcm/compare-to-any-snapshot.jsp"
-          		  managed-bean="CompareToAnySnapshot" icon="/images/icons/comparetoany_large.png"
-          		  show-ok-button="false"
-          		  title-id="snapshot_compare_to_any" description-id="snapshot_compare_to_any_description" />
-                 
-          <!-- manage permissions -->              
-         <dialog name="setPermissions" page="/jsp/wcm/set-permissions.jsp" 
-                 managed-bean="SetPermissionsDialog" icon="/images/icons/users_large.gif"
-                 title-id="set_permissions_title" description-id="set_permissions_subtitle" />
-                 
-         <dialog name="removePermissions" page="/jsp/wcm/remove-permissions.jsp" 
-                 managed-bean="RemovePermissionsDialog" icon="/images/icons/delete_large.gif"
-                 title-id="remove_permissions_title" />
-                 
-         <dialog name="editPermissions" page="/jsp/wcm/edit-permissions.jsp" 
-                 managed-bean="EditPermissionsDialog" icon="/images/icons/edituser_large.gif"
-                 title-id="edit_permissions_title" description-id="edit_permissions_subtitle" />                
-
-         <dialog name="managePermissions" page="/jsp/wcm/manage-permissions.jsp" 
-                 managed-bean="ManagePermissionsDialog" icon="/images/icons/edituser_large.gif"
-				 actions-config-id="set_permission_menu"
-				 show-ok-button="false" 
-                 title-id="view_permissions_title" description-id="manage_permissions_subtitle" />
-                 
-         <dialog name="viewPermissions" page="/jsp/wcm/manage-permissions.jsp" 
-                 managed-bean="ManagePermissionsDialog" icon="/images/icons/user_large.gif"
-				 show-ok-button="false" 
-                 title-id="view_permissions_title" description-id="view_permissions_subtitle" />
-              
          <dialog name="editUserDetails" page="/jsp/users/edit-user-details.jsp" managed-bean="EditUserDetailsDialog"
                  icon="/images/icons/edituser_large.gif" title-id="edit_user_details" 
                  description-id="edit_user_details_description" />
@@ -564,20 +366,10 @@
                  icon="/images/icons/details_large.gif" title-id="details_of" description-id="documentdetails_description" show-ok-button="false"
                  error-message-id="empty_message" />
                  
-		 <dialog name="showSpaceDetails" page="/jsp/spaces/space-details.jsp" managed-bean="SpaceDetailsDialog"
+		   <dialog name="showSpaceDetails" page="/jsp/spaces/space-details.jsp" managed-bean="SpaceDetailsDialog"
                  icon="/images/icons/details_large.gif" title-id="details_of" description-id="spacedetails_description" show-ok-button="false"
                  error-message-id="empty_message" />
-                 
-		 <dialog name="showFileDetails" page="/jsp/wcm/file-details.jsp" managed-bean="FileDetailsBean"
-                 icon="/images/icons/details_large.gif" title-id="details_of" 
-                 description-id="file_details_desc" show-ok-button="false" 
-                 error-message-id="empty_message"/>      
-                 
-		 <dialog name="showFolderDetails" page="/jsp/wcm/folder-details.jsp" managed-bean="FolderDetailsBean"
-                 icon="/images/icons/details_large.gif" title-id="details_of" 
-                 description-id="folder_details_desc" show-ok-button="false" 
-                 error-message-id="empty_message"/>      
-                  
+
          <dialog name="manageCategories" page="/jsp/categories/categories.jsp" managed-bean="CategoriesDialog"
                  icon="/images/icons/category.gif" title-id="category_management" show-ok-button="false"
                  description-id="categories_description" subtitle-id="categories"
@@ -659,99 +451,8 @@
                  description-id="delete_post_info" />
       </dialogs>
    </config>
-   
-   <!-- WCM -->
-   <config evaluator="node-type" condition="wca:webfolder">
-      <dialogs>
-         <dialog name="deleteSpace" page="/jsp/dialog/delete.jsp" managed-bean="DeleteWebsiteDialog"
-                 icon="/images/icons/delete_website_large.gif" title-id="delete_website" 
-                 description-id="delete_website_info" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wcmwf:reviewTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
-                 managed-bean="ManageReviewTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" error-message-id="empty_message" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wcmwf:parallelReviewTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
-                 managed-bean="ManageReviewTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wcmwf:submittedTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
-                 managed-bean="ManageTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
-      </dialogs>
-   </config>
 
-   <config evaluator="node-type" condition="wcmwf:rejectedTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
-                 managed-bean="ManageTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wcmwf:submitpendingTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
-                 managed-bean="ManageTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wcmwf:submitcancelledTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-task-dialog.jsp"
-                 managed-bean="ManageTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wcmwf:verifyBrokenLinksTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-review-task-dialog.jsp"
-                 managed-bean="ManageReviewTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wcmwf:changeRequestTask">
-      <dialogs>
-         <dialog name="manageTask" page="/jsp/wcm/manage-change-request-task-dialog.jsp"
-                 managed-bean="ManageChangeRequestTaskDialog" 
-                 icon="/images/icons/manage_workflow_task_large.gif" 
-                 description-id="manage_task_desc" />
-      </dialogs>
-   </config>
-   
-   <config evaluator="node-type" condition="wca:webfolder">
-      <dialogs>
-         <dialog name="showSpaceDetails" page="/jsp/wcm/website-details.jsp" 
-                 managed-bean="WebSiteDetailsDialog"
-                 icon="/images/icons/details_large.gif" title-id="details_of" 
-                 show-ok-button="false" error-message-id="empty_message"/>
-         </dialogs>
-   </config>
-   <!-- End WCM -->
-
-    <config evaluator="node-type" condition="app:filelink">
+   <config evaluator="node-type" condition="app:filelink">
       <dialogs>
          <dialog name="showDocDetails" page="/jsp/content/filelink-details.jsp"
                  managed-bean="DocumentLinkDetailsDialog"

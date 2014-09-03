@@ -18,11 +18,8 @@
  */
 package org.alfresco.web.bean.content;
 
-import java.io.Serializable;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -31,30 +28,21 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 
-import org.springframework.extensions.config.Config;
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileExistsException;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Node;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.data.IDataContainer;
 import org.alfresco.web.data.QuickSort;
-import org.alfresco.web.forms.Form;
-import org.alfresco.web.forms.FormNotFoundException;
-import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.web.forms.FormsService;
-import org.alfresco.util.XMLUtil;
 import org.alfresco.web.ui.common.Utils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.w3c.dom.Document;
+import org.springframework.extensions.config.Config;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 
 /**
  * Bean implementation for the "Create Content Wizard" dialog
@@ -68,35 +56,9 @@ public class CreateContentWizard extends BaseContentWizard
    protected String content = null;
    protected List<SelectItem> createMimeTypes;
    
-   transient protected FormsService formsService;
-   protected String formName;
-   protected FormProcessor.Session formProcessorSession = null;
-   transient protected Document instanceDataDocument = null;
-   
    private static Log logger = LogFactory.getLog(CreateContentWizard.class);
    
   
-   /**
-    * @param formsService    The FormsService to set.
-    */
-   public void setFormsService(final FormsService formsService)
-   {
-      this.formsService = formsService;
-   }
-   
-   /**
-    * @return the formsService
-    */
-   private FormsService getFormsService()
-   {
-      //check for null for cluster environment
-      if (formsService == null)
-      {
-         formsService =  (FormsService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "FormsService");
-      }
-      return formsService;
-   }
-   
    // ------------------------------------------------------------------------------
    // Wizard implementation
    
@@ -104,25 +66,8 @@ public class CreateContentWizard extends BaseContentWizard
    @Override
    public String finish()
    {
-      // if a form is entered, then save the form instance data as XML ...
-      if (this.instanceDataDocument != null)
-      {
-         this.content = XMLUtil.toString(this.instanceDataDocument, true);
-         
-         this.mimeType = MimetypeMap.MIMETYPE_XML; // belts & braces - override mimetype (in case is not set to XML)
-      }
-      
       String result = super.finish();
 
-//      // WCM
-//      if ((super.createdNode != null) && (this.instanceDataDocument != null))
-//      {
-//         final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-//         props.put(WCMAppModel.PROP_PARENT_FORM_NAME, getFormName());
-//         props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, "");
-//         getNodeService().addAspect(super.createdNode, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
-//      }
-//      
       return result;
    }
    
@@ -144,14 +89,6 @@ public class CreateContentWizard extends BaseContentWizard
       this.content = null;
       this.inlineEdit = true;
       this.mimeType = MimetypeMap.MIMETYPE_HTML;
-      this.formName = "";
-      
-      this.instanceDataDocument = null;
-      if (this.formProcessorSession != null)
-      {
-         this.formProcessorSession.destroy();
-      }
-      this.formProcessorSession = null;
    }
    
    @Override
@@ -299,11 +236,6 @@ public class CreateContentWizard extends BaseContentWizard
    {
       ResourceBundle bundle = Application.getBundle(FacesContext.getCurrentInstance());
       
-      if (this.instanceDataDocument != null)
-      {
-         this.mimeType = MimetypeMap.MIMETYPE_XML; // belts & braces - override mimetype (in case is not set to XML)
-      }
-      
       // TODO: show first few lines of content here?
       return buildSummary(
             new String[] {bundle.getString("file_name"), 
@@ -313,81 +245,6 @@ public class CreateContentWizard extends BaseContentWizard
                           getSummaryMimeType(this.mimeType)});
    }
    
-   /**
-    * @return List of UI items to represent the full list of available ECM Forms
-    */
-   public List<SelectItem> getFormsList()
-   {
-      Collection<Form> forms = this.getFormsService().getForms();
-      List<SelectItem> items = new ArrayList<SelectItem>(forms.size()+1);
-      items.add(new SelectItem("", ""));
-      for (Form form : forms)
-      {
-    	 items.add(new SelectItem(form.getName(), form.getTitle()));
-      }
-      return items;
-   }
-   
-   public String getFormName()
-   {
-      return this.formName;
-   }
-
-   public void setFormName(String formName)
-   {
-      this.formName = formName;
-   }
-   
-   public Form getForm() throws FormNotFoundException
-   {
-      return (this.getFormName() != null 
-              ? getFormsService().getForm(formName)
-	      : null);
-   }
-
-   public FormProcessor.Session getFormProcessorSession()
-   {
-      return this.formProcessorSession;
-   }
-
-   public void setFormProcessorSession(final FormProcessor.Session formProcessorSession)
-   {
-      this.formProcessorSession = formProcessorSession;
-   }
-   
-   public Document getInstanceDataDocument()
-   {
-      if (this.instanceDataDocument == null)
-      {
-         final String content = this.getContent();
-         try
-         {
-            this.instanceDataDocument = (content != null 
-                                         ? XMLUtil.parse(content) 
-                                         : XMLUtil.newDocument());
-         }
-         catch (Exception e)
-         {
-            Utils.addErrorMessage("error parsing document", e);
-            this.instanceDataDocument = XMLUtil.newDocument();
-         }
-      }
-      return this.instanceDataDocument;
-   }
-   
-   /** Overrides in order to strip an xml extension if the user entered it */
-   // TODO do we need ? it is currently referenced in create-forms.jsp (copied from wcm create-xml.jsp)
-   @Override
-   public String getFileName()
-   {
-      final String result = super.getFileName();
-      return (result != null &&
-              MimetypeMap.MIMETYPE_XML.equals(this.mimeType) &&
-              this.getFormName() != null &&
-              "xml".equals(FilenameUtils.getExtension(result).toLowerCase())
-              ? FilenameUtils.removeExtension(result)
-              : result);
-   }
    
    // ------------------------------------------------------------------------------
    // Action event handlers

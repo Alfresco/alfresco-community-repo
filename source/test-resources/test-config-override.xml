@@ -36,38 +36,6 @@
             <qname>attr4</qname>
          </simple-search-additional-attributes>
       </client>
-      
-      <wcm>
-         <workflows>
-            custom:submit
-         </workflows>
-         
-         <admin-workflows>
-            custom:changerequest, custom:somejob
-         </admin-workflows>
-         
-         <views>
-            <browse-page-size>50</browse-page-size>
-         </views>
-         
-         <deployment>
-            <progress-polling-frequency>10</progress-polling-frequency>
-         </deployment>
-         
-         <links-management>
-            <progress-polling-frequency>15</progress-polling-frequency>
-         </links-management>
-         
-         <xforms>
-           <widget xforms-type="xf:group" appearance="custom" javascript-class-name="custom.HGroup" />
-         </xforms>
-         
-         <xforms-scripts>
-            /custom/custom-xforms.js, /custom/another-custom-xforms.js
-         </xforms-scripts>
-         
-         <custom-config>50</custom-config>
-      </wcm>
    </config>
    
    <config evaluator="string-compare" condition="Languages">

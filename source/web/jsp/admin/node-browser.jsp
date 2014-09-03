@@ -301,34 +301,6 @@
               <h:outputText value="#{parent.typeQName.prefixString}"/>
           </h:column>
       </h:dataTable>
-      
-      <br/>
-      <h:panelGroup id="storePropsPanel" rendered="#{AdminNodeBrowseBean.inAVMStore}">
-      
-          <h:outputText styleClass="mainTitle" value="AVM Store Properties"/>
-      
-          <h:dataTable id="storeProperties" border="1" value="#{AdminNodeBrowseBean.AVMStoreProperties}" var="storeProp"
-                        styleClass="nodeBrowserTable">
-              <h:column>
-                  <f:facet name="header">
-                      <h:outputText value="Name"/>
-                  </f:facet>
-                  <h:outputText value="#{storeProp.name}"/>
-              </h:column>
-              <h:column>
-                  <f:facet name="header">
-                      <h:outputText value="Value"/>
-                  </f:facet>
-                  <h:outputText value="#{storeProp.value}"/>
-              </h:column>
-              <h:column>
-                  <f:facet name="header">
-                      <h:outputText value="Type"/>
-                  </f:facet>
-                  <h:outputText value="#{storeProp.type}"/>
-              </h:column>
-         </h:dataTable>
-      </h:panelGroup>
    
    </h:form>
    

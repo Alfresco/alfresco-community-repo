@@ -47,12 +47,9 @@ import org.alfresco.web.ui.common.Utils;
  */
 public class UIActionCommandProcessor implements ExtCommandProcessor
 {
-   /**
-     * 
-     */
-    private static final String MANAGE_TASK = "managetask";
+   private static final String MANAGE_TASK = "managetask";
 
-public static final String PARAM_CONTAINER = "container";
+   public static final String PARAM_CONTAINER = "container";
    
    private ServletContext sc = null;
    private String command = null;
@@ -61,9 +58,6 @@ public static final String PARAM_CONTAINER = "container";
    static
    {
       // add our commands to the command registry
-//       // WCM
-//      CommandFactory.getInstance().registerCommand("createwebcontent", CreateWebContentCommand.class);
-      CommandFactory.getInstance().registerCommand("editwebcontent", EditWebContentCommand.class);
       CommandFactory.getInstance().registerCommand(MANAGE_TASK, ManageTaskDialogCommand.class);
       CommandFactory.getInstance().registerCommand("editcontentprops", EditContentPropertiesCommand.class);
       CommandFactory.getInstance().registerCommand("userprofile", UserProfileDialogCommand.class);
@@ -81,7 +75,7 @@ public static final String PARAM_CONTAINER = "container";
       {
          this.args = new HashMap<String, String>(args);
       }
-      if(MANAGE_TASK.equals(command))
+      if (MANAGE_TASK.equals(command))
       {
           String taskId = args.get(ManageTaskDialogCommand.PROP_TASKID);
           return WorkflowUtil.isTaskEditable(taskId, sc);

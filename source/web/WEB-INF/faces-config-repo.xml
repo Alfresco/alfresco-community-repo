@@ -60,11 +60,6 @@
    </component>
    
    <component>
-      <component-type>org.alfresco.faces.WebProjectFolderSelector</component-type>
-      <component-class>org.alfresco.web.ui.repo.component.UIWebProjectFolderSelector</component-class>
-   </component>
-   
-   <component>
       <component-type>org.alfresco.faces.CategorySelector</component-type>
       <component-class>org.alfresco.web.ui.repo.component.UICategorySelector</component-class>
    </component>

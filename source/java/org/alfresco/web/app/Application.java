@@ -28,7 +28,6 @@ import java.util.ResourceBundle;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -641,70 +640,6 @@ public class Application
       return getGuestHomeFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
    }
    
-   /**
-    * @return the Websites folder name
-    */
-   public static String getWebsitesFolderName(ServletContext context)
-   {
-      return getWebsitesFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
-   }
-   
-   /**
-    * @return the Websites folder name
-    */
-   public static String getWebsitesFolderName(FacesContext context)
-   {
-      return getWebsitesFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
-   }
-   
-   /**
-    * @return the WCM Content Forms folder name
-    */
-   public static String getWebContentFormsFolderName(ServletContext context)
-   {
-      return getWebContentFormsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
-   }
-   
-   /**
-    * @return the WCM Content Forms folder name
-    */
-   public static String getWebContentFormsFolderName(FacesContext context)
-   {
-      return getWebContentFormsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
-   }
-   
-   /**
-    * @return the Content Forms folder name
-    */
-   public static String getContentFormsFolderName(ServletContext context)
-   {
-      return getContentFormsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
-   }
-   
-   /**
-    * @return the Content Forms folder name
-    */
-   public static String getContentFormsFolderName(FacesContext context)
-   {
-      return getContentFormsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
-   }
-   
-   /**
-<<<<<<< .working
-    * @return the Projects folder name
-    */
-   public static String getProjectsFolderName(ServletContext context)
-   {
-      return getProjectsFolderName(WebApplicationContextUtils.getRequiredWebApplicationContext(context));
-   }
-   
-   /**
-    * @return the Projects folder name
-    */
-   public static String getProjectsFolderName(FacesContext context)
-   {
-      return getProjectsFolderName(FacesContextUtils.getRequiredWebApplicationContext(context));
-   }
    
    /**
     * Set the language locale for the current user context
@@ -1257,78 +1192,6 @@ public class Application
       }
       
       return guestHomeFolderName;
-   }
-   
-   /**
-    * Returns the Websites folder name
-    * 
-    * @param context The Spring context
-    * @return The Websites folder name
-    */
-   private static String getWebsitesFolderName(WebApplicationContext context)
-   {
-      if (websitesFolderName == null)
-      {
-         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
-         Properties configuration = bootstrap.getConfiguration();
-         websitesFolderName = configuration.getProperty("spaces.wcm.childname");
-      }
-      
-      return websitesFolderName;
-   }
-   
-   /**
-    * Returns the Projects folder name
-    * 
-    * @param context The Spring context
-    * @return The Projects folder name
-    */
-   private static String getProjectsFolderName(WebApplicationContext context)
-   {
-      if (projectsFolderName == null)
-      {
-         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
-         Properties configuration = bootstrap.getConfiguration();
-         projectsFolderName = configuration.getProperty("spaces.projects.childname");
-      }
-      
-      return projectsFolderName;
-   }
-   
-   /**
-    * Returns the WCM Content Forms folder name
-    * 
-    * @param context The Spring context
-    * @return The WCM Content Forms folder name
-    */
-   private static String getWebContentFormsFolderName(WebApplicationContext context)
-   {
-      if (webContentFormsFolderName == null)
-      {
-         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
-         Properties configuration = bootstrap.getConfiguration();
-         webContentFormsFolderName = configuration.getProperty("spaces.wcm_content_forms.childname");
-      }
-      
-      return webContentFormsFolderName;
-   }
-   
-   /**
-    * Returns the Content Forms folder name
-    * 
-    * @param context The Spring context
-    * @return The WCM Content Forms folder name
-    */
-   private static String getContentFormsFolderName(WebApplicationContext context)
-   {
-      if (contentFormsFolderName == null)
-      {
-         ImporterBootstrap bootstrap = (ImporterBootstrap)context.getBean(BEAN_IMPORTER_BOOTSTRAP);
-         Properties configuration = bootstrap.getConfiguration();
-         contentFormsFolderName = configuration.getProperty("spaces.content_forms.childname");
-      }
-      
-      return contentFormsFolderName;
    }
    
    /**

@@ -486,56 +486,6 @@
             <action>wizard:createContent</action>
          </action>
 
-         <!-- Edit XML content type -->
-         <action id="edit_form">
-            <permissions>
-               <permission allow="true">Write,AddChildren</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.EditFormEvaluator</evaluator>
-            <label-id>edit_form</label-id>
-            <image>/images/icons/edit_form.gif</image>
-            <action>wizard:editForm</action>
-            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-         
-         <!-- Create XML content type (WCM) -->
-         <action id="create_web_form">
-            <evaluator>org.alfresco.web.action.evaluator.CreateWebFormEvaluator</evaluator>
-            <label-id>create_web_form</label-id>
-            <image>/images/icons/create_form.gif</image>
-            <action>wizard:createWebForm</action>
-         </action>
-
-         <!-- Edit XML content type (WCM) -->
-         <action id="edit_web_form">
-            <permissions>
-               <permission allow="true">Write,AddChildren</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.EditWebFormEvaluator</evaluator>
-            <label-id>edit_web_form</label-id>
-            <image>/images/icons/edit_form.gif</image>
-            <action>wizard:editWebForm</action>
-            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-
-         <!-- Regenerate Renditions (WCM) -->
-         <action id="regenerate_renditions">
-            <evaluator>org.alfresco.web.action.evaluator.RegenerateRenditionsEvaluator</evaluator>
-            <label-id>regenerate_renditions</label-id>
-            <image>/images/icons/regenerate_renditions.gif</image>
-            <action>wizard:regenerateRenditions</action>
-            <action-listener>#{BrowseBean.setupSpaceAction}</action-listener>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-
          <!-- Create space -->
          <action id="create_space">
             <permissions>
@@ -554,14 +504,6 @@
             <label-id>advanced_space_wizard</label-id>
             <image>/images/icons/create_space.gif</image>
             <action>wizard:createSpace</action>
-         </action>
-
-         <!-- Create Website Wizard -->
-         <action id="create_website_wizard">
-            <evaluator>org.alfresco.web.action.evaluator.CreateWebProjectEvaluator</evaluator>
-            <label-id>create_website</label-id>
-            <image>/images/icons/create_website.gif</image>
-            <action>wizard:createWebsite</action>
          </action>
          
          <!-- Manage Space Users -->
@@ -1042,8 +984,6 @@
          <!-- Actions Menu for Create in Browse screen -->
          <action-group id="browse_create_menu">
             <action idref="create_content" />
-            <action idref="create_web_form" />      
-            <action idref="create_website_wizard" />
             <action idref="create_space" />
             <action idref="create_space_wizard" />
          </action-group>
@@ -1058,7 +998,6 @@
             <action idref="import_space" />
             <action idref="manage_space_users" />
             <action idref="manage_space_rules" />
-            <action idref="regenerate_renditions" />
             <!-- NOTE: now found on the User Console
             <action idref="manage_deleted_items" />-->
          </action-group>

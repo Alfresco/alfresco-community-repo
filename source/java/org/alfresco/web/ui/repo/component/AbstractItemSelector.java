@@ -222,11 +222,7 @@ public abstract class AbstractItemSelector extends UIInput
             NodeRef nodeRef = new NodeRef(Repository.getStoreRef(), selection);
             if (!getNodeService(context).exists(nodeRef))
             {
-//                // WCM
-//               nodeRef = new NodeRef(new StoreRef(StoreRef.PROTOCOL_AVM, avmStore), selection);
-//               Pair<Integer, String> versionPathPair = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-//               ((EditableValueHolder)this).setSubmittedValue(AVMNodeConverter.ToNodeRef(versionPathPair.getFirst(), versionPathPair.getSecond()));
-                throw new RuntimeException("WCM anticipation here.");
+                throw new RuntimeException("NodeRef not found.");
             }
             else
             {
@@ -370,39 +366,7 @@ public abstract class AbstractItemSelector extends UIInput
                   }
                   else
                   {
-                      // WCM
-//                     if (value.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-//                     {
-//                        Pair<Integer, String> avmNode = AVMNodeConverter.ToAVMVersionPath(value);
-//                        String avmPath = avmNode.getSecond();
-//                        
-//                        int rootPosition = avmPath.indexOf(AVMUtil.DIR_ROOT);
-//                        if(rootPosition > 0)
-//                        {
-//                        	label = avmPath.substring(rootPosition + AVMUtil.DIR_ROOT.length());
-//                        	if(label.length() == 0)
-//                        	{
-//                        		int storeEnd = avmPath.indexOf(":");
-//                        		if(storeEnd > 0)
-//                        		{
-//                        			label = avmPath.substring(0, storeEnd);
-//                        		}
-//                        		else
-//                        		{
-//                        			label = "ROOT";
-//                        		}
-//                        	}
-//                        }
-//                        else
-//                        {
-//                        	// AVM path does not have ROOT
-//                        	label = avmPath;
-//                        }
-//                     }
-//                     else
-//                     {
-                        label = Repository.getNameForNode(service, value);
-//                     }
+                     label = Repository.getNameForNode(service, value);
                      showValueInHiddenField = true;
                   }
                   
@@ -436,13 +400,6 @@ public abstract class AbstractItemSelector extends UIInput
                   if (value != null)
                   {
                      fieldValue = encodeFieldValues(theMode, value.getId());
-//                     
-//                     // WCM
-//                     // setup the avmStore if the value represents an avm path
-//                     if (value.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-//                     {
-//                        this.avmStore = value.getStoreRef().getIdentifier();
-//                     }
                   }
                   else
                   {

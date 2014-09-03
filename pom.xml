@@ -81,11 +81,6 @@
 			<artifactId>commons-logging</artifactId>
 		</dependency>
         <dependency>
-            <groupId>net.sf.chiba</groupId>
-            <artifactId>chiba</artifactId>
-            <version>1.3.0-alfresco-patched</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.james</groupId>
             <artifactId>apache-mime4j-dom</artifactId>
             <version>0.7.2</version>

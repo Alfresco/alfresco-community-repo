@@ -583,45 +583,6 @@
       </navigation-case>
    </navigation-rule>
    
-   <navigation-rule>
-      <from-view-id>/jsp/*</from-view-id>
-      <navigation-case>
-         <from-outcome>browseWebsite</from-outcome>
-         <to-view-id>/jsp/wcm/browse-website.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>browseSandbox</from-outcome>
-         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
-      </navigation-case>
-<!--
-      <navigation-case>
-         <from-outcome>editAvmFile</from-outcome>
-         <to-view-id>/jsp/wcm/edit-file.jsp</to-view-id>
-      </navigation-case>
--->
-      <navigation-case>
-         <from-outcome>updateAvmFile</from-outcome>
-         <to-view-id>/jsp/wcm/update-file.jsp</to-view-id>
-      </navigation-case>
-
-      <navigation-case>
-         <from-outcome>showFileDetails</from-outcome>
-         <to-view-id>/jsp/wcm/file-details.jsp</to-view-id>
-      </navigation-case>
-      <navigation-case>
-         <from-outcome>showFolderDetails</from-outcome>
-         <to-view-id>/jsp/wcm/folder-details.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   <navigation-rule> 
-      <from-view-id>/jsp/wcm/*</from-view-id>
-      <navigation-case>
-         <from-outcome>cancel</from-outcome>
-         <to-view-id>/jsp/wcm/browse-sandbox.jsp</to-view-id>
-      </navigation-case>
-   </navigation-rule>
-   
-   
    <!-- Overridden dialog:close navigation rules for Recovery Report -->
    <navigation-rule>
       <from-view-id>/jsp/*</from-view-id>

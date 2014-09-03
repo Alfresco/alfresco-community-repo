@@ -9,7 +9,6 @@
          <element-reader element-name="advanced-search" class="org.alfresco.web.config.AdvancedSearchElementReader" />
          <element-reader element-name="views" class="org.alfresco.web.config.ViewsElementReader" />
          <element-reader element-name="actions" class="org.alfresco.web.config.ActionsElementReader" />
-         <element-reader element-name="wcm" class="org.alfresco.web.config.WCMElementReader" />
       </element-readers>
    </plug-ins>
 
@@ -81,33 +80,6 @@
             <action idref="always_hidden" hide="true" />
          </action-group>
       </actions>
-      
-      <wcm>
-         <workflows>
-            wcmwf:submit
-         </workflows>
-         
-         <admin-workflows>
-            wcmwf:changerequest
-         </admin-workflows>
-         
-         <views>
-            <browse-page-size>25</browse-page-size>
-         </views>
-         
-         <deployment>
-            <progress-polling-frequency>2</progress-polling-frequency>
-         </deployment>
-         
-         <links-management>
-            <progress-polling-frequency>2</progress-polling-frequency>
-         </links-management>
-         
-         <xforms>
-           <widget xforms-type="xf:group" appearance="minimal" javascript-class-name="alfresco.xforms.HGroup" />
-           <widget xforms-type="xf:range" javascript-class-name="alfresco.xforms.NumericalRange" />
-         </xforms>
-      </wcm>
    </config>
    
    <config evaluator="string-compare" condition="Languages">

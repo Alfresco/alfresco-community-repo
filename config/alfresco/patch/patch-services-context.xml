@@ -3358,8 +3358,8 @@
         <property name="id"><value>patch.solrFacets.root</value></property>
         <property name="description"><value>patch.solrFacets.root.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>7005</value></property>
-        <property name="targetSchema"><value>7006</value></property>
+        <property name="fixesToSchema"><value>8002</value></property>
+        <property name="targetSchema"><value>8003</value></property>
         <property name="dependsOn" >
             <list>
                 <ref bean="patch.updateDmPermissions" />

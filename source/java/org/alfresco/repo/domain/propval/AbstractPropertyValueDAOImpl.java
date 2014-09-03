@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -129,6 +129,19 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     
     private SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache; // cluster-aware
     
+    /**
+     * Flag to throw exception if type of the key doesn't guarantee uniqueness, @see MNT-11895
+     */
+    private boolean uniquenessCheckEnabled = true;
+    
+    /**
+     * Setter for uniquenessCheckEnabled flag
+     */
+    public void setUniquenessCheckEnabled(boolean uniquenessCheckEnabled)
+    {
+        this.uniquenessCheckEnabled = uniquenessCheckEnabled;
+    }
+
     /**
      * Set the cache to use for unique property lookups
      */
@@ -1162,13 +1175,37 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
     }
     
+    private void checkUniquenessGuarantee(Serializable... values)
+    {
+        for (int i = 0; i < values.length; i++)
+        {
+            PersistedType persistedType = PropertyValueEntity.getPersistedTypeEnum(values[i], converter);
+            if (persistedType == PersistedType.SERIALIZABLE)
+            {
+                if (uniquenessCheckEnabled)
+                {
+                    throw new IllegalArgumentException("Type of the KEY-" + i + " (" + values[i].getClass() + ") cannot guarantee uniqueness. " +
+                       "Please, see https://issues.alfresco.com/jira/browse/MNT-11895 for details. " +
+                       "Set system.propval.uniquenessCheck.enabled=false to not throw the exception.");
+                }
+                else
+                {
+                    logger.warn("Type of the KEY-" + i + " (" + values[i].getClass() + ") cannot guarantee uniqueness. " +
+                            "Please, see https://issues.alfresco.com/jira/browse/MNT-11895 for details. " +
+                            "Set system.propval.uniquenessCheck.enabled=true to throw the exception.");
+                }
+            }
+        }
+    }
+    
     public Pair<Long, Long> createPropertyUniqueContext(
             Serializable value1, Serializable value2, Serializable value3,
             Serializable propertyValue1)
     {
         /*
-         * Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transactioin
+         * Use savepoints so that the PropertyUniqueConstraintViolation can be caught and handled in-transaction
          */
+        checkUniquenessGuarantee(value1, value2, value3);
         
         // Translate the properties.  Null values are acceptable
         Long id1 = getOrCreatePropertyValue(value1).getFirst();

@@ -213,6 +213,7 @@
       <property name="propertyUniqueContextCache" ref="propertyUniqueContextCache"/>
       
       <property name="scriptExecutor" ref="scriptExecutor"/>
+      <property name="uniquenessCheckEnabled" value="${system.propval.uniquenessCheck.enabled}"/>
       
    </bean>
    

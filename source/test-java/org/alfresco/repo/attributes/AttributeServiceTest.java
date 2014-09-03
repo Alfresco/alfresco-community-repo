@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,15 +21,21 @@ package org.alfresco.repo.attributes;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.domain.propval.DefaultPropertyTypeConverter;
 import org.alfresco.repo.domain.propval.PropValGenerator;
+import org.alfresco.repo.domain.propval.PropertyTypeConverter;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.domain.propval.PropertyValueEntity;
+import org.alfresco.repo.domain.propval.PropertyValueEntity.PersistedType;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallback;
+import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
@@ -190,6 +196,105 @@ public class AttributeServiceTest extends TestCase
             String msg = String.format("Property value [%s=%s] should have been deleted by cleanup script.",
                         value.getSecond().getClass().getSimpleName(), value.getSecond());
             fail(msg);
+        }
+    }
+    
+    public void testKeySegmentsGuaranteeUniqueness()
+    {
+        final PropertyTypeConverter converter = new DefaultPropertyTypeConverter();
+
+        final int VAL1 = 0;
+        final int VAL2 = 1;
+        final int KEY_INT_1 = 1;
+        final int KEY_INT_2 = 2;
+        final String KEY_STR_1 = "string";
+        final String KEY_STR_2 = "string2";
+        final TestIdentifier.TestEnum KEY_ENUM = TestIdentifier.TestEnum.ONE;
+        final HashMap<String, String> KEY_MAP = new HashMap<>();
+        final NodeRef KEY_NODEREF = new NodeRef("workspace://SpacesStore/5980bbdb-8a31-437e-95c8-d5092c3c58fc");
+        final TestIdentifier KEY_SERIALIZABLE = new TestIdentifier(KEY_STR_2);
+
+        try
+        {
+            // check integer keys
+            assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_INT_2, converter), PersistedType.LONG);
+            attributeService.createAttribute(VAL1, KEY_INT_1, KEY_INT_2);
+            try
+            {
+                attributeService.createAttribute(VAL2, KEY_INT_1, KEY_INT_2);
+                fail("Duplicate attribute creation should not be allowed");
+            }
+            catch (DuplicateAttributeException expected)
+            {
+            }
+
+            // check noderef keys
+            assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_NODEREF, converter), PersistedType.STRING);
+            attributeService.createAttribute(VAL1, KEY_INT_1, KEY_NODEREF);
+            try
+            {
+                attributeService.createAttribute(VAL2, KEY_INT_1, KEY_NODEREF);
+                fail("Duplicate attribute creation should not be allowed");
+            }
+            catch (DuplicateAttributeException expected)
+            {
+            }
+
+            // check enum keys
+            assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_ENUM, converter), PersistedType.ENUM);
+            attributeService.createAttribute(VAL1, KEY_INT_1, KEY_ENUM);
+            try
+            {
+                attributeService.createAttribute(VAL2, KEY_INT_1, KEY_ENUM);
+                fail("Duplicate attribute creation should not be allowed");
+            }
+            catch (DuplicateAttributeException expected)
+            {
+            }
+
+            // check constructable keys
+            assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_MAP, converter), PersistedType.CONSTRUCTABLE);
+            attributeService.createAttribute(VAL1, KEY_INT_1, KEY_MAP);
+            try
+            {
+                attributeService.createAttribute(VAL2, KEY_INT_1, KEY_MAP);
+                fail("Duplicate attribute creation should not be allowed");
+            }
+            catch (DuplicateAttributeException expected)
+            {
+            }
+
+            // check string keys
+            assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_STR_2, converter), PersistedType.STRING);
+            attributeService.createAttribute(VAL1, KEY_STR_1, KEY_STR_2);
+            try
+            {
+                attributeService.createAttribute(VAL2, KEY_STR_1, KEY_STR_2);
+                fail("Duplicate attribute creation should not be allowed");
+            }
+            catch (DuplicateAttributeException expected)
+            {
+            }
+
+            // check custom type serializable key
+            assertEquals(PropertyValueEntity.getPersistedTypeEnum(KEY_SERIALIZABLE, converter), PersistedType.SERIALIZABLE);
+            try
+            {
+                attributeService.createAttribute(VAL1, KEY_STR_1, KEY_SERIALIZABLE);
+                fail("Keys of SERIALIZABLE persisted type are not allowed because it cannot guarantee uniqueness");
+            }
+            catch (IllegalArgumentException expected)
+            {
+            }
+        }
+        finally
+        {
+            attributeService.removeAttribute(KEY_INT_1, KEY_INT_2);
+            attributeService.removeAttribute(KEY_INT_1, KEY_NODEREF);
+            attributeService.removeAttribute(KEY_INT_1, KEY_ENUM);
+            attributeService.removeAttribute(KEY_INT_1, KEY_MAP);
+            attributeService.removeAttribute(KEY_STR_1, KEY_STR_2);
+            attributeService.removeAttribute(KEY_STR_1, KEY_SERIALIZABLE);
         }
     }
 }

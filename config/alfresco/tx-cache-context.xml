@@ -553,5 +553,19 @@
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
    </bean>
    
+      <!-- The transactional cache for Solr Facets NodeRefs -->
+   
+   <bean name="solrFacetNodeRefCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="solrFacetNodeRefSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.solrFacetNodeRefTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="${cache.solrFacetNodeRefSharedCache.tx.maxItems}" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+   </bean>
+   
 </beans>
 

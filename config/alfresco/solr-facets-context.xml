@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+      <property name="models">
+         <list>
+            <value>alfresco/model/solrFacetModel.xml</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="solrFacetRawProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+      <property name="locations">
+         <list>
+            <value>classpath*:alfresco/subsystems/Search/solr/facet/solr-facets-config.properties</value>
+            <value>classpath*:alfresco/extension/solr-facets-config-custom.properties</value>
+         </list>
+      </property>
+   </bean>
+   <bean id="solrFacetConfigs" class="org.alfresco.repo.search.impl.solr.facet.SolrFacetConfig">
+      <constructor-arg index="0" ref="solrFacetRawProperties" />
+      <constructor-arg index="1">
+         <value>${solr_facets.inheritanceHierarchy}</value>
+      </constructor-arg>
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
+   <bean id="solrFacetService" class="org.alfresco.repo.search.impl.solr.facet.SolrFacetServiceImpl">
+      <property name="nodeService" ref="nodeService" />
+      <property name="authorityService" ref="authorityService" />
+      <property name="namespaceService" ref="namespaceService" />
+      <property name="searchService" ref="SearchService" />
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="facetConfig" ref="solrFacetConfigs" />
+      <property name="singletonCache" ref="immutableSingletonCache" />
+      <property name="facetNodeRefCache" ref="solrFacetNodeRefCache" />
+      <property name="facetsRootXPath">
+         <value>${solr_facets.root}</value>
+      </property>
+   </bean>
+</beans>

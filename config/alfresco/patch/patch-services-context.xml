@@ -3352,6 +3352,31 @@
         <property name="ruleService">
             <ref bean="ruleService" />
         </property>
-    </bean>
-
+    </bean> 
+    
+    <bean id="patch.solrFacets.root" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.solrFacets.root</value></property>
+        <property name="description"><value>patch.solrFacets.root.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>7005</value></property>
+        <property name="targetSchema"><value>7006</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>${solr_facets.root}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">${solr_facets.root.path}</prop>
+                <prop key="location">alfresco/bootstrap/solrFacetsRootFolder.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean> 
 </beans>

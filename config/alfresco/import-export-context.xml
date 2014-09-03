@@ -373,6 +373,7 @@
                 <prop key="system.syncset_definition_container.childname">${system.syncset_definition_container.childname}</prop>
                 <prop key="system.downloads_container.childname">${system.downloads_container.childname}</prop>
                 <prop key="system.certificate_container.childname">${system.certificate_container.childname}</prop>
+                <prop key="spaces.solr_facets.root.childname">${spaces.solr_facets.root.childname}</prop>
             </props>
         </property>
     </bean>
@@ -666,6 +667,12 @@
                 <props>
                     <prop key="path">/${system.system_container.childname}</prop>
                     <prop key="location">alfresco/bootstrap/downloadsSpace.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                </props>
+                
+                <props>
+                    <prop key="path">${solr_facets.root.path}</prop>
+                    <prop key="location">alfresco/bootstrap/solrFacetsRootFolder.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
             </list>

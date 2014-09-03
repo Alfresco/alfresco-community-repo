@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
+   xmlns:d="http://www.alfresco.org/model/dictionary/1.0" xmlns:cm="http://www.alfresco.org/model/content/1.0"
+   xmlns:srft="http://www.alfresco.org/model/solrfacet/1.0" xmlns:sys="http://www.alfresco.org/model/system/1.0" xmlns="">
+
+   <srft:facets view:childName="${spaces.solr_facets.root.childname}">
+      <view:properties>
+         <cm:isIndexed>false</cm:isIndexed>
+         <sys:store-protocol>workspace</sys:store-protocol>
+         <sys:store-identifier>SpacesStore</sys:store-identifier>
+         <sys:node-uuid>solr_facets_root_space</sys:node-uuid>
+         <cm:name>${spaces.solr_facets.root.name}</cm:name>
+         <cm:title>${spaces.solr_facets.root.name}</cm:title>
+         <cm:description>${spaces.solr_facets.root.description}
+         </cm:description>
+      </view:properties>
+   </srft:facets>
+</view:view>

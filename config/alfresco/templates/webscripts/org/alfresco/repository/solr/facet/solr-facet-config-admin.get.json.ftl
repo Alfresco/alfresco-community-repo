@@ -1,28 +1,38 @@
+<#macro facetJSON facet>
 <#escape x as jsonUtils.encodeJSONString(x)>
-{
-    "facets": [
-          <#list filters?keys as facet>
-          <#assign f=filters[facet]>
-          {
-             "filterID" : "${f.filterID}",
-             "facetQName" : "${f.facetQName}",
-             "displayName" : "${f.displayName}",
-             "maxFilters" : ${f.maxFilters?c},
-             "hitThreshold" : ${f.hitThreshold?c},
-             "minFilterValueLength" : ${f.minFilterValueLength?c},
-             "sortBy" : "${f.sortBy}",
-             "scope" : "${f.scope}",
+             "filterID" : "${facet.filterID}",
+             "facetQName" : "${facet.facetQName}",
+             "displayName" : "${facet.displayName}",
+             "displayControl" : "${facet.displayControl}",
+             "maxFilters" : ${facet.maxFilters?c},
+             "hitThreshold" : ${facet.hitThreshold?c},
+             "minFilterValueLength" : ${facet.minFilterValueLength?c},
+             "sortBy" : "${facet.sortBy}",
+             "scope" : "${facet.scope}",
              "scopedSites" : [
-              <#if f.scopedSites??>
-                  <#list f.scopedSites as site>
+              <#if facet.scopedSites??>
+                  <#list facet.scopedSites as site>
                      "${site}"<#if site_has_next>,</#if>
                   </#list>
               </#if>
               ],
-             "index" : ${f.index?c},
-             "isEnabled" : ${f.enabled?c}
-          }<#if facet_has_next>,</#if>
-          </#list>
-    ]
-}
+             "index" : ${facet.index?c},
+             "isEnabled" : ${facet.enabled?c},
+             "isDefault" : ${facet.default?c}
 </#escape>
+</#macro>
+
+{
+   <#if filters??>
+    "facets" : [
+           <#list filters as facet>
+           {
+               <@facetJSON facet=facet />
+           }<#if facet_has_next>,</#if>
+           </#list>
+          ]
+
+   <#else>
+    <@facetJSON facet=filter />
+   </#if>
+}

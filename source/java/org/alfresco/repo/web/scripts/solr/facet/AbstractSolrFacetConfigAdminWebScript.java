@@ -51,6 +51,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
     protected static final String PARAM_FILTER_ID = "filterID";
     protected static final String PARAM_FACET_QNAME = "facetQName";
     protected static final String PARAM_DISPLAY_NAME = "displayName";
+    protected static final String PARAM_DISPLAY_CONTROL = "displayControl";
     protected static final String PARAM_MAX_FILTERS = "maxFilters";
     protected static final String PARAM_HIT_THRESHOLD = "hitThreshold";
     protected static final String PARAM_MIN_FILTER_VALUE_LENGTH = "minFilterValueLength";
@@ -105,13 +106,14 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
 
             final QName facetQName = QName.createQName(facetQNameStr);
             final String displayName = json.getString(PARAM_DISPLAY_NAME);
+            final String displayControl = json.getString(PARAM_DISPLAY_CONTROL);
             final int maxFilters = json.getInt(PARAM_MAX_FILTERS);
             final int hitThreshold = json.getInt(PARAM_HIT_THRESHOLD);
             final int minFilterValueLength = json.getInt(PARAM_MIN_FILTER_VALUE_LENGTH);
             final String sortBy = json.getString(PARAM_SORT_BY);
             final String scope = json.getString(PARAM_SCOPE);
-            final int index = json.getInt(PARAM_INDEX);
-            final boolean isEnabled = json.getBoolean(PARAM_IS_ENABLED);
+            final int index = getValue(Integer.class, json.opt(PARAM_INDEX), 0); //FIXME get the index from the service
+            final boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), true);
             JSONArray scopedSitesJsonArray = json.getJSONArray(PARAM_SCOPED_SITES);
             Set<String> scopedSites = null;
             if (scopedSitesJsonArray != null)
@@ -128,6 +130,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
                         .filterID(filterID)
                         .facetQName(facetQName)
                         .displayName(displayName)
+                        .displayControl(displayControl)
                         .maxFilters(maxFilters)
                         .hitThreshold(hitThreshold)
                         .minFilterValueLength(minFilterValueLength)
@@ -145,6 +148,23 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         catch (JSONException e)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not parse JSON from req.", e);
+        }
+    }
+
+    private <T> T getValue(Class<T> clazz, Object value, T defaultValue) throws JSONException
+    {
+        if (value == null)
+        {
+            return defaultValue;
+        }
+
+        try
+        {
+            return clazz.cast(value);
+        }
+        catch (Exception ex)
+        {
+            throw new JSONException("JSONObject[" + value +"] is not an instance of [" + clazz.getName() +"]");
         }
     }
 

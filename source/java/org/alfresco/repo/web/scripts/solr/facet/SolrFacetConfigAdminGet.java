@@ -19,7 +19,9 @@
 
 package org.alfresco.repo.web.scripts.solr.facet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
@@ -27,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -41,15 +44,30 @@ public class SolrFacetConfigAdminGet extends AbstractSolrFacetConfigAdminWebScri
     @Override
     protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, SolrFacetProperties> filters = facetService.getFacets();
+        // get the filterID parameter.
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String filterID = templateVars.get("filterID");
 
         Map<String, Object> model = new HashMap<String, Object>(1);
 
-        model.put("filters", filters);
+        if (filterID == null)
+        {
+            List<SolrFacetProperties> filters = new ArrayList<>(facetService.getFacets().values());
+            model.put("filters", filters);
+        }
+        else
+        {
+            SolrFacetProperties fp = facetService.getFacet(filterID);
+            if (fp == null)
+            {
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Filter not found");
+            }
+            model.put("filter", fp);
+        }
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("Retrieved all available facets: " + filters);
+            logger.debug("Retrieved all available facets: " + model.values());
         }
 
         return model;

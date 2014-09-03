@@ -5,6 +5,8 @@
    Get faceted-search config, if configured
    
    http://<host>:<port>/alfresco/api/solr/facet-config
+   Or
+   http://<host>:<port>/alfresco/api/solr/facet-config/{filterId}
    
    Example response from this web script:
    
@@ -14,6 +16,7 @@
              "filterID" : "filter_content_size",
              "facetQName" : "{http://www.alfresco.org/model/content/1.0}content.size",
              "displayName" : "faceted-search.facet-menu.facet.size",
+             "displayControl" : "alfresco\/search\/FacetFilters",
              "maxFilters" : 5,
              "hitThreshold" : 1,
              "minFilterValueLength" : 5,
@@ -25,7 +28,8 @@
                      "site1"
               ],
              "index" : 5,
-             "isEnabled" : true
+             "isEnabled" : true,
+             "isDefault" : true
           }
       ]
    }
@@ -35,6 +39,7 @@
    ]]>
    </description>
    <url>/api/solr/facet-config</url>
+   <url>/api/solr/facet-config/{filterID}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>

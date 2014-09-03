@@ -12,6 +12,7 @@
              "filterID" : "filter_content_size",
              "facetQName" : "{http://www.alfresco.org/model/content/1.0}content.size",
              "displayName" : "faceted-search.facet-menu.facet.size",
+             "displayControl" : "alfresco/search/FacetFilters",
              "maxFilters" : 5,
              "hitThreshold" : 1,
              "minFilterValueLength" : 5,
@@ -22,8 +23,8 @@
                      "site2",
                      "site1"
               ],
-             "index" : 6,
-             "isEnabled" : true
+             "index" : 6,  // optional
+             "isEnabled" : true  // optional
    }
    
    Notes:

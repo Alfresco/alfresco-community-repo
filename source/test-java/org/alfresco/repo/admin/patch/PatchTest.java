@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -189,6 +189,20 @@ public class PatchTest extends TestCase
         assertTrue("Sample 01 not in list of applied patches", found01);
         assertTrue("Sample 02 not in list of applied patches", found02);
         assertTrue("Sample 03 not in list of applied patches", found03);
+    }
+    
+    public void testApplyOutstandingPatch() throws Exception
+    {
+        Patch testPatch = (Patch)ctx.getBean("patch.sample.02");
+        // apply outstanding patches
+        boolean success = patchService.applyOutstandingPatch(testPatch);
+        assertTrue(success);
+        // get the applied patch
+        AppliedPatch appliedPatch = patchService.getPatch(testPatch.getId());
+        assertNotNull("patch.sample.02 patch hasn't been applied", appliedPatch);
+        
+        // check that the patch application was recorded
+        assertTrue("Patch info didn't indicate success: " + appliedPatch, appliedPatch.getSucceeded());
     }
     
     public void testGetPatchesByDate() throws Exception

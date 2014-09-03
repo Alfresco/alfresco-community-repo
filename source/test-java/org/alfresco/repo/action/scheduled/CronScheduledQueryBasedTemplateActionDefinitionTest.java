@@ -42,6 +42,8 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -122,50 +124,49 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
 
     private static final String YESTERDAY_TEST_DOCUMENT_NAME_TEMPLATE = "Yesterday" + TEST_DOCUMENT_NAME_TEMPLATE;
 
-
     private static final String MNT_11598_QUERY_TEMPLATE = "@cm\\:created:\\$\\{luceneDateRange(yesterday, \"-P10Y\")\\}";
-
+    
+    private static final String TEST_FOLDER_NAME = String.format(ROOT_TEST_FOLDER_NAME_TEMPLATE, System.currentTimeMillis());
 
     private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
-
+    private ServiceRegistry registry;
 
     private UserTransaction transaction;
 
 
     private NodeRef rootTestFolder;
 
-    private List<NodeRef> freshNodes = new LinkedList<NodeRef>();
+    private List<FileInfo> freshNodes = new LinkedList<FileInfo>();
 
-    private List<NodeRef> yesterdayNodes = new LinkedList<NodeRef>();
+    private List<FileInfo> yesterdayNodes = new LinkedList<FileInfo>();
 
 
     private CronScheduledQueryBasedTemplateActionDefinition scheduler;
 
+    private StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
 
     @Before
     @Override
     public void setUp() throws Exception
     {
-        ServiceRegistry registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        this.registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
 
-        initializeScheduler(registry);
+        initializeScheduler();
 
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
         transaction = registry.getTransactionService().getUserTransaction(false);
         transaction.begin();
 
-        createTestContent(registry);
+        createTestContent();
     }
 
     /**
      * Initializes target {@link CronScheduledQueryBasedTemplateActionDefinition} instance for testing. <b>Default query template is not set!</b> It must be set in test method. No
      * need to register for every test for scheduling. Hence, {@link CronScheduledQueryBasedTemplateActionDefinition#afterPropertiesSet()} is omitted here and must be invoked for
      * test which requires scheduling
-     * 
-     * @param registry - {@link ServiceRegistry} instance
      */
-    private void initializeScheduler(ServiceRegistry registry)
+    private void initializeScheduler()
     {
         Scheduler factory = (Scheduler) applicationContext.getBean(SCHEDULER_FACTORY_BEAN_NAME);
 
@@ -206,22 +207,19 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
      * Creates <code>rootTestFolder</code> test folder as start of test content hierarchy. Then it creates
      * {@link CronScheduledQueryBasedTemplateActionDefinitionTest#TEST_DOCUMENTS_AMOUNT} documents in the root folder with "today" creation date and the same amount of documents
      * with "yesterday" creation date
-     * 
-     * @param registry - {@link ServiceRegistry} instance
      */
-    private void createTestContent(ServiceRegistry registry)
+    private void createTestContent() throws Exception
     {
         FileFolderService fileFolderService = registry.getFileFolderService();
 
         NodeRef companyHomeNodeRef = registry.getNodeLocatorService().getNode(CompanyHomeNodeLocator.NAME, null, null);
-        String objectName = String.format(ROOT_TEST_FOLDER_NAME_TEMPLATE, System.currentTimeMillis());
-        rootTestFolder = fileFolderService.create(companyHomeNodeRef, objectName, ContentModel.TYPE_FOLDER).getNodeRef();
+        rootTestFolder = fileFolderService.create(companyHomeNodeRef, TEST_FOLDER_NAME, ContentModel.TYPE_FOLDER).getNodeRef();
 
         for (int i = 0; i < TEST_DOCUMENTS_AMOUNT; i++)
         {
-            objectName = String.format(FRESH_TEST_DOCUMENT_NAME_TEMPLATE, i, System.currentTimeMillis());
-            FileInfo fileInfo = fileFolderService.create(rootTestFolder, objectName, ContentModel.TYPE_CONTENT);
-            freshNodes.add(fileInfo.getNodeRef());
+            String freshDocName = String.format(FRESH_TEST_DOCUMENT_NAME_TEMPLATE, i, System.currentTimeMillis());
+            FileInfo fileInfo = fileFolderService.create(rootTestFolder, freshDocName, ContentModel.TYPE_CONTENT);
+            freshNodes.add(fileInfo);
         }
 
         Calendar calendar = GregorianCalendar.getInstance();
@@ -236,18 +234,51 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
         {
             for (int i = 0; i < TEST_DOCUMENTS_AMOUNT; i++)
             {
-                objectName = String.format(YESTERDAY_TEST_DOCUMENT_NAME_TEMPLATE, i, System.currentTimeMillis());
-                FileInfo fileInfo = fileFolderService.create(rootTestFolder, objectName, ContentModel.TYPE_CONTENT);
+                String yesterdayDocName = String.format(YESTERDAY_TEST_DOCUMENT_NAME_TEMPLATE, i, System.currentTimeMillis());
+                FileInfo fileInfo = fileFolderService.create(rootTestFolder, yesterdayDocName, ContentModel.TYPE_CONTENT);
                 nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_CREATED, yesterdayTime);
-                yesterdayNodes.add(fileInfo.getNodeRef());
+                yesterdayNodes.add(fileInfo);
             }
         }
         finally
         {
-            policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_ANULLABLE);
+            policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
         }
+        checkNodes(freshNodes);
+        checkNodes(yesterdayNodes);
     }
 
+    /**
+     * Check the nodes to be indexed
+     * 
+     * @param nodes
+     * @throws Exception
+     */
+    private void checkNodes(List<FileInfo> nodes) throws Exception
+    {
+        SearchService searchService = registry.getSearchService();
+        
+        boolean notFound = false;
+        for (int i = 1; i <= 40; i++)
+        {
+            notFound = false;
+            for (FileInfo fileInfo : nodes)
+            {
+                ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home//cm:" + TEST_FOLDER_NAME + "//cm:" + fileInfo.getName() + "\"");
+                if (resultSet.length() == 0)
+                {
+                    notFound = true;
+                    break;
+                }
+            }
+            if (notFound)
+            {
+                Thread.sleep(500);
+            }
+        }
+        assertFalse("The content was not created or indexed correctly.", notFound);
+    }
+    
     @After
     @Override
     public void tearDown() throws Exception
@@ -275,14 +306,14 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
         assertFalse("Result set must not be empty!", actualNodes.isEmpty());
         assertTrue(("Result set must contain at least " + TEST_DOCUMENTS_AMOUNT + " nodes!"), actualNodes.size() >= yesterdayNodes.size());
 
-        for (NodeRef nodeRef : freshNodes)
+        for (FileInfo fileInfo : freshNodes)
         {
-            assertFalse("No one of the nodes created \"today\" is expected in result set!", actualNodes.contains(nodeRef));
+            assertFalse("No one of the nodes created \"today\" is expected in result set!", actualNodes.contains(fileInfo.getNodeRef()));
         }
 
-        for (NodeRef nodeRef : yesterdayNodes)
+        for (FileInfo fileInfo : yesterdayNodes)
         {
-            assertTrue("One of the nodes created \"yesteday\" is missing in result set!", actualNodes.contains(nodeRef));
+            assertTrue("One of the nodes created \"yesteday\" is missing in result set!", actualNodes.contains(fileInfo.getNodeRef()));
         }
     }
 }

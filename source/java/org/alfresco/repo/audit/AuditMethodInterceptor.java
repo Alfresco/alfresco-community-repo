@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.audit.model.AuditApplication;
 import org.alfresco.repo.domain.schema.SchemaBootstrap;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.Auditable;
@@ -517,7 +518,17 @@ public class AuditMethodInterceptor implements MethodInterceptor
 		            {
 		                public Map<String, Serializable> execute() throws Throwable
 		                {
-		                    return auditComponent.recordAuditValues(rootPath, auditData);
+                            // Record thrown exceptions regardless of userFilter in case of failed authentication
+                            // see MNT-11760
+                            if (thrown instanceof AuthenticationException)
+                            {
+                                  return auditComponent.recordAuditValuesWithUserFilter(rootPath, auditData, false);
+                            }
+                            else
+                            {
+                                  return auditComponent.recordAuditValues(rootPath, auditData);
+                            }
+
 		                }
 		            };
 		            try

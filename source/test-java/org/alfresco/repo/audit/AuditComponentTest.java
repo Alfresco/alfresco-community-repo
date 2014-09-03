@@ -108,7 +108,7 @@ public class AuditComponentTest extends TestCase
         auditModelRegistry = (AuditModelRegistryImpl) ctx.getBean("auditModel.modelRegistry");
         //MNT-10807 : Auditing does not take into account audit.filter.alfresco-access.transaction.user
         UserAuditFilter userAuditFilter = new UserAuditFilter();
-        userAuditFilter.setUserFilterPattern("System;.*");
+        userAuditFilter.setUserFilterPattern("~System;~null;.*");
         userAuditFilter.afterPropertiesSet();
         auditComponent = (AuditComponent) ctx.getBean("auditComponent");
         auditComponent.setUserAuditFilter(userAuditFilter);
@@ -647,12 +647,17 @@ public class AuditComponentTest extends TestCase
         {
             try
             {
+                AuthenticationUtil.pushAuthentication();
                 authenticationService.authenticate("banana", "****".toCharArray());
                 fail("Invalid authentication attempt should fail");
             }
             catch (AuthenticationException e)
             {
                 // Expected
+            }
+            finally
+            {
+                AuthenticationUtil.popAuthentication();
             }
         }
 
@@ -811,7 +816,7 @@ public class AuditComponentTest extends TestCase
      */
     public void testAuditSubordinateCall() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
         AuditQueryParameters params = new AuditQueryParameters();
         params.setForward(true);

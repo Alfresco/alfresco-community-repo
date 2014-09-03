@@ -484,17 +484,21 @@ public class AuditComponentImpl implements AuditComponent
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * @since 3.2
-     */
+    @Override
     public Map<String, Serializable> recordAuditValues(String rootPath, Map<String, Serializable> values)
+    {
+        return recordAuditValuesWithUserFilter(rootPath, values, true);
+    }
+    
+    @Override
+    public Map<String, Serializable> recordAuditValuesWithUserFilter(String rootPath, Map<String, Serializable> values, boolean useUserFilter)
     {
         ParameterCheck.mandatory("rootPath", rootPath);
         AuditApplication.checkPathFormat(rootPath);
         
         String username = AuthenticationUtil.getFullyAuthenticatedUser();
-        if (values == null || values.isEmpty() || !areAuditValuesRequired() || !userAuditFilter.acceptUser(username) || !auditFilter.accept(rootPath, values))
+        if (values == null || values.isEmpty() || !areAuditValuesRequired()
+                || !(userAuditFilter.acceptUser(username) || !useUserFilter) || !auditFilter.accept(rootPath, values))
         {
             return Collections.emptyMap();
         }

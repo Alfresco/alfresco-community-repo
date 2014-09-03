@@ -208,6 +208,19 @@ public interface AuditComponent
     Map<String, Serializable> recordAuditValues(String rootPath, Map<String, Serializable> values);
     
     /**
+     * The same as {@link AuditComponent#recordAuditValues(String, Map)}, but with controlled usage of userFilter
+     * 
+     * @param rootPath          a base path of {@link AuditPath} key entries concatenated with the path separator
+     *                          '/' ({@link AuditApplication#AUDIT_PATH_SEPARATOR})
+     * @param values            the values to audit mapped by {@link AuditPath} key relative to root path
+     *                          (may be <tt>null</tt>)
+     * @param useUserFilter     if <tt>false<tt> the user filter is disabled.
+     * @return                  Returns the values that were actually persisted, keyed by their full path.
+     * @throws IllegalStateException if the transaction state could not be determined
+     */
+    Map<String, Serializable> recordAuditValuesWithUserFilter(String rootPath, Map<String, Serializable> values, boolean useUserFilter);
+    
+    /**
      * Find audit entries using the given parameters
      * 
      * @param callback          the data callback per entry

@@ -295,6 +295,7 @@ public class AttributeServiceTest extends TestCase
             attributeService.removeAttribute(KEY_INT_1, KEY_MAP);
             attributeService.removeAttribute(KEY_STR_1, KEY_STR_2);
             attributeService.removeAttribute(KEY_STR_1, KEY_SERIALIZABLE);
+            propertyValueDAO.cleanupUnusedValues();
         }
     }
 }

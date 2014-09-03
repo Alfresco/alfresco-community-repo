@@ -1824,23 +1824,23 @@
       <property name="facetService" ref="solrFacetService"/>
    </bean>
    <bean
-      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.get"
-      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminGet"
+      id="webscript.org.alfresco.repository.facet.solr-facet-config-admin.get"
+      class="org.alfresco.repo.web.scripts.facet.SolrFacetConfigAdminGet"
       parent="baseSolrFacetConfigAdminWebscript">
    </bean>
    <bean
-      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.delete"
-      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminDelete"
+      id="webscript.org.alfresco.repository.facet.solr-facet-config-admin.delete"
+      class="org.alfresco.repo.web.scripts.facet.SolrFacetConfigAdminDelete"
       parent="baseSolrFacetConfigAdminWebscript">
    </bean>
    <bean
-      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.post"
-      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminPost"
+      id="webscript.org.alfresco.repository.facet.solr-facet-config-admin.post"
+      class="org.alfresco.repo.web.scripts.facet.SolrFacetConfigAdminPost"
       parent="baseSolrFacetConfigAdminWebscript">
    </bean>
    <bean
-      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.put"
-      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminPut"
+      id="webscript.org.alfresco.repository.facet.solr-facet-config-admin.put"
+      class="org.alfresco.repo.web.scripts.facet.SolrFacetConfigAdminPut"
       parent="baseSolrFacetConfigAdminWebscript">
    </bean>
 

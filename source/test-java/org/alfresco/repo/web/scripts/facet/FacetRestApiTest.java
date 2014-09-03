@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.web.scripts.solr.facet;
+package org.alfresco.repo.web.scripts.facet;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,8 +58,8 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
     private static final String FACETS = "facets";
 
-    private final static String GET_FACETS_URL       = "/api/solr/facet-config";
-    private final static String PUT_FACET_URL_FORMAT = "/api/solr/facet-config/{0}?relativePos={1}";
+    private final static String GET_FACETS_URL       = "/api/facet/facet-config";
+    private final static String PUT_FACET_URL_FORMAT = "/api/facet/facet-config/{0}?relativePos={1}";
     private final static String POST_FACETS_URL      = GET_FACETS_URL;
     private final static String PUT_FACETS_URL       = GET_FACETS_URL;
 

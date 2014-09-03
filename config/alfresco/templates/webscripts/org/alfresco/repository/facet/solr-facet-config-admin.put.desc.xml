@@ -1,13 +1,15 @@
 <webscript>
-   <shortname>POST Faceted-Search Config</shortname>
+   <shortname>PUT Faceted-Search Config</shortname>
    <description>
    <![CDATA[
-   Post faceted-search config
-   
-   http://<host>:<port>/alfresco/api/solr/facet-config
-   
-   Example body to this web script:
-   
+   Put (update) faceted-search config<br/>
+   This REST endpoint supports two forms of resource updates:<br/>
+   <br/>
+   http://<host>:<port>/alfresco/api/facet/facet-config<br/>
+   <br/>
+   This will perform an update of the Facet properties. Example body to this web script:<br/>
+   <br/>
+   <pre>
    {
              "filterID" : "filter_content_size",
              "facetQName" : "{http://www.alfresco.org/model/content/1.0}content.size",
@@ -17,7 +19,7 @@
              "hitThreshold" : 1,
              "minFilterValueLength" : 5,
              "sortBy" : "ALPHABETICALLY",
-             "scope" : "SCOPED_SITES", // if not provided, default value is "ALL"
+             "scope" : "SCOPED_SITES",  // if not provided, default value is "ALL"
              "scopedSites" : [
                      "site3",
                      "site2",
@@ -30,13 +32,19 @@
                 }
              }
              "isEnabled" : true  // if not provided, default value is false
-   }
+   }</pre><br/>
    
    Notes:
    - user must be an Admin, member of Alfresco_Search_Administrators group or a Network Admin for given network/tenant
+   <br/>
+   Alternatively, you can omit the request body as shown above and include a query parameter, relativePos, which
+   will not update the facet properties but will move the facet in the ordered list by the specified distance.<br/>
+   +2 means 'down two places'. -1 means 'up one place'. An attempt to move a facet beyond the end of the sequence will
+   simply move it to the end.
    ]]>
    </description>
-   <url>/api/solr/facet-config</url>
+   <url>/api/facet/facet-config</url>
+   <url>/api/facet/facet-config/{filterID}?relativePos={relativePos?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>

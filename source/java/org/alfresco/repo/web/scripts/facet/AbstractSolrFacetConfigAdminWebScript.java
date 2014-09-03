@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.web.scripts.solr.facet;
+package org.alfresco.repo.web.scripts.facet;
 
 import java.io.Serializable;
 import java.util.ArrayList;

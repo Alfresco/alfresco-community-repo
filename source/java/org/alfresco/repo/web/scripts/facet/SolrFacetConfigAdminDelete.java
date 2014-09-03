@@ -17,12 +17,11 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.web.scripts.solr.facet;
+package org.alfresco.repo.web.scripts.facet;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -31,20 +30,13 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class is the controller for the "solr-facet-config-admin.get" web script.
+ * This class is the controller for the "solr-facet-config-admin.delete" web script.
  * 
  * @author Jamal Kaabi-Mofrad
  */
-public class SolrFacetConfigAdminGet extends AbstractSolrFacetConfigAdminWebScript
+public class SolrFacetConfigAdminDelete extends AbstractSolrFacetConfigAdminWebScript
 {
-    private static final Log logger = LogFactory.getLog(SolrFacetConfigAdminGet.class);
-
-    @Override
-    protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status, final Cache cache)
-    {
-        // Allow all authenticated users view the filters
-        return unprotectedExecuteImpl(req, status, cache);
-    }
+    private static final Log logger = LogFactory.getLog(SolrFacetConfigAdminDelete.class);
 
     @Override
     protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache)
@@ -53,25 +45,18 @@ public class SolrFacetConfigAdminGet extends AbstractSolrFacetConfigAdminWebScri
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         String filterID = templateVars.get("filterID");
 
-        Map<String, Object> model = new HashMap<String, Object>(1);
-
         if (filterID == null)
         {
-            model.put("filters", facetService.getFacets());
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Filter id not provided");
         }
-        else
-        {
-            SolrFacetProperties fp = facetService.getFacet(filterID);
-            if (fp == null)
-            {
-                throw new WebScriptException(Status.STATUS_NOT_FOUND, "Filter not found");
-            }
-            model.put("filter", fp);
-        }
+        facetService.deleteFacet(filterID);
+
+        Map<String, Object> model = new HashMap<String, Object>(1);
+        model.put("success", true);
 
         if (logger.isDebugEnabled())
         {
-            logger.debug("Retrieved all available facets: " + model.values());
+            logger.debug("Facet [" + filterID + "] has been deleted successfully");
         }
 
         return model;

@@ -1845,9 +1845,6 @@
       <property name="ownableService">
          <ref bean="OwnableService" />
       </property>
-      <property name="AVMService">
-         <ref bean="AVMService" />
-      </property>
     </bean>
     
 </beans>

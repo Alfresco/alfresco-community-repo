@@ -403,16 +403,27 @@
 		<platformTest type="unix" />
 	    </ruleList>
 	</runProgram>
-	<actionGroup>
+	<actionGroup progressText="Stopping Services">
 	    <actionList>
-		<runProgram>
-		    <abortOnError>0</abortOnError>
-		    <showMessageOnError>0</showMessageOnError>
-		    <progressText>Stopping services</progressText>
-		    <program>${installdir}/tomcat/scripts/servicerun.bat</program>
-		    <programArguments>STOP</programArguments>
-		</runProgram>
-		<runProgram>
+        <logMessage text="Stopping service: ${tomcat_unique_service_name}" />
+        <stopWindowsService abortOnError="0" showMessageOnError="0" serviceName="${tomcat_unique_service_name}" delay="90000" />
+        <logMessage text="Stopped: ${tomcat_unique_service_name}" />
+        <wait ms="10000" />
+        <foreach values="1 2 3 4 5 6 7 8 9 10" variables="iteration" >
+            <actionList>
+                <actionGroup>
+                    <actionList>
+                        <logMessage text="Waiting for Tomcat service" />
+                        <wait ms="2000" />
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="windows" />
+                        <windowsServiceTest service="${tomcat_unique_service_name}" condition="is_running" />
+                    </ruleList>
+                </actionGroup>
+            </actionList>
+        </foreach>
+        <runProgram>
 		    <abortOnError>0</abortOnError>
 		    <showMessageOnError>0</showMessageOnError>
 		    <progressText>Stopping services</progressText>

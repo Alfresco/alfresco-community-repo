@@ -74,6 +74,7 @@
                 <platformTest type="windows"/>
             </ruleList>
         </getUniqueWindowsServiceName>
+        <setInstallerVariable name="tomcat_unique_service_name" value="${tomcat_unique_service_name}" persist="1" />
     </readyToInstallActionList>
 
     <postInstallationActionList>

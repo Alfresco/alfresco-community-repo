@@ -95,6 +95,13 @@
                 <cd path="${installer_directory}" />
             </preShowPageActionList>
             <validationActionList>
+                <actionGroup>
+                <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                <ruleList>
+                   <isTrue value="${component(baseparamdir).parameter(installdir).allowEmptyValue}" />
+                   <compareText text="${installdir}" logic="equals" value="" negate="yes" />
+                </ruleList>
+                <actionList>
                 <throwError>
 <!-- Require installdir to be empty. #2489 -->
 <text>The selected folder is not empty. Please select a different folder</text>
@@ -187,6 +194,8 @@
                 <ruleList>
                     <isFalse value="${base_installdir_allow_symlink_on_windows_dir}" />
                 </ruleList>
+                </actionGroup>
+                </actionList>
                 </actionGroup>
             </validationActionList>
         </directoryParameter>

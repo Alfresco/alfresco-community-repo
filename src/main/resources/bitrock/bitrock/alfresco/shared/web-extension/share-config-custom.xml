@@ -206,8 +206,8 @@
             The I18N label is created from the "type" attribute, e.g. google-docs.doc=Google Docs&trade; Document
          -->
          <creatable-types>
-            <creatable type="doc">application/msword</creatable>
-            <creatable type="xls">application/vnd.ms-excel</creatable>
+            <creatable type="doc">application/vnd.openxmlformats-officedocument.wordprocessingml.document</creatable>
+            <creatable type="xls">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</creatable>
             <creatable type="ppt">application/vnd.ms-powerpoint</creatable>
          </creatable-types>
       </google-docs>
@@ -315,6 +315,11 @@
             JAAS login configuration entry name.
          -->
          <config-entry>ShareHTTP</config-entry>
+        <!--
+           A Boolean which when true strips the @domain sufix from Kerberos authenticated usernames.
+           Use together with stripUsernameSuffix property in alfresco-global.properties file.
+        -->
+        <stripUserNameSuffix>true</stripUserNameSuffix>
       </kerberos>
    </config>
 
@@ -419,5 +424,20 @@
       </remote>
    </config>
    -->
+
+   <!-- Cookie settings -->
+   <!-- To disable alfUsername2 cookie set enableCookie value to "false" -->
+   <!--
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="cookie" class="org.alfresco.web.config.cookie.CookieElementReader"/>
+      </element-readers>
+   </plug-ins>
    
+   <config evaluator="string-compare" condition="Cookie" replace="true">
+      <cookie>
+         <enableCookie>false</enableCookie>
+      </cookie>
+   </config>
+   -->
 </alfresco-config>

@@ -179,7 +179,6 @@ jayrock         http://jayrock.berlios.de/
 Jmagick		http://sourceforge.net/projects/jmagick/
 JBoss Virtual File System	http://www.jboss.org/community/wiki/JBoss5VirtualFileSystem
 JODConverter	http://www.artofsolving.com/node/20
-jTDS Project	http://jtds.sourceforge.net/license.html
 Jut.jar		http://www.openoffice.org/licenses/lgpl_license.html
 OpenOffice	http://www.openoffice.org/license.html
 

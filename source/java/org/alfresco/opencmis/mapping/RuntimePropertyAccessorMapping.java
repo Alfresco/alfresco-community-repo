@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -145,6 +145,9 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         {
             registerPropertyAccessor(new DescriptionProperty(serviceRegistry, cmisConnector));
             registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisConnector, cmisMapping));
+
+            // MNT-11631: 'cmis:isPrivateWorkingCopy' property accessor
+            registerPropertyAccessor(new IsPrivateWorkingCopy(serviceRegistry, cmisConnector));
         }
 
         //

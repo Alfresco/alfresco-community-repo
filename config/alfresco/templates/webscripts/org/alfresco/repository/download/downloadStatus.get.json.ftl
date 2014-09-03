@@ -1,9 +1,9 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
    {
       "status": "${downloadStatus.status?string}",
-      "done": "${downloadStatus.done?string}", 
-      "total": "${downloadStatus.total?string}", 
-      "filesAdded": "${downloadStatus.filesAdded?string}", 
-      "totalFiles": "${downloadStatus.totalFiles?string}" 
+      "done": "${downloadStatus.done?c}",
+      "total": "${downloadStatus.total?c}",
+      "filesAdded": "${downloadStatus.filesAdded?c}",
+      "totalFiles": "${downloadStatus.totalFiles?c}"
    }
 </#escape>

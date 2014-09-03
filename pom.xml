@@ -16,7 +16,6 @@
         <bitrock.folder>${binaries.folder}/bitrock/bitrock-8.5.1-20121129</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
         <bitrock.arguments>
-		   --verbose
            --license
            ${binaries.folder}/build-classpath/license.xml
            --setvars
@@ -98,7 +97,7 @@
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/binaries-osx-x64</outputDirectory>
                                 </artifactItem>
-								<!-- LibreOffice -->
+                                <!-- LibreOffice -->
                                 <artifactItem>
                                     <groupId>org.libreoffice</groupId>
                                     <artifactId>libreoffice-dist</artifactId>

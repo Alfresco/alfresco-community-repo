@@ -201,6 +201,11 @@ public class DownloadServiceIntegrationTest
                 {
                     Assert.assertTrue(association.getTargetRef().equals(rootFile) || association.getTargetRef().equals(rootFolder));
                 }
+                
+                Assert.assertTrue(NODE_SERVICE.hasAspect(downloadNode, ContentModel.ASPECT_INDEX_CONTROL));
+                Assert.assertEquals(Boolean.FALSE,properties.get(ContentModel.PROP_IS_INDEXED));
+                Assert.assertEquals(Boolean.FALSE,properties.get(ContentModel.PROP_IS_CONTENT_INDEXED));
+                
                 return null;
             }
         });

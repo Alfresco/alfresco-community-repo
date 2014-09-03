@@ -124,6 +124,12 @@ public class DownloadStorage
         
         final NodeRef downloadNodeRef = newChildAssoc.getChildRef();
         
+        // MNT-11911 fix, add ASPECT_INDEX_CONTROL and property that not create indexes for search and not visible files/folders at 'My Documents' dashlet 
+        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(2);
+        aspectProperties.put(ContentModel.PROP_IS_INDEXED, Boolean.FALSE);
+        aspectProperties.put(ContentModel.PROP_IS_CONTENT_INDEXED, Boolean.FALSE);
+        nodeService.addAspect(downloadNodeRef, ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);
+         
         if (log.isDebugEnabled())
         {
             StringBuilder msg = new StringBuilder();

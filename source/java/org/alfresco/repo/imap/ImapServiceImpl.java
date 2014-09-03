@@ -1210,7 +1210,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 {
                     try
                     {
-                        return config.getFolderPath(namespaceService, nodeService, searchService, fileFolderService);
+                        return config.getFolderPathOrNull(namespaceService, nodeService, searchService, fileFolderService);
                     }
                     catch (AccessDeniedException e)
                     {

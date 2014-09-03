@@ -104,7 +104,8 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
      * <p>
      * Authentication and transactions are the client's responsibility.
      * 
-     * @return                      Returns an existing folder reference or null
+     * @return Returns an existing folder reference
+     * @throws AlfrescoRuntimeException if path cannot be resolved or found node is not a folder
      */
     public NodeRef getFolderPath(
             NamespaceService namespaceService,
@@ -112,12 +113,40 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
             SearchService searchService,
             FileFolderService fileFolderService)
     {
+        return getFolderPathImpl(namespaceService, nodeService, searchService, fileFolderService, true);
+    }
+    
+    /**
+     * Helper method to find the folder path referenced by this bean.
+     * The {@link #getPath() path} to the start of the {@link #getFolderNames() folder path}
+     * must exist.
+     * <p>
+     * Authentication and transactions are the client's responsibility.
+     * 
+     * @return Returns an existing folder reference or null
+     */
+    public NodeRef getFolderPathOrNull(
+            NamespaceService namespaceService,
+            NodeService nodeService,
+            SearchService searchService,
+            FileFolderService fileFolderService)
+    {
+        return getFolderPathImpl(namespaceService, nodeService, searchService, fileFolderService, false);
+    }
+    
+    private NodeRef getFolderPathImpl(
+            NamespaceService namespaceService,
+            NodeService nodeService,
+            SearchService searchService,
+            FileFolderService fileFolderService,
+            boolean throwException)
+    {
         NodeRef pathStartNodeRef = super.resolveNodePath(namespaceService, nodeService, searchService);
         if (pathStartNodeRef == null)
         {
-            throw new AlfrescoRuntimeException(
+            return getNullOrThrowAlfrescoRuntimeExcpetion(
                     "Folder path resolution requires an existing base path. \n" +
-                    "   Base path: " + getRootPath());
+                    "   Base path: " + getRootPath(), throwException);
         }
         // Just choose the root path if the folder path is empty
         if (folderPath.length() == 0)
@@ -129,7 +158,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
             List<NodeRef> nodeRefs = searchService.selectNodes(pathStartNodeRef, folderPath, null, namespaceService, true);
             if (nodeRefs.size() == 0)
             {
-                throw new AlfrescoRuntimeException("Folder not found: " + this);
+                return getNullOrThrowAlfrescoRuntimeExcpetion("Folder not found: " + this, throwException);
             }
             else
             {
@@ -137,12 +166,21 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
                 FileInfo folderInfo = fileFolderService.getFileInfo(nodeRef);
                 if (!folderInfo.isFolder())
                 {
-                    throw new AlfrescoRuntimeException("Not a folder: " + this);
+                    return getNullOrThrowAlfrescoRuntimeExcpetion("Not a folder: " + this, throwException);
                 }
                 return nodeRef;
             }
         }
         // Done
+    }
+    
+    private NodeRef getNullOrThrowAlfrescoRuntimeExcpetion(String exceptionMessage, boolean throwException)
+    {
+        if (throwException)
+        {
+            throw new AlfrescoRuntimeException(exceptionMessage);
+        }
+        return null;
     }
     
     /**

@@ -48,9 +48,15 @@
 			<#if item.path??>
 			"path": "${item.path}",
 			</#if>
-			<#if item.lastThumbnailModification??>
-			"lastThumbnailModification": "${item.lastThumbnailModification}",
-			</#if>
+			"lastThumbnailModification":
+			[
+			 <#if item.lastThumbnailModification??>
+			 <#list item.lastThumbnailModification as lastThumbnailMod>
+			 "${lastThumbnailMod}"
+			 <#if lastThumbnailMod_has_next>,</#if>
+			 </#list>
+			 </#if>
+			],
 			"tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>]
 		}<#if item_has_next>,</#if>
 		</#list>

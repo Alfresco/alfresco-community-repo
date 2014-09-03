@@ -116,6 +116,7 @@ function getRepositoryItem(folderPath, node, populate)
             modifiedByUser: node.properties["cm:modifier"],
             createdOn: node.properties["cm:created"],
             createdByUser: node.properties["cm:creator"],
+            lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
             mimetype: node.mimetype,
             path: folderPath.join("/")
          };
@@ -173,6 +174,7 @@ function getDocumentItem(siteId, containerId, pathParts, node, populate)
             modifiedByUser: node.properties["cm:modifier"],
             createdOn: node.properties["cm:created"],
             createdByUser: node.properties["cm:creator"],
+            lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
             mimetype: node.mimetype,
             path: pathParts.join("/")
          };

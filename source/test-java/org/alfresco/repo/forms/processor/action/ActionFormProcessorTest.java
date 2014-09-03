@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,19 +19,18 @@
 
 package org.alfresco.repo.forms.processor.action;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
@@ -48,22 +47,18 @@ import org.alfresco.repo.forms.processor.node.FormFieldConstants;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.springframework.context.ApplicationContext;
+import org.alfresco.util.BaseAlfrescoSpringTest;
 
 /**
  * Test class for the {@link ActionFormProcessor}.
@@ -72,115 +67,108 @@ import org.springframework.context.ApplicationContext;
  * @since 4.0
  */
 @Category(BaseSpringTestsCategory.class)
-public class ActionFormProcessorTest
+public class ActionFormProcessorTest extends BaseAlfrescoSpringTest
 {
-    private static final ApplicationContext testContext = ApplicationContextHelper.getApplicationContext();
-    
-    // injected services
-    private static ContentService CONTENT_SERVICE;
-    private static FormService FORM_SERVICE;
-    private static NamespaceService NAMESPACE_SERVICE;
-    private static NodeService NODE_SERVICE;
-    private static Repository REPOSITORY_HELPER;
-    private static RetryingTransactionHelper TRANSACTION_HELPER;
-    
+    private RetryingTransactionHelper transactionHelper;
+    private NamespaceService namespaceService;
+    private Repository repositoryHelper;
+    private FormService formService;
+
     private NodeRef testNode;
     private List<NodeRef> testNodesToBeTidiedUp;
-    
-    @BeforeClass public static void initTestsContext() throws Exception
+
+
+    @Override
+    protected String[] getConfigLocations()
     {
-        CONTENT_SERVICE = (ContentService)testContext.getBean("ContentService");
-        FORM_SERVICE = (FormService)testContext.getBean("FormService");
-        NAMESPACE_SERVICE = (NamespaceService)testContext.getBean("NamespaceService");
-        NODE_SERVICE = (NodeService)testContext.getBean("NodeService");
-        REPOSITORY_HELPER = (Repository)testContext.getBean("repositoryHelper");
-        TRANSACTION_HELPER = (RetryingTransactionHelper)testContext.getBean("retryingTransactionHelper");
-        
+        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
+
+        List<String> locations = Arrays.asList(existingConfigLocations);
+        List<String> mutableLocationsList = new ArrayList<String>(locations);
+        mutableLocationsList.add("classpath:org/alfresco/repo/forms/MNT-7383-context.xml");
+
+        String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
+        return result;
+    }
+
+    @SuppressWarnings("deprecation")
+	@Override
+    protected void onSetUpInTransaction() throws Exception
+    {
+        super.onSetUpInTransaction();
+
+        this.formService = (FormService)this.applicationContext.getBean("FormService");
+        this.namespaceService = (NamespaceService)this.applicationContext.getBean("NamespaceService");
+        this.repositoryHelper = (Repository)this.applicationContext.getBean("repositoryHelper");
+        this.transactionHelper = (RetryingTransactionHelper)this.applicationContext.getBean("retryingTransactionHelper");
+
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+        testNode = createNode(companyHome,
+                "testDoc" + ActionFormProcessorTest.class.getSimpleName() + ".txt",
+                ContentModel.TYPE_CONTENT);
+        ContentWriter writer = contentService.getWriter(testNode, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent("Irrelevant content");
+
+        testNodesToBeTidiedUp = new ArrayList<NodeRef>();
+        testNodesToBeTidiedUp.add(testNode);
+
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
     }
-    
-    /**
-     * Create some content that can have actions run on it.
-     */
-    @Before public void createTestObjects() throws Exception
+
+    @Override
+    protected void onTearDownInTransaction() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        for (NodeRef node : testNodesToBeTidiedUp)
         {
-            @Override
-            public Void execute() throws Throwable
-            {
-                // Create some content which we will run actions on.
-                NodeRef companyHome = REPOSITORY_HELPER.getCompanyHome();
-                testNode = createNode(companyHome,
-                                      "testDoc" + ActionFormProcessorTest.class.getSimpleName() + ".txt",
-                                      ContentModel.TYPE_CONTENT);
-                ContentWriter writer = CONTENT_SERVICE.getWriter(testNode, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                writer.setEncoding("UTF-8");
-                writer.putContent("Irrelevant content");
-                
-                return null;
-            }
-        });
-        
-        testNodesToBeTidiedUp = new ArrayList<NodeRef>();
-        testNodesToBeTidiedUp.add(testNode);
+            if (nodeService.exists(node)) nodeService.deleteNode(node);
+        }
+        authenticationService.clearCurrentSecurityContext();
+        super.onTearDownInTransaction();
     }
-    
-    
+
     /**
      * Create a node of the specified content type, under the specified parent node with the specified cm:name.
      */
-    private NodeRef createNode(NodeRef parentNode, String name, QName type)
+    protected NodeRef createNode(NodeRef parentNode, String name, QName type)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(ContentModel.PROP_NAME, name);
         QName docContentQName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, name);
-        NodeRef node = NODE_SERVICE.createNode(parentNode,
+        NodeRef node = this.nodeService.createNode(parentNode,
                     ContentModel.ASSOC_CONTAINS,
                     docContentQName,
                     type,
                     props).getChildRef();
         return node;
     }
-    
-    /**
-     * This method deletes any nodes which were created during test execution.
-     */
-    @After public void tidyUpTestNodes() throws Exception
+
+    public void testRequestFormForNonExistentAction() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        try
+        {
+            this.formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "noSuchActionBean"));
+            fail("Expected FormNotFoundException");
+        }
+        catch(FormNotFoundException e)
+        {
+            //NOOP
+        }
+
+    }
+
+    public void testGenerateDefaultFormForParameterlessAction() throws Exception
+    {
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
                 public Void execute() throws Throwable
                 {
-                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                    
-                    for (NodeRef node : testNodesToBeTidiedUp)
-                    {
-                        if (NODE_SERVICE.exists(node)) NODE_SERVICE.deleteNode(node);
-                    }
-                    
-                    return null;
-                }
-            });
-    }
-    
-    @Test(expected=FormNotFoundException.class) public void requestFormForNonExistentAction() throws Exception
-    {
-        FORM_SERVICE.getForm(new Item(ActionFormProcessor.ITEM_KIND, "noSuchActionBean"));
-    }
-    
-    
-    @Test public void generateDefaultFormForParameterlessAction() throws Exception
-    {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    Form form = FORM_SERVICE.getForm(new Item(ActionFormProcessor.ITEM_KIND, "extract-metadata"));
+                    Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "extract-metadata"));
                     
                     // check a form got returned
                     assertNotNull("Expecting form to be present", form);
@@ -203,46 +191,43 @@ public class ActionFormProcessorTest
             });
     }
     
-    @Test public void generateDefaultFormForActionWithNodeRefParam() throws Exception
+    public void testGenerateDefaultFormForActionWithNodeRefParam() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    Form form = FORM_SERVICE.getForm(new Item(ActionFormProcessor.ITEM_KIND, "script"));
-                    
-                    // check a form got returned
-                    assertNotNull("Expecting form to be present", form);
-                    
-                    // get the fields into a Map
-                    Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-                    
-                    assertEquals("Wrong number of fieldDefs", 2, fieldDefs.size());
-                    Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
-                    for (FieldDefinition fieldDef : fieldDefs)
-                    {
-                        fieldDefMap.put(fieldDef.getName(), fieldDef);
-                    }
-                    
-                    // First of all, we'll check the fields that come from the Action class.
-                    validateExecuteAsynchronouslyField(fieldDefMap);
-                    
-                    // One defined parameter for this action.
-                    PropertyFieldDefinition scriptRef = (PropertyFieldDefinition)fieldDefMap.get("script-ref");
-                    assertNotNull("'script-ref' field defn was missing.", scriptRef);
-                    assertEquals("script-ref", scriptRef.getName());
-                    assertEquals("Script", scriptRef.getLabel());
-                    assertEquals("script-ref", scriptRef.getDescription());
-                    assertEquals("text", scriptRef.getDataType());
-                    assertTrue(scriptRef.isMandatory());
-                    List<FieldConstraint> constraints = scriptRef.getConstraints();
-                    assertEquals(1, constraints.size());
-                    assertEquals("LIST", constraints.get(0).getType());
-                    
-                    return null;
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable {
+                Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "script"));
+
+                // check a form got returned
+                assertNotNull("Expecting form to be present", form);
+
+                // get the fields into a Map
+                Collection<FieldDefinition> fieldDefs = form.getFieldDefinitions();
+
+                assertEquals("Wrong number of fieldDefs", 2, fieldDefs.size());
+                Map<String, FieldDefinition> fieldDefMap = new HashMap<String, FieldDefinition>(fieldDefs.size());
+                for (FieldDefinition fieldDef : fieldDefs) {
+                    fieldDefMap.put(fieldDef.getName(), fieldDef);
                 }
-            });
+
+                // First of all, we'll check the fields that come from the Action class.
+                validateExecuteAsynchronouslyField(fieldDefMap);
+
+                // One defined parameter for this action.
+                PropertyFieldDefinition scriptRef = (PropertyFieldDefinition) fieldDefMap.get("script-ref");
+                assertNotNull("'script-ref' field defn was missing.", scriptRef);
+                assertEquals("script-ref", scriptRef.getName());
+                assertEquals("Script", scriptRef.getLabel());
+                assertEquals("script-ref", scriptRef.getDescription());
+                assertEquals("text", scriptRef.getDataType());
+                assertTrue(scriptRef.isMandatory());
+                List<FieldConstraint> constraints = scriptRef.getConstraints();
+                assertEquals(1, constraints.size());
+                assertEquals("LIST", constraints.get(0).getType());
+
+                return null;
+            }
+        });
     }
 
     private void validateExecuteAsynchronouslyField(Map<String, FieldDefinition> fieldDefMap)
@@ -257,9 +242,9 @@ public class ActionFormProcessorTest
     }
     
     
-    @Test public void generateFormWithSelectedFields() throws Exception
+    public void testGenerateFormWithSelectedFields() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
                 public Void execute() throws Throwable
@@ -269,7 +254,7 @@ public class ActionFormProcessorTest
                     fields.add(MoveActionExecuter.PARAM_DESTINATION_FOLDER);
                     fields.add(ActionFormProcessor.EXECUTE_ASYNCHRONOUSLY);
                     
-                    Form form = FORM_SERVICE.getForm(new Item(ActionFormProcessor.ITEM_KIND, "move"), fields);
+                    Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "move"), fields);
                     
                     // check a form got returned
                     assertNotNull("Expecting form to be present", form);
@@ -296,41 +281,106 @@ public class ActionFormProcessorTest
             });
     }
     
-    @Test public void persistForm_executeTransformAction() throws Exception
+    public void testPersistForm_executeTransformAction() throws Exception
     {
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    Form form = FORM_SERVICE.getForm(new Item(ActionFormProcessor.ITEM_KIND, "transform"));
-                    
-                    // This is the actionedUponNodeRef. A special parameter with no prop_ prefix
-                    form.addData(AbstractFormProcessor.DESTINATION, testNode.toString());
-                    
-                    // transform the node (which is text/plain to xml in the same folder)
-                    form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_XML);
-                    form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_DESTINATION_FOLDER, REPOSITORY_HELPER.getCompanyHome().toString());
-                    form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CONTAINS.toPrefixString(NAMESPACE_SERVICE));
-                    form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_ASSOC_QNAME, ContentModel.ASSOC_CONTAINS.toPrefixString(NAMESPACE_SERVICE));
-                    
-                    FORM_SERVICE.saveForm(form.getItem(), form.getFormData());
-                    
-                    for (ChildAssociationRef chAssRef : NODE_SERVICE.getChildAssocs(REPOSITORY_HELPER.getCompanyHome()))
-                    {
-                        System.err.println(NODE_SERVICE.getProperty(chAssRef.getChildRef(), ContentModel.PROP_NAME));
-                    }
-                    
-                    Serializable cmName = NODE_SERVICE.getProperty(testNode, ContentModel.PROP_NAME);
-                    String transformedNodeName = ((String)cmName).replace(".txt", ".xml");
-                    
-                    NodeRef expectedTransformedNode = NODE_SERVICE.getChildByName(REPOSITORY_HELPER.getCompanyHome(), ContentModel.ASSOC_CONTAINS, transformedNodeName);
-                    assertNotNull("transformed node was missing", expectedTransformedNode);
-                    
-                    testNodesToBeTidiedUp.add(expectedTransformedNode);
-                    
-                    return null;
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable {
+                Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "transform"));
+
+                // This is the actionedUponNodeRef. A special parameter with no prop_ prefix
+                form.addData(AbstractFormProcessor.DESTINATION, testNode.toString());
+
+                // transform the node (which is text/plain to xml in the same folder)
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_MIME_TYPE, MimetypeMap.MIMETYPE_XML);
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_DESTINATION_FOLDER, repositoryHelper.getCompanyHome().toString());
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_ASSOC_TYPE_QNAME, ContentModel.ASSOC_CONTAINS.toPrefixString(namespaceService));
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + TransformActionExecuter.PARAM_ASSOC_QNAME, ContentModel.ASSOC_CONTAINS.toPrefixString(namespaceService));
+
+                formService.saveForm(form.getItem(), form.getFormData());
+
+                for (ChildAssociationRef chAssRef : nodeService.getChildAssocs(repositoryHelper.getCompanyHome())) {
+                    System.err.println(nodeService.getProperty(chAssRef.getChildRef(), ContentModel.PROP_NAME));
                 }
-            });
+
+                Serializable cmName = nodeService.getProperty(testNode, ContentModel.PROP_NAME);
+                String transformedNodeName = ((String) cmName).replace(".txt", ".xml");
+
+                NodeRef expectedTransformedNode = nodeService.getChildByName(repositoryHelper.getCompanyHome(), ContentModel.ASSOC_CONTAINS, transformedNodeName);
+                assertNotNull("transformed node was missing", expectedTransformedNode);
+
+                testNodesToBeTidiedUp.add(expectedTransformedNode);
+
+                return null;
+            }
+        });
     }
+
+    public void testMNT7383() throws Exception
+    {
+        this.transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                Form form = formService.getForm(new Item(ActionFormProcessor.ITEM_KIND, "actionFormProcessorTestActionExecuter"));
+
+                assertNotNull("Expecting form to be present", form);
+
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + "check", Boolean.TRUE);
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + "date", new Date());
+                ArrayList<QName> qnameList = new ArrayList<QName>();
+                qnameList.add(ContentModel.TYPE_PERSON);
+                qnameList.add(ContentModel.TYPE_FOLDER);
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + "qname", qnameList);
+                ArrayList<NodeRef> nodeRefList = new ArrayList<NodeRef>();
+                nodeRefList.add(repositoryHelper.getCompanyHome());
+                nodeRefList.add(repositoryHelper.getRootHome());
+                form.addData(FormFieldConstants.PROP_DATA_PREFIX + "nodeRefs", nodeRefList);
+
+                formService.saveForm(form.getItem(), form.getFormData());
+
+                return null;
+            }
+        });
+    }
+
+
+    public static class ActionFormProcessorTestActionExecuter extends ActionExecuterAbstractBase
+    {
+        public static final String NAME = "actionFormProcessorTestActionExecuter";
+
+        @Override protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+        {
+            paramList.add(new ParameterDefinitionImpl("check", DataTypeDefinition.BOOLEAN, false, "Check"));
+            paramList.add(new ParameterDefinitionImpl("date", DataTypeDefinition.DATE, false, "Date"));
+            paramList.add(new ParameterDefinitionImpl("qname", DataTypeDefinition.QNAME, false, "QName", true));
+            paramList.add(new ParameterDefinitionImpl("nodeRefs", DataTypeDefinition.NODE_REF, false, "NodeRefs", true));
+        }
+
+        @SuppressWarnings("unchecked")
+		@Override protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
+        {
+            Object checkValue = action.getParameterValue("check");
+            assertEquals("Parameter value should be Boolean", checkValue.getClass(), Boolean.class);
+
+            Object dateValue = action.getParameterValue("date");
+            assertEquals("Parameter value should be Date", dateValue.getClass(), Date.class);
+
+            Object qnameValue = action.getParameterValue("qname");
+            assertEquals("Parameter value should be ArrayList", qnameValue.getClass(), ArrayList.class);
+            for (QName qname : (ArrayList<QName>)qnameValue)
+            {
+                assertEquals("The item value should be QName", qname.getClass(), QName.class);
+            }
+
+            Object nodeRefsValue = action.getParameterValue("nodeRefs");
+            assertEquals("Parameter value should be ArrayList", nodeRefsValue.getClass(), ArrayList.class);
+            for (NodeRef nodeRef : (ArrayList<NodeRef>)nodeRefsValue)
+            {
+                assertEquals("The item value should be NodeRef", nodeRef.getClass(), NodeRef.class);
+            }
+        }
+    }
+
 }

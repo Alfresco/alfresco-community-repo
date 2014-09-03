@@ -74,13 +74,14 @@ public class ActionParameterField implements Field
         }
         else
         {
-            if (DataTypeDefinition.BOOLEAN.equals(type))
+            if (DataTypeDefinition.NODE_REF.equals(type))
             {
-                this.fieldDef = new PropertyFieldDefinition(this.name, DataTypeDefinition.BOOLEAN.getLocalName());
+                // constrained NodeRef parameter (assumed list of particular NodeRefs)
+                this.fieldDef = new PropertyFieldDefinition(this.name, DataTypeDefinition.TEXT.getLocalName());
             }
             else
             {    
-                this.fieldDef = new PropertyFieldDefinition(this.name, DataTypeDefinition.TEXT.getLocalName());
+                this.fieldDef = new PropertyFieldDefinition(this.name, type.getLocalName());
             }
             PropertyFieldDefinition propFieldDef = (PropertyFieldDefinition)this.fieldDef;
             

@@ -19,12 +19,16 @@
 
 package org.alfresco.repo.forms.processor.action;
 
+import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ON;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.alfresco.repo.action.executer.ActionExecuter;
 import org.alfresco.repo.forms.Field;
@@ -49,6 +53,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 /**
@@ -202,24 +208,125 @@ public class ActionFormProcessor extends FilteredFormProcessor<ActionDefinition,
                 QName expectedParamType = actionParamDef.getType();
                 DataTypeDefinition typeDef = dictionaryService.getDataType(expectedParamType);
                 
-                // In order to allow short-form QNames, which are not handled by the default type converter,
-                // we'll do QName conversion ourselves.
                 Object convertedObj = null;
-                if (DataTypeDefinition.QNAME.equals(expectedParamType))
+                if (actionParamDef.isMultiValued())
                 {
-                    if (((String)fieldValueObj).charAt(0) == QName.NAMESPACE_BEGIN)
+                    if (fieldValueObj instanceof String)
                     {
-                        convertedObj = QName.createQName((String) fieldValueObj);
+                        if(((String)fieldValueObj).length() == 0)
+                        {
+                            // empty string for multi-valued parameters
+                            // should be treated as null
+                            fieldValueObj = null;
+                        }
+                        else if(DataTypeDefinition.QNAME.equals(expectedParamType))
+                        {
+                            // if value is a String convert to List of QName
+                            // In order to allow short-form QNames, which are not handled by the default type converter,
+                            // we'll do QName conversion ourselves.
+                            StringTokenizer tokenizer = new StringTokenizer((String) fieldValueObj, ",");
+                            List<QName> list = new ArrayList<QName>(8);
+                            while (tokenizer.hasMoreTokens())
+                            {
+                                String token = tokenizer.nextToken();
+                                QName qname = null;
+                                if (token.charAt(0) == QName.NAMESPACE_BEGIN)
+                                {
+                                    qname = QName.createQName(token);
+                                }
+                                else
+                                {
+                                    qname = QName.createQName(token, namespaceService);
+                                }
+                                list.add(qname);
+                            }
+
+                            // process the list the List
+                            fieldValueObj = list;
+                        }
+                        else
+                        {
+                            // if value is a String convert to List of String
+                            StringTokenizer tokenizer = new StringTokenizer((String) fieldValueObj, ",");
+                            List<String> list = new ArrayList<String>(8);
+                            while (tokenizer.hasMoreTokens())
+                            {
+                                list.add(tokenizer.nextToken());
+                            }
+
+                            // process the list the List
+                            fieldValueObj = list;
+                        }
                     }
-                    else
+                    else if (fieldValueObj instanceof JSONArray)
                     {
-                        convertedObj = QName.createQName((String)fieldValueObj, namespaceService);
+                     // if value is a JSONArray convert to List of Object
+                        JSONArray jsonArr = (JSONArray) fieldValueObj;
+                        int arrLength = jsonArr.length();
+                        List<Object> list = new ArrayList<Object>(arrLength);
+                        try
+                        {
+                            for (int x = 0; x < arrLength; x++)
+                            {
+                                list.add(jsonArr.get(x));
+                            }
+                        }
+                        catch (JSONException je)
+                        {
+                            throw new FormException("Failed to convert JSONArray to List", je);
+                        }
+
+                        // persist the list
+                        fieldValueObj = list;
+                    }
+                    
+                    if (fieldValueObj instanceof Collection<?>)
+                    {
+                        convertedObj = DefaultTypeConverter.INSTANCE.convert(typeDef, (Collection<?>)fieldValueObj);
+                    }
+                    else if (fieldValueObj != null)
+                    {
+                        throw new FormException("Not a recognized multi-value parameter value instance: " + convertedObj);
                     }
                 }
                 else
                 {
+                    if (fieldValueObj instanceof String)
+                    {
+                        if(((String)fieldValueObj).length() == 0)
+                        {
+                            if(!DataTypeDefinition.TEXT.equals(expectedParamType))
+                            {
+                                // empty string for multi-valued parameters
+                                // should be treated as null
+                                fieldValueObj = null;
+                            }
+                        }
+                        else if (DataTypeDefinition.BOOLEAN.equals(expectedParamType))
+                        {
+                            // check for browser representation of true, that being "on"
+                            if (ON.equals(fieldValueObj))
+                            {
+                                fieldValueObj = Boolean.TRUE;
+                            }
+                        }
+                        else if (DataTypeDefinition.QNAME.equals(expectedParamType))
+                        {
+                            // In order to allow short-form QNames, which are not handled by the default type converter,
+                            // we'll do QName conversion ourselves.
+                            if (((String)fieldValueObj).charAt(0) == QName.NAMESPACE_BEGIN)
+                            {
+                                fieldValueObj = QName.createQName((String) fieldValueObj);
+                            }
+                            else
+                            {
+                                fieldValueObj = QName.createQName((String)fieldValueObj, namespaceService);
+                            }
+                        }
+                    }
                     convertedObj = DefaultTypeConverter.INSTANCE.convert(typeDef, fieldValueObj);
                 }
+                
                 actionParameters.put(paramDefinitionName, (Serializable) convertedObj);
             }
         }

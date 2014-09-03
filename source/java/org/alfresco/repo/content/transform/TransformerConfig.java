@@ -122,6 +122,21 @@ public interface TransformerConfig
     static final String PRIORITY = ".priority";
     
     /**
+     * The suffix to property names to indicate which Alfresco version the transformer is
+     * available with. If not specified it is not restricted. So if set to "Enterprise" it
+     * is not available to Community.
+     * @see AMP
+     */
+    static final String EDITION = ".edition";
+    
+    /**
+     * The suffix to property names to indicate which Alfresco AMPs the transformer is
+     * available with. The value should be the AMP's ID. If not specified it is not restricted.
+     * @see #EDITION
+     */
+    static final String AMP = ".amp";
+    
+    /**
      * The suffix to property names for the threshold count.
      */
     static final String THRESHOLD_COUNT = ".thresholdCount";

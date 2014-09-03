@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.alfresco.repo.content.transform.TransformerConfig.AMP;
 import static org.alfresco.repo.content.transform.TransformerConfig.AVAILABLE;
+import static org.alfresco.repo.content.transform.TransformerConfig.EDITION;
 import static org.alfresco.repo.content.transform.TransformerConfig.FAILOVER;
 import static org.alfresco.repo.content.transform.TransformerConfig.PIPE;
 import static org.alfresco.repo.content.transform.TransformerConfig.PIPELINE;
@@ -31,8 +33,10 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -49,19 +53,22 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
 
     public TransformerConfigDynamicTransformers(TransformerConfig transformerConfig, TransformerProperties transformerProperties,
             MimetypeService mimetypeService, ContentService contentService, ContentTransformerRegistry transformerRegistry,
-            TransformerDebug transformerDebug)
+            TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService)
     {
-        createDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService, transformerRegistry, transformerDebug);
+        createDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
+                transformerRegistry, transformerDebug, moduleService, descriptorService);
     }
 
     private void createDynamicTransformers(TransformerConfig transformerConfig, TransformerProperties transformerProperties,
             MimetypeService mimetypeService, ContentService contentService, ContentTransformerRegistry transformerRegistry,
-            TransformerDebug transformerDebug)
+            TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService)
     {
         Collection<String> SUFFIXES = Arrays.asList(new String [] {
                 FAILOVER,
                 PIPELINE,
-                AVAILABLE
+                AVAILABLE,
+                EDITION,
+                AMP
         });
 
         Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue>
@@ -82,18 +89,36 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
                 {
                     try
                     {
-                        String availableStr = getProperty(property.transformerName, null, null, AVAILABLE, null, transformerSourceTargetSuffixValues);
-                        boolean available = availableStr == null || "true".equalsIgnoreCase(availableStr);
-                        
-                        AbstractContentTransformer2 transformer = property.suffix.equals(PIPELINE)
-                                ? createComplexTransformer(property, transformerConfig, mimetypeService,
-                                        contentService, transformerRegistry, transformerDebug, available)
-                                : createFailoverTransformer(property, transformerConfig, mimetypeService,
-                                        contentService, transformerRegistry, transformerDebug, available);
-                        transformer.register();
-                        processed.add(property);
-                        dynamicTransformers.add(transformer);
-                        logger.debug(property.transformerName+" added");
+                        String edition = getProperty(property.transformerName, null, null, EDITION,
+                                null, transformerSourceTargetSuffixValues);
+                        String moduleId = getProperty(property.transformerName, null, null, AMP,
+                                null, transformerSourceTargetSuffixValues);
+                        if (!supportedEdition(descriptorService, edition))
+                        {
+                            processed.add(property);
+                            logger.debug(property.transformerName+" ignored. As it is an "+edition+" only transformer.");
+                        }
+                        else if (!supportedModule(moduleService, moduleId))
+                        {
+                            processed.add(property);
+                            logger.debug(property.transformerName+" ignored. As the AMP "+moduleId+" is not installed.");
+                        }
+                        else
+                        {
+                            String availableStr = getProperty(property.transformerName, null, null, AVAILABLE,
+                                    null, transformerSourceTargetSuffixValues);
+                            boolean available = availableStr == null || "true".equalsIgnoreCase(availableStr);
+                            
+                            AbstractContentTransformer2 transformer = property.suffix.equals(PIPELINE)
+                                    ? createComplexTransformer(property, transformerConfig, mimetypeService,
+                                            contentService, transformerRegistry, transformerDebug, available)
+                                    : createFailoverTransformer(property, transformerConfig, mimetypeService,
+                                            contentService, transformerRegistry, transformerDebug, available);
+                            transformer.register();
+                            processed.add(property);
+                            dynamicTransformers.add(transformer);
+                            logger.debug(property.transformerName+" added");
+                        }
                     }
                     catch (IllegalArgumentException e)
                     {
@@ -120,6 +145,18 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
         }
     }
     
+    private boolean supportedEdition(DescriptorService descriptorService, String edition)
+    {
+        return descriptorService == null || edition == null ||
+                descriptorService.getServerDescriptor().getEdition().equals(edition);
+    }
+
+    private boolean supportedModule(ModuleService moduleService, String moduleId)
+    {
+        return moduleService == null || moduleId == null ||
+                moduleService.getModule(moduleId) != null;
+    }
+
     private AbstractContentTransformer2 createComplexTransformer(TransformerSourceTargetSuffixValue property,
             TransformerConfig transformerConfig,
             MimetypeService mimetypeService, ContentService contentService,

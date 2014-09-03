@@ -25,6 +25,12 @@
        <property name="globalProperties">
          <ref bean="global-properties" />
        </property>
+       <property name="moduleService">
+          <ref bean="ModuleService" />
+       </property>
+       <property name="descriptorService">
+          <ref bean="descriptorComponent" />
+       </property>
    </bean>
 
    <!-- Selects the transformer to be used -->

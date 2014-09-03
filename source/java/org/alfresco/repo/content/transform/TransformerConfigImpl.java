@@ -21,10 +21,13 @@ package org.alfresco.repo.content.transform;
 import java.util.Properties;
 
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.descriptor.DescriptorService;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
@@ -85,6 +88,10 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     // Needed to read global properties.
     private Properties globalProperties;
     
+    private ModuleService moduleService;
+    
+    private DescriptorService descriptorService;
+    
     private TransformerProperties transformerProperties;
     
     private TransformerConfigDynamicTransformers dynamicTransformers;
@@ -129,6 +136,16 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         this.globalProperties = globalProperties;
     }
 
+    public void setModuleService(ModuleService moduleService)
+    {
+        this.moduleService = moduleService;
+    }
+    
+    public void setDescriptorService(DescriptorService descriptorService)
+    {
+        this.descriptorService = descriptorService;
+    }
+
     /**
      * Called by spring after bean is initialised.
      */
@@ -138,7 +155,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         transformerProperties = new TransformerProperties(subsystem, globalProperties);
         
         dynamicTransformers = new TransformerConfigDynamicTransformers(this, transformerProperties, mimetypeService,
-                contentService, transformerRegistry, transformerDebug);
+                contentService, transformerRegistry, transformerDebug, moduleService, descriptorService);
         statistics= new TransformerConfigStatistics(this, mimetypeService);
         limits = new TransformerConfigLimits(transformerProperties, mimetypeService);
         supported = new TransformerConfigSupported(transformerProperties, mimetypeService);

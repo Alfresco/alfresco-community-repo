@@ -28,11 +28,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
@@ -380,6 +382,39 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         taskQuery.setActive(true);
         taskQuery.setProcessId(workflowInstanceId);
         checkNoTasksFoundUsingQuery(taskQuery);
+    }
+    
+    public void testStartWorkflowFromTaskListener() throws Exception
+    {
+        WorkflowDefinition testDefinition = deployDefinition("activiti/testStartWfFromListener.bpmn20.xml");
+        
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, "MNT-11926-testfile.txt");
+        final ChildAssociationRef childAssoc = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "MNT-11926-test"), ContentModel.TYPE_CONTENT, props);
+
+        try
+        {
+            // Create workflow parameters
+            Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+            Serializable wfPackage = workflowService.createPackage(null);
+            params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+            NodeRef assignee = personManager.get(USER1);
+            params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee); // task instance field
+
+            WorkflowPath path = workflowService.startWorkflow(testDefinition.getId(), params);
+            String instanceId = path.getInstance().getId();
+
+            WorkflowTask startTask = workflowService.getStartTask(instanceId);
+            workflowService.endTask(startTask.getId(), null);
+        }
+        finally
+        {
+            // tidy up
+            nodeService.deleteNode(childAssoc.getChildRef());
+        }
     }
     
     @Override

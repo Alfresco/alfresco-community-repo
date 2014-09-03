@@ -86,7 +86,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected TestPersonManager personManager;
     protected TestGroupManager groupManager;
     protected NodeService nodeService;
-    private NodeRef companyHome;
+    protected NodeRef companyHome;
     protected WorkflowTestHelper wfTestHelper;
     protected TransactionServiceImpl transactionService;
     

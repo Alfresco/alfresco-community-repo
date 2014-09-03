@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -185,6 +185,11 @@ public class FailoverContentTransformer extends AbstractContentTransformer2 impl
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Transformation attempt " + oneBasedCount + " of " + transformers.size() +  ": " + transf);
+                }
+                
+                if (!transf.isTransformable(reader.getMimetype(), reader.getSize(), outputMimetype, options))
+                {
+                    throw new UnsupportedTransformationException("Unsupported transformation: " +reader.getMimetype()+" to "+outputMimetype);
                 }
                 
                 // We can't know in advance which transformer in the sequence will work - if any.

@@ -28,4 +28,72 @@
          </list>
       </property>  
    </bean>
+   
+   
+   
+   <bean id="transformer.Test-DummyOpenOffice"
+         class="org.alfresco.repo.content.transform.DummyAnyToPDFTestSubtransformer"
+         parent="baseContentTransformer" >
+   </bean>
+   
+   <bean id="transformer.Test-PasswordProtectedMSExcel2Pdf-AlwaysFails"
+         class="org.alfresco.repo.content.transform.DummyAnyToPDFTestSubtransformer"
+         parent="baseContentTransformer" >
+         <property name="alwaysFail">
+             <value>true</value>
+         </property>
+   </bean>
+   
+   <bean id="transformer.Test-TriggeredFlag"
+         class="org.alfresco.repo.content.transform.TestHtml2PdfTriggeredFlag"
+         singleton="true" />
+   
+   <bean id="transformer.Test-Html2Pdf-ShoulNotBeTriggered"
+         class="org.alfresco.repo.content.transform.DummyTestComplexSubtransformer"
+         parent="baseComplexContentTransformer" >
+      <property name="triggered" ref="transformer.Test-TriggeredFlag" />
+         
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.Test-DummyOpenOffice" />
+            <ref bean="transformer.Test-DummyOpenOffice" />
+         </list>
+      </property>
+
+      <property name="intermediateMimetypes">
+         <list>
+            <value>application/vnd.oasis.opendocument.text</value>
+         </list>
+      </property>
+
+      <property name="supportedTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.SupportedTransformation" >
+                <property name="sourceMimetype"><value>text/html</value></property>
+                <property name="targetMimetype"><value>application/pdf</value></property>
+            </bean>
+         </list>
+      </property>
+      <property name="explicitTransformations">
+         <list>
+            <bean class="org.alfresco.repo.content.transform.ExplictTransformationDetails" >
+                <property name="sourceMimetype"><value>text/html</value></property>
+                <property name="targetMimetype"><value>application/pdf</value></property>
+            </bean>
+         </list>
+      </property>
+   </bean>
+   
+   <bean id="transformer.failover.Test-PasswordProtectedMSExcel2Pdf"
+        class="org.alfresco.repo.content.transform.TestFailoverContentTransformer"
+        parent="baseContentTransformer" >
+      <property name="triggered" ref="transformer.Test-TriggeredFlag" />
+      <property name="transformers">
+         <list>
+            <ref bean="transformer.Test-PasswordProtectedMSExcel2Pdf-AlwaysFails"/>
+            <ref bean="transformer.Test-Html2Pdf-ShoulNotBeTriggered"/>
+         </list>
+      </property>
+   </bean>
+
 </beans>

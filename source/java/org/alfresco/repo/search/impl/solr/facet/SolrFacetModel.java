@@ -37,6 +37,8 @@ public interface SolrFacetModel
 
     public static final QName PROP_FIELD_LABEL = QName.createQName(SOLR_FACET_MODEL_URL, "fieldLabel");
 
+    public static final QName PROP_DISPLAY_CONTROL = QName.createQName(SOLR_FACET_MODEL_URL, "displayControl");
+
     public static final QName PROP_MAX_FILTERS = QName.createQName(SOLR_FACET_MODEL_URL, "maxFilters");
 
     public static final QName PROP_HIT_THRESHOLD = QName.createQName(SOLR_FACET_MODEL_URL, "hitThreshold");
@@ -52,4 +54,6 @@ public interface SolrFacetModel
     public static final QName PROP_INDEX = QName.createQName(SOLR_FACET_MODEL_URL, "index");
 
     public static final QName PROP_IS_ENABLED = QName.createQName(SOLR_FACET_MODEL_URL, "isEnabled");
+
+    public static final QName PROP_IS_DEFAULT = QName.createQName(SOLR_FACET_MODEL_URL, "isDefault");
 }

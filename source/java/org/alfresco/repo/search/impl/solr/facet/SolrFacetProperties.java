@@ -31,11 +31,12 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Jamal Kaabi-Mofrad
  */
-public class SolrFacetProperties
+public class SolrFacetProperties implements Comparable<SolrFacetProperties>
 {
     private final String filterID;
     private final QName facetQName;
     private final String displayName;
+    private final String displayControl;
     private final int maxFilters;
     private final int hitThreshold;
     private final int minFilterValueLength;
@@ -44,6 +45,7 @@ public class SolrFacetProperties
     private final Set<String> scopedSites;
     private final int index;
     private final boolean isEnabled;
+    private final boolean isDefault; // is loaded from properties files?
 
     /**
      * Initialises a newly created <code>SolrFacetProperty</code> object
@@ -55,6 +57,7 @@ public class SolrFacetProperties
         this.filterID = builder.filterID;
         this.facetQName = builder.facetQName;
         this.displayName = builder.displayName;
+        this.displayControl = builder.displayControl;
         this.maxFilters = builder.maxFilters;
         this.hitThreshold = builder.hitThreshold;
         this.minFilterValueLength = builder.minFilterValueLength;
@@ -62,6 +65,7 @@ public class SolrFacetProperties
         this.scope = builder.scope;
         this.index = builder.index;
         this.isEnabled = builder.isEnabled;
+        this.isDefault = builder.isDefault;
         this.scopedSites = (builder.scopedSites == null) ? null :Collections.unmodifiableSet(new HashSet<String>(builder.scopedSites));
     }
 
@@ -87,6 +91,14 @@ public class SolrFacetProperties
     public String getDisplayName()
     {
         return this.displayName;
+    }
+
+    /**
+     * @return the displayControl
+     */
+    public String getDisplayControl()
+    {
+        return this.displayControl;
     }
 
     /**
@@ -159,6 +171,16 @@ public class SolrFacetProperties
         return this.isEnabled;
     }
 
+    /**
+     * Whether the facet is a default facet (loaded from a configuration file) or not
+     * 
+     * @return true if the facet is default, false otherwise
+     */
+    public boolean isDefault()
+    {
+        return this.isDefault;
+    }
+
     /*
      * @see java.lang.Object#hashCode()
      */
@@ -205,20 +227,30 @@ public class SolrFacetProperties
     }
 
     /*
+     * @see java.lang.Comparable#compareTo(T)
+     */
+    @Override
+    public int compareTo(SolrFacetProperties that)
+    {
+        return Integer.compare(this.index, that.index);
+    }
+
+    /*
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString()
     {
-        StringBuilder builder2 = new StringBuilder(270);
-        builder2.append("FacetProperty [filterID=").append(this.filterID).append(", facetQName=")
-                    .append(this.facetQName).append(", displayName=").append(this.displayName).append(", maxFilters=")
+        StringBuilder sb = new StringBuilder(320);
+        sb.append("FacetProperty [filterID=").append(this.filterID).append(", facetQName=")
+                    .append(this.facetQName).append(", displayName=").append(this.displayName)
+                    .append(", displayControl=").append(this.displayControl).append(", maxFilters=")
                     .append(this.maxFilters).append(", hitThreshold=").append(this.hitThreshold)
                     .append(", minFilterValueLength=").append(this.minFilterValueLength).append(", sortBy=")
                     .append(this.sortBy).append(", scope=").append(this.scope).append(", scopedSites=")
                     .append(this.scopedSites).append(", index=").append(this.index).append(", isEnabled=").append(this.isEnabled)
-                    .append("]");
-        return builder2.toString();
+                    .append(", isDefault=").append(this.isDefault).append("]");
+        return sb.toString();
     }
 
     public static class Builder
@@ -226,6 +258,7 @@ public class SolrFacetProperties
         private String filterID;
         private QName facetQName;
         private String displayName;
+        private String displayControl;
         private int maxFilters;
         private int hitThreshold;
         private int minFilterValueLength;
@@ -234,6 +267,7 @@ public class SolrFacetProperties
         private Set<String> scopedSites;
         private int index;
         private boolean isEnabled;
+        private boolean isDefault;
 
         public Builder filterID(String filterID)
         {
@@ -250,6 +284,12 @@ public class SolrFacetProperties
         public Builder displayName(String displayName)
         {
             this.displayName = displayName;
+            return this;
+        }
+
+        public Builder displayControl(String displayControl)
+        {
+            this.displayControl = displayControl;
             return this;
         }
 
@@ -298,6 +338,12 @@ public class SolrFacetProperties
         public Builder isEnabled(boolean isEnabled)
         {
             this.isEnabled = isEnabled;
+            return this;
+        }
+
+        public Builder isDefault(boolean isDefault)
+        {
+            this.isDefault = isDefault;
             return this;
         }
 

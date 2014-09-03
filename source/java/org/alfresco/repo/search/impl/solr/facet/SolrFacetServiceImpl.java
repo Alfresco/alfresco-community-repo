@@ -21,7 +21,6 @@ package org.alfresco.repo.search.impl.solr.facet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +53,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
@@ -196,7 +196,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     @Override
     public Map<String, SolrFacetProperties> getFacets()
     {
-        return Collections.unmodifiableMap(facetsMap);
+        Map<String, SolrFacetProperties> sortedMap = CollectionUtils.sortMapByValue(facetsMap);
+        return sortedMap;
     }
 
     @Override
@@ -254,6 +255,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         String filterID = (String) properties.get(ContentModel.PROP_NAME);
         QName fieldQName = (QName) properties.get(SolrFacetModel.PROP_FIELD_TYPE);
         String displayName = (String) properties.get(SolrFacetModel.PROP_FIELD_LABEL);
+        String displayControl = (String) properties.get(SolrFacetModel.PROP_DISPLAY_CONTROL);
         int maxFilters = (Integer) properties.get(SolrFacetModel.PROP_MAX_FILTERS);
         int hitThreshold = (Integer) properties.get(SolrFacetModel.PROP_HIT_THRESHOLD);
         int minFilterValueLength = (Integer) properties.get(SolrFacetModel.PROP_MIN_FILTER_VALUE_LENGTH);
@@ -261,6 +263,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         String scope = (String) properties.get(SolrFacetModel.PROP_SCOPE);
         int index = (Integer) properties.get(SolrFacetModel.PROP_INDEX);
         boolean isEnabled = (Boolean) properties.get(SolrFacetModel.PROP_IS_ENABLED);
+        boolean isDefault = (Boolean) properties.get(SolrFacetModel.PROP_IS_DEFAULT);
         @SuppressWarnings("unchecked")
         List<String> scSites = (List<String>) properties.get(SolrFacetModel.PROP_SCOPED_SITES);
         Set<String> scopedSites = (scSites == null) ? null : new HashSet<>(scSites);
@@ -270,6 +273,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                     .filterID(filterID)
                     .facetQName(fieldQName)
                     .displayName(displayName)
+                    .displayControl(displayControl)
                     .maxFilters(maxFilters)
                     .hitThreshold(hitThreshold)
                     .minFilterValueLength(minFilterValueLength)
@@ -277,6 +281,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                     .scope(scope)
                     .index(index)
                     .isEnabled(isEnabled)
+                    .isDefault(isDefault)
                     .scopedSites(scopedSites).build();
 
         return fp;
@@ -404,7 +409,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             throw new SolrFacetConfigException("Filter Id cannot be null.");
         }
 
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(11);
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(14);
 
         if (withFilterId)
         {
@@ -412,6 +417,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
         properties.put(SolrFacetModel.PROP_FIELD_TYPE, facetProperties.getFacetQName());
         properties.put(SolrFacetModel.PROP_FIELD_LABEL, facetProperties.getDisplayName());
+        properties.put(SolrFacetModel.PROP_DISPLAY_CONTROL, facetProperties.getDisplayControl());
         properties.put(SolrFacetModel.PROP_MAX_FILTERS, facetProperties.getMaxFilters());
         properties.put(SolrFacetModel.PROP_HIT_THRESHOLD, facetProperties.getHitThreshold());
         properties.put(SolrFacetModel.PROP_MIN_FILTER_VALUE_LENGTH, facetProperties.getMinFilterValueLength());
@@ -420,6 +426,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         properties.put(SolrFacetModel.PROP_SCOPED_SITES, (Serializable) facetProperties.getScopedSites());
         properties.put(SolrFacetModel.PROP_INDEX, facetProperties.getIndex());
         properties.put(SolrFacetModel.PROP_IS_ENABLED, facetProperties.isEnabled());
+
+        SolrFacetProperties fp = facetConfig.getDefaultFacets().get(facetProperties.getFilterID());
+        properties.put(SolrFacetModel.PROP_IS_DEFAULT, (fp == null) ? false : fp.isDefault());
 
         return properties;
     }
@@ -531,6 +540,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     {
         SolrFacetProperties fp = getFacetProperties(childAssocRef.getChildRef());
         this.facetsMap.put(fp.getFilterID(), fp);
+        this.facetNodeRefCache.put(fp.getFilterID(), childAssocRef.getChildRef());
     }
 
     @Override
@@ -538,5 +548,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     {
         String filterID = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         this.facetsMap.remove(filterID);
+        this.facetNodeRefCache.remove(filterID);
     }
 }

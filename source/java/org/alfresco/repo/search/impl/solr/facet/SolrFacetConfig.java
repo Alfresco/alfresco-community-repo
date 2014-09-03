@@ -178,6 +178,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                 QName fieldQName = resolveToQName(namespaceService, field);
                 String filterID = propValues.get(ValueName.PROP_FILTER_ID.getPropValueName(field));
                 String displayName = propValues.get(ValueName.PROP_DISPLAY_NAME.getPropValueName(field));
+                String displayControl = propValues.get(ValueName.PROP_DISPLAY_CONTROL.getPropValueName(field));
                 int maxFilters = getIntegerValue(propValues.get(ValueName.PROP_MAX_FILTERS.getPropValueName(field)));
                 int hitThreshold = getIntegerValue(propValues.get(ValueName.PROP_HIT_THRESHOLD.getPropValueName(field)));
                 int minFilterValueLength = getIntegerValue(propValues.get(ValueName.PROP_MIN_FILTER_VALUE_LENGTH.getPropValueName(field)));
@@ -192,6 +193,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                             .filterID(filterID)
                             .facetQName(fieldQName)
                             .displayName(displayName)
+                            .displayControl(displayControl)
                             .maxFilters(maxFilters)
                             .hitThreshold(hitThreshold)
                             .minFilterValueLength(minFilterValueLength)
@@ -199,6 +201,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                             .scope(scope)
                             .index(index)
                             .isEnabled(isEnabled)
+                            .isDefault(true)
                             .scopedSites(scopedSites).build();
                 
                 facetProperties.put(filterID, fp);
@@ -309,7 +312,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
     {
         PROP_FILTER_ID("filterID"), PROP_DISPLAY_NAME("displayName"), PROP_MAX_FILTERS("maxFilters"), PROP_HIT_THRESHOLD("hitThreshold"),
         PROP_MIN_FILTER_VALUE_LENGTH("minFilterValueLength"), PROP_SORTBY("sortBy"), PROP_SCOPE("scope"), PROP_SCOPED_SITES("scopedSites"),
-        PROP_INDEX("index"), PROP_IS_ENABLED("isEnabled");
+        PROP_INDEX("index"), PROP_IS_ENABLED("isEnabled"), PROP_DISPLAY_CONTROL("displayControl");
 
         private ValueName(String propValueName)
         {

@@ -46,6 +46,16 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
+            <property name="srft:displayControl">
+               <title>Field Display Control</title>
+               <type>d:text</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
             <property name="srft:maxFilters">
                <title>Maximum Filters</title>
                <type>d:int</type>
@@ -127,6 +137,16 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
+            <property name="srft:isDefault">
+               <title>Is Default (loaded from a properties file)</title>
+               <type>d:boolean</type>
+               <mandatory>true</mandatory>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
          </properties>
       </type>
       <!-- Facets Root Folder -->
@@ -135,4 +155,4 @@
          <parent>cm:folder</parent>
       </type>
    </types>
-</model>   
+</model>

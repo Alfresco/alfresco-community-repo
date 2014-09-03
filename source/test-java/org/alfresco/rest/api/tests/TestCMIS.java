@@ -27,6 +27,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.opencmis.dictionary.QNameFilter;
+import org.alfresco.opencmis.dictionary.QNameFilterImpl;
+import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
@@ -1217,10 +1219,19 @@ public class TestCMIS extends EnterpriseTestApi
         }
     }
 
-    // ALF-18968
+    /**
+     * ALF-18968
+     * 
+     * @see QNameFilterImpl#listOfHardCodedExcludedTypes()
+     */
     @Test
     public void testTypeFiltering() throws Exception
     {
+        // Force an exclusion in order to test the exclusion inheritance
+        cmisTypeExclusions.setExcluded(ActionModel.TYPE_ACTION_BASE, true);
+        // Quick check
+        assertTrue(cmisTypeExclusions.isExcluded(ActionModel.TYPE_ACTION_BASE));
+
         // Test that a type defined with this excluded parent type does not break the CMIS dictionary
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
@@ -1238,7 +1249,7 @@ public class TestCMIS extends EnterpriseTestApi
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
-        // test that this type is excluded
+        // test that this type is excluded; the 'action' model (act prefix) is in the list of hardcoded exclusions
         QName type = QName.createQName("{http://www.alfresco.org/test/testCMIS}type1");
         assertTrue(cmisTypeExclusions.isExcluded(type));
 

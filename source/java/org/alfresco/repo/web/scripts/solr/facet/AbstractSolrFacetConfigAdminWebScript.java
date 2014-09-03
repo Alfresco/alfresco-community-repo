@@ -112,7 +112,6 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
             final int minFilterValueLength = json.getInt(PARAM_MIN_FILTER_VALUE_LENGTH);
             final String sortBy = json.getString(PARAM_SORT_BY);
             final String scope = json.getString(PARAM_SCOPE);
-            final int index = getValue(Integer.class, json.opt(PARAM_INDEX), facetService.getNextIndex());
             final boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), true);
             JSONArray scopedSitesJsonArray = json.getJSONArray(PARAM_SCOPED_SITES);
             Set<String> scopedSites = null;
@@ -136,7 +135,6 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
                         .minFilterValueLength(minFilterValueLength)
                         .sortBy(sortBy)
                         .scope(scope)
-                        .index(index)
                         .isEnabled(isEnabled)
                         .scopedSites(scopedSites).build();
             return fp;

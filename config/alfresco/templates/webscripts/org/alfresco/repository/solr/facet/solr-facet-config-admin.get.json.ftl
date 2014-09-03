@@ -36,10 +36,9 @@
                     "title" : <#if propDetails.title??>"${propDetails.title}"<#else>null</#if>
                 }<#if propDetails_has_next>,</#if>
                 </#list>
-             },   
+             },
              </#if>
-             "index" : ${facet.index?c},
-             "isEnabled" : ${facet.enabled?c},
+             "isEnabled" : ${facet.isEnabled()?c},
              "isDefault" : ${facet.default?c}
 </#escape>
 </#macro>

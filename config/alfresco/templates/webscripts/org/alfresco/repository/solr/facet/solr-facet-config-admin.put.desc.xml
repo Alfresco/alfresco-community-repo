@@ -25,7 +25,6 @@
                      "site2",
                      "site1"
               ],
-             "index" : 6,  // optional
              "isEnabled" : true  // optional
    }</pre><br/>
    

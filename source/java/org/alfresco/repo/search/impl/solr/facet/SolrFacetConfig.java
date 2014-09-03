@@ -339,12 +339,12 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                     String[] extra = value.split(",");
                     if (extra.length == 1)
                     {
-                        customProps.add(new CustomProperties(qName, null, null, extra[0]));
+                        customProps.add(new CustomProperties(qName, extra[0]));
                     }
                     else
                     {
                         List<String> list = Arrays.asList(extra);
-                        customProps.add(new CustomProperties(qName, null, null, (Serializable) list));
+                        customProps.add(new CustomProperties(qName, (Serializable) list));
                     }
                 }
             }

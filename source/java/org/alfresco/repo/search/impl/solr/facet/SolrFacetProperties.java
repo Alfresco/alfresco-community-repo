@@ -383,37 +383,17 @@ public class SolrFacetProperties implements Serializable
         private static final long serialVersionUID = 2250062300454166258L;
         
         private final QName name;
-        private final String title;
-        private final String type;
         private final Serializable value;
 
-        public CustomProperties(QName name, String title, String type, Serializable value)
+        public CustomProperties(QName name, Serializable value)
         {
             this.name = name;
-            this.title = title;
-            this.type = type;
             this.value = value;
         }
 
         public QName getName()
         {
             return this.name;
-        }
-
-        /**
-         * @return the title
-         */
-        public String getTitle()
-        {
-            return this.title;
-        }
-
-        /**
-         * @return the type
-         */
-        public String getType()
-        {
-            return this.type;
         }
 
         public Serializable getValue()
@@ -458,8 +438,7 @@ public class SolrFacetProperties implements Serializable
         public String toString()
         {
             StringBuilder builder = new StringBuilder(100);
-            builder.append("CustomProperties [name=").append(this.name).append(", title=")
-                        .append(this.title).append(", type=").append(this.type).append(", value=")
+            builder.append("CustomProperties [name=").append(this.name).append(", value=")
                         .append(this.value).append("]");
             return builder.toString();
         }

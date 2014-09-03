@@ -322,7 +322,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             extraProps = new HashSet<>(customProperties.size());
             for (Entry<QName, Serializable> cp : customProperties.entrySet())
             {
-                extraProps.add(new CustomProperties(cp.getKey(), (String) properties.get(ContentModel.PROP_TITLE), null, cp.getValue()));
+                extraProps.add(new CustomProperties(cp.getKey(), cp.getValue()));
             }
         }
         // Construct the FacetProperty object
@@ -431,11 +431,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
         else
         {
-            String name = (String) nodeService.getProperty(facetNodeRef, ContentModel.PROP_NAME);
-            if (!filterID.equals(name))
-            {
-                throw new SolrFacetConfigException("The filterID cannot be renamed.");
-            }
             Map<QName, Serializable> properties = createNodeProperties(facetProperties);
             // Set the updated properties back onto the facet node reference
             this.nodeService.setProperties(facetNodeRef, properties);
@@ -521,8 +516,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
 
         // construct a valid facet property object
         facetProperties = makeValidFacetPropObj(facetProperties);
-        Set<CustomProperties> customProperties = facetProperties.getCustomProperties();
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13 + customProperties.size());
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(15);
 
         properties.put(ContentModel.PROP_NAME, facetProperties.getFilterID());
         properties.put(SolrFacetModel.PROP_IS_DEFAULT, facetProperties.isDefault());
@@ -538,9 +532,10 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         addNodeProperty(properties, SolrFacetModel.PROP_SCOPED_SITES, (Serializable) facetProperties.getScopedSites());
         addNodeProperty(properties, SolrFacetModel.PROP_IS_ENABLED, facetProperties.isEnabled());
 
-        for (CustomProperties cp : customProperties)
+        Set<CustomProperties> customProperties = facetProperties.getCustomProperties();
+        if(customProperties.size() > 0)
         {
-            addNodeProperty(properties, cp.getName(), cp.getValue());
+            properties.put(SolrFacetModel.PROP_EXTRA_INFORMATION, new ArrayList<>(customProperties));
         }
 
         return properties;
@@ -740,7 +735,21 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         {
             if (SolrFacetModel.SOLR_FACET_CUSTOM_PROPERTY_URL.equals(entry.getKey().getNamespaceURI()))
             {
-                customProperties.put(entry.getKey(), entry.getValue());
+                Serializable values = entry.getValue();
+                if (SolrFacetModel.PROP_EXTRA_INFORMATION.equals(entry.getKey()) && values instanceof List)
+                {
+
+                    @SuppressWarnings("unchecked")
+                    List<CustomProperties> list = (List<CustomProperties>) values;
+                    for (CustomProperties cp : list)
+                    {
+                        customProperties.put(cp.getName(), cp.getValue());
+                    }
+                }
+                else
+                {
+                    customProperties.put(entry.getKey(), entry.getValue());
+                }
             }
         }
         return customProperties;

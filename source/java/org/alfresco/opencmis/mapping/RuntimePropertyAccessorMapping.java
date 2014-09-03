@@ -134,8 +134,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new ContentStreamLengthProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new ContentStreamMimetypeProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new ContentStreamIdProperty(serviceRegistry, cmisConnector));
-        registerPropertyAccessor(new DirectProperty(serviceRegistry, cmisConnector,
-                PropertyIds.CONTENT_STREAM_FILE_NAME, ContentModel.PROP_NAME));
+        registerPropertyAccessor(new ContentStreamFileNameProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new ParentProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new PathProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new AllowedChildObjectTypeIdsProperty(serviceRegistry, cmisConnector, cmisMapping));

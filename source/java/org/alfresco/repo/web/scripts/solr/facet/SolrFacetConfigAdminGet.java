@@ -69,5 +69,4 @@ public class SolrFacetConfigAdminGet extends AbstractSolrFacetConfigAdminWebScri
 
         return model;
     }
-
 }

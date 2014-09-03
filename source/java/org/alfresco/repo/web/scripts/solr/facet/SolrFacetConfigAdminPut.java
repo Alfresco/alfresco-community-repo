@@ -38,6 +38,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * This class is the controller for the "solr-facet-config-admin.put" web scripts.
  * 
  * @author Jamal Kaabi-Mofrad
+ * @author Neil Mc Erlean
+ * @since 5.0
  */
 public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScript
 {

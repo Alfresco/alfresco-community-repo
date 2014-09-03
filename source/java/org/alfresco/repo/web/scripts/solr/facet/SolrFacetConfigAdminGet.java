@@ -40,6 +40,13 @@ public class SolrFacetConfigAdminGet extends AbstractSolrFacetConfigAdminWebScri
     private static final Log logger = LogFactory.getLog(SolrFacetConfigAdminGet.class);
 
     @Override
+    protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status, final Cache cache)
+    {
+        // Allow all authenticated users view the filters
+        return unprotectedExecuteImpl(req, status, cache);
+    }
+
+    @Override
     protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache)
     {
         // get the filterID parameter.

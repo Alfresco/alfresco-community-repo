@@ -27,6 +27,14 @@
                      "site2",
                      "site1"
               ],
+             "customProperties" :
+             {
+                "blockIncludeFacetRequest":
+                {
+                    "name" : "{http:\/\/www.alfresco.org\/model\/solrfacetcustomproperty\/1.0}blockIncludeFacetRequest",
+                    "value" : "true"
+                }
+             }
              "isEnabled" : true,
              "isDefault" : true
           }

@@ -18,7 +18,10 @@
  */
 package org.alfresco.repo.web.scripts.solr.facet;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
@@ -32,20 +35,20 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.springframework.extensions.webscripts.TestWebScriptServer.*;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.TestWebScriptServer.*;
 
 /**
  * This class tests the ReST API of the {@link SolrFacetService}.
  * 
  * @author Neil Mc Erlean
+ * @author Jamal Kaabi-Mofrad
  * @since 5.0
  */
 public class FacetRestApiTest extends BaseWebScriptTest
@@ -57,12 +60,15 @@ public class FacetRestApiTest extends BaseWebScriptTest
     
     private final static String GET_FACETS_URL       = "/api/solr/facet-config";
     private final static String PUT_FACET_URL_FORMAT = "/api/solr/facet-config/{0}?relativePos={1}";
+    private final static String POST_FACETS_URL      = GET_FACETS_URL;
+    private final static String PUT_FACETS_URL       = GET_FACETS_URL;
     
     private MutableAuthenticationService authenticationService;
     private AuthorityService             authorityService;
     private PersonService                personService;
     private RetryingTransactionHelper    transactionHelper;
-    
+    private List<String> filters = new ArrayList<String>();
+
     @Override protected void setUp() throws Exception
     {
         super.setUp();
@@ -70,7 +76,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         authorityService      = getServer().getApplicationContext().getBean("AuthorityService", AuthorityService.class);
         personService         = getServer().getApplicationContext().getBean("PersonService", PersonService.class);
         transactionHelper     = getServer().getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
-        
+
         // Create test users. TODO Create these users @BeforeClass or at a testsuite scope.
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
@@ -95,7 +101,17 @@ public class FacetRestApiTest extends BaseWebScriptTest
     @Override public void tearDown() throws Exception
     {
         super.tearDown();
-        
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                deleteFilters();
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override public Void doWork() throws Exception
@@ -114,18 +130,79 @@ public class FacetRestApiTest extends BaseWebScriptTest
         });
     }
     
-    public void testNonSearchAdminUserCannotAccessSolrFacets() throws Exception
+    public void testNonSearchAdminUserCannotCreateUpdateSolrFacets() throws Exception
+    {
+        // Create a filter
+        final JSONObject filter = new JSONObject();
+        final String filterName = "filter" + System.currentTimeMillis();
+        filters.add(filterName);
+        filter.put("filterID", filterName);
+        filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test1");
+        filter.put("displayName", "facet-menu.facet.test1");
+        filter.put("displayControl", "alfresco/search/FacetFilters/test1");
+        filter.put("maxFilters", 5);
+        filter.put("hitThreshold", 1);
+        filter.put("minFilterValueLength", 4);
+        filter.put("sortBy", "ALPHABETICALLY");
+        
+        // Non-Search-Admin tries to create a filter
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Post the filter
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 403);
+                return null;
+            }
+        }, NON_SEARCH_ADMIN_USER);
+        
+        // Search-Admin creates a filter
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Post the filter
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 200);
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+        
+        // Non-Search-Admin tries to modify the filter
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                Response response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterName), 200);
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+                assertEquals(filterName, jsonRsp.getString("filterID"));
+                assertEquals(5, jsonRsp.getInt("maxFilters"));
+                // Now change the maxFilters value and try to update
+                jsonRsp.put("maxFilters", 10);
+                sendRequest(new PutRequest(PUT_FACETS_URL, jsonRsp.toString(), "application/json"), 403);
+                
+                return null;
+            }
+        }, NON_SEARCH_ADMIN_USER);
+    }
+
+    public void testNonSearchAdminUserCanGetFacets() throws Exception
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             @Override public Void doWork() throws Exception
             {
-                sendRequest(new GetRequest(GET_FACETS_URL), 403);
+                Response response = sendRequest(new GetRequest(GET_FACETS_URL), 200);
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+                List<String> filters = getListFromJsonArray(jsonRsp.getJSONArray(FACETS));
+                assertTrue(filters.size() > 0);
                 return null;
             }
         }, NON_SEARCH_ADMIN_USER);
     }
-    
+
     public void testSearchAdminCanGetFacets() throws Exception
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -147,7 +224,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         }, SEARCH_ADMIN_USER);
     }
-    
+
     public void testSearchAdminReordersFacets() throws Exception
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -164,15 +241,15 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 
                 System.out.println("Received " + facetsArray.length() + " facets");
                 
-                final List<Pair<Integer, String>> idsIndexes = getIdsIndexes(facetsArray);
+                final List<String> idsIndexes = getListFromJsonArray(facetsArray);
                 
                 System.out.println(" IDs, indexes = " + idsIndexes);
                 
                 // Reorder them such that the last facet is moved left one place.
                 assertTrue("There should be more than 1 built-in facet", facetsArray.length() > 1);
                 
-                final Pair<Integer, String> lastIndexIdPair = idsIndexes.get(idsIndexes.size() - 1);
-                final String url = PUT_FACET_URL_FORMAT.replace("{0}", lastIndexIdPair.getSecond())
+                final String lastIndexId = idsIndexes.get(idsIndexes.size() - 1);
+                final String url = PUT_FACET_URL_FORMAT.replace("{0}", lastIndexId)
                                                        .replace("{1}", "-1");
                 rsp = sendRequest(new PutRequest(url, "", "application/json"), 200);
                 
@@ -187,30 +264,231 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 
                 System.out.println("Received " + newfacetsArray.length() + " facets");
                 
-                final List<Pair<Integer, String>> newIdsIndexes = getIdsIndexes(newfacetsArray);
+                final List<String> newIdsIndexes = getListFromJsonArray(newfacetsArray);
                 
                 System.out.println(" IDs, indexes = " + newIdsIndexes);
                 
-                
                 // Note here that the last Facet JSON object *is* moved one place up the list.
-                // But its index value does not change, which I think is as it should be.
-                assertEquals(CollectionUtils.moveLeft(1, lastIndexIdPair, idsIndexes),
-                             newIdsIndexes);
+                assertEquals(CollectionUtils.moveLeft(1, lastIndexId, idsIndexes), newIdsIndexes);
                 return null;
             }
         }, SEARCH_ADMIN_USER);
     }
-    
-    private List<Pair<Integer, String>> getIdsIndexes(JSONArray facetsArray) throws JSONException
+
+    public void testDefaultValues() throws Exception
     {
-        List<Pair<Integer, String>> result = new ArrayList<>();
-        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Build the Filter object - ignore the optional values
+                JSONObject filter_one = new JSONObject();
+                String filterNameOne = "filterOne" + System.currentTimeMillis();
+                filters.add(filterNameOne);
+                filter_one.put("filterID", filterNameOne);
+                filter_one.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test1");
+                filter_one.put("displayName", "facet-menu.facet.test1");
+                filter_one.put("displayControl", "alfresco/search/FacetFilters/test1");
+                filter_one.put("maxFilters", 5);
+                filter_one.put("hitThreshold", 1);
+                filter_one.put("minFilterValueLength", 4);
+                filter_one.put("sortBy", "ALPHABETICALLY");
+
+                // Post the filter
+                Response response = sendRequest(new PostRequest(POST_FACETS_URL, filter_one.toString(),"application/json"), 200);
+
+                // Retrieve the created filter
+                response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterNameOne), 200);
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+                assertEquals(filterNameOne, jsonRsp.getString("filterID"));
+                assertEquals("{http://www.alfresco.org/model/content/1.0}test1", jsonRsp.getString("facetQName"));
+                assertEquals("facet-menu.facet.test1", jsonRsp.getString("displayName"));
+                assertEquals("alfresco/search/FacetFilters/test1", jsonRsp.getString("displayControl"));
+                assertEquals(5, jsonRsp.getInt("maxFilters"));
+                assertEquals(1, jsonRsp.getInt("hitThreshold"));
+                assertEquals(4, jsonRsp.getInt("minFilterValueLength"));
+                assertEquals("ALPHABETICALLY", jsonRsp.getString("sortBy"));
+                // Check the Default values
+                assertEquals("ALL", jsonRsp.getString("scope"));
+                assertFalse(jsonRsp.getBoolean("isEnabled"));
+                assertFalse(jsonRsp.getBoolean("isDefault"));
+                
+                // Build the Filter object with all the values
+                JSONObject filter_two = new JSONObject();
+                String filterNameTwo = "filterTwo" + System.currentTimeMillis();
+                filters.add(filterNameTwo);
+                filter_two.put("filterID", filterNameTwo);
+                filter_two.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test2");
+                filter_two.put("displayName", "facet-menu.facet.test2");
+                filter_two.put("displayControl", "alfresco/search/FacetFilters/test2");
+                filter_two.put("maxFilters", 5);
+                filter_two.put("hitThreshold", 1);
+                filter_two.put("minFilterValueLength", 4);
+                filter_two.put("sortBy", "ALPHABETICALLY");
+                filter_two.put("scope", "SCOPED_SITES");
+                List<String> expectedValues = Arrays.asList(new String[] { "sit1", "site2", "site3" });
+                filter_two.put("scopedSites", expectedValues);
+                filter_two.put("isEnabled", true);
+
+                // Post the filter
+                response = sendRequest(new PostRequest(POST_FACETS_URL, filter_two.toString(), "application/json"), 200);
+
+                // Retrieve the created filter
+                response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterNameTwo), 200);
+                jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+
+                assertEquals(filterNameTwo, jsonRsp.getString("filterID"));
+                assertEquals("SCOPED_SITES", jsonRsp.getString("scope"));
+                assertTrue(jsonRsp.getBoolean("isEnabled"));
+                JSONArray jsonArray = jsonRsp.getJSONArray("scopedSites");
+                List<String> retrievedValues = getListFromJsonArray(jsonArray);
+                // Sort the list
+                Collections.sort(retrievedValues);
+                assertEquals(expectedValues, retrievedValues);
+
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+    }
+
+    public void testFacetCustomProperties() throws Exception
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Build the Filter object
+                JSONObject filter = new JSONObject();
+                String filterName = "filter" + System.currentTimeMillis();
+                filters.add(filterName);
+                filter.put("filterID", filterName);
+                filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}content.size.test");
+                filter.put("displayName", "facet-menu.facet.size.test");
+                filter.put("displayControl", "alfresco/search/FacetFilters/test");
+                filter.put("maxFilters", 5);
+                filter.put("hitThreshold", 1);
+                filter.put("minFilterValueLength", 4);
+                filter.put("sortBy", "ALPHABETICALLY");
+
+                JSONObject customProp = new JSONObject();
+                // 1st custom prop
+                JSONObject blockIncludeRequest = new JSONObject();
+                blockIncludeRequest.put("name", "blockIncludeFacetRequest");
+                blockIncludeRequest.put("value", "true");
+                customProp.put("blockIncludeFacetRequest", blockIncludeRequest);
+
+                // 2nd custom prop
+                JSONObject multipleValue = new JSONObject();
+                multipleValue.put("name", "multipleValueTest");
+                List<String> expectedValues = Arrays.asList(new String[] { "sit1", "site2", "site3" });
+                multipleValue.put("value", expectedValues);
+                customProp.put("multipleValueTest", multipleValue);
+
+                filter.put("customProperties", customProp);
+
+                // Post the filter
+                Response response = sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(),"application/json"), 200);
+                // Retrieve the created filter
+                response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterName), 200);
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+                customProp = jsonRsp.getJSONObject("customProperties");
+
+                blockIncludeRequest = customProp.getJSONObject("blockIncludeFacetRequest");
+                assertEquals("{http://www.alfresco.org/model/solrfacetcustomproperty/1.0}blockIncludeFacetRequest", blockIncludeRequest.get("name"));
+                assertEquals("true", blockIncludeRequest.get("value"));
+
+                multipleValue = customProp.getJSONObject("multipleValueTest");
+                assertEquals("{http://www.alfresco.org/model/solrfacetcustomproperty/1.0}multipleValueTest", multipleValue.get("name"));
+
+                JSONArray jsonArray = (JSONArray) multipleValue.get("value");
+                List<String> retrievedValues = getListFromJsonArray(jsonArray);
+                // Sort the list
+                Collections.sort(retrievedValues);
+                assertEquals(expectedValues, retrievedValues);
+
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+    }
+
+    public void testCreateUpdateFacetWithInvalidFilterId() throws Exception
+    {
+        // Build the Filter object
+        final JSONObject filter = new JSONObject();
+        final String filterName = "filter" + System.currentTimeMillis();
+        filters.add(filterName);
+        filter.put("filterID", filterName);
+        filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test1");
+        filter.put("displayName", "facet-menu.facet.test1");
+        filter.put("displayControl", "alfresco/search/FacetFilters/test1");
+        filter.put("maxFilters", 5);
+        filter.put("hitThreshold", 1);
+        filter.put("minFilterValueLength", 4);
+        filter.put("sortBy", "ALPHABETICALLY");
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Post the filter
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 200);
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+
+        // Admin tries to change the FilterID value
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Retrieve the created filter
+                Response response = sendRequest(new GetRequest(GET_FACETS_URL + "/" + filterName), 200);
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(response.getContentAsString()));
+                assertEquals(filterName, jsonRsp.getString("filterID"));
+                // Now change the filterID value and try to update
+                jsonRsp.put("filterID", filterName + "Modified");
+                sendRequest(new PutRequest(PUT_FACETS_URL, jsonRsp.toString(), "application/json"), 400);
+
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+
+        // Admin tries to create a filter with a duplicate FilterID
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Post the filter
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 400);
+
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+
+    }
+
+    private List<String> getListFromJsonArray(JSONArray facetsArray) throws JSONException
+    {
+        List<String> result = new ArrayList<>();
+
         for (int i = 0; i < facetsArray.length(); i++)
         {
-            final JSONObject nextFacet = facetsArray.getJSONObject(i);
-            final int nextIndex = nextFacet.getInt("index");
-            final String nextId = nextFacet.getString("filterID");
-            result.add(new Pair<>(nextIndex, nextId));
+            Object object = facetsArray.get(i);
+            if (object instanceof JSONObject)
+            {
+                final JSONObject nextFacet = (JSONObject) object;
+                final String nextId = nextFacet.getString("filterID");
+                result.add(nextId);
+            }
+            else
+            {
+                result.add((String) object);
+            }
         }
         return result;
     }
@@ -240,6 +518,14 @@ public class FacetRestApiTest extends BaseWebScriptTest
         if (personService.personExists(userName))
         {
             personService.deletePerson(userName);
+        }
+    }
+
+    private void deleteFilters() throws IOException
+    {
+        for (String filter : filters)
+        {
+            sendRequest(new DeleteRequest(GET_FACETS_URL + "/" + filter), 200);
         }
     }
 }

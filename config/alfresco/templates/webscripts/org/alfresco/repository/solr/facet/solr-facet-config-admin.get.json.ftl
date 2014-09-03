@@ -28,12 +28,10 @@
                     <#list propDetails.value as v>
                     "${v?string}"<#if v_has_next>,</#if>
                     </#list>
-                    ],
+                    ]
                     <#else>
-                    "value" : "${propDetails.value?string}",
+                    "value" : "${propDetails.value?string}"
                     </#if>
-                    "type" : <#if propDetails.type??>"${propDetails.type}"<#else>null</#if>, 
-                    "title" : <#if propDetails.title??>"${propDetails.title}"<#else>null</#if>
                 }<#if propDetails_has_next>,</#if>
                 </#list>
              },

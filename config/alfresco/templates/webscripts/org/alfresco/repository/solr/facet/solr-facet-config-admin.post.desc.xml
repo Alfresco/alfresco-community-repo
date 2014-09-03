@@ -17,13 +17,13 @@
              "hitThreshold" : 1,
              "minFilterValueLength" : 5,
              "sortBy" : "ALPHABETICALLY",
-             "scope" : "SCOPED_SITES",
+             "scope" : "SCOPED_SITES", // if not provided, default value is "ALL"
              "scopedSites" : [
                      "site3",
                      "site2",
                      "site1"
               ],
-             "isEnabled" : true  // optional
+             "isEnabled" : true  // if not provided, default value is false
    }
    
    Notes:

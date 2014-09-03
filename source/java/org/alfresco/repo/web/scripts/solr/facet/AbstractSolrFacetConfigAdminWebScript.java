@@ -111,9 +111,9 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
             final int hitThreshold = json.getInt(PARAM_HIT_THRESHOLD);
             final int minFilterValueLength = json.getInt(PARAM_MIN_FILTER_VALUE_LENGTH);
             final String sortBy = json.getString(PARAM_SORT_BY);
-            final String scope = json.getString(PARAM_SCOPE);
-            final boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), true);
-            JSONArray scopedSitesJsonArray = json.getJSONArray(PARAM_SCOPED_SITES);
+            final String scope = getValue(String.class, json.opt(PARAM_SCOPE), "ALL");
+            final boolean isEnabled = getValue(Boolean.class, json.opt(PARAM_IS_ENABLED), false);
+            JSONArray scopedSitesJsonArray = getValue(JSONArray.class, json.opt(PARAM_SCOPED_SITES), null);
             Set<String> scopedSites = null;
             if (scopedSitesJsonArray != null)
             {

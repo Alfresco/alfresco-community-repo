@@ -21,27 +21,26 @@ package org.alfresco.repo.search.impl.solr.facet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
-import org.alfresco.repo.node.NodeServicePolicies.BeforeUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -71,13 +70,14 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
+ * Solr Facet Service Implementation.
+ *
  * @author Jamal Kaabi-Mofrad
+ * @since 5.0
  */
 public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrFacetService,
             NodeServicePolicies.OnCreateNodePolicy,
-            NodeServicePolicies.OnUpdateNodePolicy,
-            NodeServicePolicies.BeforeDeleteNodePolicy,
-            NodeServicePolicies.BeforeUpdateNodePolicy
+            NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static final Log logger = LogFactory.getLog(SolrFacetServiceImpl.class);
     /**
@@ -102,8 +102,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     private SimpleCache<String, Object> singletonCache; // eg. for facetsHomeNodeRef
     private final String KEY_FACETS_HOME_NODEREF = "key.facetshome.noderef";
     private SimpleCache<String, NodeRef> facetNodeRefCache; // for filterID to nodeRef lookup
-    private NavigableMap<Integer, SolrFacetProperties> facetsMap = new ConcurrentSkipListMap<>(); // TODO
-    private int maxAllowedFilters = 100;
+    private ConcurrentMap<String, SolrFacetProperties> defaultFacetsMap = new ConcurrentHashMap<String, SolrFacetProperties>(10);
 
     /**
      * @param authorityService the authorityService to set
@@ -193,14 +192,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         this.facetNodeRefCache = facetNodeRefCache;
     }
 
-    /**
-     * @param maxAllowedFilters the maxAllowedFilters to set
-     */
-    public void setMaxAllowedFilters(int maxAllowedFilters)
-    {
-        this.maxAllowedFilters = maxAllowedFilters;
-    }
-
     @Override
     public boolean isSearchAdmin(String userName)
     {
@@ -217,17 +208,24 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     {
         // Sort the facets into display order
         final SolrFacetComparator comparator = new SolrFacetComparator(getFacetOrder());
-        
+
         SortedSet<SolrFacetProperties> result = new TreeSet<>(comparator);
-        result.addAll(facetsMap.values());
-        
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(getFacetsRoot());
+
+        for (ChildAssociationRef ref : children)
+        {
+            result.add(getFacetProperties(ref.getChildRef()));
+        }
+        // add the default filters
+        result.addAll(defaultFacetsMap.values());
+
         return new ArrayList<>(result);
     }
-    
+
     public List<String> getFacetOrder()
     {
         final NodeRef facetContainer = getFacetsRoot();
-        
+
         @SuppressWarnings("unchecked")
         final List<String> facetOrder = (List<String>) nodeService.getProperty(facetContainer, SolrFacetModel.PROP_FACET_ORDER);
         return facetOrder;
@@ -242,12 +240,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
          * the nodeService.
          */
         NodeRef nodeRef = getFacetNodeRef(filterID);
-        return (nodeRef == null) ? getDefaultLoadedFacet(filterID) : getFacetProperties(nodeRef);
-    }
-
-    private SolrFacetProperties getDefaultLoadedFacet(String filterID)
-    {
-        return facetConfig.getDefaultFacets().get(filterID);
+        return (nodeRef == null) ? defaultFacetsMap.get(filterID) : getFacetProperties(nodeRef);
     }
 
     @Override
@@ -297,26 +290,40 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
 
         String filterID = (String) properties.get(ContentModel.PROP_NAME);
-        QName fieldQName = (QName) properties.get(SolrFacetModel.PROP_FIELD_TYPE);
-        String displayName = (String) properties.get(SolrFacetModel.PROP_FIELD_LABEL);
-        String displayControl = (String) properties.get(SolrFacetModel.PROP_DISPLAY_CONTROL);
-        int maxFilters = (Integer) properties.get(SolrFacetModel.PROP_MAX_FILTERS);
-        int hitThreshold = (Integer) properties.get(SolrFacetModel.PROP_HIT_THRESHOLD);
-        int minFilterValueLength = (Integer) properties.get(SolrFacetModel.PROP_MIN_FILTER_VALUE_LENGTH);
-        String sortBy = (String) properties.get(SolrFacetModel.PROP_SORT_BY);
-        String scope = (String) properties.get(SolrFacetModel.PROP_SCOPE);
-        int index = (Integer) properties.get(SolrFacetModel.PROP_INDEX);
-        boolean isEnabled = (Boolean) properties.get(SolrFacetModel.PROP_IS_ENABLED);
         boolean isDefault = (Boolean) properties.get(SolrFacetModel.PROP_IS_DEFAULT);
+
+        SolrFacetProperties defaultFacet = defaultFacetsMap.get(filterID);
+        if(defaultFacet == null)
+        {
+            defaultFacet = new SolrFacetProperties.Builder().build();
+        }
+
+        QName fieldQName = getDefaultIfNull(defaultFacet.getFacetQName(), (QName) properties.get(SolrFacetModel.PROP_FIELD_TYPE));
+        String displayName = getDefaultIfNull(defaultFacet.getDisplayName(), (String) properties.get(SolrFacetModel.PROP_FIELD_LABEL));
+        String displayControl = getDefaultIfNull(defaultFacet.getDisplayControl(), (String) properties.get(SolrFacetModel.PROP_DISPLAY_CONTROL));
+        int maxFilters = getDefaultIfNull(defaultFacet.getMaxFilters(), (Integer) properties.get(SolrFacetModel.PROP_MAX_FILTERS));
+        int hitThreshold = getDefaultIfNull(defaultFacet.getHitThreshold(), (Integer) properties.get(SolrFacetModel.PROP_HIT_THRESHOLD));
+        int minFilterValueLength = getDefaultIfNull(defaultFacet.getMinFilterValueLength(), (Integer) properties.get(SolrFacetModel.PROP_MIN_FILTER_VALUE_LENGTH));
+        String sortBy = getDefaultIfNull(defaultFacet.getSortBy(), (String) properties.get(SolrFacetModel.PROP_SORT_BY));
+        String scope = getDefaultIfNull(defaultFacet.getScope(), (String) properties.get(SolrFacetModel.PROP_SCOPE));
+        Boolean isEnabled = getDefaultIfNull(defaultFacet.isEnabled(), (Boolean) properties.get(SolrFacetModel.PROP_IS_ENABLED));
         @SuppressWarnings("unchecked")
         List<String> scSites = (List<String>) properties.get(SolrFacetModel.PROP_SCOPED_SITES);
-        Set<String> scopedSites = (scSites == null) ? null : new HashSet<>(scSites);
+        Set<String> scopedSites = getDefaultIfNull(defaultFacet.getScopedSites(), (scSites == null) ? null : new HashSet<>(scSites));
 
+        Set<CustomProperties> extraProps = null;
         Map<QName, Serializable> customProperties = getFacetCustomProperties(properties);
-        Set<CustomProperties> extraProps = new HashSet<>(customProperties.size());
-        for(Entry<QName, Serializable> cp : customProperties.entrySet())
+        if (customProperties.isEmpty())
         {
-            extraProps.add(new CustomProperties(cp.getKey(), (String) properties.get(ContentModel.PROP_TITLE), null, cp.getValue()));
+            extraProps = defaultFacet.getCustomProperties();
+        }
+        else
+        {
+            extraProps = new HashSet<>(customProperties.size());
+            for (Entry<QName, Serializable> cp : customProperties.entrySet())
+            {
+                extraProps.add(new CustomProperties(cp.getKey(), (String) properties.get(ContentModel.PROP_TITLE), null, cp.getValue()));
+            }
         }
         // Construct the FacetProperty object
         SolrFacetProperties fp = new SolrFacetProperties.Builder()
@@ -329,13 +336,17 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                     .minFilterValueLength(minFilterValueLength)
                     .sortBy(sortBy)
                     .scope(scope)
-                    .index(index)
                     .isEnabled(isEnabled)
                     .isDefault(isDefault)
                     .scopedSites(scopedSites)
                     .customProperties(extraProps).build();
 
         return fp;
+    }
+
+    private <T> T getDefaultIfNull(T defaultValue, T newValue)
+    {
+        return (newValue == null) ? defaultValue : newValue;
     }
 
     @Override
@@ -346,12 +357,11 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
 
     private NodeRef createFacetNodeImpl(final SolrFacetProperties facetProperties, boolean checkDefaultFP)
     {
-
         final String filterID = facetProperties.getFilterID();
         NodeRef facetNodeRef = getFacetNodeRef(filterID);
         // We need to check the bootstrapped Facet properties (i.e loaded from properties file(s)) as well,
         // in order to not allow the user to create a new facet with the same filterID as the bootstrapped FP.
-        if (facetNodeRef != null || (checkDefaultFP && getDefaultLoadedFacet(filterID) != null))
+        if (facetNodeRef != null || (checkDefaultFP && defaultFacetsMap.get(filterID) != null))
         {
             throw new SolrFacetConfigException("Unable to create facet because the filterID [" + filterID + "] is already in use.");
         }
@@ -406,7 +416,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         NodeRef facetNodeRef = getFacetNodeRef(filterID);
         if (facetNodeRef == null)
         {
-            SolrFacetProperties fp = getDefaultLoadedFacet(filterID);
+            SolrFacetProperties fp = defaultFacetsMap.get(filterID);
             if (fp != null)
             {
                 // As we don't create nodes for the bootstrapped FP on server
@@ -436,6 +446,51 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
     }
 
+    private SolrFacetProperties makeValidFacetPropObj(SolrFacetProperties newFP)
+    {
+
+        SolrFacetProperties bootstraptedFP = defaultFacetsMap.get(newFP.getFilterID());
+        // null means there is no default facet
+        if(bootstraptedFP == null)
+        {
+            return new SolrFacetProperties.Builder(newFP).isDefault(false).build();
+        }
+
+        QName fieldQName = getValue(bootstraptedFP.getFacetQName(), newFP.getFacetQName(), null);
+        String displayName = getValue(bootstraptedFP.getDisplayName(), newFP.getDisplayName(), null);
+        String displayControl = getValue(bootstraptedFP.getDisplayControl(), newFP.getDisplayControl(), null);
+        int maxFilters = getValue(bootstraptedFP.getMaxFilters(), newFP.getMaxFilters(), -1);
+        int hitThreshold = getValue(bootstraptedFP.getHitThreshold(), newFP.getHitThreshold(), -1);
+        int minFilterValueLength = getValue(bootstraptedFP.getMinFilterValueLength(), newFP.getMinFilterValueLength(), -1);
+        String sortBy = getValue(bootstraptedFP.getSortBy(), newFP.getSortBy(), null);
+        String scope = getValue(bootstraptedFP.getScope(), newFP.getScope(), null);
+        Boolean isEnabled = getValue(bootstraptedFP.isEnabled(), newFP.isEnabled(), null);
+        Set<String> scopedSites = getValue(bootstraptedFP.getScopedSites(), newFP.getScopedSites(), null);
+        Set<CustomProperties> extraProps = getValue(bootstraptedFP.getCustomProperties(), newFP.getCustomProperties(), null);
+        // Construct the FacetProperty object
+        SolrFacetProperties fp = new SolrFacetProperties.Builder()
+                    .filterID(newFP.getFilterID())
+                    .facetQName(fieldQName)
+                    .displayName(displayName)
+                    .displayControl(displayControl)
+                    .maxFilters(maxFilters)
+                    .hitThreshold(hitThreshold)
+                    .minFilterValueLength(minFilterValueLength)
+                    .sortBy(sortBy)
+                    .scope(scope)
+                    .isEnabled(isEnabled)
+                    .isDefault(true)
+                    .scopedSites(scopedSites)
+                    .customProperties(extraProps).build();
+
+        return fp;
+    }
+
+    private <T> T getValue(T originalValue, T newValue, T defaultValueIfEquals)
+    {
+        return (originalValue.equals(newValue) ? defaultValueIfEquals : newValue);
+    }
+
     @Override
     public void deleteFacet(String filterID)
     {
@@ -445,7 +500,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             throw new SolrFacetConfigException("The [" + filterID + "] facet cannot be found.");
         }
 
-        SolrFacetProperties defaultFP = getDefaultLoadedFacet(filterID);
+        SolrFacetProperties defaultFP = defaultFacetsMap.get(filterID);
         if (defaultFP != null)
         {
             throw new SolrFacetConfigException("The default [" + filterID + "] facet cannot be deleted. It can only be disabled.");
@@ -464,31 +519,49 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             throw new SolrFacetConfigException("Filter Id cannot be null.");
         }
 
+        // construct a valid facet property object
+        facetProperties = makeValidFacetPropObj(facetProperties);
         Set<CustomProperties> customProperties = facetProperties.getCustomProperties();
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(14 + customProperties.size());
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13 + customProperties.size());
 
         properties.put(ContentModel.PROP_NAME, facetProperties.getFilterID());
-        properties.put(SolrFacetModel.PROP_FIELD_TYPE, facetProperties.getFacetQName());
-        properties.put(SolrFacetModel.PROP_FIELD_LABEL, facetProperties.getDisplayName());
-        properties.put(SolrFacetModel.PROP_DISPLAY_CONTROL, facetProperties.getDisplayControl());
-        properties.put(SolrFacetModel.PROP_MAX_FILTERS, facetProperties.getMaxFilters());
-        properties.put(SolrFacetModel.PROP_HIT_THRESHOLD, facetProperties.getHitThreshold());
-        properties.put(SolrFacetModel.PROP_MIN_FILTER_VALUE_LENGTH, facetProperties.getMinFilterValueLength());
-        properties.put(SolrFacetModel.PROP_SCOPE, facetProperties.getScope());
-        properties.put(SolrFacetModel.PROP_SORT_BY, facetProperties.getSortBy());
-        properties.put(SolrFacetModel.PROP_SCOPED_SITES, (Serializable) facetProperties.getScopedSites());
-        properties.put(SolrFacetModel.PROP_INDEX, facetProperties.getIndex());
-        properties.put(SolrFacetModel.PROP_IS_ENABLED, facetProperties.isEnabled());
+        properties.put(SolrFacetModel.PROP_IS_DEFAULT, facetProperties.isDefault());
 
-        SolrFacetProperties fp = getDefaultLoadedFacet(facetProperties.getFilterID());
-        properties.put(SolrFacetModel.PROP_IS_DEFAULT, (fp == null) ? false : fp.isDefault());
+        addNodeProperty(properties, SolrFacetModel.PROP_FIELD_TYPE, facetProperties.getFacetQName());
+        addNodeProperty(properties, SolrFacetModel.PROP_FIELD_LABEL, facetProperties.getDisplayName());
+        addNodeProperty(properties, SolrFacetModel.PROP_DISPLAY_CONTROL, facetProperties.getDisplayControl());
+        addNodeProperty(properties, SolrFacetModel.PROP_MAX_FILTERS, facetProperties.getMaxFilters());
+        addNodeProperty(properties, SolrFacetModel.PROP_HIT_THRESHOLD, facetProperties.getHitThreshold());
+        addNodeProperty(properties, SolrFacetModel.PROP_MIN_FILTER_VALUE_LENGTH, facetProperties.getMinFilterValueLength());
+        addNodeProperty(properties, SolrFacetModel.PROP_SCOPE, facetProperties.getScope());
+        addNodeProperty(properties, SolrFacetModel.PROP_SORT_BY, facetProperties.getSortBy());
+        addNodeProperty(properties, SolrFacetModel.PROP_SCOPED_SITES, (Serializable) facetProperties.getScopedSites());
+        addNodeProperty(properties, SolrFacetModel.PROP_IS_ENABLED, facetProperties.isEnabled());
 
         for (CustomProperties cp : customProperties)
         {
-            properties.put(cp.getName(), cp.getValue());
+            addNodeProperty(properties, cp.getName(), cp.getValue());
         }
 
         return properties;
+    }
+
+    private void addNodeProperty(Map<QName, Serializable> properties, QName qname, Serializable propValue)
+    {
+        if (propValue == null)
+        {
+            return;
+        }
+        if (propValue instanceof Integer && ((Integer) propValue) < 0)
+        {
+            return;
+        }
+        if (propValue instanceof Collection<?> && ((Collection<?>) propValue).isEmpty())
+        {
+            return;
+        }
+
+        properties.put(qname, propValue);
     }
 
     public NodeRef getFacetsRoot()
@@ -535,18 +608,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                     SolrFacetModel.TYPE_FACET_FIELD,
                     new JavaBehaviour(this, "onCreateNode"));
 
-        // Filter before update
-        this.policyComponent.bindClassBehaviour(
-                    BeforeUpdateNodePolicy.QNAME,
-                    SolrFacetModel.TYPE_FACET_FIELD,
-                    new JavaBehaviour(this, "beforeUpdateNode"));
-
-        // Filter update
-        this.policyComponent.bindClassBehaviour(
-                    OnUpdateNodePolicy.QNAME,
-                    SolrFacetModel.TYPE_FACET_FIELD,
-                    new JavaBehaviour(this, "onUpdateNode"));
-
         // Filter before deletion
         this.policyComponent.bindClassBehaviour(
                     BeforeDeleteNodePolicy.QNAME,
@@ -556,6 +617,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         Map<String, SolrFacetProperties> mergedMap = new HashMap<>(100);
         // Loaded facets
         Map<String, SolrFacetProperties> defaultFP = facetConfig.getDefaultFacets();
+        defaultFacetsMap.putAll(defaultFP); // add the default facets to a ConcurrentHashMap for performance reasons
         mergedMap.putAll(defaultFP);
 
         // Persisted facets
@@ -563,50 +625,42 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         // The persisted facets will override the default facets
         mergedMap.putAll(persistedProperties);
 
+        List<String> facetOrder = getFacetOrder();
         // Sort the merged maps
-        Comparator<Entry<String, SolrFacetProperties>> entryComparator = CollectionUtils.toEntryComparator(new SolrFacetComparator(getFacetOrder()));
+        Comparator<Entry<String, SolrFacetProperties>> entryComparator = CollectionUtils.toEntryComparator(new SolrFacetComparator(facetOrder));
         Map<String, SolrFacetProperties> sortedMap = CollectionUtils.sortMapByValue(mergedMap, entryComparator);
-        LinkedList<SolrFacetProperties> orderedFacets = new LinkedList<>(sortedMap.values());
 
-        // Get the last index, as the map is sorted by the FP's index value
-        int maxIndex = orderedFacets.getLast().getIndex();
-        int previousIndex = -1;
-        SolrFacetProperties previousFP = null;
-        for (SolrFacetProperties facet : orderedFacets)
-        {
-            String filterID = facet.getFilterID();
-            int index = facet.getIndex();
-            if (index == previousIndex)
-            {
-                // we can be sure that previousFP is never null, as we don't
-                // allow the index to be -1;
-                if (defaultFP.get(previousFP.getFilterID()) != null && persistedProperties.get(filterID) != null)
-                {
-                    SolrFacetProperties updatedPreviousFacet = new SolrFacetProperties.Builder(previousFP).index(++maxIndex).build();
-                    mergedMap.put(previousFP.getFilterID(), updatedPreviousFacet);
-                    mergedMap.put(filterID, facet);
-                }
-                else
-                {
-                    SolrFacetProperties updatedCurrentFacet = new SolrFacetProperties.Builder(facet).index(++maxIndex).build();
-                    mergedMap.put(updatedCurrentFacet.getFilterID(), updatedCurrentFacet);
-                }
-            }
-            else
-            {
-                mergedMap.put(filterID, facet);
-            }
-            previousIndex = index;
-            previousFP = facet;
-        }
-
-        for (SolrFacetProperties fp : mergedMap.values())
-        {
-            facetsMap.put(fp.getIndex(), fp);
-        }
         if (logger.isDebugEnabled() && persistedProperties.size() > 0)
         {
             logger.debug("The facets [" + persistedProperties + "] have overridden their matched default facets.");
+        }
+
+        final Set<String> newFacetOrder = (facetOrder == null) ? new LinkedHashSet<String>(sortedMap.size()) : new LinkedHashSet<String>(facetOrder);
+
+        for (SolrFacetProperties fp : sortedMap.values())
+        {
+            newFacetOrder.add(fp.getFilterID());
+        }
+
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Exception
+                    {
+                        reorderFacets(new ArrayList<String>(newFacetOrder));
+                        return null;
+                    }
+                }, false);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("The facets order [" + newFacetOrder + "] have been persisted.");
         }
     }
 
@@ -630,37 +684,28 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     }
 
     @Override
-    public void beforeUpdateNode(NodeRef nodeRef)
-    {
-        // Remove the facet, in order to not end up with duplicate facets but different index
-        SolrFacetProperties fp = getFacetProperties(nodeRef);
-        this.facetsMap.remove(fp.getIndex());
-    }
-
-    @Override
-    public void onUpdateNode(NodeRef nodeRef)
-    {
-        SolrFacetProperties fp = getFacetProperties(nodeRef);
-        this.facetsMap.put(fp.getIndex(), fp);
-    }
-
-    @Override
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         SolrFacetProperties fp = getFacetProperties(childAssocRef.getChildRef());
-        this.facetsMap.put(fp.getIndex(), fp);
         this.facetNodeRefCache.put(fp.getFilterID(), childAssocRef.getChildRef());
-        
+
         // We must also add the new filterID to the facetOrder property.
         final NodeRef facetsRoot = getFacetsRoot();
-        
+
         @SuppressWarnings("unchecked")
         ArrayList<String> facetOrder = (ArrayList<String>) nodeService.getProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER);
-        // FIXME This could be null.
-        
+        if (facetOrder == null)
+        {
+            List<SolrFacetProperties> facets = getFacets();
+            facetOrder = new ArrayList<String>(facets.size());
+            for (SolrFacetProperties facet : facets)
+            {
+                facetOrder.add(facet.getFilterID());
+            }
+        }
         // We'll put it at the end (arbitrarily).
         facetOrder.add(fp.getFilterID());
-        
+
         nodeService.setProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER, facetOrder);
     }
 
@@ -668,40 +713,17 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         String filterID = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-        int index = (Integer) nodeService.getProperty(nodeRef, SolrFacetModel.PROP_INDEX);
-
-        this.facetsMap.remove(index);
         this.facetNodeRefCache.remove(filterID);
-        
+
         // We must also remove the filterID from the facetOrder property.
         final NodeRef facetsRoot = getFacetsRoot();
-        
+
         @SuppressWarnings("unchecked")
         ArrayList<String> facetOrder = (ArrayList<String>) nodeService.getProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER);
-        
+
         if (facetOrder.remove(filterID))
         {
             nodeService.setProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER, facetOrder);
-        }
-    }
-
-    @Override
-    public int getNextIndex()
-    {
-        synchronized (facetsMap)
-        {
-            if (facetsMap.size() >= maxAllowedFilters)
-            {
-                throw new SolrFacetConfigException("You have reached the maximum number of allowed filters. Please delete an existing filter in order to make a new one!");
-            }
-            int max = facetsMap.lastKey();
-            if (max >= Integer.MAX_VALUE)
-            {
-                reorder();
-                max = facetsMap.lastKey();
-            }
-
-            return max + 1;
         }
     }
 
@@ -724,46 +746,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         return customProperties;
     }
 
-    /**
-     * This will reorder the facetsMap, hence, the invoker needs to use an
-     * appropriate locking mechanism
-     */
-    private void reorder()
-    {
-        boolean order = false;
-        int previous = 0;
-        for (int i : facetsMap.keySet())
-        {
-            if (i != previous)
-            {
-                order = true;
-                break;
-            }
-            previous++;
-        }
-
-        if (order)
-        {
-            Map<Integer, SolrFacetProperties> tempMap = new LinkedHashMap<>();
-            int index = 0;
-            for (SolrFacetProperties fp : facetsMap.values())
-            {
-                if (fp.getIndex() != index)
-                {
-                    fp = new SolrFacetProperties.Builder(fp).index(index).build();
-                }
-                tempMap.put(index, fp);
-                index++;
-            }
-            facetsMap.clear();
-
-            for (SolrFacetProperties fp : tempMap.values())
-            {
-                updateFacet(fp);
-            }
-        }
-    }
-    
     @Override public void reorderFacets(List<String> facetIds)
     {
         // We need to validate the provided facet IDs

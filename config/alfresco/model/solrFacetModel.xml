@@ -119,16 +119,6 @@
                   <tokenised>false</tokenised>
                </index>
             </property>
-            <property name="srft:index">
-               <title>Index</title>
-               <type>d:int</type>
-               <mandatory>true</mandatory>
-               <index enabled="false">
-                  <atomic>false</atomic>
-                  <stored>false</stored>
-                  <tokenised>false</tokenised>
-               </index>
-            </property>
             <property name="srft:isEnabled">
                <title>Is enabled</title>
                <type>d:boolean</type>

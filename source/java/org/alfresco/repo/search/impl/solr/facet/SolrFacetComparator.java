@@ -38,6 +38,11 @@ public class SolrFacetComparator implements Comparator<SolrFacetProperties>
     
     @Override public int compare(SolrFacetProperties facet1, SolrFacetProperties facet2)
     {
+        if (sortedIDs.isEmpty())
+        {
+            return facet1.getFilterID().compareTo(facet2.getFilterID());
+        }
+
         Pair<Integer, Integer> facetIndicesInSortedList = find(facet1, facet2);
         
         if (bothSorted(facetIndicesInSortedList))
@@ -47,19 +52,7 @@ public class SolrFacetComparator implements Comparator<SolrFacetProperties>
         }
         else if (neitherSorted(facetIndicesInSortedList))
         {
-            // Sorting is by the index value defined in the facet itself.
-            final int indexDifference = facet1.getIndex() - facet2.getIndex();
-            
-            if (indexDifference == 0)
-            {
-                // This could happen if an end user defines/overrides indexes to be equal.
-                // We'll sort based on facet ID if it does happen.
-                return facet1.getFilterID().compareTo(facet2.getFilterID());
-            }
-            else
-            {
-                return indexDifference;
-            }
+            return facet1.getFilterID().compareTo(facet2.getFilterID());
         }
         else
         {

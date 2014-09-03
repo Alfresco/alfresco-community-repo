@@ -416,4 +416,9 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.dictionary.DictionaryModelTypeTest.class);
         suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
     }
+
+    static void tests66(TestSuite suite)
+    {
+        suite.addTest(org.alfresco.repo.search.impl.solr.facet.SolrFacetTestSuite.suite());
+    }
 }

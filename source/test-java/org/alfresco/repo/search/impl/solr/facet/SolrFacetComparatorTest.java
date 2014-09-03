@@ -34,15 +34,16 @@ public class SolrFacetComparatorTest
 {
     @Test public void simpleSortOfSortedFacets() throws Exception
     {
-        List<String> expectedIds = Arrays.asList(new String[] { "a", "b", "c"});
+        List<String> expectedIds = Arrays.asList(new String[] { "a", "b", "c", "d"});
         
         SolrFacetProperties.Builder builder = new SolrFacetProperties.Builder();
         
         List<SolrFacetProperties> facets = Arrays.asList(new SolrFacetProperties[]
                                                          {
-                                                            builder.filterID("c").index(1).build(),
-                                                            builder.filterID("b").index(2).build(),
-                                                            builder.filterID("a").index(3).build(),
+                                                            builder.filterID("a").build(),
+                                                            builder.filterID("d").build(),
+                                                            builder.filterID("b").build(),
+                                                            builder.filterID("c").build(),
                                                          });
         Collections.sort(facets, new SolrFacetComparator(expectedIds));
         

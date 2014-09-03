@@ -39,6 +39,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * This class picks up all the loaded properties passed to it and uses a naming
@@ -58,7 +59,6 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * <li>custom.cm\:content.mimetype.sortBy=DESCENDING</li>
  * <li>custom.cm\:content.mimetype.scope=SCOPED_SITES</li>
  * <li>custom.cm\:content.mimetype.scopedSites=site1,site2,site3</li>
- * <li>custom.cm\:content.mimetype.index=0</li>
  * <li>custom.cm\:content.mimetype.isEnabled=true</li>
  * </ul>
  * Also, if there is a need to add additional properties, the following needs to be
@@ -91,8 +91,8 @@ public class SolrFacetConfig extends AbstractLifecycleBean
 
     public SolrFacetConfig(Properties rawProperties, String inheritanceOrder)
     {
-        PropertyCheck.mandatory(this, "rawProperties", rawProperties);
-        PropertyCheck.mandatory(this, "inheritanceOrder", inheritanceOrder);
+        ParameterCheck.mandatory("rawProperties", rawProperties);
+        ParameterCheck.mandatory("inheritanceOrder", inheritanceOrder);
         
         this.rawProperties = rawProperties;
         
@@ -223,12 +223,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                 String sortBy = propValues.get(ValueName.PROP_SORTBY.getPropValueName(field));
                 String scope = propValues.get(ValueName.PROP_SCOPE.getPropValueName(field));
                 Set<String> scopedSites = getScopedSites(propValues.get(ValueName.PROP_SCOPED_SITES.getPropValueName(field)));
-                int index = getIntegerValue(propValues.get(ValueName.PROP_INDEX.getPropValueName(field)));
-                if(index < 0)
-                {
-                    throw new SolrFacetConfigException("Index must be greater than or equal to 0");
-                }
-                boolean isEnabled = Boolean.valueOf(propValues.get(ValueName.PROP_IS_ENABLED.getPropValueName(field)));
+                Boolean isEnabled = Boolean.valueOf(propValues.get(ValueName.PROP_IS_ENABLED.getPropValueName(field)));
                 Set<CustomProperties> customProps = getCustomProps(facetFields.get(field), field, propValues);
 
                 // Construct the FacetProperty object
@@ -242,14 +237,13 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                             .minFilterValueLength(minFilterValueLength)
                             .sortBy(sortBy)
                             .scope(scope)
-                            .index(index)
                             .isEnabled(isEnabled)
                             .isDefault(true)
                             .scopedSites(scopedSites)
                             .customProperties(customProps).build();
 
                 facetProperties.put(filterID, fp);
-            }           
+            }
 
             // Done
             return facetProperties;
@@ -273,7 +267,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
 
         private static void getPropertyAndPropOderControl(Properties properties, Set<String> propNames, Set<String> propOrderControl)
         {
-            
+
             for (Object propKeyObj : properties.keySet())
             {
                 String propKey = (String) propKeyObj;
@@ -327,14 +321,14 @@ public class SolrFacetConfig extends AbstractLifecycleBean
             }
             return set;
         }
-        
+
         private static Set<CustomProperties> getCustomProps(Set<String> additionalProps, String field, Map<String, String> propValues)
         {
             if (additionalProps == null)
             {
                 return Collections.emptySet();
             }
-            
+
             Set<CustomProperties> customProps = new HashSet<>();
             for (String extraInfo : additionalProps)
             {
@@ -385,7 +379,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
     {
         PROP_FILTER_ID("filterID"), PROP_DISPLAY_NAME("displayName"), PROP_MAX_FILTERS("maxFilters"), PROP_HIT_THRESHOLD("hitThreshold"),
         PROP_MIN_FILTER_VALUE_LENGTH("minFilterValueLength"), PROP_SORTBY("sortBy"), PROP_SCOPE("scope"), PROP_SCOPED_SITES("scopedSites"),
-        PROP_INDEX("index"), PROP_IS_ENABLED("isEnabled"), PROP_DISPLAY_CONTROL("displayControl");
+        PROP_IS_ENABLED("isEnabled"), PROP_DISPLAY_CONTROL("displayControl");
 
         private ValueName(String propValueName)
         {

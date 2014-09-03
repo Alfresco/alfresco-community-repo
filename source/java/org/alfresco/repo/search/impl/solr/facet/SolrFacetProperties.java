@@ -46,8 +46,7 @@ public class SolrFacetProperties implements Serializable
     private final String sortBy;
     private final String scope;
     private final Set<String> scopedSites;
-    private final int index;
-    private final boolean isEnabled;
+    private final Boolean isEnabled;
     private final boolean isDefault; // is loaded from properties files?
     private final Set<CustomProperties> customProperties;
 
@@ -67,7 +66,6 @@ public class SolrFacetProperties implements Serializable
         this.minFilterValueLength = builder.minFilterValueLength;
         this.sortBy = builder.sortBy;
         this.scope = builder.scope;
-        this.index = builder.index;
         this.isEnabled = builder.isEnabled;
         this.isDefault = builder.isDefault;
         this.scopedSites = Collections.unmodifiableSet(new HashSet<String>(builder.scopedSites));
@@ -157,17 +155,9 @@ public class SolrFacetProperties implements Serializable
     }
 
     /**
-     * @return the index
+     * @return null if the value is not set
      */
-    public int getIndex()
-    {
-        return this.index;
-    }
-
-    /**
-     * @return the isEnabled
-     */
-    public boolean isEnabled()
+    public Boolean isEnabled()
     {
         return this.isEnabled;
     }
@@ -191,7 +181,6 @@ public class SolrFacetProperties implements Serializable
     {
         return Collections.unmodifiableSet(new HashSet<CustomProperties>(this.customProperties));
     }
-    
 
     /*
      * @see java.lang.Object#hashCode()
@@ -251,7 +240,7 @@ public class SolrFacetProperties implements Serializable
                     .append(this.maxFilters).append(", hitThreshold=").append(this.hitThreshold)
                     .append(", minFilterValueLength=").append(this.minFilterValueLength).append(", sortBy=")
                     .append(this.sortBy).append(", scope=").append(this.scope).append(", scopedSites=")
-                    .append(this.scopedSites).append(", index=").append(this.index).append(", isEnabled=").append(this.isEnabled)
+                    .append(this.scopedSites).append(", isEnabled=").append(this.isEnabled)
                     .append(", isDefault=").append(this.isDefault).append(", customProperties=").append(this.customProperties)
                     .append("]");
         return sb.toString();
@@ -263,14 +252,13 @@ public class SolrFacetProperties implements Serializable
         private QName facetQName;
         private String displayName;
         private String displayControl;
-        private int maxFilters;
-        private int hitThreshold;
-        private int minFilterValueLength;
+        private int maxFilters = -1;
+        private int hitThreshold = -1;;
+        private int minFilterValueLength = -1;
         private String sortBy;
         private String scope;
         private Set<String> scopedSites = Collections.emptySet();
-        private int index;
-        private boolean isEnabled;
+        private Boolean isEnabled;
         private boolean isDefault;
         private Set<CustomProperties> customProperties = Collections.emptySet();
 
@@ -295,7 +283,6 @@ public class SolrFacetProperties implements Serializable
             this.sortBy = that.sortBy;
             this.scope = that.scope;
             this.scopedSites = that.scopedSites;
-            this.index = that.index;
             this.isEnabled = that.isEnabled;
             this.isDefault = that.isDefault;
             this.customProperties = that.customProperties;
@@ -364,13 +351,7 @@ public class SolrFacetProperties implements Serializable
             return this;
         }
 
-        public Builder index(int index)
-        {
-            this.index = index;
-            return this;
-        }
-
-        public Builder isEnabled(boolean isEnabled)
+        public Builder isEnabled(Boolean isEnabled)
         {
             this.isEnabled = isEnabled;
             return this;
@@ -396,7 +377,7 @@ public class SolrFacetProperties implements Serializable
             return new SolrFacetProperties(this);
         }
     }
-    
+
     public static class CustomProperties implements Serializable
     {
         private static final long serialVersionUID = 2250062300454166258L;

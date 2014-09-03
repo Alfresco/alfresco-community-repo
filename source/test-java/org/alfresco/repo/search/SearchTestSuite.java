@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.search;
 
-import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
@@ -31,7 +30,6 @@ import org.alfresco.repo.search.impl.lucene.index.IndexInfoTest;
 import org.alfresco.repo.search.impl.parsers.CMISTest;
 import org.alfresco.repo.search.impl.parsers.CMIS_FTSTest;
 import org.alfresco.repo.search.impl.parsers.FTSTest;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelperTest;
 import org.alfresco.util.NumericEncodingTest;
 
 /**
@@ -63,11 +61,7 @@ public class SearchTestSuite extends TestSuite
         suite.addTestSuite(CMIS_FTSTest.class);
         suite.addTestSuite(CMISTest.class);
         suite.addTestSuite(FTSTest.class);
-        suite.addTest(new JUnit4TestAdapter(SolrFacetHelperTest.class));
-    
-        
-        
-       
+
         return suite;
     }
 }

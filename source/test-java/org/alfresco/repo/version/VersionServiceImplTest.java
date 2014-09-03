@@ -715,6 +715,48 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
     
     /**
+     * Test that secondary association is present after revert, see MNT-11756
+     */
+    public void testAssociationIsPresentAfterRevert()
+    {
+        // Create Order
+        NodeRef orderNodeRef = this.dbNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}MyVersionableOrder"), TEST_ATS_PARENT_TYPE_QNAME, this.nodeProperties).getChildRef();
+        this.dbNodeService.addAspect(orderNodeRef, ContentModel.ASPECT_VERSIONABLE, new HashMap<QName, Serializable>());
+        assertNotNull(orderNodeRef);
+        this.dbNodeService.setProperty(orderNodeRef, PROP_ATS_PARENT_ID, 1);
+
+        // Create Order-Product association
+        NodeRef productNodeRef = this.dbNodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("{test}MyProduct1"), TEST_ATS_CHILD_TYPE_QNAME, this.nodeProperties).getChildRef();
+        this.dbNodeService.setProperty(orderNodeRef, PROP_ATS_CHILD_ID, 1);
+
+        ChildAssociationRef childAssoc = this.dbNodeService.addChild(orderNodeRef, productNodeRef, TEST_ATS_RELATED_CHILDREN_QNAME, TEST_ATS_RELATED_CHILDREN_QNAME);
+        assertFalse("Order-product child association should not be primary", childAssoc.isPrimary());
+
+        // Create version
+        Version version1 = createVersion(orderNodeRef);
+        this.dbNodeService.setProperty(orderNodeRef, PROP_ATS_PARENT_ID, 2);
+        assertEquals("New property should be set", 2, this.dbNodeService.getProperty(orderNodeRef, PROP_ATS_PARENT_ID));
+
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(orderNodeRef, TEST_ATS_RELATED_CHILDREN_QNAME, RegexQNamePattern.MATCH_ALL);
+        assertTrue("Order-Product association must exist", childAssocs.size() > 0);
+        assertTrue("Order should have Order-Product association", childAssocs.contains(childAssoc));
+
+        VersionHistory vh = this.versionService.getVersionHistory(orderNodeRef);
+        assertNotNull(vh);
+        assertEquals(1, vh.getAllVersions().size());
+
+        // Revert
+        this.versionService.revert(orderNodeRef, version1);
+        assertEquals("Old property should restore after revert", 1, this.dbNodeService.getProperty(orderNodeRef, PROP_ATS_PARENT_ID));
+
+        childAssocs = nodeService.getChildAssocs(orderNodeRef, TEST_ATS_RELATED_CHILDREN_QNAME, RegexQNamePattern.MATCH_ALL);
+        assertTrue("Order-Product association must exist after revert", childAssocs.size() > 0);
+        assertTrue("Order-Product association should remain the same", childAssocs.contains(childAssoc));
+    }
+    
+    /**
      * This method was taken from the CommmentServiceImpl on the cloud branch
      * 
      * TODO: When this is merged to HEAD, please remove this method and use the one in CommmentServiceImpl

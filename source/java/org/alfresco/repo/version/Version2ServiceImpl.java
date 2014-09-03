@@ -1275,6 +1275,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                     if (children.contains(versionedChild) == false)
                     {
                         NodeRef childRef = null;
+                        ChildAssociationRef assocToKeep = null;
                         if (this.nodeService.exists(versionedChild.getChildRef()) == true)
                         {
                             // The node was a primary child of the parent, but that is no longer the case.  Despite this
@@ -1292,6 +1293,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                                     if (children.contains(assocToCheck))
                                     {
                                         childRef = assocToCheck.getChildRef();
+                                        assocToKeep = assocToCheck;
                                         break;
                                     }
                                 }
@@ -1326,7 +1328,14 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                         }
                         if (childRef != null)
                         {
-                            children.remove(nodeService.getPrimaryParent(childRef));
+                            if (assocToKeep != null)
+                            {
+                                children.remove(assocToKeep);
+                            }
+                            else
+                            {
+                                children.remove(nodeService.getPrimaryParent(childRef));
+                            }
                         }
                     }
                     else

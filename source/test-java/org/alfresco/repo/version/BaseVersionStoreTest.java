@@ -111,6 +111,11 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected static final QName TEST_CHILD_ASSOC_1 = QName.createQName(TEST_NAMESPACE, "childassoc1");
     protected static final QName TEST_CHILD_ASSOC_2 = QName.createQName(TEST_NAMESPACE, "childassoc2");
     protected static final QName TEST_ASSOC = QName.createQName(TEST_NAMESPACE, "assoc1");	
+    protected static final QName TEST_ATS_PARENT_TYPE_QNAME = QName.createQName(TEST_NAMESPACE, "atsParent");
+    protected static final QName TEST_ATS_CHILD_TYPE_QNAME = QName.createQName(TEST_NAMESPACE, "atsChild");
+    protected static final QName TEST_ATS_RELATED_CHILDREN_QNAME = QName.createQName(TEST_NAMESPACE, "atsRelatedChildren");
+    protected static final QName PROP_ATS_PARENT_ID = QName.createQName(TEST_NAMESPACE, "atsParentID");
+    protected static final QName PROP_ATS_CHILD_ID = QName.createQName(TEST_NAMESPACE, "atsChildID");
     
     protected Collection<String> multiValue = null;
     protected static final String MULTI_VALUE_1 = "multi1";

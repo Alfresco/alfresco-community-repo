@@ -19,20 +19,23 @@
 
 package org.alfresco.repo.search.impl.solr.facet;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 
 /**
- * Domain-Specific Language (DSL) style builder class for encapsulating the
- * facet properties.
+ * Domain-Specific Language (DSL) style builder class for encapsulating the facet properties.
  * 
  * @author Jamal Kaabi-Mofrad
  */
-public class SolrFacetProperties implements Comparable<SolrFacetProperties>
+public class SolrFacetProperties implements Serializable
 {
+    private static final long serialVersionUID = 2991173095752087202L;
+    
     private final String filterID;
     private final QName facetQName;
     private final String displayName;
@@ -46,6 +49,7 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
     private final int index;
     private final boolean isEnabled;
     private final boolean isDefault; // is loaded from properties files?
+    private final Set<CustomProperties> customProperties;
 
     /**
      * Initialises a newly created <code>SolrFacetProperty</code> object
@@ -66,7 +70,8 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
         this.index = builder.index;
         this.isEnabled = builder.isEnabled;
         this.isDefault = builder.isDefault;
-        this.scopedSites = (builder.scopedSites == null) ? null :Collections.unmodifiableSet(new HashSet<String>(builder.scopedSites));
+        this.scopedSites = Collections.unmodifiableSet(new HashSet<String>(builder.scopedSites));
+        this.customProperties = Collections.unmodifiableSet(new HashSet<CustomProperties>(builder.customProperties));
     }
 
     /**
@@ -142,16 +147,12 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
     }
 
     /**
-     * Returns an unmodifiable view of the Scoped Sites set or null
+     * Returns an unmodifiable view of the Scoped Sites set. Never null.
      *
      * @return the scopedSites
      */
     public Set<String> getScopedSites()
     {
-        if (this.scopedSites == null)
-        {
-            return null;
-        }
         return Collections.unmodifiableSet(new HashSet<String>(this.scopedSites));
     }
 
@@ -180,6 +181,17 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
     {
         return this.isDefault;
     }
+
+    /**
+     * Returns an unmodifiable view of the custom properties set. Never null.
+     * 
+     * @return the customProperties
+     */
+    public Set<CustomProperties> getCustomProperties()
+    {
+        return Collections.unmodifiableSet(new HashSet<CustomProperties>(this.customProperties));
+    }
+    
 
     /*
      * @see java.lang.Object#hashCode()
@@ -227,21 +239,12 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
     }
 
     /*
-     * @see java.lang.Comparable#compareTo(T)
-     */
-    @Override
-    public int compareTo(SolrFacetProperties that)
-    {
-        return Integer.compare(this.index, that.index);
-    }
-
-    /*
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString()
     {
-        StringBuilder sb = new StringBuilder(320);
+        StringBuilder sb = new StringBuilder(400);
         sb.append("FacetProperty [filterID=").append(this.filterID).append(", facetQName=")
                     .append(this.facetQName).append(", displayName=").append(this.displayName)
                     .append(", displayControl=").append(this.displayControl).append(", maxFilters=")
@@ -249,7 +252,8 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
                     .append(", minFilterValueLength=").append(this.minFilterValueLength).append(", sortBy=")
                     .append(this.sortBy).append(", scope=").append(this.scope).append(", scopedSites=")
                     .append(this.scopedSites).append(", index=").append(this.index).append(", isEnabled=").append(this.isEnabled)
-                    .append(", isDefault=").append(this.isDefault).append("]");
+                    .append(", isDefault=").append(this.isDefault).append(", customProperties=").append(this.customProperties)
+                    .append("]");
         return sb.toString();
     }
 
@@ -264,10 +268,38 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
         private int minFilterValueLength;
         private String sortBy;
         private String scope;
-        private Set<String> scopedSites;
+        private Set<String> scopedSites = Collections.emptySet();
         private int index;
         private boolean isEnabled;
         private boolean isDefault;
+        private Set<CustomProperties> customProperties = Collections.emptySet();
+
+        public Builder()
+        {
+        }
+
+        /**
+         * Copy builder
+         * 
+         * @param that existing {@code SolrFacetProperties} object
+         */
+        public Builder(SolrFacetProperties that)
+        {
+            this.filterID = that.filterID;
+            this.facetQName = that.facetQName;
+            this.displayName = that.displayName;
+            this.displayControl = that.displayControl;
+            this.maxFilters = that.maxFilters;
+            this.hitThreshold = that.hitThreshold;
+            this.minFilterValueLength = that.minFilterValueLength;
+            this.sortBy = that.sortBy;
+            this.scope = that.scope;
+            this.scopedSites = that.scopedSites;
+            this.index = that.index;
+            this.isEnabled = that.isEnabled;
+            this.isDefault = that.isDefault;
+            this.customProperties = that.customProperties;
+        }
 
         public Builder filterID(String filterID)
         {
@@ -325,7 +357,10 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
 
         public Builder scopedSites(Set<String> scopedSites)
         {
-            this.scopedSites = scopedSites;
+            if (scopedSites != null)
+            {
+                this.scopedSites = scopedSites;
+            }
             return this;
         }
 
@@ -347,9 +382,106 @@ public class SolrFacetProperties implements Comparable<SolrFacetProperties>
             return this;
         }
 
+        public Builder customProperties(Set<CustomProperties> customProperties)
+        {
+            if (customProperties != null)
+            {
+                this.customProperties = customProperties;
+            }
+            return this;
+        }
+
         public SolrFacetProperties build()
         {
             return new SolrFacetProperties(this);
         }
+    }
+    
+    public static class CustomProperties implements Serializable
+    {
+        private static final long serialVersionUID = 2250062300454166258L;
+        
+        private final QName name;
+        private final String title;
+        private final String type;
+        private final Serializable value;
+
+        public CustomProperties(QName name, String title, String type, Serializable value)
+        {
+            this.name = name;
+            this.title = title;
+            this.type = type;
+            this.value = value;
+        }
+
+        public QName getName()
+        {
+            return this.name;
+        }
+
+        /**
+         * @return the title
+         */
+        public String getTitle()
+        {
+            return this.title;
+        }
+
+        /**
+         * @return the type
+         */
+        public String getType()
+        {
+            return this.type;
+        }
+
+        public Serializable getValue()
+        {
+            return this.value;
+        }
+
+        /*
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((this.name == null) ? 0 : this.name.hashCode());
+            return result;
+        }
+
+        /*
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj)
+            {
+                return true;
+            }
+            if (obj == null || !(obj instanceof CustomProperties))
+            {
+                return false;
+            }
+            CustomProperties other = (CustomProperties) obj;
+            return EqualsHelper.nullSafeEquals(this.name, other.name);
+        }
+
+        /*
+         * @see java.lang.Object#toString()
+         */
+        @Override
+        public String toString()
+        {
+            StringBuilder builder = new StringBuilder(100);
+            builder.append("CustomProperties [name=").append(this.name).append(", title=")
+                        .append(this.title).append(", type=").append(this.type).append(", value=")
+                        .append(this.value).append("]");
+            return builder.toString();
+        }
+
     }
 }

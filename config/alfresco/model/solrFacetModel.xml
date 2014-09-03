@@ -18,6 +18,8 @@
    <!-- Solr Facets Namespace -->
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/solrfacet/1.0" prefix="srft" />
+      <!-- if you want to extend the properties of a facet then use this namespace to mark the custom properties -->
+      <namespace uri="http://www.alfresco.org/model/solrfacetcustomproperty/1.0" prefix="srftcustom"/>
    </namespaces>
 
    <types>
@@ -155,4 +157,18 @@
          <parent>cm:folder</parent>
       </type>
    </types>
+
+   <aspects>
+      <!-- Custom Facet Properties Aspect -->
+      <aspect name="srft:customProperties">
+         <title>Facet Custom Properties</title>
+         <properties>
+            <property name="srftcustom:extraInformation">
+               <title>Additional Facet Information</title>
+               <type>d:text</type>
+            </property>
+         </properties>
+      </aspect>
+   </aspects>
+
 </model>

@@ -19,7 +19,7 @@
 
 package org.alfresco.repo.search.impl.solr.facet;
 
-import java.util.Map;
+import java.util.List;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -34,10 +34,9 @@ public interface SolrFacetService
     /**
      * Gets all the available facets.
      * 
-     * @return Map of {@code SolrFacetProperties} with the
-     *         {@code SolrFacetProperties.filterID} as the key or an empty map if none exists
+     * @return List of {@code SolrFacetProperties} or an empty list if none exists
      */
-    public Map<String, SolrFacetProperties> getFacets();
+    public List<SolrFacetProperties> getFacets();
 
     /**
      * Gets the facet by filter Id.
@@ -86,4 +85,6 @@ public interface SolrFacetService
      * @param filterID the filter Id
      */
     public void deleteFacet(String filterID);
+
+    public int getNextIndex();
 }

@@ -19,15 +19,19 @@
 
 package org.alfresco.repo.search.impl.solr.facet;
 
+import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
@@ -47,6 +51,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * <ul>
  * <li>custom.cm\:content.mimetype.filterID=filter_abc</li>
  * <li>custom.cm\:content.mimetype.displayName=faceted-search.facet-menu.facet.formats</li>
+ * <li>custom.cm\:content.mimetype.displayControl=alfresco/search/FacetFilters</li>
  * <li>custom.cm\:content.mimetype.maxFilters=5</li>
  * <li>custom.cm\:content.mimetype.hitThreshold=1</li>
  * <li>custom.cm\:content.mimetype.minFilterValueLength=4</li>
@@ -55,6 +60,12 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * <li>custom.cm\:content.mimetype.scopedSites=site1,site2,site3</li>
  * <li>custom.cm\:content.mimetype.index=0</li>
  * <li>custom.cm\:content.mimetype.isEnabled=true</li>
+ * </ul>
+ * Also, if there is a need to add additional properties, the following needs to be
+ * put into a properties file:
+ * <ul>
+ * <li>custom.cm\:content.mimetype<b>.EXTRA-PROP.</b>blockIncludeFacetRequest=true</li>
+ * <li>custom.cm\:content.mimetype<b>.EXTRA-PROP.</b>moreProp=additionalInfo</li>
  * </ul>
  * The inheritance order is strictly defined using property:<br/>
  * <b>${solr_facets.inheritanceHierarchy}</b><br/>
@@ -69,6 +80,9 @@ public class SolrFacetConfig extends AbstractLifecycleBean
 {
     private static final Log logger = LogFactory.getLog(SolrFacetConfig.class);
 
+    private static final String KEY_EXTRA_INFO = ".EXTRA-PROP.";
+    private static final int KEY_EXTRA_INFO_LENGTH = KEY_EXTRA_INFO.length();
+    
     private final Properties rawProperties;
     private final Set<String> propInheritanceOrder;
  
@@ -163,15 +177,39 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                 }
             }
 
-            Set<String> facetFields = new HashSet<>();
+            Map<String, Set<String>> facetFields = new HashMap<>();
             for(String key : propValues.keySet())
             {
-                facetFields.add(key.substring(0, key.lastIndexOf('.')));
+                String facetQName = null;
+                Set<String> extraProp = null;
+                int index = key.indexOf(KEY_EXTRA_INFO);
+                if (index > 0)
+                {
+                    String extraInfo = key.substring(index + KEY_EXTRA_INFO_LENGTH);
+                    facetQName = key.substring(0, index);
+
+                    extraProp = facetFields.get(facetQName);
+                    if (extraProp == null)
+                    {
+                        extraProp = new HashSet<>();
+                    }
+                    if (extraInfo.length() > 0)
+                    {
+                        extraProp.add(extraInfo);
+                    }
+                }
+                else
+                {
+                    index = key.lastIndexOf('.');
+                    facetQName = key.substring(0, index);
+                    extraProp = facetFields.get(facetQName);
+                }
+                facetFields.put(facetQName, extraProp);
             }
 
             // Build the facet config objects
             Map<String, SolrFacetProperties> facetProperties = new HashMap<>(100);
-            for (String field : facetFields)
+            for (String field : facetFields.keySet())
             {
                 // FacetProperty attributes
                 // Resolve facet field into QName
@@ -186,7 +224,12 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                 String scope = propValues.get(ValueName.PROP_SCOPE.getPropValueName(field));
                 Set<String> scopedSites = getScopedSites(propValues.get(ValueName.PROP_SCOPED_SITES.getPropValueName(field)));
                 int index = getIntegerValue(propValues.get(ValueName.PROP_INDEX.getPropValueName(field)));
+                if(index < 0)
+                {
+                    throw new SolrFacetConfigException("Index must be greater than or equal to 0");
+                }
                 boolean isEnabled = Boolean.valueOf(propValues.get(ValueName.PROP_IS_ENABLED.getPropValueName(field)));
+                Set<CustomProperties> customProps = getCustomProps(facetFields.get(field), field, propValues);
 
                 // Construct the FacetProperty object
                 SolrFacetProperties fp = new SolrFacetProperties.Builder()
@@ -202,8 +245,9 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                             .index(index)
                             .isEnabled(isEnabled)
                             .isDefault(true)
-                            .scopedSites(scopedSites).build();
-                
+                            .scopedSites(scopedSites)
+                            .customProperties(customProps).build();
+
                 facetProperties.put(filterID, fp);
             }           
 
@@ -282,6 +326,35 @@ public class SolrFacetConfig extends AbstractLifecycleBean
                 }
             }
             return set;
+        }
+        
+        private static Set<CustomProperties> getCustomProps(Set<String> additionalProps, String field, Map<String, String> propValues)
+        {
+            if (additionalProps == null)
+            {
+                return Collections.emptySet();
+            }
+            
+            Set<CustomProperties> customProps = new HashSet<>();
+            for (String extraInfo : additionalProps)
+            {
+                String value = propValues.get(field + KEY_EXTRA_INFO + extraInfo);
+                if (value != null)
+                {
+                    QName qName = QName.createQName(SolrFacetModel.SOLR_FACET_CUSTOM_PROPERTY_URL, extraInfo);
+                    String[] extra = value.split(",");
+                    if (extra.length == 1)
+                    {
+                        customProps.add(new CustomProperties(qName, null, null, extra[0]));
+                    }
+                    else
+                    {
+                        List<String> list = Arrays.asList(extra);
+                        customProps.add(new CustomProperties(qName, null, null, (Serializable) list));
+                    }
+                }
+            }
+            return customProps;
         }
 
         private static int getIntegerValue(String propValue)

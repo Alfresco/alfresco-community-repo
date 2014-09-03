@@ -260,6 +260,12 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 				}
 
 				@Override
+				public String getContextPath()
+				{
+					return null;
+				}
+
+				@Override
 				public ServletContext getContext(String arg0)
 				{
 					return null;

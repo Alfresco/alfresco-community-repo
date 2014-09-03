@@ -3205,6 +3205,32 @@
         </property>
     </bean>
     
+    <bean id="patch.addTagScopeAspect"
+        class="org.alfresco.repo.admin.patch.impl.AddTagScopeAspect"
+        parent="basePatch">
+        <property name="id">
+            <value>patch.addTagScopeAspect</value>
+        </property>
+        <property name="description">
+            <value>patch.addTagScopeAspect.description</value>
+        </property>
+        <property name="fixesFromSchema">
+            <value>0</value>
+        </property>
+        <property name="fixesToSchema">
+            <value>6065</value>
+        </property>
+        <property name="targetSchema">
+            <value>6066</value>
+        </property>
+        <property name="repository">
+            <ref bean="repositoryHelper"/>
+        </property>
+        <property name="taggingService">
+            <ref bean="TaggingService"/>
+        </property>
+    </bean>
+    
     <bean id="patch.siteAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
         <property name="id"><value>patch.siteAdministrators</value></property>
         <property name="description"><value>patch.siteAdministrators.description</value></property>
@@ -3295,6 +3321,7 @@
         <!--  Do we deferr running the surf-config folder patch? -->
         <property name="deferred"><value>${system.patch.surfConfigFolder.deferred}</value></property>
     </bean> 
+
     <bean id="patch.renameSiteAuthorityDisplayName"
         class="org.alfresco.repo.admin.patch.impl.RenameSiteAuthorityDisplayName"
         parent="basePatch">

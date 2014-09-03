@@ -96,20 +96,6 @@
             </params>
          </action>
          
-         <action id="workflow_edit_content_properties">
-            <permissions>
-               <permission allow="true">Write</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
-            <label-id>edit_properties</label-id>
-            <image>/images/icons/edit_properties.gif</image>
-            <action>dialog:editAvmFileProperties</action>
-            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-         
          <!-- Checkin document from workflow package -->
          <action id="workflow_checkin_doc">
             <evaluator>org.alfresco.web.action.evaluator.CheckinDocEvaluator</evaluator>
@@ -162,54 +148,6 @@
             </params>
          </action>
          
-         <!-- Preview folder -->
-         <action id="workflow_preview_folder">
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
-            <label-id>folder_preview</label-id>
-            <image>/images/icons/preview_website.gif</image>
-            <href>#{actionContext.previewUrl}</href>
-            <target>new</target>
-         </action>
-         
-         <!-- Preview file -->
-         <action id="workflow_preview_file">
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
-            <label-id>file_preview</label-id>
-            <image>/images/icons/preview_website.gif</image>
-            <href>#{actionContext.previewUrl}</href>
-            <target>new</target>
-         </action>
-         
-         <!-- View File details -->
-         <action id="workflow_file_details">
-            <permissions>
-               <permission allow="true">Read</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
-            <label-id>view_details</label-id>
-            <image>/images/icons/View_details.gif</image>
-            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
-            <action>dialog:workflowShowFileDetails</action>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-         
-         <!-- View Folder details -->
-         <action id="workflow_folder_details">
-            <permissions>
-               <permission allow="true">Read</permission>
-            </permissions>
-            <evaluator>org.alfresco.web.action.evaluator.WCMWorkflowEvaluator</evaluator>
-            <label-id>view_details</label-id>
-            <image>/images/icons/View_details.gif</image>
-            <action-listener>#{AVMBrowseBean.setupContentAction}</action-listener>
-            <action>dialog:showFolderDetails</action>
-            <params>
-               <param name="id">#{actionContext.id}</param>
-            </params>
-         </action>
-         
          <action-group id="document_browse_menu">
             <action idref="start_workflow" />
          </action-group>
@@ -237,54 +175,6 @@
          <!--  Task Dialog Action Groups for managing Workflow Packages -->
          <!--  -->
          
-         <!-- WCM -->
-         <action-group id="edit_and_remove_wcm_package_item_actions">
-            <action idref="edit_file"/>
-            <action idref="update_file" />
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="workflow_edit_content_properties" />
-            <action idref="remove_package_item" />
-            <action idref="delete_file" />
-            <action idref="workflow_revert" />
-         </action-group>
-
-         <action-group id="edit_and_delete_wcm_package_item_actions">
-            <action idref="edit_file"/>
-            <action idref="update_file" />
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="delete_file" />
-            <action idref="workflow_revert" />
-         </action-group>
-
-         <action-group id="read_wcm_package_item_actions">
-            <action idref="workflow_file_details" />
-         </action-group>
-
-         <action-group id="edit_wcm_package_item_actions">
-            <action idref="edit_file" />
-            <action idref="update_file" />
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="workflow_edit_content_properties" />
-            <action idref="workflow_revert" />
-            <action idref="delete_file" />
-         </action-group>
-
-         <action-group id="review_wcm_package_item_actions">
-            <action idref="workflow_edit_content_properties" />
-            <action idref="workflow_preview_file" />
-            <action idref="workflow_file_details" />
-            <action idref="workflow_revert" />
-            <action idref="delete_file" />
-         </action-group>
-
-         <action-group id="remove_wcm_package_item_actions">
-            <action idref="workflow_file_details" />
-            <action idref="remove_package_item" />
-         </action-group>
-
          <!-- ADM -->
          
          <action-group id="read_package_item_actions">
@@ -334,40 +224,6 @@
          <action-group id="add_package_item_actions">
             <action idref="add_package_item" />
          </action-group>
-      </actions>
-   </config>
-   
-   <config evaluator="node-type" condition="wcm:avmplainfolder">
-      <actions>
-      
-         <!-- Override actions for WCM Folder in workflow package task screen -->
-         <action-group id="edit_wcm_package_item_actions">
-            <action idref="edit_file" hide="true" />
-            <action idref="update_file" hide="true" />
-            <action idref="workflow_preview_file" hide="true" />
-            <action idref="workflow_file_details" hide="true" />
-            
-            <action idref="workflow_preview_folder" />
-            <action idref="workflow_folder_details" />
-         </action-group>
-         
-      </actions>
-   </config>
-   
-   <config evaluator="node-type" condition="wcm:avmlayeredfolder">
-      <actions>
-      
-         <!-- Override actions for WCM Folder in workflow package task screen -->
-         <action-group id="edit_wcm_package_item_actions">
-            <action idref="edit_file" hide="true" />
-            <action idref="update_file" hide="true" />
-            <action idref="workflow_preview_file" hide="true" />
-            <action idref="workflow_file_details" hide="true" />
-            
-            <action idref="workflow_preview_folder" />
-            <action idref="workflow_folder_details" />
-         </action-group>
-         
       </actions>
    </config>
    

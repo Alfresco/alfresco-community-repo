@@ -33,13 +33,8 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.workflow.WorkflowModel;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
@@ -48,8 +43,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
-import org.alfresco.wcm.webproject.WebProjectService;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
@@ -60,7 +53,6 @@ import org.alfresco.web.bean.repository.NodePropertyResolver;
 import org.alfresco.web.bean.repository.Repository;
 import org.alfresco.web.bean.repository.TransientNode;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.bean.wcm.AVMNode;
 import org.alfresco.web.config.DialogsConfigElement.DialogButtonConfig;
 import org.alfresco.web.ui.common.Utils;
 import org.alfresco.web.ui.common.component.UIActionLink;
@@ -78,9 +70,6 @@ public class ManageTaskDialog extends BaseDialogBean
     private static final long serialVersionUID = -3209544870892993135L;
 
     transient private WorkflowService workflowService;
-    transient private AVMService avmService;
-    transient private AVMSyncService avmSyncService;
-    transient private WebProjectService wpService;
     protected Node taskNode;
     transient private WorkflowTask task;
     transient private WorkflowInstance workflowInstance;
@@ -148,8 +137,6 @@ public class ManageTaskDialog extends BaseDialogBean
                 Boolean isSystemPackage = (Boolean) this.getNodeService().getProperty(this.workflowPackage,
                             WorkflowModel.PROP_IS_SYSTEM_PACKAGE);
                 LOGGER.debug("Workflow package: " + this.workflowPackage + " system package: " + isSystemPackage);
-                boolean isWCMWorkflow = (this.workflowPackage.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM));
-                LOGGER.debug("is wcm workflow: " + isWCMWorkflow);
             }
         }
     }
@@ -732,38 +719,30 @@ public class ManageTaskDialog extends BaseDialogBean
 
                 for (NodeRef nodeRef : contents)
                 {
-                    if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                    if (this.getNodeService().exists(nodeRef))
                     {
-                        Pair<Integer, String> vp = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-                        this.addAVMNode(new AVMNode(this.getAvmService().lookup(vp.getFirst(), vp.getSecond(), true)));
-                    }
-                    else
-                    {
-                        if (this.getNodeService().exists(nodeRef))
-                        {
-                            // find it's type so we can see if it's a node we
-                            // are interested in
-                            QName type = this.getNodeService().getType(nodeRef);
+                        // find it's type so we can see if it's a node we
+                        // are interested in
+                        QName type = this.getNodeService().getType(nodeRef);
 
-                            // make sure the type is defined in the data
-                            // dictionary
-                            if (this.getDictionaryService().getType(type) != null)
+                        // make sure the type is defined in the data
+                        // dictionary
+                        if (this.getDictionaryService().getType(type) != null)
+                        {
+                            // look for content nodes or links to content
+                            // NOTE: folders within workflow packages are
+                            // ignored for now
+                            if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT)
+                                        || ApplicationModel.TYPE_FILELINK.equals(type))
                             {
-                                // look for content nodes or links to content
-                                // NOTE: folders within workflow packages are
-                                // ignored for now
-                                if (this.getDictionaryService().isSubClass(type, ContentModel.TYPE_CONTENT)
-                                            || ApplicationModel.TYPE_FILELINK.equals(type))
+                                // if the node is not in the removed list
+                                // then add create the
+                                // client side representation and add to the
+                                // list
+                                if (this.packageItemsToRemove == null
+                                            || this.packageItemsToRemove.contains(nodeRef.toString()) == false)
                                 {
-                                    // if the node is not in the removed list
-                                    // then add create the
-                                    // client side representation and add to the
-                                    // list
-                                    if (this.packageItemsToRemove == null
-                                                || this.packageItemsToRemove.contains(nodeRef.toString()) == false)
-                                    {
-                                        createAndAddNode(nodeRef);
-                                    }
+                                    createAndAddNode(nodeRef);
                                 }
                             }
                         }
@@ -840,62 +819,6 @@ public class ManageTaskDialog extends BaseDialogBean
         return workflowService;
     }
 
-    /**
-     * Sets the avm service to use
-     * 
-     * @param avmService AvmService instance
-     */
-    public void setAvmService(final AVMService avmService)
-    {
-        this.avmService = avmService;
-    }
-
-    protected AVMService getAvmService()
-    {
-        if (avmService == null)
-        {
-            avmService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMService();
-        }
-        return avmService;
-    }
-
-    /**
-     * Sets the avm sync service to use
-     * 
-     * @param avmSyncService AvmSycService instance
-     */
-    public void setAvmSyncService(final AVMSyncService avmSyncService)
-    {
-        this.avmSyncService = avmSyncService;
-    }
-
-    protected AVMSyncService getAvmSyncService()
-    {
-        if (avmSyncService == null)
-        {
-            avmSyncService = Repository.getServiceRegistry(FacesContext.getCurrentInstance()).getAVMSyncService();
-        }
-        return avmSyncService;
-    }
-
-    /**
-     * @param wpService The WebProjectService to set.
-     */
-    public void setWebProjectService(final WebProjectService wpService)
-    {
-        this.wpService = wpService;
-    }
-
-    protected WebProjectService getWebProjectService()
-    {
-        if (wpService == null)
-        {
-            wpService = (WebProjectService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(),
-                        "WebProjectService");
-        }
-        return wpService;
-    }
-
     protected WorkflowTask getWorkflowTask()
     {
         if (task == null)
@@ -917,27 +840,6 @@ public class ManageTaskDialog extends BaseDialogBean
 
     // ------------------------------------------------------------------------------
     // Helper methods
-
-    protected void addAVMNode(final AVMNode node)
-    {
-        node.getProperties().put("taskId", this.getWorkflowTask().id);
-        node.addPropertyResolver("path", AVMNode.RESOLVER_SANDBOX_RELATIVE_PATH);
-        node.addPropertyResolver("previewUrl", AVMNode.RESOLVER_PREVIEW_URL);
-        node.addPropertyResolver("fileType16", AVMNode.RESOLVER_FILE_TYPE_16);
-        node.addPropertyResolver("size", this.browseBean.resolverSize);
-        if (!node.isDirectory())
-        {
-            node.addPropertyResolver("url", this.browseBean.resolverUrl);
-        }
-        this.resources.add(node);
-        if (node.isDirectory() && !node.getDescriptor().isDeleted())
-        {
-            for (final AVMNodeDescriptor d : this.getAvmService().getDirectoryListingArray(node.getDescriptor(), true))
-            {
-                this.addAVMNode(new AVMNode(d));
-            }
-        }
-    }
 
     protected void createAndAddNode(NodeRef nodeRef)
     {

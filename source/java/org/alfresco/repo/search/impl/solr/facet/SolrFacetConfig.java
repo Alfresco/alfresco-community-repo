@@ -326,7 +326,7 @@ public class SolrFacetConfig extends AbstractLifecycleBean
         {
             if (additionalProps == null)
             {
-                return Collections.emptySet();
+                return null;
             }
 
             Set<CustomProperties> customProps = new HashSet<>();

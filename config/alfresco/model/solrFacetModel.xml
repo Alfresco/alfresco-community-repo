@@ -170,6 +170,7 @@
             <property name="srftcustom:extraInformation">
                <title>Additional Facet Information</title>
                <type>d:any</type>
+               <mandatory>false</mandatory>
                <multiple>true</multiple>
             </property>
          </properties>

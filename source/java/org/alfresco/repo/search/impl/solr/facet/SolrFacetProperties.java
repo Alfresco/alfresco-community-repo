@@ -69,7 +69,7 @@ public class SolrFacetProperties implements Serializable
         this.isEnabled = builder.isEnabled;
         this.isDefault = builder.isDefault;
         this.scopedSites = Collections.unmodifiableSet(new HashSet<String>(builder.scopedSites));
-        this.customProperties = Collections.unmodifiableSet(new HashSet<CustomProperties>(builder.customProperties));
+        this.customProperties = (builder.customProperties == null) ? null : Collections.unmodifiableSet(new HashSet<CustomProperties>(builder.customProperties));
     }
 
     /**
@@ -173,13 +173,13 @@ public class SolrFacetProperties implements Serializable
     }
 
     /**
-     * Returns an unmodifiable view of the custom properties set. Never null.
+     * Returns an unmodifiable view of the custom properties set or <i>null</i>.
      * 
      * @return the customProperties
      */
     public Set<CustomProperties> getCustomProperties()
     {
-        return Collections.unmodifiableSet(new HashSet<CustomProperties>(this.customProperties));
+        return (this.customProperties == null) ? null : Collections.unmodifiableSet(new HashSet<CustomProperties>(this.customProperties));
     }
 
     /*
@@ -260,7 +260,7 @@ public class SolrFacetProperties implements Serializable
         private Set<String> scopedSites = Collections.emptySet();
         private Boolean isEnabled;
         private boolean isDefault;
-        private Set<CustomProperties> customProperties = Collections.emptySet();
+        private Set<CustomProperties> customProperties;
 
         public Builder()
         {
@@ -365,10 +365,7 @@ public class SolrFacetProperties implements Serializable
 
         public Builder customProperties(Set<CustomProperties> customProperties)
         {
-            if (customProperties != null)
-            {
-                this.customProperties = customProperties;
-            }
+            this.customProperties = customProperties;
             return this;
         }
 

@@ -26,7 +26,6 @@
          <parent>cm:content</parent>
          <archive>false</archive>
          <properties>
-       <!-- <cm:isIndexed>false</cm:isIndexed> -->
             <property name="srft:fieldType">
                <title>Field Type</title>
                <type>d:qname</type>
@@ -121,7 +120,6 @@
             <property name="srft:isEnabled">
                <title>Is enabled</title>
                <type>d:boolean</type>
-               <default>true</default>
                <mandatory>true</mandatory>
                <index enabled="false">
                   <atomic>false</atomic>

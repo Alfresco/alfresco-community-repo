@@ -1,9 +1,0 @@
-<webscript>
-  <shortname>Handles error posting</shortname>
-  <description>Used to capture and store client-side errors that occur on the Repository</description>
-  <family>Aikau</family>
-  <url>/aikau/error-report</url>
-  <format default="json"></format>
-  <authentication runas="admin">user</authentication>
-  <lifecycle>internal</lifecycle>
-</webscript>

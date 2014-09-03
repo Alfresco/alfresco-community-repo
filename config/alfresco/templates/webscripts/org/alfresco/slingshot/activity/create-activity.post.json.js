@@ -59,7 +59,7 @@ function postActivity()
    }
    if (json.has("parentNodeRef"))
    {
-      parentNodeRef = json.get("nodeRef");
+      parentNodeRef = json.get("parentNodeRef");
       data.parentNodeRef = parentNodeRef;
       m_parentNode = search.findNode(parentNodeRef);
    }

@@ -664,16 +664,6 @@
             <value>3.4.x</value>
         </property>
     </bean>
-    <bean id="patch.deploymentMigration" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
-        <property name="id"><value>patch.deploymentMigration</value></property>
-        <property name="description"><value>patch.deploymentMigration.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>116</value></property>
-        <property name="targetSchema"><value>117</value></property>
-        <property name="lastSupportedVersion" >
-            <value>3.4.x</value>
-        </property>
-    </bean>
     <bean id="patch.redeploySubmitProcess3" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.redeploySubmitProcess</value></property>
         <property name="description"><value>patch.redeploySubmitProcess.description</value></property>

@@ -369,7 +369,7 @@ public class SolrFacetServiceImplTest
     }
 
     @Test
-    public void createSite()
+    public void createFacet()
     {
         final String filterName = getFilterName();
         final SolrFacetProperties facetProps = new SolrFacetProperties.Builder()

@@ -78,7 +78,7 @@
                                  <div class="mainSubText"><h:outputText value="#{msg.forum_info}" id="msg3" /></div>
                               </td>
                               
-                              <td align=right>
+                              <td width=50>
                                  <%-- Create actions menu --%>
                                  <a:menu id="createMenu" itemSpacing="4" label="#{msg.create_options}" image="/images/icons/menu.gif" menuStyleClass="moreActionsMenu" style="white-space:nowrap">
                                     <r:actions id="actions_create" value="forum_create_menu" context="#{NavigationBean.currentNode}" />

@@ -83,8 +83,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     /**
      * The authority that needs to contain the users allowed to administer the faceted-search config.
      */
-    private static final String ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY = "ALFRESCO_SEARCH_ADMINISTRATORS";
-    private static final String GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX
+    public static final String ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY = "ALFRESCO_SEARCH_ADMINISTRATORS";
+    public static final String GROUP_ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY = PermissionService.GROUP_PREFIX
                 + ALFRESCO_SEARCH_ADMINISTRATORS_AUTHORITY;
 
     /** The store where facets are kept */
@@ -656,6 +656,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         
         @SuppressWarnings("unchecked")
         ArrayList<String> facetOrder = (ArrayList<String>) nodeService.getProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER);
+        // FIXME This could be null.
         
         // We'll put it at the end (arbitrarily).
         facetOrder.add(fp.getFilterID());

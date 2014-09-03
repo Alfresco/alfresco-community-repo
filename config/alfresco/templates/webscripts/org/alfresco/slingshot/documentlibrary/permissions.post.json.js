@@ -53,6 +53,7 @@ function main()
    }
    
    var permissions = json.getJSONArray("permissions");
+   var isInherited = json.getBoolean("isInherited");
    for (var i = 0; i < permissions.length(); i++)
    {
       var perm = permissions.getJSONObject(i);
@@ -70,7 +71,7 @@ function main()
       if (remove)
       {
          //Prevent the removal of the SiteManager group authority
-         if (!(role == "SiteManager" && authority == siteManagerAuthority))
+         if (!(role == "SiteManager" && authority == siteManagerAuthority && !isInherited))
          {
             node.removePermission(role, authority);
          }

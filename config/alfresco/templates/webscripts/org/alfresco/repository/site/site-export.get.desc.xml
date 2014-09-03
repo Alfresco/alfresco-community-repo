@@ -4,7 +4,7 @@
   <![CDATA[
   Exports the details and contents of a site.
 
-  Returns a single zip file containing ACP and AVM exports of
+  Returns a single zip file containing ACP exports of
   the various parts of the site.
   ]]></description>
   <url>/api/sites/{shortname}/export</url>

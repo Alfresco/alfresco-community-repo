@@ -57,9 +57,6 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
 /**
  * Exports a Site as a zip of ACPs.
  * 
- * As of 4.0, the export no longer includes an AVM Dump, as
- *  the site config is now in the main site ACP.
- * 
  * @author Nick Burch
  * @since 3.5
  */

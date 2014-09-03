@@ -74,7 +74,7 @@ public class DictionaryGet extends DictionaryWebServiceBase
         Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
         Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
         
-        // check configured list of model namespaces to ignore i.e. wcm
+        // check configured list of model namespaces to ignore
         for (String ns : this.namespaceService.getURIs())
         {
             if (!ignoreNamespaces.contains(ns))

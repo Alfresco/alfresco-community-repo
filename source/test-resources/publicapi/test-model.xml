@@ -7,7 +7,7 @@
     <version>0.1</version>
     
     <imports>
-        <import uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
     </imports>
     
     <namespaces>
@@ -17,7 +17,7 @@
     <types>
         <type name="testCMIS:type1">
             <title>Type 1</title>
-            <parent>wcm:avmcontent</parent>
+            <parent>cm:savedquery</parent>
             <properties>
             </properties>
         </type>

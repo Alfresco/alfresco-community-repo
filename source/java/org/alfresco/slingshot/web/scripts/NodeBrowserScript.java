@@ -31,7 +31,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

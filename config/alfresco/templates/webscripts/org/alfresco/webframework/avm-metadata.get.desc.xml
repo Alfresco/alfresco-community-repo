@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>AVM Metadata Retrieval Service</shortname>
-  <description>AVM Metadata Retrieval Service</description>
-  <url>/webframework/avm/metadata/{storeId}/{webappId}/{path}</url>
-  <format default="html">argument</format>
-  <authentication>user</authentication>
-  <transaction allow="readonly">required</transaction>
-</webscript>

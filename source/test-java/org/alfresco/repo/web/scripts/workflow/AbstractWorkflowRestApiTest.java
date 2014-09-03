@@ -823,7 +823,7 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertFalse("Found adhoc workflow when it was supposed to be excluded", adhocWorkflowPresent);
         
         // filter with a wildcard and ensure they all get filtered out
-        exclude = adhocDefName + ", jbpm$wcmwf:*";
+        exclude = adhocDefName;
         response = sendRequest(new GetRequest(URL_WORKFLOW_DEFINITIONS + "?exclude=" + exclude), 200);
         assertEquals(Status.STATUS_OK, response.getStatus());
         json = new JSONObject(response.getContentAsString());
@@ -831,7 +831,6 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         assertNotNull(results);
         
         adhocWorkflowPresent = false;
-        boolean wcmWorkflowsPresent = false;
         for (int i = 0; i < results.length(); i++)
         {
             JSONObject workflowDefinitionJSON = results.getJSONObject(i);
@@ -841,14 +840,9 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
             {
                 adhocWorkflowPresent = true;
             }
-            if (name.startsWith("jbpm$wcmwf:"))
-            {
-                wcmWorkflowsPresent = true;
-            }
         }
         
         assertFalse("Found adhoc workflow when it was supposed to be excluded", adhocWorkflowPresent);
-        assertFalse("Found a WCM workflow when they were supposed to be excluded", wcmWorkflowsPresent);
     }
 
     public void testWorkflowDefinitionGet() throws Exception

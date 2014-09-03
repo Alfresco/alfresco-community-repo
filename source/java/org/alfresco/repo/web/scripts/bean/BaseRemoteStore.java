@@ -63,8 +63,7 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
  * </pre><p>
  * optional request parameters:
  * <pre>
- *      s                    -> the avm store id
- *      w                    -> the wcm web application id
+ *      s                    -> the store id
  * </pre><p>
  * Note: path is relative to the root path as configured for this webscript bean
  * <p>
@@ -94,10 +93,8 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest
 public abstract class BaseRemoteStore extends AbstractWebScript
 {
     public static final String TOKEN_STORE = "s";
-    public static final String TOKEN_WEBAPP = "w";
     
 	public static final String REQUEST_PARAM_STORE = "s";
-	public static final String REQUEST_PARAM_WEBAPP = "w";
 	
 	private static final Log logger = LogFactory.getLog(BaseRemoteStore.class);
     
@@ -179,7 +176,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         // values that we need to determine
         String methodName = null;
         String store = null;
-        String webapp = null;
         StringBuilder pathBuilder = new StringBuilder(128);
         
         // tokenize the path and figure out tokenized values
@@ -197,15 +193,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
         			// if the token is TOKEN_STORE, then the next token is the id of the store
         			store = tokenizer.nextToken();
         			
-        			// reset element
-        			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
-        		}
-        		
-        		if (TOKEN_WEBAPP.equals(el))
-        		{
-        			// if the token is TOKEN_WEBAPP, then the next token is a WCM webapp id
-        			webapp = tokenizer.nextToken();
-        			        			
         			// reset element
         			el = (tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null);
         		}
@@ -239,18 +226,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
             	throw new WebScriptException("Unable to determine which store to operate against." +
             	        " A store was not specified and a default was not provided.");
             }
-        }
-        
-        // if we don't have a webapp, check whether it may have been passed in on a request parameter
-        if (webapp == null)
-        {
-        	webapp = req.getParameter(REQUEST_PARAM_WEBAPP);
-        }
-        
-        // if we do have a webapp, allow for path prepending
-        if (webapp != null)
-        {
-        	pathBuilder.insert(0, "/www/avm_webapps/" + webapp);        	
         }
         
         String path = pathBuilder.toString();

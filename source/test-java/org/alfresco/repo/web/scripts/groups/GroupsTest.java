@@ -786,7 +786,7 @@ public class GroupsTest extends BaseWebScriptTest
     	
     	// Negative test Search for a group in a wrong zone
     	{
-		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + AuthorityService.ZONE_APP_WCM), Status.STATUS_OK);
+		    Response response = sendRequest(new GetRequest(URL_GROUPS + "?shortNameFilter=" + TEST_GROUPE + "&zone=" + "SOME.THING"), Status.STATUS_OK);
 		    JSONObject top = new JSONObject(response.getContentAsString());
 		    logger.debug(response.getContentAsString());
 //		    System.out.println(response.getContentAsString());

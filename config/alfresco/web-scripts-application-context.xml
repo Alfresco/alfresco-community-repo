@@ -285,23 +285,6 @@
       <property name="delegate" ref="webscript.content.streamer" />
    </bean>
    
-   <!--  Remote Store service - AVM -->
-   <bean id="webscript.org.alfresco.repository.store.remoteavm.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   <bean id="webscript.org.alfresco.repository.store.remoteavm.post" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   <bean id="webscript.org.alfresco.repository.store.remoteavm.delete" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   
    <!--  Remote Store service - ADM -->
    <bean id="webscript.org.alfresco.repository.store.remoteadm.get" class="org.alfresco.repo.web.scripts.bean.ADMRemoteStore" parent="webscript">
       <property name="nodeService" ref="NodeService" />
@@ -339,23 +322,6 @@
       <property name="siteService" ref="SiteService" />
       <property name="hiddenAspect" ref="hiddenAspect" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
-   </bean>
-   
-   <!--  Authenticated Web Framework AVM Store service -->
-   <bean id="webscript.org.alfresco.webframework.avmstore.get" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   <bean id="webscript.org.alfresco.webframework.avmstore.post" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
-   </bean>
-   <bean id="webscript.org.alfresco.webframework.avmstore.delete" class="org.alfresco.repo.web.scripts.bean.AVMRemoteStore" parent="webscript">
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="avmService" ref="AVMService" />
-      <property name="searchService" ref="SearchService" />
    </bean>
    
    <!-- Web-tier SSO authentication touch point -->
@@ -576,7 +542,7 @@
       <property name="scriptAuthorityService" ref="authorityServiceScript"/>
    </bean>
 
-   <!-- Exports a site's contents as ACP+AVM dumps -->
+   <!-- Exports a site's contents as ACP dumps -->
    <bean id="webscript.org.alfresco.repository.site.site-export.get" class="org.alfresco.repo.web.scripts.site.SiteExportGet" parent="webscript">
       <property name="siteService" ref="SiteService"/>
       <property name="mimetypeService" ref="MimetypeService"/>
@@ -685,9 +651,6 @@
       <property name="ignoreNamespaces">
          <set>
             <value>http://www.alfresco.org/model/dictionary/1.0</value>
-            <value>http://www.alfresco.org/model/wcmmodel/1.0</value>
-            <value>http://www.alfresco.org/model/wcmappmodel/1.0</value>
-            <value>http://www.alfresco.org/model/wcmworkflow/1.0</value>
             <value>http://www.alfresco.org/model/rendition/1.0</value>
             <value>http://www.alfresco.org/model/versionstore/1.0</value>
             <value>http://www.alfresco.org/model/versionstore/2.0</value>

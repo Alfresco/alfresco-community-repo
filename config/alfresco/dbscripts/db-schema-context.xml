@@ -25,15 +25,6 @@
         </property>
     </bean>
 
-    <bean id="schema.create.avm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
-        <property name="schemaBootstrap" ref="schemaBootstrap" />
-        <property name="preCreateScriptUrls">
-            <list>
-                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AvmTables.sql</value>
-            </list>
-        </property>
-    </bean>
-
     <bean id="schema.create.jbpm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
         <property name="schemaBootstrap" ref="schemaBootstrap" />
         <property name="postCreateScriptUrls">
@@ -94,22 +85,6 @@
                 <ref bean="patch.db-V4.1-ChildAssoc-OrderBy" />
                 <ref bean="patch.db-V4.1-createIdxAlfNodeTQN" />
                 <ref bean="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" />
-            </list>
-        </property>
-    </bean>
-
-    <bean id="schema.upgrade.avm" class="org.alfresco.repo.domain.schema.SchemaBootstrapRegistration" init-method="register">
-        <property name="schemaBootstrap" ref="schemaBootstrap" />
-        <property name="postUpdateScriptPatches">
-            <list>
-                <ref bean="patch.db-V3.2-Remove-AVM-Issuer" />
-                <ref bean="patch.db-V3.2-Modify-AVM-MimeType" />
-                <ref bean="patch.db-V3.3-Fix-AVM-Seqs" />
-                <ref bean="patch.db-V3.4-RemovingLinkValidationMetadata" />
-                <ref bean="patch.db-V3.4-AVM-rename-dupes" />
-                <ref bean="patch.db-V3.4-AVM-index-child-entries-lower" />
-                <ref bean="patch.db-V4.1-fix-AVM-seqs-order" />
-                <ref bean="patch.db-V4.2-drop-AVM-index" />
             </list>
         </property>
     </bean>

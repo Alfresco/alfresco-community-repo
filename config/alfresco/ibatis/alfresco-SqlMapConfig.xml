@@ -206,8 +206,6 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/solr-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/usage-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/usage-insert-SqlMap.xml"/>
-        <mapper resource="alfresco/ibatis/#resource.dialect#/avm-common-SqlMap.xml"/>
-        <mapper resource="alfresco/ibatis/#resource.dialect#/avm-insert-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/subscriptions-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/tenants-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/metadata-query-common-SqlMap.xml"/>

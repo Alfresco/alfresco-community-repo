@@ -50,44 +50,22 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
         this.contentDataDAO = contentDataDAO;
     }
 
+    @Override
     public long getMaxAclId()
     {
         return getMaxAclEntityId();
     }
     
+    @Override
     public long getDmNodeCount()
     {
         return getDmNodeEntitiesCount();
     }
     
+    @Override
     public long getDmNodeCountWithNewACLs(Long above)
     {
         return getDmNodeEntitiesCountWithNewACLs(above);
-    }
-    
-    public List<Long> selectAllAclIds()
-    {
-        return selectAllAclEntityIds();
-    }
-    
-    public List<Long> selectNonDanglingAclIds()
-    {
-        return selectNonDanglingAclEntityIds();
-    }
-    
-    public int deleteDanglingAces()
-    {
-        return deleteDanglingAceEntities();
-    }
-    
-    public int deleteAcls(List<Long> aclIds)
-    {
-        return deleteAclEntities(aclIds);
-    }
-    
-    public int deleteAclMembersForAcls(List<Long> aclIds)
-    {
-        return deleteAclMemberEntitiesForAcls(aclIds);
     }
     
     /**
@@ -95,6 +73,7 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
      * <p>
      * @see #getAdmOldContentProperties(Long, Long)
      */
+    @Override
     public void updateAdmV31ContentProperties(Long minNodeId, Long maxNodeId)
     {
         List<Map<String, Object>> props = getAdmOldContentProperties(minNodeId, maxNodeId);
@@ -168,11 +147,6 @@ public abstract class AbstractPatchDAOImpl implements PatchDAO, BatchingDAO
     protected abstract long getMaxAclEntityId();
     protected abstract long getDmNodeEntitiesCount();
     protected abstract long getDmNodeEntitiesCountWithNewACLs(Long above);
-    protected abstract List<Long> selectAllAclEntityIds();
-    protected abstract List<Long> selectNonDanglingAclEntityIds();
-    protected abstract int deleteDanglingAceEntities();
-    protected abstract int deleteAclEntities(List<Long> aclIds);
-    protected abstract int deleteAclMemberEntitiesForAcls(List<Long> aclIds);
     
     // note: caller's row handler is expected to migrate the attrs
     @Override

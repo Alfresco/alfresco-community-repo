@@ -59,8 +59,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_ADM_MAX_NODE_ID = "alfresco.patch.select_admMaxNodeId";
     private static final String SELECT_ADM_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_admOldContentProperties";
     private static final String SELECT_AUTHORITIES_AND_CRC = "alfresco.patch.select_authoritiesAndCrc";
-    private static final String SELECT_PERMISSIONS_ALL_ACL_IDS = "alfresco.patch.select_AllAclIds";
-    private static final String SELECT_PERMISSIONS_USED_ACL_IDS = "alfresco.patch.select_UsedAclIds";
     private static final String SELECT_PERMISSIONS_MAX_ACL_ID = "alfresco.patch.select_MaxAclId";
     private static final String SELECT_PERMISSIONS_DM_NODE_COUNT = "alfresco.patch.select_DmNodeCount";
     private static final String SELECT_PERMISSIONS_DM_NODE_COUNT_WITH_NEW_ACLS = "alfresco.patch.select_DmNodeCountWherePermissionsHaveChanged";
@@ -73,10 +71,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String UPDATE_CONTENT_MIMETYPE_ID = "alfresco.patch.update_contentMimetypeId";
     private static final String UPDATE_CHILD_ASSOC_CRC = "alfresco.patch.update_childAssocCrc";
     private static final String UPDATE_CREATE_SIZE_CURRENT_PROPERTY = "alfresco.patch.update_CreateSizeCurrentProperty";
-    
-    private static final String DELETE_PERMISSIONS_UNUSED_ACES = "alfresco.permissions.delete_UnusedAces";
-    private static final String DELETE_PERMISSIONS_ACL_LIST = "alfresco.permissions.delete_AclList";
-    private static final String DELETE_PERMISSIONS_ACL_MEMBERS_FOR_ACL_LIST = "alfresco.permissions.delete_AclMembersForAclList";
     
     private static final String SELECT_OLD_ATTR_TENANTS = "alfresco.patch.select_oldAttrTenants";
     private static final String SELECT_OLD_ATTR_PBBS = "alfresco.patch.select_oldAttrPropertyBackedBeans";
@@ -236,38 +230,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         return count == null ? 0L : count;
     }
     
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<Long> selectAllAclEntityIds()
-    {
-        return (List<Long>) template.selectList(SELECT_PERMISSIONS_ALL_ACL_IDS);
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<Long> selectNonDanglingAclEntityIds()
-    {
-        return (List<Long>) template.selectList(SELECT_PERMISSIONS_USED_ACL_IDS);
-    }
-    
-    @Override
-    protected int deleteDanglingAceEntities()
-    {
-        return template.delete(DELETE_PERMISSIONS_UNUSED_ACES);
-    }
-    
-    @Override
-    protected int deleteAclEntities(List<Long> aclIds)
-    {
-        return template.delete(DELETE_PERMISSIONS_ACL_LIST, aclIds);
-    }
-    
-    @Override
-    protected int deleteAclMemberEntitiesForAcls(List<Long> aclIds)
-    {
-        return template.delete(DELETE_PERMISSIONS_ACL_MEMBERS_FOR_ACL_LIST, aclIds);
-    }
-
     public List<String> getAuthoritiesWithNonUtf8Crcs()
     {
         final List<String> results = new ArrayList<String>(1000);

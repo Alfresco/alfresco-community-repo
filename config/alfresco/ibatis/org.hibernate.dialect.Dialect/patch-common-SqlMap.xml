@@ -261,28 +261,6 @@
             ga.name = 'alfresco-tenants'
     </select>
     
-    <select id="select_oldAttrAVMLocks" resultMap="result_avmLock">
-        select
-            ma2.mkey        as wpStoreId,
-            a4.string_value as relPath,
-            a5.string_value as avmStore,
-            a6.string_value as owner1
-        from 
-            alf_global_attributes ga
-            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
-            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id)
-            join alf_map_attribute_entries ma3 on (ma3.map_id = ma2.attribute_id)
-            join alf_map_attribute_entries ma4 on (ma4.map_id = ma3.attribute_id and ma4.mkey = 'path')
-            join alf_attributes a4 on (a4.id = ma4.attribute_id)
-            join alf_map_attribute_entries ma5 on (ma5.map_id = ma3.attribute_id and ma5.mkey = 'store')
-            join alf_attributes a5 on (a5.id = ma5.attribute_id)
-            join alf_map_attribute_entries ma6 on (ma6.map_id = ma3.attribute_id and ma6.mkey = 'owners')
-            join alf_list_attribute_entries la6 on (la6.list_id = ma6.attribute_id and la6.mindex = 0)
-            join alf_attributes a6 on (a6.id = la6.attribute_id)
-        where 
-            ga.name = '.avm_lock_table'
-    </select>
-    
     <select id="select_oldAttrPropertyBackedBeans" resultMap="result_PBB">
          select
             ma.mkey         as componentName,
@@ -317,22 +295,7 @@
         from
             alf_global_attributes ga
         where
-            name not in ('alfresco-tenants', '.href', '.avm_lock_table', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
-    </select>
-    
-    <select id="select_AllAclIds" resultType="long">
-        select
-            id
-        from
-            alf_access_control_list
-    </select>
-    
-    <!-- for patch -->
-    <select id="select_UsedAclIds" resultType="long">
-        select acl_id from avm_nodes where acl_id is not null
-        union select acl_id from avm_stores where acl_id is not null
-        union select acl_id from alf_node where acl_id is not null
-        union select acl_id from alf_attributes where acl_id is not null
+            name not in ('alfresco-tenants', '.href', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
     </select>
     
     <!-- for patch -->

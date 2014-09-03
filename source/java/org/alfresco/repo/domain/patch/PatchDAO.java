@@ -97,16 +97,6 @@ public interface PatchDAO
      */
     public long getDmNodeCountWithNewACLs(Long above);
     
-    public List<Long> selectAllAclIds();
-    
-    public List<Long> selectNonDanglingAclIds();
-    
-    public int deleteDanglingAces();
-    
-    public int deleteAcls(List<Long> aclIds);
-    
-    public int deleteAclMembersForAcls(List<Long> aclIds);
-    
     /**
      * @return      Returns the names of authorities with incorrect CRC values
      */

@@ -28,7 +28,14 @@ var Filters =
       "fm:forums",
       "fm:forum",
       "fm:topic",
-      "fm:post",
+      "fm:post"
+   ],
+
+   /**
+    * Aspects that we want to suppress from the resultset
+    */   
+   IGNORED_ASPECTS:
+   [
       "cm:workingcopy"
    ],
 
@@ -67,7 +74,7 @@ var Filters =
          filterQuery = filterParams.query;
 
       // Common types and aspects to filter from the UI
-      var filterQueryDefaults = ' -TYPE:"' + Filters.IGNORED_TYPES.join('" -TYPE:"') + '"';
+      var filterQueryDefaults = ' -TYPE:"' + Filters.IGNORED_TYPES.join('" -TYPE:"') + '"' + ' -ASPECT:"' + Filters.IGNORED_ASPECTS.join('" -ASPECT:"') + '"'; 
 
       switch (String(filter.filterId))
       {

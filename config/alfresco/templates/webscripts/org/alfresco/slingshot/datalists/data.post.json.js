@@ -63,7 +63,7 @@ function getData()
       var parentNode = parsedArgs.listNode;
       if (parentNode != null)
       {
-         var pagedResult = parentNode.childFileFolders(true, false, Filters.IGNORED_TYPES, -1, -1, REQUEST_MAX, "cm:name", true, null);
+         var pagedResult = parentNode.childFileFolders(true, false, Filters.IGNORED_TYPES.concat(Filters.IGNORED_ASPECTS), -1, -1, REQUEST_MAX, "cm:name", true, null);
          allNodes = pagedResult.page;
       }
    }

@@ -428,7 +428,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to upload a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to upload a file", e);
         }
 
         // Split to transactions to check the commit
@@ -448,7 +448,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to unlock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to unlock a file", e);
         }
 
         // Split to transactions to check the commit
@@ -492,7 +492,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to upload a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to upload a file", e);
         }
 
         try
@@ -503,7 +503,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to lock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to lock a file", e);
         }
 
         // Construct IF HEADER
@@ -528,7 +528,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to upload a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to upload a file", e);
         }
 
         headers = new HashMap<String, String>();
@@ -544,7 +544,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to unlock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to unlock a file", e);
         }
 
         if (fileNoderef != null)
@@ -572,7 +572,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to lock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to lock a file", e);
         }
 
         txn.commit();
@@ -601,7 +601,7 @@ public class PutMethodTest
         }
         catch (Exception e)
         {
-            fail("Failed to upload a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+            throw new RuntimeException("Failed to upload a file", e);
         }
 
         if (fileNoderef != null && nodeService.exists(fileNoderef))

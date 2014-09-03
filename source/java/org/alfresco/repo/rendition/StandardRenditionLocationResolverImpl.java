@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
@@ -45,11 +47,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.TemplateException;
-import org.alfresco.util.FreeMarkerUtil;
 import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 import freemarker.ext.dom.NodeModel;
 import freemarker.template.SimpleDate;
@@ -270,7 +274,7 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
             try
             {
                 Document xml = XMLUtil.parse(sourceNode, serviceRegistry.getContentService());
-                pathTemplate = FreeMarkerUtil.buildNamespaceDeclaration(xml) + pathTemplate;
+                pathTemplate = buildNamespaceDeclaration(xml) + pathTemplate;
                 root.put("xml", NodeModel.wrap(xml));
             } catch (Exception ex)
             {
@@ -322,4 +326,25 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
         return result;
     }
 
+   public static String buildNamespaceDeclaration(final Document xml)
+   {
+      final Element docEl = xml.getDocumentElement();
+      final NamedNodeMap attributes = docEl.getAttributes();
+      final StringBuilder result = new StringBuilder();
+      for (int i = 0; i < attributes.getLength(); i++)
+      {
+         final Node a = attributes.item(i);
+         if (a.getNodeName().startsWith(XMLConstants.XMLNS_ATTRIBUTE))
+         {
+            final String prefix = a.getNodeName().substring((XMLConstants.XMLNS_ATTRIBUTE + ":").length());
+            final String uri = a.getNodeValue();
+            if (result.length() != 0)
+            {
+               result.append(",\n");
+            }
+            result.append("\"").append(prefix).append("\":\"").append(uri).append("\"");
+         }
+      }
+      return "<#ftl ns_prefixes={\n" + result.toString() + "}>\n";
+   }
 }

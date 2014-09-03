@@ -58,7 +58,7 @@ import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
 public class AbstractPermissionTest extends TestCase
 {
-    private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
+    protected static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     
     protected static final String ROLE_AUTHENTICATED = "ROLE_AUTHENTICATED";
 

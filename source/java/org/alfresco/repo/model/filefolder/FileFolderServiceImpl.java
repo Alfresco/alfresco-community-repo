@@ -136,7 +136,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     private BehaviourFilter behaviourFilter;
     private NamedObjectRegistry<CannedQueryFactory<NodeRef>> cannedQueryRegistry;
 
-    private boolean preserveModificationData = true;
+    private boolean preserveAuditableData = true;
 
     // TODO: Replace this with a more formal means of identifying "system" folders (i.e. aspect or UUID)
     private List<String> systemPaths;
@@ -216,14 +216,14 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         this.behaviourFilter = behaviourFilter;
     }
 
-    public void setPreserveModificationData(boolean preserveModificationData)
+    public void setPreserveAuditableData(boolean preserveAuditableData)
     {
-        this.preserveModificationData = preserveModificationData;
+        this.preserveAuditableData = preserveAuditableData;
     }
 
-    public boolean isPreserveModificationData()
+    public boolean isPreserveAuditableData()
     {
-        return preserveModificationData;
+        return preserveAuditableData;
     }
 
 
@@ -1084,7 +1084,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
                     if (isPrimaryParent)
                     {
                         // move the node so that the association moves as well
-                        boolean auditableBehaviorWasDisabled = preserveModificationData && behaviourFilter.isEnabled(ContentModel.ASPECT_AUDITABLE);
+                        boolean auditableBehaviorWasDisabled = preserveAuditableData && behaviourFilter.isEnabled(ContentModel.ASPECT_AUDITABLE);
                         if (auditableBehaviorWasDisabled)
                         {
                             behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);

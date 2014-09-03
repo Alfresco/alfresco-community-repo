@@ -97,7 +97,7 @@ public class FileFolderServicePropagationTest extends TestCase
 
         if (null == defaultPreservationValue)
         {
-            defaultPreservationValue = fileFolderService.isPreserveModificationData();
+            defaultPreservationValue = fileFolderService.isPreserveAuditableData();
         }
 
         ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
@@ -162,7 +162,7 @@ public class FileFolderServicePropagationTest extends TestCase
     public void tearDown() throws Exception
     {
         // Resetting to default value...
-        fileFolderService.setPreserveModificationData(defaultPreservationValue);
+        fileFolderService.setPreserveAuditableData(defaultPreservationValue);
 
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -197,7 +197,7 @@ public class FileFolderServicePropagationTest extends TestCase
         }
 
         // Enabling preservation of modification properties data...
-        fileFolderService.setPreserveModificationData(true);
+        fileFolderService.setPreserveAuditableData(true);
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -223,7 +223,7 @@ public class FileFolderServicePropagationTest extends TestCase
         }
 
         // Enabling preservation of modification properties data...
-        fileFolderService.setPreserveModificationData(true);
+        fileFolderService.setPreserveAuditableData(true);
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -249,7 +249,7 @@ public class FileFolderServicePropagationTest extends TestCase
         }
 
         // Enabling preservation of modification properties data...
-        fileFolderService.setPreserveModificationData(true);
+        fileFolderService.setPreserveAuditableData(true);
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -297,7 +297,7 @@ public class FileFolderServicePropagationTest extends TestCase
         }
 
         // Disabling preservation of modification properties data... 
-        fileFolderService.setPreserveModificationData(false);
+        fileFolderService.setPreserveAuditableData(false);
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -325,7 +325,7 @@ public class FileFolderServicePropagationTest extends TestCase
         }
 
         // Disabling preservation of modification properties data...
-        fileFolderService.setPreserveModificationData(false);
+        fileFolderService.setPreserveAuditableData(false);
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -353,7 +353,7 @@ public class FileFolderServicePropagationTest extends TestCase
         }
 
         // Disabling preservation of modification properties data...
-        fileFolderService.setPreserveModificationData(false);
+        fileFolderService.setPreserveAuditableData(false);
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override

@@ -308,6 +308,8 @@
    <bean id="admNodeACLDAO" class="org.alfresco.repo.domain.permissions.ADMAccessControlListDAO">
       <property name="nodeDAO" ref="nodeDAO"/>
       <property name="aclDAO" ref="aclDAO"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="preserveAuditableData" value="${system.auditableData.ACLs}"></property>
    </bean>
     
    <bean id="avmNodeACLDAO" class="org.alfresco.repo.domain.permissions.AVMAccessControlListDAO">

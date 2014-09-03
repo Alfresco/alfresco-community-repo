@@ -27,6 +27,7 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.GrantedAuthority;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.permissions.ADMAccessControlListDAO;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -3382,6 +3383,47 @@ public class PermissionServiceTest extends AbstractPermissionTest
         long end = System.nanoTime();
 
         //assertTrue("Time was "+(end - start)/1000000000.0f, end == start);
+    }
+    
+    public void testPreserveAuditableData()
+    {
+        ADMAccessControlListDAO accessControlListDao = (ADMAccessControlListDAO) applicationContext.getBean("admNodeACLDAO");
+        boolean preserveAuditableData = accessControlListDao.isPreserveAuditableData();
+        
+        runAs("admin");
+        
+        personService.getPerson("andy");
+        personService.getPerson("userTwo");
+        
+        NodeRef folder = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}Folder"), ContentModel.TYPE_FOLDER).getChildRef();;
+        NodeRef content1 = nodeService.createNode(folder, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}content1"), ContentModel.TYPE_CONTENT).getChildRef();;
+        NodeRef content2 = nodeService.createNode(folder, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}content2"), ContentModel.TYPE_CONTENT).getChildRef();;
+        
+        try
+        {
+            permissionService.setPermission(folder, "andy", PermissionService.COORDINATOR, true);
+            
+            assertEquals("admin", nodeService.getProperty(content1, ContentModel.PROP_MODIFIER));
+        
+            accessControlListDao.setPreserveAuditableData(true);
+        
+            runAs("andy");
+            permissionService.setPermission(content1, "userTwo", PermissionService.COORDINATOR, true);
+            assertEquals("admin", nodeService.getProperty(content1, ContentModel.PROP_MODIFIER));
+        
+            accessControlListDao.setPreserveAuditableData(false);
+        
+            permissionService.setPermission(content2, "userTwo", PermissionService.COORDINATOR, true);
+            assertEquals("andy", nodeService.getProperty(content2, ContentModel.PROP_MODIFIER));
+        }
+        finally
+        {
+            accessControlListDao.setPreserveAuditableData(preserveAuditableData);
+            if (folder != null)
+            {
+                nodeService.deleteNode(folder);
+            }
+        }
     }
 
 

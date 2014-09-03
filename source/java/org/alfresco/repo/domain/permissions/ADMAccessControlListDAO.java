@@ -23,9 +23,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
 import org.alfresco.repo.domain.permissions.AVMAccessControlListDAO.CounterSet;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
@@ -52,6 +54,9 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     private NodeDAO nodeDAO;
 
     private AclDAO aclDaoComponent;
+    
+    private BehaviourFilter behaviourFilter;
+    private boolean preserveAuditableData = true;
 
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -61,6 +66,21 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     public void setAclDAO(AclDAO aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
+    }
+    
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    public void setPreserveAuditableData(boolean preserveAuditableData)
+    {
+        this.preserveAuditableData = preserveAuditableData;
+    }
+    
+    public boolean isPreserveAuditableData()
+    {
+        return preserveAuditableData;
     }
 
     public void forceCopy(NodeRef nodeRef)
@@ -250,8 +270,24 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
 
     public void setAccessControlList(NodeRef nodeRef, Long aclId)
     {
-        Long nodeId = getNodeIdNotNull(nodeRef);
-        nodeDAO.setNodeAclId(nodeId, aclId);
+        boolean auditableBehaviorWasDisabled = preserveAuditableData && behaviourFilter.isEnabled(ContentModel.ASPECT_AUDITABLE);
+        if (auditableBehaviorWasDisabled)
+        {
+            behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+        }
+        
+        try
+        {
+            Long nodeId = getNodeIdNotNull(nodeRef);
+            nodeDAO.setNodeAclId(nodeId, aclId);
+        }
+        finally
+        {
+            if (auditableBehaviorWasDisabled)
+            {
+                behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+            }
+        }
     }
 
     public void setAccessControlList(NodeRef nodeRef, Acl acl)

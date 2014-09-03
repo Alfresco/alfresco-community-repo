@@ -7,7 +7,6 @@
  */
 package org.alfresco.repo.management;
 
-import javax.management.InstanceAlreadyExistsException;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
@@ -53,18 +52,7 @@ public class DynamicMBeanExporter extends MBeanExporter implements DynamicMBeanE
      */
     public void unregisterMBean(ObjectName objectName)
     {
-        if (this.registeredBeans.remove(objectName))
-        {
-            try
-            {
-                this.server.unregisterMBean(objectName);
-                onUnregister(objectName);
-            }
-            catch (JMException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
+        doUnregister(objectName);
     }
 
     /*
@@ -87,22 +75,12 @@ public class DynamicMBeanExporter extends MBeanExporter implements DynamicMBeanE
         ObjectName actualObjectName = objectName;
         try
         {
-            try
-            {
-                actualObjectName = this.server.registerMBean(mbean, objectName).getObjectName();
-            }
-            catch (InstanceAlreadyExistsException ex)
-            {
-                this.server.unregisterMBean(objectName);
-                actualObjectName = this.server.registerMBean(mbean, objectName).getObjectName();
-            }
+            doRegister(mbean, actualObjectName);
         }
         catch (JMException e)
         {
             throw new RuntimeException(e);
         }
-        this.registeredBeans.add(actualObjectName);
-        onRegister(actualObjectName);
         return actualObjectName;
     }
 }

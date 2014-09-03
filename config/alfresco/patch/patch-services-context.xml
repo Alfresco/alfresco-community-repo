@@ -3218,10 +3218,10 @@
             <value>0</value>
         </property>
         <property name="fixesToSchema">
-            <value>6065</value>
+            <value>8001</value>
         </property>
         <property name="targetSchema">
-            <value>6066</value>
+            <value>8002</value>
         </property>
         <property name="repository">
             <ref bean="repositoryHelper"/>

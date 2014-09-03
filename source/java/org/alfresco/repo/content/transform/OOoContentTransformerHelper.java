@@ -29,6 +29,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Date;
 
+import com.sun.star.task.ErrorCodeIOException;
 import net.sf.jooreports.converter.DocumentFamily;
 import net.sf.jooreports.converter.DocumentFormat;
 import net.sf.jooreports.converter.DocumentFormatRegistry;
@@ -56,6 +57,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
     private String documentFormatsConfiguration;
     private DocumentFormatRegistry formatRegistry;
     protected TransformerDebug transformerDebug;
+    private static final int JODCONVERTER_TRANSFORMATION_ERROR_CODE = 3088;
 
     /**
      * Set a non-default location from which to load the document format mappings.
@@ -383,10 +385,22 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
                         "   to file: " + tempToFile,
                         e);
             }
-            catch (Throwable ee)
+            catch (Throwable throwable)
             {
-                produceEmptyPdfFile(tempToFile);
-                getLogger().error("Convertation problem", ee);
+                // Because of the known bug with empty Spreadsheets in JodConverter try to catch exception and produce empty pdf file
+                if (throwable.getCause() instanceof ErrorCodeIOException &&
+                        ((ErrorCodeIOException) throwable.getCause()).ErrCode == JODCONVERTER_TRANSFORMATION_ERROR_CODE)
+                {
+                    getLogger().warn("Transformation failed: \n" +
+                                             "from file: " + tempFromFile + "\n" +
+                                             "to file: " + tempToFile +
+                                             "Source file " + tempFromFile + " has no content");
+                    produceEmptyPdfFile(tempToFile);
+                }
+				else
+				{
+                    throw throwable;
+				}
             }
         }
 

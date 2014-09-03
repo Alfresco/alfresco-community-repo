@@ -140,25 +140,8 @@ public class LinksListGet extends AbstractLinksWebScript
       }
       
       // We need the container node for permissions checking
-      NodeRef container;
-      if (links.getPage().size() > 0)
-      {
-         container = links.getPage().get(0).getContainerNodeRef();
-      }
-      else
-      {
-         // Find the container (if it's been created yet)
-         container = siteService.getContainer(
-               site.getShortName(), LinksServiceImpl.LINKS_COMPONENT);
-         
-         if (container == null)
-         {
-            // Brand new site, no write operations on links have happened
-            // Fudge it for now with the site itself, the first write call
-            //  will have the container created
-            container = site.getNodeRef();
-         }
-      }
+      // MNT-11854 Consumer allowed to create Discussion, Wiki, Blog and Link if she/he creates the first item
+      NodeRef container = site.getNodeRef();
       
       // All done
       Map<String, Object> model = new HashMap<String, Object>();

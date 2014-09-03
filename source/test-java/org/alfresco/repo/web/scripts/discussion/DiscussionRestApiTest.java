@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,6 +48,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -147,8 +148,8 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         }
         
         // Create users
-        createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
-        createUser(USER_TWO, SiteModel.SITE_CONTRIBUTOR);
+        createUser(USER_ONE, SiteModel.SITE_COLLABORATOR, SITE_SHORT_NAME_DISCUSSION);
+        createUser(USER_TWO, SiteModel.SITE_CONTRIBUTOR, SITE_SHORT_NAME_DISCUSSION);
         
         // Do tests as inviter user
         this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -199,7 +200,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         }
     }
     
-    private void createUser(String userName, String role)
+    private void createUser(String userName, String role, String siteName)
     {
         // if user with given user name doesn't already exist then create user
         if (!this.authenticationService.authenticationExists(userName))
@@ -224,7 +225,7 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
         }
         
         // add the user as a member with the given role
-        this.siteService.setMembership(SITE_SHORT_NAME_DISCUSSION, userName, role);
+        this.siteService.setMembership(siteName, userName, role);
         
         // Give the test user access to the test node
         // They need to be able to read it, and create children of it
@@ -1245,4 +1246,54 @@ public class DiscussionRestApiTest extends BaseWebScriptTest
 
     }
     
+    /**
+     * Test for <a href=https://issues.alfresco.com/jira/browse/MNT-11964>MNT-11964</a>
+     * @throws Exception 
+     */
+    public void testCreateForumPermission() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        
+        String siteName = SITE_SHORT_NAME_DISCUSSION + GUID.generate();
+        this.siteService.createSite("ForumSitePreset", siteName, "SiteTitle", "SiteDescription", SiteVisibility.PUBLIC);
+        
+        String userName = USER_ONE + GUID.generate();
+        createUser(userName, SiteModel.SITE_COLLABORATOR, siteName);
+
+        // Check permissions for admin
+        checkForumPermissions(siteName);
+        
+        // Check permissions for user
+        this.authenticationComponent.setCurrentUser(userName);
+        checkForumPermissions(siteName);
+
+        // Cleanup
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        this.siteService.deleteSite(siteName);
+        
+        // Create a new site as user
+        this.authenticationComponent.setCurrentUser(userName);
+        siteName = SITE_SHORT_NAME_DISCUSSION + GUID.generate();
+        this.siteService.createSite("BlogSitePreset", siteName, "SiteTitle", "SiteDescription", SiteVisibility.PUBLIC);
+        
+        // Check permissions for user
+        checkForumPermissions(siteName);
+        
+        // Check permissions for admin
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        checkForumPermissions(siteName);
+        
+        // Cleanup
+        this.siteService.deleteSite(siteName);
+        this.personService.deletePerson(userName);
+    }
+    
+    private void checkForumPermissions(String siteName) throws Exception
+    {
+        String url = "/api/forum/site/" + siteName + "/" + COMPONENT_DISCUSSION + "/posts";
+        Response response = sendRequest(new GetRequest(url), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        assertTrue("The user sould have permission to create a new discussion.", Boolean.parseBoolean(result.getJSONObject("forumPermissions").getString("create")));
+    }
 }

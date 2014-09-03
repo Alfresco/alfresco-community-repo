@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -107,8 +108,8 @@ public class BlogServiceTest extends BaseWebScriptTest
         }
         
         // Create users
-        createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
-        createUser(USER_TWO, SiteModel.SITE_COLLABORATOR);
+        createUser(USER_ONE, SiteModel.SITE_COLLABORATOR, SITE_SHORT_NAME_BLOG);
+        createUser(USER_TWO, SiteModel.SITE_COLLABORATOR, SITE_SHORT_NAME_BLOG);
 
         // Blank our lists used to track things the test creates
         posts = new ArrayList<String>(5);
@@ -149,7 +150,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         }
     }
     
-    private void createUser(String userName, String role)
+    private void createUser(String userName, String role, String siteMembership)
     {
         // if user with given user name doesn't already exist then create user
         if (this.authenticationService.authenticationExists(userName) == false)
@@ -171,7 +172,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         }
         
         // add the user as a member with the given role
-        this.siteService.setMembership(SITE_SHORT_NAME_BLOG, userName, role);
+        this.siteService.setMembership(siteMembership, userName, role);
     }
     
     
@@ -875,4 +876,54 @@ public class BlogServiceTest extends BaseWebScriptTest
         assertEquals(0, item.getJSONArray("tags").length());
     }
 
+    /**
+     * Test for <a href=https://issues.alfresco.com/jira/browse/MNT-11964>MNT-11964</a>
+     * @throws Exception 
+     */
+    public void testBlogPermission() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        
+        String siteName = SITE_SHORT_NAME_BLOG + GUID.generate();
+        this.siteService.createSite("BlogSitePreset", siteName, "BlogSiteTitle", "BlogSiteDescription", SiteVisibility.PUBLIC);
+        
+        String userName = USER_ONE + GUID.generate();
+        createUser(userName, SiteModel.SITE_COLLABORATOR, siteName);
+
+        // Check permissions for admin
+        checkBlogPermissions(siteName);
+        
+        // Check permissions for user
+        this.authenticationComponent.setCurrentUser(userName);
+        checkBlogPermissions(siteName);
+
+        // Cleanup
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        this.siteService.deleteSite(siteName);
+        
+        // Create a new site as user
+        this.authenticationComponent.setCurrentUser(userName);
+        siteName = SITE_SHORT_NAME_BLOG + GUID.generate();
+        this.siteService.createSite("BlogSitePreset", siteName, "BlogSiteTitle", "BlogSiteDescription", SiteVisibility.PUBLIC);
+        
+        // Check permissions for user
+        checkBlogPermissions(siteName);
+        
+        // Check permissions for admin
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        checkBlogPermissions(siteName);
+        
+        // Cleanup
+        this.siteService.deleteSite(siteName);
+        this.personService.deletePerson(userName);
+    }
+    
+    private void checkBlogPermissions(String siteName) throws Exception
+    {
+        String url = "/api/blog/site/" + siteName + "/" + COMPONENT_BLOG;
+        Response response = sendRequest(new GetRequest(url), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        assertTrue("The user sould have permission to create a new blog.", Boolean.parseBoolean(result.getJSONObject("item").getJSONObject("permissions").getString("create")));
+    }
 }

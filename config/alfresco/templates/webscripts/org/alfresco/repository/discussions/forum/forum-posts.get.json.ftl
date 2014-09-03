@@ -3,7 +3,7 @@
 {
    "forumPermissions":
    {
-      <#if forum.getParent()?? >
+      <#if forum.getParent()?? && forum.getTypeShort() != "st:site" >
         "create": ${(forum.getParent()).hasPermission("CreateChildren")?string},
         "edit": ${(forum.getParent()).hasPermission("Write")?string},
         "delete": ${(forum.getParent()).hasPermission("Delete")?string}

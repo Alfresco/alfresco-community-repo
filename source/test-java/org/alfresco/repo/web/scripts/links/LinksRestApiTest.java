@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
@@ -129,8 +130,8 @@ public class LinksRestApiTest extends BaseWebScriptTest
         }
         
         // Create users
-        createUser(USER_ONE, SiteModel.SITE_COLLABORATOR);
-        createUser(USER_TWO, SiteModel.SITE_COLLABORATOR);
+        createUser(USER_ONE, SiteModel.SITE_COLLABORATOR, SITE_SHORT_NAME_LINKS);
+        createUser(USER_TWO, SiteModel.SITE_COLLABORATOR, SITE_SHORT_NAME_LINKS);
 
         // Do tests as inviter user
         this.authenticationComponent.setCurrentUser(USER_ONE);
@@ -166,7 +167,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
         }
     }
     
-    private void createUser(String userName, String role)
+    private void createUser(String userName, String role, String siteName)
     {
         // if user with given user name doesn't already exist then create user
         if (this.authenticationService.authenticationExists(userName) == false)
@@ -188,7 +189,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
         }
         
         // add the user as a member with the given role
-        this.siteService.setMembership(SITE_SHORT_NAME_LINKS, userName, role);
+        this.siteService.setMembership(siteName, userName, role);
     }
     
     
@@ -663,5 +664,58 @@ public class LinksRestApiTest extends BaseWebScriptTest
        this.authenticationComponent.setCurrentUser(USER_ONE);
        
        sendRequest(new GetRequest(URL_LINKS_LIST), Status.STATUS_NOT_FOUND);
+    }
+    
+    /**
+     * Test for <a href=https://issues.alfresco.com/jira/browse/MNT-11964>MNT-11964</a>
+     * @throws Exception 
+     */
+    public void testCreateLinkPermission() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        
+        String siteName = SITE_SHORT_NAME_LINKS + GUID.generate();
+        this.siteService.createSite("LinkSitePreset", siteName, "SiteTitle", "SiteDescription", SiteVisibility.PUBLIC);
+        
+        String userName = USER_ONE + GUID.generate();
+        createUser(userName, SiteModel.SITE_COLLABORATOR, siteName);
+
+        // Check permissions for admin
+        checkLinkPermissions(siteName);
+        
+        // Check permissions for user
+        this.authenticationComponent.setCurrentUser(userName);
+        checkLinkPermissions(siteName);
+
+        // Cleanup
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        this.siteService.deleteSite(siteName);
+        
+        // Create a new site as user
+        this.authenticationComponent.setCurrentUser(userName);
+        siteName = SITE_SHORT_NAME_LINKS + GUID.generate();
+        this.siteService.createSite("LinkSitePreset", siteName, "SiteTitle", "SiteDescription", SiteVisibility.PUBLIC);
+        
+        // Check permissions for user
+        checkLinkPermissions(siteName);
+        
+        // Check permissions for admin
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        checkLinkPermissions(siteName);
+        
+        // Cleanup
+        this.siteService.deleteSite(siteName);
+        this.personService.deletePerson(userName);
+    }
+    
+    private void checkLinkPermissions(String siteName) throws Exception
+    {
+        String url = "/api/links/site/" + siteName + "/links";
+        url += "?filter=" + "all";
+        url += "&startIndex=0&page=1&pageSize=4";
+        Response response = sendRequest(new GetRequest(url), 200);
+        JSONObject result = new JSONObject(response.getContentAsString());
+        
+        assertTrue("The user sould have permission to create a new link.", Boolean.parseBoolean(result.getJSONObject("metadata").getJSONObject("linkPermissions").getString("create")));
     }
 }

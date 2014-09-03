@@ -16,7 +16,7 @@
    "password": "${item.properties["blg:password"]!''}",
    "permissions":
    {
-      <#if item.getParent()?? >
+      <#if item.getParent()?? && item.getTypeShort() != "st:site" >
         "create": ${(item.getParent()).hasPermission("CreateChildren")?string},
         "edit": ${(item.getParent()).hasPermission("Write")?string},
         "delete": ${(item.getParent()).hasPermission("Delete")?string}

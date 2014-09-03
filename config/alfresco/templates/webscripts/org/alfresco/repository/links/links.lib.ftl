@@ -57,7 +57,7 @@
    {
       "linkPermissions":
       {
-         <#if links.getParent()?? >
+         <#if links.getParent()?? && links.getTypeShort() != "st:site" >
             "create": "${(links.getParent()).hasPermission("CreateChildren")?string}"
          <#else>
             "create": "${links.hasPermission("CreateChildren")?string}"

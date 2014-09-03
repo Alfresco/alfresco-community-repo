@@ -87,8 +87,7 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(SimplePermissionReference.getPermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Coordinator"));
 
-        // TODO: readjust due to permission removal
-        assertEquals(103, grantees.size());
+        assertEquals(69, grantees.size());
     }
 
     public void testIncludePermissionGroups6()
@@ -103,21 +102,17 @@ public class PermissionModelTest extends AbstractPermissionTest
     {
         Set<PermissionReference> granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "ReadProperties"));
-        // TODO: readjust due to permission removal
-        // 14-18 -> 4 site base roles added
-        assertEquals(18, granters.size());
+        assertEquals(14, granters.size());
 
         granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base", namespacePrefixResolver),
                 "_ReadProperties"));
-        // TODO: readjust due to permission removal
-        // 5-19 site based roles added
-        assertEquals(19, granters.size());
+        assertEquals(15, granters.size());
     }
 
     public void testGlobalPermissions()
     {
         Set<? extends PermissionEntry> globalPermissions = permissionModelDAO.getGlobalPermissionEntries();
-        assertEquals(6, globalPermissions.size());
+        assertEquals(5, globalPermissions.size());
     }
 
     public void testRequiredPermissions()
@@ -136,11 +131,11 @@ public class PermissionModelTest extends AbstractPermissionTest
 
         required = permissionModelDAO.getRequiredPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("cm", "cmobject", namespacePrefixResolver),
                 "Coordinator"), QName.createQName("cm", "cmobject", namespacePrefixResolver), Collections.<QName> emptySet(), On.NODE);
-        assertEquals(18, required.size());
+        assertEquals(17, required.size());
 
         required = permissionModelDAO.getRequiredPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base", namespacePrefixResolver),
                 "FullControl"), QName.createQName("sys", "base", namespacePrefixResolver), Collections.<QName> emptySet(), On.NODE);
-        assertEquals(18, required.size());
+        assertEquals(17, required.size());
 
     }
 

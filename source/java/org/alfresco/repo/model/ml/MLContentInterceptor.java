@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.model.ml;
 
+import java.util.Set;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -79,8 +81,11 @@ public class MLContentInterceptor implements MethodInterceptor
             NodeRef nodeRef = (NodeRef) args[0];
             
             // Shortcut it if the node is not an empty translation
-            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            Set<QName> aspects = nodeService.getAspects(nodeRef);
+            if (!aspects.contains(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT) ||
+                !aspects.contains(ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
             {
+                // It is not a ML document or we expect that there is no translation
                 return invocation.proceed();
             }
             

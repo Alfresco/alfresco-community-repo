@@ -20,7 +20,6 @@ package org.alfresco.repo.domain.permissions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +53,9 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  *     <b>alf_access_control_entry</b>
  *     <b>alf_permission</b>
  *     <b>alf_authority</b>
- *     
- * Also, following are currently unused:
- * 
+ *     <b/>
+ * Also, following are currently unused:<b/>
+ *     <b/>
  *     <b>alf_ace_context</b>
  *     <b>alf_authority_alias</b>
  *     
@@ -262,13 +261,6 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
         return getADMNodeEntityIdsByAcl(aclEntityId, maxResults);
     }
     
-    public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults)
-    {
-        // Sparta: remove WCM/AVM
-        //return getAVMNodeEntityIdsByAcl(aclEntityId, maxResults);
-        return Collections.emptyList();
-    }
-    
     public void updateAcl(AclUpdateEntity entity)
     {
         ParameterCheck.mandatory("entity", entity);
@@ -368,7 +360,6 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     protected abstract int deleteAclEntity(long id);
     
     protected abstract List<Long> getADMNodeEntityIdsByAcl(long aclEntityId, int maxResults);
-    protected abstract List<Long> getAVMNodeEntityIdsByAcl(long aclEntityId, int maxResults);
     
     //
     // ACL Member

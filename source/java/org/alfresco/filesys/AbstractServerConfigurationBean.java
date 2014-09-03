@@ -136,10 +136,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   
   private ExtendedDiskInterface m_repoDiskInterface;
   
-  // AVM filesystem interface
-  
-  private ExtendedDiskInterface m_avmDiskInterface;
-  
   // Runtime platform type
   
   private Platform.Type m_platform = Platform.Type.Unchecked;
@@ -214,15 +210,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
       m_repoDiskInterface = diskInterface;
   }
 
-  /**
-   * Set the filesystem driver for the AVM based filesystem
-   * 
-   */
-  public void setAvmDiskInterface(ExtendedDiskInterface diskInterface)
-  {
-      m_avmDiskInterface = diskInterface;
-  }
-  
   /**
    * Set the authentication component
    * 
@@ -351,16 +338,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   public final ExtendedDiskInterface getRepoDiskInterface()
   {
       return m_repoDiskInterface;
-  }
-  
-  /**
-   * Return the disk interface to be used to create AVM filesystem shares
-   * 
-   * @return DiskInterface
-   */
-  public final ExtendedDiskInterface getAvmDiskInterface()
-  {
-      return m_avmDiskInterface;
   }
   
   /**

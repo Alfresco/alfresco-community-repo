@@ -320,7 +320,6 @@ public class ScriptAuthorityServiceTest extends TestCase
        Set<String> zones = new HashSet<String>();
        zones.add(AuthorityService.ZONE_APP_SHARE);
        pubAuthorityService.addAuthorityToZones(GROUP_A_FULL, zones);
-       zones.add(AuthorityService.ZONE_APP_WCM);
        pubAuthorityService.addAuthorityToZones(GROUP_B_FULL, zones);
        
        groups = service.searchGroupsInZone(
@@ -331,14 +330,6 @@ public class ScriptAuthorityServiceTest extends TestCase
        assertEquals(GROUP_A, groups[0].getShortName());
        assertEquals(GROUP_B, groups[1].getShortName());
        
-       groups = service.searchGroupsInZone(
-             GROUP_A.substring(0, GROUP_A.length()-1), AuthorityService.ZONE_APP_WCM,  
-             new ScriptPagingDetails(10,0), "default");
-       
-       assertEquals(1, groups.length);
-       assertEquals(GROUP_B, groups[0].getShortName());
-
-       
        // And root groups in zones 
        groups = service.searchRootGroupsInZone(
              GROUP_A.substring(0, GROUP_A.length()-1)+"*", AuthorityService.ZONE_APP_SHARE,  
@@ -346,15 +337,6 @@ public class ScriptAuthorityServiceTest extends TestCase
        
        assertEquals(1, groups.length);
        assertEquals(GROUP_A, groups[0].getShortName());
-       
-       groups = service.searchRootGroupsInZone(
-             GROUP_A.substring(0, GROUP_A.length()-1)+"*", AuthorityService.ZONE_APP_WCM,  
-             new ScriptPagingDetails(10,0), "default");
-       
-       // B apparently counts as a root group in the WCM zone as it's
-       //  parent group A isn't in that zone too
-       assertEquals(1, groups.length);
-       assertEquals(GROUP_B, groups[0].getShortName());
     }
     
     public void testGroupUsers()

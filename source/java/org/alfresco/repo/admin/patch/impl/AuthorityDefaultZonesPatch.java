@@ -105,10 +105,6 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
         defaultZones.add(AuthorityService.ZONE_APP_DEFAULT);
         defaultZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
 
-        Set<String> wcmZones = new HashSet<String>(2, 1.0f);
-        wcmZones.add(AuthorityService.ZONE_APP_WCM);
-        wcmZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
-
         Set<String> shareZones = new HashSet<String>(2, 1.0f);
         shareZones.add(AuthorityService.ZONE_APP_SHARE);
         shareZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);

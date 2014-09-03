@@ -52,7 +52,6 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
     private static final String SELECT_ACLS_THAT_INHERIT_FROM_ACL = "alfresco.permissions.select_AclsThatInheritFromAcl";
     private static final String SELECT_LATEST_ACL_BY_GUID = "alfresco.permissions.select_LatestAclByGuid";
     private static final String SELECT_ADM_NODES_BY_ACL = "alfresco.permissions.select_ADMNodesByAclId";
-    private static final String SELECT_AVM_NODES_BY_ACL = "alfresco.permissions.select_AVMNodesByAclId";
     private static final String UPDATE_ACL = "alfresco.permissions.update_Acl";
     private static final String DELETE_ACL = "alfresco.permissions.delete_Acl";
     
@@ -159,21 +158,6 @@ public class AclCrudDAOImpl extends AbstractAclCrudDAOImpl
         params.put("id", aclEntityId);
         
         return (List<Long>)template.selectList(SELECT_ADM_NODES_BY_ACL, params, new RowBounds(0 , maxResults));
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<Long> getAVMNodeEntityIdsByAcl(long aclEntityId, int maxResults)
-    {
-        if (maxResults < 0)
-        {
-            maxResults = RowBounds.NO_ROW_LIMIT;
-        }
-        
-        Map<String, Object> params = new HashMap<String, Object>(1);
-        params.put("id", aclEntityId);
-        
-        return (List<Long>)template.selectList(SELECT_AVM_NODES_BY_ACL, params, new RowBounds(0 , maxResults));
     }
     
     @Override

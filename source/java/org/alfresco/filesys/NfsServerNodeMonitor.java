@@ -270,7 +270,7 @@ public class NfsServerNodeMonitor
     }
 
     /**
-     * Searches for {@link ShareDetails} to access NFS server cache for specific device name (e.g. 'Alfresco', 'AVM' etc)
+     * Searches for {@link ShareDetails} to access NFS server cache for specific device name (e.g. 'Alfresco', etc)
      * 
      * @param fileId - {@link Integer} value which contains <code>fileId</code> specific to device
      * @return {@link ShareDetails} instance which contains <code>fileId</code> key in the cache or <code>null</code> if such instance was not found

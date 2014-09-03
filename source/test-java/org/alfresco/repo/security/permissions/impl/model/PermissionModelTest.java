@@ -87,8 +87,7 @@ public class PermissionModelTest extends AbstractPermissionTest
         Set<PermissionReference> grantees = permissionModelDAO.getGranteePermissions(SimplePermissionReference.getPermissionReference(QName.createQName("cm", "cmobject",
                 namespacePrefixResolver), "Coordinator"));
 
-        // NB This has gone from 59 to 63, I believe, because of the for new WCM roles.
-        // 63-97 from AVM permission fix up
+        // TODO: readjust due to permission removal
         assertEquals(103, grantees.size());
     }
 
@@ -104,13 +103,13 @@ public class PermissionModelTest extends AbstractPermissionTest
     {
         Set<PermissionReference> granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base",
                 namespacePrefixResolver), "ReadProperties"));
-        // NB This has gone from 10 to 14 because of the new WCM roles, I believe.
+        // TODO: readjust due to permission removal
         // 14-18 -> 4 site base roles added
         assertEquals(18, granters.size());
 
         granters = permissionModelDAO.getGrantingPermissions(SimplePermissionReference.getPermissionReference(QName.createQName("sys", "base", namespacePrefixResolver),
                 "_ReadProperties"));
-        // NB 11 to 15 as above.
+        // TODO: readjust due to permission removal
         // 5-19 site based roles added
         assertEquals(19, granters.size());
     }

@@ -130,9 +130,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     private SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache; // cluster-aware
     
     /**
-     * Set the cache to use for <b>avm_version_roots</b> lookups (optional).
-     * 
-     * @param vrEntityCache
+     * Set the cache to use for unique property lookups
      */
     public void setPropertyUniqueContextCache(SimpleCache<CachePucKey, PropertyUniqueContextEntity> propertyUniqueContextCache)
     {
@@ -1464,7 +1462,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
         }
         else
         {
-            // reasonable to clear for now (eg. only used by AVMLockingService.removeLocks*)
             // note: in future, if we need to support mass removal based on specific key grouping then we need to use more intelligent cache (removal)
             propertyUniqueContextCache.clear();
         }

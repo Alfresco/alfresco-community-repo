@@ -541,24 +541,6 @@
                   <property name="defaultAccessLevel"> <value>Write</value> </property> </bean> </property>
                -->
             </bean>
-            
-            
-            <!-- AVM virtualization view of all stores/versions for WCM -->
-            <!-- virtual view stores filter can be any of the following: normal, site, staging, author, preview -->
-            
-            <!-- AVM context deprecated - uncomment to add back
-            <bean class="org.alfresco.filesys.avm.AVMContext">
-               <property name="deviceName">
-                  <value>${filesystem.avm.name}</value>
-               </property>
-               <property name="virtualView">
-                  <value>${filesystem.avm.enabled}</value>
-               </property>
-               <property name="stores">
-                  <value>${filesystem.avm.stores}</value>
-               </property>
-            </bean>
-            -->
          </list>
       </property>
    </bean>

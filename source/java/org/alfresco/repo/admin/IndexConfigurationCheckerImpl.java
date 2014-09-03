@@ -49,7 +49,6 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
     private RecoveryMode indexRecoveryMode;
     private NodeService nodeService;
     private SearchService searchService;
-    //private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
     
     /**
      * Set the index recovert mode

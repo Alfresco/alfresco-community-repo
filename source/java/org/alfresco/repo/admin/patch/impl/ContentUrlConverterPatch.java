@@ -66,7 +66,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * to the newer <b>alf_content_url</b> storage.
  * <p/>
  * The {@link ServiceRegistry} is used to record progress.  The component picks up ranges of node IDs
- * (DM and AVM) and records the progress.  Since new nodes will not need converting, the converter
+ * (DM) and records the progress.  Since new nodes will not need converting, the converter
  * will stop once it hits the largest node ID that it found upon first initiation.  Once completed,
  * the content store reader will start to pick up orphaned content and schedule it for deletion.
  * <p/>
@@ -85,12 +85,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
             NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentUrlConverter", "adm", "range-start-id");
     private static final RegistryKey KEY_ADM_DONE = new RegistryKey(
             NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentUrlConverter", "adm", "done");
-    private static final RegistryKey KEY_AVM_MAX_ID = new RegistryKey(
-            NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentUrlConverter", "avm", "max-id");
-    private static final RegistryKey KEY_AVM_RANGE_START_ID = new RegistryKey(
-            NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentUrlConverter", "avm", "range-start-id");
-    private static final RegistryKey KEY_AVM_DONE = new RegistryKey(
-            NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentUrlConverter", "avm", "done");
     private static final RegistryKey KEY_STORE_DONE = new RegistryKey(
             NamespaceService.SYSTEM_MODEL_1_0_URI, "ContentUrlConverter", "store", "done");
 
@@ -313,16 +307,10 @@ public class ContentUrlConverterPatch extends AbstractPatch
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.adm.start"));
             boolean admCompleted = applyADMLooping(running);
             
-            /* Sparta: remove WCM/AVM
-            logger.info(I18NUtil.getMessage("patch.convertContentUrls.avm.start"));
-            boolean avmCompleted = applyAVMLooping(running);
-            */
-            boolean avmCompleted = true;
-            
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.store.start", contentStore));
             boolean urlLiftingCompleted = applyUrlLifting(running);
             
-            completed = admCompleted && avmCompleted && urlLiftingCompleted;
+            completed = admCompleted && urlLiftingCompleted;
         }
         catch (RuntimeException e)
         {
@@ -469,106 +457,6 @@ public class ContentUrlConverterPatch extends AbstractPatch
         return false;
     }
     
-    /*
-    private boolean applyAVMLooping(final AtomicBoolean running)
-    {
-        RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
-        {
-            public Boolean execute() throws Throwable
-            {
-                return applyAVM();
-            }
-        };
-        boolean done = false;
-        while (running.get())
-        {
-            done = transactionHelper.doInTransaction(callback, false, true);
-            if (done)
-            {
-                break;
-            }
-        }
-        return done;
-    }
-    */
-    
-    /**
-     * Do the AVM conversion work
-     */
-    /*
-    private boolean applyAVM() throws Exception
-    {
-        Long maxId = (Long) registryService.getProperty(KEY_AVM_MAX_ID);
-
-        // Must we run at all?
-        Boolean done = (Boolean) registryService.getProperty(KEY_AVM_DONE);
-        if (done != null && done.booleanValue())
-        {
-            logger.info(I18NUtil.getMessage("patch.convertContentUrls.avm.done", maxId));
-            return true;
-        }
-
-        if (maxId == null)
-        {
-            maxId = patchDAO.getMaxAvmNodeID();
-            registryService.addProperty(KEY_AVM_MAX_ID, maxId);
-        }
-        Long startId = (Long) registryService.getProperty(KEY_AVM_RANGE_START_ID);
-        if (startId == null)
-        {
-            startId = 1L;
-            registryService.addProperty(KEY_AVM_RANGE_START_ID, startId);
-        }
-        Long endId = startId + (batchSize * (long) threadCount * 10L);
-        
-        final List<Long> nodeIds = patchDAO.getAvmNodesWithOldContentProperties(startId, endId);
-        BatchProcessWorkerAdaptor<Long> batchProcessorWorker = new BatchProcessWorkerAdaptor<Long>()
-        {
-            public void process(Long nodeId) throws Throwable
-            {
-                // Convert it
-                PlainFileNode node = (PlainFileNode) AVMDAOs.Instance().fAVMNodeDAO.getByID(nodeId);
-                ContentData contentData = node.getContentData();
-                node.setContentData(contentData);
-                AVMDAOs.Instance().fAVMNodeDAO.update(node);
-            }
-        };
-        BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(
-                "ContentUrlConverter.AVM (" + maxId + ")",
-                transactionHelper,
-                nodeIds, threadCount, batchSize,
-                applicationEventPublisher, null, 1);
-        batchProcessor.process(batchProcessorWorker, true);
-        if (batchProcessor.getTotalErrors() > 0)
-        {
-            // Something went wrong.  We don't advance the start range so that the patch re-execution will
-            // start at the start of the range that failed.
-            throw AlfrescoRuntimeException.create("patch.convertContentUrls.error", batchProcessor.getLastError());
-        }
-
-        // Advance
-        startId = endId;
-        // Have we 
-        if (startId > maxId)
-        {
-            startId = maxId + 1;
-            // We're past the max ID that we're interested in
-            done = Boolean.TRUE;
-            registryService.addProperty(KEY_AVM_DONE, done);
-            logger.info(I18NUtil.getMessage("patch.convertContentUrls.avm.done", maxId));
-            return true;
-        }
-        // Progress
-        super.reportProgress(maxId, startId);
-        
-        // Move the start ID on
-        registryService.addProperty(KEY_AVM_RANGE_START_ID, startId);
-        
-        // More to do
-        return false;
-    }
-    */
-    
     private boolean applyUrlLifting(final AtomicBoolean running) throws Exception
     {
         RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
@@ -591,9 +479,8 @@ public class ContentUrlConverterPatch extends AbstractPatch
         }
         
         Boolean admDone = (Boolean) registryService.getProperty(KEY_ADM_DONE);
-        Boolean avmDone = (Boolean) registryService.getProperty(KEY_AVM_DONE);
         
-        if ((admDone == null || !admDone.booleanValue()) || (avmDone == null || !avmDone.booleanValue()))
+        if ((admDone == null || !admDone.booleanValue()))
         {
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.store.pending"));
             return false;

@@ -193,11 +193,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      * 
      *    Resolve to node via its display path.
      *  
-     * 3) AVM Path - {store_id}/{path}
-     * 
-     *    Resolve to AVM node via its display path
-     * 
-     * @param  referenceType    one of "node", "path", or "avmpath"
+     * @param  referenceType    one of "node", "path"
      * @param  reference        array of reference segments (as described above for each reference type)
      * @return ScriptNode       the script node
      */

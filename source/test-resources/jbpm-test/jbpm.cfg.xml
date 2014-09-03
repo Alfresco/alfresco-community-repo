@@ -58,7 +58,6 @@
          <int value="1" />
       </field>
 
-      <!-- overridden for WCM unit tests to 5 secs (was 1.5 mins) -->
       <field name="idleInterval">
          <int value="5000" />
       </field>

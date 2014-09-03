@@ -69,7 +69,6 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
@@ -1833,7 +1832,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     {
         int totalProblems = 0;
         
-        // Discover available reference files (e.g. for prefixes alf_, avm_ etc.)
+        // Discover available reference files (e.g. for prefixes alf_, etc.)
         // and process each in turn.
         for (String schemaReferenceUrl : schemaReferenceUrls)
         {

@@ -9,7 +9,6 @@
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
-      <import uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
    </imports>
    
    <namespaces>

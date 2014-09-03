@@ -268,39 +268,6 @@
    </bean>
       
    <!-- ===================================== -->
-   <!-- Lookup for AVM entities               -->
-   <!-- ===================================== -->
-   
-   <!-- The cross-transaction shared cache for AVM Store entities -->
-   
-   <bean name="avmStoreSharedCache" class="org.alfresco.repo.cache.NullCache"/>
-
-   
-   <!-- The cross-transaction shared cache for AVM entities (various - using cache region) -->
-   
-   <bean name="avmEntitySharedCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.avmEntitySharedCache"/>
-   </bean>
-   
-   <!-- The cross-transaction shared cache for AVM VersionRoot entities -->
-   
-   <bean name="avmVersionRootEntitySharedCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.avmVersionRootEntitySharedCache"/>
-   </bean>
-   
-   <!-- The cross-transaction shared cache for AVM Node entities -->
-   
-   <bean name="avmNodeSharedCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.avmNodeSharedCache"/>
-   </bean>
-   
-   <!-- The cross-transaction shared cache for AVM Node Aspects entities -->
-   
-   <bean name="avmNodeAspectsSharedCache" factory-bean="cacheFactory" factory-method="createCache">
-      <constructor-arg value="cache.avmNodeAspectsSharedCache"/>
-   </bean>
-   
-   <!-- ===================================== -->
    <!-- WebServices Query Session Cache       -->
    <!-- ===================================== -->
 

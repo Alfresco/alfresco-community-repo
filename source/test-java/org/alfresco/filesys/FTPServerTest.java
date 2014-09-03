@@ -248,28 +248,19 @@ public class FTPServerTest extends TestCase
             reply = ftp.getReplyCode();
             assertTrue(FTPReply.isPositiveCompletion(reply));
 
-            // expect /Alfresco directory
-            //        /AVM directory - avm removed
             assertTrue(files.length == 1);
             
-            boolean foundAVM=false;
             boolean foundAlfresco=false;
             for(FTPFile file : files)
             {
                 logger.debug("file name=" + file.getName());
                 assertTrue(file.isDirectory());
                 
-                if(file.getName().equalsIgnoreCase("AVM"))
-                {
-                    foundAVM=true;
-                }
                 if(file.getName().equalsIgnoreCase("Alfresco"))
                 {
                     foundAlfresco=true;
                 }
             }
-            // AVM mount point removed
-            //assertTrue(foundAVM);
             assertTrue(foundAlfresco);
             
             // Change to Alfresco Dir that we know exists
@@ -568,8 +559,6 @@ public class FTPServerTest extends TestCase
         
         final String TEST_DIR="/Alfresco/User Homes/" + USER_ONE;
      
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-            
         FTPClient ftpOne = connectClient();
         FTPClient ftpTwo = connectClient();
         try
@@ -666,8 +655,6 @@ public class FTPServerTest extends TestCase
         
         final String TEST_DIR="/Alfresco/User Homes/" + USER_THREE;
      
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
-            
         FTPClient ftpOne = connectClient();
         try
         {

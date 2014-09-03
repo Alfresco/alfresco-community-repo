@@ -26,9 +26,6 @@
             <list>
                 <ref bean="search.admLuceneIndexerAndSearcherFactory" />
                 <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <!-- Sparta: remove WCM/AVM
-                <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
-                -->
             </list>
         </property>
     </bean>
@@ -41,9 +38,6 @@
             <list>
                 <ref bean="search.admLuceneIndexerAndSearcherFactory" />
                 <ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />
-                <!-- Sparta: remove WCM/AVM
-                <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
-                -->
             </list>
         </property>
     </bean>

@@ -19,8 +19,6 @@
    <namespaces>
       <namespace uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
       <namespace uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
-      <namespace uri="http://www.alfresco.org/model/wcmmodel/1.0" prefix="wcm"/>
-      <namespace uri="http://www.alfresco.org/model/wcmappmodel/1.0" prefix="wca"/>
    </namespaces>
 
    <!--                                                                                   -->
@@ -106,7 +104,6 @@
       <permissionGroup name="CreateAssociations" expose="true" allowFullControl="false" />  
       <permissionGroup name="ReadPermissions" expose="true" allowFullControl="false" />  
       <permissionGroup name="ChangePermissions" expose="true" allowFullControl="false" />  
-      <permissionGroup name="Flatten" expose="true" allowFullControl="false" />  
     
       <!-- =========== -->
       <!-- Permissions -->
@@ -281,15 +278,6 @@
         -->
       </permission>
        
-      <!-- AVM specific -->
-       
-      <permission name="_Flatten" expose="false" >
-        <grantedToGroup permissionGroup="Flatten" />
-        <!-- Commented out parent permission check ...
-        <requiredPermission on="parent" name="_ReadChildren" implies="false"/>
-        -->
-      </permission>
-      
    </permissionSet>
    
    <!-- ================================================ -->
@@ -352,23 +340,6 @@
           <includePermissionGroup type="sys:base" permissionGroup="CreateAssociations"/>
       </permissionGroup>
        
-      <!-- avm related permissions -->
-       
-       <!-- AVM website specific roles.                                               -->
-      <permissionGroup name="ContentManager" allowFullControl="true" expose="false" />
-      
-      <permissionGroup name="ContentPublisher" allowFullControl="false" expose="false">
-         <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
-      </permissionGroup>
-      
-      <permissionGroup name="ContentContributor" allowFullControl="false" expose="false">
-         <includePermissionGroup permissionGroup="Contributor" type="cm:cmobject" />
-      </permissionGroup>
-      
-      <permissionGroup name="ContentReviewer" allowFullControl="false" expose="false">
-         <includePermissionGroup permissionGroup="Editor" type="cm:cmobject" />
-      </permissionGroup>
-       
    </permissionSet>
    
    <!-- =============================== -->
@@ -400,59 +371,6 @@
       <permissionGroup name="Consumer" extends="true" expose="true"/>
       <permissionGroup name="RecordAdministrator" extends="true" expose="false"/>
       
-   </permissionSet>
-   
-   <!-- ========================================== -->
-   <!-- Permissions specific to avm website folder -->
-   <!-- ========================================== -->
-   
-   <permissionSet type="wcm:avmfolder" expose="selected">                                       
-      <permissionGroup name="ContentManager" extends="true" expose="true" />
-      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
-      <permissionGroup name="ContentContributor" extends="true" expose="true" />
-      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
-   </permissionSet>
-    
-   <permissionSet type="wcm:avmplainfolder" expose="selected">                                       
-      <permissionGroup name="ContentManager" extends="true" expose="true" />
-      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
-      <permissionGroup name="ContentContributor" extends="true" expose="true" />
-      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
-   </permissionSet>
-    
-   <permissionSet type="wcm:avmlayeredfolder" expose="selected">                                       
-      <permissionGroup name="ContentManager" extends="true" expose="true" />
-      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
-      <permissionGroup name="ContentContributor" extends="true" expose="true" />
-      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
-   </permissionSet>
-    
-   <permissionSet type="wcm:avmcontent" expose="selected">                                       
-      <permissionGroup name="ContentManager" extends="true" expose="true" />
-      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
-      <permissionGroup name="ContentContributor" extends="true" expose="true" />
-      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
-   </permissionSet>
-    
-   <permissionSet type="wcm:avmplaincontent" expose="selected">                                       
-      <permissionGroup name="ContentManager" extends="true" expose="true" />
-      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
-      <permissionGroup name="ContentContributor" extends="true" expose="true" />
-      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
-   </permissionSet>
-    
-   <permissionSet type="wcm:avmlayeredcontent" expose="selected">                                       
-      <permissionGroup name="ContentManager" extends="true" expose="true" />
-      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
-      <permissionGroup name="ContentContributor" extends="true" expose="true" />
-      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
-   </permissionSet>
-    
-   <permissionSet type="wca:webfolder" expose="selected">                                           
-      <permissionGroup name="ContentManager" extends="true" expose="true" />
-      <permissionGroup name="ContentPublisher" extends="true" expose="true" />
-      <permissionGroup name="ContentContributor" extends="true" expose="true" />
-      <permissionGroup name="ContentReviewer" extends="true" expose="true" />
    </permissionSet>
    
    <!-- ============================================== -->
@@ -553,8 +471,4 @@
    <!-- Cancel check out is granted to the locak owner                                   -->
    <globalPermission permission="CancelCheckOut" authority="ROLE_LOCK_OWNER"/>
    
-   <!-- Usere need to be able to remove stuff from thier own sandbox -->
-    
-   <globalPermission permission="Flatten" authority="ROLE_WCM_STORE_OWNER" />
-       
 </permissions>

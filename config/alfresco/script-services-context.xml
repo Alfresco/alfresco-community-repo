@@ -182,24 +182,6 @@
         </property>
     </bean>
     
-    <bean id="avmScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.AVM">
-        <property name="extensionName">
-            <value>avm</value>
-        </property>        
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry"/>
-        </property>
-    </bean>
-    
-    <bean id="crossCopyScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.CrossRepositoryCopy">
-        <property name="extensionName">
-            <value>crossRepoCopy</value>
-        </property>        
-        <property name="serviceRegistry">
-            <ref bean="ServiceRegistry"/>
-        </property>
-    </bean>
-    
     <bean id="workflowScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.workflow.jscript.WorkflowManager">
         <property name="extensionName">
             <value>workflow</value>

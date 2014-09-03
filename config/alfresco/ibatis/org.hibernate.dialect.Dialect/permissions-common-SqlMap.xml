@@ -394,15 +394,6 @@
             acl_id = ?
     </select>
     
-    <select id="select_AVMNodesByAclId" parameterMap="parameter_IdMap" resultType="long">
-        select
-            id
-        from
-            avm_nodes
-        where
-            acl_id = ?
-    </select>
-    
     <select id="select_AclMembersByAclId" parameterMap="parameter_IdMap" resultMap="result_AclMember">
         select
             *

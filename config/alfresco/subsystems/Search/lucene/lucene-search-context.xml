@@ -52,11 +52,6 @@
                 <entry key="workspace">
                     <ref bean="search.admLuceneIndexerAndSearcherFactory"></ref>
                 </entry>
-                <!-- Sparta: remove WCM/AVM
-                <entry key="avm">
-                    <ref bean="search.avmLuceneIndexerAndSearcherFactory"></ref>
-                </entry>
-                -->
             </map>
         </property>
         <property name="redirectedStoreBindings">
@@ -86,9 +81,6 @@
                 <entry key="versionStore">
                     <ref bean="search.luceneCategoryService"></ref>
                 </entry>
-                <entry key="avm">
-                    <ref bean="search.luceneCategoryService"></ref>
-                </entry>
             </map>
         </property>
     </bean>
@@ -113,9 +105,6 @@
 			<list>
 			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
 				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<!-- Sparta: remove WCM/AVM
-				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />
-				-->	
 			</list>
         </property>
     </bean>
@@ -125,9 +114,6 @@
 			<list>
 			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
 				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<!-- Sparta: remove WCM/AVM
-				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
-				-->
 			</list>
         </property>
     </bean>
@@ -140,9 +126,6 @@
 			<list>
 			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
 				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<!-- Sparta: remove WCM/AVM
-				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
-				-->
 			</list>
         </property>
     </bean>
@@ -349,79 +332,6 @@
     </bean>
 
     <!-- Indexer and searchers for lucene -->
-    <!-- Sparta: remove WCM/AVM
-    <bean id="search.avmLuceneIndexerAndSearcherFactory"
-        parent="search.abstractLuceneIndexerAndSearcherFactory"
-        class="org.alfresco.repo.search.impl.lucene.AVMLuceneIndexerAndSearcherFactory">
-        <property name="nodeService">
-            <ref bean="mlAwareNodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="nameSpaceService">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="contentService">
-            <ref bean="contentService" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService" />
-        </property>
-        <property name="contentStore">
-            <ref bean="fileContentStore"/>
-        </property>
-        <property name="avmService">
-            <ref bean="avmService" />
-        </property>
-        <property name="avmSyncService">
-            <ref bean="avmSyncService" />
-        </property>
-        <property name="queryRegister">
-            <ref bean="search.queryRegisterComponent" />
-        </property>
-        <property name="threadPoolExecutor">
-            <ref bean="search.indexThreadPoolExecutor"></ref>
-        </property>
-        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-            <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
-        </property>
-        <property name="transformerDebug">
-            <ref bean="transformerDebug"></ref>
-        </property>
-    </bean>
-    -->
-    
-    <!-- Sparta: remove WCM/AVM
-	<bean id="search.avm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="indexAndSearcher">
-            <ref bean="search.avmLuceneIndexerAndSearcherFactory" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService" />
-        </property>
-        <property name="namespaceService">
-            <ref bean="namespaceService" />
-        </property>
-        <property name="useInMemorySort">
-            <value>${lucene.indexer.useInMemorySort}</value>
-        </property>
-        <property name="maxRawResultSetSizeForInMemorySort">
-            <value>${lucene.indexer.maxRawResultSetSizeForInMemorySort}</value>
-        </property>
-    </bean>
-    -->
-    
-    <!-- Indexer and searchers for lucene -->
     <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">
         <property name="nodeService">
             <ref bean="nodeService" />
@@ -490,10 +400,5 @@
        <property name="searchService">
            <ref bean="search.searchService"/>
        </property>
-       <!-- Sparta: remove WCM/AVM
-       <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-           <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor"/>
-       </property>
-       -->
     </bean>
 </beans>

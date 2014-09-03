@@ -18,14 +18,6 @@
 
 package org.alfresco.filesys.alfresco;
 
-import java.io.IOException;
-import java.util.concurrent.Callable;
-
-import javax.transaction.Status;
-import javax.transaction.UserTransaction;
-
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.filesys.config.ServerConfigurationBean;
 import org.alfresco.filesys.repo.ContentContext;
 import org.alfresco.jlan.server.SrvSession;
 import org.alfresco.jlan.server.core.DeviceContext;
@@ -33,12 +25,10 @@ import org.alfresco.jlan.server.core.DeviceContextException;
 import org.alfresco.jlan.server.filesys.IOControlNotImplementedException;
 import org.alfresco.jlan.server.filesys.IOCtlInterface;
 import org.alfresco.jlan.server.filesys.NetworkFile;
-import org.alfresco.jlan.server.filesys.TransactionalFilesystemInterface;
 import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.jlan.smb.SMBException;
 import org.alfresco.jlan.smb.SMBStatus;
 import org.alfresco.jlan.util.DataBuffer;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -140,7 +130,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
             throw new SMBException(SMBStatus.NTErr, SMBStatus.NTInvalidParameter);
         
         // Check if the I/O control handler is enabled
-        // Not enabled for AVM
         
         if(tree.getContext() instanceof ContentContext)
         {

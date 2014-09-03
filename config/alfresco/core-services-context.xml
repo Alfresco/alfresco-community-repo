@@ -194,44 +194,6 @@
         </property>
     </bean>
 
-    <bean id="exporter" class="org.springframework.jmx.export.MBeanExporter">
-       <property name="server" ref="alfrescoMBeanServer"/>
-       <property name="beans">
-         <map>
-           <!--  Used by Alfresco WCM Virtualisation server -->
-           <entry key="Alfresco:Name=VirtServerRegistry,Type=VirtServerRegistry" value-ref="VirtServerRegistry"/>
-         </map>
-       </property>
-       <property name="registrationBehaviorName" value="REGISTRATION_REPLACE_EXISTING"/>       
-    </bean>
-
-    <!-- MBeans registered with alfrescoMBeanServer -->
-    <bean id="VirtServerRegistry"
-          class="org.alfresco.mbeans.VirtServerRegistry"
-          init-method="initialize" >
-
-        <!-- Authentication info to contact remote virtualization server  -->
-        <!-- NOTE:                                                        -->
-        <!--    On the machine hosting the virtualization server,         -->
-        <!--    $VIRTUAL_TOMCAT_HOME/conf/alfresco-jmxrmi.password and    -->
-        <!--    $VIRTUAL_TOMCAT_HOME/conf/alfresco-jmxrmi.access          -->
-        <!--    should have the same data as the corresponding files      -->
-        <!--    contained here within the Alfresco webapp server.         -->
-        <!--    By default, they do; however, if you change the password  -->
-        <!--    file on one server, be sure to change it on the other.    -->
-        <!--                                                              -->
-        <!-- WARNING:                                                     -->
-        <!--    For security, be certain that *only* the uid under which  -->
-        <!--    the servers run have read access to the password files    -->
-        <!--    (e.g.:  under Unix, chmod them to "400").                 -->
-
-        <property name="passwordFile"
-                  value="${alfresco.jmx.dir}/alfresco-jmxrmi.password"/>
-
-        <property name="accessFile"
-                  value="${alfresco.jmx.dir}/alfresco-jmxrmi.access"/>
-    </bean>
-
     <!--
          http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module#log4j.properties
     -->
@@ -465,11 +427,9 @@
                 <value>alfresco.messages.schema-update</value>
                 <value>alfresco.messages.webdav-messages</value>
                 <value>alfresco.messages.copy-service</value>
-                <value>alfresco.messages.avm-messages</value>
                 <value>alfresco.messages.content-filter-languages</value>
                 <value>alfresco.messages.jbpm-engine-messages</value>
                 <value>alfresco.messages.activiti-engine-messages</value>
-                <value>alfresco.messages.wdr-messages</value>
                 <value>alfresco.messages.subscription-service</value>
                 <value>alfresco.messages.replication</value>
                 <value>alfresco.messages.categories</value>
@@ -792,14 +752,12 @@
                 <!-- Content models -->
                 <value>alfresco/model/contentModel.xml</value>
                 <value>alfresco/model/bpmModel.xml</value>
-                <value>alfresco/model/wcmModel.xml</value>
                 <value>alfresco/model/forumModel.xml</value>
                 <value>alfresco/model/imapModel.xml</value>
                 <value>alfresco/model/transferModel.xml</value>
 
                 <!-- Content models -->
                 <value>alfresco/model/applicationModel.xml</value>
-                <value>alfresco/model/wcmAppModel.xml</value>
 
                 <!-- Implementation models -->
                 <value>org/alfresco/repo/action/actionModel.xml</value>
@@ -851,7 +809,6 @@
                 <value>alfresco/messages/email-server-model</value>
                 <value>alfresco/messages/data-list-model</value>
                 <value>alfresco/messages/transfer-model</value>
-                <value>alfresco/messages/wcmapp-model</value>
                 <value>alfresco/messages/publishing-model</value>
                 <value>alfresco/messages/site-model</value>
             </list>
@@ -1240,24 +1197,7 @@
       </property>
    </bean>
    
-   <!-- Sparta: remove WCM/AVM
-   <bean id="avmLuceneIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.avmLuceneIndexerAndSearcherFactory</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
-            <value>org.alfresco.repo.search.impl.lucene.LuceneConfig</value>
-         </list>
-      </property>
-   </bean>
-   -->
-   
-     <bean id="admLuceneIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory" depends-on="Search" >
+   <bean id="admLuceneIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory" depends-on="Search" >
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
       </property>
@@ -1343,22 +1283,6 @@
          </list>
       </property>
    </bean>
-   
-   <!-- Sparta: remove WCM/AVM
-   <bean id="avmIndexRecoveryComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
-      <property name="sourceApplicationContextFactory">
-         <ref bean="Search" />
-      </property>
-      <property name="sourceBeanName">
-         <value>search.avmIndexRecoveryComponent</value>
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.node.index.IndexRecovery</value>
-         </list>
-      </property>
-   </bean>
-   -->
    
    <!-- only required for lucene index test support -->
    

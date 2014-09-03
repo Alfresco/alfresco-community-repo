@@ -63,7 +63,6 @@ public interface AclCrudDAO
     public void updateAcl(AclUpdateEntity entity);
     public void deleteAcl(long aclEntityId);
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults);
-    public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults);
     //
     // Access Control Entry (ACE)
     //

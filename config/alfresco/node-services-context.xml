@@ -76,7 +76,6 @@
          <map>
             <entry key="workspace"><ref bean="mtAwareNodeService"></ref></entry>
             <entry key="versionStore"><ref bean="versionNodeService"></ref></entry>
-            <entry key="avm"><ref bean="avmNodeService"/></entry>
          </map>
       </property>
    </bean>
@@ -167,22 +166,6 @@
         <property name="methodSecurity" ref="ArchivedNodes_security_listArchivedNodes"/>
    </bean>  
 
-   <!-- AVMNodeService -->
-   <bean id="avmNodeService" class="org.alfresco.repo.avm.AVMNodeService" init-method="init">
-      <property name="dictionaryService">
-         <ref bean="dictionaryService"/>
-      </property>
-      <property name="avmService">
-         <ref bean="avmService"/>
-      </property>
-      <property name="policyComponent">
-         <ref bean="policyComponent"/>
-      </property>
-      <property name="tenantService">
-         <ref bean="tenantService"/>
-      </property>
-   </bean>
-
    <!-- ensures model-compliance of node structures -->
    <bean id="integrityChecker" class="org.alfresco.repo.node.integrity.IntegrityChecker" init-method="init">
       <property name="policyComponent" ref="policyComponent"/>
@@ -272,7 +255,6 @@
       <property name="permissionService" ref="permissionServiceImpl" />
       <property name="policyComponent" ref="policyComponent"/>
       <property name="storeArchiveMap" ref="storeArchiveMap"/>
-      <property name="avmNodeService" ref="avmNodeService"/>
       <property name="nodeIndexer" ref="nodeIndexer"/>
       <property name="policyBehaviourFilter" ref="policyBehaviourFilter" />
       <property name="tenantService" ref="tenantService"/>

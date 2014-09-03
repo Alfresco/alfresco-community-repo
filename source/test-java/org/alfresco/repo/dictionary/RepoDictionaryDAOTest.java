@@ -137,7 +137,6 @@ public class RepoDictionaryDAOTest extends TestCase
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
         bootstrapModels.add("alfresco/model/systemModel.xml");
         bootstrapModels.add("alfresco/model/contentModel.xml");
-        bootstrapModels.add("alfresco/model/wcmModel.xml");
         bootstrapModels.add("alfresco/model/applicationModel.xml");
         
         bootstrapModels.add("org/alfresco/repo/security/authentication/userModel.xml");
@@ -423,7 +422,6 @@ public class RepoDictionaryDAOTest extends TestCase
         models.add("alfresco/model/dictionaryModel.xml");
         models.add("alfresco/model/systemModel.xml");
         models.add("alfresco/model/contentModel.xml");
-        models.add("alfresco/model/wcmModel.xml");
         models.add("alfresco/model/applicationModel.xml");
         models.add("org/alfresco/repo/security/authentication/userModel.xml");
         models.add("org/alfresco/repo/action/actionModel.xml");

@@ -50,11 +50,6 @@ public interface AuthorityService
     public static String ZONE_APP_DEFAULT = "APP.DEFAULT";
     
     /**
-     * The WCM application zone.
-     */
-    public static String ZONE_APP_WCM = "APP.WCM";
-    
-    /**
      * The SHARE application zone.
      */
     public static String ZONE_APP_SHARE = "APP.SHARE";

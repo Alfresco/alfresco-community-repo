@@ -151,15 +151,13 @@ public interface AclDAO
     
     public Acl getAclCopy(Long toCopy, Long toInheritFrom, ACLCopyMode mode);
     
-    public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults);
-    
     public List<Long> getADMNodesByAcl(long aclEntityId, int maxResults);
     
     public Acl createLayeredAcl(Long indirectedAcl);
     
     public void renameAuthority(String before, String after);
     
-    public void deleteAclForNode(long aclId, boolean isAVMNode);
+    public void deleteAclForNode(long aclId);
 
     /**
      * @param inheritedAclId

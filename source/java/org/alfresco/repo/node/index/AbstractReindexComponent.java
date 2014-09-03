@@ -396,13 +396,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             Iterator<StoreRef> storeRefsIterator = storeRefs.iterator();
             while (storeRefsIterator.hasNext())
             {
-                // Remove AVM stores
-                StoreRef storeRef = storeRefsIterator.next();
-            }
-            
-            storeRefsIterator = storeRefs.iterator();
-            while (storeRefsIterator.hasNext())
-            {
                 // Remove stores to ignore
                 StoreRef storeRef = storeRefsIterator.next();
                 if (isIgnorableStore(storeRef))

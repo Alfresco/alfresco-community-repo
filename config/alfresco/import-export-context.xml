@@ -187,14 +187,6 @@
       </property>
     </bean>
     
-    <bean id="avmZipExporterService" class="org.alfresco.repo.exporter.AVMZipExporterServiceImpl">
-       <property name="avmService" ref="AVMService"/>
-    </bean>
-
-    <bean id="avmZipImporter" class="org.alfresco.repo.importer.AVMZipImporter">
-       <property name="avmService" ref="AVMService"/>
-    </bean>
-
     <!-- System Info Importer -->
     
     <bean id="systemInfoImporter" class="org.alfresco.repo.importer.system.SystemInfoBootstrap" abstract="true">
@@ -247,30 +239,6 @@
         </property>
         -->
    </bean>
-
-    <bean id="avmZipBootstrap" class="org.alfresco.repo.importer.AVMZipBootstrap" abstract="true">
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="retryingTransactionHelper">
-            <ref bean="storeImporterTransactionHelper"/>
-        </property>
-        <property name="authenticationContext">
-            <ref bean="authenticationContext" />
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService"/>
-        </property>
-        <property name="avmZipImporter">
-            <ref bean="avmZipImporter"/>
-        </property>
-        <property name="avmService">
-            <ref bean="AVMService"/>
-        </property>
-        <property name="allowWrite">
-            <value>${server.transaction.allow-writes}</value>
-        </property>
-    </bean>
 
     <bean id="storeImporterViews" class="org.alfresco.repo.importer.ImporterBootstrapViews" abstract="true">
     </bean>
@@ -378,8 +346,6 @@
                 <prop key="spaces.templates.rss.childname">${spaces.templates.rss.childname}</prop>
                 <prop key="spaces.savedsearches.childname">${spaces.savedsearches.childname}</prop>
                 <prop key="spaces.scripts.childname">${spaces.scripts.childname}</prop>
-                <prop key="spaces.wcm.childname">${spaces.wcm.childname}</prop>
-                <prop key="spaces.wcm_content_forms.childname">${spaces.wcm_content_forms.childname}</prop>
                 <prop key="spaces.content_forms.childname">${spaces.content_forms.childname}</prop>
                 <prop key="spaces.user_homes.childname">${spaces.user_homes.childname}</prop>
                 <prop key="spaces.sites.childname">${spaces.sites.childname}</prop>
@@ -400,7 +366,6 @@
                 <prop key="spaces.scheduled_actions.childname">${spaces.scheduled_actions.childname}</prop>
                 <prop key="spaces.rendition.rendering_actions.childname">${spaces.rendition.rendering_actions.childname}</prop>
                 <prop key="spaces.replication.replication_actions.childname">${spaces.replication.replication_actions.childname}</prop>
-                <prop key="spaces.wcm_deployed.childname">${spaces.wcm_deployed.childname}</prop>
                 <prop key="spaces.publishing.root.childname">${spaces.publishing.root.childname}</prop>
                 <prop key="spaces.nodetemplates.childname">${spaces.nodetemplates.childname}</prop>
                 <prop key="spaces.shared.childname">${spaces.shared.childname}</prop>
@@ -704,12 +669,6 @@
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 </props>
             </list>
-        </property>
-    </bean>
-
-    <bean id="sitesAVMZipBootstrap-base" parent="avmZipBootstrap" abstract="true">
-        <property name="avmRoot">
-            <value>sitestore:/</value>
         </property>
     </bean>
 

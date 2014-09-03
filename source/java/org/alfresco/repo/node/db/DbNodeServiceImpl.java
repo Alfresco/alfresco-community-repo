@@ -70,7 +70,6 @@ import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -106,7 +105,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private NodeDAO nodeDAO;
     private PermissionService permissionService;
     private StoreArchiveMap storeArchiveMap;
-    private NodeService avmNodeService;
     private NodeIndexer nodeIndexer;
     private BehaviourFilter policyBehaviourFilter;
     private boolean enableTimestampPropagation;
@@ -134,11 +132,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     public void setStoreArchiveMap(StoreArchiveMap storeArchiveMap)
     {
         this.storeArchiveMap = storeArchiveMap;
-    }
-
-    public void setAvmNodeService(NodeService avmNodeService)
-    {
-        this.avmNodeService = avmNodeService;
     }
 
     /**
@@ -234,9 +227,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
             }
             storeRefs.add(storeRef);
         }
-        // Now get the AVMStores.
-        List<StoreRef> avmStores = avmNodeService.getStores();
-        storeRefs.addAll(avmStores);
         // Return them all.
         return storeRefs;
     }

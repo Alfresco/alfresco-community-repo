@@ -59,7 +59,6 @@
     
     <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneIndexerAndSearcherFactory"/>
     <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneUnIndexedIndexerAndSearcherFactory"/>
-    <alias name="search.indexerAndSearcherFactory" alias="search.avmLuceneIndexerAndSearcherFactory"/>
     
     <bean id="search.categoryService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
         <property name="proxyInterface">
@@ -74,9 +73,6 @@
                     <ref bean="search.luceneCategoryService"></ref>
                 </entry>
                 <entry key="versionStore">
-                    <ref bean="search.luceneCategoryService"></ref>
-                </entry>
-                <entry key="avm">
                     <ref bean="search.luceneCategoryService"></ref>
                 </entry>
             </map>
@@ -109,8 +105,6 @@
          class="org.alfresco.repo.search.impl.noindex.NoIndexIndexRecovery" >
     </bean>
    
-   <alias name="search.indexRecoveryComponent" alias="search.avmIndexRecoveryComponent"/>
-	
 	<bean id="search.indexConfigurationChecker" class="org.alfresco.repo.admin.DummyIndexConfigurationCheckerImpl">
     </bean>
     

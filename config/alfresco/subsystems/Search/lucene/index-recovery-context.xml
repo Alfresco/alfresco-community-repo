@@ -78,24 +78,6 @@
       </property>
    </bean>
 	
-	<!-- Sparta: remove WCM/AVM
-   <bean
-         id="search.avmIndexRecoveryComponent"
-         class="org.alfresco.repo.node.index.AVMFullIndexRecoveryComponent"
-         parent="search.indexRecoveryComponentBase">
-      <property name="recoveryMode">
-          <value>${index.recovery.mode}</value>
-      </property>
-	   <property name="avmService">
-          <ref bean="avmService" />
-      </property>
-	   <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-		   <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
-      </property>
-   </bean>
-   -->
-	
-
    <!-- Index tracking -->
    <!--
       This is the default index tracker component.  It is used during bootstrap when incremental recovery
@@ -153,52 +135,6 @@
         </property>
     </bean>
 
-    <!--===========================-->
-    <!-- AVM (WCM) index tracking  -->
-    <!--===========================-->
-    
-    <!-- Sparta: remove WCM/AVM
-    <bean
-          id="search.avmIndexTrackerComponent"
-          class="org.alfresco.repo.node.index.AVMRemoteSnapshotTracker"
-          parent="search.indexRecoveryComponentBase">
-	   <property name="avmService">
-          <ref bean="avmService" />
-      </property>
-	   <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
-		   <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
-      </property>
-    </bean>
-
-    <bean id="search.baseAvmIndexJobDetail" abstract="true" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass">
-            <value>org.alfresco.repo.node.index.NoOpIndexRecoveryJob</value>
-        </property>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="indexRecoveryComponent">
-                    <ref bean="search.avmIndexTrackerComponent" />
-                </entry>
-            </map>
-        </property>
-    </bean>
-    
-    <bean id="search.avmIndexJobDetail" parent="search.baseAvmIndexJobDetail"/>
-    
-    <bean id="search.avmIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
-        <property name="jobDetail" ref="search.avmIndexJobDetail"/>
-        <property name="scheduler">
-            <ref bean="searchSchedulerFactory" />
-        </property>
-        <property name="cronExpression">
-            <value>${index.tracking.avm.cronExpression}</value>
-        </property>
-        <property name="startDelayMinutes">
-            <value>${system.cronJob.startDelayMinutes}</value>
-        </property>
-    </bean>
-    -->
-    
    <!-- Failed FTS reindexer -->
    <!--
       Bean that triggers full text indexing for content that was previously flagged with:

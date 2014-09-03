@@ -767,7 +767,6 @@ public class AclDAOImpl implements AclDAO
                     
                     // Retrieve dependent nodes
                     List<Long> nodeIds = aclCrudDAO.getADMNodesByAcl(aclId, -1);
-                    nodeIds.addAll(aclCrudDAO.getAVMNodesByAcl(aclId, -1));
                     
                     if (nodeIds.size() > 0)
                     {
@@ -853,7 +852,7 @@ public class AclDAOImpl implements AclDAO
      * {@inheritDoc}
      */
     @Override
-    public void deleteAclForNode(long aclId, boolean isAVMNode)
+    public void deleteAclForNode(long aclId)
     {
         Acl dbAcl = getAcl(aclId);
         if (dbAcl.getAclType() == ACLType.DEFINING)
@@ -868,19 +867,12 @@ public class AclDAOImpl implements AclDAO
             Long defining = dbAcl.getInheritsFrom();
             if (aclCrudDAO.getAcl(defining) == null)
             {
-                if (! isAVMNode)
+                // ADM
+                if (getADMNodesByAcl(aclId, 1).size() == 0)
                 {
-                    // ADM
-                    if (getADMNodesByAcl(aclId, 1).size() == 0)
-                    {
-                        // delete acl members & acl
-                        aclCrudDAO.deleteAclMembersByAcl(aclId);
-                        aclCrudDAO.deleteAcl(aclId);
-                    }
-                }
-                else
-                {
-                    // TODO: AVM
+                    // delete acl members & acl
+                    aclCrudDAO.deleteAclMembersByAcl(aclId);
+                    aclCrudDAO.deleteAcl(aclId);
                 }
             }
         }
@@ -1542,15 +1534,6 @@ public class AclDAOImpl implements AclDAO
             return null;
         }
         return aclCrudDAO.getAcl(id);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults)
-    {
-        return aclCrudDAO.getAVMNodesByAcl(aclEntityId, maxResults);
     }
 
     /**

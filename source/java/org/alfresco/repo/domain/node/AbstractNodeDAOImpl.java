@@ -2024,7 +2024,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Remove ACLs
         if (deleteAcl && aclId != null)
         {
-            aclDAO.deleteAclForNode(aclId, false);
+            aclDAO.deleteAclForNode(aclId);
         }
         
         // The node has been cleaned up.  Now we recreate the node for index tracking purposes.

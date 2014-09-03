@@ -424,15 +424,6 @@
         <property name="checkOutCheckInService" ref="CheckOutCheckInService" />
     </bean>
     
-    <bean id="copy-to-web-project" class="org.alfresco.repo.action.executer.CopyToWebProjectActionExecuter" parent="action-executer">
-        <property name="nodeService">
-            <ref bean="NodeService" />
-        </property>
-        <property name="crossRepositoryCopyService">
-            <ref bean="CrossRepositoryCopyService" />
-        </property>
-    </bean>
-
     <bean id="move" class="org.alfresco.repo.action.executer.MoveActionExecuter" parent="action-executer">
         <property name="nodeService" ref="NodeService" />
         <property name="fileFolderService">
@@ -621,50 +612,6 @@
         <property name="publicAction">
             <value>false</value>
         </property>
-    </bean>
-    
-    <!-- deprecated - see "wcm-submit" (wcm-services-context.xml) -->
-
-    <!-- deprecated - note: still used by Web-Client (*Deploy*) -->
-    <bean id="avm-deploy-website" class="org.alfresco.repo.avm.actions.AVMDeployWebsiteAction" parent="action-executer">
-      
-      <!--  Run avm-deploy-website action on the deployment queue -->
-      <property name="queueName">
-          <value>deployment</value>
-      </property>    
-      <property name="deploymentService">
-            <ref bean="DeploymentService"/>
-      </property>
-      <property name="transactionService">
-            <ref bean="TransactionService"/>
-      </property>
-      <property name="contentService">
-          <ref bean="ContentService"/>
-      </property>
-      <property name="nodeService">
-          <ref bean="NodeService"/>
-      </property>
-      <property name="publicAction">
-            <value>false</value>
-      </property>
-      <property name="defaultRemoteUsername">
-         <value>admin</value>
-      </property>
-      <property name="defaultRemotePassword">
-         <value>admin</value>
-      </property>
-      <property name="defaultAlfrescoRmiPort">
-         <value>${alfresco.rmi.services.port}</value>
-      </property>
-      <property name="defaultReceiverRmiPort">
-         <value>44100</value>
-      </property>
-      <property name="defaultTargetName">
-         <value>default</value>
-      </property>
-      <property name="delay">
-         <value>30</value>
-      </property>
     </bean>
     
     <bean id="count-children" class="org.alfresco.repo.action.executer.CountChildrenActionExecuter" parent="action-executer">

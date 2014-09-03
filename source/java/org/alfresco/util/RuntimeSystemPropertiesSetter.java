@@ -107,13 +107,6 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
             //
             //     $TOMCAT_HOME/webapps/alfresco/WEB-INF/classes/alfresco/alfresco-jmxrmi.password
             // or: $TOMCAT_HOME/shared/classes/alfresco/alfresco-jmxrmi.password
-            //
-            // However, if WCM isn't installed there won't be a JMX password file.
-            // Therefore, while it's important to choke on bad paths, a missing
-            // password file must be acceptable -- it just means that WCM virtualization
-            // will be disabled later when org.alfresco.mbeans.VirtServerRegistry
-            // refuses to bring up the serverConnector bean.
-
             path = this.resolver.getResource("classpath:alfresco/alfresco-jmxrmi.password").getFile().getCanonicalFile();
         }
         catch (Exception e ) 

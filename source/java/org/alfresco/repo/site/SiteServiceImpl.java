@@ -120,7 +120,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
- * Site Service Implementation. Also bootstraps the site AVM and DM stores.
+ * Site Service Implementation. Also bootstraps the site DM stores.
  * 
  * @author Roy Wetherall
  */
@@ -173,7 +173,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private FileFolderService fileFolderService;
     private SearchService searchService;
     private NamespaceService namespaceService;
-    private PreferenceService preferenceService;
     private PermissionService permissionService;
     private ActivityService activityService;
     private PersonService personService;
@@ -205,9 +204,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         this.sitesXPath = sitesXPath;
     }
     
+    @Deprecated
     public void setPreferenceService(PreferenceService preferenceService)
     {
-        this.preferenceService = preferenceService;
+        // Never used
     }
 
     /**

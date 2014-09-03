@@ -45,10 +45,6 @@ public class AlfrescoConfigSection extends ConfigSection {
   
   private DiskInterface m_repoDiskInterface;
   
-  // AVM filesystem interface
-  
-  private DiskInterface m_avmDiskInterface;
-  
   // Main authentication service, public API
   
   private AuthenticationService m_authenticationService;
@@ -78,7 +74,6 @@ public class AlfrescoConfigSection extends ConfigSection {
     // Copy values from the server configuration bean
 
     m_repoDiskInterface = config.getRepoDiskInterface();
-    m_avmDiskInterface  = config.getAvmDiskInterface();
     
     m_authenticationService = config.getAuthenticationService();
     m_authenticationComponent = config.getAuthenticationComponent();
@@ -100,16 +95,6 @@ public class AlfrescoConfigSection extends ConfigSection {
   public final DiskInterface getRepoDiskInterface()
   {
       return m_repoDiskInterface;
-  }
-  
-  /**
-   * Return the disk interface to be used to create AVM filesystem shares
-   * 
-   * @return DiskInterface
-   */
-  public final DiskInterface getAvmDiskInterface()
-  {
-      return m_avmDiskInterface;
   }
   
   /**

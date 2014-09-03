@@ -43,13 +43,6 @@
         <result property="rootDir" column="rootDir" jdbcType="VARCHAR" javaType="java.lang.String"/>
     </resultMap>
     
-    <resultMap type="java.util.HashMap" id="result_avmLock">
-        <result property="wpStoreId" column="wpStoreId" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="relPath" column="relPath" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="avmStore" column="avmStore" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="owner1" column="owner1" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
-    
     <resultMap type="java.util.HashMap" id="result_PBB">
         <result property="componentName" column="componentName" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="propName" column="propName" jdbcType="VARCHAR" javaType="java.lang.String"/>
@@ -148,29 +141,10 @@
     <!-- Selects        -->
     <!--                -->
 
-    <select id="select_avmMaxNodeId" resultType="java.lang.Long">
-        select max(id) from avm_nodes
-    </select>
-
     <select id="select_admMaxNodeId" resultType="java.lang.Long">
         select max(id) from alf_node
     </select>
     
-    <select id="select_avmNodesWithOldContentProperties" parameterType="Ids" resultType="java.lang.Long">
-        select
-            id
-        from
-            avm_nodes
-        where
-            id &gt;= #{idOne}
-            and id &lt; #{idTwo}
-            and class_type = 'plainfile'
-            and content_url is not null
-            and content_url not like 'id:%' <include refid="alfresco.util.escape"/>
-        order by
-            id ASC
-    </select>
-
     <select id="select_admOldContentProperties" parameterType="Ids" resultMap="result_admOldContentProp">
         <![CDATA[
         select

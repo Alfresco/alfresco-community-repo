@@ -49,15 +49,15 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * Where {module.id} is whatever value is set within the AMP's module.properties file. For details, see: <a
  * href='http://wiki.alfresco.com/wiki/Developing_an_Alfresco_Module'>Developing an Alfresco Module</a>
  * <p>
- * For example, if {module.id} is "org.alfresco.module.avmCompare", then within your source code you'll have:
+ * For example, if {module.id} is "org.alfresco.module.someModule", then within your source code you'll have:
  * 
  * <pre>
- * config / alfresco / module / org.alfresco.module.avmCompare / log4j.properties
+ * config / alfresco / module / org.alfresco.module.someModule / log4j.properties
  * </pre>
  * 
  * This would be deployed to:
  * <pre>
- * WEB - INF / classes / alfresco / module / org.alfresco.module.avmCompare / log4j.properties
+ * WEB - INF / classes / alfresco / module / org.alfresco.module.someModule / log4j.properties
  * </pre>
  */
 public class Log4JHierarchyInit implements ApplicationContextAware
@@ -85,29 +85,22 @@ public class Log4JHierarchyInit implements ApplicationContextAware
         }
     }
     
-    
-
-    /* (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.resolver = applicationContext;
     }
 
-    @SuppressWarnings("unchecked")
     public void init()
     {
         importLogSettings();
     }
 
-    @SuppressWarnings("unchecked")
     private void importLogSettings()
     {
         try
         {
             // Get the PropertyConfigurator
-            Class clazz = Class.forName("org.apache.log4j.PropertyConfigurator");
+            Class<?> clazz = Class.forName("org.apache.log4j.PropertyConfigurator");
             Method method = clazz.getMethod("configure", URL.class);
             // Import using this method
             for (String url : extraLog4jUrls)

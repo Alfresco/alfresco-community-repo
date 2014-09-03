@@ -102,6 +102,43 @@
                                     <excludes>**/ROOT/**</excludes>
                                     <outputDirectory>${project.build.directory}/binaries-osx-x64</outputDirectory>
                                 </artifactItem>
+								<!-- LibreOffice -->
+                                <artifactItem>
+                                    <groupId>org.libreoffice</groupId>
+                                    <artifactId>libreoffice-dist</artifactId>
+                                    <version>4.2.5-alfresco</version>
+                                    <classifier>linux</classifier>
+                                    <type>tgz</type>
+                                    <excludes>**/ROOT/**</excludes>									
+                                    <outputDirectory>${project.build.directory}/binaries-linux-x64</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.libreoffice</groupId>
+                                    <artifactId>libreoffice-dist</artifactId>
+                                    <version>4.2.5-alfresco</version>
+                                    <classifier>osx</classifier>
+                                    <type>tgz</type>
+                                    <excludes>**/ROOT/**</excludes>									
+                                    <outputDirectory>${project.build.directory}/binaries-osx-x64</outputDirectory>
+                                </artifactItem>					
+                                <artifactItem>
+                                    <groupId>org.libreoffice</groupId>
+                                    <artifactId>libreoffice-dist</artifactId>
+                                    <version>4.2.5-alfresco</version>
+                                    <classifier>windows</classifier>
+                                    <type>tgz</type>
+                                    <excludes>**/ROOT/**</excludes>
+                                    <outputDirectory>${project.build.directory}/binaries-windows-x64</outputDirectory>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.libreoffice</groupId>
+                                    <artifactId>libreoffice-dist</artifactId>
+                                    <version>4.2.5-alfresco</version>
+                                    <classifier>windows</classifier>
+                                    <type>tgz</type>
+                                    <excludes>**/ROOT/**</excludes>
+                                    <outputDirectory>${project.build.directory}/binaries-windows</outputDirectory>
+                                </artifactItem>								
                             </artifactItems>
                         </configuration>
                     </execution>

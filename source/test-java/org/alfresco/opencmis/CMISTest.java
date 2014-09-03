@@ -48,6 +48,10 @@ import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
+import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.audit.AuditServiceImpl;
+import org.alfresco.repo.audit.UserAuditFilter;
+import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -68,6 +72,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
@@ -97,6 +102,7 @@ import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
 import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.Action;
+import org.apache.chemistry.opencmis.commons.enums.ChangeType;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
@@ -144,6 +150,7 @@ public class CMISTest
     private TaggingService taggingService;
     private NamespaceService namespaceService;
     private AuthorityService authorityService;
+    private AuditModelRegistryImpl auditSubsystem;
     private PermissionService permissionService;
 	private DictionaryDAO dictionaryDAO;
     private CMISDictionaryService cmisDictionaryService;
@@ -314,6 +321,7 @@ public class CMISTest
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
         this.nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         this.authorityService = (AuthorityService)ctx.getBean("AuthorityService");
+        this.auditSubsystem = (AuditModelRegistryImpl) ctx.getBean("Audit");
         this.permissionService = (PermissionService) ctx.getBean("permissionService");
     	this.dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
     	this.cmisDictionaryService = (CMISDictionaryService)ctx.getBean("OpenCMISDictionaryService1.1");
@@ -2299,6 +2307,216 @@ public class CMISTest
 			}
 		}, "user2", "tenant2");
 	}
+    
+    /**
+     * MNT-11726: Test that {@link CMISChangeEvent} contains objectId of node in short form (without StoreRef).
+     */
+    @Test
+    public void testCMISChangeLogObjectIds() throws Exception
+    {
+        // setUp audit subsystem
+        setupAudit();
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        try
+        {
+            final String changeToken = withCmisService(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertNotNull(repositories);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.iterator().next();
+
+                    return repo.getLatestChangeLogToken();
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                    // perform CREATED, UPDATED, SECURITY, DELETED CMIS change type actions
+                    String folder = GUID.generate();
+                    FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folder, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folder);
+                    assertNotNull(folderInfo);
+
+                    String content = GUID.generate();
+                    FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), content, ContentModel.TYPE_CONTENT);
+                    assertNotNull(document);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, content);
+
+                    permissionService.setPermission(document.getNodeRef(), "SomeAuthority", PermissionService.EXECUTE_CONTENT, true);
+
+                    fileFolderService.delete(document.getNodeRef());
+                    fileFolderService.delete(folderInfo.getNodeRef());
+
+                    return null;
+                }
+            });
+            
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertNotNull(repositories);
+                    assertTrue(repositories.size() > 0);
+                    String repositoryId = repositories.iterator().next().getId();
+
+                    ObjectList changes = cmisService.getContentChanges(repositoryId, new Holder<String>(changeToken), Boolean.TRUE, null, Boolean.FALSE, Boolean.FALSE, BigInteger.valueOf(1000), null);
+
+                    for (ObjectData od : changes.getObjects())
+                    {
+                        ChangeType changeType = od.getChangeEventInfo().getChangeType();
+                        Object objectId = od.getProperties().getProperties().get("cmis:objectId").getValues().get(0);
+                        
+                        assertFalse("CMISChangeEvent " + changeType + " should store short form of objectId " + objectId, 
+                                objectId.toString().contains(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.toString()));
+                    }
+
+                    return null;
+                }
+            }, CmisVersion.CMIS_1_1);
+        }
+        finally
+        {
+            auditSubsystem.destroy();
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    private void setupAudit()
+    {
+        UserAuditFilter userAuditFilter = new UserAuditFilter();
+        userAuditFilter.setUserFilterPattern("System;.*");
+        userAuditFilter.afterPropertiesSet();
+        AuditComponent auditComponent = (AuditComponent) ctx.getBean("auditComponent");
+        auditComponent.setUserAuditFilter(userAuditFilter);
+        AuditServiceImpl auditServiceImpl = (AuditServiceImpl) ctx.getBean("auditService");
+        auditServiceImpl.setAuditComponent(auditComponent);
+        
+        RetryingTransactionCallback<Void> initAudit = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Exception
+            {
+                auditSubsystem.stop();
+                auditSubsystem.setProperty("audit.enabled", "true");
+                auditSubsystem.setProperty("audit.cmischangelog.enabled", "true");
+                auditSubsystem.start();
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(initAudit, false, true); 
+    }
+
+    /**
+     * MNT-11727: move and rename operations should be shown as an UPDATE in the CMIS change log
+     */
+    @Test
+    public void testMoveRenameWithCMISshouldBeAuditedAsUPDATE() throws Exception
+    {
+        // setUp audit subsystem
+        setupAudit();
+
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            assertTrue("Audit is not enabled", auditSubsystem.isAuditEnabled());
+            assertNotNull("CMIS audit is not enabled", auditSubsystem.getAuditApplicationByName("CMISChangeLog"));
+
+            NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+            String folder = GUID.generate();
+            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folder, ContentModel.TYPE_FOLDER);
+
+            final String actualToken = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
+            {
+                public String execute() throws Exception
+                {
+                    return cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken();
+                }
+            }, true, false);
+
+            String content = GUID.generate();
+            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), content, ContentModel.TYPE_CONTENT);
+            assertNotNull(document);
+            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, content);
+
+            Holder<String> changeLogToken = new Holder<String>();
+            changeLogToken.setValue(actualToken);
+            ObjectList changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            List<ObjectData> events = changeLog.getObjects();
+            int count = events.size();
+            // it should be 3 entries: 1 for previous folder create, 1 new CREATE (for document create)
+            // and 1 NEW UPDATE
+            assertEquals(3, count);
+
+            assertEquals(events.get(0).getProperties().getPropertyList().get(0).getValues().get(0), folderInfo.getNodeRef().getId());
+            assertEquals(events.get(0).getChangeEventInfo().getChangeType(), ChangeType.CREATED);
+
+            assertTrue(((String) events.get(1).getProperties().getPropertyList().get(0).getValues().get(0)).contains(document.getNodeRef().getId()));
+            assertEquals(events.get(1).getChangeEventInfo().getChangeType(), ChangeType.CREATED);
+
+            assertTrue(((String) events.get(2).getProperties().getPropertyList().get(0).getValues().get(0)).contains(document.getNodeRef().getId()));
+            assertEquals(events.get(2).getChangeEventInfo().getChangeType(), ChangeType.UPDATED);
+
+            // test rename
+            final String actualToken2 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
+            {
+                public String execute() throws Exception
+                {
+                    return cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken();
+                }
+            }, true, false);
+            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, content + "-updated");
+
+            changeLogToken = new Holder<String>();
+            changeLogToken.setValue(actualToken2);
+            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            events = changeLog.getObjects();
+            count = events.size();
+            assertEquals(2, count);
+            assertEquals("Rename operation should be shown as an UPDATE in the CMIS change log", events.get(1).getChangeEventInfo().getChangeType(), ChangeType.UPDATED);
+
+            // test move
+            String targetFolder = GUID.generate();
+            FileInfo targetFolderInfo = fileFolderService.create(companyHomeNodeRef, targetFolder, ContentModel.TYPE_FOLDER);
+
+            final String actualToken3 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
+            {
+                public String execute() throws Exception
+                {
+                    return cmisConnector.getRepositoryInfo(CmisVersion.CMIS_1_1).getLatestChangeLogToken();
+                }
+            }, true, false);
+            nodeService.moveNode(document.getNodeRef(), targetFolderInfo.getNodeRef(), ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+
+            changeLogToken = new Holder<String>();
+            changeLogToken.setValue(actualToken3);
+            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            events = changeLog.getObjects();
+            count = events.size();
+            assertEquals(2, count);
+            assertEquals("Move operation should be shown as an UPDATE in the CMIS change log", events.get(1).getChangeEventInfo().getChangeType(), ChangeType.UPDATED);
+        }
+        finally
+        {
+            auditSubsystem.destroy();
+            AuthenticationUtil.popAuthentication();
+        }
+    }
     
     /**
      * MNT-11304: Test that Alfresco has no default boundaries for decimals

@@ -31,7 +31,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.alfresco.model.ContentModel;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -133,16 +132,6 @@ public class XMLUtil
       return XMLUtil.parse(in);
    }
 
-   /** utility function for parsing xml */
-   public static Document parse(final int version, 
-                                final String path,
-                                final AVMService avmService)
-      throws SAXException,
-      IOException
-   {
-      return XMLUtil.parse(avmService.getFileInputStream(version, path));
-   }
-   
    /** utility function for parsing xml */
    public static Document parse(final File source)
       throws SAXException,

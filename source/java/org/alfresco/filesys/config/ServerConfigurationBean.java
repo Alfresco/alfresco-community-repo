@@ -40,8 +40,6 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.filesys.AbstractServerConfigurationBean;
 import org.alfresco.filesys.alfresco.AlfrescoContext;
 import org.alfresco.filesys.alfresco.ExtendedDiskInterface;
-import org.alfresco.filesys.avm.AVMContext;
-import org.alfresco.filesys.avm.AVMDiskDriver;
 import org.alfresco.filesys.config.acl.AccessControlListBean;
 import org.alfresco.filesys.repo.BufferedContentDiskDriver;
 import org.alfresco.filesys.repo.ContentContext;
@@ -107,7 +105,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
     private FTPConfigBean ftpConfigBean;
     private NFSConfigBean nfsConfigBean;
     private List<DeviceContext> filesystemContexts;
-    private boolean avmAllStores;
     private SecurityConfigBean securityConfigBean;
     private CoreServerConfigBean coreServerConfigBean;
 
@@ -153,11 +150,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
         this.filesystemContexts = filesystemContexts;
     }
 
-    public void setAvmAllStores(boolean avmAllStores)
-    {
-        this.avmAllStores = avmAllStores;
-    }
-    
     public void setSecurityConfigBean(SecurityConfigBean securityConfigBean)
     {
         this.securityConfigBean = securityConfigBean;
@@ -1742,133 +1734,86 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
                     DiskSharedDevice filesys = null;
 
-                    if (filesystem instanceof AVMContext)
+                    // Create a new filesystem driver instance and register a context for
+                    // the new filesystem
+
+                    ExtendedDiskInterface filesysDriver = getRepoDiskInterface();
+                    ContentContext filesysContext = (ContentContext) filesystem;
+                    
+                    if(clusterConfigBean != null && clusterConfigBean.getClusterEnabled())
                     {
-                        // Create a new filesystem driver instance and register a context for
-                        // the new filesystem
-
-                        ExtendedDiskInterface filesysDriver = getAvmDiskInterface();
-                        DiskDeviceContext diskCtx = (DiskDeviceContext) filesystem;
-                        
-                        if(clusterConfigBean != null && clusterConfigBean.getClusterEnabled())
+                        if(logger.isDebugEnabled())
                         {
-                            if(logger.isDebugEnabled())
-                            {
-                                logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ diskCtx.getShareName());
-                            }
-                            GenericConfigElement hazelConfig = createClusterConfig("cifs.avm."+diskCtx.getShareName()); 
-                            HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
-                            hazel.initializeCache(hazelConfig, this);   
-                            diskCtx.setStateCache(hazel);
+                            logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ filesysContext.getShareName());
                         }
-                        else
-                        {
-                            // Check if the filesystem uses the file state cache, if so then add to the file state reaper
-                            StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                            standaloneCache.initializeCache( new GenericConfigElement( ""), this);
-                            diskCtx.setStateCache(standaloneCache);                  
-                        }
-                        
-                        if ( diskCtx.hasStateCache()) {
-                            
-                            // Register the state cache with the reaper thread
-                            
-                            fsysConfig.addFileStateCache( filesystem.getDeviceName(), diskCtx.getStateCache());
-                        }
-                        
-                        filesysDriver.registerContext(filesystem);
-
-                        // Create the shared filesystem
-
-                        filesys = new DiskSharedDevice(filesystem.getDeviceName(), filesysDriver, (AVMContext)filesystem);
-                        filesys.setConfiguration( this);
-                        // Start the filesystem
-
-                        ((AVMContext)filesystem).startFilesystem(filesys);
+                        GenericConfigElement hazelConfig = createClusterConfig("cifs.filesys."+filesysContext.getShareName()); 
+                        HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
+                        hazel.initializeCache(hazelConfig, this);   
+                        filesysContext.setStateCache(hazel);
                     }
                     else
                     {
-                        // Create a new filesystem driver instance and register a context for
-                        // the new filesystem
-
-                        ExtendedDiskInterface filesysDriver = getRepoDiskInterface();
-                        ContentContext filesysContext = (ContentContext) filesystem;
-                        
-                        if(clusterConfigBean != null && clusterConfigBean.getClusterEnabled())
-                        {
-                            if(logger.isDebugEnabled())
-                            {
-                                logger.debug("start hazelcast cache : " + clusterConfigBean.getClusterName() + ", shareName: "+ filesysContext.getShareName());
-                            }
-                            GenericConfigElement hazelConfig = createClusterConfig("cifs.filesys."+filesysContext.getShareName()); 
-                            HazelCastClusterFileStateCache hazel = new HazelCastClusterFileStateCache();
-                            hazel.initializeCache(hazelConfig, this);   
-                            filesysContext.setStateCache(hazel);
-                        }
-                        else
-                        {
-                            // Create state cache here and inject
-                            StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
-                            standaloneCache.initializeCache( new GenericConfigElement( ""), this);
-                            filesysContext.setStateCache(standaloneCache);
-                        }
-                        
-                        if ( filesysContext.hasStateCache()) {
-                            
-                            // Register the state cache with the reaper thread
-                            // has many side effects including initialisation of the cache    
-                            fsysConfig.addFileStateCache( filesystem.getDeviceName(), filesysContext.getStateCache());
-                            
-                            // Create the lock manager for the context.
-                            FileStateLockManager lockMgr = new FileStateLockManager(filesysContext.getStateCache());
-                            filesysContext.setLockManager(lockMgr); 
-                            filesysContext.setOpLockManager(lockMgr);
-                        }
-                        
-                        if ((!cifsConfigBean.getServerEnabled() && !ftpConfigBean.getServerEnabled())
-                                    && isContentDiskDriver2(filesysDriver))
-                        {
-                            ((ContentContext) filesystem).setDisableNodeMonitor(true);
-                        }
-                        
-                        filesysDriver.registerContext(filesystem);
-
-                        // Check if an access control list has been specified
-
-                        AccessControlList acls = null;
-                        AccessControlListBean accessControls = filesysContext.getAccessControlList();
-                        if (accessControls != null)
-                        {
-                            // Parse the access control list
-                            acls = accessControls.toAccessControlList(secConfig);
-                        }
-                        else if (secConfig.hasGlobalAccessControls())
-                        {
-
-                            // Use the global access control list for this disk share
-                            acls = secConfig.getGlobalAccessControls();
-                        }
-
-                        // Create the shared filesystem
-
-                        filesys = new DiskSharedDevice(filesystem.getDeviceName(), filesysDriver, filesysContext);
-                        filesys.setConfiguration( this);
-
-                        // Add any access controls to the share
-
-                        filesys.setAccessControlList(acls);
-
-
-                        
-                        // Check if change notifications should be enabled
-                        
-                        if ( filesysContext.getDisableChangeNotifications() == false)
-                            filesysContext.enableChangeHandler( true);
-                        
-                        // Start the filesystem
-
-                        filesysContext.startFilesystem(filesys);
+                        // Create state cache here and inject
+                        StandaloneFileStateCache standaloneCache = new StandaloneFileStateCache();
+                        standaloneCache.initializeCache( new GenericConfigElement( ""), this);
+                        filesysContext.setStateCache(standaloneCache);
                     }
+                    
+                    if ( filesysContext.hasStateCache()) {
+                        
+                        // Register the state cache with the reaper thread
+                        // has many side effects including initialisation of the cache    
+                        fsysConfig.addFileStateCache( filesystem.getDeviceName(), filesysContext.getStateCache());
+                        
+                        // Create the lock manager for the context.
+                        FileStateLockManager lockMgr = new FileStateLockManager(filesysContext.getStateCache());
+                        filesysContext.setLockManager(lockMgr); 
+                        filesysContext.setOpLockManager(lockMgr);
+                    }
+                    
+                    if ((!cifsConfigBean.getServerEnabled() && !ftpConfigBean.getServerEnabled())
+                                && isContentDiskDriver2(filesysDriver))
+                    {
+                        ((ContentContext) filesystem).setDisableNodeMonitor(true);
+                    }
+                    
+                    filesysDriver.registerContext(filesystem);
+
+                    // Check if an access control list has been specified
+
+                    AccessControlList acls = null;
+                    AccessControlListBean accessControls = filesysContext.getAccessControlList();
+                    if (accessControls != null)
+                    {
+                        // Parse the access control list
+                        acls = accessControls.toAccessControlList(secConfig);
+                    }
+                    else if (secConfig.hasGlobalAccessControls())
+                    {
+
+                        // Use the global access control list for this disk share
+                        acls = secConfig.getGlobalAccessControls();
+                    }
+
+                    // Create the shared filesystem
+
+                    filesys = new DiskSharedDevice(filesystem.getDeviceName(), filesysDriver, filesysContext);
+                    filesys.setConfiguration( this);
+
+                    // Add any access controls to the share
+
+                    filesys.setAccessControlList(acls);
+
+
+                    
+                    // Check if change notifications should be enabled
+                    
+                    if ( filesysContext.getDisableChangeNotifications() == false)
+                        filesysContext.enableChangeHandler( true);
+                    
+                    // Start the filesystem
+
+                    filesysContext.startFilesystem(filesys);
 
                     // Add the new filesystem
 
@@ -1890,50 +1835,6 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
             logger.warn("No filesystems defined");
         }
-
-        // Check if shares should be added for all AVM stores
-        if (this.avmAllStores && getAvmDiskInterface() != null)
-        {
-            // Get the list of store names
-
-            AVMDiskDriver avmDriver = (AVMDiskDriver) getAvmDiskInterface();
-            StringList storeNames = avmDriver.getAVMStoreNames();
-
-            // Add shares for each of the store names, if the share name does not already exist
-
-            if (storeNames != null && storeNames.numberOfStrings() > 0)
-            {
-                // Add a share for each store
-
-                for (int i = 0; i < storeNames.numberOfStrings(); i++)
-                {
-                    String storeName = storeNames.getStringAt(i);
-
-                    // Check if a share of the same name already exists
-
-                    if (fsysConfig.getShares().findShare(storeName, ShareType.DISK, true) == null)
-                    {
-                        // Create the new share for the store
-
-                        AVMContext avmContext = new AVMContext(storeName, storeName + ":/", AVMContext.VERSION_HEAD);
-//                        avmContext.enableStateCache(this, true);
-
-                        // Create the shared filesystem
-
-                        DiskSharedDevice filesys = new DiskSharedDevice(storeName, avmDriver, avmContext); 
-                        filesys.setConfiguration( this);
-                        
-                        fsysConfig.addShare( filesys);
-
-                        // DEBUG
-
-                        if (logger.isDebugEnabled())
-                            logger.debug("Added AVM share " + storeName);
-                    }
-                }
-            }
-        }
-        
 
         // home folder share mapper could be declared in security config
     }

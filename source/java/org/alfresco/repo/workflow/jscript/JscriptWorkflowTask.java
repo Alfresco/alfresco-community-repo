@@ -232,7 +232,7 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
         Collection<QName> allowedTypes = getAllowedPackageResourceTypes();
         for (NodeRef node : contents)
         {
-            if (isAvmResource(node, allowedTypes))
+            if (isValidResource(node, allowedTypes))
             {
                 ScriptNode scriptNode = new ScriptNode(node, serviceRegistry, getScope());
                 resources.add(scriptNode);
@@ -250,10 +250,8 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
         return allowedTypes;
     }
 
-    private boolean isAvmResource(NodeRef node, Collection<QName> allowedTypes)
+    private boolean isValidResource(NodeRef node, Collection<QName> allowedTypes)
     {
-        if(isAvmNode(node))
-            return true;
         if (nodeService.exists(node))
         {
             //Check if the node is one of the allowedTypes.
@@ -262,11 +260,6 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
         return false;
     }
     
-    private boolean isAvmNode(NodeRef node)
-    {
-        return StoreRef.PROTOCOL_AVM.equals(node.getStoreRef().getProtocol());
-    }
-
     private static class DefaultNamespaceProvider implements NamespacePrefixResolverProvider
     {
         private static final long serialVersionUID = -7015209142379905617L;

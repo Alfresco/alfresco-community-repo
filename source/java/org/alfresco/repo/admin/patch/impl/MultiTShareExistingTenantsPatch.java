@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
-import org.alfresco.repo.site.SiteAVMBootstrap;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.workflow.WorkflowDeployer;
 

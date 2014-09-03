@@ -574,29 +574,24 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                 // now we know the node - we can abstain for certain types and aspects (eg. RM)
                 if(abstainForClassQNames.size() > 0)
                 {
-                    // For AVM we can not get type and aspect without going through internal AVM security checks
-                    // AVM is never excluded
-                    if(!testNodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+                    // check node exists
+                    if (nodeService.exists(testNodeRef))
                     {
-                        // check node exists (note: for AVM deleted nodes, will skip the abstain check, since exists/getType is accessed via AVMNodeService)
-                        if (nodeService.exists(testNodeRef))
+                        QName typeQName = nodeService.getType(testNodeRef);
+                        if(abstainForClassQNames.contains(typeQName))
                         {
-                            QName typeQName = nodeService.getType(testNodeRef);
-                            if(abstainForClassQNames.contains(typeQName))
+                            return AccessDecisionVoter.ACCESS_ABSTAIN;
+                        }
+                       
+                        Set<QName> aspectQNames = nodeService.getAspects(testNodeRef);
+                        for(QName abstain : abstainForClassQNames)
+                        {
+                            if(aspectQNames.contains(abstain))
                             {
                                 return AccessDecisionVoter.ACCESS_ABSTAIN;
                             }
-                           
-                            Set<QName> aspectQNames = nodeService.getAspects(testNodeRef);
-                            for(QName abstain : abstainForClassQNames)
-                            {
-                                if(aspectQNames.contains(abstain))
-                                {
-                                    return AccessDecisionVoter.ACCESS_ABSTAIN;
-                                }
-                            }
                         }
-                   }
+                    }
                 }
                 
                 if (log.isDebugEnabled())

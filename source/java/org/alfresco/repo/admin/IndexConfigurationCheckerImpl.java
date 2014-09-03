@@ -81,22 +81,6 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
         this.searchService = searchService;
     }
 
-    /**
-     * avm trigger 
-     * @param avmSnapShotTriggeredIndexingMethodInterceptor
-     */
-    /* Sparta: remove WCM/AVM
-    public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
-    {
-        this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
-    }
-    */
-
-
-
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.admin.IndexConfigurationChecker#checkIndexConfiguration()
-     */
     @Override
     public List<StoreRef> checkIndexConfiguration()
     {
@@ -105,7 +89,6 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
         List<StoreRef> missingIndexStoreRefs = new ArrayList<StoreRef>(0);
         for (StoreRef storeRef : storeRefs)
         {
-            @SuppressWarnings("unused")
             NodeRef rootNodeRef = null;
             try
             {
@@ -127,32 +110,6 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
             
             if (indexRecoveryMode != RecoveryMode.FULL)
             {
-                if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                {
-                    /* Sparta: remove WCM/AVM
-                    if (avmSnapShotTriggeredIndexingMethodInterceptor.isIndexingEnabled())
-                    {
-                        IndexMode storeIndexMode = avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(storeRef.getIdentifier());
-                        if (storeIndexMode.equals(IndexMode.UNINDEXED))
-                        {
-                            if (logger.isDebugEnabled())
-                            {
-                                logger.debug("Skipping index check for store: " + storeRef + " (unindexed AVM store)");
-                            }
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Skipping index check for store: " + storeRef + " (AVM indexing is disabled)");
-                        }
-                        continue;
-                    }
-                    */
-                }
-                
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Checking index for store: " + storeRef);

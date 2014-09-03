@@ -20,7 +20,6 @@ package org.alfresco.repo.service;
 
 import java.util.Collection;
 
-import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -34,10 +33,6 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.deploy.DeploymentService;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -53,7 +48,6 @@ import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
-import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -79,10 +73,6 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.wcm.asset.AssetService;
-import org.alfresco.wcm.preview.PreviewURIService;
-import org.alfresco.wcm.sandbox.SandboxService;
-import org.alfresco.wcm.webproject.WebProjectService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -301,36 +291,6 @@ public class ServiceDescriptorRegistry
         return (AuditService)getService(AUDIT_SERVICE);
     }
 
-    /**
-     * Get the AVMService.
-     * @return The AVMService or null if there is none.
-     */
-    @Override
-    public AVMService getAVMService()
-    {
-        return (AVMService)getService(AVM_SERVICE);
-    }
-
-    /**
-     * Get the AVMService.
-     * @return The AVMService or null if there is none.
-     */
-    @Override
-    public AVMService getAVMLockingAwareService()
-    {
-        return (AVMService)getService(AVM_LOCKING_AWARE_SERVICE);
-    }
-    
-    /**
-     * Get the AVM Sync Service.
-     * @return The AVM Sync Service.
-     */
-    @Override
-    public AVMSyncService getAVMSyncService()
-    {
-        return (AVMSyncService)getService(AVM_SYNC_SERVICE);
-    }
-
     @Override
     public OwnableService getOwnableService()
     {
@@ -350,12 +310,6 @@ public class ServiceDescriptorRegistry
     }
 
     @Override
-    public CrossRepositoryCopyService getCrossRepositoryCopyService()
-    {
-        return (CrossRepositoryCopyService)getService(CROSS_REPO_COPY_SERVICE);
-    }
-
-    @Override
     public AttributeService getAttributeService()
     {
         return (AttributeService)getService(ATTRIBUTE_SERVICE);
@@ -365,18 +319,6 @@ public class ServiceDescriptorRegistry
     public ContentFilterLanguagesService getContentFilterLanguagesService()
     {
         return (ContentFilterLanguagesService) getService(CONTENT_FILTER_LANGUAGES_SERVICE);
-    }
-
-    @Override
-    public AVMLockingService getAVMLockingService()
-    {
-        return (AVMLockingService)getService(AVM_LOCKING_SERVICE);
-    }
-
-    @Override
-    public VirtServerRegistry getVirtServerRegistry()
-    {
-        return (VirtServerRegistry)getService(VIRT_SERVER_REGISTRY);
     }
 
     @Override
@@ -401,36 +343,6 @@ public class ServiceDescriptorRegistry
     public TaggingService getTaggingService()
     {
         return (TaggingService)getService(TAGGING_SERVICE);
-    }
-    
-    @Override
-    public DeploymentService getDeploymentService() 
-    {
-        return (DeploymentService) getService(DEPLOYMENT_SERVICE);
-    }
-    
-    @Override
-    public WebProjectService getWebProjectService()
-    {
-        return (WebProjectService)getService(WEBPROJECT_SERVICE);
-    }
-    
-    @Override
-    public SandboxService getSandboxService()
-    {
-        return (SandboxService)getService(SANDBOX_SERVICE);
-    }
-    
-    @Override
-    public AssetService getAssetService()
-    {
-        return (AssetService)getService(ASSET_SERVICE);
-    }
-    
-    @Override
-    public PreviewURIService getPreviewURIService()
-    {
-        return (PreviewURIService)getService(PREVIEW_URI_SERVICE);
     }
     
     @Override

@@ -108,11 +108,6 @@
       <property name="contentService" >
          <ref bean="contentService" />
       </property>
-      <!-- Sparta: remove WCM/AVM
-      <property name="avmNodeDAO">
-            <ref bean="newAvmNodeDAO"/>
-      </property>
-      -->
       <property name="transactionService" >
          <ref bean="transactionService" />
       </property>
@@ -155,9 +150,6 @@
       </property>
       <property name="mimetypeService">
          <ref bean="mimetypeService"/>
-      </property>
-      <property name="avmService">
-          <ref bean="avmService"/>
       </property>
       <property name="imageMagickContentTransformer">
          <ref bean="transformer.ImageMagick" />

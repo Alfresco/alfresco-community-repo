@@ -11,7 +11,6 @@ import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.permissions.AccessControlListDAO;
@@ -28,8 +27,6 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -47,8 +44,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
-import org.alfresco.wcm.util.WCMUtil;
-import org.alfresco.wcm.webproject.WebProjectService;
 import org.springframework.context.ApplicationContext;
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean;
 
@@ -106,28 +101,17 @@ public class AbstractReadPermissionTest extends TestCase
     
     protected UserTransaction testTX;
     
-	protected AVMService fService;
 	protected IndexerAndSearcher fIndexerAndSearcher;
-	protected WebProjectService wpService;
 
 	protected boolean logToFile = false;
 
 	protected String[] webAuthorities = new String[] {"Web1", "Web2", "Web3", "Web4", "Web5"};
 
-	protected String[] authorities = new String[] {"Dynamic","1000","1001","Y","Z","X","10_1","avm","100","10","1","01","001","0001"};
-
-	protected String AVMStore = "main" + System.currentTimeMillis();
+	protected String[] authorities = new String[] {"Dynamic","1000","1001","Y","Z","X","10_1","100","10","1","01","001","0001"};
 
 	final int WEB_COUNT = 100;
 
-	protected final String TEST_RUN = ""+System.currentTimeMillis();
-	protected final String TEST_WEBPROJ_DNS  = "testWP-"+TEST_RUN;
-	protected final String TEST_WEBPROJ_NAME = "testSandbox Web Project Display Name - "+TEST_RUN;
-	protected final String TEST_WEBPROJ_TITLE = "This is my title";
-	protected final String TEST_WEBPROJ_DESCRIPTION = "This is my description";
-	protected final String TEST_WEBPROJ_DEFAULT_WEBAPP = WCMUtil.DIR_ROOT;
-	protected final boolean TEST_WEBPROJ_USE_AS_TEMPLATE = true;
-	protected final boolean TEST_WEBPROJ_DONT_USE_AS_TEMPLATE = false;
+//	protected final String TEST_RUN = ""+System.currentTimeMillis();
 
 	protected class Counter
 	{
@@ -430,127 +414,6 @@ public class AbstractReadPermissionTest extends TestCase
 
 		}
 	}
-	
-    protected void setupBasicTree(final String authority) throws Exception
-    {
-		runAs("admin");
-
-        final String[] dirs = new String[] {"a", "a/b", "a/b/c", "a/b/c/d", "e", "e/f", "e/f/g", "e/f/g/h", "x", "x/y"};
-
-        for(int j = 0; j < dirs.length; j++)
-        {
-        	String path = dirs[j];
-        	String dir;
-        	String file;
-        	int k = path.lastIndexOf('/');
-        	if(k == -1)
-        	{
-        		dir = "";
-        		file = path;
-        	}
-        	else
-        	{
-        		dir = path.substring(0, k);
-        		file = path.substring(k+1);
-        	}
-        	fService.createDirectory(AVMStore + ":/" + dir, file);
-        }
-        
-//    	fService.createDirectory("main:/", "a");
-//    	fService.createDirectory("main:/a", "b");
-//    	fService.createDirectory("main:/a/b", "c");
-//    	fService.createDirectory("main:/", "d");
-//    	fService.createDirectory("main:/d", "e");
-//    	fService.createDirectory("main:/d/e", "f");
-
-//        desc = avmService.lookup(-1, storeName + ":/base");
-//        nodeRef = AVMNodeConverter.ToNodeRef(-1, desc.getPath());
-//        permissionService.setPermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS, true);
-//        permissionService.deletePermission(nodeRef, PermissionService.ALL_AUTHORITIES, PermissionService.ALL_PERMISSIONS);
-        
-        AVMNodeDescriptor nodeDesc = fService.lookup(-1, AVMStore + ":/");
-        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDesc.getPath());
-        //permissionService.setPermission(nodeRef, "1", PermissionService.READ, true);
-
-//        for(int ii = 0; ii < COUNT; ii++)
-//        {
-//            final int i = ii;
-//            final int j = 
-//            if(ii % 100 == 0)
-//            {
-//            	System.out.println("Loop " + i);
-//            }
-            RetryingTransactionCallback<Void> cb = new RetryingTransactionCallback<Void>()
-            {
-                public Void execute() throws Throwable
-                {
-                	for(int i = 0; i < WEB_COUNT; i++)
-                	{
-                        if(i % 100 == 0)
-                        {
-                        	System.out.println("Loop " + i);
-                        }
-                        int j = i % webAuthorities.length;
-
-	                	String dir = AVMStore + ":/" + dirs[i % 10];
-	                	String file = "foo" + i;
-	                	String path = dir + "/" + file;
-	
-	                	fService.createFile(dir, file).close();
-	                	ContentWriter writer = fService.getContentWriter(path, true);
-	                	writer.setEncoding("UTF-8");
-	                	writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-	                	//writer.putContent("I am " + path);
-	                	writer.putContent("I am main");
-	                	
-	                	//String authority = webAuthorities[j];
-	                	NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, path);
-	                    permissionService.setPermission(nodeRef, authority, PermissionService.READ, true);
-	                    permissionService.setInheritParentPermissions(nodeRef, false);
-                	}
-                	
-                    return null;
-                }
-            };
-            retryingTransactionHelper.doInTransaction(cb, false, false);
-        //}
-        
-//    	fService.createDirectory("main:/", "a");
-//    	fService.createDirectory("main:/a", "b");
-//    	fService.createDirectory("main:/a/b", "c");
-//    	fService.createDirectory("main:/", "d");
-//    	fService.createDirectory("main:/d", "e");
-//    	fService.createDirectory("main:/d/e", "f");
-//
-//        AVMNodeDescriptor nodeDesc = fService.lookup(-1, "main:/");
-//        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDesc.getPath());
-//        permissionService.setPermission(nodeRef, "1", PermissionService.READ, true);
-    	
-//    	fService.createFile("main:/a/b/c", "foo").close();
-//    	ContentWriter writer = fService.getContentWriter("main:/a/b/c/foo", true);
-//    	writer.setEncoding("UTF-8");
-//    	writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-//    	writer.putContent("I am main:/a/b/c/foo");
-    	
-//        AVMNodeDescriptor nodeDesc = fService.lookup(-1, "main:/a/b/c/foo");
-//        NodeRef nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDesc.getPath());
-//        permissionService.setPermission(nodeRef, "1", PermissionService.READ, true);
-
-//    	fService.createFile("main:/a/b/c", "bar").close();
-//    	writer = fService.getContentWriter("main:/a/b/c/bar", true);
-//	    writer.setEncoding("UTF-8");
-//	    writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-//	    writer.putContent("I am main:/a/b/c/bar");
-	    
-//        nodeDesc = fService.lookup(-1, "main:/a/b/c/foo");
-//        nodeRef = AVMNodeConverter.ToNodeRef(-1, nodeDesc.getPath());
-//        permissionService.setPermission(nodeRef, "1", PermissionService.READ, true);
-        
-    	fService.createSnapshot(AVMStore, null, null);
-    	
-    	//testTX.commit();
-    }
-    
 	protected void deleteAuthentication(String name)
 	{
 		if(authenticationDAO.userExists(name))
@@ -636,15 +499,7 @@ public class AbstractReadPermissionTest extends TestCase
         }
         authenticationService.createAuthentication(AuthenticationUtil.getAdminUserName(), "admin".toCharArray());
      
-		fService = (AVMService)applicationContext.getBean("AVMService");
 		fIndexerAndSearcher = (IndexerAndSearcher)applicationContext.getBean("indexerAndSearcherFactory");
-		wpService = (WebProjectService)applicationContext.getBean("WebProjectService");
-
-		if (fService.getStore(AVMStore) != null)
-		{
-			fService.purgeStore(AVMStore);
-		}
-		fService.createStore(AVMStore);
 
 		for(String authority : authorities)
 		{

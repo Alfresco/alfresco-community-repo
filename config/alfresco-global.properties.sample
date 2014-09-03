@@ -157,11 +157,8 @@ alfresco.rmi.services.host=0.0.0.0
 #
 # Select 0 to use a random unused port.
 # 
-#avm.rmi.service.port=50501
-#avmsync.rmi.service.port=50502
 #attribute.rmi.service.port=50503
 #authentication.rmi.service.port=50504
 #repo.rmi.service.port=50505
 #action.rmi.service.port=50506
-#wcm-deployment-receiver.rmi.service.port=50507
 #monitor.rmi.service.port=50508

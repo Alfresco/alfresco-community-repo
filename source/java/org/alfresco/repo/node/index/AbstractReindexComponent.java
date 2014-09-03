@@ -398,10 +398,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
             {
                 // Remove AVM stores
                 StoreRef storeRef = storeRefsIterator.next();
-                if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                {
-                    storeRefsIterator.remove();
-                }
             }
             
             storeRefsIterator = storeRefs.iterator();

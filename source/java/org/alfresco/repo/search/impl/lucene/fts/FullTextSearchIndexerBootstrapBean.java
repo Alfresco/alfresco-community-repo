@@ -41,14 +41,7 @@ public class FullTextSearchIndexerBootstrapBean extends AbstractLifecycleBean
         List<StoreRef> storeRefs = nodeService.getStores();
         for (StoreRef storeRef : storeRefs)
         {
-            if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
-            {
-                // nothing to do
-            }
-            else
-            {
-                fullTextSearchIndexer.requiresIndex(storeRef);
-            }
+            fullTextSearchIndexer.requiresIndex(storeRef);
         }
     }
 

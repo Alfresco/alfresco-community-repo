@@ -1,7 +1,6 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -63,60 +62,6 @@ public class ReadPermissionTest extends AbstractReadPermissionTest
         results.setBulkFetch(false);
         assertEquals(10, results.length());
         results.close();        
-    }
-
-    public void testAVM() throws Exception
-    {
-        try
-        {
-            runAs("admin");
-
-        	setupBasicTree("Web1");
-
-        	runAs("Web1");
-
-            StoreRef storeRef = AVMNodeConverter.ToStoreRef(AVMStore);
-            long start;
-            long end;
-            SearchParameters sp;
-            ResultSet results;
-
-            // Text index
-            sp = new SearchParameters();
-            sp.addStore(storeRef);
-            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-            sp.setQuery("TYPE:\"cm:content\"");
-            sp.setMaxItems(Integer.MAX_VALUE);
-            sp.setMaxPermissionChecks(Integer.MAX_VALUE);
-            sp.setMaxPermissionCheckTimeMillis(Integer.MAX_VALUE);
-            start = System.nanoTime();
-            results = serviceRegistry.getSearchService().query(sp);
-            assertEquals(WEB_COUNT, results.length());
-            results.close();
-            end = System.nanoTime();
-            System.out.println("AVM in "+((end-start)/1e9));
-
-            sp = new SearchParameters();
-            sp.addStore(storeRef);
-            sp.setLanguage(SearchService.LANGUAGE_LUCENE);
-  //          sp.setQuery("TEXT:\"I am\"");
-            sp.setQuery("TYPE:\"cm:content\"");
-            sp.setMaxItems(Integer.MAX_VALUE);
-            sp.setMaxPermissionChecks(Integer.MAX_VALUE);
-            sp.setMaxPermissionCheckTimeMillis(Integer.MAX_VALUE);
-            start = System.nanoTime();
-            results = serviceRegistry.getSearchService().query(sp);
-            assertEquals(WEB_COUNT, results.length());
-            results.close();
-            end = System.nanoTime();
-            System.out.println("AVM in "+((end-start)/1e9));
-            
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            throw e;
-        }
     }
 
     public void testReadDeny()

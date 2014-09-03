@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO.ContentUrlHandler;
 import org.alfresco.repo.lock.JobLockService;
@@ -117,7 +116,6 @@ public class ContentStoreCleaner
     private ContentDataDAO contentDataDAO;
     private DictionaryService dictionaryService;
     private ContentService contentService;
-    private AVMNodeDAO avmNodeDAO;
     private TransactionService transactionService;
     private int protectDays;
     private DeleteFailureAction deletionFailureAction;
@@ -169,14 +167,6 @@ public class ContentStoreCleaner
     }
 
     /**
-     * @param avmNodeDAO The AVM Node DAO to get urls with.
-     */
-    public void setAvmNodeDAO(AVMNodeDAO avmNodeDAO)
-    {
-        this.avmNodeDAO = avmNodeDAO;
-    }
-    
-    /**
      * @param transactionService the component to ensure proper transactional wrapping
      */
     public void setTransactionService(TransactionService transactionService)
@@ -223,10 +213,6 @@ public class ContentStoreCleaner
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "contentService", contentService);
-        
-        // Sparta: remove WCM/AVM
-        //PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
-        
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "eagerContentStoreCleaner", eagerContentStoreCleaner);
         

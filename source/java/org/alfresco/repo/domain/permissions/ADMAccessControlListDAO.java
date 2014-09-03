@@ -144,13 +144,10 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
 
         for (Pair<Long, StoreRef> pair : stores)
         {
-            if (!pair.getSecond().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-            {
-                CounterSet update;
-                Long rootNodeId = nodeDAO.getRootNode(pair.getSecond()).getFirst();
-                update = fixOldDmAcls(rootNodeId, nodeDAO.getNodeAclId(rootNodeId), (Long)null, true);
-                result.add(update);
-            }
+            CounterSet update;
+            Long rootNodeId = nodeDAO.getRootNode(pair.getSecond()).getFirst();
+            update = fixOldDmAcls(rootNodeId, nodeDAO.getNodeAclId(rootNodeId), (Long)null, true);
+            result.add(update);
         }
 
         HashMap<ACLType, Integer> toReturn = new HashMap<ACLType, Integer>();

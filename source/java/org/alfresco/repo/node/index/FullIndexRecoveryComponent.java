@@ -451,10 +451,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
                 // delete stores
                 for(StoreRef storeRef : nodeService.getStores())
                 {
-                    if(!storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                    {
-                        indexer.deleteIndex(storeRef);
-                    }
+                    indexer.deleteIndex(storeRef);
                 }
                 return null;
             }

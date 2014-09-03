@@ -27,7 +27,6 @@ import java.util.Map;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.forms.processor.workflow.ExtendedFieldBuilder;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.ServiceRegistry;
@@ -263,27 +262,17 @@ public class Workflow extends BaseTemplateProcessorExtension
             
             for(NodeRef nodeRef : contents)
             {
-                if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                {
-                    Pair<Integer, String> vp = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-                    resources.add(new AVMTemplateNode(
-                            vp.getSecond(), vp.getFirst(), this.services, this.resolver));
-               
-                }
-                else
-                {
-                    QName type = nodeService.getType(nodeRef);
+                QName type = nodeService.getType(nodeRef);
 
-                    // make sure the type is defined in the data dictionary
-                    if (ddService.getType(type) != null)
+                // make sure the type is defined in the data dictionary
+                if (ddService.getType(type) != null)
+                {
+                    // look for content nodes or links to content
+                    // NOTE: folders within workflow packages are ignored for now
+                    if (ddService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
+                            ApplicationModel.TYPE_FILELINK.equals(type))
                     {
-                        // look for content nodes or links to content
-                        // NOTE: folders within workflow packages are ignored for now
-                        if (ddService.isSubClass(type, ContentModel.TYPE_CONTENT) || 
-                                ApplicationModel.TYPE_FILELINK.equals(type))
-                        {
-                            resources.add(new TemplateNode(nodeRef, this.services, this.resolver));
-                        }
+                        resources.add(new TemplateNode(nodeRef, this.services, this.resolver));
                     }
                 }
             }

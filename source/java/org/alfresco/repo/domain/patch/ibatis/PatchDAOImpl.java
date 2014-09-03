@@ -28,7 +28,6 @@ import java.util.Set;
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.CrcHelper;
-import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.node.ChildAssocEntity;
 import org.alfresco.repo.domain.patch.AbstractPatchDAOImpl;
@@ -48,7 +47,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 
 /**
- * iBatis-specific implementation of the AVMPatch DAO.
+ * iBatis-specific implementation of the PatchDAO.
  * 
  * @author janv
  * @since 3.2
@@ -57,13 +56,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
 {
     private static Log logger = LogFactory.getLog(PatchDAOImpl.class);
     
-    private static final String SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE = "alfresco.avm.select_AVMNodeEntitiesCountWhereNewInStore";
-    private static final String SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID = "alfresco.avm.select_AVMNodesWithEmptyGUID";
-    private static final String SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION = "alfresco.avm.select_AVMNodes_nullVersionLayeredDirectories";
-    private static final String SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION = "alfresco.avm.select_AVMNodes_nullVersionLayeredFiles";
-    private static final String SELECT_AVM_MAX_NODE_ID = "alfresco.patch.select_avmMaxNodeId";
     private static final String SELECT_ADM_MAX_NODE_ID = "alfresco.patch.select_admMaxNodeId";
-    private static final String SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_avmNodesWithOldContentProperties";
     private static final String SELECT_ADM_OLD_CONTENT_PROPERTIES = "alfresco.patch.select_admOldContentProperties";
     private static final String SELECT_AUTHORITIES_AND_CRC = "alfresco.patch.select_authoritiesAndCrc";
     private static final String SELECT_PERMISSIONS_ALL_ACL_IDS = "alfresco.patch.select_AllAclIds";
@@ -78,8 +71,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     
     private static final String UPDATE_ADM_OLD_CONTENT_PROPERTY = "alfresco.patch.update_admOldContentProperty";
     private static final String UPDATE_CONTENT_MIMETYPE_ID = "alfresco.patch.update_contentMimetypeId";
-    private static final String UPDATE_AVM_NODE_LIST_NULLIFY_ACL = "alfresco.avm.update_AVMNodeList_nullifyAcl";
-    private static final String UPDATE_AVM_NODE_LIST_SET_ACL = "alfresco.avm.update_AVMNodeList_setAcl";
     private static final String UPDATE_CHILD_ASSOC_CRC = "alfresco.patch.update_childAssocCrc";
     private static final String UPDATE_CREATE_SIZE_CURRENT_PROPERTY = "alfresco.patch.update_CreateSizeCurrentProperty";
     
@@ -88,7 +79,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String DELETE_PERMISSIONS_ACL_MEMBERS_FOR_ACL_LIST = "alfresco.permissions.delete_AclMembersForAclList";
     
     private static final String SELECT_OLD_ATTR_TENANTS = "alfresco.patch.select_oldAttrTenants";
-    private static final String SELECT_OLD_ATTR_AVM_LOCKS= "alfresco.patch.select_oldAttrAVMLocks";
     private static final String SELECT_OLD_ATTR_PBBS = "alfresco.patch.select_oldAttrPropertyBackedBeans";
     private static final String SELECT_OLD_ATTR_CHAINING_URS = "alfresco.patch.select_oldAttrChainingURS";
     private static final String SELECT_OLD_ATTR_CUSTOM_NAMES = "alfresco.patch.select_oldAttrCustomNames";
@@ -167,64 +157,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         */
     }
 
-    @Override
-    protected long getAVMNodeEntitiesCountWhereNewInStore()
-    {
-        Long count = (Long) template.selectOne(SELECT_AVM_NODE_ENTITIES_COUNT_WHERE_NEW_IN_STORE);
-        return count == null ? 0L : count;
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<AVMNodeEntity> getAVMNodeEntitiesWithEmptyGUID(int maxResults)
-    {
-        if (maxResults < 0)
-        {
-            maxResults = RowBounds.NO_ROW_LIMIT;
-        }
-        
-        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_NODE_ENTITIES_WITH_EMPTY_GUID, new RowBounds(0, maxResults));
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<AVMNodeEntity> getNullVersionLayeredDirectoryNodeEntities(int maxResults)
-    {
-        if (maxResults < 0)
-        {
-            maxResults = RowBounds.NO_ROW_LIMIT;
-        }
-        
-        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_LD_NODE_ENTITIES_NULL_VERSION, new RowBounds(0, maxResults));
-    }
-    
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<AVMNodeEntity> getNullVersionLayeredFileNodeEntities(int maxResults)
-    {
-        if (maxResults < 0)
-        {
-            maxResults = RowBounds.NO_ROW_LIMIT;
-        }
-        
-        return (List<AVMNodeEntity>) template.selectList(SELECT_AVM_LF_NODE_ENTITIES_NULL_VERSION, new RowBounds(0, maxResults));
-    }
-
-    public long getMaxAvmNodeID()
-    {
-        Long count = (Long) template.selectOne(SELECT_AVM_MAX_NODE_ID);
-        return count == null ? 0L : count;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Long> getAvmNodesWithOldContentProperties(Long minNodeId, Long maxNodeId)
-    {
-        IdsEntity ids = new IdsEntity();
-        ids.setIdOne(minNodeId);
-        ids.setIdTwo(maxNodeId);
-        return (List<Long>) template.selectList(SELECT_AVM_NODES_WITH_OLD_CONTENT_PROPERTIES, ids);
-    }
-
     public long getMaxAdmNodeID()
     {
         Long count = (Long) template.selectOne(SELECT_ADM_MAX_NODE_ID);
@@ -279,22 +211,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
             logger.debug("Added " + rowsAffected + " cm:sizeCurrent properties.");
         }
         return rowsAffected;
-    }
-    
-    @Override
-    protected int updateAVMNodeEntitiesNullifyAcl(List<Long> nodeIds)
-    {
-        return template.update(UPDATE_AVM_NODE_LIST_NULLIFY_ACL, nodeIds);
-    }
-    
-    @Override
-    protected int updateAVMNodeEntitiesSetAcl(long aclId, List<Long> nodeIds)
-    {
-        IdListOfIdsParam params = new IdListOfIdsParam();
-        params.setId(aclId);
-        params.setListOfIds(nodeIds);
-        
-        return template.update(UPDATE_AVM_NODE_LIST_SET_ACL, params);
     }
     
     @Override
@@ -525,12 +441,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     protected void getOldAttrTenantsImpl(ResultHandler resultHandler)
     {
         template.select(SELECT_OLD_ATTR_TENANTS, resultHandler);
-    }
-    
-    @Override
-    protected void getOldAttrAVMLocksImpl(ResultHandler resultHandler)
-    {
-        template.select(SELECT_OLD_ATTR_AVM_LOCKS, resultHandler);
     }
     
     @Override

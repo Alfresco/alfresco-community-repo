@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.avm.AVMNodeEntity;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,24 +38,6 @@ import org.apache.ibatis.session.ResultHandler;
  */
 public interface PatchDAO
 {
-    // AVM-related
-    
-    public long getAVMNodesCountWhereNewInStore();
-    
-    public List<AVMNodeEntity> getEmptyGUIDS(int count);
-    
-    public List<AVMNodeEntity> getNullVersionLayeredDirectories(int count);
-    
-    public List<AVMNodeEntity> getNullVersionLayeredFiles(int count);
-    
-    public long getMaxAvmNodeID();
-    
-    public List<Long> getAvmNodesWithOldContentProperties(Long minNodeId, Long maxNodeId);
-    
-    public int updateAVMNodesNullifyAcl(List<Long> nodeIds);
-    
-    public int updateAVMNodesSetAcl(long aclId, List<Long> nodeIds);
-    
     // DM-related
     
     public long getMaxAdmNodeID();
@@ -188,11 +169,6 @@ public interface PatchDAO
      * Migrate old Tenant attributes (if any)
      */
     public void migrateOldAttrTenants(ResultHandler resultHandler);
-    
-    /**
-     * Migrate old AVM Lock attributes (if any)
-     */
-    public void migrateOldAttrAVMLocks(ResultHandler resultHandler);
     
     /**
      * Migrate old Property-Backed Bean attributes (if any)

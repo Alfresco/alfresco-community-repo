@@ -32,10 +32,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -83,7 +79,6 @@ public class WorkflowServiceImpl implements WorkflowService
     private WorkflowPackageComponent workflowPackageComponent;
     private NodeService nodeService;
     private ContentService contentService;
-    private AVMSyncService avmSyncService;
     private DictionaryService dictionaryService;
     private NodeService protectedNodeService;
     private WorkflowNotificationUtils workflowNotificationUtils;
@@ -156,16 +151,6 @@ public class WorkflowServiceImpl implements WorkflowService
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
-    }
-
-    /**
-     * Set the avm sync service
-     * 
-     * @param avmSyncService
-     */
-    public void setAvmSyncService(AVMSyncService avmSyncService)
-    {
-        this.avmSyncService = avmSyncService;
     }
 
     /**
@@ -1347,14 +1332,7 @@ public class WorkflowServiceImpl implements WorkflowService
     
     public List<NodeRef> getPackageContents(NodeRef packageRef)
     {
-        if (packageRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-        {
-            return getAvmPackageContents(packageRef);
-        }
-        else
-        {
-            return getRepositoryPackageContents(packageRef);
-        }
+        return getRepositoryPackageContents(packageRef);
     }
 
     /**
@@ -1429,34 +1407,6 @@ public class WorkflowServiceImpl implements WorkflowService
         return true;
     }
 
-    /**
-     * @param contents
-     * @param workflowPackage
-     */
-    private List<NodeRef> getAvmPackageContents(NodeRef workflowPackage)
-    {
-        List<NodeRef> contents = new ArrayList<NodeRef>();
-        if (protectedNodeService.exists(workflowPackage))
-        {
-            final NodeRef stagingNodeRef = (NodeRef) protectedNodeService.getProperty(workflowPackage,
-                        WCMModel.PROP_AVM_DIR_INDIRECTION);
-            final String stagingAvmPath = AVMNodeConverter.ToAVMVersionPath(stagingNodeRef).getSecond();
-            final String packageAvmPath = AVMNodeConverter.ToAVMVersionPath(workflowPackage).getSecond();
-            if (logger.isDebugEnabled())
-                logger.debug("comparing " + packageAvmPath + " with " + stagingAvmPath);
-            for (AVMDifference d : avmSyncService.compare(-1, packageAvmPath, -1, stagingAvmPath, null, true))
-            {
-                if (logger.isDebugEnabled())
-                    logger.debug("got difference " + d);
-                if (d.getDifferenceCode() == AVMDifference.NEWER || d.getDifferenceCode() == AVMDifference.CONFLICT)
-                {
-                    contents.add(AVMNodeConverter.ToNodeRef(d.getSourceVersion(), d.getSourcePath()));
-                }
-            }
-        }
-        return contents;
-    }
-    
     /**
      * Determines if the given user is a member of the pooled actors assigned to the task
      * 

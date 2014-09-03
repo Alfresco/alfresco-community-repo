@@ -30,15 +30,10 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.BaseInterpreter;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.AuthorityDAO;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avmsync.AVMDifference;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -65,7 +60,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTransition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.GUID;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -82,8 +76,6 @@ public class WorkflowInterpreter extends BaseInterpreter
     private NamespaceService namespaceService;
     private NodeService nodeService;
     private AuthorityDAO authorityDAO;
-    private AVMService avmService;
-    private AVMSyncService avmSyncService;
     private PersonService personService;
     private FileFolderService fileFolderService;
     private TenantService tenantService;
@@ -104,20 +96,12 @@ public class WorkflowInterpreter extends BaseInterpreter
     private Map<QName, Serializable> vars = new HashMap<QName, Serializable>();
     
 
-
-
-    /* (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onBootstrap(org.springframework.getContext().ApplicationEvent)
-     */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
         //NOOP
     }
 
-    /* (non-Javadoc)
-     * @see org.springframework.extensions.surf.util.AbstractLifecycleBean#onShutdown(org.springframework.getContext().ApplicationEvent)
-     */
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
@@ -154,22 +138,6 @@ public class WorkflowInterpreter extends BaseInterpreter
     public void setDictionaryService(DictionaryService dictionaryService)
     {
         this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * @param avmService  The AVM Service
-     */
-    public void setAVMService(AVMService avmService)
-    {
-        this.avmService = avmService;
-    }
-    
-    /**
-     * @param avmSyncService  The AVM Sync Service
-     */
-    public void setAVMSyncService(AVMSyncService avmSyncService)
-    {
-        this.avmSyncService = avmSyncService;
     }
 
     /**
@@ -1181,47 +1149,6 @@ public class WorkflowInterpreter extends BaseInterpreter
                         }
                         vars.put(qname, (Serializable)values);
                     }
-                    out.println("set var " + qname + " = " + vars.get(qname));
-                }
-                else if (command[2].equals("avmpackage"))
-                {
-                    // lookup source folder of changes
-                    AVMNodeDescriptor avmSource = avmService.lookup(-1, command[3]);
-                    if (avmSource == null || !avmSource.isDirectory())
-                    {
-                        return command[3] + " must refer to a directory.";
-                    }
-                    
-                    // create container for avm workflow packages
-                    String packagesPath = "workflow-system:/packages";
-                    AVMNodeDescriptor packagesDesc = avmService.lookup(-1, packagesPath);
-                    if (packagesDesc == null)
-                    {
-                        avmService.createStore("workflow-system");
-                        avmService.createDirectory("workflow-system:/", "packages");
-                    }
-                    
-                    // create package (layered to target, if target is specified)
-                    String packageName = GUID.generate();
-                    String avmSourceIndirection = avmSource.getIndirection();
-                    if (avmSourceIndirection != null)
-                    {
-                        avmService.createLayeredDirectory(avmSourceIndirection, packagesPath, packageName);
-                        List<AVMDifference> diff = avmSyncService.compare(-1, avmSource.getPath(), -1, packagesPath + "/" + packageName, null);
-                        avmSyncService.update(diff, null, true, true, false, false, null, null);
-                    }
-                    else
-                    {
-                        // copy source folder to package folder
-                        avmService.copy(-1, avmSource.getPath(), packagesPath, packageName);
-                    }
-                    
-                    // convert package to workflow package
-                    AVMNodeDescriptor packageDesc = avmService.lookup(-1, packagesPath + "/" + packageName);
-                    NodeRef packageNodeRef = workflowService.createPackage(AVMNodeConverter.ToNodeRef(-1, packageDesc.getPath()));
-                    nodeService.setProperty(packageNodeRef, WorkflowModel.PROP_IS_SYSTEM_PACKAGE, true);
-                    QName qname = QName.createQName(command[1], namespaceService);
-                    vars.put(qname, packageNodeRef);
                     out.println("set var " + qname + " = " + vars.get(qname));
                 }
                 else if (command[2].equals("package"))

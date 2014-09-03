@@ -27,7 +27,6 @@
       <property name="workflowPackageComponent" ref="workflowPackageImpl"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="contentService" ref="contentService"/>
-      <property name="avmSyncService" ref="AVMSyncService"/>
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="protectedNodeService" ref="NodeService"/>
       <property name="workflowAdminService" ref="workflowAdminService"/>
@@ -62,8 +61,6 @@
 
    <bean id="workflowInterpreter" class="org.alfresco.repo.workflow.WorkflowInterpreter" parent="interpreterBase">
       <property name="workflowService" ref="WorkflowService"/>
-      <property name="AVMService" ref="AVMService"/>
-      <property name="AVMSyncService" ref="AVMSyncService"/>
       <property name="nodeService" ref="NodeService"/>
       <property name="namespaceService" ref="namespaceService"/>
       <property name="personService" ref="PersonService"/>

@@ -31,8 +31,6 @@ import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-//import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -479,12 +477,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
             return AccessStatus.DENIED;
         }
 
-        // AVM nodes - test for existence underneath
-        if (passedNodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-        {
-            return doAvmCan(passedNodeRef, permIn);
-        }
-        
         // Note: if we're directly accessing a frozen state (version) node (ie. in the 'version' store) we need to check permissions for the versioned node (ie. in the 'live' store)
         if (isVersionNodeRef(passedNodeRef))
         {
@@ -611,36 +603,16 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
     }
 
-    private AccessStatus doAvmCan(NodeRef nodeRef, PermissionReference permission)
-    {
-        /* Sparta: remove WCM/AVM
-        org.alfresco.util.Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-        int version = avmVersionPath.getFirst();
-        String path = avmVersionPath.getSecond();
-        boolean result = AVMRepository.GetInstance().can(nodeRef.getStoreRef().getIdentifier(), version, path, permission.getName());
-        AccessStatus status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
-        return status;
-        */
-        return AccessStatus.DENIED;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.alfresco.service.cmr.security.PermissionService#hasPermission(java.lang.Long, java.lang.String,
-     *      java.lang.String)
-     */
     public AccessStatus hasPermission(Long aclID, PermissionContext context, String permission)
     {
         return hasPermission(aclID, context, getPermissionReference(permission));
     }
 
-   
     protected AccessStatus hasPermission(Long aclId, PermissionContext context, PermissionReference permission)
     {
         if (aclId == null)
         {
-            // Enforce store ACLs if set - the AVM default was to "allow" if there are no permissions set ...
+            // Enforce store ACLs if set
             if (context.getStoreAcl() == null)
             {
                 return AccessStatus.ALLOWED;

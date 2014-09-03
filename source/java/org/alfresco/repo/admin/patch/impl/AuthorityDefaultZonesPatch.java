@@ -25,8 +25,6 @@ import java.util.Set;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.AVMStoreDescriptor;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.site.SiteInfo;
@@ -50,7 +48,6 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
 
     /** The authority service. */
     private AuthorityService authorityService;
-    private AVMService avmService;
     private SiteService siteService;
 
     /**
@@ -65,17 +62,7 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
     }
 
     /**
-     * Set the avm service
-     * @param avmService
-     */
-    public void setAvmService(AVMService avmService)
-    {
-        this.avmService = avmService;
-    }
-
-    /**
      * Set the site service
-     * @param siteService
      */
     public void setSiteService(SiteService siteService)
     {
@@ -126,17 +113,9 @@ public class AuthorityDefaultZonesPatch extends AbstractPatch
         shareZones.add(AuthorityService.ZONE_APP_SHARE);
         shareZones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
 
-        List<AVMStoreDescriptor> stores = avmService.getStores();
         List<SiteInfo> sites = siteService.listSites(null, null);
 
-        List<Action> groupActions = new ArrayList<Action>(stores.size() * 4 + sites.size() * 5 + 1);
-        for (AVMStoreDescriptor store : stores)
-        {
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentManager", wcmZones, ActionType.SET));
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentPublisher", wcmZones, ActionType.SET));
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentContributor", wcmZones, ActionType.SET));
-            groupActions.add(new Action("GROUP_"+store.getName()+"-ContentReviewer", wcmZones, ActionType.SET));
-        }
+        List<Action> groupActions = new ArrayList<Action>(sites.size() * 5 + 1);
         for (SiteInfo site : sites)
         {
             groupActions.add(new Action("GROUP_site_" + site.getShortName(), shareZones, ActionType.SET));

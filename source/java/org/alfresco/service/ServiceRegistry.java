@@ -21,7 +21,6 @@ package org.alfresco.service;
 import java.util.Collection;
 
 import org.alfresco.api.AlfrescoPublicApi;
-import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -34,10 +33,6 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.deploy.DeploymentService;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -79,10 +74,6 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.wcm.asset.AssetService;
-import org.alfresco.wcm.preview.PreviewURIService;
-import org.alfresco.wcm.sandbox.SandboxService;
-import org.alfresco.wcm.webproject.WebProjectService;
 
 
 /**
@@ -146,19 +137,6 @@ public interface ServiceRegistry
     static final QName BLOG_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "BlogService");
     static final QName CALENDAR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CalendarService");
     static final QName NOTIFICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NotificationService");
-    
-    // WCM / AVM
-    static final QName AVM_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMService");
-    static final QName AVM_LOCKING_AWARE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingAwareService");
-    static final QName AVM_SYNC_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMSyncService");
-    static final QName CROSS_REPO_COPY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CrossRepositoryCopyService");
-    static final QName AVM_LOCKING_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AVMLockingService");
-    static final QName VIRT_SERVER_REGISTRY = QName.createQName(NamespaceService.ALFRESCO_URI, "VirtServerRegistry");
-    static final QName DEPLOYMENT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DeploymentService");
-    static final QName WEBPROJECT_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WebProjectService");
-    static final QName SANDBOX_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "SandboxService");
-    static final QName ASSET_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "AssetService");
-    static final QName PREVIEW_URI_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "WCMPreviewURIService");
     
     // CMIS
     static final QName CMIS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISService");
@@ -371,27 +349,6 @@ public interface ServiceRegistry
     AuditService getAuditService();
 
     /**
-     * Get the AVMService.
-     * @return The AVM service (or null if one is not provided);
-     */
-    @NotAuditable
-    AVMService getAVMService();
-
-    /**
-    * Get the AVMLockingAwareService.
-     * @return The AVM locking aware service (or null if one is not provided);    
-     */
-    @NotAuditable
-    AVMService getAVMLockingAwareService();
-    
-    /**
-     * Get the AVM Sync Service.
-     * @return The AVM Sync Service.
-     */
-    @NotAuditable
-    AVMSyncService getAVMSyncService();
-
-    /**
      * Get the ownable service (or null if one is not provided)
      * @return
      */
@@ -400,140 +357,72 @@ public interface ServiceRegistry
 
     /**
      * Get the person service (or null if one is not provided)
-     * @return
      */
     @NotAuditable
     PersonService getPersonService();
 
     /**
      * Get the site service (or null if one is not provided)
-     * @return
      */
     @NotAuditable
     SiteService getSiteService();
 
     /**
-     * Get the cross repository copy service (or null if one is not provided)
-     * @return
-     */
-    @NotAuditable
-    CrossRepositoryCopyService getCrossRepositoryCopyService();
-
-    /**
      * Get the attribute service (or null if one is not provided)
-     * @return
      */
     @NotAuditable
     AttributeService getAttributeService();
 
     /**
-     * Get the AVM locking service (or null if one is not provided)
-     * @return
-     */
-    @NotAuditable
-    AVMLockingService getAVMLockingService();
-
-    /**
-     * Get the Virtualisation Server registry service bean
-     * @return
-     */
-    @NotAuditable
-    VirtServerRegistry getVirtServerRegistry();
-
-    /**
      * Get the Multilingual Content Service
-     * @return
      */
     @NotAuditable
     MultilingualContentService getMultilingualContentService();
 
     /**
      * Get the Edition Service
-     * @return
      */
     @NotAuditable
     EditionService getEditionService();
     
     /**
      * Get the Thumbnail Service
-     * @return
      */
     @NotAuditable
     ThumbnailService getThumbnailService();
     
     /**
      * Get the Tagging Service
-     * @return
      */
     @NotAuditable
     TaggingService getTaggingService();
     
     /**
-     * Get the WCM Deployment Service
-     * @return the deployment service (or null, if one is not provided)
-     */
-    @NotAuditable
-    DeploymentService getDeploymentService();
-    
-    /**
-     * Get the WCM WebProject Service
-     * @return
-     */
-    @NotAuditable
-    WebProjectService getWebProjectService();
-    
-    /**
-     * Get the WCM Sandbox Service
-     * @return
-     */
-    @NotAuditable
-    SandboxService getSandboxService();
-    
-    /**
-     * Get the WCM Asset Service
-     * @return
-     */
-    @NotAuditable
-    AssetService getAssetService();
-    
-    /**
-     * Get the WCM Preview URI Service
-     * @return
-     */
-    @NotAuditable
-    PreviewURIService getPreviewURIService();
-    
-    /**
      * Get the form service (or null if one is not provided)
-     * @return
      */
     @NotAuditable
     FormService getFormService();
 
     /**
      * Get the rendition service (or null if one is not provided)
-     * @return
      */
     @NotAuditable
     RenditionService getRenditionService();
 
     /**
      * Get the rating service (or null if one is not provided)
-     * @return
      */
     @NotAuditable
     RatingService getRatingService();
     
     /**
      * Get the node locator service (or null if one is not provided)
-     * @return
      */
     @NotAuditable
     NodeLocatorService getNodeLocatorService();
     
     /**
      * Get the blog service (or null if one is not provided)
-     * @return
      * 
      * @since 4.0
      */
@@ -542,7 +431,6 @@ public interface ServiceRegistry
     
     /**
      * Get the calendar service (or null if one is not provided)
-     * @return
      * 
      * @since 4.0
      */

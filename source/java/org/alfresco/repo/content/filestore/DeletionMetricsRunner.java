@@ -32,7 +32,6 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.cleanup.ContentStoreCleaner;
 import org.alfresco.repo.content.cleanup.ContentStoreCleanerListener;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
-import org.alfresco.repo.domain.avm.AVMNodeDAO;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -78,7 +77,6 @@ public class DeletionMetricsRunner
         jobLockService = serviceRegistry.getJobLockService();
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
-        AVMNodeDAO avmNodeDAO = (AVMNodeDAO) ctx.getBean("newAvmNodeDAO");
         ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
         
         // we need a store
@@ -103,7 +101,6 @@ public class DeletionMetricsRunner
         cleaner.setTransactionService(transactionService);
         cleaner.setDictionaryService(dictionaryService);
         cleaner.setContentService(contentService);
-        cleaner.setAvmNodeDAO(avmNodeDAO);
     }
 
 

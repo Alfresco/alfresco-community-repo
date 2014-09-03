@@ -9,8 +9,6 @@
                 <value>{http://www.jcp.org/jcr/nt/1.0}*</value> 
                 <value>{http://www.jcp.org/jcr/mix/1.0}*</value>
                 <value>{http://www.jcp.org/jcr/sv/1.0}*</value>
-                <value>{http://www.alfresco.org/model/wcmappmodel/1.0}*</value>
-                <value>{http://www.alfresco.org/model/wcmmodel/1.0}*</value>
             </list>
         </property>
     </bean>

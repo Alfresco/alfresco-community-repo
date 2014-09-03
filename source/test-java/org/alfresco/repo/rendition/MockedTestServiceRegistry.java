@@ -22,7 +22,6 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Collection;
 
-import org.alfresco.mbeans.VirtServerRegistry;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
@@ -36,10 +35,6 @@ import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.audit.AuditService;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.avm.deploy.DeploymentService;
-import org.alfresco.service.cmr.avm.locking.AVMLockingService;
-import org.alfresco.service.cmr.avmsync.AVMSyncService;
 import org.alfresco.service.cmr.blog.BlogService;
 import org.alfresco.service.cmr.calendar.CalendarService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -81,10 +76,6 @@ import org.alfresco.service.descriptor.DescriptorService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.wcm.asset.AssetService;
-import org.alfresco.wcm.preview.PreviewURIService;
-import org.alfresco.wcm.sandbox.SandboxService;
-import org.alfresco.wcm.webproject.WebProjectService;
 
 public class MockedTestServiceRegistry implements ServiceRegistry
 {
@@ -112,20 +103,6 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     
     @Override
     public NotificationService getNotificationService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
-    public WebProjectService getWebProjectService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
-    public VirtServerRegistry getVirtServerRegistry()
     {
         // A mock response
         return null;
@@ -201,13 +178,6 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     }
     
     @Override
-    public SandboxService getSandboxService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
     public RuleService getRuleService()
     {
         // A mock response
@@ -223,13 +193,6 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     
     @Override
     public PublicServiceAccessService getPublicServiceAccessService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
-    public PreviewURIService getPreviewURIService()
     {
         // A mock response
         return null;
@@ -388,20 +351,6 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     }
     
     @Override
-    public DeploymentService getDeploymentService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
-    public CrossRepositoryCopyService getCrossRepositoryCopyService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
     public CopyService getCopyService()
     {
         // A mock response
@@ -479,47 +428,12 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     }
     
     @Override
-    public AssetService getAssetService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
     public ActionService getActionService()
     {
         // A mock response
         return actionService;
     }
     
-    @Override
-    public AVMSyncService getAVMSyncService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
-    public AVMService getAVMService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
-    public AVMLockingService getAVMLockingService()
-    {
-        // A mock response
-        return null;
-    }
-    
-    @Override
-    public AVMService getAVMLockingAwareService()
-    {
-        // A mock response
-        return null;
-    }
-
     @Override
     public RepoAdminService getRepoAdminService()
     {

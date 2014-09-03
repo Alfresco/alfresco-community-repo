@@ -35,12 +35,6 @@
         </property>
     </bean>
     
-    
-    
-    <bean id="avmSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
-        <constructor-arg index="0" ref="repoSqlSessionFactory"/>
-    </bean>
-    
     <bean id="repoSqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" ref="repoSqlSessionFactory"/>
     </bean>

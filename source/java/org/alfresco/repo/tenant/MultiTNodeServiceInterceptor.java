@@ -223,7 +223,7 @@ public class MultiTNodeServiceInterceptor extends DelegatingIntroductionIntercep
                 StoreRef storeRef = ref;
                 try
                 {
-                    if (tenantService.isEnabled() && (! storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM)))
+                    if (tenantService.isEnabled())
                     {
                         // MT: return tenant stores only (although for super System return all stores - as used by
                         // ConfigurationChecker, IndexRecovery, IndexBackup etc)

@@ -111,6 +111,7 @@ Inbound settings from iBatis
         <!-- Patch -->
         
         <typeAlias alias="SizeCurrentParams" type="org.alfresco.repo.domain.patch.ibatis.SizeCurrentParams"/>
+        <typeAlias alias="IdListOfIdsParam" type="org.alfresco.repo.domain.patch.ibatis.IdListOfIdsParam"/>
         
         <!-- Permissions -->
         
@@ -156,20 +157,6 @@ Inbound settings from iBatis
         <!-- Usage -->
         
         <typeAlias alias="UsageDelta" type="org.alfresco.repo.domain.usage.UsageDeltaEntity"/>
-        
-        <!-- AVM -->
-        
-        <typeAlias alias="AVMStore" type="org.alfresco.repo.domain.avm.AVMStoreEntity"/>
-        <typeAlias alias="AVMNode" type="org.alfresco.repo.domain.avm.AVMNodeEntity"/>
-        <typeAlias alias="AVMNodeAspect" type="org.alfresco.repo.domain.avm.AVMAspectEntity"/>
-        <typeAlias alias="AVMChildEntry" type="org.alfresco.repo.domain.avm.AVMChildEntryEntity"/>
-        <typeAlias alias="AVMVersionRoot" type="org.alfresco.repo.domain.avm.AVMVersionRootEntity"/>
-        <typeAlias alias="AVMHistoryLink" type="org.alfresco.repo.domain.avm.AVMHistoryLinkEntity"/>
-        <typeAlias alias="AVMMergeLink" type="org.alfresco.repo.domain.avm.AVMMergeLinkEntity"/>
-        <typeAlias alias="AVMVersionLayeredNodeEntry" type="org.alfresco.repo.domain.avm.AVMVersionLayeredNodeEntryEntity"/>
-        <typeAlias alias="AVMStoreProperty" type="org.alfresco.repo.domain.avm.AVMStorePropertyEntity"/>
-        <typeAlias alias="AVMNodeProperty" type="org.alfresco.repo.domain.avm.AVMNodePropertyEntity"/>
-        <typeAlias alias="IdListOfIdsParam" type="org.alfresco.repo.domain.patch.ibatis.IdListOfIdsParam"/>
         
         <!-- Canned Queries Test -->
         <!-- Subscriptions -->

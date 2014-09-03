@@ -29,7 +29,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentPropertyUpdatePolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentReadPolicy;
 import org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy;
@@ -47,7 +46,6 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -93,7 +91,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     
     private DictionaryService dictionaryService;
     private NodeService nodeService;
-    private AVMService avmService;
     private MimetypeService mimetypeService;
     private RetryingTransactionHelper transactionHelper;
     private ApplicationContext applicationContext;
@@ -163,11 +160,6 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
-    }
-    
-    public void setAvmService(AVMService service)
-    {
-        this.avmService = service;
     }
     
     public void setImageMagickContentTransformer(ContentTransformer imageMagickContentTransformer) 
@@ -533,17 +525,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
         // Register the new URL for rollback cleanup
         eagerContentStoreCleaner.registerNewContentUrl(writer.getContentUrl());
 
-        // Special case for AVM repository.   
-        Serializable contentValue = null;
-        if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-        {
-            Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
-            contentValue = avmService.getContentDataForWrite(avmVersionPath.getSecond());
-        }
-        else
-        {
-            contentValue = nodeService.getProperty(nodeRef, propertyQName);
-        }
+        Serializable contentValue = nodeService.getProperty(nodeRef, propertyQName);
 
         // set extra data on the reader if the property is pre-existing
         if (contentValue != null && contentValue instanceof ContentData)
@@ -974,18 +956,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
             {
                 // set the full content property
                 ContentData contentData = writer.getContentData();
-                // Bypass NodeService for avm stores.
-                if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                {
-                    nodeService.setProperty(nodeRef, ContentModel.PROP_CONTENT, contentData);
-                }
-                else
-                {
-                    nodeService.setProperty(
-                        nodeRef,
-                        propertyQName,
-                        contentData);
-                }
+                nodeService.setProperty(nodeRef, propertyQName, contentData);
                 // done
                 if (logger.isDebugEnabled())
                 {

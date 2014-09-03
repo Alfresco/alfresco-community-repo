@@ -79,8 +79,7 @@ public class MLContentInterceptor implements MethodInterceptor
             NodeRef nodeRef = (NodeRef) args[0];
             
             // Shortcut it if the node is not an empty translation
-            if (nodeRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM) || 
-                !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_MULTILINGUAL_EMPTY_TRANSLATION))
             {
                 return invocation.proceed();
             }

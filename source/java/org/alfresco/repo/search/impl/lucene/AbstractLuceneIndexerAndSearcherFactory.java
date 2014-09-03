@@ -1538,7 +1538,6 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
                         return null;
                     }
                     Set<String> protocols = new HashSet<String>();
-                    protocols.add(StoreRef.PROTOCOL_AVM);
                     protocols.add(StoreRef.PROTOCOL_ARCHIVE);
                     protocols.add(StoreRef.PROTOCOL_WORKSPACE);
                     protocols.add("locks");

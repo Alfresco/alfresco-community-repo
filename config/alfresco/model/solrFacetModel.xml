@@ -151,10 +151,24 @@
             </property>
          </properties>
       </type>
+      
       <!-- Facets Root Folder -->
       <type name="srft:facets">
          <title>Facets</title>
          <parent>cm:folder</parent>
+         <properties>
+            <property name="srft:facetOrder">
+               <title>Ordered sequence of Facet IDs</title>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <multiple>true</multiple>
+               <index enabled="false">
+                  <atomic>false</atomic>
+                  <stored>false</stored>
+                  <tokenised>false</tokenised>
+               </index>
+            </property>
+         </properties>
       </type>
    </types>
 

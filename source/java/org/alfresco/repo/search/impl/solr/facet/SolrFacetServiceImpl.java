@@ -31,8 +31,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentSkipListMap;
-
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -44,6 +45,10 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.IllegalArgument;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.MissingFacetId;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -210,7 +215,22 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     @Override
     public List<SolrFacetProperties> getFacets()
     {
-        return new ArrayList<>(facetsMap.values());
+        // Sort the facets into display order
+        final SolrFacetComparator comparator = new SolrFacetComparator(getFacetOrder());
+        
+        SortedSet<SolrFacetProperties> result = new TreeSet<>(comparator);
+        result.addAll(facetsMap.values());
+        
+        return new ArrayList<>(result);
+    }
+    
+    public List<String> getFacetOrder()
+    {
+        final NodeRef facetContainer = getFacetsRoot();
+        
+        @SuppressWarnings("unchecked")
+        final List<String> facetOrder = (List<String>) nodeService.getProperty(facetContainer, SolrFacetModel.PROP_FACET_ORDER);
+        return facetOrder;
     }
 
     @Override
@@ -435,6 +455,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         {
             logger.debug("Deleted [" + filterID + "] facet.");
         }
+        
+        // TODO Remove the matching filterID from the property list on the container.
     }
 
     private Map<QName, Serializable> createNodeProperties(SolrFacetProperties facetProperties)
@@ -544,7 +566,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         mergedMap.putAll(persistedProperties);
 
         // Sort the merged maps
-        Map<String, SolrFacetProperties> sortedMap = CollectionUtils.sortMapByValue(mergedMap, getIndextComparator());
+        Comparator<Entry<String, SolrFacetProperties>> entryComparator = CollectionUtils.toEntryComparator(new SolrFacetComparator(getFacetOrder()));
+        Map<String, SolrFacetProperties> sortedMap = CollectionUtils.sortMapByValue(mergedMap, entryComparator);
         LinkedList<SolrFacetProperties> orderedFacets = new LinkedList<>(sortedMap.values());
 
         // Get the last index, as the map is sorted by the FP's index value
@@ -641,24 +664,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         this.facetNodeRefCache.remove(filterID);
     }
 
-    /**
-     * Note: this comparator imposes orderings that are inconsistent with equals
-     * method of the {@link SolrFacetProperties}."
-     * 
-     * @return
-     */
-    private Comparator<Entry<String, SolrFacetProperties>> getIndextComparator()
-    {
-        return new Comparator<Entry<String, SolrFacetProperties>>()
-        {
-            public int compare(Entry<String, SolrFacetProperties> facet1,
-                        Entry<String, SolrFacetProperties> facet2)
-            {
-                return Integer.compare(facet1.getValue().getIndex(), facet2.getValue().getIndex());
-            }
-        };
-    }
-
     @Override
     public int getNextIndex()
     {
@@ -735,6 +740,49 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             {
                 updateFacet(fp);
             }
+        }
+    }
+    
+    @Override public void reorderFacets(List<String> facetIds)
+    {
+        // We need to validate the provided facet IDs
+        if (facetIds == null)        { throw new NullPointerException("Illegal null facetIds"); }
+        else if (facetIds.isEmpty()) { throw new MissingFacetId("Illegal empty facetIds"); }
+        else
+        {
+            final List<SolrFacetProperties> existingFacets = getFacets();
+            
+            final Map<String, SolrFacetProperties> sortedFacets = new LinkedHashMap<>(); // maintains insertion order
+            for (String facetId : facetIds)
+            {
+                SolrFacetProperties facet = getFacet(facetId);
+                
+                if (facet == null)
+                {
+                    throw new UnrecognisedFacetId("Cannot reorder facets as ID not recognised:", facetId);
+                }
+                else if (sortedFacets.containsKey(facetId))
+                {
+                    throw new DuplicateFacetId("Cannot reorder facets as sequence contains duplicate entry for ID:", facetId);
+                }
+                else
+                {
+                    sortedFacets.put(facetId, facet);
+                }
+            }
+            if (existingFacets.size() != sortedFacets.size())
+            {
+                throw new IllegalArgument("Cannot reorder facets. Expected " + existingFacets.size() +
+                                          " IDs but only received " + sortedFacets.size());
+            }
+            
+            // We can now safely apply the updates to the facet ID sequence.
+            //
+            // Put them in an ArrayList to ensure the collection is Serializable.
+            // The alternative is changing the service API to look like <T extends Serializable & List<String>>
+            // which is a bit verbose for an API.
+            ArrayList<String> serializableProp = new ArrayList<>(facetIds);
+            nodeService.setProperty(getFacetsRoot(), SolrFacetModel.PROP_FACET_ORDER, serializableProp);
         }
     }
 }

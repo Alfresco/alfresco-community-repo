@@ -21,6 +21,10 @@ package org.alfresco.repo.search.impl.solr.facet;
 
 import java.util.List;
 
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.IllegalArgument;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.MissingFacetId;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -37,7 +41,7 @@ public interface SolrFacetService
      * @return List of {@code SolrFacetProperties} or an empty list if none exists
      */
     public List<SolrFacetProperties> getFacets();
-
+    
     /**
      * Gets the facet by filter Id.
      * 
@@ -87,4 +91,15 @@ public interface SolrFacetService
     public void deleteFacet(String filterID);
 
     public int getNextIndex();
+    
+    /**
+     * Reorders existing facets to the provided order.
+     * 
+     * @param filterIds an ordered sequence of filter IDs.
+     * @throws NullPointerException if filterIds is {@code null}.
+     * @throws MissingFacetId if the list is empty.
+     * @throws UnrecognisedFacetId if any of the provided filter IDs are not recognised.
+     * @throws DuplicateFacetId if there is a duplicate filter ID in the list.
+     */
+    public void reorderFacets(List<String> filterIds);
 }

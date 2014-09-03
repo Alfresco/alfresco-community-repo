@@ -63,4 +63,9 @@ public interface SolrFacetModel
     public static final QName PROP_IS_DEFAULT = QName.createQName(SOLR_FACET_MODEL_URL, "isDefault");
 
     public static final QName PROP_EXTRA_INFORMATION = QName.createQName(SOLR_FACET_CUSTOM_PROPERTY_URL, "extraInformation");
+    
+    /** The type of the facet container folder. */
+    public static final QName TYPE_FACETS = QName.createQName(SOLR_FACET_MODEL_URL, "facets");
+    
+    public static final QName PROP_FACET_ORDER = QName.createQName(SOLR_FACET_MODEL_URL, "facetOrder");
 }

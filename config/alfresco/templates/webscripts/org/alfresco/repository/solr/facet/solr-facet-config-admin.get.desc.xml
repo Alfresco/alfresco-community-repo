@@ -1,0 +1,41 @@
+<webscript>
+   <shortname>GET Faceted-Search Config</shortname>
+   <description>
+   <![CDATA[
+   Get faceted-search config, if configured
+   
+   http://<host>:<port>/alfresco/api/solr/facet-config
+   
+   Example response from this web script:
+   
+   {
+    "facets": [
+          {
+             "filterID" : "filter_content_size",
+             "facetQName" : "{http://www.alfresco.org/model/content/1.0}content.size",
+             "displayName" : "faceted-search.facet-menu.facet.size",
+             "maxFilters" : 5,
+             "hitThreshold" : 1,
+             "minFilterValueLength" : 5,
+             "sortBy" : "ALPHABETICALLY",
+             "scope" : "SCOPED_SITES",
+             "scopedSites" : [
+                     "site3",
+                     "site2",
+                     "site1"
+              ],
+             "index" : 5,
+             "isEnabled" : true
+          }
+      ]
+   }
+   
+   Notes:
+   - user must be an Admin, member of Alfresco_Search_Administrators group or a Network Admin for given network/tenant
+   ]]>
+   </description>
+   <url>/api/solr/facet-config</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

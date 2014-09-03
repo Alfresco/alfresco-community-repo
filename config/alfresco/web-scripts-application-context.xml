@@ -1819,6 +1819,31 @@
        </property>
     </bean>
     
+    <!-- Get/Post/Put/Delete Solr Facetnfig -->
+   <bean id="baseSolrFacetConfigAdminWebscript" abstract="true" parent="webscript">
+      <property name="facetService" ref="solrFacetService"/>
+   </bean>
+   <bean
+      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.get"
+      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminGet"
+      parent="baseSolrFacetConfigAdminWebscript">
+   </bean>
+   <bean
+      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.delete"
+      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminDelete"
+      parent="baseSolrFacetConfigAdminWebscript">
+   </bean>
+   <bean
+      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.post"
+      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminPost"
+      parent="baseSolrFacetConfigAdminWebscript">
+   </bean>
+   <bean
+      id="webscript.org.alfresco.repository.solr.facet.solr-facet-config-admin.put"
+      class="org.alfresco.repo.web.scripts.solr.facet.SolrFacetConfigAdminPut"
+      parent="baseSolrFacetConfigAdminWebscript">
+   </bean>
+
     <!-- Share Content Download - post of an Activity before performing a Site download action -->
     <bean id="webscript.org.alfresco.slingshot.download.get" class="org.alfresco.slingshot.web.scripts.SlingshotContentGet" parent="webscript.org.alfresco.content.content.get">
         <property name="siteService" ref="SiteService" />

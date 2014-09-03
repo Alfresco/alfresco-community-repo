@@ -1,0 +1,23 @@
+<webscript>
+   <shortname>Delete Faceted-Search Config</shortname>
+   <description>
+   <![CDATA[
+   Delete faceted-search config, if configured
+   
+   http://<host>:<port>/alfresco/api/solr/facet-config
+   
+   Example response from this web script:
+   
+      {
+         "success" : true | false
+      }
+      
+   Notes:
+   - user must be an Admin, member of Alfresco_Search_Administrators group or a Network Admin for given network/tenant
+   ]]>
+   </description>
+   <url>/api/solr/facet-config/{filterID}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

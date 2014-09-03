@@ -32,6 +32,7 @@ import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.action.executer.CopyActionExecuter;
 import org.alfresco.repo.action.executer.ImageTransformActionExecuter;
+import org.alfresco.repo.action.executer.MoveActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -1268,6 +1269,55 @@ public class RuleServiceImplTest extends BaseRuleTest
         // New node
         NodeRef actionedUponNodeRef = this.nodeService.createNode(folder1NodeRef, ContentModel.ASSOC_CHILDREN, actionedQName, ContentModel.TYPE_CONTENT).getChildRef();
         ContentWriter writer = this.contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype("text/plain");
+        writer.putContent("TestContent");
+        txn.commit();
+
+        // Remove the parent folder
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        try
+        {
+            nodeService.deleteNode(parentFolderNodeRef);
+        }
+        catch (Exception e)
+        {
+            fail("The nodes should be deleted without errors, but exception was thrown: " + e);
+        }
+        txn.commit();
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        assertFalse("The folder should be deleted.", nodeService.exists(parentFolderNodeRef));
+        txn.commit();
+
+        // Now test move action
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        // Create 1 folder with 2 folders inside
+        parentFolderNodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        folder1NodeRef = this.nodeService.createNode(parentFolderNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()),
+                ContentModel.TYPE_FOLDER).getChildRef();
+        folder2NodeRef = this.nodeService.createNode(parentFolderNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()),
+                ContentModel.TYPE_FOLDER).getChildRef();
+
+        // Create rule for folder1
+        testRule = new Rule();
+        testRule.setRuleTypes(Collections.singletonList(RuleType.OUTBOUND));
+        testRule.setTitle("RuleServiceTest" + GUID.generate());
+        testRule.setDescription(DESCRIPTION);
+        testRule.applyToChildren(true);
+        action = this.actionService.createAction(MoveActionExecuter.NAME);
+        action.setParameterValue(CopyActionExecuter.PARAM_DESTINATION_FOLDER, folder2NodeRef);
+        testRule.setAction(action);
+        this.ruleService.saveRule(folder1NodeRef, testRule);
+        assertNotNull("Rule was not saved", testRule.getNodeRef());
+
+        actionedQName = QName.createQName("actioneduponnode" + GUID.generate());
+        // New node
+        actionedUponNodeRef = this.nodeService.createNode(folder1NodeRef, ContentModel.ASSOC_CHILDREN, actionedQName, ContentModel.TYPE_CONTENT).getChildRef();
+        writer = this.contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_CONTENT, true);
         writer.setMimetype("text/plain");
         writer.putContent("TestContent");
         txn.commit();

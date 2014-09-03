@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.repo.action.executer;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -29,6 +30,7 @@ import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Move action executor.
@@ -81,6 +83,15 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
                 && !this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_WORKING_COPY))
         {
             NodeRef destinationParent = (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+
+            // Check the destination not to be in a pending delete list
+            // MNT-11695
+            Set<QName> destinationAspects = nodeService.getAspects(destinationParent);
+            if (destinationAspects.contains(ContentModel.ASPECT_PENDING_DELETE))
+            {
+                return;
+            }
+
             try
             {
                 fileFolderService.move(actionedUponNodeRef, destinationParent, null);

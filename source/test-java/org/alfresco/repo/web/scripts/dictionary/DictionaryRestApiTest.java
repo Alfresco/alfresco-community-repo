@@ -22,6 +22,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -74,42 +75,37 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 	
 	private void validateChildAssociation(JSONObject result) throws Exception
 	{
-		assertEquals("wca:formworkflowdefaults", result.get("name"));
-		assertEquals("Form Workflow Defaults", result.get("title"));
-		assertEquals("Form Workflow Defaults", result.get("description"));
+        assertEquals("cm:member", result.get("name"));
 		assertEquals(true, result.get("isChildAssociation"));
 		assertEquals(false, result.get("protected"));
 		
-		assertEquals("wca:form", result.getJSONObject("source").get("class"));
+		assertEquals("cm:authorityContainer", result.getJSONObject("source").get("class"));
 		assertEquals(false, result.getJSONObject("source").get("mandatory"));
-		assertEquals(false, result.getJSONObject("source").get("many"));
+		assertEquals(true, result.getJSONObject("source").get("many"));
 		
-		assertEquals("wca:workflowdefaults", result.getJSONObject("target").get("class"));
+		assertEquals("cm:authority", result.getJSONObject("target").get("class"));
 		assertEquals(false, result.getJSONObject("target").get("mandatory"));
-		assertEquals(false, result.getJSONObject("target").get("many"));
+		assertEquals(true, result.getJSONObject("target").get("many"));
 		
-		assertEquals("/api/classes/wca_form/association/wca_formworkflowdefaults", result.get("url"));
+		assertTrue(result.get("url").toString().startsWith("/api/classes/"));
+		assertTrue(result.get("url").toString().indexOf("/association/cm_member") > 0);;
 	}
 	
 	private void validateAssociation(JSONObject result) throws Exception
 	{
-		assertEquals("wca:renderingenginetemplates", result.get("name"));
-		assertEquals("Rendering Engine Templates", result.get("title"));
-		assertEquals("Rendering Engine Templates", result.get("description"));
+		assertEquals("cm:workingcopylink", result.get("name"));
 		assertEquals(false, result.get("isChildAssociation"));
 		assertEquals(false, result.get("protected"));
 		
-		assertEquals("wca:form", result.getJSONObject("source").get("class"));
-		assertEquals("wca:capture", result.getJSONObject("source").get("role"));
-		assertEquals(false, result.getJSONObject("source").get("mandatory"));
+		assertEquals("cm:checkedOut", result.getJSONObject("source").get("class"));
+		assertEquals(true, result.getJSONObject("source").get("mandatory"));
 		assertEquals(false, result.getJSONObject("source").get("many"));
 		
-		assertEquals("wca:renderingenginetemplate", result.getJSONObject("target").get("class"));
-		assertEquals("wca:presentation", result.getJSONObject("target").get("role"));
-		assertEquals(false, result.getJSONObject("target").get("mandatory"));
-		assertEquals(true, result.getJSONObject("target").get("many"));
+		assertEquals("cm:workingcopy", result.getJSONObject("target").get("class"));
+		assertEquals(true, result.getJSONObject("target").get("mandatory"));
+		assertEquals(false, result.getJSONObject("target").get("many"));
 		
-		assertEquals("/api/classes/wca_form/association/wca_renderingenginetemplates", result.get("url"));
+		assertEquals("/api/classes/cm_checkedOut/association/cm_workingcopylink", result.get("url"));
 	}
 	private void validateAssociationDef(JSONObject result) throws Exception
 	{
@@ -301,15 +297,13 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
                 validatePropertyDef(result.getJSONObject(i));
             }
             
+            @SuppressWarnings("unused")
             String title = "";
             if (result.getJSONObject(i).has("title") == true)
             {
                 title = result.getJSONObject(i).getString("title");
             }
-            System.out.println(title + " - " + result.getJSONObject(i).getString("name"));
       }
-        
-//        System.out.println("/n/n");
         
         // test /api/properties?name=cm:name&name=cm:title&name=cm:description
         req = new GetRequest(URL_PROPERTIES + "?name=cm:name&name=cm:title&name=cm:description");
@@ -317,17 +311,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
         assertEquals(200, response.getStatus());        
         result = new JSONArray(response.getContentAsString());
         assertEquals(3, result.length());
-//        for (int i = 0; i < result.length(); i++)
-//        {
-//            String title = "";
-//            if (result.getJSONObject(i).has("title") == true)
-//            {
-//                title = result.getJSONObject(i).getString("title");
-//            }
-//            System.out.println(title + " - " + result.getJSONObject(i).getString("name"));
-//        }
-		
-		
 	}
 	
 	public void testGetClassDetail() throws Exception
@@ -789,24 +772,12 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(200,response.getStatus());
 		validateAssociationDef(result);
 		
-		req = new GetRequest(URL_SITES + "/wca_form/association/wca_formworkflowdefaults");
-		response = sendRequest(req, 200);
-		result = new JSONObject(response.getContentAsString());
-		validateChildAssociation(result);
-		assertEquals(200,response.getStatus());
-		
-		req = new GetRequest(URL_SITES + "/wca_form/association/wca_renderingenginetemplates");
-		response = sendRequest(req, 200);
-		result = new JSONObject(response.getContentAsString());
-		validateAssociation(result);
-		assertEquals(200,response.getStatus());
-		
 		//wrong data
 		response = sendRequest(new GetRequest(URL_SITES +"/cm_personalbe/association/cms_avatarsara"), 404);
 		assertEquals(404,response.getStatus());
 		
-		//ask for an invalid association under wca_form , which returns a null array 
-		response = sendRequest(new GetRequest(URL_SITES +"/wca_form/association/cmsavatarsara"), 200);
+		//ask for an invalid association, which returns a null array 
+		response = sendRequest(new GetRequest(URL_SITES +"/cm_person/association/cm_atari"), 200);
 		result = new JSONObject(response.getContentAsString()); // change to return 404
 		assertEquals(0,result.length());
 		assertEquals(200,response.getStatus());
@@ -814,8 +785,10 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 	
 	public void testGetAssociationDefs() throws Exception
 	{
-		//validate with associationfilter=>all  and classname=>wca_form
-		GetRequest req = new GetRequest(URL_SITES + "/wca_form/associations");
+	    // CHILD ASSOCS
+	    
+	    // All associations on cm:authorityContainer
+		GetRequest req = new GetRequest(URL_SITES + "/cm_authorityContainer/associations");
 		Map< String, String > arguments = new HashMap< String, String >();
 		arguments.put("af", "all");
 		req.setArgs(arguments);
@@ -824,17 +797,14 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(result.length()>0, true);
 		for(int i=0; i<result.length(); i++)
 		{
-			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
+			if (result.getJSONObject(i).get("name").equals("cm:member"))
+			{
 				validateChildAssociation(result.getJSONObject(i));
-		}
-		for(int i=0; i<result.length(); i++)
-		{
-			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
-				validateAssociation(result.getJSONObject(i));
+			}
 		}
 		assertEquals(200,response.getStatus());
 		
-		//validate with associationfilter=>child and classname=>wca_form
+		// Child associations on cm:authorityContainer
 		arguments.clear();
 		arguments.put("af", "child");
 		req.setArgs(arguments);
@@ -843,12 +813,46 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(result.length()>0, true);
 		for(int i=0; i<result.length(); i++)
 		{
-			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
-				validateChildAssociation(result.getJSONObject(i));
+            if (result.getJSONObject(i).get("name").equals("cm:member"))
+            {
+                validateChildAssociation(result.getJSONObject(i));
+            }
 		}
 		assertEquals(200,response.getStatus());
 		
-		//validate with associationfilter=>general(that means an association and not child) and classname=>wca_form
+        // look for childassociation cm:member
+        arguments.clear();
+        arguments.put("af", "child");
+        arguments.put("nsp", "cm");
+        arguments.put("n", "member");
+        req.setArgs(arguments);
+        response = sendRequest(req, 200);
+        result = new JSONArray(response.getContentAsString());
+        assertEquals(result.length()>0, true);
+        for(int i=0; i<result.length(); i++)
+        {
+            if (result.getJSONObject(i).get("name").equals("cm:workingcopylink"))
+            {
+                validateChildAssociation(result.getJSONObject(i));
+            }
+        }
+        assertEquals(200,response.getStatus());
+        
+        // cm:authorityContainer has a child_assoc relation with cm:member , but ask for general association, this then returns a null array 
+        arguments.clear();
+        arguments.put("af", "general");
+        arguments.put("nsp", "cm");
+        arguments.put("n", "member");
+        req.setArgs(arguments);
+        response = sendRequest(req, 200);
+        result = new JSONArray(response.getContentAsString());
+        assertEquals(0,result.length());
+        assertEquals(200,response.getStatus());
+        
+        // PEER ASSOCS
+        
+		// Peer associations on cm:checkedOut
+        req = new GetRequest(URL_SITES + "/cm_checkedOut/associations");
 		arguments.clear();
 		arguments.put("af", "general");
 		req.setArgs(arguments);
@@ -857,142 +861,66 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		assertEquals(result.length()>0, true);
 		for(int i=0; i<result.length(); i++)
 		{
-			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
+			if (result.getJSONObject(i).get("name").equals("cm:workingcopylink"))
+			{
 				validateAssociation(result.getJSONObject(i));
+			}
 		}
 		assertEquals(200,response.getStatus());
 		
-		//look for association wca_renderingenginetemplates in the class wca_form => returns a single valid class
+		//look for association cm:workingcopylink
 		arguments.clear();
 		arguments.put("af", "general");
-		arguments.put("nsp", "wca");
-		arguments.put("n", "renderingenginetemplates");
+		arguments.put("nsp", "cm");
+		arguments.put("n", "workingcopylink");
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
 		assertEquals(result.length()>0, true);
 		for(int i=0; i<result.length(); i++)
 		{
-			if(result.getJSONObject(i).get("name").equals("wca:renderingenginetemplates")) 
-				validateAssociation(result.getJSONObject(i));
+            if (result.getJSONObject(i).get("name").equals("cm:workingcopylink"))
+            {
+                validateAssociation(result.getJSONObject(i));
+            }
 		}
 		assertEquals(200,response.getStatus());
 		
-		//look for childassociation wca_formworkflowdefaults in the class wca_form =>returns a single valid class
+		//look for details on cm:checkedOut
+		arguments.clear();
+		arguments.put("nsp", "cm");
+		arguments.put("n", "workingcopylink");
+		req.setArgs(arguments);
+		response = sendRequest(req, 200);
+		result = new JSONArray(response.getContentAsString());
+		assertEquals(result.length()>0, true);
+		for(int i=0; i<result.length(); i++)
+		{
+            if (result.getJSONObject(i).get("name").equals("cm:workingcopylink"))
+            {
+                validateAssociation(result.getJSONObject(i));
+            }
+		}
+		assertEquals(200,response.getStatus());
+		
+		// cm:copiedFrom has a general association relation with cm:object , but ask for child association, this then returns a null array 
 		arguments.clear();
 		arguments.put("af", "child");
-		arguments.put("nsp", "wca");
-		arguments.put("n", "formworkflowdefaults");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(result.length()>0, true);
-		for(int i=0; i<result.length(); i++)
-		{
-			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
-				validateChildAssociation(result.getJSONObject(i));
-		}
-		assertEquals(200,response.getStatus());
-		
-		//look for details on wca_formworkflowdefaults in the class wca_form , with no classfilter
-		arguments.clear();
-		arguments.put("nsp", "wca");
-		arguments.put("n", "formworkflowdefaults");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(result.length()>0, true);
-		for(int i=0; i<result.length(); i++)
-		{
-			if(result.getJSONObject(i).get("name").equals("wca:formworkflowdefaults")) 
-				validateChildAssociation(result.getJSONObject(i));
-		}
-		assertEquals(200,response.getStatus());
-		
-		// wca_formworkflowdefaults has a child_assoc relation with wca_form , but ask for general association, this then returns a null array 
-		arguments.clear();
-		arguments.put("af", "general");
-		arguments.put("nsp", "wca");
-		arguments.put("n", "formworkflowdefaults");
+		arguments.put("nsp", "cm");
+		arguments.put("n", "workingcopylink");
 		req.setArgs(arguments);
 		response = sendRequest(req, 200);
 		result = new JSONArray(response.getContentAsString());
 		assertEquals(0,result.length());
 		assertEquals(200,response.getStatus());
-		
-		// wca_renderingenginetemplates has a general association relation with wca_form , but ask for child association, this then returns a null array 
-		arguments.clear();
-		arguments.put("af", "child");
-		arguments.put("nsp", "wca");
-		arguments.put("n", "renderingenginetemplates");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		result = new JSONArray(response.getContentAsString());
-		assertEquals(0,result.length());
-		assertEquals(200,response.getStatus());
-		
-		//look for childassociation  in the class wca_form , with no name parameter =>both name and namespaceprefix are needed
-		arguments.clear();
-		arguments.put("af", "child");
-		arguments.put("nsp", "wca");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
-		arguments.clear();
-		arguments.put("af", "child");
-		arguments.put("n", "renderingenginetemplates");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
-		arguments.clear();
-		arguments.put("af", "general");
-		arguments.put("n", "formworkflowdefaults");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
-		//look for associations (excluding child assocs)  in the class wca_form , with no name parameter 
-		arguments.clear();
-		arguments.put("af", "general");
-		arguments.put("nsp", "wca");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
 		
 		//wrong data
 		response = sendRequest(new GetRequest(URL_SITES +"/cmsa_personalbe/associations"), 404);
 		assertEquals(404,response.getStatus());
 		
-		//ask for a child-association which is actually not a valid child of classname - wca_form 
-		arguments.clear();
-		arguments.put("af", "child");
-		arguments.put("nsp", "wca");
-		arguments.put("n", "renderingenginetemplates");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		assertEquals(200,response.getStatus());
-		
-		arguments.clear();
-		arguments.put("af", "general");
-		arguments.put("nsp", "wca"); // invalid namespaceprefix => should be of class-type wca
-		arguments.put("n", "renderingenginetemplates");
-		req.setArgs(arguments);
-		response = sendRequest(req, 200);
-		assertEquals(200,response.getStatus());
-		
 		//data without name parameter
 		arguments.clear();
 		arguments.put("nsp", "cm");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
-		//data with invalid association in wca_form
-		arguments.clear();
-		arguments.put("nsp", "wca");
-		arguments.put("n", "dublincore");
 		req.setArgs(arguments);
 		response = sendRequest(req, 404);
 		assertEquals(404,response.getStatus());
@@ -1004,15 +932,6 @@ public class DictionaryRestApiTest extends BaseWebScriptTest
 		req.setArgs(arguments);
 		response = sendRequest(req, 404);
 		assertEquals(404,response.getStatus());
-		
-		//data with invalid class in wca_form
-		arguments.clear();
-		arguments.put("nsp", "wca");
-		arguments.put("n", "dublincore");
-		req.setArgs(arguments);
-		response = sendRequest(req, 404);
-		assertEquals(404,response.getStatus());
-		
 	}
 	
     public void testGetClasses() throws Exception

@@ -45,7 +45,6 @@ hazelcast  	http://www.hazelcast.com/index.jsp
 ibatis		http://ibatis.apache.org/license.html
 jakarta-oro	http://jakarta.apache.org/oro/ 
 Jackson 	http://wiki.fasterxml.com/JacksonDownload
-jcr		http://jackrabbit.apache.org/ 
 joda-time	http://joda-time.sourceforge.net/ 
 J2EE/jsp	Redistributed by Apache foundation.
 EHCache dependency jar	http://mirrors.ibiblio.org/pub/mirrors/maven/net.sf.jsr107cache/licenses/jsr107cache-1.0.license

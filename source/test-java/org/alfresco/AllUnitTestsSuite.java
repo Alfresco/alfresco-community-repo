@@ -70,6 +70,7 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.PropertyMapTest.class));
         suite.addTestSuite(org.alfresco.util.ValueProtectingMapTest.class);
         suite.addTestSuite(org.alfresco.util.json.ExceptionJsonSerializerTest.class);
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.util.collections.CollectionUtilsTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.schemacomp.DbObjectXMLTransformerTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.schemacomp.DbPropertyTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.schemacomp.DefaultComparisonUtilsTest.class));

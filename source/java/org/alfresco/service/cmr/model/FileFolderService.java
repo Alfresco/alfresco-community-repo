@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -443,4 +443,13 @@ public interface FileFolderService
     @Auditable(parameters = {"rootNodeRef"})
     public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
     
+    
+    /**
+     * Helper method to transform a list of {@link NodeRef} to a list of {@link FileInfo}
+     * 
+     * @param nodeRefs
+     * @return list of {@link FileInfo}
+     */
+    @Auditable(parameters = {"nodeRefs"})
+    public List<FileInfo> toFileInfoList(List<NodeRef> nodeRefs);
 }

@@ -440,6 +440,7 @@
                org.alfresco.service.cmr.model.FileFolderService.getNameOnlyPath=ACL_NODE.1.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.resolveNamePath=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.model.FileFolderService.getFileInfo=ACL_NODE.0.sys:base.ReadProperties
+               org.alfresco.service.cmr.model.FileFolderService.toFileInfoList=ACL_ALLOW
                org.alfresco.service.cmr.model.FileFolderService.getReader=ACL_NODE.0.sys:base.ReadContent
                org.alfresco.service.cmr.model.FileFolderService.getWriter=ACL_NODE.0.sys:base.WriteContent
                org.alfresco.service.cmr.model.FileFolderService.exists=ACL_ALLOW

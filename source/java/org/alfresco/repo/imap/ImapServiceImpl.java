@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,6 @@ import static org.alfresco.repo.imap.AlfrescoImapConst.DICTIONARY_TEMPLATE_PREFI
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -65,7 +64,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -81,7 +79,6 @@ import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -1127,7 +1124,17 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             FileFilterMode.setClient(Client.imap);
             try
             {
-                list = fileFolderService.listFolders(root);
+                // Check if the mount point is site root
+                // then shortcut to user's favorite sites
+                // MNT-12055
+                if (serviceRegistry.getSiteService().getSiteRoot().equals(root))
+                {
+                    list = fileFolderService.toFileInfoList(filter.favs);
+                }
+                else
+                {
+                    list = fileFolderService.listFolders(root);
+                }
             }
             finally
             {
@@ -1320,57 +1327,25 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             Map<String, Serializable> prefs = preferenceService.getPreferences(
                     userName, AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES);
     
-            /**
-             * List the user's sites
-             */
-            List<SiteInfo> sites = serviceRegistry.getTransactionService()
-                    .getRetryingTransactionHelper().doInTransaction(
-                            new RetryingTransactionCallback<List<SiteInfo>>()
-                            {
-                                public List<SiteInfo> execute() throws Exception
-                                {
-                                    List<SiteInfo> res = new ArrayList<SiteInfo>();
-                                    try
-                                    {
-    
-                                        res = serviceRegistry.getSiteService()
-                                                .listSites(userName);
-                                    } 
-                                    catch (SiteServiceException e)
-                                    {
-                                        // Do nothing. Root sites folder was not
-                                        // created.
-                                        if (logger.isDebugEnabled())
-                                        {
-                                            logger.warn("[getFavouriteSites] Root sites folder was not created.");
-                                        }
-                                    } 
-                                    catch (InvalidNodeRefException e)
-                                    {
-                                        // Do nothing. Root sites folder was
-                                        // deleted.
-                                        if (logger.isDebugEnabled())
-                                        {
-                                            logger.warn("[getFavouriteSites] Root sites folder was deleted.");
-                                        }
-                                    }
-    
-                                    return res;
-                                }
-                            }, false, true);
-    
-            for (SiteInfo siteInfo : sites)
+            for (String key : prefs.keySet())
             {
-                String key = AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES + "."
-                        + siteInfo.getShortName();
                 Boolean isImapFavourite = (Boolean) prefs.get(key);
                 if (isImapFavourite != null && isImapFavourite)
                 {
-                    if(logger.isDebugEnabled())
+                    String siteName = key.substring(AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES.length() + 1); // count the dot
+                    boolean isMember = serviceRegistry.getSiteService().isMember(siteName, userName);
+                    if (isMember)
                     {
-                        logger.debug("[getFavouriteSites] User: " + userName + " Favourite site: " + siteInfo.getShortName());
+                        SiteInfo siteInfo = serviceRegistry.getSiteService().getSite(siteName);
+                        if (siteInfo != null)
+                        {
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("[getFavouriteSites] User: " + userName + " Favourite site: " + siteInfo.getShortName());
+                            }
+                            favSites.add(siteInfo.getNodeRef());
+                        }
                     }
-                    favSites.add(siteInfo.getNodeRef());
                 }
             }
             if (logger.isDebugEnabled())

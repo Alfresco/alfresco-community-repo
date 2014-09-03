@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -283,6 +284,21 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
 
         // Done
         return fileInfo;
+    }
+
+    public List<FileInfo> toFileInfoList(List<NodeRef> nodeRefs)
+    {
+        List<FileInfo> fileInfos = new LinkedList<FileInfo>();
+        for (NodeRef nodeRef : nodeRefs)
+        {
+            // Use service proxy
+            FileInfo fileInfo = this.getFileInfo(nodeRef);
+            if (fileInfo != null)
+            {
+                fileInfos.add(fileInfo);
+            }
+        }
+        return fileInfos;
     }
 
     /**

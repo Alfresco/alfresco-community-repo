@@ -41,7 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class ForumTopicsRecentGet extends AbstractDiscussionWebScript
 {
-   protected static final int RECENT_SEARCH_PERIOD_DAYS = 30;
+   protected static final int RECENT_SEARCH_PERIOD_DAYS = 7;
    protected static final long ONE_DAY_MS = 24*60*60*1000;
    
    @Override

@@ -431,7 +431,7 @@ public class LockableAspectInterceptorTest
         properties.put(ContentModel.PROP_NAME, "A Name");
         // Lock properties should not be persisted (filtered out by interceptor)
         properties.put(ContentModel.PROP_LOCK_TYPE, LockType.NODE_LOCK);
-        properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL);
+        properties.put(ContentModel.PROP_LOCK_LIFETIME, Lifetime.EPHEMERAL.toString());
         properties.put(ContentModel.PROP_LOCK_OWNER, "Alison Bloggs");
         Date expiryDate = new Date();
         properties.put(ContentModel.PROP_EXPIRY_DATE, expiryDate);

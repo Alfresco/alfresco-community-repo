@@ -55,6 +55,10 @@ public class RegenerateRenditionsEvaluator extends BaseActionEvaluator
     */
    public boolean evaluate(final Node node)
    {
+      // Sparta: disable/remove WCM/AVM
+      return false;
+      
+      /*
       // is the authenticated user permitted to execute the regenerate renditions action
       // against at least one web project
       boolean isUserAllowed = false;
@@ -103,5 +107,6 @@ public class RegenerateRenditionsEvaluator extends BaseActionEvaluator
       }
 
       return (node.hasAspect(WCMAppModel.ASPECT_RENDERING_ENGINE_TEMPLATE) || isWebFormsPath) && isUserAllowed;
+      */
    }
 }

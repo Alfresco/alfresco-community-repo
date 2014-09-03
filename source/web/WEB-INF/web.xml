@@ -929,4 +929,15 @@
       <env-entry-value/> <!-- Empty value included for JBoss compatibility -->
    </env-entry>
 
+   <jsp-config>
+      <taglib>
+         <taglib-uri>http://alfresco.com/alfresco</taglib-uri>
+         <taglib-location>/WEB-INF/alfresco.tld</taglib-location>
+      </taglib>
+
+      <taglib>
+         <taglib-uri>http://alfresco.com/wcm</taglib-uri>
+         <taglib-location>/WEB-INF/wcm.tld</taglib-location>
+      </taglib>
+   </jsp-config>
 </web-app>

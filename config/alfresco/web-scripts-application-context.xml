@@ -1874,6 +1874,6 @@
       <property name="ownableService">
          <ref bean="OwnableService" />
       </property>
-    </bean>
+   </bean>
     
 </beans>

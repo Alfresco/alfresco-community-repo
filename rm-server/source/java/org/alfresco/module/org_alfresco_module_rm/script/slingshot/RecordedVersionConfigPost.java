@@ -43,7 +43,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class RecordedVersionConfigPost extends AbstractRmWebScript implements RecordableVersionModel
 {
     // Constant for recorded version parameter
-    private static final String RECORDED_VERSION = "recordedVersion";
+    public static final String RECORDED_VERSION = "recordedVersion";
 
     /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)

@@ -29,6 +29,8 @@ import org.alfresco.module.org_alfresco_module_rm.model.compatibility.Dictionary
 import org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22RemoveInPlaceRolesFromAllPatchUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigGetTest;
+import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigPostTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGetUnitTest;
@@ -54,30 +56,34 @@ import org.junit.runners.Suite.SuiteClasses;
     DictionaryBootstrapPostProcessorUnitTest.class,
     BeanExtenderUnitTest.class,
     DateParameterProcessorUnitTest.class,
-    
+
     // services
     RecordServiceImplUnitTest.class,
     HoldServiceImplUnitTest.class,
    // FilePlanPermissionServiceImplUnitTest.class, // removed because test unreliable on Bamboo
     RecordableVersionServiceImplUnitTest.class,
-    
+
     // evaluators
     TransferEvaluatorUnitTest.class,
     FrozenEvaluatorUnitTest.class,
-    
+
     // web scripts
     HoldsGetUnitTest.class,
     HoldPostUnitTest.class,
     HoldPutUnitTest.class,
-    
+
     // capability conditions
     HoldCapabilityConditionUnitTest.class,
-    
+
     // action implementations
     FileReportActionUnitTest.class,
-    
+
     // patches
-    RMv22RemoveInPlaceRolesFromAllPatchUnitTest.class
+    RMv22RemoveInPlaceRolesFromAllPatchUnitTest.class,
+
+    // recorded version config
+    RecordedVersionConfigGetTest.class,
+    RecordedVersionConfigPostTest.class
 })
 public class AllUnitTestSuite
 {

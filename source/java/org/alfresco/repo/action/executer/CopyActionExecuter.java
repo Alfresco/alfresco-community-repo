@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,9 @@
 package org.alfresco.repo.action.executer;
 
 import java.util.List;
+import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
@@ -36,6 +38,7 @@ import org.alfresco.service.cmr.repository.CopyService.CopyInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.rule.RuleServiceException;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Copy action executor.
@@ -98,13 +101,21 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {
         if (!nodeService.exists(actionedUponNodeRef))
-	{
+        {
             return;
-    	}
-            NodeRef destinationParent = (NodeRef)ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
-            
-            // Get the deep copy value
-            boolean deepCopy = false;
+        }
+        NodeRef destinationParent = (NodeRef) ruleAction.getParameterValue(PARAM_DESTINATION_FOLDER);
+
+        // Check the destination not to be in a pending delete list
+        // MNT-11695
+        Set<QName> destinationAspects = nodeService.getAspects(destinationParent);
+        if (destinationAspects.contains(ContentModel.ASPECT_PENDING_DELETE))
+        {
+            return;
+        }
+
+        // Get the deep copy value
+        boolean deepCopy = false;
         Boolean deepCopyValue = (Boolean)ruleAction.getParameterValue(PARAM_DEEP_COPY);
         if (deepCopyValue != null)
         {
@@ -165,5 +176,5 @@ public class CopyActionExecuter extends ActionExecuterAbstractBase
                     originalAssoc.getQName(),
 	                deepCopy);
         }
-		}
+    }
 }

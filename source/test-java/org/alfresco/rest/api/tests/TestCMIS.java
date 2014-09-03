@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
@@ -6,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.AbstractList;
@@ -98,6 +117,26 @@ import org.springframework.context.ApplicationContext;
 
 public class TestCMIS extends EnterpriseTestApi
 {
+    private static final String CMIS_VERSION_10 = "1.0";
+
+    private static final String CMIS_VERSION_11 = "1.1";
+
+    private static final String TYPE_CMIS_DOCUMENT = "cmis:document";
+
+
+    private static final String DOCUMENT_LIBRARY_CONTAINER_NAME = "documentLibrary";
+
+    private static final String TEST_SITE_NAME_PATTERN = "testSite-%d";
+
+    private static final String TEST_USER_NAME_PATTERN = "testUser-%d";
+
+    private static final String TEST_DOCUMENT_NAME_PATTERN = "testDocument-%s.txt";
+
+	private static final String DOCUMENT_LIBRARY_PATH_PATTERN = "/Sites/%s/" + DOCUMENT_LIBRARY_CONTAINER_NAME;
+
+    private static final String TEST_PASSWORD = "password";
+
+
     private DictionaryDAO dictionaryDAO;
     private LockService lockService;
     private TenantService tenantService;
@@ -196,7 +235,7 @@ public class TestCMIS extends EnterpriseTestApi
         }, personId, network1.getId());
 
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
         Nodes nodesProxy = publicApiClient.nodes();
         Comments commentsProxy = publicApiClient.comments();
 
@@ -244,7 +283,7 @@ public class TestCMIS extends EnterpriseTestApi
                 {
                     properties = new HashMap<String, String>();
                     {
-                        properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+			        	properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
                         properties.put(PropertyIds.NAME, "doc-" + j);
                     }
 
@@ -272,7 +311,7 @@ public class TestCMIS extends EnterpriseTestApi
             {
                 Map<String, String> properties = new HashMap<String, String>();
                 {
-                    properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+		        	properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
                     properties.put(PropertyIds.NAME, "doc-" + i);
                 }
 
@@ -339,7 +378,7 @@ public class TestCMIS extends EnterpriseTestApi
         {
             Map<String, String> fileProps = new HashMap<String, String>();
             {
-                fileProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+	            fileProps.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
                 fileProps.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
             }
             ContentStreamImpl fileContent = new ContentStreamImpl();
@@ -480,7 +519,7 @@ public class TestCMIS extends EnterpriseTestApi
             List<Document> allVersions = doc.getAllVersions();
             assertEquals(2, allVersions.size());
             assertEquals("2.0", allVersions.get(0).getVersionLabel());
-            assertEquals("1.0", allVersions.get(1).getVersionLabel());
+			assertEquals(CMIS_VERSION_10, allVersions.get(1).getVersionLabel());
         }
         
         {
@@ -489,7 +528,7 @@ public class TestCMIS extends EnterpriseTestApi
 
             Map<String, String> fileProps = new HashMap<String, String>();
             {
-                fileProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+	            fileProps.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
                 fileProps.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
             }
             ContentStreamImpl fileContent = new ContentStreamImpl();
@@ -526,7 +565,7 @@ public class TestCMIS extends EnterpriseTestApi
                 // do a few checkout, checkin cycles to create some versions
                 fileProps = new HashMap<String, String>();
                 {
-                    fileProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+		            fileProps.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
                     fileProps.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
                 }
 
@@ -580,7 +619,7 @@ public class TestCMIS extends EnterpriseTestApi
         Sites sitesProxy = publicApiClient.sites();
         Comments commentsProxy = publicApiClient.comments();
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
         
         ListResponse<MemberOfSite> sites = sitesProxy.getPersonSites(person, null);
         assertTrue(sites.getList().size() > 0);
@@ -593,7 +632,7 @@ public class TestCMIS extends EnterpriseTestApi
 
         Map<String, String> fileProps = new HashMap<String, String>();
         {
-            fileProps.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+            fileProps.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
             fileProps.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
         }
         ContentStreamImpl fileContent = new ContentStreamImpl();
@@ -658,7 +697,7 @@ public class TestCMIS extends EnterpriseTestApi
         {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
 
-            publicApiClient.post(Binding.atom, "1.0", null, null);
+			publicApiClient.post(Binding.atom, CMIS_VERSION_10, null, null);
             
             fail();
         }
@@ -671,7 +710,7 @@ public class TestCMIS extends EnterpriseTestApi
         {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
             
-            publicApiClient.head(Binding.atom, "1.0", null, null);
+			publicApiClient.head(Binding.atom, CMIS_VERSION_10, null, null);
             
             fail();
         }
@@ -684,7 +723,7 @@ public class TestCMIS extends EnterpriseTestApi
         {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
             
-            publicApiClient.options(Binding.atom, "1.0", null, null);
+			publicApiClient.options(Binding.atom, CMIS_VERSION_10, null, null);
             
             fail();
         }
@@ -697,7 +736,7 @@ public class TestCMIS extends EnterpriseTestApi
         {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
             
-            publicApiClient.trace(Binding.atom, "1.0", null, null);
+			publicApiClient.trace(Binding.atom, CMIS_VERSION_10, null, null);
             
             fail();
         }
@@ -710,7 +749,7 @@ public class TestCMIS extends EnterpriseTestApi
         {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person));
             
-            publicApiClient.patch(Binding.atom, "1.0", null, null);
+			publicApiClient.patch(Binding.atom, CMIS_VERSION_10, null, null);
             
             fail();
         }
@@ -745,11 +784,11 @@ public class TestCMIS extends EnterpriseTestApi
                 SiteInformation siteInfo2 = new SiteInformation(siteName2, siteName2, siteName2, SiteVisibility.PRIVATE);
                 TestSite site2 = network1.createSite(siteInfo2);
 
-                NodeRef nodeRef1 = repoService.createDocument(site1.getContainerNodeRef("documentLibrary"), "Test Doc1", "Test Doc1 Title", "Test Doc1 Description", "Test Content");
+				NodeRef nodeRef1 = repoService.createDocument(site1.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), "Test Doc1", "Test Doc1 Title", "Test Doc1 Description", "Test Content");
                 nodes.add(nodeRef1);
-                NodeRef nodeRef2 = repoService.createDocument(site1.getContainerNodeRef("documentLibrary"), "Test Doc2", "Test Doc2 Title", "Test Doc2 Description", "Test Content");
+				NodeRef nodeRef2 = repoService.createDocument(site1.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), "Test Doc2", "Test Doc2 Title", "Test Doc2 Description", "Test Content");
                 nodes.add(nodeRef2);
-                NodeRef nodeRef3 = repoService.createDocument(site2.getContainerNodeRef("documentLibrary"), "Test Doc2", "Test Doc2 Title", "Test Doc2 Description", "Test Content");
+				NodeRef nodeRef3 = repoService.createDocument(site2.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), "Test Doc2", "Test Doc2 Title", "Test Doc2 Description", "Test Content");
                 nodes.add(nodeRef3);
                 repoService.createAssociation(nodeRef2, nodeRef1, ContentModel.ASSOC_ORIGINAL);
                 repoService.createAssociation(nodeRef3, nodeRef1, ContentModel.ASSOC_ORIGINAL);
@@ -764,7 +803,7 @@ public class TestCMIS extends EnterpriseTestApi
             OperationContext cmisOperationCtxOverride = new OperationContextImpl();
             cmisOperationCtxOverride.setIncludeRelationships(IncludeRelationships.BOTH);
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id, cmisOperationCtxOverride));
-            CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+    		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
 
             CmisObject o1 = cmisSession.getObject(nodes.get(0).getId());
             List<Relationship> relationships = o1.getRelationships();
@@ -783,7 +822,7 @@ public class TestCMIS extends EnterpriseTestApi
     public void testObjectIds() throws Exception
     {
         String username = "enterpriseuser" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+		PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person = repoService.createUser(personInfo, username, null);
         String personId = person.getId();
 
@@ -800,7 +839,7 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
                 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+				NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 folders.add(folderNodeRef);
 
                 name = GUID.generate();
@@ -898,7 +937,7 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
                 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+				NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 folders1.add(folderNodeRef);
 
                 name = GUID.generate();
@@ -914,7 +953,7 @@ public class TestCMIS extends EnterpriseTestApi
 
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
         
-        cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+		cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
 
         // test CMIS accepts NodeRefs and guids as input
         // objectIds returned from public api CMIS are always the guid
@@ -982,7 +1021,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+		PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -999,7 +1038,7 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+				NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 folders.add(folderNodeRef);
 
                 for(int i = 0; i < 3; i++)
@@ -1019,9 +1058,9 @@ public class TestCMIS extends EnterpriseTestApi
         final NodeRef doc3NodeRef = documents.get(2);
 
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession atomCmisSession10 = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
-        CmisSession atomCmisSession11 = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
-        CmisSession browserCmisSession11 = publicApiClient.createPublicApiCMISSession(Binding.browser, "1.1");
+		CmisSession atomCmisSession10 = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
+		CmisSession atomCmisSession11 = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
+		CmisSession browserCmisSession11 = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11);
 
         // Test that adding aspects works for both 1.0 and 1.1
 
@@ -1245,7 +1284,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+		PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1255,7 +1294,7 @@ public class TestCMIS extends EnterpriseTestApi
 
         // and that we can't get to it through CMIS
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
         try
         {
             cmisSession.getTypeDefinition("D:testCMIS:type1");
@@ -1277,7 +1316,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+		PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1292,18 +1331,18 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+				NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 return folderNodeRef;
             }
         }, person1Id, network1.getId());
 
         // Create a document...
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
         AlfrescoFolder docLibrary = (AlfrescoFolder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         Map<String, String> properties = new HashMap<String, String>();
         {
-            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+        	properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
             properties.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
         }
         ContentStreamImpl fileContent = new ContentStreamImpl();
@@ -1355,7 +1394,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+		PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1370,14 +1409,14 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+				NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 return folderNodeRef;
             }
         }, person1Id, network1.getId());
 
         // Create a document...
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
         AlfrescoFolder docLibrary = (AlfrescoFolder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         Map<String, String> properties = new HashMap<String, String>();
         {
@@ -1396,11 +1435,11 @@ public class TestCMIS extends EnterpriseTestApi
         
         AlfrescoDocument doc = (AlfrescoDocument)docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
         String versionLabel = doc.getVersionLabel();
-        assertEquals("1.0", versionLabel);
+		assertEquals(CMIS_VERSION_10, versionLabel);
 
         AlfrescoDocument doc1 = (AlfrescoDocument)doc.getObjectOfLatestVersion(false);
         String versionLabel1 = doc1.getVersionLabel();
-        assertEquals("1.0", versionLabel1);
+		assertEquals(CMIS_VERSION_10, versionLabel1);
     }
     
     /* MNT-10175 test */
@@ -1410,7 +1449,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1425,7 +1464,7 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 return folderNodeRef;
             }
         }, person1Id, network1.getId());
@@ -1433,12 +1472,12 @@ public class TestCMIS extends EnterpriseTestApi
         // Create a document
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
         // Use CMIS 1.1 to test content appending
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
         Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         String name = GUID.generate() + ".txt";
         Map<String, String> properties = new HashMap<String, String>();
         {
-            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+            properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
             properties.put(PropertyIds.NAME, name);
         }
         // Create content to append
@@ -1485,7 +1524,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1500,20 +1539,20 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 return folderNodeRef;
             }
         }, person1Id, network1.getId());
 
         // Create a document...
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
         Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         String name = "mydoc-" + GUID.generate() + ".txt";
         Map<String, String> properties = new HashMap<String, String>();
         {
             // create a document with 2 aspects
-            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+            properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
             properties.put(PropertyIds.NAME, name);
         }
         ContentStreamImpl fileContent = new ContentStreamImpl();
@@ -1567,7 +1606,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+	    PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1582,14 +1621,14 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+	            NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 return folderNodeRef;
             }
                 }, person1Id, network1.getId());
 
         // Create a document...
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+	    CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
         Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         String name = "mydoc-" + GUID.generate() + ".txt";
         final List<String> secondaryTypes = new ArrayList<String>();
@@ -1597,7 +1636,7 @@ public class TestCMIS extends EnterpriseTestApi
         Map<String, Object> properties = new HashMap<String, Object>();
         {
             // create a document with 2 aspects
-            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+	        properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
             properties.put(PropertyIds.SECONDARY_OBJECT_TYPE_IDS, secondaryTypes);
             properties.put("cm:summary", "My summary");
             properties.put(PropertyIds.NAME, name);
@@ -1659,7 +1698,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1676,14 +1715,14 @@ public class TestCMIS extends EnterpriseTestApi
                 SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
                 TestSite site = repoService.createSite(null, siteInfo);
 
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), nodeName);
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), nodeName);
                 /* create node with property description */
                 return repoService.createDocument(folderNodeRef, nodeName, "title", nodeDescription, "content");
             }
         }, person1Id, network1.getId());
 
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
         Document doc = 
                 (Document)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary/" + nodeName + "/" + nodeName);
 
@@ -1704,7 +1743,7 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
@@ -1719,19 +1758,19 @@ public class TestCMIS extends EnterpriseTestApi
                 TestSite site = repoService.createSite(null, siteInfo);
 
                 String name = GUID.generate();
-                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 return folderNodeRef;
             }
         }, person1Id, network1.getId());
 
         // Create a document...
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.1");
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
         Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
         String name = "mydoc-" + GUID.generate() + ".txt";
         Map<String, Object> properties = new HashMap<String, Object>();
         {
-            properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+            properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
             properties.put(PropertyIds.NAME, name);
         }
         ContentStreamImpl fileContent = new ContentStreamImpl();
@@ -1777,13 +1816,13 @@ public class TestCMIS extends EnterpriseTestApi
         final TestNetwork network1 = getTestFixture().getRandomNetwork();
 
         String username = "user" + System.currentTimeMillis();
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null,
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null,
         		null, null, null, null, null);
         TestPerson person1 = network1.createUser(personInfo);
         String person1Id = person1.getId();
 
         publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, "1.1",
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.browser, CMIS_VERSION_11,
         		"org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl");
 
 		ObjectType objectType = cmisSession.getTypeDefinition("D:testcmis:maDoc");
@@ -1797,5 +1836,82 @@ public class TestCMIS extends EnterpriseTestApi
 		}
 		assertEquals(1, mandatoryAspects.size());
 		assertEquals("P:cm:generalclassifiable", mandatoryAspects.get(0));
+    }
+
+    @Test
+    public void testMnt11631() throws Exception
+    {
+        final TestNetwork network = getTestFixture().getRandomNetwork();
+
+        String username = String.format(TEST_USER_NAME_PATTERN, System.currentTimeMillis());
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
+        TestPerson person = network.createUser(personInfo);
+        String personId = person.getId();
+
+        final String siteName = String.format(TEST_SITE_NAME_PATTERN, System.currentTimeMillis());
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+
+                String name = GUID.generate();
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
+                return folderNodeRef;
+            }
+        }, personId, network.getId());
+
+        publicApiClient.setRequestContext(new RequestContext(network.getId(), personId));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
+        Folder docLibrary = (Folder) cmisSession.getObjectByPath(String.format(DOCUMENT_LIBRARY_PATH_PATTERN, siteName));
+        String name = String.format(TEST_DOCUMENT_NAME_PATTERN, GUID.generate());
+
+        Map<String, Object> properties = new HashMap<String, Object>();
+        properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
+        properties.put(PropertyIds.NAME, name);
+
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        ByteArrayInputStream stream = new ByteArrayInputStream(GUID.generate().getBytes());
+        fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        fileContent.setStream(stream);
+
+        Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+
+        ObjectId pwcId = doc.checkOut();
+        Document pwc = (Document) cmisSession.getObject(pwcId.getId());
+
+        assertIsPwcProperty(pwc, false);
+
+        cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10);
+        CmisObject pwc10 = cmisSession.getObject(pwc.getId());
+        assertIsPwcProperty(pwc10, true);
+    }
+
+    private void assertIsPwcProperty(CmisObject pwc, boolean nullExpected)
+    {
+        boolean isPwcFound = false;
+        Boolean isPwcValueTrue = null;
+        for (Property<?> property : pwc.getProperties())
+        {
+            if ((null != property) && PropertyIds.IS_PRIVATE_WORKING_COPY.equals(property.getId()))
+            {
+                isPwcFound = true;
+                isPwcValueTrue = property.getValue();
+                break;
+            }
+        }
+
+        if (nullExpected)
+        {
+            assertTrue(("'" + PropertyIds.IS_PRIVATE_WORKING_COPY + "' property is not null!"), !isPwcFound || (null == isPwcValueTrue));
+            return;
+        }
+
+        assertTrue(("'" + PropertyIds.IS_PRIVATE_WORKING_COPY + "' property has not been found!"), isPwcFound);
+        assertNotNull(("'" + PropertyIds.IS_PRIVATE_WORKING_COPY + "' property value must not be null!"), isPwcValueTrue);
+        assertTrue(("'" + PropertyIds.IS_PRIVATE_WORKING_COPY + "' property value must be equal to 'true'!"), isPwcValueTrue);
     }
 }

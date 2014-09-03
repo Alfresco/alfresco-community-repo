@@ -75,6 +75,7 @@
             </list>
         </property>
     </bean>
+    -->
     
     
     <bean id="search.fts.alfresco.switching" class="org.alfresco.repo.search.impl.solr.DbOrIndexSwitchingQueryLanguage" >
@@ -132,7 +133,6 @@
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="tenantService" ref="tenantService"/>
     </bean>
-    -->
    
    <bean id="search.dbQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">

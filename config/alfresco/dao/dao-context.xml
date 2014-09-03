@@ -305,7 +305,9 @@
       <property name="protocolToACLDAO">
          <map>
             <entry key="workspace"><ref bean="admNodeACLDAO"></ref></entry>
+           <!-- Sparta: remove WCM/AVM
             <entry key="avm"><ref bean="avmNodeACLDAO"/></entry>
+           -->
          </map>
       </property>
       <property name="defaultACLDAO">

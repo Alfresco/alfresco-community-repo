@@ -193,7 +193,7 @@ public class LockableAspectInterceptor implements MethodInterceptor
             /* MNT-10477 fix */
             checkForLockIfEphemeral(nodeRef);
 
-            if (newProperties.get(ContentModel.PROP_LOCK_LIFETIME) == Lifetime.EPHEMERAL)
+            if (Lifetime.EPHEMERAL.toString().equals(newProperties.get(ContentModel.PROP_LOCK_LIFETIME)))
             {
                 Map<QName, Serializable> convertedProperties = filterLockProperties(newProperties);
                 // Now complete the call by passing the converted properties

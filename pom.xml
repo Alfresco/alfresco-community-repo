@@ -36,6 +36,14 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- AMPS files -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-spp</artifactId>
+            <version>${project.version}</version>
+            <type>amp</type>
+        </dependency>
+
         <!-- JAR files, to extract alfresco/extension -->
         <dependency>
             <groupId>org.alfresco</groupId>

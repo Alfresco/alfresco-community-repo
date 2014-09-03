@@ -46,7 +46,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.*;
 
 /**
  * This class tests the ReST API of the {@link SolrFacetService}.
- * 
+ *
  * @author Neil Mc Erlean
  * @author Jamal Kaabi-Mofrad
  * @since 5.0
@@ -55,14 +55,14 @@ public class FacetRestApiTest extends BaseWebScriptTest
 {
     private static final String SEARCH_ADMIN_USER     = "searchAdmin";
     private static final String NON_SEARCH_ADMIN_USER = "nonSearchAdmin";
-    
+
     private static final String FACETS = "facets";
-    
+
     private final static String GET_FACETS_URL       = "/api/solr/facet-config";
     private final static String PUT_FACET_URL_FORMAT = "/api/solr/facet-config/{0}?relativePos={1}";
     private final static String POST_FACETS_URL      = GET_FACETS_URL;
     private final static String PUT_FACETS_URL       = GET_FACETS_URL;
-    
+
     private MutableAuthenticationService authenticationService;
     private AuthorityService             authorityService;
     private PersonService                personService;
@@ -77,6 +77,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         personService         = getServer().getApplicationContext().getBean("PersonService", PersonService.class);
         transactionHelper     = getServer().getApplicationContext().getBean("retryingTransactionHelper", RetryingTransactionHelper.class);
 
+        AuthenticationUtil.clearCurrentSecurityContext();
         // Create test users. TODO Create these users @BeforeClass or at a testsuite scope.
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
@@ -84,7 +85,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
             {
                 createUser(SEARCH_ADMIN_USER);
                 createUser(NON_SEARCH_ADMIN_USER);
-                
+
                 if ( !authorityService.getContainingAuthorities(AuthorityType.GROUP,
                                                                 SEARCH_ADMIN_USER,
                                                                 true)
@@ -97,7 +98,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         });
     }
-    
+
     @Override public void tearDown() throws Exception
     {
         super.tearDown();
@@ -128,8 +129,9 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 return null;
             }
         });
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
-    
+
     public void testNonSearchAdminUserCannotCreateUpdateSolrFacets() throws Exception
     {
         // Create a filter
@@ -144,7 +146,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         filter.put("hitThreshold", 1);
         filter.put("minFilterValueLength", 4);
         filter.put("sortBy", "ALPHABETICALLY");
-        
+
         // Non-Search-Admin tries to create a filter
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
@@ -156,7 +158,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 return null;
             }
         }, NON_SEARCH_ADMIN_USER);
-        
+
         // Search-Admin creates a filter
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
@@ -168,7 +170,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 return null;
             }
         }, SEARCH_ADMIN_USER);
-        
+
         // Non-Search-Admin tries to modify the filter
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
@@ -182,7 +184,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 // Now change the maxFilters value and try to update
                 jsonRsp.put("maxFilters", 10);
                 sendRequest(new PutRequest(PUT_FACETS_URL, jsonRsp.toString(), "application/json"), 403);
-                
+
                 return null;
             }
         }, NON_SEARCH_ADMIN_USER);
@@ -210,14 +212,14 @@ public class FacetRestApiTest extends BaseWebScriptTest
             @Override public Void doWork() throws Exception
             {
                 Response rsp = sendRequest(new GetRequest(GET_FACETS_URL), 200);
-                
+
                 String contentAsString = rsp.getContentAsString();
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(contentAsString));
-                
+
                 // FIXME The JSON payload should be contained within a 'data' object.
                 JSONArray facetsArray = (JSONArray)jsonRsp.get(FACETS);
                 assertNotNull("JSON 'facets' array was null", facetsArray);
-                
+
                 // We'll not add any further assertions on the JSON content. If we've
                 // got valid JSON at this point, then that's good enough.
                 return null;
@@ -233,41 +235,41 @@ public class FacetRestApiTest extends BaseWebScriptTest
             {
                 // get the existing facets.
                 Response rsp = sendRequest(new GetRequest(GET_FACETS_URL), 200);
-                
+
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-                
+
                 final JSONArray facetsArray = (JSONArray)jsonRsp.get(FACETS);
                 assertNotNull("JSON 'facets' array was null", facetsArray);
-                
+
                 System.out.println("Received " + facetsArray.length() + " facets");
-                
+
                 final List<String> idsIndexes = getListFromJsonArray(facetsArray);
-                
+
                 System.out.println(" IDs, indexes = " + idsIndexes);
-                
+
                 // Reorder them such that the last facet is moved left one place.
                 assertTrue("There should be more than 1 built-in facet", facetsArray.length() > 1);
-                
+
                 final String lastIndexId = idsIndexes.get(idsIndexes.size() - 1);
                 final String url = PUT_FACET_URL_FORMAT.replace("{0}", lastIndexId)
                                                        .replace("{1}", "-1");
                 rsp = sendRequest(new PutRequest(url, "", "application/json"), 200);
-                
-                
+
+
                 // Now get the facets back and we should see that one has moved.
                 rsp = sendRequest(new GetRequest(GET_FACETS_URL), 200);
-                
+
                 jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-                
+
                 JSONArray newfacetsArray = (JSONArray)jsonRsp.get(FACETS);
                 assertNotNull("JSON 'facets' array was null", newfacetsArray);
-                
+
                 System.out.println("Received " + newfacetsArray.length() + " facets");
-                
+
                 final List<String> newIdsIndexes = getListFromJsonArray(newfacetsArray);
-                
+
                 System.out.println(" IDs, indexes = " + newIdsIndexes);
-                
+
                 // Note here that the last Facet JSON object *is* moved one place up the list.
                 assertEquals(CollectionUtils.moveLeft(1, lastIndexId, idsIndexes), newIdsIndexes);
                 return null;
@@ -313,7 +315,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 assertEquals("ALL", jsonRsp.getString("scope"));
                 assertFalse(jsonRsp.getBoolean("isEnabled"));
                 assertFalse(jsonRsp.getBoolean("isDefault"));
-                
+
                 // Build the Filter object with all the values
                 JSONObject filter_two = new JSONObject();
                 String filterNameTwo = "filterTwo" + System.currentTimeMillis();
@@ -492,14 +494,14 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }
         return result;
     }
-    
+
     private void createUser(String userName)
     {
         if (! authenticationService.authenticationExists(userName))
         {
             authenticationService.createAuthentication(userName, "PWD".toCharArray());
         }
-        
+
         if (! personService.personExists(userName))
         {
             PropertyMap ppOne = new PropertyMap(4);
@@ -508,11 +510,11 @@ public class FacetRestApiTest extends BaseWebScriptTest
             ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
             ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
             ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-            
+
             personService.createPerson(ppOne);
         }
     }
-    
+
     private void deleteUser(String userName)
     {
         if (personService.personExists(userName))

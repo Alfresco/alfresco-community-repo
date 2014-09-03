@@ -102,7 +102,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     private SimpleCache<String, Object> singletonCache; // eg. for facetsHomeNodeRef
     private final String KEY_FACETS_HOME_NODEREF = "key.facetshome.noderef";
     private SimpleCache<String, NodeRef> facetNodeRefCache; // for filterID to nodeRef lookup
-    private NavigableMap<Integer, SolrFacetProperties> facetsMap = new ConcurrentSkipListMap<>();
+    private NavigableMap<Integer, SolrFacetProperties> facetsMap = new ConcurrentSkipListMap<>(); // TODO
     private int maxAllowedFilters = 100;
 
     /**
@@ -455,8 +455,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         {
             logger.debug("Deleted [" + filterID + "] facet.");
         }
-        
-        // TODO Remove the matching filterID from the property list on the container.
     }
 
     private Map<QName, Serializable> createNodeProperties(SolrFacetProperties facetProperties)
@@ -652,6 +650,17 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         SolrFacetProperties fp = getFacetProperties(childAssocRef.getChildRef());
         this.facetsMap.put(fp.getIndex(), fp);
         this.facetNodeRefCache.put(fp.getFilterID(), childAssocRef.getChildRef());
+        
+        // We must also add the new filterID to the facetOrder property.
+        final NodeRef facetsRoot = getFacetsRoot();
+        
+        @SuppressWarnings("unchecked")
+        ArrayList<String> facetOrder = (ArrayList<String>) nodeService.getProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER);
+        
+        // We'll put it at the end (arbitrarily).
+        facetOrder.add(fp.getFilterID());
+        
+        nodeService.setProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER, facetOrder);
     }
 
     @Override
@@ -662,6 +671,17 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
 
         this.facetsMap.remove(index);
         this.facetNodeRefCache.remove(filterID);
+        
+        // We must also remove the filterID from the facetOrder property.
+        final NodeRef facetsRoot = getFacetsRoot();
+        
+        @SuppressWarnings("unchecked")
+        ArrayList<String> facetOrder = (ArrayList<String>) nodeService.getProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER);
+        
+        if (facetOrder.remove(filterID))
+        {
+            nodeService.setProperty(facetsRoot, SolrFacetModel.PROP_FACET_ORDER, facetOrder);
+        }
     }
 
     @Override

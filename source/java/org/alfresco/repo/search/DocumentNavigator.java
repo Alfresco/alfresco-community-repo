@@ -60,12 +60,6 @@ import org.jaxen.XPath;
  */
 public class DocumentNavigator extends DefaultNavigator implements NamedAccessNavigator
 {
-    private static QName JCR_ROOT = QName.createQName("http://www.jcp.org/jcr/1.0", "root");
-    
-    private static QName JCR_PRIMARY_TYPE = QName.createQName("http://www.jcp.org/jcr/1.0", "primaryType");
-    
-    private static QName JCR_MIXIN_TYPES = QName.createQName("http://www.jcp.org/jcr/1.0", "mixinTypes");
-    
     private static final long serialVersionUID = 3618984485740165427L;
 
     private DictionaryService dictionaryService;
@@ -108,30 +102,17 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         }
     }
     
-    public class JCRRootNodeChildAssociationRef extends ChildAssociationRef
-    {
-
-        /**
-         * Comment for <code>serialVersionUID</code>
-         */
-        private static final long serialVersionUID = -3890194577752476675L;
-
-        public JCRRootNodeChildAssociationRef(QName assocTypeQName, NodeRef parentRef, QName childQName, NodeRef childRef)
-        {
-            super(assocTypeQName, parentRef, childQName, childRef);
-        }
-        
-        public JCRRootNodeChildAssociationRef(QName assocTypeQName, NodeRef parentRef, QName childQName, NodeRef childRef, boolean isPrimary, int nthSibling)
-        {
-            super(assocTypeQName, parentRef, childQName, childRef, isPrimary, nthSibling);
-        }
-        
-    }
-
     private boolean followAllParentLinks;
     
-    private boolean useJCRRootNode;
-
+    /**
+     * @deprecated useJCRRootNode parameter is now obsolete.
+     */
+    public DocumentNavigator(DictionaryService dictionaryService, NodeService nodeService, SearchService searchService,
+            NamespacePrefixResolver nspr, boolean followAllParentLinks, boolean useJCRRootNode)
+    {
+        this(dictionaryService, nodeService, searchService, nspr, followAllParentLinks);
+    }
+    
     /**
      * @param dictionaryService
      *            used to resolve the <b>subtypeOf</b> function and other
@@ -149,7 +130,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
      *            parent-child association should be traversed
      */
     public DocumentNavigator(DictionaryService dictionaryService, NodeService nodeService, SearchService searchService,
-            NamespacePrefixResolver nspr, boolean followAllParentLinks, boolean useJCRRootNode)
+            NamespacePrefixResolver nspr, boolean followAllParentLinks)
     {
         super();
         this.dictionaryService = dictionaryService;
@@ -157,7 +138,6 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         this.searchService = searchService;
         this.nspr = nspr;
         this.followAllParentLinks = followAllParentLinks;
-        this.useJCRRootNode = useJCRRootNode;
     }
 
     
@@ -379,14 +359,6 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
                 properties.add(property);
             }        
         }
-        if(useJCRRootNode)
-        {
-            properties.add(new Property(JCR_PRIMARY_TYPE, nodeService.getType(nodeRef), nodeRef));
-            for(QName mixin : nodeService.getAspects(nodeRef))
-            {
-                properties.add(new Property(JCR_MIXIN_TYPES, mixin, nodeRef));
-            }
-        }
         
         return properties.iterator();
     }
@@ -400,18 +372,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         NodeRef childRef = assocRef.getChildRef();
         QName qName = QName.createQName(namespaceURI, localName);
         List<? extends ChildAssociationRef> list = null;
-        // Add compatability for JCR 170 by including the root node.
-        if(isDocument(contextNode) && useJCRRootNode)
-        {
-            list = new ArrayList<ChildAssociationRef>(1);
-            list = Collections.singletonList(
-                    new JCRRootNodeChildAssociationRef(
-                            ContentModel.ASSOC_CHILDREN, childRef, JCR_ROOT, childRef, true, 0));
-        }
-        else
-        {
-            list = nodeService.getChildAssocs(childRef, RegexQNamePattern.MATCH_ALL, qName);
-        }
+        list = nodeService.getChildAssocs(childRef, RegexQNamePattern.MATCH_ALL, qName);
         // done
         return list.iterator();
     }
@@ -422,16 +383,7 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         ChildAssociationRef assocRef = (ChildAssociationRef) o;
         NodeRef childRef = assocRef.getChildRef();
         List<ChildAssociationRef> list;
-        // Add compatability for JCR 170 by including the root node.
-        if(isDocument(o) && useJCRRootNode)
-        {
-            list = new ArrayList<ChildAssociationRef>(1);
-            list.add(new JCRRootNodeChildAssociationRef(ContentModel.ASSOC_CHILDREN, childRef, JCR_ROOT, childRef, true, 0));
-        }
-        else
-        {
-            list = nodeService.getChildAssocs(childRef);
-        }
+        list = nodeService.getChildAssocs(childRef);
         return list.iterator();
     }
 

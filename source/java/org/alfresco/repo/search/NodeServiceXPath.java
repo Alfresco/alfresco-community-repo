@@ -88,8 +88,6 @@ public class NodeServiceXPath extends BaseXPath
 {
     private static final long serialVersionUID = 3834032441789592882L;
 
-    private static String JCR_URI = "http://www.jcp.org/jcr/1.0";
-    
     private static Log logger = LogFactory.getLog(NodeServiceXPath.class);
 
     /**
@@ -469,67 +467,6 @@ public class NodeServiceXPath extends BaseXPath
         }
     }
 
-    static class JCRContains implements Function
-    {
-
-        public Object call(Context context, List args) throws FunctionCallException
-        {
-            if (args.size() == 2)
-            {
-                if (context.getNavigator().isAttribute(context.getNodeSet().get(0)))
-                {
-                    throw new FunctionCallException("jcr:contains() does not apply to an attribute context.");
-                }
-                return evaluate(context.getNodeSet(), args.get(0), args.get(1), context.getNavigator());
-            }
-
-            throw new FunctionCallException("contains() requires two argument.");
-        }
-
-        public Object evaluate(List nodes, Object identifier, Object pattern, Navigator nav)
-        {
-            if (nodes.size() != 1)
-            {
-                return false;
-            }
-
-            QName qname = null;
-            NodeRef nodeRef = null;
-
-            Object target = identifier;
-
-            if (identifier instanceof List)
-            {
-                List list = (List) identifier;
-                if (list.isEmpty())
-                {
-                    return false;
-                }
-                // do not recurse: only first list should unwrap
-                target = list.get(0);
-            }
-
-            if (nav.isElement(target))
-            {
-                qname = null; // should use all attributes and full text index
-                nodeRef = ((ChildAssociationRef) target).getChildRef();
-            }
-            else if (nav.isAttribute(target))
-            {
-                qname = QName.createQName(
-                        nav.getAttributeNamespaceUri(target),
-                        ISO9075.decode(nav.getAttributeName(target)));
-                nodeRef = ((DocumentNavigator.Property) target).parent;
-            }
-
-            String patternValue = StringFunction.evaluate(pattern, nav);
-            DocumentNavigator dNav = (DocumentNavigator) nav;
-
-            return dNav.contains(nodeRef, qname, patternValue, SearchParameters.AND);
-
-        }
-    }
-
     static class Score implements Function
     {
         private Double one = new Double(1);
@@ -694,14 +631,6 @@ public class NodeServiceXPath extends BaseXPath
             registerFunction("", "contains", new Contains());
 
             registerFunction("", "first", new FirstFunction());
-
-            // 170 functions
-
-            registerFunction(JCR_URI, "like", new Like());
-            registerFunction(JCR_URI, "score", new Score());
-            registerFunction(JCR_URI, "contains", new JCRContains());
-            registerFunction(JCR_URI, "deref", new Deref());
-
         }
     }
 

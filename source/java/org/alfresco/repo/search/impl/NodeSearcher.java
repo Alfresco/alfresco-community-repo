@@ -75,53 +75,11 @@ public class NodeSearcher
         try
         {
             String xpath = xpathIn;
-            boolean useJCRXPath = language.equalsIgnoreCase(SearchService.LANGUAGE_JCR_XPATH);
 
             List<AttributeOrder> order = null;
 
-            // replace element
-            if (useJCRXPath)
-            {
-                order = new ArrayList<AttributeOrder>();
-                // We do not allow variable substitution with this pattern
-                xpath = xpath.replaceAll("element\\(\\s*(\\*|\\w*:\\w*)\\s*,\\s*(\\*|\\w*:\\w*)\\s*\\)",
-                        "$1[subtypeOf(\"$2\")]");
-                String split[] = xpath.split("order\\s*by\\s*", 2);
-                xpath = split[0];
-
-                if (split.length > 1 && split[1].length() > 0)
-                {
-                    String clauses[] = split[1].split("\\s,\\s");
-
-                    for (String clause : clauses)
-                    {
-                        if (clause.startsWith("@"))
-                        {
-                            String attribute = clause.replaceFirst("@(\\p{Alpha}[\\w:]*)(?:\\s+(.*))?", "$1");
-                            String sort = clause.replaceFirst("@(\\p{Alpha}[\\w:]*)(?:\\s+(.*))?", "$2");
-
-                            if (sort.length() == 0)
-                            {
-                                sort = "ascending";
-                            }
-
-                            QName attributeQName = QName.createQName(attribute, namespacePrefixResolver);
-                            order.add(new AttributeOrder(attributeQName, sort.equalsIgnoreCase("ascending")));
-                        }
-                        else if (clause.startsWith("jcr:score"))
-                        {
-                            // ignore jcr:score ordering
-                        }
-                        else
-                        {
-                            throw new IllegalArgumentException("Malformed order by expression " + split[1]);
-                        }
-                    }
-                }
-            }
-            
             DocumentNavigator documentNavigator = new DocumentNavigator(dictionaryService, nodeService, searchService,
-                    namespacePrefixResolver, followAllParentLinks, useJCRXPath);
+                    namespacePrefixResolver, followAllParentLinks);
             NodeServiceXPath nsXPath = new NodeServiceXPath(xpath, documentNavigator, paramDefs);
             for (String prefix : namespacePrefixResolver.getPrefixes())
             {
@@ -236,10 +194,8 @@ public class NodeSearcher
     {
         try
         {
-            boolean useJCRXPath = language.equalsIgnoreCase(SearchService.LANGUAGE_JCR_XPATH);
-
             DocumentNavigator documentNavigator = new DocumentNavigator(dictionaryService, nodeService, searchService,
-                    namespacePrefixResolver, followAllParentLinks, useJCRXPath);
+                    namespacePrefixResolver, followAllParentLinks);
             NodeServiceXPath nsXPath = new NodeServiceXPath(xpath, documentNavigator, paramDefs);
             for (String prefix : namespacePrefixResolver.getPrefixes())
             {

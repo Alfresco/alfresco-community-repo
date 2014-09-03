@@ -511,7 +511,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      * {
      *    query: string,          mandatory, in appropriate format and encoded for the given language
      *    store: string,          optional, defaults to 'workspace://SpacesStore'
-     *    language: string,       optional, one of: lucene, xpath, jcr-xpath, fts-alfresco - defaults to 'lucene'
+     *    language: string,       optional, one of: lucene, xpath, fts-alfresco - defaults to 'lucene'
      *    templates: [],          optional, Array of query language template objects (see below) - if supported by the language 
      *    sort: [],               optional, Array of sort column objects (see below) - if supported by the language
      *    page: object,           optional, paging information object (see below) - if supported by the language

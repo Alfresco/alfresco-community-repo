@@ -1121,7 +1121,7 @@
         </property>
     </bean>
     
-    <bean id="noindex" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+    <bean id="noindex" class="org.alfresco.repo.management.subsystems.NoIndexChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
         </property>

@@ -328,5 +328,11 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
             throw new IllegalStateException("Illegal write to property \"" + name + "\"");
         }
         super.setProperty(name, value);
-    }    
+    }  
+    
+    protected void destroy(boolean isPermanent)
+    {
+        super.destroy(isPermanent);
+        doInit();
+    }
 }

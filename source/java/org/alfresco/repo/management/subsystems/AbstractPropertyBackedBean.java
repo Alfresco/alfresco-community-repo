@@ -91,9 +91,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     private DefaultResolver defaultResolver = new DefaultResolver();
 
     /** The lifecycle states. */
-    private enum RuntimeState {UNINITIALIZED, STOPPED, PENDING_BROADCAST_START, STARTED};
+    protected enum RuntimeState {UNINITIALIZED, STOPPED, PENDING_BROADCAST_START, STARTED};
     
-    private RuntimeState runtimeState = RuntimeState.UNINITIALIZED;
+    protected RuntimeState runtimeState = RuntimeState.UNINITIALIZED;
 
     /** The state. */
     private PropertyBackedBeanState state;

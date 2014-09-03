@@ -35,6 +35,12 @@ public class LuceneChildApplicationContextFactory extends ChildApplicationContex
     {
         return new ApplicationContextState(true);
     }
+    
+    protected void destroy(boolean isPermanent)
+    {
+        super.destroy(isPermanent);
+        doInit();
+    }
 
     
 }

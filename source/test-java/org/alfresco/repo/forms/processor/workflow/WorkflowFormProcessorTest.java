@@ -159,14 +159,14 @@ public class WorkflowFormProcessorTest extends TestCase
         String fieldName = PRIORITY_NAME.toPrefixString(namespaceService);
         List<String> fields = Arrays.asList(fieldName);
         Form form = processForm(fields);
-        checkSingleProperty(form, fieldName, 2);
+        checkSingleProperty(form, fieldName, "2");
 
         // Check Status field is added to Form, when explicitly typed as a
         // property.
         String fullPropertyName = "prop:" + fieldName;
         fields = Arrays.asList(fullPropertyName);
         form = processForm(fields);
-        checkSingleProperty(form, fieldName, 2);
+        checkSingleProperty(form, fieldName, "2");
         checkPackageActionGroups(form.getFormData());
     }
 
@@ -194,7 +194,7 @@ public class WorkflowFormProcessorTest extends TestCase
         String priorityField = PRIORITY_NAME.toPrefixString(namespaceService);
         List<String> fields = Arrays.asList(fakeFieldName, priorityField);
         Form form = processForm(fields);
-        checkSingleProperty(form, priorityField, 2);
+        checkSingleProperty(form, priorityField, "2");
         checkPackageActionGroups(form.getFormData());
     }
 
@@ -219,7 +219,7 @@ public class WorkflowFormProcessorTest extends TestCase
         FormData formData = form.getFormData();
         assertEquals(fieldData, formData.getFieldData("assoc_bpm_assignee").getValue());
         checkPackageActionGroups(formData);
-        assertEquals(2, formData.getFieldData("prop_bpm_workflowPriority").getValue());
+        assertEquals("2", formData.getFieldData("prop_bpm_workflowPriority").getValue());
     }
 
     public void testGeneratePackageItems() throws Exception

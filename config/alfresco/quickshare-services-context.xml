@@ -63,6 +63,7 @@
         <property name="tenantService" ref="tenantService"/>
         <property name="thumbnailService" ref="ThumbnailService"/>
         <property name="eventPublisher" ref="eventPublisher" />
+        <property name="behaviourFilter" ref="policyBehaviourFilter" />
  	</bean>
 
 </beans>

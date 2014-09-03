@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,6 +43,7 @@ import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
@@ -107,6 +108,7 @@ public class QuickShareServiceIntegrationTest
     private static DictionaryService dictionaryService;
     private static Repository repository;
     private static AttributeService attributeService;
+    private static PermissionService permissionService;
     
     private static AlfrescoPerson user1 = new AlfrescoPerson(testContext, "UserOne");
     private static AlfrescoPerson user2 = new AlfrescoPerson(testContext, "UserTwo");
@@ -140,6 +142,7 @@ public class QuickShareServiceIntegrationTest
         quickShareService = ctx.getBean("QuickShareService", QuickShareService.class);
         repository = ctx.getBean("repositoryHelper", Repository.class);
         attributeService = ctx.getBean("AttributeService", AttributeService.class);
+        permissionService = ctx.getBean("PermissionService", PermissionService.class);
     }
     
     @Before public void createTestData()
@@ -387,4 +390,46 @@ public class QuickShareServiceIntegrationTest
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         Assert.assertFalse(nodeService.exists(node));
     }
+    
+    /**
+     * Test for MNT-11960
+     * <p> The node is created by user1 and shared by user2.
+     * <p> The modifier should not change to user2 after sharing.
+     */
+    @Test
+    public void testModifierAfterSharing()
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>(){
+            @Override
+            public Void doWork() throws Exception
+            {
+                permissionService.setPermission(testNode, user2.getUsername(), PermissionService.CONSUMER, true);
+                return null;
+            }
+        }, user1.getUsername());
+        
+        final Serializable modifiedDate = AuthenticationUtil.runAsSystem(new RunAsWork<Serializable>(){
+            @Override
+            public Serializable doWork() throws Exception
+            {
+                return nodeService.getProperty(testNode, ContentModel.PROP_MODIFIED);
+            }
+        });
+        
+        share(testNode, user2.getUsername());
+        
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>(){
+            @Override
+            public Void doWork() throws Exception
+            {
+                assertTrue(nodeService.getAspects(testNode).contains(ContentModel.ASPECT_AUDITABLE));
+                assertNotNull(nodeService.getProperty(testNode, ContentModel.PROP_MODIFIER));
+                assertEquals("The modifier has changed after sharing.", user1.getUsername(), nodeService.getProperty(testNode, ContentModel.PROP_MODIFIER));
+                assertNotNull(nodeService.getProperty(testNode, ContentModel.PROP_MODIFIED));
+                assertEquals("The modified date has changed after sharing.", modifiedDate, nodeService.getProperty(testNode, ContentModel.PROP_MODIFIED));
+                return null;
+            }
+        });
+    }
+    
 }

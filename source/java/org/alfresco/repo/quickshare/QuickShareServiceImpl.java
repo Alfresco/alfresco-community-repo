@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,7 @@ import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
 import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -96,6 +97,19 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     private TenantService tenantService;
     private ThumbnailService thumbnailService;
     private EventPublisher eventPublisher;
+    
+    /** Component to determine which behaviours are active and which not */
+    private BehaviourFilter behaviourFilter;
+    
+    /**
+     * Spring configuration
+     * 
+     * @param behaviourFilter the behaviourFilter to set
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
     
     /**
      * Enable or disable this service.
@@ -221,16 +235,26 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
             props.put(QuickShareModel.PROP_QSHARE_SHAREDID, sharedId);
             props.put(QuickShareModel.PROP_QSHARE_SHAREDBY, AuthenticationUtil.getRunAsUser());
             
-            // consumer/contributor should be able to add "shared" aspect (MNT-10366)
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            // Disable audit to preserve modifier and modified date
+            // see MNT-11960
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            try
             {
-                public Void doWork()
+                // consumer/contributor should be able to add "shared" aspect (MNT-10366)
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                 {
-                    nodeService.addAspect(nodeRef, QuickShareModel.ASPECT_QSHARE, props);
-                    return null;
-                }
-            });
-            
+                    public Void doWork()
+                    {
+                        nodeService.addAspect(nodeRef, QuickShareModel.ASPECT_QSHARE, props);
+                        return null;
+                    }
+                });
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
+
             final NodeRef tenantNodeRef = tenantService.getName(nodeRef);
             
             TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>()

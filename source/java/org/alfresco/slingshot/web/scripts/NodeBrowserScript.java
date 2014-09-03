@@ -68,20 +68,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class NodeBrowserScript extends DeclarativeWebScript
 {
-    /** available query languages */
-    private static List<String> queryLanguages = new ArrayList<String>();
-    static
-    {
-        queryLanguages.add("storeroot");
-        queryLanguages.add("noderef");
-        queryLanguages.add(SearchService.LANGUAGE_XPATH);
-        queryLanguages.add(SearchService.LANGUAGE_LUCENE);
-        queryLanguages.add(SearchService.LANGUAGE_FTS_ALFRESCO);
-        queryLanguages.add(SearchService.LANGUAGE_CMIS_STRICT);
-        queryLanguages.add(SearchService.LANGUAGE_CMIS_ALFRESCO);
-        queryLanguages.add(SearchService.LANGUAGE_JCR_XPATH);
-    }
-
     private Long searchElapsedTime = null;
 
     // stores and node

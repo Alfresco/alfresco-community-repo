@@ -52,9 +52,11 @@
                 <entry key="workspace">
                     <ref bean="search.admLuceneIndexerAndSearcherFactory"></ref>
                 </entry>
+                <!-- Sparta: remove WCM/AVM
                 <entry key="avm">
                     <ref bean="search.avmLuceneIndexerAndSearcherFactory"></ref>
                 </entry>
+                -->
             </map>
         </property>
         <property name="redirectedStoreBindings">
@@ -111,7 +113,9 @@
 			<list>
 			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
 				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
-				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+				<!-- Sparta: remove WCM/AVM
+				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />
+				-->	
 			</list>
         </property>
     </bean>
@@ -121,7 +125,9 @@
 			<list>
 			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
 				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<!-- Sparta: remove WCM/AVM
 				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+				-->
 			</list>
         </property>
     </bean>
@@ -134,7 +140,9 @@
 			<list>
 			    <ref bean="search.admLuceneIndexerAndSearcherFactory" />	
 				<ref bean="search.admLuceneUnIndexedIndexerAndSearcherFactory" />	
+				<!-- Sparta: remove WCM/AVM
 				<ref bean="search.avmLuceneIndexerAndSearcherFactory" />	
+				-->
 			</list>
         </property>
     </bean>
@@ -341,6 +349,7 @@
     </bean>
 
     <!-- Indexer and searchers for lucene -->
+    <!-- Sparta: remove WCM/AVM
     <bean id="search.avmLuceneIndexerAndSearcherFactory"
         parent="search.abstractLuceneIndexerAndSearcherFactory"
         class="org.alfresco.repo.search.impl.lucene.AVMLuceneIndexerAndSearcherFactory">
@@ -384,7 +393,9 @@
             <ref bean="transformerDebug"></ref>
         </property>
     </bean>
-
+    -->
+    
+    <!-- Sparta: remove WCM/AVM
 	<bean id="search.avm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
         <property name="dictionaryService">
             <ref bean="dictionaryService" />
@@ -408,7 +419,8 @@
             <value>${lucene.indexer.maxRawResultSetSizeForInMemorySort}</value>
         </property>
     </bean>
-
+    -->
+    
     <!-- Indexer and searchers for lucene -->
     <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.lucene.LuceneCategoryServiceImpl">
         <property name="nodeService">
@@ -478,8 +490,10 @@
        <property name="searchService">
            <ref bean="search.searchService"/>
        </property>
+       <!-- Sparta: remove WCM/AVM
        <property name="avmSnapShotTriggeredIndexingMethodInterceptor">
            <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor"/>
        </property>
+       -->
     </bean>
 </beans>

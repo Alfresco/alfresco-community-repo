@@ -51,7 +51,6 @@ public class FullIndexRecoveryComponentTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private FullIndexRecoveryComponent indexRecoverer;
-    private AVMFullIndexRecoveryComponent avmIndexRecoveryComponent;
     private NodeService nodeService;
     private NodeRef rootNodeRef;
     private TransactionService transactionService;
@@ -63,7 +62,6 @@ public class FullIndexRecoveryComponentTest extends TestCase
     {
         ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
         indexRecoverer = (FullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.indexRecoveryComponent");
-        avmIndexRecoveryComponent = (AVMFullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.avmIndexRecoveryComponent");
         nodeService = (NodeService) ctx.getBean("nodeService");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");     
@@ -151,7 +149,6 @@ public class FullIndexRecoveryComponentTest extends TestCase
     public synchronized void testReindexing() throws Exception
     {
         indexRecoverer.setRecoveryMode(FullIndexRecoveryComponent.RecoveryMode.FULL.name());
-        avmIndexRecoveryComponent.setRecoveryMode(FullIndexRecoveryComponent.RecoveryMode.FULL.name());
         // reindex
         Thread reindexThread = new Thread()
         {
@@ -160,27 +157,16 @@ public class FullIndexRecoveryComponentTest extends TestCase
                 indexRecoverer.reindex();
             }
         };
-        Thread avmReindexThread = new Thread()
-        {
-            public void run()
-            {
-                avmIndexRecoveryComponent.reindex();
-            }
-        };
         //reindexThread.setDaemon(true);
-        //avmReindexThread.setDaemon(true);
         reindexThread.start();
-        avmReindexThread.start();
         
         // must allow the rebuild to complete or the test after this one will fail to validate their indexes 
         // - as they now will be deleted.
         reindexThread.join();
-        avmReindexThread.join();
         
         // wait a bit and then terminate
         wait(20000);
         indexRecoverer.setShutdown(true);
-        avmIndexRecoveryComponent.setShutdown(true);
         wait(20000);
     }
 }

@@ -851,7 +851,9 @@
                 <value>avmServiceWriteTxnAdvisor</value>
                 <value>avmServiceReadTxnAdvisor</value>
                 <value>checkTxnAdvisor</value>
+                <!-- Sparta: remove WCM/AVM
                 <value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
+                -->
             </list>
         </property>
     </bean>
@@ -898,10 +900,12 @@
         </property>
     </bean>
 
-    <bean id="avmServiceBase" class="org.alfresco.repo.avm.AVMServiceImpl">
+    <bean id="avmServiceBase" class="org.alfresco.repo.avm.AVMServiceNOOPImpl">
+        <!-- Sparta: remove WCM/AVM - use NOOP impl for now (see also AVMSyncServiceNOOPImpl)
         <property name="avmRepository">
             <ref bean="avmRepository"/>
         </property>
+        -->
     </bean>
 
     <bean id="checkTxnAdvisor" class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
@@ -1023,7 +1027,9 @@
                 <value>avmServiceWriteTxnAdvisor</value>
                 <value>avmServiceReadTxnAdvisor</value>
                 <value>checkTxnAdvisor</value>
+                <!-- Sparta: remove WCM/AVM
                 <value>avmSnapShotTriggeredIndexingMethodInterceptor</value>
+                -->
             </list>
         </property>
     </bean>
@@ -1045,6 +1051,7 @@
         </property>
     </bean>
 
+    <!-- Sparta: remove WCM/AVM
     <bean id="avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory">
             <ref bean="Search" />
@@ -1058,16 +1065,20 @@
             </list>
         </property>
     </bean>
+    -->
 
     <!-- The AVMSyncService -->
-
-    <bean id="avmSyncService" class="org.alfresco.repo.avm.AVMSyncServiceImpl">
+    
+    
+    <bean id="avmSyncService" class="org.alfresco.repo.avm.AVMSyncServiceNOOPImpl">
+        <!-- Sparta: remove WCM/AVM - use NOOP impl for now (see also AVMServiceNOOPImpl)
         <property name="avmService">
             <ref bean="AVMService"/>
         </property>
         <property name="avmRepository">
             <ref bean="avmRepository"/>
         </property>
+        -->
     </bean>
 
     <!-- Read transaction advisor for sync service. -->

@@ -26,7 +26,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
-import org.alfresco.repo.domain.permissions.AVMAccessControlListDAO.CounterSet;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlList;
@@ -477,6 +476,78 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                 // the acl does not inherit from a node and does not need to be fixed up
                 // Leave alone
             }
+        }
+    }
+    
+    /**
+     * 
+     * Counter for each type of ACL change
+     * @author andyh
+     *
+     */
+    public static class CounterSet extends HashMap<ACLType, Counter>
+    {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -3682278258679211481L;
+
+        CounterSet()
+        {
+            super();
+            this.put(ACLType.DEFINING, new Counter());
+            this.put(ACLType.FIXED, new Counter());
+            this.put(ACLType.GLOBAL, new Counter());
+            this.put(ACLType.LAYERED, new Counter());
+            this.put(ACLType.OLD, new Counter());
+            this.put(ACLType.SHARED, new Counter());
+        }
+
+        void add(ACLType type, Counter c)
+        {
+            Counter counter = get(type);
+            counter.add(c.getCounter());
+        }
+
+        void increment(ACLType type)
+        {
+            Counter counter = get(type);
+            counter.increment();
+        }
+
+        void add(CounterSet other)
+        {
+            add(ACLType.DEFINING, other.get(ACLType.DEFINING));
+            add(ACLType.FIXED, other.get(ACLType.FIXED));
+            add(ACLType.GLOBAL, other.get(ACLType.GLOBAL));
+            add(ACLType.LAYERED, other.get(ACLType.LAYERED));
+            add(ACLType.OLD, other.get(ACLType.OLD));
+            add(ACLType.SHARED, other.get(ACLType.SHARED));
+        }
+    }
+
+    /**
+     * Simple counter
+     * @author andyh
+     *
+     */
+    public static class Counter
+    {
+        int counter;
+
+        void increment()
+        {
+            counter++;
+        }
+
+        int getCounter()
+        {
+            return counter;
+        }
+
+        void add(int i)
+        {
+            counter += i;
         }
     }
 }

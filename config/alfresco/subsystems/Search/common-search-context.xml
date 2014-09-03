@@ -43,6 +43,7 @@
         <!-- Query collections should be loaded on demand using this component - once loaded thay are available for use -->
     </bean>
     
+    <!-- Sparta: remove WCM/AVM
     <bean id="search.avmSnapShotTriggeredIndexingMethodInterceptor" class="org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptorImpl">
         <property name="avmService">
             <ref bean="avmService" />
@@ -131,6 +132,7 @@
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="tenantService" ref="tenantService"/>
     </bean>
+    -->
    
    <bean id="search.dbQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">

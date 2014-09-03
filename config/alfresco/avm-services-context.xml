@@ -214,9 +214,11 @@
         <property name="searchService">
             <ref bean="SearchService" />
         </property>
+        <!-- Sparta: disable/remove WCM/AVM (note: sandboxFactory is defined in wcm-services-context.xml)
         <property name="sandboxFactory">
             <ref bean="sandboxFactory" />
         </property>
+        -->
     </bean>
     
     <!-- AVM Locking. -->

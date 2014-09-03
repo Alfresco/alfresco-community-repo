@@ -228,6 +228,7 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
      */
     public List<StoreRef> getStores()
     {
+        /* Sparta: disable/remove WCM/AVM
         // For AVM stores we fake up StoreRefs.
         List<AVMStoreDescriptor> stores = fAVMService.getStores();
         List<StoreRef> result = new ArrayList<StoreRef>();
@@ -237,6 +238,8 @@ public class AVMNodeService extends AbstractNodeServiceImpl implements NodeServi
             result.add(new StoreRef(StoreRef.PROTOCOL_AVM, name));
         }
         return result;
+        */
+        return Collections.emptyList();
     }
     
     /**

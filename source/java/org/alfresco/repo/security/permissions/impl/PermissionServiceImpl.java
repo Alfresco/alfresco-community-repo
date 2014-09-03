@@ -32,7 +32,7 @@ import net.sf.acegisecurity.providers.dao.User;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.avm.AVMRepository;
+//import org.alfresco.repo.avm.AVMRepository;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -613,12 +613,15 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
 
     private AccessStatus doAvmCan(NodeRef nodeRef, PermissionReference permission)
     {
+        /* Sparta: remove WCM/AVM
         org.alfresco.util.Pair<Integer, String> avmVersionPath = AVMNodeConverter.ToAVMVersionPath(nodeRef);
         int version = avmVersionPath.getFirst();
         String path = avmVersionPath.getSecond();
         boolean result = AVMRepository.GetInstance().can(nodeRef.getStoreRef().getIdentifier(), version, path, permission.getName());
         AccessStatus status = result ? AccessStatus.ALLOWED : AccessStatus.DENIED;
         return status;
+        */
+        return AccessStatus.DENIED;
     }
 
     /*

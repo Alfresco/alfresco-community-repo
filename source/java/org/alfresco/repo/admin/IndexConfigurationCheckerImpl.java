@@ -23,8 +23,6 @@ import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.index.FullIndexRecoveryComponent.RecoveryMode;
-import org.alfresco.repo.search.AVMSnapShotTriggeredIndexingMethodInterceptor;
-import org.alfresco.repo.search.IndexMode;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -51,7 +49,7 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
     private RecoveryMode indexRecoveryMode;
     private NodeService nodeService;
     private SearchService searchService;
-    private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
+    //private AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor;
     
     /**
      * Set the index recovert mode
@@ -87,10 +85,12 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
      * avm trigger 
      * @param avmSnapShotTriggeredIndexingMethodInterceptor
      */
+    /* Sparta: remove WCM/AVM
     public void setAvmSnapShotTriggeredIndexingMethodInterceptor(AVMSnapShotTriggeredIndexingMethodInterceptor avmSnapShotTriggeredIndexingMethodInterceptor)
     {
         this.avmSnapShotTriggeredIndexingMethodInterceptor = avmSnapShotTriggeredIndexingMethodInterceptor;
     }
+    */
 
 
 
@@ -129,6 +129,7 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
             {
                 if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
                 {
+                    /* Sparta: remove WCM/AVM
                     if (avmSnapShotTriggeredIndexingMethodInterceptor.isIndexingEnabled())
                     {
                         IndexMode storeIndexMode = avmSnapShotTriggeredIndexingMethodInterceptor.getIndexMode(storeRef.getIdentifier());
@@ -149,6 +150,7 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
                         }
                         continue;
                     }
+                    */
                 }
                 
                 if (logger.isDebugEnabled())

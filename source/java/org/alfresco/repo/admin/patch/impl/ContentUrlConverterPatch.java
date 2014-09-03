@@ -21,7 +21,6 @@ package org.alfresco.repo.admin.patch.impl;
 import java.sql.Savepoint;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -29,8 +28,6 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.admin.patch.PatchExecuter;
 import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
-import org.alfresco.repo.avm.AVMDAOs;
-import org.alfresco.repo.avm.PlainFileNode;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorkerAdaptor;
 import org.alfresco.repo.content.ContentStore;
@@ -39,14 +36,13 @@ import org.alfresco.repo.domain.contentdata.ContentDataDAO;
 import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
 import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -316,8 +312,13 @@ public class ContentUrlConverterPatch extends AbstractPatch
             
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.adm.start"));
             boolean admCompleted = applyADMLooping(running);
+            
+            /* Sparta: remove WCM/AVM
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.avm.start"));
             boolean avmCompleted = applyAVMLooping(running);
+            */
+            boolean avmCompleted = true;
+            
             logger.info(I18NUtil.getMessage("patch.convertContentUrls.store.start", contentStore));
             boolean urlLiftingCompleted = applyUrlLifting(running);
             
@@ -468,6 +469,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         return false;
     }
     
+    /*
     private boolean applyAVMLooping(final AtomicBoolean running)
     {
         RetryingTransactionCallback<Boolean> callback = new RetryingTransactionCallback<Boolean>()
@@ -488,10 +490,12 @@ public class ContentUrlConverterPatch extends AbstractPatch
         }
         return done;
     }
+    */
     
     /**
      * Do the AVM conversion work
      */
+    /*
     private boolean applyAVM() throws Exception
     {
         Long maxId = (Long) registryService.getProperty(KEY_AVM_MAX_ID);
@@ -563,6 +567,7 @@ public class ContentUrlConverterPatch extends AbstractPatch
         // More to do
         return false;
     }
+    */
     
     private boolean applyUrlLifting(final AtomicBoolean running) throws Exception
     {

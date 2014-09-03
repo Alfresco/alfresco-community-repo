@@ -40,9 +40,11 @@
       <property name="diskInterface">
          <ref bean="contentDiskDriver"/>
       </property>
+      <!-- Sparta: remove WCM/AVM
       <property name="avmDiskInterface">
          <ref bean="avmDiskDriver"/>
       </property>
+      -->
    </bean>
    
    <!-- IO Handler -->
@@ -438,6 +440,7 @@
    </bean>
    
    <!-- WCM/AVM Filesystem Interface -->
+   <!-- Sparta: remove WCM/AVM
    <bean id="avmDiskDriver" class="org.alfresco.filesys.avm.AVMDiskDriver">
       <property name="avmService"><ref bean="AVMLockingAwareService"/></property>
       <property name="transactionService"><ref bean="transactionService"/></property>
@@ -452,4 +455,6 @@
       <property name="createVersionListener"><ref bean="createVersionTxnListener"/></property>
       <property name="purgeVersionListener"><ref bean="purgeVersionTxnListener"/></property>
    </bean>
+   -->
+   
 </beans>

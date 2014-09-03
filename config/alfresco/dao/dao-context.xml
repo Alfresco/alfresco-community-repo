@@ -225,6 +225,8 @@
    
    <!-- AVM -->
    
+   <!-- Sparta: remove WCM/AVM
+   
    <bean id="newAvmStoreDAO" class="org.alfresco.repo.domain.avm.ibatis.AVMStoreDAOImpl">
       <property name="sqlSessionTemplate" ref="avmSqlSessionTemplate"/>
       <property name="qnameDAO" ref="qnameDAO"/>
@@ -256,6 +258,7 @@
       <property name="propertyValueDAO" ref="propertyValueDAO"/>
       <property name="propertyUniqueContextCache" ref="propertyUniqueContextCache"/>
    </bean>
+   -->
    
    <!-- Permissions (including ACLs / ACEs) -->
    
@@ -270,10 +273,14 @@
          <map>
             <entry key="workspace"><ref bean="admPermissionsDaoComponent"></ref></entry>
             <entry key="versionStore"><ref bean="admPermissionsDaoComponent"></ref></entry>
+            <!-- Sparta: remove WCM/AVM
             <entry key="avm"><ref bean="avmPermissionsDaoComponent"/></entry>
+            -->
          </map>
       </property>
    </bean>
+   
+   <!-- Sparta: remove WCM/AVM
    
    <bean id="avmPermissionsDaoComponent" class="org.alfresco.repo.domain.permissions.AVMPermissionsDaoComponentImpl">
       <property name="aclDAO">
@@ -289,6 +296,7 @@
           <ref bean="admNodeACLDAO"/>
        </property>
    </bean>
+   -->
    
    <bean id="admPermissionsDaoComponent" class="org.alfresco.repo.domain.permissions.ADMPermissionsDaoComponentImpl">
       <property name="aclDAO">
@@ -312,12 +320,14 @@
       <property name="preserveAuditableData" value="${system.auditableData.ACLs}"></property>
    </bean>
     
+   <!-- Sparta: remove WCM/AVM
    <bean id="avmNodeACLDAO" class="org.alfresco.repo.domain.permissions.AVMAccessControlListDAO">
       <property name="avmRepository" ref="avmRepository"/>
       <property name="avmService" ref="avmService"/>
       <property name="aclDAO" ref="aclDAO"/>
       <property name="avmNodeDAO" ref="newAvmNodeDAO"/>
-    </bean>
+   </bean>
+   -->
    
    <bean id="aclCrudDAO" class="org.alfresco.repo.domain.permissions.ibatis.AclCrudDAOImpl">
       <property name="sqlSessionTemplate" ref="repoSqlSessionTemplate"/>

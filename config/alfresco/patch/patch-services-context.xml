@@ -1189,7 +1189,8 @@
             </list>
         </property>
     </bean>
-
+    
+    <!-- Sparta: remove WCM/AVM
     <bean id="patch.resetWCMToGroupBasedPermissionsPatch" class="org.alfresco.repo.admin.patch.impl.ResetWCMToGroupBasedPermissionsPatch" parent="basePatch" >
         <property name="id"><value>patch.resetWCMToGroupBasedPermissionsPatch</value></property>
         <property name="description"><value>patch.resetWCMToGroupBasedPermissionsPatch.description</value></property>
@@ -1235,8 +1236,10 @@
             <value>ContentManager</value>
         </property>
     </bean>
+    -->
     
     <!-- note: does not need to be run if patch.wcmPostPermissionSnapshotPatch2 already applied -->
+    <!-- Sparta: remove WCM/AVM
     <bean id="patch.wcmPostPermissionSnapshotPatch3" class="org.alfresco.repo.admin.patch.impl.WCMPostPermissionSnapshotPatch" parent="basePatch" >
         <property name="id"><value>patch.wcmPostPermissionSnapshotPatch3</value></property>
         <property name="description"><value>patch.wcmPostPermissionSnapshotPatch.description</value></property>
@@ -1264,8 +1267,10 @@
             <ref bean="patchDAO"/>
         </property>
     </bean>
+    -->
     
     <!-- note: NOOP - superceded by patch.resetWCMToGroupBasedPermissionsPatch -->
+    <!-- Sparta: remove WCM/AVM
     <bean id="patch.moveWCMToGroupBasedPermissionsPatch" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch" >
         <property name="id"><value>patch.moveWCMToGroupBasedPermissionsPatch</value></property>
         <property name="description"><value>patch.noOpPatch.description</value></property>
@@ -1278,8 +1283,10 @@
             </list>
         </property>
     </bean>
+    -->
     
     <!-- note: NOOP - superceded by patch.wcmPostPermissionSnapshotPatch3 -->
+    <!-- Sparta: remove WCM/AVM
     <bean id="patch.wcmPostPermissionSnapshotPatch2" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch" >
         <property name="id"><value>patch.wcmPostPermissionSnapshotPatch2</value></property>
         <property name="description"><value>patch.noOpPatch.description</value></property>
@@ -1292,6 +1299,7 @@
             </list>
         </property>
     </bean>
+    -->
     
     <!--  Redeploy both direct and indirect submit processes for addition submit failure handling -->
     <bean id="patch.redeploySubmitProcess6" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >

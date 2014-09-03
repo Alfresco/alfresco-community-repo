@@ -11,12 +11,13 @@
        </property>
     </bean>
     
+    <!-- Sparta: remove WCM/AVM
     <bean id="search.avmIndexRecoveryBootstrap" class="org.alfresco.repo.node.index.IndexRecoveryBootstrapBean" >
        <property name="indexRecoveryComponent">
           <ref bean="search.avmIndexRecoveryComponent"/>
        </property>
     </bean>
-    
+    -->
     
     <bean id="search.indexConfigurationCheckerBootstrap" class="org.alfresco.repo.admin.IndexConfigurationCheckerBootstrapBean">
        <property name="strict">

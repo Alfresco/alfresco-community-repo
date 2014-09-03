@@ -1240,6 +1240,7 @@
       </property>
    </bean>
    
+   <!-- Sparta: remove WCM/AVM
    <bean id="avmLuceneIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1254,6 +1255,7 @@
          </list>
       </property>
    </bean>
+   -->
    
      <bean id="admLuceneIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory" depends-on="Search" >
       <property name="sourceApplicationContextFactory">
@@ -1342,6 +1344,7 @@
       </property>
    </bean>
    
+   <!-- Sparta: remove WCM/AVM
    <bean id="avmIndexRecoveryComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1355,6 +1358,7 @@
          </list>
       </property>
    </bean>
+   -->
    
    <!-- only required for lucene index test support -->
    

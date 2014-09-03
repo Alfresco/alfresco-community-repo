@@ -78,6 +78,7 @@
       </property>
    </bean>
 	
+	<!-- Sparta: remove WCM/AVM
    <bean
          id="search.avmIndexRecoveryComponent"
          class="org.alfresco.repo.node.index.AVMFullIndexRecoveryComponent"
@@ -92,6 +93,7 @@
 		   <ref bean="search.avmSnapShotTriggeredIndexingMethodInterceptor" />
       </property>
    </bean>
+   -->
 	
 
    <!-- Index tracking -->
@@ -154,7 +156,8 @@
     <!--===========================-->
     <!-- AVM (WCM) index tracking  -->
     <!--===========================-->
-
+    
+    <!-- Sparta: remove WCM/AVM
     <bean
           id="search.avmIndexTrackerComponent"
           class="org.alfresco.repo.node.index.AVMRemoteSnapshotTracker"
@@ -179,9 +182,9 @@
             </map>
         </property>
     </bean>
+    
     <bean id="search.avmIndexJobDetail" parent="search.baseAvmIndexJobDetail"/>
     
-    <!-- Schedule index tracking for AVM -->
     <bean id="search.avmIndexTrackerTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail" ref="search.avmIndexJobDetail"/>
         <property name="scheduler">
@@ -194,6 +197,7 @@
             <value>${system.cronJob.startDelayMinutes}</value>
         </property>
     </bean>
+    -->
     
    <!-- Failed FTS reindexer -->
    <!--

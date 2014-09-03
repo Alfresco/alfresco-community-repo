@@ -223,7 +223,10 @@ public class ContentStoreCleaner
         PropertyCheck.mandatory(this, "contentDataDAO", contentDataDAO);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "contentService", contentService);
-        PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
+        
+        // Sparta: remove WCM/AVM
+        //PropertyCheck.mandatory(this, "avmNodeDAO", avmNodeDAO);
+        
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "eagerContentStoreCleaner", eagerContentStoreCleaner);
         

@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.permissions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -263,7 +264,9 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     
     public List<Long> getAVMNodesByAcl(long aclEntityId, int maxResults)
     {
-        return getAVMNodeEntityIdsByAcl(aclEntityId, maxResults);
+        // Sparta: remove WCM/AVM
+        //return getAVMNodeEntityIdsByAcl(aclEntityId, maxResults);
+        return Collections.emptyList();
     }
     
     public void updateAcl(AclUpdateEntity entity)

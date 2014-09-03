@@ -108,9 +108,11 @@
       <property name="contentService" >
          <ref bean="contentService" />
       </property>
+      <!-- Sparta: remove WCM/AVM
       <property name="avmNodeDAO">
             <ref bean="newAvmNodeDAO"/>
       </property>
+      -->
       <property name="transactionService" >
          <ref bean="transactionService" />
       </property>

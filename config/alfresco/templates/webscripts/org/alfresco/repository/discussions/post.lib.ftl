@@ -81,7 +81,7 @@
 	<#else>
 	"isUpdated": false,   
 	</#if>
-	<#if postData.author??>
+	<#if postData.author?? && postData.author?has_content>
 		<@renderPerson person=postData.author fieldName="author" />
 	<#else>
 		"author":

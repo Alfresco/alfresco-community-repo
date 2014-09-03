@@ -190,7 +190,7 @@ function getDocResults(params)
    {
       ftsQuery = 'PATH:"' + rootNode.qnamePath + '//*" AND (' + ftsQuery + ')';
    }
-   ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -ASPECT:"sys:hidden" AND -cm:creator:system';
+   ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"fm:post" AND -ASPECT:"sys:hidden" AND -cm:creator:system';
    
    if (logger.isLoggingEnabled())
       logger.log("LiveQuery:\r\n" + ftsQuery);

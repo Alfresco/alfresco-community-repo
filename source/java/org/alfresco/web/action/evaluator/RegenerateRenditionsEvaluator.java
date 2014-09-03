@@ -18,28 +18,7 @@
  */
 package org.alfresco.web.action.evaluator;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-
-import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.wcm.webproject.WebProjectInfo;
-import org.alfresco.wcm.webproject.WebProjectService;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.WebProject;
-import org.alfresco.web.data.IDataContainer;
-import org.alfresco.web.data.QuickSort;
 
 /**
  * UI Action Evaluator for Regenerate Renditions in the Web Forms DataDictionary folder

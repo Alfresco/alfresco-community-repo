@@ -18,11 +18,8 @@
  */
 package org.alfresco.web.app.servlet.command;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
-import javax.faces.application.NavigationHandler;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
@@ -30,13 +27,10 @@ import javax.servlet.ServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
-import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wizard.WizardManager;
-import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Command to execute the Edit Web Content (xforms) wizard via url.
@@ -65,7 +59,7 @@ public class EditWebContentCommand extends BaseUIActionCommand
       ServletRequest req = (ServletRequest)properties.get(PROP_REQUEST);
       ServletResponse res = (ServletResponse)properties.get(PROP_RESPONSE);
       FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
-      AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
+//      AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);     // WCM
       NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
       
       // setup context from url args in properties map
@@ -76,9 +70,10 @@ public class EditWebContentCommand extends BaseUIActionCommand
       String path = (String)properties.get(PROP_PATH);
       ParameterCheck.mandatoryString(PROP_PATH, path);
       navigator.setCurrentNodeId(webProjectId);
-      avmBrowseBean.setSandbox(sandbox);
-      // navigation handler is called directly in this method
-      avmBrowseBean.setupEditAction(path);
+//      // WCM
+//      avmBrowseBean.setSandbox(sandbox);
+//      // navigation handler is called directly in this method
+//      avmBrowseBean.setupEditAction(path);
       
       String viewId = fc.getViewRoot().getViewId();
       try

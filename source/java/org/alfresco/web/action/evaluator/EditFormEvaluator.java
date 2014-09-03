@@ -17,16 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>. */
 package org.alfresco.web.action.evaluator;
 
-import javax.faces.context.FacesContext;
-
-import org.alfresco.model.WCMAppModel;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.Path;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.repository.Repository;
 
 /**
  * UI Action Evaluator - Edit Form in the Forms DataDictionary folder
@@ -42,16 +33,18 @@ public class EditFormEvaluator extends BaseActionEvaluator
     */
    public boolean evaluate(final Node node)
    {
-      final FacesContext fc = FacesContext.getCurrentInstance();
-      final ServiceRegistry services = Repository.getServiceRegistry(fc);
-      final NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
-      
-      // get the path to the current name - compare last element with the Forms folder name
-      final Path path = navigator.getCurrentNode().getNodePath();
-      final Path.Element element = path.get(path.size() - 1);
-      final String endPath = element.getPrefixedString(services.getNamespaceService());
-      
-      return (Application.getContentFormsFolderName(fc).equals(endPath) && 
-              node.hasAspect(WCMAppModel.ASPECT_FORM));
+//       // WCM
+//      final FacesContext fc = FacesContext.getCurrentInstance();
+//      final ServiceRegistry services = Repository.getServiceRegistry(fc);
+//      final NavigationBean navigator = (NavigationBean)FacesHelper.getManagedBean(fc, NavigationBean.BEAN_NAME);
+//      
+//      // get the path to the current name - compare last element with the Forms folder name
+//      final Path path = navigator.getCurrentNode().getNodePath();
+//      final Path.Element element = path.get(path.size() - 1);
+//      final String endPath = element.getPrefixedString(services.getNamespaceService());
+//      
+//      return (Application.getContentFormsFolderName(fc).equals(endPath) && 
+//              node.hasAspect(WCMAppModel.ASPECT_FORM));
+       return false;
    }
 }

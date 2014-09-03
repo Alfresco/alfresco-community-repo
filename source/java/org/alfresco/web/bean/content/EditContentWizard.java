@@ -24,7 +24,6 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -59,7 +58,8 @@ public class EditContentWizard extends CreateContentWizard
       this.nodeRef = node.getNodeRef();
       try
       {
-         formName = (String)getNodeService().getProperty(nodeRef, WCMAppModel.PROP_PARENT_FORM_NAME); // getFormName() ...
+//          // WCM
+//         formName = (String)getNodeService().getProperty(nodeRef, WCMAppModel.PROP_PARENT_FORM_NAME); // getFormName() ...
          form = formsService.getForm(this.formName);
       }
       catch (FormNotFoundException fnfe)

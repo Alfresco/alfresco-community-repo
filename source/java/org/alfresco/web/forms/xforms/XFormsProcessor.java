@@ -31,22 +31,20 @@ import java.util.TreeSet;
 
 import javax.faces.context.FacesContext;
 
-import org.springframework.extensions.config.ConfigElement;
-import org.springframework.extensions.config.ConfigService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.util.XMLUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.chiba.xml.ns.NamespaceConstants;
 import org.chiba.xml.xforms.exception.XFormsException;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.extensions.config.ConfigElement;
+import org.springframework.extensions.config.ConfigService;
 import org.springframework.web.util.JavaScriptUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -163,8 +161,9 @@ public class XFormsProcessor implements FormProcessor
       //make the XFormsBean available for this session
       final XFormsBean xforms = (XFormsBean)
          FacesHelper.getManagedBean(fc, XFormsBean.BEAN_NAME);
-      final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)
-         FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
+//      // WCM
+//      final AVMBrowseBean avmBrowseBean = (AVMBrowseBean)
+//         FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
       try
       {
          xforms.setXFormsSession((XFormsBean.XFormsSession)session);
@@ -221,43 +220,47 @@ public class XFormsProcessor implements FormProcessor
       js.append("alfresco.constants.WEBAPP_CONTEXT = '").
          append(JavaScriptUtils.javaScriptEscape(contextPath)).
          append("';\n");
-      
-      String avmWebApp = avmBrowseBean.getWebapp();
-      
+
+//      // WCM
+//      String avmWebApp = avmBrowseBean.getWebapp();
+//      
       // TODO - need better way to determine WCM vs ECM context
       js.append("alfresco.constants.AVM_WEBAPP_CONTEXT = '");
-      if (avmWebApp != null)
-      {
-         js.append(JavaScriptUtils.javaScriptEscape(avmWebApp));
-      }
+//      // WCM
+//      if (avmWebApp != null)
+//      {
+//         js.append(JavaScriptUtils.javaScriptEscape(avmWebApp));
+//      }
       js.append("';\n");
       
       // TODO - need better way to determine WCM vs ECM context
       js.append("alfresco.constants.AVM_WEBAPP_URL = '");
-      if (avmWebApp != null)
-      {
-         //Use preview store because when user upload image it appears in preview, not in main store.
-         String storeName = AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox());
-         if (storeName != null)
-         {
-            js.append(JavaScriptUtils.javaScriptEscape(fc.getExternalContext().getRequestContextPath() + "/wcs/api/path/content/avm/" +
-                      AVMUtil.buildStoreWebappPath(storeName, avmWebApp).replace(":","")));
-         }
-      }
-	  
+//      // WCM
+//      if (avmWebApp != null)
+//      {
+//         //Use preview store because when user upload image it appears in preview, not in main store.
+//         String storeName = AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox());
+//         if (storeName != null)
+//         {
+//            js.append(JavaScriptUtils.javaScriptEscape(fc.getExternalContext().getRequestContextPath() + "/wcs/api/path/content/avm/" +
+//                      AVMUtil.buildStoreWebappPath(storeName, avmWebApp).replace(":","")));
+//         }
+//      }
+//	  
       js.append("';\n");
 
       js.append("alfresco.constants.AVM_WEBAPP_PREFIX = '");
-      if (avmWebApp != null)
-      {
-         String storeName = AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox());
-         if (storeName != null)
-         {
-            js.append(JavaScriptUtils.javaScriptEscape(fc.getExternalContext().getRequestContextPath() + "/wcs/api/path/content/avm/" +
-                      AVMUtil.buildSandboxRootPath(storeName).replace(":","")));
-         }
-      }
-         
+//      // WCM
+//      if (avmWebApp != null)
+//      {
+//         String storeName = AVMUtil.getCorrespondingPreviewStoreName(avmBrowseBean.getSandbox());
+//         if (storeName != null)
+//         {
+//            js.append(JavaScriptUtils.javaScriptEscape(fc.getExternalContext().getRequestContextPath() + "/wcs/api/path/content/avm/" +
+//                      AVMUtil.buildSandboxRootPath(storeName).replace(":","")));
+//         }
+//      }
+//         
       js.append("';\n");
       js.append("alfresco.constants.LANGUAGE = '");
       String lang = Application.getLanguage(FacesContext.getCurrentInstance()).toString();

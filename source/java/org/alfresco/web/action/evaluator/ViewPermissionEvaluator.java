@@ -18,10 +18,7 @@
  */
 package org.alfresco.web.action.evaluator;
 
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.bean.wcm.ManagePermissionsDialog;
 
 /**
  * UI Action Evaluator - Evaluates whether the view permissions action should be visible.
@@ -42,11 +39,12 @@ public class ViewPermissionEvaluator extends BaseActionEvaluator
     public boolean evaluate(final Node node)
     {
         boolean result = true;
-        final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
-        if (!AVMUtil.isMainStore(AVMUtil.getStoreName(path)))
-        {
-            result = false;
-        }
+//        // WCM
+//        final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
+//        if (!AVMUtil.isMainStore(AVMUtil.getStoreName(path)))
+//        {
+//            result = false;
+//        }
         return result;
 
     }
@@ -59,10 +57,11 @@ public class ViewPermissionEvaluator extends BaseActionEvaluator
     @Override
     public boolean evaluate(Object obj)
     {
-        if (obj instanceof ManagePermissionsDialog)
-        {
-            return !((ManagePermissionsDialog) obj).isRendered();
-        }
+//        // WCM
+//        if (obj instanceof ManagePermissionsDialog)
+//        {
+//            return !((ManagePermissionsDialog) obj).isRendered();
+//        }
         return false;
     }
 

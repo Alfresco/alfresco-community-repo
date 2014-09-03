@@ -24,19 +24,11 @@ import java.io.OutputStream;
 
 import javax.faces.context.FacesContext;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.repo.domain.PropertyValue;
 import org.alfresco.repo.web.scripts.FileTypeImageUtils;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMService;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.Pair;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -71,14 +63,15 @@ import org.xml.sax.SAXException;
       {
          throw new NullPointerException();
       }
-      final AVMService avmService = this.getServiceRegistry().getAVMService();
-      if (!avmService.hasAspect(AVMNodeConverter.ToAVMVersionPath(nodeRef).getFirst(),
-                                AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), 
-                                WCMAppModel.ASPECT_RENDITION))
-      {
-         throw new IllegalArgumentException("node " + nodeRef +
-                                            " does not have aspect " + WCMAppModel.ASPECT_RENDITION);
-      }
+//        // WCM
+//      final AVMService avmService = this.getServiceRegistry().getAVMService();
+//      if (!avmService.hasAspect(AVMNodeConverter.ToAVMVersionPath(nodeRef).getFirst(),
+//                                AVMNodeConverter.ToAVMVersionPath(nodeRef).getSecond(), 
+//                                WCMAppModel.ASPECT_RENDITION))
+//      {
+//         throw new IllegalArgumentException("node " + nodeRef +
+//                                            " does not have aspect " + WCMAppModel.ASPECT_RENDITION);
+//      }
       this.nodeRef = nodeRef;
       this.formsService = formsService;
    }
@@ -87,7 +80,9 @@ import org.xml.sax.SAXException;
                                final String avmPath, 
                                final FormsService formsService)
    {
-      this(AVMNodeConverter.ToNodeRef(version, avmPath), formsService);
+//      // WCM
+//      this(AVMNodeConverter.ToNodeRef(version, avmPath), formsService);
+      this(null, formsService);
    }
 
    private FormsService getFormsService()
@@ -107,26 +102,34 @@ import org.xml.sax.SAXException;
 //      return avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
 //                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
 //                                        ContentModel.PROP_NAME).getStringValue();
-      return AVMNodeConverter.SplitBase(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond())[1];
+//      // WCM
+//      return AVMNodeConverter.SplitBase(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond())[1];
+      return null;
    }
 
    /** the description of this rendition */
    public String getDescription()
    {
-      final AVMService avmService = this.getServiceRegistry().getAVMService();
-      return avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
-                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
-                                        ContentModel.PROP_DESCRIPTION).getStringValue();
+//      // WCM
+//      final AVMService avmService = this.getServiceRegistry().getAVMService();
+//      return avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+//                                        AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+//                                        ContentModel.PROP_DESCRIPTION).getStringValue();
+      return null;
    }
 
    public String getWebappRelativePath()
    {
-      return AVMUtil.getWebappRelativePath(this.getPath());
+//      // WCM
+//      return AVMUtil.getWebappRelativePath(this.getPath());
+      return null;
    }
 
    public String getSandboxRelativePath()
    {
-      return AVMUtil.getSandboxRelativePath(this.getPath());
+//      // WCM
+//      return AVMUtil.getSandboxRelativePath(this.getPath());
+      return null;
    }
 
    public FormInstanceData getPrimaryFormInstanceData()
@@ -138,65 +141,69 @@ import org.xml.sax.SAXException;
    public FormInstanceData getPrimaryFormInstanceData(boolean includeDeleted)
       throws FileNotFoundException
    {
-      final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
-      final String fidAVMStoreRelativePath = (String)
-         avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
-                                    AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
-                                    WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA).getValue(DataTypeDefinition.TEXT);
-      String avmStore = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
-      avmStore = avmStore.substring(0, avmStore.indexOf(':'));
-      final String path = avmStore + ':' + fidAVMStoreRelativePath;
-      if (avmService.lookup(-1, path, includeDeleted) == null)
-      {
-         throw new FileNotFoundException("unable to find primary form instance data " + path);
-      }
-      return this.getFormsService().getFormInstanceData(-1, path);
+//      // WCM
+//      final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
+//      final String fidAVMStoreRelativePath = (String)
+//         avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+//                                    AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+//                                    WCMAppModel.PROP_PRIMARY_FORM_INSTANCE_DATA).getValue(DataTypeDefinition.TEXT);
+//      String avmStore = AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
+//      avmStore = avmStore.substring(0, avmStore.indexOf(':'));
+//      final String path = avmStore + ':' + fidAVMStoreRelativePath;
+//      if (avmService.lookup(-1, path, includeDeleted) == null)
+//      {
+//         throw new FileNotFoundException("unable to find primary form instance data " + path);
+//      }
+//      return this.getFormsService().getFormInstanceData(-1, path);
+       return null;
    }
 
    /** the rendering engine template that generated this rendition */
    public RenderingEngineTemplate getRenderingEngineTemplate()
    {
-      if (this.renderingEngineTemplate == null)
-      {
-         final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
-         PropertyValue pv = 
-            avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
-                                       AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
-                                       WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
-         if (pv == null)
-         {
-            LOGGER.debug("property " + WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE +
-                         " not set on " + this.getPath());
-            return null;
-         }
-
-         final NodeRef retNodeRef = (NodeRef)pv.getValue(DataTypeDefinition.NODE_REF);
-         if (retNodeRef == null)
-         {
-            LOGGER.debug("unable to locate parent rendering engine template of rendition " +
-                         this.getPath());
-            return null;
-         }
-         pv = avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
-                                         AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
-                                         WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
-         if (pv == null)
-         {
-            LOGGER.debug("property " + WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES +
-                         " not set on " + this.getPath());
-            return null;
-         }
-
-         final NodeRef rpNodeRef = (NodeRef)pv.getValue(DataTypeDefinition.NODE_REF);
-         if (rpNodeRef == null)
-         {
-            LOGGER.debug("unable to locate parent rendering engine template properties of rendition " +
-                         this.getPath());
-            return null;
-         }
-         this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef, this.getFormsService());
-      }
-      return this.renderingEngineTemplate;
+//      // WCM
+//      if (this.renderingEngineTemplate == null)
+//      {
+//         final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
+//         PropertyValue pv = 
+//            avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+//                                       AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+//                                       WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE);
+//         if (pv == null)
+//         {
+//            LOGGER.debug("property " + WCMAppModel.PROP_PARENT_RENDERING_ENGINE_TEMPLATE +
+//                         " not set on " + this.getPath());
+//            return null;
+//         }
+//
+//         final NodeRef retNodeRef = (NodeRef)pv.getValue(DataTypeDefinition.NODE_REF);
+//         if (retNodeRef == null)
+//         {
+//            LOGGER.debug("unable to locate parent rendering engine template of rendition " +
+//                         this.getPath());
+//            return null;
+//         }
+//         pv = avmService.getNodeProperty(AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getFirst(), 
+//                                         AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond(), 
+//                                         WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES);
+//         if (pv == null)
+//         {
+//            LOGGER.debug("property " + WCMAppModel.PROP_PARENT_RENDITION_PROPERTIES +
+//                         " not set on " + this.getPath());
+//            return null;
+//         }
+//
+//         final NodeRef rpNodeRef = (NodeRef)pv.getValue(DataTypeDefinition.NODE_REF);
+//         if (rpNodeRef == null)
+//         {
+//            LOGGER.debug("unable to locate parent rendering engine template properties of rendition " +
+//                         this.getPath());
+//            return null;
+//         }
+//         this.renderingEngineTemplate = new RenderingEngineTemplateImpl(retNodeRef, rpNodeRef, this.getFormsService());
+//      }
+//      return this.renderingEngineTemplate;
+      return null;
    }
 
    /** the node ref containing the contents of this rendition */
@@ -207,12 +214,16 @@ import org.xml.sax.SAXException;
    
    public String getPath()
    {
-      return AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
+//       // WCM
+//      return AVMNodeConverter.ToAVMVersionPath(this.nodeRef).getSecond();
+       return null;
    }
 
    public String getUrl()
    {
-      return AVMUtil.getPreviewURI(this.getPath());
+//       // WCM
+//      return AVMUtil.getPreviewURI(this.getPath());
+      return null;
    }
 
    public String getFileTypeImage()
@@ -222,12 +233,14 @@ import org.xml.sax.SAXException;
 
    public OutputStream getOutputStream()
    {
-      final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
-      final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(this.nodeRef);
-      return (avmService.lookup(p.getFirst(), p.getSecond()) == null
-              ? avmService.createFile(AVMNodeConverter.SplitBase(p.getSecond())[0],
-                                      AVMNodeConverter.SplitBase(p.getSecond())[1])
-              : avmService.getFileOutputStream(this.getPath()));
+//       // WCM
+//      final AVMService avmService = this.getServiceRegistry().getAVMLockingAwareService();
+//      final Pair<Integer, String> p = AVMNodeConverter.ToAVMVersionPath(this.nodeRef);
+//      return (avmService.lookup(p.getFirst(), p.getSecond()) == null
+//              ? avmService.createFile(AVMNodeConverter.SplitBase(p.getSecond())[0],
+//                                      AVMNodeConverter.SplitBase(p.getSecond())[1])
+//              : avmService.getFileOutputStream(this.getPath()));
+      return null;
    }
 
    public void regenerate()

@@ -19,10 +19,7 @@
 
 package org.alfresco.web.action.evaluator;
 
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.web.bean.repository.Node;
-import org.alfresco.web.bean.wcm.AVMUtil;
-import org.alfresco.web.bean.wcm.ManagePermissionsDialog;
 
 /**
  * UI Action Evaluator - Evaluates whether the change and remove permissions action should be visible.
@@ -42,11 +39,12 @@ public class ManagePermissionIsMainStoreEvaluator extends BaseActionEvaluator
     public boolean evaluate(final Node node)
     {
         boolean result = false;
-        final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
-        if (!AVMUtil.isMainStore(AVMUtil.getStoreName(path)))
-        {
-            result = true;
-        }
+//      // WCM
+//        final String path = AVMNodeConverter.ToAVMVersionPath(node.getNodeRef()).getSecond();
+//        if (!AVMUtil.isMainStore(AVMUtil.getStoreName(path)))
+//        {
+//            result = true;
+//        }
         return result;
     }
 
@@ -58,10 +56,11 @@ public class ManagePermissionIsMainStoreEvaluator extends BaseActionEvaluator
     @Override
     public boolean evaluate(final Object obj)
     {
-        if (obj instanceof ManagePermissionsDialog)
-        {
-            return ((ManagePermissionsDialog) obj).isRendered();
-        }
+//        // WCM
+//        if (obj instanceof ManagePermissionsDialog)
+//        {
+//            return ((ManagePermissionsDialog) obj).isRendered();
+//        }
         return false;
     }
 

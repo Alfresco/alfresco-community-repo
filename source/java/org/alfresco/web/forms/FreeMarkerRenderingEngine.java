@@ -100,8 +100,10 @@ public class FreeMarkerRenderingEngine
          {
             LOGGER.debug("request to load template " + name);
 
-            final RenderingEngine.TemplateResourceResolver trr = (RenderingEngine.TemplateResourceResolver)
-               model.get(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER);
+//            // WCM
+//            final RenderingEngine.TemplateResourceResolver trr = (RenderingEngine.TemplateResourceResolver)
+//               model.get(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER);
+            final RenderingEngine.TemplateResourceResolver trr = null;
 
             return trr.resolve(name);
          }
@@ -180,10 +182,11 @@ public class FreeMarkerRenderingEngine
                                                   " to " + m.getClass().getName() + ".");
             }
          }
-         else if (qn.equals(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER))
-         {
-            continue;
-         }
+//         // WCM
+//         else if (qn.equals(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER))
+//         {
+//            continue;
+//         }
          else
          {
             final String[] splitQName = QName.splitPrefixedQName(qn.toPrefixString());

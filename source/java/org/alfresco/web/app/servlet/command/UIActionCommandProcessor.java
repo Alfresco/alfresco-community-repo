@@ -22,7 +22,6 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +29,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.web.app.AlfrescoNavigationHandler;
-import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.workflow.WorkflowUtil;
 import org.alfresco.web.ui.common.Utils;
 
@@ -63,7 +61,8 @@ public static final String PARAM_CONTAINER = "container";
    static
    {
       // add our commands to the command registry
-      CommandFactory.getInstance().registerCommand("createwebcontent", CreateWebContentCommand.class);
+//       // WCM
+//      CommandFactory.getInstance().registerCommand("createwebcontent", CreateWebContentCommand.class);
       CommandFactory.getInstance().registerCommand("editwebcontent", EditWebContentCommand.class);
       CommandFactory.getInstance().registerCommand(MANAGE_TASK, ManageTaskDialogCommand.class);
       CommandFactory.getInstance().registerCommand("editcontentprops", EditContentPropertiesCommand.class);

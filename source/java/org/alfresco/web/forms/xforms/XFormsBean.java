@@ -37,19 +37,15 @@ import javax.faces.context.ResponseWriter;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.alfresco.repo.avm.AVMNodeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.XMLUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wcm.AVMNode;
-import org.alfresco.web.bean.wcm.AVMUtil;
 import org.alfresco.web.forms.Form;
 import org.alfresco.web.forms.FormProcessor;
-import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.xs.XSModel;
@@ -189,7 +185,7 @@ public class XFormsBean implements Serializable
 
    private XFormsSession xformsSession;
    private transient Schema2XFormsProperties schema2XFormsProperties;
-   private AVMBrowseBean avmBrowseBean;
+//   private AVMBrowseBean avmBrowseBean;     // WCM
    private NavigationBean navigator;
    // lock for XFormSession.eventLog
    private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
@@ -225,19 +221,20 @@ public class XFormsBean implements Serializable
       return schema2XFormsProperties;
    }
 
-   /**
-    * @param avmBrowseBean the avmBrowseBean to set.
-    */
-   public void setAvmBrowseBean(final AVMBrowseBean avmBrowseBean)
-   {
-      this.avmBrowseBean = avmBrowseBean;
-   }
-   
-   public void setNavigator(final NavigationBean navigator)
-   {
-      this.navigator = navigator;
-   }
-
+//   // WCM
+//   /**
+//    * @param avmBrowseBean the avmBrowseBean to set.
+//    */
+//   public void setAvmBrowseBean(final AVMBrowseBean avmBrowseBean)
+//   {
+//      this.avmBrowseBean = avmBrowseBean;
+//   }
+//   
+//   public void setNavigator(final NavigationBean navigator)
+//   {
+//      this.navigator = navigator;
+//   }
+//
    /** @param xformsSession the current session */
    public void setXFormsSession(final XFormsSession xformsSession)
       throws FormBuilderException,
@@ -685,22 +682,23 @@ public class XFormsBean implements Serializable
                                        request.getContextPath() + "/wcservice");
                String rewrittenURI = uri;
                
-               if (uri.contains("${storeid}"))
-               {
-                  final String storeId = AVMUtil.getStoreName(cwdAvmPath);
-                  rewrittenURI         = uri.replace("${storeid}", storeId);
-               }
-               else if (uri.contains("{storeid}"))
-               {
-                  final String storeId = AVMUtil.getStoreName(cwdAvmPath);
-                  rewrittenURI         = uri.replace("{storeid}", storeId);
-               }
-               else
-               {
-                  if (LOGGER.isDebugEnabled())
-                     LOGGER.debug("no store id specified in webscript URI " + uri);
-               }
-               
+//               // WCM
+//               if (uri.contains("${storeid}"))
+//               {
+//                  final String storeId = AVMUtil.getStoreName(cwdAvmPath);
+//                  rewrittenURI         = uri.replace("${storeid}", storeId);
+//               }
+//               else if (uri.contains("{storeid}"))
+//               {
+//                  final String storeId = AVMUtil.getStoreName(cwdAvmPath);
+//                  rewrittenURI         = uri.replace("{storeid}", storeId);
+//               }
+//               else
+//               {
+//                  if (LOGGER.isDebugEnabled())
+//                     LOGGER.debug("no store id specified in webscript URI " + uri);
+//               }
+//               
                if (uri.contains("${ticket}"))
                {
                   AuthenticationService authenticationService = Repository.getServiceRegistry(facesContext).getAuthenticationService();
@@ -728,12 +726,13 @@ public class XFormsBean implements Serializable
             }
             else
             {
-               // It's a web project asset include / import
-               final String baseURI = (uri.charAt(0) == '/'
-                                       ? AVMUtil.getPreviewURI(AVMUtil.getStoreName(cwdAvmPath))
-                                       : AVMUtil.getPreviewURI(cwdAvmPath));
-
-               finalURI = baseURI + uri;
+//               // WCM
+//               // It's a web project asset include / import
+//               final String baseURI = (uri.charAt(0) == '/'
+//                                       ? AVMUtil.getPreviewURI(AVMUtil.getStoreName(cwdAvmPath))
+//                                       : AVMUtil.getPreviewURI(cwdAvmPath));
+//
+//               finalURI = baseURI + uri;
             }
 
             if (LOGGER.isDebugEnabled())
@@ -852,11 +851,12 @@ public class XFormsBean implements Serializable
       throws FormBuilderException
    {
       String path = null;
-      if (this.getXformsSession().getForm().isWebForm())
-      {
-         path = this.getCurrentAVMPath();
-      }
-      else
+//      // WCM
+//      if (this.getXformsSession().getForm().isWebForm())
+//      {
+//         path = this.getCurrentAVMPath();
+//      }
+//      else
       {
          path = this.getCurrentPath();
       }
@@ -899,18 +899,19 @@ public class XFormsBean implements Serializable
       }
    }
 
-   private String getCurrentAVMPath()
-   {
-      AVMNode node = this.avmBrowseBean.getAvmActionNode();
-      if (node == null)
-      {
-         return this.avmBrowseBean.getCurrentPath();
-      }
-
-      final String result = node.getPath();
-      return node.isDirectory() ? result : AVMNodeConverter.SplitBase(result)[0];
-   }
-   
+//   // WCM
+//   private String getCurrentAVMPath()
+//   {
+//      AVMNode node = this.avmBrowseBean.getAvmActionNode();
+//      if (node == null)
+//      {
+//         return this.avmBrowseBean.getCurrentPath();
+//      }
+//
+//      final String result = node.getPath();
+//      return node.isDirectory() ? result : AVMNodeConverter.SplitBase(result)[0];
+//   }
+//   
    private String getCurrentPath()
    {
       org.alfresco.web.bean.repository.Node node = this.navigator.getCurrentNode();

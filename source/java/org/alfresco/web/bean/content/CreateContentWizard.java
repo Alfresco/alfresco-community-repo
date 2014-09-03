@@ -35,7 +35,6 @@ import org.springframework.extensions.config.Config;
 import org.springframework.extensions.config.ConfigElement;
 import org.springframework.extensions.config.ConfigService;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.namespace.QName;
@@ -114,15 +113,16 @@ public class CreateContentWizard extends BaseContentWizard
       }
       
       String result = super.finish();
-      
-      if ((super.createdNode != null) && (this.instanceDataDocument != null))
-      {
-         final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
-         props.put(WCMAppModel.PROP_PARENT_FORM_NAME, getFormName());
-         props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, "");
-         getNodeService().addAspect(super.createdNode, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
-      }
-      
+
+//      // WCM
+//      if ((super.createdNode != null) && (this.instanceDataDocument != null))
+//      {
+//         final Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
+//         props.put(WCMAppModel.PROP_PARENT_FORM_NAME, getFormName());
+//         props.put(WCMAppModel.PROP_ORIGINAL_PARENT_PATH, "");
+//         getNodeService().addAspect(super.createdNode, WCMAppModel.ASPECT_FORM_INSTANCE_DATA, props);
+//      }
+//      
       return result;
    }
    

@@ -29,7 +29,6 @@ import javax.faces.event.ActionEvent;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -319,22 +318,26 @@ public class CheckinCheckoutDialog extends BaseDialogBean
     		  boolean editingInline = false;
     		  Node node = setupContentDocument(id);
          
-    		  if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-    		  {
-    			  editingInline = true;
-            
-    			  // editable form document
-    			  FacesContext fc = FacesContext.getCurrentInstance();
-    			  this.navigator.setupDispatchContext(node);
-            
-    			  // TODO - rename editContent Wizard since it only deals with editing form content
-    			  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:editContent");
-    		  }
-         
-    		  // detect the inline editing aspect to see which edit mode to use
-    		  else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
-    				  node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
-    				  ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
+//    		  // WCM
+//    		  if (node.hasAspect(WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+//    		  {
+//    			  editingInline = true;
+//            
+//    			  // editable form document
+//    			  FacesContext fc = FacesContext.getCurrentInstance();
+//    			  this.navigator.setupDispatchContext(node);
+//            
+//    			  // TODO - rename editContent Wizard since it only deals with editing form content
+//    			  fc.getApplication().getNavigationHandler().handleNavigation(fc, null, "wizard:editContent");
+//    		  }
+//         
+//    		  // detect the inline editing aspect to see which edit mode to use
+//    		  else if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
+//    				  node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
+//    				  ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
+		      if (node.hasAspect(ApplicationModel.ASPECT_INLINEEDITABLE) && 
+		              node.getProperties().get(ApplicationModel.PROP_EDITINLINE) != null &&
+		              ((Boolean)node.getProperties().get(ApplicationModel.PROP_EDITINLINE)).booleanValue() == true)
     		  {
     			  // retrieve the content reader for this node
     			  ContentReader reader = property.getContentService().getReader(node.getNodeRef(), ContentModel.PROP_CONTENT);

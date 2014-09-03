@@ -19,17 +19,13 @@
 package org.alfresco.web.bean.clipboard;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.WCMAppModel;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
-import org.alfresco.service.cmr.avm.AVMService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.QueryParameterDefinition;
@@ -63,8 +59,9 @@ abstract class AbstractClipboardItem implements ClipboardItem
    private QName type;
    private String icon;
    
-   transient protected AVMService avmService;
-   
+//   // WCM
+//   transient protected AVMService avmService;
+//   
    private List<String> customPasteViewIds;
    
    
@@ -95,21 +92,22 @@ abstract class AbstractClipboardItem implements ClipboardItem
        this.parent = parent;
        this.customPasteViewIds = customPasteViewIds;
    }
-   
-   public void setAvmService(AVMService avmService)
-   {
-      this.avmService = avmService;
-   }
-   
-   protected AVMService getAvmService()
-   {
-      if (avmService == null)
-      {
-         avmService = getServiceRegistry().getAVMLockingAwareService();
-      }
-      return avmService;
-   }
-   
+
+//   // WCM
+//   public void setAvmService(AVMService avmService)
+//   {
+//      this.avmService = avmService;
+//   }
+//   
+//   protected AVMService getAvmService()
+//   {
+//      if (avmService == null)
+//      {
+//         avmService = getServiceRegistry().getAVMLockingAwareService();
+//      }
+//      return avmService;
+//   }
+//   
    public ClipboardStatus getMode()
    {
       return this.mode;
@@ -228,28 +226,29 @@ abstract class AbstractClipboardItem implements ClipboardItem
       
       return (nodeRefs.size() != 0);
    }
-   
-   protected void recursiveFormCheck(AVMNodeDescriptor desc)
-   {
-       if (desc.isFile())
-       {
-           String filePath = desc.getPath();
-           if (avmService.hasAspect(-1, filePath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
-           {
-               avmService.removeAspect(filePath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
-           }
-           if (avmService.hasAspect(-1, filePath, WCMAppModel.ASPECT_RENDITION))
-           {
-               avmService.removeAspect(filePath, WCMAppModel.ASPECT_RENDITION);
-           }
-       }
-       else
-       {
-           Map<String, AVMNodeDescriptor> listing = getAvmService().getDirectoryListing(desc);
-           for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
-           {
-               recursiveFormCheck(entry.getValue());
-           }
-       }
-   }
+//   
+//   // WCM
+//   protected void recursiveFormCheck(AVMNodeDescriptor desc)
+//   {
+//       if (desc.isFile())
+//       {
+//           String filePath = desc.getPath();
+//           if (avmService.hasAspect(-1, filePath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA))
+//           {
+//               avmService.removeAspect(filePath, WCMAppModel.ASPECT_FORM_INSTANCE_DATA);
+//           }
+//           if (avmService.hasAspect(-1, filePath, WCMAppModel.ASPECT_RENDITION))
+//           {
+//               avmService.removeAspect(filePath, WCMAppModel.ASPECT_RENDITION);
+//           }
+//       }
+//       else
+//       {
+//           Map<String, AVMNodeDescriptor> listing = getAvmService().getDirectoryListing(desc);
+//           for (Map.Entry<String, AVMNodeDescriptor> entry : listing.entrySet())
+//           {
+//               recursiveFormCheck(entry.getValue());
+//           }
+//       }
+//   }
 }

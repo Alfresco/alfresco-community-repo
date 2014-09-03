@@ -18,8 +18,6 @@
  */
 package org.alfresco.web.app.servlet.command;
 
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.faces.application.NavigationHandler;
@@ -30,14 +28,10 @@ import javax.servlet.ServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.ServiceRegistry;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.alfresco.web.app.servlet.BaseServlet;
 import org.alfresco.web.app.servlet.FacesHelper;
-import org.alfresco.web.bean.NavigationBean;
-import org.alfresco.web.bean.wcm.AVMBrowseBean;
-import org.alfresco.web.bean.wizard.WizardManager;
 import org.alfresco.web.bean.workflow.WorkflowBean;
-import org.alfresco.web.ui.wcm.component.UIUserSandboxes;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * Command to execute the Manage Task dialog via url.

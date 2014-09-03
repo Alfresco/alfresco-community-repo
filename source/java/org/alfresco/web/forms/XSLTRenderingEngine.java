@@ -428,8 +428,10 @@ public class XSLTRenderingEngine
          {
             LOGGER.debug("request to resolve href " + href +
                          " using base " + base);
-            final RenderingEngine.TemplateResourceResolver trr = (RenderingEngine.TemplateResourceResolver)
-               model.get(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER);
+//            // WCM
+//            final RenderingEngine.TemplateResourceResolver trr = (RenderingEngine.TemplateResourceResolver)
+//                    model.get(RenderingEngineTemplateImpl.PROP_RESOURCE_RESOLVER);
+            final RenderingEngine.TemplateResourceResolver trr = null;
 
             InputStream in = null;
             try

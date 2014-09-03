@@ -27,8 +27,6 @@ import javax.faces.context.FacesContext;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.avm.AVMNodeConverter;
-import org.alfresco.service.cmr.avm.AVMNodeDescriptor;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
@@ -38,17 +36,13 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
-import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.wcm.util.WCMUtil;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.NavigationBean;
 import org.alfresco.web.bean.repository.Repository;
-import org.alfresco.web.bean.wcm.AVMBrowseBean;
 import org.alfresco.web.ui.repo.component.shelf.UIClipboardShelfItem;
 
 /**
@@ -61,7 +55,7 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
    private static final long serialVersionUID = -1686557602737846009L;
    
    private static final String WORKSPACE_PASTE_VIEW_ID = "/jsp/browse/browse.jsp";
-   private static final String AVM_PASTE_VIEW_ID = "/jsp/wcm/browse-sandbox.jsp";
+//   private static final String AVM_PASTE_VIEW_ID = "/jsp/wcm/browse-sandbox.jsp";       // WCM
    private static final String FORUMS_PASTE_VIEW_ID = "/jsp/forums/forums.jsp";
    private static final String FORUM_PASTE_VIEW_ID = "/jsp/forums/forum.jsp";
 
@@ -102,21 +96,22 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
     */
    public boolean canCopyToViewId(String viewId)
    {
-      if (AVM_PASTE_VIEW_ID.equals(viewId)) 
+//      // WCM
+//      if (AVM_PASTE_VIEW_ID.equals(viewId)) 
+//      {
+//         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), AVMBrowseBean.BEAN_NAME);
+//         String destPath = avmBrowseBean.getCurrentPath();   
+//
+//         if (WCMUtil.isStagingStore(WCMUtil.getStoreName(destPath))) 
+//         { 
+//            return false; 
+//         }
+//          
+//         return true;
+//      }
+//      else
       {
-         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), AVMBrowseBean.BEAN_NAME);
-         String destPath = avmBrowseBean.getCurrentPath();   
-
-         if (WCMUtil.isStagingStore(WCMUtil.getStoreName(destPath))) 
-         { 
-            return false; 
-         }
-          
-         return true;
-      }
-      else
-      {
-          return super.canCopyToViewId(viewId) || (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || AVM_PASTE_VIEW_ID.equals(viewId) ||
+          return super.canCopyToViewId(viewId) || (WORKSPACE_PASTE_VIEW_ID.equals(viewId) || /*AVM_PASTE_VIEW_ID.equals(viewId) || WCM */
               FORUMS_PASTE_VIEW_ID.equals(viewId) || FORUM_PASTE_VIEW_ID.equals(viewId));       
       }
    }
@@ -351,74 +346,75 @@ public class WorkspaceClipboardItem extends AbstractClipboardItem
          }
          return true;
       }
-      else if (AVM_PASTE_VIEW_ID.equals(viewId))
-      {
-         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
-
-         final String destPath = avmBrowseBean.getCurrentPath();
-         final NodeRef destRef = AVMNodeConverter.ToNodeRef(-1, destPath);
-
-         final CrossRepositoryCopyService crossRepoCopyService = getServiceRegistry().getCrossRepositoryCopyService();
-
-         // initial name to attempt the copy of the item with
-         String name = getName();
-
-         for(;;)
-         {
-            try
-            {
-               final String currentName = name;
-
-               // attempt each copy/paste in its own transaction
-               retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-               {
-                  public Void execute() throws Throwable
-                  {
-                     if (getMode() == ClipboardStatus.COPY)
-                     {
-                        // COPY operation
-                        if (logger.isDebugEnabled())
-                           logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
-      
-                        // inter-store copy operation
-                        crossRepoCopyService.copy(getNodeRef(), destRef, currentName);
-                  
-                        if (destRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
-                        {
-                            // ETHREEOH-2110
-                            AVMNodeDescriptor desc = getAvmService().lookup(-1, destPath + "/" + currentName);
-                            recursiveFormCheck(desc);
-                        }
-                     }
-                     else
-                     {
-                        // this should not occur as the canMoveToViewId() will return false
-                        throw new Exception("Move operation not supported between stores.");
-                     }                  
-                     return null;               
-                  }
-               });
-
-               // We got here without error, so no need to loop with a new name
-               break;
-            }
-            catch (FileExistsException fileExistsErr)
-            {
-               // If mode is COPY, have another go around the loop with a new name
-               if (getMode() == ClipboardStatus.COPY)
-               {
-                  String copyOf = Application.getMessage(fc, MSG_COPY_OF);
-                  name = copyOf + ' ' + name;                  
-               }
-               else
-               {
-                   // we should not rename an item when it is being moved - so exit
-                   throw fileExistsErr;
-               }
-            }
-         }
-         return true;
-      }
+//      // WCM
+//      else if (AVM_PASTE_VIEW_ID.equals(viewId))
+//      {
+//         AVMBrowseBean avmBrowseBean = (AVMBrowseBean)FacesHelper.getManagedBean(fc, AVMBrowseBean.BEAN_NAME);
+//
+//         final String destPath = avmBrowseBean.getCurrentPath();
+//         final NodeRef destRef = AVMNodeConverter.ToNodeRef(-1, destPath);
+//
+//         final CrossRepositoryCopyService crossRepoCopyService = getServiceRegistry().getCrossRepositoryCopyService();
+//
+//         // initial name to attempt the copy of the item with
+//         String name = getName();
+//
+//         for(;;)
+//         {
+//            try
+//            {
+//               final String currentName = name;
+//
+//               // attempt each copy/paste in its own transaction
+//               retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+//               {
+//                  public Void execute() throws Throwable
+//                  {
+//                     if (getMode() == ClipboardStatus.COPY)
+//                     {
+//                        // COPY operation
+//                        if (logger.isDebugEnabled())
+//                           logger.debug("Attempting to copy node: " + getNodeRef() + " into node ID: " + destRef.toString());
+//      
+//                        // inter-store copy operation
+//                        crossRepoCopyService.copy(getNodeRef(), destRef, currentName);
+//                  
+//                        if (destRef.getStoreRef().getProtocol().equals(StoreRef.PROTOCOL_AVM))
+//                        {
+//                            // ETHREEOH-2110
+//                            AVMNodeDescriptor desc = getAvmService().lookup(-1, destPath + "/" + currentName);
+//                            recursiveFormCheck(desc);
+//                        }
+//                     }
+//                     else
+//                     {
+//                        // this should not occur as the canMoveToViewId() will return false
+//                        throw new Exception("Move operation not supported between stores.");
+//                     }                  
+//                     return null;               
+//                  }
+//               });
+//
+//               // We got here without error, so no need to loop with a new name
+//               break;
+//            }
+//            catch (FileExistsException fileExistsErr)
+//            {
+//               // If mode is COPY, have another go around the loop with a new name
+//               if (getMode() == ClipboardStatus.COPY)
+//               {
+//                  String copyOf = Application.getMessage(fc, MSG_COPY_OF);
+//                  name = copyOf + ' ' + name;                  
+//               }
+//               else
+//               {
+//                   // we should not rename an item when it is being moved - so exit
+//                   throw fileExistsErr;
+//               }
+//            }
+//         }
+//         return true;
+//      }
       else
       {
          return false;

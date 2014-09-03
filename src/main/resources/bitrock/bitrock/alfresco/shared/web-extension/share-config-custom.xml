@@ -437,6 +437,10 @@
    <config evaluator="string-compare" condition="Cookie" replace="true">
       <cookie>
          <enableCookie>false</enableCookie>
+         <cookies-to-remove>
+            <cookie-to-remove>alfUsername3</cookie-to-remove>
+            <cookie-to-remove>alfLogin</cookie-to-remove>
+         </cookies-to-remove>
       </cookie>
    </config>
    -->

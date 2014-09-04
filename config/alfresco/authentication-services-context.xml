@@ -306,6 +306,7 @@
         <property name="homeFolderManager" ref="HomeFolderManager" />
         <property name="repoAdminService" ref="repoAdminService" />
         <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="eventPublisher" ref="eventPublisher" />
         
         <!-- Configurable properties. -->
         <property name="homeFolderCreationEager"    value= "${home.folder.creation.eager}" />

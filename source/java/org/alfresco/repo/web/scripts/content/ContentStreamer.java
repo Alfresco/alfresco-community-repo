@@ -354,21 +354,21 @@ public class ContentStreamer implements ResourceLoaderAware
             final long size = reader.getSize();
             final String encoding = reader.getEncoding();
                   
-            if (attach)
-            {
-                final String finalMimetype = mimetype;
-                
-                eventPublisher.publishEvent(new EventPreparator(){
-                    @Override
-                    public Event prepareEvent(String user, String networkId, String transactionId)
-                    {
-                        String siteId = siteService.getSiteShortName(nodeRef);
-                        
-                        return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
-                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.asType(ClientType.webclient), attachFileName, finalMimetype, size, encoding);
-                    }
-                });
-            }
+//            if (attach)
+//            {
+//                final String finalMimetype = mimetype;
+//                
+//                eventPublisher.publishEvent(new EventPreparator(){
+//                    @Override
+//                    public Event prepareEvent(String user, String networkId, String transactionId)
+//                    {
+//                        String siteId = siteService.getSiteShortName(nodeRef);
+//                        
+//                        return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
+//                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.asType(ClientType.webclient), attachFileName, finalMimetype, size, encoding);
+//                    }
+//                });
+//            }
             
             if (range == null)
             {

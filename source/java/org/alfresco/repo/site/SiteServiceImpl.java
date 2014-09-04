@@ -1510,7 +1510,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      */
     public void updateSite(SiteInfo siteInfo)
     {
-        String shortName = siteInfo.getShortName();
+        final String shortName 		    = siteInfo.getShortName();
+        final String title 	 		    = siteInfo.getTitle();
+        final String description        = siteInfo.getDescription();
+        
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)
         {
@@ -1522,8 +1525,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
         // Update the properties of the site
         // Note: the site preset and short name should never be updated!
-        properties.put(ContentModel.PROP_TITLE, siteInfo.getTitle());
-        properties.put(ContentModel.PROP_DESCRIPTION, siteInfo.getDescription());
+        properties.put(ContentModel.PROP_TITLE, title);
+        properties.put(ContentModel.PROP_DESCRIPTION, description);
 
         // Update the permissions based on the visibility
         SiteVisibility currentVisibility = getSiteVisibility(siteNodeRef);
@@ -1598,6 +1601,18 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         
         // Set the updated properties back onto the site node reference
         this.nodeService.setProperties(siteNodeRef, properties);
+               
+        final SiteVisibility visibility = siteInfo.getVisibility();
+        final String sitePreset			= siteInfo.getSitePreset();
+        
+        eventPublisher.publishEvent(new EventPreparator(){
+            @Override
+            public Event prepareEvent(String user, String networkId, String transactionId)
+            {         
+            	return new SiteManagementEvent("site.update", transactionId, networkId, new Date().getTime(),
+                            user, shortName,title,description, visibility.toString(),sitePreset);
+            }
+        });
     }
     
     /**

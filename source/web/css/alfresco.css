@@ -1,0 +1,135 @@
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url(opensans.woff) format('woff');
+}
+@font-face {
+  font-family: 'Open Sans Bold';
+  font-style: normal;
+  font-weight: 600;
+  src: url(opensansbold.woff) format('woff');
+}
+@font-face {
+  font-family: 'Open Sans Condensed';
+  font-style: normal;
+  font-weight: 300;
+  src: url(opensanscondensed.woff) format('woff');
+}
+
+/* Root styles, footer and links */
+
+body, html
+{
+   height: 100%;
+	font: 13px/1.231 Open Sans, Arial, sans-serif;
+}
+
+.sticky-wrapper
+{
+	min-height: 100%;
+	height: auto !important;
+	height: 100%;
+	margin: 0 auto -32px; /* the bottom margin is the negative value of the footer's height */
+}
+
+.footer, .push
+{
+	height: 32px; /* .push must be the same height as .footer and inverse of .sticky-wrapper height */
+}
+
+.footer
+{
+   clear: both;
+   text-align: center;
+   line-height: 32px; /* centers text within .footer height */
+}
+
+a,
+a:visited,
+a:hover
+{
+   color: #333;
+}
+
+a,
+a:visited
+{
+   text-decoration: none;
+}
+
+a:hover
+{
+   text-decoration: underline;
+}
+
+h1
+{
+   font-size: 220%;
+   font-family: Open Sans Condensed, Arial, sans-serif;
+   color: #333;
+}
+
+h2
+{
+   font-size: 108%;
+   font-family: Open Sans Bold, Arial, sans-serif;
+   padding-top: 1em;
+   border-bottom: 1px solid #ccc;
+   padding-bottom: 0.166em;
+}
+
+h3
+{
+   font-size: 125%;
+   font-family: Open Sans, Arial, sans-serif;
+   border-bottom: 1px solid #ccc;
+   padding: 4px 0;
+}
+
+.title
+{
+   margin: 1em 0 0;
+}
+
+.title .logo
+{
+   position: relative;
+   top: 8px;
+}
+
+.title .logo-separator
+{
+   display: inline-block;
+   border-right: 1px solid #ccc;
+   position: relative;
+   top: -22px;
+   height: 40px;
+   margin-bottom: -12px;
+}
+
+.title > h1
+{
+   display: inline;
+   position: relative;
+   left: 7px;
+   top: -5px;
+}
+
+.index
+{
+   margin-left: 18em;
+   padding-top: 1em;
+}
+
+.index-list
+{
+   padding-top: 4em;
+   border-top: 1px solid #eee;
+}
+
+p
+{
+   line-height: 1.333em;
+   padding-bottom: 0.333em;
+}

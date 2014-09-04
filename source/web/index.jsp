@@ -17,8 +17,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
 --%>
 
-<!-- Enterprise index-jsp placeholder -->
+<%@ page import="org.springframework.web.context.WebApplicationContext" %>
+<%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
+<%@ page import="org.alfresco.repo.admin.SysAdminParams" %>
+<%@ page import="org.alfresco.service.descriptor.DescriptorService" %>
+<%@ page import="org.alfresco.util.UrlUtil" %>
 
+<!-- Enterprise index-jsp placeholder -->
 <%
 // route WebDAV requests
 if (request.getMethod().equalsIgnoreCase("PROPFIND") || request.getMethod().equalsIgnoreCase("OPTIONS"))
@@ -27,12 +32,51 @@ if (request.getMethod().equalsIgnoreCase("PROPFIND") || request.getMethod().equa
 }
 %>
 
+<%
+WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext());
+SysAdminParams sysAdminParams = (SysAdminParams)context.getBean("sysAdminParams");
+DescriptorService descriptorService = (DescriptorService)context.getBean("descriptorComponent");
+%>
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
    <title>Alfresco</title>
+   <link rel="stylesheet" type="text/css" href="./css/reset.css" />
+   <link rel="stylesheet" type="text/css" href="./css/alfresco.css" />
 </head>
 <body>
+   <div class="sticky-wrapper">
+      <div class="index">
+         
+         <div class="title">
+            <span class="logo"><img src="./images/logo/logo.png" width="145" height="48" alt="" /></span>
+            <span class="logo-separator">&nbsp;</span>
+            <h1>Welcome to Alfresco</h1>
+         </div>
+         
+         <div class="index-list">
+            <p><a href="http://docs.alfresco.com/">Online Documentation</a></p>
+            <p></p>
+            <p><a href="<%=UrlUtil.getShareUrl(sysAdminParams)%>">Alfresco Share</a></p>
+            <p><a href="./webdav">Alfresco WebDav</a></p>
+            <p></p>
+            <p><a href="./s/index">Alfresco WebScripts Home</a> (admin only)</p>
+<%
+   if (descriptorService.getLicenseDescriptor().getLicenseMode().toString().equals("ENTERPRISE"))
+   {
+%>
+            <p><a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>
+<% } %>
+            <p></p>
+            <p><a href="./cmisatom">CMIS AtomPub Binding: AtomPub Service Document</a></p>
+            <p><a href="./cmisws/cmis?wsdl">CMIS Web Services Binding: WSDL Documents</a></p>
+            <p><a href="./cmisbrowser">CMIS Browser Binding (CMIS 1.1, experimental): Repository Info (JSON)</a></p>
+         </div>
+         
+      </div>
+      <div class="push"></div>
+   </div>
    <div class="footer">
       Alfresco Software, Inc. &copy; 2005-2014 All rights reserved.
    </div>

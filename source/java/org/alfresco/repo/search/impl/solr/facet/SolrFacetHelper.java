@@ -431,7 +431,7 @@ public class SolrFacetHelper
                 }
                 catch (ExecutionException e)
                 {
-                    new IllegalStateException(e);
+                    throw new IllegalStateException(e);
                 }
             }
         }

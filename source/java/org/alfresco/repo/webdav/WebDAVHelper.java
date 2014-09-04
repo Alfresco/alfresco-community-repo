@@ -38,6 +38,8 @@ import org.alfresco.events.types.ContentReadRangeEvent;
 import org.alfresco.events.types.Event;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.lock.LockUtils;
@@ -62,7 +64,6 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.URLDecoder;
@@ -1100,12 +1101,12 @@ public class WebDAVHelper
                 if (StringUtils.hasText(range))
                 { 
                     return new ContentReadRangeEvent(user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
-                                null, realNodeInfo.getType().toString(), Client.webdav, realNodeInfo.getName(), mimetype, size, contentEncoding, range); 
+                                null, realNodeInfo.getType().toString(), Client.asType(ClientType.webdav), realNodeInfo.getName(), mimetype, size, contentEncoding, range); 
                 } 
                 else 
                 {
                     return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
-                                null, realNodeInfo.getType().toString(), Client.webdav, realNodeInfo.getName(), mimetype, size, contentEncoding);            
+                                null, realNodeInfo.getType().toString(), Client.asType(ClientType.webdav), realNodeInfo.getName(), mimetype, size, contentEncoding);            
                 }
             }
         });

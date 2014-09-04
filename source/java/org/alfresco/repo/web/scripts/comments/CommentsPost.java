@@ -28,6 +28,8 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -46,7 +48,6 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.FileFilterMode.Client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONStringer;
@@ -150,7 +151,7 @@ public class CommentsPost extends DeclarativeWebScript {
                     
                     String jsonActivityData = jsonWriter.endObject().toString();
                     
-                    activityService.postActivity("org.alfresco.comments.comment-created", siteId, "comments", jsonActivityData, Client.webclient);
+                    activityService.postActivity("org.alfresco.comments.comment-created", siteId, "comments", jsonActivityData, Client.asType(ClientType.webclient));
                 }
                 catch(Exception e)
                 {

@@ -20,12 +20,13 @@ package org.alfresco.repo.webdav;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.FileFilterMode.Client;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -125,7 +126,7 @@ public class ActivityPosterImpl implements ActivityPoster
                     siteId,
                     appTool,
                     json.toString(),
-                    Client.webdav,
+                    Client.asType(ClientType.webdav),
                     contentNodeInfo);
     }
     

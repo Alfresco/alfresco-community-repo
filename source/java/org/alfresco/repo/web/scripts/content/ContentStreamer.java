@@ -17,6 +17,8 @@ import org.alfresco.events.types.ContentEvent;
 import org.alfresco.events.types.ContentEventImpl;
 import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.events.EventPreparator;
@@ -31,7 +33,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -364,7 +365,7 @@ public class ContentStreamer implements ResourceLoaderAware
                         String siteId = siteService.getSiteShortName(nodeRef);
                         
                         return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
-                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.webclient, attachFileName, finalMimetype, size, encoding);
+                                    nodeRef.getId(), siteId, propertyQName.toString(), Client.asType(ClientType.webclient), attachFileName, finalMimetype, size, encoding);
                     }
                 });
             }

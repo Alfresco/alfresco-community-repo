@@ -107,6 +107,7 @@
                 <ref bean="patch.db-V4.2-upgrade-to-activiti-5.11" />
                 <ref bean="patch.db-V4.2-remove-old-index-act" />
                 <ref bean="patch.db-V4.2-upgrade-to-activiti-5.13" />
+                <ref bean="patch.db-V5.0-upgrade-to-activiti-5.16.2" />
             </list>
         </property>
     </bean>

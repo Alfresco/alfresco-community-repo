@@ -4,8 +4,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xsi:schemaLocation="http://www.alfresco.org/repo/db-schema db-schema.xsd" 
     name="" dbprefix="act_" 
-    version="8002" 
-    tablecolumnorder="true">
+    version="8004" 
+    tablecolumnorder="false">
   <validators>
     <validator class="org.alfresco.util.schemacomp.validator.NameValidator">
       <properties>

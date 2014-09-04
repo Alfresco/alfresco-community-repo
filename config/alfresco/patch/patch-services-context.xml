@@ -3380,12 +3380,12 @@
         </property>
     </bean>
     
-    <bean id="patch.db-Activiti-5.16.2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id" value="patch.db-Activiti-5.16.2" />
-        <property name="description" value="patch.db-Activiti-5.16.2.description" />
+    <bean id="patch.db-V5.0-upgrade-to-activiti-5.16.2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-upgrade-to-activiti-5.16.2" />
+        <property name="description" value="patch.db-V5.0-upgrade-to-activiti-5.16.2.description" />
         <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="8002" />
-        <property name="targetSchema" value="8003" />
+        <property name="fixesToSchema" value="8003" />
+        <property name="targetSchema" value="8004" />
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-upgrade-5-16-2.sql</value>
         </property>

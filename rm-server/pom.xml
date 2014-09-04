@@ -216,7 +216,7 @@
       <dependency>
          <groupId>org.springframework.extensions.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
-         <version>1.2.0</version>
+         <version>${alfresco.base.version}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>

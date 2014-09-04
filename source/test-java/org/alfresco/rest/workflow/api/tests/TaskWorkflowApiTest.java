@@ -1173,6 +1173,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(requestContext.getRunAsUser(), taskJSONObject.get("assignee"));
             assertEquals("john", taskJSONObject.get("owner"));
             assertEquals(dueDate, parseDate(taskJSONObject, "dueAt"));
+            // experiment
+            assertEquals(createdCal.getTime().toString(), parseDate(taskJSONObject, "startedAt").toString());
             assertEquals(createdCal.getTime(), parseDate(taskJSONObject, "startedAt"));
             assertEquals(2l, taskJSONObject.get("priority"));
             assertEquals("wf:adhocTask", taskJSONObject.get("formResourceKey"));

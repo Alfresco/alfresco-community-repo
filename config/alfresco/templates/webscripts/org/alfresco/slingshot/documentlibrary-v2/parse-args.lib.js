@@ -93,6 +93,7 @@ var Common =
       try
       {
          var location = null,
+             siteId = null,
              qnamePaths,
              displayPaths;
          
@@ -125,8 +126,8 @@ var Common =
          }
          else if ((qnamePaths.length > 4) && (qnamePaths[2] == TYPE_SITES))
          {
-            var siteId = displayPaths[3],
-               siteNode = Common.getSite(siteId),
+               siteId = displayPaths[3];
+            var siteNode = Common.getSite(siteId),
                containerId = qnamePaths[4].substr(3);
 
             if (siteNode != null)
@@ -154,7 +155,7 @@ var Common =
          {
             location =
             {
-               site: null,
+               site: siteId,
                container: null,
                path: "/" + displayPaths.slice(2, displayPaths.length).join("/"),
                file: node.name

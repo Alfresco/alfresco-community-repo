@@ -63,7 +63,13 @@ DescriptorService descriptorService = (DescriptorService)context.getBean("descri
             <p></p>
             <p><a href="./s/index">Alfresco WebScripts Home</a> (admin only)</p>
 <%
-   if (descriptorService.getLicenseDescriptor().getLicenseMode().toString().equals("ENTERPRISE"))
+   if (descriptorService.getLicenseDescriptor() == null)
+   {
+%>
+            <p>WARNING: License has failed to deploy and the system is in Read Only mode. Please visit the <a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>
+<% 
+   }
+   else if (descriptorService.getLicenseDescriptor().getLicenseMode().toString().equals("ENTERPRISE"))
    {
 %>
             <p><a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>

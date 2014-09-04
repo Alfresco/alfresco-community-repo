@@ -139,7 +139,7 @@ public class RmClassesRestApiTest extends BaseRMWebScriptTestCase
             "emailserver:attached",
             "bpm:assignees",
             "cm:likesRatingSchemeRollups",
-            "wcmwf:submission",
+            "wf:parallelReviewStats",
             "sys:localized"
         });
     }

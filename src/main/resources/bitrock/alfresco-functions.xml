@@ -116,7 +116,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
-                            <value>${libreoffice_directory}/program/soffice.bin</value>
+                            <value>${libreoffice_directory}/program/soffice</value>
                             <ruleList>
                                 <platformTest type="linux"/>
                             </ruleList>

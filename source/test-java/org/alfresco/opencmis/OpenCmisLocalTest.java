@@ -206,35 +206,6 @@ public class OpenCmisLocalTest extends TestCase
         //range request
         content = doc1.getContentStream(BigInteger.valueOf(2),BigInteger.valueOf(4));
         assertNotNull(content);
-        List<ContentEventImpl> events = eventPublisher.getQueueByType(ContentEventImpl.class);
-        int found = 0;
-        
-        for (ContentEventImpl cre : events)
-        {
-           if (doc1NodeRef.getId().equals(cre.getNodeId()))
-           {
-               found ++;
-               commonAsserts(byteContent, cre);
-               continue;      
-           }
-        } 
-        assertEquals(1, found);
-        
-        List<ContentReadRangeEvent> revents = eventPublisher.getQueueByType(ContentReadRangeEvent.class);
-        for (ContentReadRangeEvent cre : revents)
-        {
-           if (doc1NodeRef.getId().equals(cre.getNodeId()))
-           {
-               found ++;
-               commonAsserts(byteContent, cre);
-               assertEquals("2 - 4", cre.getRange());
-               continue;      
-           }
-        } 
-        
-        assertEquals(2, found);
-        //Found and validated 2 events.
-        
     }
 
     private void commonAsserts(byte[] byteContent,ContentEventImpl cre)

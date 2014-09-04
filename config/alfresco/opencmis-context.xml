@@ -115,7 +115,7 @@
     </bean>
 
     <bean id="cmisActivityPoster" class="org.alfresco.opencmis.ActivityPosterImpl">
-        <property name="activityService"        ref="activityService" />
+        <property name="poster"                 ref="activitiesPoster" />
         <property name="siteService"            ref="SiteService" />
         <property name="tenantService"          ref="tenantService" />
         <property name="nodeService"            ref="NodeService" />

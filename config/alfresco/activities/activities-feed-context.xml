@@ -24,5 +24,18 @@
             </list>
         </property>
     </bean>
-    
+       
+    <bean id="activitiesPoster" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="ActivitiesFeed"/>
+        </property>
+        <property name="sourceBeanName">
+            <value>ffActivitiesPoster</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.alfresco.service.cmr.activities.ActivityPoster</value>
+            </list>
+        </property>
+    </bean>
 </beans>

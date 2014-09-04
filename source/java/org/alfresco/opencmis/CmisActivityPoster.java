@@ -26,8 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author sglover
  */
-// TODO consolidate with ActivityPost for WebDAV
-public interface ActivityPoster
+public interface CmisActivityPoster
 {
 	void postFileFolderAdded(NodeRef nodeRef);
     

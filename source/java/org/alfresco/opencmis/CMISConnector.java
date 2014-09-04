@@ -321,7 +321,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private ServiceRegistry serviceRegistry;
     private EventPublisher eventPublisher;
 
-    private ActivityPoster activityPoster;
+    private CmisActivityPoster activityPoster;
 
     private BehaviourFilter behaviourFilter;
 
@@ -376,12 +376,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 		this.siteService = siteService;
 	}
 
-	public void setActivityPoster(ActivityPoster activityPoster)
+	public void setActivityPoster(CmisActivityPoster activityPoster)
     {
 		this.activityPoster = activityPoster;
 	}
     
-	public ActivityPoster getActivityPoster()
+	public CmisActivityPoster getActivityPoster()
 	{
 		return activityPoster;
 	}

@@ -26,6 +26,10 @@
       <property name="maxFeedItems" value="${activities.feed.max.size}"/>
    </bean>
    
+   <bean id="ffActivitiesPoster" class="org.alfresco.service.cmr.activities.FileFolderActivityPosterImpl">
+      <property name="activityService" ref="activityService" />
+   </bean>
+   
    <!-- cleans out-of-date feed entries -->
    <bean id="feedCleaner" class="org.alfresco.repo.activities.feed.cleanup.FeedCleaner" init-method="init">
       <property name="feedDAO" ref="feedDAO"/>

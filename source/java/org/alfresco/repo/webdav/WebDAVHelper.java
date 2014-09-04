@@ -32,10 +32,14 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.events.types.ContentEvent;
+import org.alfresco.events.types.ContentEventImpl;
+import org.alfresco.events.types.Event;
 import org.alfresco.jlan.util.IPAddress;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
+import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.lock.LockUtils;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
@@ -1099,29 +1103,19 @@ public class WebDAVHelper
      
         if (!StringUtils.hasText(range))
         {
-            //Its not a range request
-            SiteService siteService = getServiceRegistry().getSiteService();
-            final String siteId = siteService.getSiteShortName(realNodeInfo.getNodeRef());
-            
-            poster.postFileFolderActivity(ActivityPoster.DOWNLOADED, null, m_tenantService.getCurrentUserDomain(),
-                        siteId, null, realNodeInfo.getNodeRef(), realNodeInfo.getName(), 
-                        "webdav", Client.asType(ClientType.webdav), null);   
-        }
-        
-//        eventPublisher.publishEvent(new EventPreparator(){
-//            @Override
-//            public Event prepareEvent(String user, String networkId, String transactionId)
-//            {
-//
-//                
-//                if (StringUtils.hasText(range))
-//                { 
-//                    return new ContentReadRangeEvent(user, networkId, transactionId, realNodeInfo.getNodeRef().getId(),
-//                                siteId, realNodeInfo.getType().toString(), Client.asType(ClientType.webdav), realNodeInfo.getName(), mimetype, size, contentEncoding, range);
-//                }
-//            }
-//        });
+            // Its not a range request
+            eventPublisher.publishEvent(new EventPreparator()
+            {
+                @Override
+                public Event prepareEvent(String user, String networkId, String transactionId)
+                {
+                    return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId, realNodeInfo.getNodeRef().getId(), null,
+                                realNodeInfo.getType().toString(), Client.asType(ClientType.webdav), realNodeInfo.getName(), mimetype,
+                                size, contentEncoding);
+                }
+            });
 
+        }
     }
     
     public String getRepositoryPath(HttpServletRequest request)

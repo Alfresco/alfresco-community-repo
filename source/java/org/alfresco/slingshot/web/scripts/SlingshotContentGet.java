@@ -22,15 +22,15 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.web.scripts.content.ContentGet;
-import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
-import org.springframework.extensions.surf.util.StringBuilderWriter;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.extensions.webscripts.json.JSONWriter;
 
 /**
  * Share specific ContentGet implementation.
@@ -47,16 +47,16 @@ import org.springframework.extensions.webscripts.json.JSONWriter;
 public class SlingshotContentGet extends ContentGet
 {
     protected SiteService siteService;
-    protected ActivityService activityService;
+    private ActivityPoster poster;
     
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
     
-    public void setActivityService(ActivityService activityService)
+    public void setPoster(ActivityPoster poster)
     {
-        this.activityService = activityService;
+        this.poster = poster;
     }
     
     /* (non-Javadoc)
@@ -68,7 +68,7 @@ public class SlingshotContentGet extends ContentGet
         // are we downloading content as an attachment?
         if (Boolean.valueOf(req.getParameter("a")))
         {
-            // is this node part of a Site context?
+            // is this    private ActivityPoster poster; node part of a Site context?
             Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
             String storeType = templateVars.get("store_type");
             String storeId = templateVars.get("store_id");
@@ -87,20 +87,9 @@ public class SlingshotContentGet extends ContentGet
                     {
                         filename = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     }
-                    StringBuilderWriter out = new StringBuilderWriter(256);
-                    final JSONWriter json = new JSONWriter(out);
-                    json.startObject();
-                    json.writeValue("title",   filename);
-                    json.writeValue("nodeRef", nodeRef.toString());
-                    json.writeValue("page",    "document-details?nodeRef=" + nodeRef.toString());
-                    json.endObject();
-                    
                     // post an activity - mirror the mechanism as if from the Share application
-                    this.activityService.postActivity(
-                            "org.alfresco.documentlibrary.file-downloaded",
-                            site.getShortName(),
-                            "documentlibrary",
-                            out.toString());
+                    poster.postFileFolderActivity(ActivityPoster.DOWNLOADED, null, null, 
+                                    site.getShortName(), null, nodeRef, filename, "documentlibrary", Client.asType(ClientType.webclient), null);
                 }
             }
         }

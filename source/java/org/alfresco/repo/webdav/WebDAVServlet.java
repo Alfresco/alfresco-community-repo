@@ -92,7 +92,7 @@ public class WebDAVServlet extends HttpServlet
     
     // WebDAV helper class
     private WebDAVHelper m_davHelper;
-    private ActivityPoster activityPoster;
+    private WebDAVActivityPoster activityPoster;
 
     /**
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,

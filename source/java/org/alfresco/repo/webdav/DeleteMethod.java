@@ -45,7 +45,7 @@ import org.alfresco.util.FileFilterMode;
  */
 public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
 {
-    private ActivityPoster activityPoster;
+    private WebDAVActivityPoster activityPoster;
     
     /**
      * Default constructor
@@ -248,7 +248,7 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
     }
     
     @Override
-    public void setActivityPoster(ActivityPoster activityPoster)
+    public void setActivityPoster(WebDAVActivityPoster activityPoster)
     {
         this.activityPoster = activityPoster;
     }

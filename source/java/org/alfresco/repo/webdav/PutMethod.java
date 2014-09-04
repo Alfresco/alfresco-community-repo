@@ -52,7 +52,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     // Try to delete the node if the PUT fails
     private boolean noContent = false;
     private boolean created = false;
-    private ActivityPoster activityPoster;
+    private WebDAVActivityPoster activityPoster;
     private FileInfo contentNodeInfo;
     private long fileSize;
     
@@ -411,7 +411,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     }
 
     @Override
-    public void setActivityPoster(ActivityPoster activityPoster)
+    public void setActivityPoster(WebDAVActivityPoster activityPoster)
     {
         this.activityPoster = activityPoster;
     }

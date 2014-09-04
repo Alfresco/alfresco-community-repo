@@ -20,28 +20,29 @@ package org.alfresco.repo.webdav;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.activities.ActivityType;
-import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * WebDAV methods may use an instance of this class to post activity data.
  * 
- * @see ActivityPoster
+ * @see WebDAVActivityPoster
  * @author Matt Ward
  */
-// TODO consolidate with ActivityPost for OpenCMIS
-public class ActivityPosterImpl implements ActivityPoster
+public class ActivityPosterImpl implements WebDAVActivityPoster
 {
     private String appTool;
-    private ActivityService activityService;
+    private ActivityPoster poster;
     
+    protected static Log logger = LogFactory.getLog("org.alfresco.webdav.protocol.activity");
     
     /**
      * Default constructor. 
@@ -61,7 +62,6 @@ public class ActivityPosterImpl implements ActivityPoster
     public ActivityPosterImpl(String appTool, ActivityService activityService)
     {
         this.appTool = appTool;
-        this.activityService = activityService;
     }
 
     
@@ -119,78 +119,27 @@ public class ActivityPosterImpl implements ActivityPoster
         String fileName = contentNodeInfo.getName();
         NodeRef nodeRef = contentNodeInfo.getNodeRef();
         
-        JSONObject json = createActivityJSON(tenantDomain, path, parentNodeRef, nodeRef, fileName);
-        
-        activityService.postActivity(
-                    activityType,
-                    siteId,
-                    appTool,
-                    json.toString(),
-                    Client.asType(ClientType.webdav),
-                    contentNodeInfo);
-    }
-    
-    /**
-     * Create JSON suitable for create, modify or delete activity posts. Returns a new JSONObject
-     * containing appropriate key/value pairs.
-     * 
-     * @param tenantDomain
-     * @param nodeRef
-     * @param fileName
-     * @throws WebDAVServerException
-     * @return JSONObject
-     */
-    private JSONObject createActivityJSON(
-                String tenantDomain,
-                String path,
-                NodeRef parentNodeRef,
-                NodeRef nodeRef,
-                String fileName) throws WebDAVServerException
-    {
-        JSONObject json = new JSONObject();
         try
         {
-            json.put("nodeRef", nodeRef);
-            
-            if (parentNodeRef != null)
-            {
-                // Used for deleted files.
-                json.put("parentNodeRef", parentNodeRef);
-            }
-            
-            if (path != null)
-            {
-                // Used for deleted files and folders (added or deleted)
-                json.put("page", "documentlibrary?path=" + path);
-            }
-            else
-            {
-                // Used for added or modified files.
-                json.put("page", "document-details?nodeRef=" + nodeRef);
-            }
-            json.put("title", fileName);
-            
-            if (!tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
-            {
-                // Only used in multi-tenant setups.
-                json.put("tenantDomain", tenantDomain);
-            }
+            poster.postFileFolderActivity(activityType, path, tenantDomain, siteId,
+                                   parentNodeRef, nodeRef, fileName,
+                                   appTool, Client.asType(ClientType.webdav),contentNodeInfo);
         }
-        catch (JSONException error)
+        catch (AlfrescoRuntimeException are)
         {
+            logger.error("Failed to post activity.", are);
             throw new WebDAVServerException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-        
-        return json;
     }
+    
 
     public void setAppTool(String appTool)
     {
         this.appTool = appTool;
     }
 
-    public void setActivityService(ActivityService activityService)
+    public void setPoster(ActivityPoster poster)
     {
-        this.activityService = activityService;
+        this.poster = poster;
     }
 }

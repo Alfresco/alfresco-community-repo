@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.webdav.WebDavService;
  */
 public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
 {
-    private ActivityPoster activityPoster;
+    private WebDAVActivityPoster activityPoster;
     
     /**
      * Default constructor
@@ -180,7 +180,7 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
     }
     
     @Override
-    public void setActivityPoster(ActivityPoster activityPoster)
+    public void setActivityPoster(WebDAVActivityPoster activityPoster)
     {
         this.activityPoster = activityPoster;
     }

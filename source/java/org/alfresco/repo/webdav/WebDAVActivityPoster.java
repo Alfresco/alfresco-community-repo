@@ -25,8 +25,7 @@ import org.alfresco.service.cmr.model.FileInfo;
  * 
  * @author Matt Ward
  */
-// TODO consolidate with ActivityPost for OpenCMIS
-public interface ActivityPoster
+public interface WebDAVActivityPoster
 {
     void postFileFolderAdded(
                 String siteId,

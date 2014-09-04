@@ -28,5 +28,5 @@ package org.alfresco.repo.webdav;
  */
 public interface ActivityPostProducer
 {
-    void setActivityPoster(ActivityPoster activityPoster);
+    void setActivityPoster(WebDAVActivityPoster activityPoster);
 }

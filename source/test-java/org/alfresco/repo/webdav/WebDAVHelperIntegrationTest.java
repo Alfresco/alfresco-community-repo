@@ -133,27 +133,4 @@ public class WebDAVHelperIntegrationTest
        FileInfo found = webDAVHelper.getNodeForPath(rootFolder, "/");
        assertEquals(rootFolder, found.getNodeRef());
    }
- /*  
-   @Test
-   public void testPublishEvent() 
-   {
-      FileInfo folderInfo = fileFolderService.create(rootFolder, "my_folder", ContentModel.TYPE_FOLDER);
-      FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), "my_file.txt", ContentModel.TYPE_CONTENT);
-      webDAVHelper.publishReadEvent(fileInfo, "text", 2l, "UTF-8", null);
-      
-      List<ContentReadEvent> readEvents = eventPublisher.getQueueByType(ContentReadEvent.class);
-      boolean found = false;
-      for (ContentReadEvent event : readEvents)
-      {
-         if (fileInfo.getNodeRef().getId().equals(event.getNodeId()))
-         {
-             assertEquals(event.getMimeType(),("text"));
-             assertEquals(event.getClient(),Client.webdav);
-             found = true;
-             break;
-         }
-      }
-      assertTrue(found);
-   }
-   */
 }

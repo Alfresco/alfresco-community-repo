@@ -164,62 +164,63 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
             return;
         }
 
-        LockCallback lockCallback =  new LockCallback();
-        String lockToken = null;
-        try
+        //MNT-12145 : BM-0013 Soak test: Exception during generation of feeds org.springframework.dao.DataIntegrityViolationException.
+        // run one job cycle
+        RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
+        
+        helper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
-            lockToken = acquireLock(lockCallback);
-            
-            // lock held here
-            
-            if (logger.isTraceEnabled())
+            public Void execute() throws Throwable
             {
-                logger.trace("Activities feed generator started");
-            }
 
-            // run one job cycle
-            RetryingTransactionHelper helper = transactionService.getRetryingTransactionHelper();
-            // respect read-only server
-            helper.setForceWritable(true);
-            helper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
+                LockCallback lockCallback = new LockCallback();
+
+                String lockToken = null;
+                try
                 {
-                    generate();
-                    return null;
-                }
-            });
+                    lockToken = acquireLock(lockCallback);
 
-            if (logger.isTraceEnabled())
-            {
-                logger.trace("Activities feed generator completed");
-            }
-        }
-        catch (LockAcquisitionException e)
-        {
-            // Job being done by another process
-            if (logger.isDebugEnabled())
-            {
+                    // lock held here
+
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Activities feed generator started");
+                    }
+
+                    generate();
+
+                    if (logger.isTraceEnabled())
+                    {
+                        logger.trace("Activities feed generator completed");
+                    }
+                }
+                catch (LockAcquisitionException e)
+                {
+                    // Job being done by another process
+                    if (logger.isDebugEnabled())
+                    {
                 logger.debug("Activities feed generator already underway: " + LOCK_QNAME);
+                    }
+                }
+                catch (Throwable e)
+                {
+                    // If the VM is shutting down, then ignore
+                    if (vmShutdownListener.isVmShuttingDown())
+                    {
+                        // Ignore
+                    }
+                    else
+                    {
+                        logger.error("Exception during generation of feeds", e);
+                    }
+                }
+                finally
+                {
+                    releaseLock(lockCallback, lockToken);
+                }
+                return null;
             }
-        }
-        catch (Throwable e)
-        {
-            // If the VM is shutting down, then ignore
-            if (vmShutdownListener.isVmShuttingDown())
-            {
-                // Ignore
-            }
-            else
-            {
-                logger.error("Exception during generation of feeds", e);
-            }
-        }
-        finally
-        {
-            releaseLock(lockCallback, lockToken);
-        }
+        }, false, false);
     }
     
     protected abstract boolean generate() throws Exception;

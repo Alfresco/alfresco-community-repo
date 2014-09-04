@@ -85,7 +85,7 @@
    <!-- Local (non-grid-based) Feed Generator -->
    
    <bean id="feedGenerator" class="org.alfresco.repo.activities.feed.local.LocalFeedGenerator" parent="baseFeedGenerator">
-      <property name="feedTaskProcessor" ref="feedTaskProcessor"/>
+      <property name="feedTaskProcessor" ref="FeedTaskProcessor"/>
    </bean>
    
    <bean id="feedTaskProcessor" class="org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor">
@@ -113,6 +113,20 @@
       
    </bean>
    
+   <bean id="FeedTaskProcessor" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyTargetClass">
+            <value>true</value>
+        </property>
+        <property name="target">
+            <ref bean="feedTaskProcessor"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="checkTxnAdvisor" />
+            </list>
+        </property>
+    </bean>
+
    <bean id="feedNotifier" class="org.alfresco.repo.activities.feed.FeedNotifierImpl">
       <property name="personService" ref="PersonService"/>
       <property name="nodeService" ref="NodeService"/>

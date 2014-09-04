@@ -28,6 +28,8 @@ import org.alfresco.events.types.ActivityEvent;
 import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -63,7 +65,6 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.Pair;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
@@ -274,7 +275,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
                 public Event prepareEvent(String user, String networkId, String transactionId)
                 {            
                     return new ActivityEvent("quickshare", transactionId, networkId, user, nodeRef.getId(),
-                                null, typeQName.toString(), Client.webclient, sb.toString(),
+                                null, typeQName.toString(),  Client.asType(ClientType.webclient), sb.toString(),
                                 null, null, 0l, null);
                 }
             });

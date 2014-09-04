@@ -72,6 +72,8 @@ import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.events.EventPreparator;
@@ -143,7 +145,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.FileFilterMode;
-import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.apache.chemistry.opencmis.commons.BasicPermissions;
@@ -392,7 +393,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     public boolean isHidden(NodeRef nodeRef)
     {
-        final Client client = FileFilterMode.getClient();
+        final FileFilterMode.Client client = FileFilterMode.getClient();
     	return (hiddenAspect.getVisibility(client, nodeRef) == Visibility.NotVisible);
     }
 
@@ -1742,12 +1743,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 if (StringUtils.hasText(range))
                 {
                     return new ContentReadRangeEvent(user, networkId, transactionId,
-                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, name, mimeType, contentSize, encoding, range); 
+                                nodeRef.getId(), null, nodeType.toString(), Client.asType(ClientType.cmis), name, mimeType, contentSize, encoding, range); 
                 } 
                 else 
                 {
                     return new ContentEventImpl(ContentEvent.DOWNLOAD, user, networkId, transactionId,
-                                nodeRef.getId(), null, nodeType.toString(), Client.cmis, name, mimeType, contentSize, encoding);            
+                                nodeRef.getId(), null, nodeType.toString(), Client.asType(ClientType.cmis), name, mimeType, contentSize, encoding);            
                 }
             }
         });

@@ -20,13 +20,14 @@ package org.alfresco.repo.activities.script;
 
 import java.util.List;
 
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.jscript.BaseScopableProcessorExtension;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.activities.FeedControl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.FileFilterMode.Client;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 
@@ -73,7 +74,7 @@ public final class Activity extends BaseScopableProcessorExtension
     */
    public void postActivity(String activityType, String siteId, String appTool, String jsonActivityData)
    {
-       activityService.postActivity(activityType, siteId, appTool, jsonActivityData, Client.webclient);
+       activityService.postActivity(activityType, siteId, appTool, jsonActivityData, Client.asType(ClientType.webclient));
    }
    
    /**

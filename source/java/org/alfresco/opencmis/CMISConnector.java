@@ -3961,17 +3961,17 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         PermissionDefinitionDataImpl cmisPermission;
 
         cmisPermission = new PermissionDefinitionDataImpl();
-        cmisPermission.setId(BasicPermissions.READ);
+        cmisPermission.setPermission(BasicPermissions.READ);
         cmisPermission.setDescription("CMIS Read");
         result.add(cmisPermission);
 
         cmisPermission = new PermissionDefinitionDataImpl();
-        cmisPermission.setId(BasicPermissions.WRITE);
+        cmisPermission.setPermission(BasicPermissions.WRITE);
         cmisPermission.setDescription("CMIS Write");
         result.add(cmisPermission);
 
         cmisPermission = new PermissionDefinitionDataImpl();
-        cmisPermission.setId(BasicPermissions.ALL);
+        cmisPermission.setPermission(BasicPermissions.ALL);
         cmisPermission.setDescription("CMIS All");
         result.add(cmisPermission);
 
@@ -3981,7 +3981,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private PermissionDefinition createPermissionDefinition(PermissionReference pr)
     {
         PermissionDefinitionDataImpl permission = new PermissionDefinitionDataImpl();
-        permission.setId(pr.getQName().toString() + "." + pr.getName());
+        permission.setPermission(pr.getQName().toString() + "." + pr.getName());
         permission.setDescription(permission.getId());
 
         return permission;

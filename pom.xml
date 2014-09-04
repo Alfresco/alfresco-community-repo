@@ -274,10 +274,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
+            <version>1.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
+            <version>1.5.11</version>
         </dependency>
         <dependency>
             <groupId>org.beanshell</groupId>
@@ -388,10 +390,6 @@
             <exclusions>
                 <exclusion>
                     <groupId>woodstox</groupId>
-                    <artifactId>wstx-asl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.woodstox</groupId>
                     <artifactId>wstx-asl</artifactId>
                 </exclusion>
             </exclusions>

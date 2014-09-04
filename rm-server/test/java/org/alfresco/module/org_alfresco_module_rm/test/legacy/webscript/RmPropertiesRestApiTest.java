@@ -139,8 +139,8 @@ public class RmPropertiesRestApiTest extends BaseRMWebScriptTestCase
             "cm:authority",
             "sys:descriptor",
             "app:folderlink",
-            "wcmwf:parallelReviewTask",
-            "wca:deploymentserver"
+            "wf:submitGroupReviewTask",
+            "cmis:policy"
         });
     }
 }

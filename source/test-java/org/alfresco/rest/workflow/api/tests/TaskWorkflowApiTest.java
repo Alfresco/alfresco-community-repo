@@ -1236,6 +1236,14 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             assertNotNull(completedTask);
             
+            // Find the review pooled task
+            final Task reviewPooledTask = activitiProcessEngine.getTaskService().createTaskQuery()
+                .processInstanceId(otherInstance.getId()).singleResult();
+            
+            assertNotNull(reviewPooledTask);
+            // MNT-12221 case, due date should be set as task property, not as variable!!!
+            assertNotNull("Due date was not set for review pooled task.", reviewPooledTask.getDueDate());
+            
             String anotherUserId = UUID.randomUUID().toString();
             
             Calendar completedTaskDue = Calendar.getInstance();
@@ -1266,7 +1274,8 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertNotNull(activeTask);
         
             Calendar activeTaskDue = Calendar.getInstance();
-            
+
+            activeTaskDue.add(Calendar.HOUR, 2);
             activeTaskDue.set(Calendar.MILLISECOND, 0);
             activeTask.setDueDate(activeTaskDue.getTime());
             activeTask.setName("Task name");
@@ -1598,6 +1607,11 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             
             params.clear();
             params.put("where", "(variables/bpm_dueDate > 'd:datetime 2013-09-15T12:22:31.866+0000')");
+            // MNT-12221 fix, due date is not saved as variable for review pooled workflow, so nothing should be found
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+            
+            params.clear();
+            params.put("where", "(dueAt = '" + ISO8601DateFormat.format(reviewPooledTask.getDueDate()) + "')");
             assertEquals(1, getResultSizeForTaskQuery(params, tasksClient));
             
             params.clear();

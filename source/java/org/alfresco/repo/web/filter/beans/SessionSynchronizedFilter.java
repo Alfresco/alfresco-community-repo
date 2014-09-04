@@ -38,6 +38,7 @@ import javax.servlet.http.HttpSession;
  * safe.
  * 
  * @author Alan Davis
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class SessionSynchronizedFilter implements Filter
 {

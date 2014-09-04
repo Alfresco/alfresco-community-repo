@@ -1,9 +1,0 @@
-<webscript>
-  <shortname>JSF Redirection Handler</shortname>
-  <description>JSF Redirection Handler</description>
-  <url>/webframework/redirect/jsf-client/{command}/{objectType}/{storeType}/{storeId}/{nodeId}</url>
-  <url>/webframework/redirect/jsf-client/{command}/{objectType}/{id}</url>
-  <format default="html">argument</format>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-</webscript>

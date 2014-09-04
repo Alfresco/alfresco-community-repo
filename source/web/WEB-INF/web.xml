@@ -1,73 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
-
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
     version="2.4">
-   <display-name>Alfresco Web Client</display-name>
+   
+   <display-name>Alfresco</display-name>
 
-   <description>Alfresco Web Client</description>
-
-   <context-param>
-      <param-name>org.jboss.jbossfaces.WAR_BUNDLES_JSF_IMPL</param-name>
-      <param-value>true</param-value>
-   </context-param>
-
-   <context-param>
-      <param-name>javax.faces.STATE_SAVING_METHOD</param-name>
-      <param-value>server</param-value>
-   </context-param>
-
-   <context-param>
-      <param-name>javax.faces.PARTIAL_STATE_SAVING_METHOD</param-name>
-      <param-value>false</param-value>
-   </context-param>
-
-   <context-param>
-      <param-name>javax.faces.CONFIG_FILES</param-name>
-      <param-value>/WEB-INF/faces-config-app.xml,/WEB-INF/faces-config-beans.xml,/WEB-INF/faces-config-navigation.xml,/WEB-INF/faces-config-common.xml,/WEB-INF/faces-config-repo.xml,/WEB-INF/faces-config-custom.xml</param-value>
-   </context-param>
-
-   <context-param>
-      <param-name>org.apache.myfaces.ALLOW_JAVASCRIPT</param-name>
-      <param-value>true</param-value>
-   </context-param>
-
-   <context-param>
-      <description>This is an EXPERIMENTAL feature, so leave it off for now!</description>
-      <param-name>org.apache.myfaces.DETECT_JAVASCRIPT</param-name>
-      <param-value>false</param-value>
-   </context-param>
-
-   <context-param>
-      <description>Stop MyFaces from Serializing the state to the session</description>
-      <param-name>org.apache.myfaces.SERIALIZE_STATE_IN_SESSION</param-name>
-      <param-value>false</param-value>
-   </context-param>
-
-    <!-- TODO: Change this to false for production -->
-    <context-param>
-        <description>
-            If true, rendered HTML code will be formatted, so that it is "human readable".
-            i.e. additional line separators and whitespace will be written, that do not
-            influence the HTML code.
-            Default: "true"
-        </description>
-        <param-name>org.apache.myfaces.PRETTY_HTML</param-name>
-        <param-value>true</param-value>
-    </context-param>
-
-    <context-param>
-        <description>
-            If true, a javascript function will be rendered that is able to restore the
-            former vertical scroll on every request. Convenient feature if you have pages
-            with long lists and you do not want the browser page to always jump to the top
-            if you trigger a link or button action that stays on the same page.
-            Default: "false"
-        </description>
-        <param-name>org.apache.myfaces.AUTO_SCROLL</param-name>
-        <param-value>false</param-value>
-    </context-param>
+   <description>Alfresco</description>
 
    <!-- Spring Application Context location -->
    <context-param>
@@ -94,27 +33,12 @@
          <param-value>/app:company_home</param-value>
    </context-param>
 
-   <context-param>
-      <param-name>org.apache.myfaces.ERROR_HANDLING</param-name>
-      <param-value>false</param-value>
-   </context-param>
-
    <!-- Enterprise context-param placeholder -->
 
    <filter>
       <description>Cleans security context before authentication via the CMIS services or filters. Mapped only for CMIS</description>
       <filter-name>CMIS security context cleaning filter</filter-name>
       <filter-class>org.alfresco.web.app.servlet.CmisSecurityContextCleanerFilter</filter-class>
-   </filter>
-
-   <filter>
-      <description>Authentication filter mapped only to faces URLs. Other URLs generally use proprietary means to talk to the AuthenticationComponent</description>
-      <filter-name>Authentication Filter</filter-name>
-      <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
-      <init-param>
-         <param-name>beanName</param-name>
-         <param-value>AuthenticationFilter</param-value>
-      </init-param>
    </filter>
 
    <filter>
@@ -155,11 +79,6 @@
          <param-value>WebDavAuthenticationFilter</param-value>
       </init-param>
    </filter>
-
-   <filter>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <filter-class>org.alfresco.web.app.servlet.AdminAuthenticationFilter</filter-class>
-   </filter>
    
    <filter>
       <description>Set HTTP cache Expires header 30 days forward for a mapping.</description>
@@ -178,11 +97,6 @@
       <filter-class>org.alfresco.web.app.servlet.GlobalLocalizationFilter</filter-class>
    </filter>
 
-   <filter>
-      <filter-name>JSF Session Synchronized Filter</filter-name>
-      <filter-class>org.alfresco.repo.web.filter.beans.SessionSynchronizedFilter</filter-class>
-   </filter>
-
    <!-- Enterprise filter placeholder -->
 
    <filter-mapping>
@@ -199,46 +113,6 @@
    <filter-mapping>
       <filter-name>CMIS security context cleaning filter</filter-name>
       <url-pattern>/cmisatom/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/navigate/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/command/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/download/*</url-pattern>
-   </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/template/*</url-pattern>
-   </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/n/*</url-pattern>
-   </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/c/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/t/*</url-pattern>
-   </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/d/*</url-pattern>
    </filter-mapping>
 
    <!-- Activiti Global Authentication Filter mapping placeholder -->
@@ -279,55 +153,10 @@
       <filter-name>Global Authentication Filter</filter-name>
       <url-pattern>/ajax/*</url-pattern>
    </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/faces/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Authentication Filter</filter-name>
-      <url-pattern>/faces/*</url-pattern>
-   </filter-mapping>
 
    <filter-mapping>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <url-pattern>/webdav/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jsp/admin/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jsp/categories/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jsp/groups/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jsp/users/delete-user.jsp</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jsp/users/users.jsp</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>Admin Authentication Filter</filter-name>
-      <url-pattern>/faces/jsp/admin/system-info.jsp</url-pattern>
-   </filter-mapping>
-   
-   <filter-mapping>
-      <filter-name>JSF Session Synchronized Filter</filter-name>
-      <url-pattern>/faces/*</url-pattern>
    </filter-mapping>
 
    <filter-mapping>
@@ -363,10 +192,6 @@
    <!-- Enterprise filter-mapping placeholder -->
 
    <listener>
-      <listener-class>org.apache.myfaces.webapp.StartupServletContextListener</listener-class>
-   </listener>
-
-   <listener>
       <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
    </listener>
    
@@ -392,18 +217,6 @@
 
    <!-- Enterprise listener placeholder -->
 
-   <!-- Faces Servlet -->
-   <servlet>
-      <servlet-name>Faces Servlet</servlet-name>
-      <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
-      <load-on-startup>1</load-on-startup>
-   </servlet>
-
-   <servlet>
-      <servlet-name>uploadFile</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.UploadFileServlet</servlet-class>
-   </servlet>
-
    <servlet>
       <servlet-name>uploadContent</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.UploadContentServlet</servlet-class>
@@ -422,31 +235,6 @@
    <servlet>
       <servlet-name>guestDownloadContent</servlet-name>
       <servlet-class>org.alfresco.web.app.servlet.GuestDownloadContentServlet</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>guestTemplateContent</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.GuestTemplateContentServlet</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>externalAccess</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.ExternalAccessServlet</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>templateContent</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.TemplateContentServlet</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>commandServlet</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.CommandServlet</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>ajaxServlet</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.ajax.AjaxServlet</servlet-class>
    </servlet>
 
    <servlet>
@@ -471,25 +259,6 @@
          <param-name>authenticator</param-name>
          <param-value>webscripts.authenticator.webclient</param-value>
       </init-param>
-   </servlet>
-
-   <servlet>
-      <servlet-name>portalapiServlet</servlet-name>
-      <servlet-class>org.springframework.extensions.webscripts.servlet.WebScriptServlet</servlet-class>
-      <init-param>
-         <param-name>authenticator</param-name>
-         <param-value>webscripts.authenticator.webclient</param-value>
-      </init-param>
-   </servlet>
-
-   <servlet>
-      <servlet-name>workflowDefinitionImageServlet</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.WorkflowDefinitionImageServlet</servlet-class>
-   </servlet>
-
-   <servlet>
-      <servlet-name>JBPMDeployProcessServlet</servlet-name>
-      <servlet-class>org.alfresco.web.app.servlet.JBPMDeployProcessServlet</servlet-class>
    </servlet>
 
    <!-- See comment on the servlet-mapping CMISFileShareServlet.
@@ -598,11 +367,6 @@
    </servlet>
 
    <servlet>
-      <servlet-name>authenticatorServlet</servlet-name>
-      <servlet-class>org.alfresco.repo.web.scripts.servlet.AuthenticatorServlet</servlet-class>
-   </servlet>
-
-   <servlet>
       <servlet-name>publicapiServlet</servlet-name>
       <servlet-class>org.alfresco.rest.api.PublicApiWebScriptServlet</servlet-class>
       <init-param>
@@ -612,16 +376,6 @@
    </servlet>
 
    <!-- Enterprise servlet placeholder -->
-
-   <servlet-mapping>
-      <servlet-name>Faces Servlet</servlet-name>
-      <url-pattern>/faces/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>uploadFile</servlet-name>
-      <url-pattern>/uploadFileServlet</url-pattern>
-   </servlet-mapping>
 
    <servlet-mapping>
       <servlet-name>uploadContent</servlet-name>
@@ -654,51 +408,6 @@
    </servlet-mapping>
 
    <servlet-mapping>
-      <servlet-name>templateContent</servlet-name>
-      <url-pattern>/template/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>templateContent</servlet-name>
-      <url-pattern>/t/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>guestTemplateContent</servlet-name>
-      <url-pattern>/guestTemplate/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>guestTemplateContent</servlet-name>
-      <url-pattern>/gt/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>externalAccess</servlet-name>
-      <url-pattern>/navigate/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>externalAccess</servlet-name>
-      <url-pattern>/n/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>commandServlet</servlet-name>
-      <url-pattern>/command/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>commandServlet</servlet-name>
-      <url-pattern>/c/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>ajaxServlet</servlet-name>
-      <url-pattern>/ajax/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
         <servlet-name>WebDAV</servlet-name>
         <url-pattern>/webdav/*</url-pattern>
    </servlet-mapping>
@@ -721,26 +430,6 @@
    <servlet-mapping>
       <servlet-name>wcapiServlet</servlet-name>
       <url-pattern>/wcs/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>portalapiServlet</servlet-name>
-      <url-pattern>/168service/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>portalapiServlet</servlet-name>
-      <url-pattern>/168s/*</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>JBPMDeployProcessServlet</servlet-name>
-      <url-pattern>/jbpm/deployprocess</url-pattern>
-   </servlet-mapping>
-
-   <servlet-mapping>
-      <servlet-name>workflowDefinitionImageServlet</servlet-name>
-      <url-pattern>/workflowdefinitionimage/*</url-pattern>
    </servlet-mapping>
 
    <!-- The cmisbrowser endpoint is provided by the Chemistry project.

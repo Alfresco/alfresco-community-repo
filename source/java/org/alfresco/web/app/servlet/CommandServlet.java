@@ -64,6 +64,7 @@ import org.apache.commons.logging.LogFactory;
  * And/or also followed by the "?guest=true" argument to force guest access login for the URL. 
  * 
  * @author Kevin Roast
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class CommandServlet extends BaseServlet
 {

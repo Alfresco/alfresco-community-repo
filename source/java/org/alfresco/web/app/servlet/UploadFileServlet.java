@@ -57,6 +57,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * UploadFileBean in the session
  * 
  * @author gavinc
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class UploadFileServlet extends BaseServlet
 {

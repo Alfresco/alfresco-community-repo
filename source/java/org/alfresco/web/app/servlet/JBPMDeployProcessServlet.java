@@ -50,6 +50,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * Servlet for handling process deployments from jBPM process designer.
  * 
  * @author davidc
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class JBPMDeployProcessServlet extends HttpServlet
 {

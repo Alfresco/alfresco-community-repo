@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
  * resource in the web client, for example the admin and jBPM consoles.
  * 
  * @author gavinc
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class AdminAuthenticationFilter implements Filter
 {

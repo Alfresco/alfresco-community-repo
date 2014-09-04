@@ -37,6 +37,7 @@ import org.springframework.extensions.webscripts.Description.RequiredAuthenticat
  * looking glass' to this servlet and use the standard Alfresco servlet api-based authentication mechanisms.
  * 
  * @author dward
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class AuthenticatorServlet extends HttpServlet
 {

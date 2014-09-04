@@ -61,6 +61,7 @@ import org.apache.myfaces.shared_impl.renderkit.ViewSequenceUtils;
  * And/or also followed by the "?guest=true" argument to force guest access login for the URL.
  * 
  * @author Kevin Roast
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class ExternalAccessServlet extends BaseServlet
 {

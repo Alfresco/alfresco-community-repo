@@ -36,6 +36,7 @@ import org.alfresco.web.app.Application;
  * the application is running inside a servlet engine. 
  *  
  * @author gavinc
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class ModeDetectionFilter implements Filter
 {  

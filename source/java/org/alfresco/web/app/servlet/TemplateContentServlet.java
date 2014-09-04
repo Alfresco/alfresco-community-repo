@@ -65,6 +65,7 @@ import org.apache.commons.logging.LogFactory;
  * will be redirected to.
  * 
  * @author Kevin Roast
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class TemplateContentServlet extends BaseTemplateContentServlet
 {   

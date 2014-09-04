@@ -34,8 +34,9 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 
-/*
+/**
  * Render Workflow Definition Image
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class WorkflowDefinitionImageServlet extends HttpServlet
 {

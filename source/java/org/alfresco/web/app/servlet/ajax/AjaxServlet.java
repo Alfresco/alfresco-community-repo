@@ -47,6 +47,7 @@ import org.apache.commons.logging.LogFactory;
  * ?ticket=1234567890
  * 
  * @author gavinc
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class AjaxServlet extends BaseServlet
 {

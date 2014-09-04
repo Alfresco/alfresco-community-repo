@@ -76,6 +76,7 @@ import org.apache.commons.logging.LogFactory;
  * resource this servlet can be used without logging out the current user.
  * 
  * @author gavinc
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class GuestTemplateContentServlet extends BaseTemplateContentServlet
 {   

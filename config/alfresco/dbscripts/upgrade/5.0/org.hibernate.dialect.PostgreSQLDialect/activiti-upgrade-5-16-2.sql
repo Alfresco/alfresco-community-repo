@@ -1,6 +1,6 @@
 --
 -- Title:      Upgraded Activiti tables to 5.16.2 version
--- Database:   MySQL
+-- Database:   PostgreSQL
 -- Since:      V5.0 Schema 8002
 -- Author:     Mark Rogers
 --
@@ -69,7 +69,7 @@ alter table ACT_HI_TASKINST
 alter table ACT_HI_ACTINST
     alter column ASSIGNEE_ TYPE varchar(255);
     
-    alter table ACT_RU_TASK
+alter table ACT_RU_TASK
     add FORM_KEY_ varchar(255);
     
 alter table ACT_RU_EXECUTION

@@ -15,10 +15,16 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.events.types.ActivityEvent;
+import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.Client;
+import org.alfresco.repo.Client.ClientType;
+import org.alfresco.repo.events.EventPreparator;
+import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.favourites.PersonFavourite.PersonFavouriteKey;
 import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -65,6 +71,7 @@ public class FavouritesServiceImpl implements FavouritesService, InitializingBea
     private PolicyComponent policyComponent;
     private PermissionService permissionService;
     private PersonService personService;
+    private EventPublisher eventPublisher;
 
     /** Authentication Service */
     private AuthenticationContext authenticationContext;
@@ -645,12 +652,25 @@ public class FavouritesServiceImpl implements FavouritesService, InitializingBea
 		if(personFavourite == null)
 		{
 			Date createdAt = new Date();
-			String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+			final String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
 			personFavourite = new PersonFavourite(userName, nodeRef, type, name, createdAt);
 			personFavourites.put(personFavourite.getKey(), personFavourite);
 			updateFavouriteNodes(userName, type, personFavourites);
 			
 			QName nodeClass = nodeService.getType(nodeRef);
+			final String finalRef = nodeRef.getId();
+			final QName nodeType = nodeClass;
+			
+            eventPublisher.publishEvent(new EventPreparator(){
+                @Override
+                public Event prepareEvent(String user, String networkId, String transactionId)
+                {            
+                    return new ActivityEvent("favorite.added", transactionId, networkId, user, finalRef,
+                                null, nodeType==null?null:nodeType.toString(),  Client.asType(ClientType.script), null,
+                                name, null, 0l, null);
+                }
+            });
+            
 	        OnAddFavouritePolicy policy = onAddFavouriteDelegate.get(nodeRef, nodeClass);
 	        policy.onAddFavourite(userName, nodeRef);
 		}
@@ -709,6 +729,19 @@ public class FavouritesServiceImpl implements FavouritesService, InitializingBea
 		updateFavouriteNodes(userName, type, personFavourites);
 
 		QName nodeClass = nodeService.getType(nodeRef);
+        final String finalRef = nodeRef.getId();
+        final QName nodeType = nodeClass;
+        
+        eventPublisher.publishEvent(new EventPreparator(){
+            @Override
+            public Event prepareEvent(String user, String networkId, String transactionId)
+            {            
+                return new ActivityEvent("favorite.removed", transactionId, networkId, user, finalRef,
+                            null, nodeType==null?null:nodeType.toString(),  Client.asType(ClientType.script), null,
+                            null, null, 0l, null);
+            }
+        });
+        
         OnRemoveFavouritePolicy policy = onRemoveFavouriteDelegate.get(nodeRef, nodeClass);
         policy.onRemoveFavourite(userName, nodeRef);
 
@@ -920,5 +953,10 @@ public class FavouritesServiceImpl implements FavouritesService, InitializingBea
     {
     	Type type = getType(nodeRef);
     	return getPersonFavourite(userName, type, nodeRef);
+    }
+
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
     }
 }

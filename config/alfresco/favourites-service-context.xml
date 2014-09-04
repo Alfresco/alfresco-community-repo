@@ -45,5 +45,6 @@
         <property name="personService" ref="PersonService"/>        
         <property name="permissionService" ref="PermissionService"/>        
         <property name="authenticationContext" ref="authenticationContext"/>
+        <property name="eventPublisher" ref="eventPublisher" />
     </bean>   
 </beans>

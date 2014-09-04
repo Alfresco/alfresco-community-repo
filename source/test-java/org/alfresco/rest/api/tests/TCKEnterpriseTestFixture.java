@@ -12,7 +12,7 @@ public class TCKEnterpriseTestFixture extends EnterpriseTestFixture
 		"rest-api-test-context.xml"
     };
 
-	public final static String[] CLASS_LOCATIONS = new String[] {"classpath*:/publicapi/lucene/"};
+	public final static String[] CLASS_LOCATIONS = new String[] {"classpath*:/publicapi/solr/"};
 
     private static TCKEnterpriseTestFixture instance;
 

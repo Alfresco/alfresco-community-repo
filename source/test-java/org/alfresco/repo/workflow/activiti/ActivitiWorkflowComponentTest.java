@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.activiti.engine.history.HistoricProcessInstance;
-import org.activiti.engine.impl.util.ClockUtil;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.Job;
@@ -585,7 +584,6 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         WorkflowDefinition def = deployTestAdhocDefinition();
         
         Date startTime = new SimpleDateFormat("dd-MM-yyy hh:mm:ss").parse("01-01-2011 12:11:10");
-        ClockUtil.setCurrentTime(startTime);
         
         // Add some variables which should be used in the WorkflowInstance
         Map<String, Object> variables = new HashMap<String, Object>();
@@ -621,8 +619,6 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         
         assertEquals(startTime, workflowInstance.getStartDate());
         
-        // Reset current time used in activiti
-        ClockUtil.setCurrentTime(null);
     }
     
     @Test
@@ -631,7 +627,6 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         WorkflowDefinition def = deployTestAdhocDefinition();
         
         Date startTime = new SimpleDateFormat("dd-MM-yyy hh:mm:ss").parse("01-01-2011 01:02:03");
-        ClockUtil.setCurrentTime(startTime);
         
         // Add some variables which should be used in the WorkflowInstance
         Map<String, Object> variables = new HashMap<String, Object>();
@@ -649,7 +644,6 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
             ActivitiConstants.ENGINE_ID, processInstance.getProcessInstanceId());
         
         Date endTime = new SimpleDateFormat("dd-MM-yyy hh:mm:ss").parse("01-01-2011 02:03:04");
-        ClockUtil.setCurrentTime(endTime);
         
         // Finish the task
         Task task = taskService.createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
@@ -673,8 +667,6 @@ public class ActivitiWorkflowComponentTest extends AbstractActivitiComponentTest
         assertEquals(3, workflowInstance.getPriority().intValue());
         assertEquals(startTime, workflowInstance.getStartDate());
         
-        // Reset current time used in activiti
-        ClockUtil.setCurrentTime(null);
     }
     
     @Test

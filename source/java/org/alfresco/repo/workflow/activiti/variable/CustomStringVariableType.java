@@ -32,6 +32,17 @@ import org.activiti.engine.impl.variable.ValueFields;
  */
 public class CustomStringVariableType extends StringType {
     protected static final int MAX_TEXT_LENGTH = 4000;
+    
+    public CustomStringVariableType()
+    {
+        super(MAX_TEXT_LENGTH);
+        
+    }
+    
+    public CustomStringVariableType(int length)
+    {
+        super(length);
+    }
 
     @Override
     public void setValue(Object value, ValueFields valueFields) 

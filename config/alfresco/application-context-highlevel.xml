@@ -7,7 +7,6 @@
     <import resource="classpath:alfresco/scheduled-jobs-context.xml" />
     <import resource="classpath:alfresco/remote-services-context.xml"/>
     <import resource="classpath*:alfresco/office-addin-context.xml"/>
-    <import resource="classpath*:alfresco/portlets-context.xml"/>
     <import resource="classpath:alfresco/blog-context.xml"/>
     <import resource="classpath:alfresco/calendar-services-context.xml"/>
     <import resource="classpath:alfresco/comment-services-context.xml"/>

@@ -3354,29 +3354,41 @@
         </property>
     </bean>
     
-    <bean id="patch.solrFacets.root" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.solrFacets.root</value></property>
-        <property name="description"><value>patch.solrFacets.root.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>8002</value></property>
-        <property name="targetSchema"><value>8003</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
+    <bean id="patch.db-Activiti-5.16.2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-Activiti-5.16.2" />
+        <property name="description" value="patch.db-Activiti-5.16.2.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="8002" />
+        <property name="targetSchema" value="8003" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-upgrade-5-16-2.sql</value>
         </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>${solr_facets.root}</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">${solr_facets.root.path}</prop>
-                <prop key="location">alfresco/bootstrap/solrFacetsRootFolder.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
-        </property>
-    </bean> 
+    </bean>
+
+   <bean id="patch.solrFacets.root" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+      <property name="id"><value>patch.solrFacets.root</value></property>
+      <property name="description"><value>patch.solrFacets.root.description</value></property>
+      <property name="fixesFromSchema"><value>0</value></property>
+      <property name="fixesToSchema"><value>8002</value></property>
+      <property name="targetSchema"><value>8003</value></property>
+      <property name="dependsOn" >
+         <list>
+            <ref bean="patch.updateDmPermissions" />
+         </list>
+      </property>
+      <property name="importerBootstrap">
+         <ref bean="spacesBootstrap" />
+      </property>
+      <property name="checkPath">
+         <value>${solr_facets.root}</value>
+      </property>
+      <property name="bootstrapView">
+         <props>
+            <prop key="path">${solr_facets.root.path}</prop>
+            <prop key="location">alfresco/bootstrap/solrFacetsRootFolder.xml</prop>
+            <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+         </props>
+      </property>
+   </bean>
+
 </beans>

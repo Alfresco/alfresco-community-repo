@@ -50,7 +50,7 @@ DescriptorService descriptorService = (DescriptorService)context.getBean("descri
       <div class="index">
          
          <div class="title">
-            <span class="logo"><img src="./images/logo/logo.png" width="145" height="48" alt="" /></span>
+            <span class="logo"><a href="http://www.alfresco.com"><img src="./images/logo/logo.png" width="145" height="48" alt="" border="0" /></a></span>
             <span class="logo-separator">&nbsp;</span>
             <h1>Welcome to Alfresco</h1>
          </div>

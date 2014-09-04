@@ -1813,12 +1813,6 @@
        </property>
     </bean>
     
-    <!-- Share Content Download - post of an Activity before performing a Site download action -->
-    <bean id="webscript.org.alfresco.slingshot.download.get" class="org.alfresco.slingshot.web.scripts.SlingshotContentGet" parent="webscript.org.alfresco.content.content.get">
-        <property name="siteService" ref="SiteService" />
-        <property name="poster" ref="activitiesPoster" />
-    </bean>
-    
     <!-- Get/Post/Put/Delete Solr FacetConfig -->
    <bean id="baseSolrFacetConfigAdminWebscript" abstract="true" parent="webscript">
       <property name="facetService" ref="solrFacetService"/>
@@ -1843,6 +1837,12 @@
       class="org.alfresco.repo.web.scripts.facet.SolrFacetConfigAdminPut"
       parent="baseSolrFacetConfigAdminWebscript">
    </bean>
+
+    <!-- Share Content Download - post of an Activity before performing a Site download action -->
+    <bean id="webscript.org.alfresco.slingshot.download.get" class="org.alfresco.slingshot.web.scripts.SlingshotContentGet" parent="webscript.org.alfresco.content.content.get">
+        <property name="siteService" ref="SiteService" />
+        <property name="poster" ref="activitiesPoster" />
+    </bean>
 
     <!-- Node browser web script -->
     <bean id="webscript.org.alfresco.slingshot.node-browser.node-browser.get" parent="webscript"

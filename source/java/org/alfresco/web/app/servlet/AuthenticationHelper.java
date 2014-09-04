@@ -109,11 +109,17 @@ public final class AuthenticationHelper
       if (logger.isDebugEnabled())
           logger.debug("Setting up the request thread.");
       // setup faces context
-      FacesContext fc = Application.inPortalServer() ? AlfrescoFacesPortlet.getFacesContext(req) : FacesHelper
-            .getFacesContext(req, res, sc);
+      FacesContext fc = Application.inPortalServer() ? AlfrescoFacesPortlet.getFacesContext(req) : FacesHelper.getFacesContext(req, res, sc);
    
       // Set the current locale and language (overriding the one already decoded from the Accept-Language header
-      I18NUtil.setLocale(Application.getLanguage(req.getSession(), Application.getClientConfig(fc).isLanguageSelect() && useInterfaceLanguage));
+      if (WebApplicationContextUtils.getRequiredWebApplicationContext(sc).containsBean(Application.BEAN_CONFIG_SERVICE))
+      {
+          I18NUtil.setLocale(Application.getLanguage(req.getSession(), Application.getClientConfig(fc).isLanguageSelect() && useInterfaceLanguage));
+      }
+      else
+      {
+          Application.getLanguage(req.getSession(), false);
+      }
       if (logger.isDebugEnabled())
           logger.debug("The general locale is : " + I18NUtil.getLocale());
       

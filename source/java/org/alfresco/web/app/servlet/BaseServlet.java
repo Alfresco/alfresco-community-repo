@@ -237,52 +237,56 @@ public abstract class BaseServlet extends HttpServlet
    public static void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res, ServletContext sc, boolean sendRedirect)
          throws IOException
    {
-      // authentication failed - so end servlet execution and redirect to login page
-      StringBuilder redirectURL = new StringBuilder(1024).append(req.getContextPath()).append(FACES_SERVLET).append(
-            Application.getLoginPage(sc));
-
       // Pass the full requested URL as a parameter so the login page knows where to redirect to later
-      String uri = req.getRequestURI();
-
-      // if we find a JSF servlet reference in the URI then we need to check if the rest of the
-      // JSP specified is valid for a redirect operation after Login has occured.
-      int jspIndex;
-      if (uri.indexOf(req.getContextPath() + FACES_SERVLET) == -1
-            || uri.length() > (jspIndex = uri.indexOf(BaseServlet.FACES_SERVLET) + BaseServlet.FACES_SERVLET.length())
-            && BaseServlet.validRedirectJSP(uri.substring(jspIndex)))
-      {
-         if (redirectURL.indexOf("?") == -1)
-         {
-            redirectURL.append('?');
-         }
-         else
-         {
-            redirectURL.append('&');
-         }
-         redirectURL.append(LoginOutcomeBean.PARAM_REDIRECT_URL);
-         redirectURL.append('=');
-         String url = uri;
-         
-         // Append the query string if necessary
-         String queryString = req.getQueryString();
-         if (queryString != null)
-         {
-            // Strip out leading ticket arguments
-            queryString = queryString.replaceAll("(?<=^|&)" + ARG_TICKET + "(=[^&=]*)?&", "");
-            // Strip out trailing ticket arguments
-            queryString = queryString.replaceAll("(^|&)" + ARG_TICKET + "(=[^&=]*)?(?=&|$)", "");
-            if (queryString.length() != 0)
-            {
-               url += "?" + queryString;
-            }
-         }
-         redirectURL.append(URLEncoder.encode(url, "UTF-8"));
-      }
+      final String uri = req.getRequestURI();
+      String redirectURL = uri;
       
+      // authentication failed - so end servlet execution and redirect to login page
+      if (WebApplicationContextUtils.getRequiredWebApplicationContext(sc).containsBean(Application.BEAN_CONFIG_SERVICE))
+      {
+          StringBuilder redirect = new StringBuilder(128)
+              .append(req.getContextPath()).append(FACES_SERVLET).append(Application.getLoginPage(sc));
+          
+          // if we find a JSF servlet reference in the URI then we need to check if the rest of the
+          // JSP specified is valid for a redirect operation after Login has occured.
+          int jspIndex;
+          if (uri.indexOf(req.getContextPath() + FACES_SERVLET) == -1
+                || uri.length() > (jspIndex = uri.indexOf(BaseServlet.FACES_SERVLET) + BaseServlet.FACES_SERVLET.length())
+                && BaseServlet.validRedirectJSP(uri.substring(jspIndex)))
+          {
+             if (redirect.indexOf("?") == -1)
+             {
+                redirect.append('?');
+             }
+             else
+             {
+                redirect.append('&');
+             }
+             redirect.append(LoginOutcomeBean.PARAM_REDIRECT_URL);
+             redirect.append('=');
+             String url = uri;
+             
+             // Append the query string if necessary
+             String queryString = req.getQueryString();
+             if (queryString != null)
+             {
+                // Strip out leading ticket arguments
+                queryString = queryString.replaceAll("(?<=^|&)" + ARG_TICKET + "(=[^&=]*)?&", "");
+                // Strip out trailing ticket arguments
+                queryString = queryString.replaceAll("(^|&)" + ARG_TICKET + "(=[^&=]*)?(?=&|$)", "");
+                if (queryString.length() != 0)
+                {
+                   url += "?" + queryString;
+                }
+             }
+             redirect.append(URLEncoder.encode(url, "UTF-8"));
+          }
+          redirectURL = redirect.toString();
+      }
       // If external authentication isn't in use (e.g. proxied share authentication), it's safe to return a redirect to the client
       if (sendRedirect)
       {
-         res.sendRedirect(redirectURL.toString());
+         res.sendRedirect(redirectURL);
       }
       // Otherwise, we must signal to the client with an unauthorized status code and rely on a browser refresh to do
       // the redirect for failover login (as we do with NTLM, Kerberos)
@@ -290,7 +294,7 @@ public abstract class BaseServlet extends HttpServlet
       {
          res.setContentType("text/html; charset=UTF-8");
          res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
+         
          final PrintWriter out = res.getWriter();
          out.println("<html><head>");
          out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + redirectURL + "\">");

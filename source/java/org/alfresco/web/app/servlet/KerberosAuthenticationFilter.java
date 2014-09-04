@@ -20,7 +20,6 @@ package org.alfresco.web.app.servlet;
 
 import java.io.IOException;
 
-import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -31,14 +30,9 @@ import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.web.app.Application;
-import org.alfresco.web.bean.NavigationBean;
-import org.alfresco.web.bean.repository.PreferencesService;
 import org.alfresco.web.bean.repository.User;
-import org.alfresco.web.config.ClientConfigElement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.config.ConfigService;
 
 /**
  * Kerberos Authentication Filter Class
@@ -51,17 +45,6 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     
     private static Log logger = LogFactory.getLog(KerberosAuthenticationFilter.class);
   
-    // Various services required by Kerberos authenticator
-    private ConfigService m_configService;
-    
-    /**
-     * @param configService the configService to set
-     */
-    public void setConfigService(ConfigService configService)
-    {
-        m_configService = configService;
-    }
-
     
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseKerberosAuthenticationFilter#init()
@@ -72,14 +55,6 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
         // Call the base Kerberos filter initialization
         super.init();
 
-        ClientConfigElement clientConfig = (ClientConfigElement) m_configService.getGlobalConfig().getConfigElement(
-                ClientConfigElement.CONFIG_ELEMENT_ID);
-
-        if (clientConfig != null)
-        {
-            setLoginPage(clientConfig.getLoginPage());
-        }
-        
         // Use the web client user attribute name
         setUserAttributeName(AuthenticationHelper.AUTHENTICATION_USER);
     }
@@ -92,9 +67,8 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     protected SessionUser createUserObject(String userName, String ticket, NodeRef personNode, NodeRef homeSpaceRef)
     {
 		// Create a web client user object
-		
-		User user = new User( userName, ticket, personNode);
-		user.setHomeSpaceId( homeSpaceRef.getId());
+		User user = new User(userName, ticket, personNode);
+		user.setHomeSpaceId(homeSpaceRef.getId());
 		
 		return user;
 	}
@@ -133,48 +107,8 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     protected boolean onLoginComplete(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean userInit)
         throws IOException
     {
-        // If the original URL requested was the login page then redirect to the browse view
         String requestURI = req.getRequestURI();
-        if (requestURI.startsWith(req.getContextPath() + BaseServlet.FACES_SERVLET) && (userInit || requestURI.endsWith(getLoginPage())))
-        {
-            if (logger.isDebugEnabled() && requestURI.endsWith(getLoginPage()))
-                logger.debug("Login page requested - redirecting to initially configured page");
-            if (logger.isDebugEnabled() && userInit)
-                logger.debug("Session reinitialised - redirecting to initially configured page");
-            
-            FacesContext fc = FacesHelper.getFacesContext(req, res, sc);
-            ConfigService configService = Application.getConfigService(fc);
-            ClientConfigElement configElement = (ClientConfigElement)configService.getGlobalConfig().getConfigElement("client");
-            String location = configElement.getInitialLocation();
-            
-            String preference = (String)PreferencesService.getPreferences(fc).getValue("start-location");
-            if (preference != null)
-            {
-                location = preference;
-            }
-            
-            if (NavigationBean.LOCATION_MYALFRESCO.equals(location))
-            {
-                // Clear previous location - Fixes the issue ADB-61
-                NavigationBean navigationBean = (NavigationBean)FacesHelper.getManagedBean(fc, "NavigationBean");
-                if (navigationBean != null)
-                {
-                    navigationBean.setLocation(null);
-                    navigationBean.setToolbarLocation(null);
-                }
-                res.sendRedirect(req.getContextPath() + BaseServlet.FACES_SERVLET + "/jsp/dashboards/container.jsp");
-            }
-            else
-            {
-                res.sendRedirect(req.getContextPath() + BaseServlet.FACES_SERVLET + FacesHelper.BROWSE_VIEW_ID);
-            }
-            
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        return true;
     }
     
     /* (non-Javadoc)
@@ -186,7 +120,6 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
     {
         BaseServlet.redirectToLoginPage(req, resp, context, false);
     }
-
 
     /* (non-Javadoc)
      * @see org.alfresco.repo.webdav.auth.BaseNTLMAuthenticationFilter#getLogger()

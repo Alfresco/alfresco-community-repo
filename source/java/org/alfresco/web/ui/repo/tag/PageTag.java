@@ -34,7 +34,6 @@ import javax.servlet.jsp.tagext.TagSupport;
 import org.alfresco.web.app.Application;
 import org.alfresco.web.app.servlet.FacesHelper;
 import org.alfresco.web.bean.coci.CCProperties;
-import org.alfresco.web.config.ClientConfigElement;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -259,14 +258,6 @@ public class PageTag extends TagSupport
          
          out.write("<script type=\"text/javascript\">"); // start - generate naked javascript code
 
-         // get client config to determine how the JavaScript setContextPath should behave
-         ClientConfigElement clientConfig = Application.getClientConfig(pageContext.getServletContext());
-
-         // set the context path used by some Alfresco script objects
-         if (clientConfig != null && clientConfig.getCheckContextAgainstPath())
-         {
-            out.write("setCheckContextAgainstPath(true);");
-         }
          out.write("setContextPath('");
          out.write(reqPath);
          out.write("');");

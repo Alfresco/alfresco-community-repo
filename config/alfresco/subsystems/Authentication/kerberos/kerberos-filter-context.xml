@@ -60,9 +60,6 @@
       <property name="jaasConfigEntryName">
          <value>${kerberos.authentication.http.configEntryName}</value>
       </property>
-      <property name="configService">
-         <ref bean="webClientConfigService" />
-      </property>
       <property name="stripKerberosUsernameSuffix">
          <value>${kerberos.authentication.stripUsernameSuffix}</value>
       </property>

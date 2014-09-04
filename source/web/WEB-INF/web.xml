@@ -150,11 +150,6 @@
    </filter-mapping>
 
    <filter-mapping>
-      <filter-name>Global Authentication Filter</filter-name>
-      <url-pattern>/ajax/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <url-pattern>/webdav/*</url-pattern>
    </filter-mapping>
@@ -479,11 +474,6 @@
    <welcome-file-list>
       <welcome-file>index.jsp</welcome-file>
    </welcome-file-list>
-
-   <error-page>
-      <exception-type>java.lang.Exception</exception-type>
-      <location>/jsp/error.jsp</location>
-   </error-page>
 
    <resource-ref>
       <description>The Alfresco database connection</description>

@@ -237,30 +237,16 @@
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
-				<executions>
-					<execution>
-						<id>pre-exploded-war</id>
-						<goals>
-                            <goal>manifest</goal>
-							<goal>exploded</goal>
-						</goals>
-						<phase>prepare-package</phase>
-					</execution>
-				</executions>
-            </plugin>    
-            <plugin>
-               <artifactId>maven-surefire-plugin</artifactId>
-               <executions>
-                  <execution>
-                     <id>default-test</id>
-                     <!-- There's also surefire configuration in the integration-tests profile -->
-                     <configuration>
-                          <includes>
-                              <include>**/org/alfresco/web/AllUnitTestsSuite.java</include>
-                          </includes>
-                     </configuration>
-                  </execution>
-               </executions>
+   				 <executions>
+   					<execution>
+   						<id>pre-exploded-war</id>
+   						<goals>
+                        <goal>manifest</goal>
+   							<goal>exploded</goal>
+   						</goals>
+   						<phase>prepare-package</phase>
+   					</execution>
+   				 </executions>
             </plugin>
         </plugins>
     </build>

@@ -46,10 +46,11 @@ import org.springframework.context.ApplicationEvent;
  * <p>
  * Note that this filter is only active when the system is running in a servlet container -
  * the AlfrescoFacesPortlet will be used for a JSR-168 Portal environment.
+ * 
+ * @deprecated 5.0 not exposed in web-client web.xml
  */
 public class AuthenticationFilter extends AbstractLifecycleBean implements DependencyInjectedFilter
 {
-
     private String loginPage;
     private ConfigService configService;
 

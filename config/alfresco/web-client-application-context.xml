@@ -2,114 +2,16 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-
-   <!-- ===================================== -->
-   <!-- Web Client Config Sources             -->
-   <!-- ===================================== -->
-   
-   <bean id="webClientConfigSource" parent="repoUrlConfigSource">
-      <constructor-arg>
-         <list>
-            <value>classpath:alfresco/web-client-config.xml</value>
-            <value>classpath:alfresco/web-client-config-dialogs.xml</value>
-            <value>classpath:alfresco/web-client-config-wizards.xml</value>
-            <value>classpath:alfresco/web-client-config-properties.xml</value>
-            <value>classpath:alfresco/web-client-config-navigation.xml</value>
-            <value>classpath:alfresco/web-client-config-actions.xml</value>
-            <value>classpath:alfresco/web-client-config-forum-actions.xml</value>
-
-            <value>classpath:alfresco/web-client-config-workflow-actions.xml</value>
-            <value>classpath:alfresco/extension/web-client-config-custom.xml</value>
-            <value>jar:*!/META-INF/web-client-config-custom.xml</value>
-            <value>workspace://SpacesStore/${spaces.company_home.childname}/${spaces.dictionary.childname}/app:webclient_extension/cm:web-client-config-custom.xml</value>
-         </list>
-      </constructor-arg>
-   </bean>
-   
-   <bean id="repoUrlConfigSource" class="org.alfresco.repo.config.source.RepoUrlConfigSource" abstract="true">
-      <property name="tenantService" ref="tenantService"/>
-      <property name="searchService" ref="SearchService"/>
-      <property name="contentService" ref="ContentService"/>
-      <property name="namespaceService" ref="NamespaceService"/>
-      <property name="nodeService" ref="NodeService"/>
-   </bean>
-   
    
    <!-- ===================================== -->
-   <!-- Web Client Config Data Cache          -->
+   <!-- Web Script Beans                      -->
    <!-- ===================================== -->
-
-   <!-- TODO: globalConfigShareCache moved into cache-context.xml files,
-        may need a way of defining caches alongside related beans as it was previously. -->
-   
-   <bean name="globalConfigCache" class="org.alfresco.repo.config.ConfigDataCache" parent="abstractAsynchronouslyRefreshedCache">
-      <property name="repoXMLConfigService" ref="webClientConfigService" />  <!-- TODO: Must we do this manually? -->
-   </bean>
- 
-   <!-- ===================================== -->
-   <!-- Web Client Config Service             -->
-   <!-- ===================================== -->
-   
-   <bean id="webClientConfigService" class="org.alfresco.repo.config.xml.RepoXMLConfigService">
-      <constructor-arg>
-         <ref bean="webClientConfigSource" />
-      </constructor-arg>
-      <property name="transactionService" ref="transactionComponent"/>
-      <property name="configDataCache"   ref="globalConfigCache"/>
-   </bean>
-   
-   <bean id="webClientConfigAdminInterpreter" class="org.alfresco.web.config.ConfigAdminInterpreter" parent="interpreterBase">
-      <property name="repoXMLConfigService" ref="webClientConfigService"/>
-   </bean>
-   
-   <bean id="webClientConfigAdminInterpreterHelp" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
-      <property name="resourceBundles">
-         <list>
-             <value>alfresco.messages.webclient-config-admin-interpreter-help</value>
-         </list>
-      </property>       
-   </bean>
-   
-   <!-- NOTE: This references a bean in the repository Spring configuration -->
-   <bean id="dataDictionary" class="org.alfresco.web.bean.repository.DataDictionary">
-      <constructor-arg>
-         <ref bean="DictionaryService" />
-      </constructor-arg>
-   </bean>
-   
-    <!-- ===================================== -->
-    <!-- Web Script Beans             -->
-    <!-- ===================================== -->
 
    <!--  Alfresco Web Client Authenticator (Servlet based) -->
    <bean id="webscripts.authenticator.webclient" class="org.alfresco.repo.web.scripts.servlet.WebClientAuthenticatorFactory" />
    
    <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory" lazy-init="true"/>
 
-   <bean id="AuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
-      <property name="applicationContextManager">
-         <ref bean="Authentication" />
-      </property>
-      <property name="interfaces">
-         <list>
-            <value>org.alfresco.repo.web.filter.beans.DependencyInjectedFilter</value>
-         </list>
-      </property>
-      <property name="sourceBeanName">
-         <value>authenticationFilter</value>
-      </property>
-      <!-- Fall back to the default alfresco implementation -->
-      <property name="defaultTarget">
-         <ref bean="defaultAuthenticationFilter"/>
-      </property>
-   </bean>
-
-   <bean id="defaultAuthenticationFilter" class="org.alfresco.web.app.servlet.AuthenticationFilter">
-      <property name="configService">
-         <ref bean="webClientConfigService" />
-      </property>
-   </bean>
-    
    <bean id="globalAuthenticationListener" class="org.alfresco.repo.web.auth.NoopAuthenticationListener"/>
     
    <bean id="GlobalAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
@@ -129,7 +31,7 @@
          <bean class="org.alfresco.repo.web.filter.beans.NullFilter" />
       </property>
    </bean>
-    
+   
    <bean id="WebscriptCookieAuthenticationFilter" class="org.alfresco.repo.management.subsystems.ChainingSubsystemProxyFactory">
       <property name="applicationContextManager">
          <ref bean="Authentication" />

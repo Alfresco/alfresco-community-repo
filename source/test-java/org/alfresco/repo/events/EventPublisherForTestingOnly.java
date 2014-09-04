@@ -18,34 +18,30 @@
  */
 package org.alfresco.repo.events;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.SimpleFormatter;
 
+import org.alfresco.events.types.BrowserEvent;
 import org.alfresco.events.types.Event;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * An implementation of EventPublisher that is used for testing
- * Uses a java.util.logging.FileHandler for logging Events to a file.
- * It also uses the standard log4j logging for Alfresco.
  * 
  * @author Gethin James
  * @since 5.0
  */
-public class EventPublisherForTestingOnly extends AbstractEventPublisher implements EventPublisher, InitializingBean
+public class EventPublisherForTestingOnly implements EventPublisher
 {
     private static final Logger logger = LoggerFactory.getLogger(EventPublisherForTestingOnly.class);
     Queue<Event> queue = new ConcurrentLinkedQueue<Event>();
-    FileHandler fileHandler;
     
     @Override
     public void publishEvent(Event event)
@@ -63,13 +59,26 @@ public class EventPublisherForTestingOnly extends AbstractEventPublisher impleme
         log("Event published: [" + event + "]");
     }
 
+//
+//    @Override
+//    public void publishBrowserEvent(final WebScriptRequest req, final String siteId, final String component, final String action, final String attributes)
+//    {
+//        publishEvent(new EventPreparator(){
+//            @Override
+//            public Event prepareEvent(String user, String networkId, String transactionId)
+//            {
+//                String agent = req.getHeader("user-agent");
+//                return new BrowserEvent(user, networkId, transactionId, siteId, component, action, agent, attributes);
+//            }
+//        });
+//    }
+    
     private void log (String logMessage)
     {
         if (logger.isDebugEnabled())
         {
             logger.debug(logMessage);
         }
-        fileHandler.publish(new LogRecord(Level.INFO, logMessage));  
     }
     
     public Queue<Event> getQueue()
@@ -90,14 +99,36 @@ public class EventPublisherForTestingOnly extends AbstractEventPublisher impleme
         }
         return (List<T>) toReturn;
     }
-
-    @Override
-    public void afterPropertiesSet() throws Exception
+    
+    /**
+     * Gets userful information from the current thread for use when creating an event
+     * @return ThreadInfo
+     */
+    protected ThreadInfo getThreadInfo()
     {
-        File eventLog = new File("alfresco-events.log");
-        fileHandler = new FileHandler(eventLog.getAbsolutePath(), true);
-        fileHandler.setLevel(Level.INFO);
-        fileHandler.setFormatter(new SimpleFormatter());
+        return new ThreadInfo(
+                    AuthenticationUtil.getFullyAuthenticatedUser(),
+                    AlfrescoTransactionSupport.getTransactionId(),
+                    TenantUtil.getCurrentDomain());
     }
+    
+    /**
+     * Basic information from a thread
+     *
+     */
+    public static class ThreadInfo {
+        public final String user;
+        public final String transaction;
+        public final String network;
+        
+        public ThreadInfo(String user, String transaction, String network)
+        {
+            super();
+            this.user = user;
+            this.transaction = transaction;
+            this.network = network;
+        }
+    }
+
 
 }

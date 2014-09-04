@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.activiti.engine.history.HistoricTaskInstance;
-import org.activiti.engine.impl.util.ClockUtil;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.DelegationState;
 import org.activiti.engine.task.IdentityLinkType;
@@ -86,8 +85,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         // Alter current engine date
         Calendar createdCal = Calendar.getInstance();
         createdCal.set(Calendar.MILLISECOND, 0);
-        ClockUtil.setCurrentTime(createdCal.getTime());
-        
+           
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), null);
         
         try
@@ -1132,9 +1130,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
     {
         // Alter current engine date
         Calendar createdCal = Calendar.getInstance();
-        createdCal.set(Calendar.MILLISECOND, 0);
-        ClockUtil.setCurrentTime(createdCal.getTime());
-        
+        createdCal.set(Calendar.MILLISECOND, 0);        
         RequestContext requestContext = initApiClientWithTestUser();
         
         String otherPerson = getOtherPersonInNetwork(requestContext.getRunAsUser(), requestContext.getNetworkId()).getId();
@@ -1222,7 +1218,6 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         Calendar taskCreated = Calendar.getInstance();
         taskCreated.set(Calendar.MILLISECOND, 0);
-        ClockUtil.setCurrentTime(taskCreated.getTime());
         String businessKey = UUID.randomUUID().toString();
         ProcessInstance processInstance = startAdhocProcess(requestContext.getRunAsUser(), requestContext.getNetworkId(), businessKey);
         

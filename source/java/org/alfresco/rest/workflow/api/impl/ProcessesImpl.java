@@ -40,11 +40,12 @@ import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
-import org.activiti.engine.impl.bpmn.diagram.ProcessDiagramGenerator;
 import org.activiti.engine.impl.identity.Authentication;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
+import org.activiti.image.ProcessDiagramGenerator;
+import org.activiti.image.impl.DefaultProcessDiagramGenerator;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
@@ -1011,7 +1012,8 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             if(model != null && model.getLocationMap().size() > 0)
             {
                 List<String> activeActivities = activitiProcessEngine.getRuntimeService().getActiveActivityIds(processId);
-                InputStream generateDiagram = ProcessDiagramGenerator.generateDiagram(model, "png", activeActivities);
+                ProcessDiagramGenerator generator = new DefaultProcessDiagramGenerator();
+                InputStream generateDiagram = generator.generateDiagram(model, "png", activeActivities);
                 
                 File file = TempFileProvider.createTempFile(processId + UUID.randomUUID(), ".png");
                 FileOutputStream fos = new FileOutputStream(file);

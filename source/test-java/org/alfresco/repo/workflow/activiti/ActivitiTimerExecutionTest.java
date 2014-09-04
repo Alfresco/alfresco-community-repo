@@ -146,8 +146,8 @@ public class ActivitiTimerExecutionTest extends BaseSpringTest
 	    				
 	    				WorkflowDefinition definition = deployDefinition("activiti/testTimerTransaction.bpmn20.xml");
 	    				
-	    				// Start the test timer transaction process, with 'error' = false, expecting a timer job
-	    				// to be executed without an error, with task timer is assigned to assigned to USER1
+	    				// Start the test timer transaction process, with 'error' = true, expecting a timer job
+	    				// to be executed with an error, with task timer is assigned to assigned to USER1
 	    				Map<QName, Serializable> params = new HashMap<QName, Serializable>();
 	    				params.put(QName.createQName("error"), Boolean.TRUE);
 	    				params.put(QName.createQName("theTaskAssignee"), USER1);
@@ -180,11 +180,7 @@ public class ActivitiTimerExecutionTest extends BaseSpringTest
     				.processInstanceId(processInstanceId).singleResult();
     		}
     		assertNotNull("Job should have exception message set", timer.getExceptionMessage());
-            
-    		// MER WHAT IS THIS DOING ? 
-    		// Regression in 5.16.1
-    		//    		assertEquals(0, timer.getRetries());
-    		
+                		
     		// Check if exception is the one we deliberately caused
     		String fullExceptionStacktrace = activitiProcessEngine.getManagementService().getJobExceptionStacktrace(timer.getId());
     		assertTrue(fullExceptionStacktrace.contains("Activiti engine rocks!"));

@@ -997,6 +997,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         
         removeFromCache(userName, false);
         
+        publishEvent("user.create", this.nodeService.getProperties(personRef));
+        
         return personRef;
     }
     
@@ -1758,8 +1760,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         {
             makeHomeFolderAsSystem(childAssocRef);
         }
-        
-        reportEvent("user.create", this.nodeService.getProperties(personRef));
+
     }
     
     private QName getChildNameLower(String userName)
@@ -1991,11 +1992,42 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             }
         }
         
-        reportEvent("user.update", after);
+        
+        if(validUserUpdateEvent(before, after))
+        {
+        	publishEvent("user.update", after);
+        }
+      
     }
     
+    /**
+     * Determine if the updated properties constitute a valid user update.
+     * Currently we only check for updates to the user firstname, lastname
+     * 
+     * @param before
+     * @param after
+     * @return
+     */
+    private boolean validUserUpdateEvent(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+    	final String firstnameBefore = (String)before.get(ContentModel.PROP_FIRSTNAME);
+        final String lastnameBefore  = (String)before.get(ContentModel.PROP_LASTNAME);
+        final String firstnameAfter  = (String)after.get(ContentModel.PROP_FIRSTNAME);
+        final String lastnameAfter   = (String)after.get(ContentModel.PROP_LASTNAME);
+        
+        boolean updatedFirstName = !EqualsHelper.nullSafeEquals(firstnameBefore, firstnameAfter);
+        boolean updatedLastName  = !EqualsHelper.nullSafeEquals(lastnameBefore, lastnameAfter);
+        
+        return updatedFirstName || updatedLastName;
+    }
     
-    private void reportEvent(String eventType,  Map<QName, Serializable> properties)
+    /**
+     * Publish new user event
+     * 
+     * @param eventType
+     * @param properties
+     */
+    private void publishEvent(String eventType,  Map<QName, Serializable> properties)
     {
     	if(properties == null)	return;
     	

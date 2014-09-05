@@ -5,23 +5,23 @@
 
    <!-- extend node service security to report capability details on failure -->
    <bean id="rm.NodeService_security" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor"/>
-   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+   <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="NodeService_security" />
       <property name="extendingBeanName" value="rm.NodeService_security" />
    </bean>
-   
+
    <!-- extended file folder bean definition -->
    <bean id="rm.fileFolderService" abstract="true" class="org.alfresco.repo.model.filefolder.ExtendedFileFolderServiceImpl">
       <property name="recordService" ref="RecordService" />
-   </bean>   
-   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+   </bean>
+   <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="fileFolderService" />
       <property name="extendingBeanName" value="rm.fileFolderService" />
    </bean>
-   
+
    <!-- extend file folder service security to report capability details on failure -->
    <bean id="rm.FileFolderService_security" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor"/>
-   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+   <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="FileFolderService_security" />
       <property name="extendingBeanName" value="rm.FileFolderService_security" />
    </bean>

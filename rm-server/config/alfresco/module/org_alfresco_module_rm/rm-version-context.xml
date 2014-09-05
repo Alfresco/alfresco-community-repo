@@ -20,17 +20,17 @@
       <property name="ownableService" ref="OwnableService" />
       <property name="extendedSecurityService" ref="ExtendedSecurityService" />
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
-   </bean>   
-   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+   </bean>
+   <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />
       <property name="extendingBeanName" value="rm.versionService" />
    </bean>
-   
+
    <!-- extended version node service bean definition -->
    <bean id="rm.versionNodeService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionNodeServiceImpl">
       <property name="recordService" ref="RecordService" />
-   </bean>   
-   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+   </bean>
+   <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionNodeService" />
       <property name="extendingBeanName" value="rm.versionNodeService" />
    </bean>

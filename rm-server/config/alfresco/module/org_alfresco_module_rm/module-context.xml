@@ -3,24 +3,9 @@
 
 <beans>
 
-   <!-- Custom property editors -->	
-
-   <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
-      <property name="propertyEditorRegistrars">
-         <list>
-            <ref bean="customPropertyEditorRegistrar"/>
-         </list>
-      </property>
-   </bean>
-
-   <bean id="customPropertyEditorRegistrar"
-         class="org.alfresco.module.org_alfresco_module_rm.util.CustomPropertyEditorRegistrar">
-      <property name="namespaceService" ref="NamespaceService"/>
-   </bean>
-   
-   <!--  Authentication Helper -->   
+   <!--  Authentication Helper -->
    <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>
-   
+
    <!-- Import extended repository context -->
 
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/extended-repository-context.xml"/>
@@ -120,7 +105,7 @@
 
    <!--  Import report service -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-report-context.xml"/>
-   
+
    <!--  Import recordable version services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-version-context.xml"/>
 
@@ -233,11 +218,4 @@
 
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
-
-   <!--  Annotated behaviour bean post processor -->
-   <bean id="annotatedBehaviourBeanPostProcessor" class="org.alfresco.repo.policy.annotation.AnnotatedBehaviourPostProcessor">
-      <property name="policyComponent" ref="policyComponent" />
-      <property name="namespaceService" ref="namespaceService" />
-   </bean>
-
 </beans>

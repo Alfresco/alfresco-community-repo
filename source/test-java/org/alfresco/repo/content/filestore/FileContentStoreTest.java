@@ -28,6 +28,7 @@ import org.alfresco.repo.content.ContentLimitProvider;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
@@ -239,6 +240,54 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         
         assertTrue("Expected exception not thrown.", expectedExceptionThrown);
         assertTrue("Stream close not detected", writer.isClosed());
+    }
+    
+    /*
+     * Test for MNT-12301 case.
+     */
+    public void testFileAccessOutsideStoreRoot()
+    {
+        String url = FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + "../somefile.bin";
+        
+        try
+        {
+            store.getReader(url);
+            fail("Access to content outside of content store root should not be allowed.");
+        }
+        catch (ContentIOException e)
+        {
+            //expected
+        }
+        
+        try
+        {
+            store.exists(url);
+            fail("Access to content outside of content store root should not be allowed.");
+        }
+        catch (ContentIOException e)
+        {
+            //expected
+        }
+        
+        try
+        {
+            store.delete(url);
+            fail("Access to content outside of content store root should not be allowed.");
+        }
+        catch (ContentIOException e)
+        {
+            //expected
+        }
+        
+        try
+        {
+            store.getWriterInternal(null, url);
+            fail("Access to content outside of content store root should not be allowed.");
+        }
+        catch (ContentIOException e)
+        {
+            //expected
+        }
     }
     
     

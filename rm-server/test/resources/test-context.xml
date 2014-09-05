@@ -130,7 +130,7 @@
    <bean id="rm.dictionaryModelType" abstract="true">
       <property name="doValidation" value="false"/>
    </bean>
-   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
+   <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="dictionaryModelType" />
       <property name="extendingBeanName" value="rm.dictionaryModelType" />
    </bean>

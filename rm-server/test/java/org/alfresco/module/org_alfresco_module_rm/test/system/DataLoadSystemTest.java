@@ -46,7 +46,7 @@ public class DataLoadSystemTest
     protected FilePlanRoleService filePlanRoleService;
     protected SiteService siteService;
     protected FileFolderService fileFolderService;
-    
+
     /** config locations */
     protected String[] getConfigLocations()
     {
@@ -56,38 +56,38 @@ public class DataLoadSystemTest
             "classpath:test-context.xml"
         };
     }
-    
+
     /** transaction batch size */
     private static final int BATCH_SIZE = 100;
-    
-    /** file plan sizing */    
-    private static final int ROOT_CATEGORY_COUNT    = 0;   
+
+    /** file plan sizing */
+    private static final int ROOT_CATEGORY_COUNT    = 0;
     private static final int RECORD_FOLDER_COUNT    = 0;
     private static final int RECORD_COUNT           = 0;
-    
+
     /** rm user sizing */
     private static final int RM_GROUP_COUNT         = 0;
     private static final int RM_USER_COUNT          = 0;
-    
+
     /** inplace sizing */
     private static final int USER_COUNT             = 0;
     private static final int INPLACE_RECORD_COUNT   = 5000;
-    
-    /** application context */    
+
+    /** application context */
     private ApplicationContext applicationContext;
     CommonRMTestUtils utils;
-    
+
     private int totalCount;
     private List<NodeRef> recordCategories;
     private List<NodeRef> recordFolders;
     private List<String> groups;
-    
+
     @Before
     public void before()
     {
         applicationContext = ApplicationContextHelper.getApplicationContext(getConfigLocations());
         utils = new CommonRMTestUtils(applicationContext);
-        
+
         filePlanService = (FilePlanService)applicationContext.getBean("FilePlanService");
         recordFolderService = (RecordFolderService)applicationContext.getBean("RecordFolderService");
         recordService = (RecordService)applicationContext.getBean("RecordService");
@@ -99,15 +99,15 @@ public class DataLoadSystemTest
         siteService = (SiteService)applicationContext.getBean("siteService");
         fileFolderService = (FileFolderService)applicationContext.getBean("fileFolderService");
     }
-    
+
     @Test
     public void loadAllData()
     {
-       loadFilePlanData(); 
+       loadFilePlanData();
        loadRMUsersAndGroups();
        loadInPlace();
     }
-    
+
     private void loadInPlace()
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -118,14 +118,14 @@ public class DataLoadSystemTest
                if (site == null)
                {
                    Assert.fail("The collab site test is not present.");
-               }               
-               
+               }
+
                final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
                if (filePlan == null)
                {
                    Assert.fail("The default RM site is not present.");
                }
-               
+
                // create users and add to site
                repeatInTransactionBatches(new RunAsWork<Void>()
                {
@@ -135,35 +135,36 @@ public class DataLoadSystemTest
                       String userName = GUID.generate();
                       System.out.println("Creating user " + userName);
                       createPerson(userName, true);
-                      
+
                       // add to collab site
                       siteService.setMembership("test", userName, SiteRole.SiteCollaborator.toString());
-                      
+
                       return null;
                   }
                }, USER_COUNT);
-        
+
                // create content and declare as record
                repeatInTransactionBatches(new RunAsWork<Void>()
                {
+                  @SuppressWarnings("null")
                   public Void doWork() throws Exception
                   {
                       // create document
                       NodeRef docLib = siteService.getContainer(site.getShortName(), SiteService.DOCUMENT_LIBRARY);
                       NodeRef document = fileFolderService.create(docLib, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                      
+
                       recordService.createRecord(filePlan, document);
-                      
+
                       return null;
                   }
                }, INPLACE_RECORD_COUNT);
-               
+
                return null;
            }
         }, AuthenticationUtil.getAdminUserName());
     }
-    
-    
+
+
     private void loadRMUsersAndGroups()
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -175,9 +176,9 @@ public class DataLoadSystemTest
                {
                    Assert.fail("The default RM site is not present.");
                }
-               
+
                groups = new ArrayList<String>();
-               
+
                repeatInTransactionBatches(new RunAsWork<Void>()
                {
                   public Void doWork() throws Exception
@@ -189,9 +190,9 @@ public class DataLoadSystemTest
                       return null;
                   }
                }, RM_GROUP_COUNT);
-               
+
                for (final String group : groups)
-               {                               
+               {
                    repeatInTransactionBatches(new RunAsWork<Void>()
                    {
                       public Void doWork() throws Exception
@@ -204,12 +205,12 @@ public class DataLoadSystemTest
                       }
                    }, RM_USER_COUNT);
                }
-               
+
                return null;
            }
-        });        
+        });
     }
-    
+
     private void loadFilePlanData()
     {
         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
@@ -221,7 +222,7 @@ public class DataLoadSystemTest
               {
                   Assert.fail("The default RM site is not present.");
               }
-              
+
               // create root categories
               recordCategories = new ArrayList<NodeRef>(ROOT_CATEGORY_COUNT);
               repeatInTransactionBatches(new RunAsWork<Void>()
@@ -232,11 +233,11 @@ public class DataLoadSystemTest
                     return null;
                  }
               }, ROOT_CATEGORY_COUNT);
-              
+
               // create record folders
               recordFolders = new ArrayList<NodeRef>(RECORD_FOLDER_COUNT);
               for (final NodeRef recordCategory : recordCategories)
-              {                              
+              {
                   repeatInTransactionBatches(new RunAsWork<Void>()
                   {
                      public Void doWork() throws Exception
@@ -246,10 +247,10 @@ public class DataLoadSystemTest
                      }
                   }, RECORD_FOLDER_COUNT);
               }
-              
+
               // create records
               for (final NodeRef recordFolder : recordFolders)
-              {                              
+              {
                   repeatInTransactionBatches(new RunAsWork<Void>()
                   {
                      public Void doWork() throws Exception
@@ -259,13 +260,13 @@ public class DataLoadSystemTest
                      }
                   }, RECORD_COUNT);
               }
-              
-              
+
+
               return null;
            }
-        });        
-    } 
-    
+        });
+    }
+
     private NodeRef createPerson(String userName, boolean createAuth)
     {
         if (createAuth)
@@ -276,7 +277,7 @@ public class DataLoadSystemTest
         properties.put(ContentModel.PROP_USERNAME, userName);
         return personService.createPerson(properties);
     }
-    
+
     private void repeatInTransactionBatches(final RunAsWork<Void> work, final int count) throws Exception
     {
         totalCount = 0;
@@ -291,19 +292,19 @@ public class DataLoadSystemTest
                     {
                         batchSize = BATCH_SIZE;
                     }
-                    
+
                     for (int i = 0; i < batchSize; i++)
                     {
                         // do it
-                        work.doWork();  
+                        work.doWork();
                         totalCount++;
                     }
-                    
+
                     System.out.println("Created " + totalCount + " of " + count);
-                    
+
                     return null;
                 }
-            }, 
+            },
             false, true);
         }
     }

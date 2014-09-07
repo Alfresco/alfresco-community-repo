@@ -33,7 +33,7 @@
       </exec>
    </target>
 
-   <target name="fetchSOLR">
+   <target name="fetchSolr">
       <xmlproperty file="../pom.xml" keepRoot="false"/>
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
@@ -46,8 +46,8 @@
       <unzip src="${solr.directory}/${solr.package}" dest="${solr.directory}"/>
    </target>
 
-   <target name="configureSOLR" depends="fetchSOLR" 
-           description="Configures Tomcat and the Alfresco repository to use SOLR">
+   <target name="configureSolr" depends="fetchSolr"
+           description="Configures Tomcat and the Alfresco repository to use Solr">
 
       <dirname property="temp.dir" file="${ant.file}"/>
       <pathconvert property="base.dir" targetos="unix">
@@ -59,7 +59,7 @@
 
       <mkdir dir="${data.root}/solr-index"/>
 
-      <!-- copy SOLR config files -->
+      <!-- copy Solr config files -->
       <copy file="${solr.directory}/context.xml"
             tofile="${app.tomcat.folder}/conf/Catalina/localhost/solr.xml" />
       <replace file="${app.tomcat.folder}/conf/Catalina/localhost/solr.xml" summary="yes">
@@ -85,20 +85,19 @@
          <replacetoken><![CDATA[<!-- Alfresco SSL Connector placeholder -->]]></replacetoken>
          <replacevalue><![CDATA[
             <Connector port="8443" protocol="org.apache.coyote.http11.Http11Protocol" SSLEnabled="true"
-                       maxThreads="150" scheme="https" keystoreFile="../../data/keystore/ssl.keystore" 
+                       maxThreads="150" scheme="https" keystoreFile="../../data/keystore/ssl.keystore"
                        keystorePass="kT9X6oe68t" keystoreType="JCEKS"
-                       secure="true" connectionTimeout="240000" 
-                       truststoreFile="../../data/keystore/ssl.truststore" 
+                       secure="true" connectionTimeout="240000"
+                       truststoreFile="../../data/keystore/ssl.truststore"
                        truststorePass="kT9X6oe68t" truststoreType="JCEKS"
                        clientAuth="want" sslProtocol="TLS" allowUnsafeLegacyRenegotiation="true" maxHttpHeaderSize="32768" />]]></replacevalue>
-       </replace>
+      </replace>
 
-      <!-- update project repository.properties file with SOLR properties -->
+      <!-- update project repository.properties file with Solr properties -->
       <propertyfile file="${data.root}/repository.properties">
          <entry key="dir.keystore" value="${data.root}/keystore" />
          <entry key="index.subsystem.name"  value="solr" />
       </propertyfile>
-
    </target>
 
 </project>

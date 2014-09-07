@@ -25,7 +25,7 @@ Using Eclipse
 
 Summary of Available Ant Targets
 
- - configureSOLR                : Configures SOLR for Alfresco
+ - configureSolr                : Configures Solr for Alfresco
  - fullBuild                    : Creates the amp file and applies it to the war file
  - incrementalBuild             : Creates the jar file and copies the jar file with other files like css, js, ftl, etc. files
  - prepareEnv                   : Prepares the development environment (must be run just once)
@@ -42,7 +42,7 @@ Summary of Available Internal Ant Targets
  - copyWebDirectory             : Copies the source/web folder
  - deleteExplodedWar            : Deletes the exploded war file
  - deleteWarFile                : Deletes the war file
- - fetchSOLR                    : Gets the the SOLR artifact
+ - fetchSolr                    : Gets the the Solr artifact
  - fetchWarFile                 : Gets the "original" war file
  - install                      : Executes the "mvn install" command
  - package                      : Executes the "mvn package" command

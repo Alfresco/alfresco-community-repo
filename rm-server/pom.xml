@@ -27,7 +27,7 @@
          </testResource>
       </testResources>
       <plugins>
-      <!-- Additional source folder to be added: source/compatibility -->
+         <!-- Additional source folder to be added: source/compatibility -->
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
@@ -131,30 +131,6 @@
          </build>
       </profile>
       <profile>
-         <id>Alfresco42</id>
-         <!-- 'config' dependencies -->
-         <dependencies>
-            <dependency>
-               <groupId>org.alfresco</groupId>
-               <artifactId>alfresco-data-model</artifactId>
-               <version>${alfresco.base.version}</version>
-               <classifier>config</classifier>
-            </dependency>
-            <dependency>
-               <groupId>org.alfresco</groupId>
-               <artifactId>alfresco-repository</artifactId>
-               <version>${alfresco.base.version}</version>
-               <classifier>config</classifier>
-            </dependency>
-            <dependency>
-               <groupId>org.alfresco</groupId>
-               <artifactId>alfresco-remote-api</artifactId>
-               <version>${alfresco.base.version}</version>
-               <classifier>config</classifier>
-            </dependency>
-         </dependencies>
-      </profile>
-      <profile>
          <id>fullBuild</id>
          <build>
             <plugins>
@@ -193,11 +169,17 @@
             </plugins>
          </build>
       </profile>
+      <profile>
+         <id>enterprise</id>
+         <properties>
+            <webapp.id>alfresco-enterprise</webapp.id>
+         </properties>
+      </profile>
    </profiles>
    <dependencies>
       <dependency>
          <groupId>org.alfresco</groupId>
-         <artifactId>alfresco</artifactId>
+         <artifactId>${webapp.id}</artifactId>
          <version>${alfresco.base.version}</version>
          <type>war</type>
       </dependency>
@@ -221,11 +203,11 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-	     <groupId>org.mockito</groupId>
-	     <artifactId>mockito-all</artifactId>
-	     <version>1.9.5</version>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-all</artifactId>
+         <version>1.9.5</version>
          <scope>test</scope>
-	  </dependency>
+      </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-test</artifactId>
@@ -244,18 +226,6 @@
          <artifactId>alfresco-remote-api</artifactId>
          <version>${alfresco.base.version}</version>
          <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.chemistry</groupId>
-         <artifactId>chemistry-tck-atompub</artifactId>
-         <version>0.1-incubating-unreleased</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.apache.myfaces.core</groupId>
-         <artifactId>myfaces-api</artifactId>
-         <version>2.1.9</version>
          <scope>test</scope>
       </dependency>
       <!-- Database drivers -->
@@ -283,12 +253,6 @@
          <artifactId>guice</artifactId>
          <version>3.0</version>
          <scope>test</scope>
-      </dependency>
-      <!-- FIXME: Test do not run (NoClassDefFoundError: org/w3c/dom/ElementTraversal) -->
-      <dependency>
-         <groupId>xml-apis</groupId>
-         <artifactId>xml-apis</artifactId>
-         <version>1.4.01</version>
       </dependency>
    </dependencies>
 </project>

@@ -1318,6 +1318,9 @@
          class="org.alfresco.repo.web.scripts.solr.StatsGet" parent="webscript">
       <property name="stats" ref="statsService"/>
       <property name="siteService" ref="SiteService" />
+      <property name="statsField">
+         <value>content.size</value>
+      </property>
       <property name="facets">
           <map>
             <entry key="content.mimetype" value="{http://www.alfresco.org/model/content/1.0}content.mimetype" />

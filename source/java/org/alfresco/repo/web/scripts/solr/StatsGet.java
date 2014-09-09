@@ -52,10 +52,16 @@ public class StatsGet extends DeclarativeWebScript
     private SiteService siteService;
     private Map<String,String> facets;
     private Map<String,? extends StatsProcessor> postProcessors;
+    private String statsField;
 
     public void setFacets(Map<String, String> facets)
     {
         this.facets = facets;
+    }
+
+    public void setStatsField(String statsField)
+    {
+        this.statsField = statsField;
     }
 
     public void setStats(StatsService stats)
@@ -106,8 +112,8 @@ public class StatsGet extends DeclarativeWebScript
        query = buildQuery(siteInfo, facetKey, startAndEnd);
 
        StatsParameters params = new StatsParameters(SearchService.LANGUAGE_SOLR_FTS_ALFRESCO, query, false);
-       //params.addSort(new SortDefinition(SortDefinition.SortType.FIELD, "contentsize", false));
-       params.addStatsParameter(StatsParameters.PARAM_FIELD, "contentsize");
+       //params.addSort(new SortDefinition(SortDefinition.SortType.FIELD, this.statsField, false));
+       params.addStatsParameter(StatsParameters.PARAM_FIELD, this.statsField);
        params.addStatsParameter(StatsParameters.PARAM_FACET, StatsParameters.FACET_PREFIX+propFacet.toString());
   
        StatsResultSet result = stats.query(params);

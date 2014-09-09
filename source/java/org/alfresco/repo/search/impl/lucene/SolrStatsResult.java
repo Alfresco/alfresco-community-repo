@@ -91,31 +91,35 @@ public class SolrStatsResult implements JSONResult, StatsResultSet
             if(statsObj.has("stats_fields"))
             {
                 JSONObject statsFields = statsObj.getJSONObject("stats_fields");
-                JSONObject contentsize = statsFields.getJSONObject("contentsize");
-                
-                sum = contentsize.getLong("sum");
-                max = contentsize.getLong("max");
-                mean = contentsize.getLong("mean");
-                
-                if(contentsize.has("facets"))
+                JSONArray fieldNames = statsFields.names();
+                if (fieldNames.length() == 1)
                 {
-                    JSONObject facets = contentsize.getJSONObject("facets");
-                    JSONArray facetNames = facets.names();
-                    for(int i = 0; i < facetNames.length(); i++)
+                    JSONObject contentsize = statsFields.getJSONObject(fieldNames.getString(0));
+                    
+                    sum = contentsize.getLong("sum");
+                    max = contentsize.getLong("max");
+                    mean = contentsize.getLong("mean");
+                    
+                    if(contentsize.has("facets"))
                     {
-                        JSONObject facetType = facets.getJSONObject(String.valueOf(facetNames.get(i)));
-                        if (facetType!=null && facetType.names() != null)
+                        JSONObject facets = contentsize.getJSONObject("facets");
+                        JSONArray facetNames = facets.names();
+                        for(int i = 0; i < facetNames.length(); i++)
                         {
-                            JSONArray facetValues = facetType.names();
-                            for(int j = 0; j < facetValues.length(); j++)
+                            JSONObject facetType = facets.getJSONObject(String.valueOf(facetNames.get(i)));
+                            if (facetType!=null && facetType.names() != null)
                             {
-                                String name = String.valueOf(facetValues.get(j));
-                                JSONObject facetVal = facetType.getJSONObject(name);
-                                stats.add(processStat(name, facetVal));                          
-                            }                        
+                                JSONArray facetValues = facetType.names();
+                                for(int j = 0; j < facetValues.length(); j++)
+                                {
+                                    String name = String.valueOf(facetValues.get(j));
+                                    JSONObject facetVal = facetType.getJSONObject(name);
+                                    stats.add(processStat(name, facetVal));                          
+                                }                        
+                            }
+
+
                         }
-
-
                     }
                 }
             }

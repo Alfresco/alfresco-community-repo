@@ -266,7 +266,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         String languageUrlFragment = extractLanguageFragment(searchParameters.getLanguage());
         
         url.append(baseUrl);
-        url.append("/select"); //TODO: Ask Andy about this.
+        url.append("/").append(languageUrlFragment);
         url.append("?wt=").append(encoder.encode("json", "UTF-8"));
         url.append("&locale=").append(encoder.encode(locale.toString(), "UTF-8"));
         
@@ -274,7 +274,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         
         url.append("&stats=true");
         url.append("&rows=0");
-        url.append("&qt=/").append(languageUrlFragment);
         if (!StringUtils.isBlank(searchParameters.getFilterQuery()))
         {
             url.append("?fq=").append(encoder.encode(searchParameters.getFilterQuery(), "UTF-8")); 

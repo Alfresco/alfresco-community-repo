@@ -1,10 +1,10 @@
 <webscript>
   <shortname>Get solr statistics</shortname>
-  <description>Retrieves statistics using solr.  For a list of potential facets call it with /api/solr/stats?listFacets=true
+  <description>Retrieves statistics using solr.  For a list of potential facets call it with /api/solrstats?listFacets=true
   You can pass one of these facets in eg. facet=content.creator .  The facet name can be used as a I18n resource bundle key,
   it also has a predefined structure: group.property[.type] eg. content.created.datetime. The [.type] is optional, the default is String.</description>
-  <url>/api/solr/site/{siteId}/stats</url>
-  <url>/api/solr/stats</url>
+  <url>/api/solrstats/site/{siteId}</url>
+  <url>/api/solrstats</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>

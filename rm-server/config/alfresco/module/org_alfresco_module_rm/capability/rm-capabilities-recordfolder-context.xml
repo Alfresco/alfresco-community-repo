@@ -33,7 +33,6 @@
             <ref bean="rmCreateRecordFolderCapability"/>
             <ref bean="rmModifyRecordFolderCapability"/>
             <ref bean="rmDeleteRecordFolderCapability"/>
-            <!-- FIXME: Move to separate capability -->
             <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
@@ -42,23 +41,6 @@
       <property name="group"><ref bean="folderControlGroup"/></property>
       <property name="index" value="20" />
    </bean>
-
-   <!-- FIXME: Will be added as a separate capability
-   <bean id="rmCreateModifyDestroyUnfiledRecordsContainerFolderCapability"
-         parent="compositeCapability">
-      <property name="name" value="CreateModifyDestroyUnfiledRecordsContainer"/>
-      <property name="permission" value="CreateModifyDestroyFolders"/>
-      <property name="capabilities">
-         <list>
-            <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
-            <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
-            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
-         </list>
-      </property>
-      <property name="group"><ref bean="folderControlGroup"/></property>
-      <property name="index" value="30" />
-   </bean>
-   -->
 
    <bean id="rmReOpenFoldersCapability"
       parent="declarativeCapability">

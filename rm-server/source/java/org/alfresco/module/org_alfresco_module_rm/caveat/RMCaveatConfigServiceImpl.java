@@ -30,6 +30,7 @@ import java.util.UUID;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -130,11 +131,14 @@ public class RMCaveatConfigServiceImpl implements RMCaveatConfigService
 
     public RMConstraintInfo addRMConstraint(String listName, String title, String[] values, MatchLogic matchLogic)
     {
-        if(listName == null)
+        if (listName == null)
         {
             // Generate a list name
-            // FIXME: hardcoded namespace
-            listName = "rmc:" + UUID.randomUUID().toString();
+            StringBuilder sb = new StringBuilder();
+            sb.append(RecordsManagementCustomModel.RM_CUSTOM_PREFIX);
+            sb.append(QName.NAMESPACE_PREFIX);
+            sb.append(UUID.randomUUID().toString());
+            listName = sb.toString();
         }
 
         List<String>allowedValues = new ArrayList<String>();

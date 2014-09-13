@@ -39,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
+import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
@@ -106,7 +107,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected QName TYPE_CUSTOM_TYPE = QName.createQName(URI, "customType");
     protected QName ASPECT_CUSTOM_ASPECT = QName.createQName(URI, "customAspect");
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
-    
+
     /** test data */
     protected String NAME_DM_DOCUMENT = "collabDocument.txt";
 
@@ -156,6 +157,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordsManagementAuditService rmAuditService;
     protected IdentifierService identifierService;
     protected HoldService holdService;
+    protected InplaceRecordService inplaceRecordService;
 
     /** test data */
     protected String siteId;
@@ -391,6 +393,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         rmAuditService = (RecordsManagementAuditService) applicationContext.getBean("RecordsManagementAuditService");
         identifierService = (IdentifierService) applicationContext.getBean("recordsManagementIdentifierService");
         holdService = (HoldService) applicationContext.getBean("HoldService");
+        inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
     }
 
     /**
@@ -825,7 +828,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         /** run in transaction */
         protected boolean runInTransactionTests = true;
-        
+
         /** run as user */
         protected String runAsUser = AuthenticationUtil.getAdminUserName();
 
@@ -843,7 +846,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             this.expectedException = expectedException;
         }
-        
+
         public BehaviourDrivenTest(Class<?> expectedException, String runAsUser)
         {
             this.expectedException = expectedException;
@@ -854,7 +857,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             this.runAsUser = runAsUser;
         }
-        
+
         public BehaviourDrivenTest(String runAsUser, boolean runInTransactionTests)
         {
             this.runInTransactionTests = runInTransactionTests;

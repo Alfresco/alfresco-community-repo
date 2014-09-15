@@ -34,7 +34,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -264,13 +264,13 @@ public class WebDAVServlet extends HttpServlet
         nodeService = (NodeService) context.getBean("NodeService");
         searchService = (SearchService) context.getBean("SearchService");
         namespaceService = (NamespaceService) context.getBean("NamespaceService");
-        ActivityService activityService = (ActivityService) context.getBean("activityService");
+        ActivityPoster poster = (ActivityPoster) context.getBean("activitiesPoster");
         singletonCache = (SimpleCache<String, NodeRef>)context.getBean("immutableSingletonCache");
         
         
         
         // Collaborator used by WebDAV methods to create activity posts.
-        activityPoster = new ActivityPosterImpl("WebDAV", activityService);
+        activityPoster = new ActivityPosterImpl("WebDAV", poster);
         
         // Create the WebDAV helper
         m_davHelper = (WebDAVHelper) context.getBean("webDAVHelper");

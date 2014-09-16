@@ -171,15 +171,17 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         Map<QName, Serializable> cloneFrozenProperties = new HashMap<QName, Serializable>(frozenProperties);
         for (Map.Entry<QName, Serializable> entry : beforeProperies.entrySet())
         {
-            if (frozenProperties.containsKey(entry.getKey()))
+            QName beforePropertyName = entry.getKey();
+            if (frozenProperties.containsKey(beforePropertyName))
             {
-                Serializable frozenValue = frozenProperties.get(entry.getKey());
-                assertEquals("Frozen property " + entry.getKey().getLocalName() + " value is incorrect.", entry.getValue(), frozenValue);
-                cloneFrozenProperties.remove(entry.getKey());               
+                Serializable frozenValue = frozenProperties.get(beforePropertyName);
+                assertEquals("Frozen property " + beforePropertyName.getLocalName() + " value is incorrect.", entry.getValue(), frozenValue);
+                cloneFrozenProperties.remove(beforePropertyName);               
             }
-            else
+            else if (!PROP_FILE_PLAN.equals(beforePropertyName) &&
+                     !PROP_RECORDABLE_VERSION_POLICY.equals(beforePropertyName))
             {
-                fail("Property missing from frozen state .. " + entry.getKey());
+                fail("Property missing from frozen state .. " + beforePropertyName);
             }
         }
         
@@ -197,6 +199,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         // compare origional and frozen aspects
         Set<QName> frozenAspects = nodeService.getAspects(frozen);
         cloneBeforeAspects.removeAll(frozenAspects);
+        cloneBeforeAspects.remove(RecordableVersionModel.ASPECT_VERSIONABLE);
         if (!cloneBeforeAspects.isEmpty())
         {
             fail("Aspects not present in frozen state. " + cloneBeforeAspects.toString());

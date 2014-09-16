@@ -34,5 +34,9 @@
       <property name="beanName" value="versionNodeService" />
       <property name="extendingBeanName" value="rm.versionNodeService" />
    </bean>
+   
+   <!--  rmv:versionable aspect behaviour bean -->
+   <bean id="rm.versionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.model.VersionableAspect" parent="rm.baseBehaviour">
+   </bean>
 
 </beans>

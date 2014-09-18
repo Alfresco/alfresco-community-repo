@@ -28,9 +28,9 @@
 
 <beans>
 
-    <!-- 
-    The Shutdown Backstop Bean is a special bean which is used to terminate Alfresco if its 
-    normal shutdown does not complete in a reasonable time - it needs to go first so it can 
+    <!--
+    The Shutdown Backstop Bean is a special bean which is used to terminate Alfresco if its
+    normal shutdown does not complete in a reasonable time - it needs to go first so it can
     terminate any of the following beans if they misbehave.
     -->
     <bean id="shutdownBackstop" class="org.alfresco.repo.shutdown.ShutdownBackstop">
@@ -39,8 +39,8 @@
        </property>
        <property name="enabled">
           <value>${shutdown.backstop.enabled}</value>
-       </property>   
-    </bean>  
+       </property>
+    </bean>
 
     <bean id="repositoryStartBootstrapBean" class="org.alfresco.repo.admin.RepositoryStartBootstrapBean" >
        <property name="repositoryState">
@@ -131,19 +131,19 @@
       <property name="messageService" ref="messageService"/>
       <property name="tenantAdminService" ref="tenantAdminService"/>
       <property name="policyComponent" ref="policyComponent"/>
-      
+
       <property name="repositoryModelsLocations">
          <list>
             <ref bean="customModelsRepositoryLocation" />
          </list>
       </property>
-      
+
       <property name="repositoryMessagesLocations">
          <list>
             <ref bean="customMessagesRepositoryLocation" />
          </list>
       </property>
-      
+
    </bean>
 
     <bean id="bootstrapReEncryptor" class="org.alfresco.encryption.BootstrapReEncryptor">
@@ -169,7 +169,7 @@
     -->
     <bean id="siteLoadBootstrap-Spaces" parent="spacesStoreImporter" singleton="true" />
     <bean id="siteLoadBootstrap-Users" parent="userStoreImporter" singleton="true" />
-    
+
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">
             <list>
@@ -180,7 +180,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                
+
                 <!-- Review and Approve workflow definitions -->
                 <props>
                     <prop key="engineId">jbpm</prop>
@@ -206,7 +206,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                
+
                 <!-- Invitation service workflow definition -->
                 <props>
                     <prop key="engineId">jbpm</prop>
@@ -214,7 +214,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-            
+
                 <!-- Invitation service workflow definition -->
                 <props>
                     <prop key="engineId">jbpm</prop>
@@ -222,7 +222,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-            
+
                 <!-- Activiti Adhoc workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -230,7 +230,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-            
+
                 <!-- Activiti Review workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -238,7 +238,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                
+
                 <!-- Activiti Pooled Review workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -246,7 +246,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                
+
                 <!-- Activiti Parallel Review workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -254,7 +254,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                
+
                 <!-- Activiti Parallel Group Review workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -262,7 +262,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                
+
                 <!-- Activiti invitation service workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -270,7 +270,7 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
-                
+
                 <!-- Activiti invitation service workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -297,7 +297,7 @@
         </property>
         <property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
     </bean>
-    
+
     <!-- Descriptor Service -->
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
        <property name="serverDescriptorDAO">
@@ -322,17 +322,17 @@
         <property name="descriptorService" ref="descriptorComponent"/>
         <property name="migrateAttrTenantsPatch" ref="patch.migrateAttrTenants"/>
     </bean>
-       
+
     <!-- Bootstrap any extensions -->
-   
+
     <import resource="classpath*:alfresco/extension/bootstrap/*-context.xml" />
-    
+
     <bean id="Transformers" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="saveSetProperty">
             <value>true</value>
         </property>
     </bean>
-    
+
     <!--  Start third party transformer Subsystem. -->
     <bean id="thirdparty" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
@@ -406,7 +406,7 @@
         </property>
         <property name="patch">
             <ref bean="patch.db-V4.2-metadata-query-indexes" />
-        </property>      
+        </property>
     </bean>
 
     <!-- Import other Alfresco bootstrap components -->
@@ -536,7 +536,7 @@
             <value>true</value>
         </property>
     </bean>
-   
+
     <!--  Subscription Service subsystem -->
     <bean id="subscriptions" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
        <property name="category">
@@ -546,7 +546,7 @@
           <value>true</value>
        </property>
     </bean>
-   
+
     <bean id="SubscriptionService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
        <property name="sourceApplicationContextFactory">
           <ref bean="subscriptions" />
@@ -560,7 +560,7 @@
           </list>
        </property>
     </bean>
-    
+
     <!-- Start the quartz scheduler -->
 
     <bean id="schedulerStarter" class="org.alfresco.util.SchedulerStarterBean" >
@@ -614,7 +614,7 @@
             <value>${system.usages.enabled}</value>
         </property>
     </bean>
-    
+
     <!-- Synchronization of home folders locations to their HomeFolderProvider -->
     <bean id="homeFolderProviderSynchronizer" class="org.alfresco.repo.security.person.HomeFolderProviderSynchronizer">
         <constructor-arg ref="transactionService" />
@@ -698,13 +698,13 @@
           <ref bean="repositoryState"/>
        </property>
     </bean>
-    
+
     <bean id="webDavBootstrapBean" class="org.alfresco.repo.webdav.WebDavBootstrap" >
        <property name="rootNode">
           <ref bean="webdavRootNode"/>
        </property>
     </bean>
-    
+
     <bean id="fileServerConfigurationFactory" class="org.alfresco.filesys.config.FileServerConfigurationFactory"/>
 
     <!-- Startup Message -->
@@ -719,15 +719,15 @@
        <property name="serverModeProvider">
            <ref bean="serverMode"/>
        </property>
-       
+
     </bean>
-    
+
      <!-- Activiti Jobexecutor -->
     <bean id="activitiEngineInitializer" depends-on="dynamicExporter"
         class="org.alfresco.repo.workflow.activiti.ActivitiEngineInitializer">
         <property name="workflowAdminService" ref="workflowAdminService" />
     </bean>
- 
+
    <!-- Custom property editors -->
    <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
       <property name="propertyEditorRegistrars">
@@ -740,5 +740,11 @@
    <bean id="customPropertyEditorRegistrar"
       class="org.alfresco.util.CustomPropertyEditorRegistrar">
       <property name="namespaceService" ref="NamespaceService"/>
+   </bean>
+
+   <!--  Annotated behaviour bean post processor -->
+   <bean id="annotatedBehaviourBeanPostProcessor" class="org.alfresco.repo.policy.annotation.AnnotatedBehaviourPostProcessor">
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="namespaceService" ref="namespaceService" />
    </bean>
 </beans>

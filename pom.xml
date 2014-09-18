@@ -875,7 +875,6 @@
     </profiles>
 
     <build>
-        <finalName>alfresco</finalName>
         <resources>
             <!-- Allow replacing variables inside version.properties -->
             <resource>

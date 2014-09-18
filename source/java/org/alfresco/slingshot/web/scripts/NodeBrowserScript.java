@@ -90,7 +90,7 @@ public class NodeBrowserScript extends DeclarativeWebScript
         this.transactionService = transactionService;
     }
 
-    private TransactionService getTransactionService()
+    protected TransactionService getTransactionService()
     {
         return transactionService;
     }
@@ -103,7 +103,7 @@ public class NodeBrowserScript extends DeclarativeWebScript
         this.nodeService = nodeService;
     }
 
-    private NodeService getNodeService()
+    protected NodeService getNodeService()
     {
         return nodeService;
     }
@@ -116,7 +116,7 @@ public class NodeBrowserScript extends DeclarativeWebScript
         this.searchService = searchService;
     }
 
-    private SearchService getSearchService()
+    protected SearchService getSearchService()
     {
         return searchService;
     }
@@ -129,7 +129,7 @@ public class NodeBrowserScript extends DeclarativeWebScript
         this.dictionaryService = dictionaryService;
     }
 
-    private DictionaryService getDictionaryService()
+    protected DictionaryService getDictionaryService()
     {
         return dictionaryService;
     }
@@ -142,7 +142,7 @@ public class NodeBrowserScript extends DeclarativeWebScript
         this.namespaceService = namespaceService;
     }
 
-	private NamespaceService getNamespaceService()
+	protected NamespaceService getNamespaceService()
     {
         return namespaceService;
     }
@@ -155,7 +155,7 @@ public class NodeBrowserScript extends DeclarativeWebScript
         this.permissionService = permissionService;
     }
 
-    private PermissionService getPermissionService()
+    protected PermissionService getPermissionService()
     {
         return permissionService;
     }
@@ -165,7 +165,7 @@ public class NodeBrowserScript extends DeclarativeWebScript
 		this.ownableService = ownableService;
 	}
 
-    public OwnableService getOwnableService()
+    protected OwnableService getOwnableService()
     {
 		return ownableService;
 	}

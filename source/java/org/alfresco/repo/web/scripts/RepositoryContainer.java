@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts;
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -87,6 +89,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private int memoryThreshold = 4 * 1024 * 1024; // 4mb
     private long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
     private ThresholdOutputStreamFactory streamFactory = null;
+
+    private final static Class<?>[] HIDE_EXCEPTIONS = new Class[] { SQLException.class };
 
     /*
      * Shame init is already used (by TenantRepositoryContainer).
@@ -252,10 +256,43 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     public void executeScript(WebScriptRequest scriptReq, WebScriptResponse scriptRes, final Authenticator auth)
         throws IOException
     {
-        final boolean debug = logger.isDebugEnabled();
+        try
+        {
+            executeScriptInternal(scriptReq, scriptRes, auth);
+        }
+        catch (RuntimeException e)
+        {
+            Throwable hideCause = ExceptionStackUtil.getCause(e, HIDE_EXCEPTIONS);
+            if (hideCause != null)
+            {
+                AlfrescoRuntimeException alf = null;
+                if (e instanceof AlfrescoRuntimeException)
+                {
+                    alf = (AlfrescoRuntimeException) e;
+                }
+                else
+                {
+                    // The message will not have a numerical identifier
+                    alf = new AlfrescoRuntimeException("WebScript execution failed", e);
+                }
+                String num = alf.getNumericalId();
+                logger.error("Server error (" + num + ")", e);
+                throw new RuntimeException("Server error (" + num + ").  Details can be found in the server logs.");
+            }
+            else
+            {
+                throw e;
+            }
+        }
+    }
+    
+    protected void executeScriptInternal(WebScriptRequest scriptReq, WebScriptResponse scriptRes, final Authenticator auth)
+        throws IOException
+    {
         final WebScript script = scriptReq.getServiceMatch().getWebScript();
         final Description desc = script.getDescription();
-        
+        final boolean debug = logger.isDebugEnabled();
+		        
         // Escalate the webscript declared level of authentication to the container required authentication
         // eg. must be guest if MT is enabled unless credentials are empty
         RequiredAuthentication containerRequiredAuthentication = getRequiredAuthentication();

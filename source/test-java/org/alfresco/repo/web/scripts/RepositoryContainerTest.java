@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,18 +18,36 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import java.sql.SQLException;
+import java.util.regex.Pattern;
 import java.util.Arrays;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.CronTriggerBean;
 import org.alfresco.util.PropertyMap;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.Authenticator;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
+
 import static org.springframework.extensions.webscripts.Status.*;
+
+import static org.mockito.Matchers.any;
 
 /**
  * Unit test to test runas function
@@ -142,5 +160,108 @@ public class RepositoryContainerTest extends BaseWebScriptTest
         // check that we still can upload file larger than 4 mb, i.e. ensure that cleaner has not deleted temp folder
         response = sendRequest(new PutRequest("/test/largecontenttest", content, "text/plain"), STATUS_OK);
         assertEquals(SUCCESS, response.getContentAsString());
+    }
+
+
+    public void testHideExceptions() throws Exception
+    {
+        final Pattern patternHiddenException = Pattern.compile("Server error \\(\\d{8}\\)\\.  Details can be found in the server logs\\.");
+        final String messageFormException = "Failed to persist field 'prop_cm_name'";
+        final String messageAuthenticationException = "Authentication failed for Web Script";
+        
+        RepositoryContainer repoContainer = (RepositoryContainer) getServer().getApplicationContext().getBean("webscripts.container");
+        RepositoryContainer repoContainerMock = Mockito.spy(repoContainer);
+
+        // case: AlfrescoRuntimeException with SQLException cause
+        Mockito.doAnswer(new Answer<Object>()
+        {
+            public Object answer(InvocationOnMock invocation)
+            {
+                throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
+            }
+        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+        try
+        {
+            repoContainerMock.executeScript(null, null, null);
+        }
+        catch (Exception e)
+        {
+            assertNull("SQLException cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { SQLException.class }));
+            assertTrue("Details should be in the server logs.", patternHiddenException.matcher(e.getMessage()).matches());
+        }
+
+        // case: AlfrescoRuntimeException with NOT SQLException cause
+        Mockito.doAnswer(new Answer<Object>()
+        {
+            public Object answer(InvocationOnMock invocation)
+            {
+                throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException());
+            }
+        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+        try
+        {
+            repoContainerMock.executeScript(null, null, null);
+        }
+        catch (Exception e)
+        {
+            assertNotNull("NullPointerException cause should be visible for client", ExceptionStackUtil.getCause(e, new Class[] { NullPointerException.class }));
+            assertFalse("Details should be available for client", patternHiddenException.matcher(e.getMessage()).matches());
+        }
+
+        // case: RuntimeException with SQLException cause
+        Mockito.doAnswer(new Answer<Object>()
+        {
+            public Object answer(InvocationOnMock invocation)
+            {
+                throw new RuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
+            }
+        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+        try
+        {
+            repoContainerMock.executeScript(null, null, null);
+        }
+        catch (Exception e)
+        {
+            assertNull("SQLException cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { SQLException.class }));
+            assertTrue("Details should be in the server logs.", patternHiddenException.matcher(e.getMessage()).matches());
+        }
+
+        // case: FormException
+        Mockito.doAnswer(new Answer<Object>()
+        {
+            public Object answer(InvocationOnMock invocation)
+            {
+                throw new FormException(messageFormException);
+            }
+        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+        try
+        {
+            repoContainerMock.executeScript(null, null, null);
+        }
+        catch (Exception e)
+        {
+            assertTrue("FormException should be visible for client", e instanceof FormException);
+            assertFalse("Details should be available for client", patternHiddenException.matcher(e.getMessage()).matches());
+            assertTrue("Actual message should be available for client", e.getMessage().contains(messageFormException));
+        }
+
+        // case: WebScriptException
+        Mockito.doAnswer(new Answer<Object>()
+        {
+            public Object answer(InvocationOnMock invocation)
+            {
+                throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, messageAuthenticationException);
+            }
+        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+        try
+        {
+            repoContainerMock.executeScript(null, null, null);
+        }
+        catch (Exception e)
+        {
+            assertTrue("WebScriptException should be visible for client", e instanceof WebScriptException);
+            assertFalse("Details should be available for client", patternHiddenException.matcher(e.getMessage()).matches());
+            assertTrue("Actual message should be available for client", e.getMessage().contains(messageAuthenticationException));
+        }
     }
 }

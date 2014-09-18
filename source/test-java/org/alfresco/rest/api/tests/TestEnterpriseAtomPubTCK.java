@@ -122,12 +122,13 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
     			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco"), "admin", "admin", cmisParameters);
 	}
 
-    @Test
-    public void testCMISTCKBasics() throws Exception
-    {
-        BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
-        JUnitHelper.run(basicsTestGroup);
-    }
+// Commented out: See https://issues.alfresco.com/jira/browse/MNT-11123?focusedCommentId=339130&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-339130
+//    @Test
+//    public void testCMISTCKBasics() throws Exception
+//    {
+//        BasicsTestGroup basicsTestGroup = new BasicsTestGroup();
+//        JUnitHelper.run(basicsTestGroup);
+//    }
     
     @Test
     public void testCMISTCKCRUD() throws Exception

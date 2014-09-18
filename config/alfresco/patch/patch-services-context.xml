@@ -3208,6 +3208,10 @@
     <bean id="patch.addTagScopeAspect"
         class="org.alfresco.repo.admin.patch.impl.AddTagScopeAspect"
         parent="basePatch">
+        <!-- Patch is disabled, see MNT-11511 -->
+        <property name="ignored">
+            <value>true</value>
+        </property>
         <property name="id">
             <value>patch.addTagScopeAspect</value>
         </property>

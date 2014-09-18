@@ -26,6 +26,7 @@ import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
+import org.alfresco.repo.workflow.activiti.ActivitiWorkflowEngine;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -72,6 +73,7 @@ public class WorkflowRestImpl
     protected ProcessEngine activitiProcessEngine;
     protected boolean deployWorkflowsInTenant;
     protected List<String> excludeModelTypes = new ArrayList<String>(Arrays.asList("bpm_priority", "bpm_description", "bpm_dueDate"));
+    private ActivitiWorkflowEngine activitiWorkflowEngine;
     
     static 
     {
@@ -269,6 +271,7 @@ public class WorkflowRestImpl
         }
         
         Item responseItem = createItemForNodeRef(nodeRef);
+        activitiWorkflowEngine.dispatchPackageUpdatedEvent(packageScriptNode, null, null, processId, null);
         return responseItem;
     }
     
@@ -312,6 +315,7 @@ public class WorkflowRestImpl
         try 
         {
             nodeService.removeChild(packageScriptNode.getNodeRef(), nodeRef);
+            activitiWorkflowEngine.dispatchPackageUpdatedEvent(packageScriptNode, null, null, processId, null);
         }
         catch (InvalidNodeRefException e)
         {
@@ -540,5 +544,10 @@ public class WorkflowRestImpl
             item.setSize(contentData.getSize());
         }
         return item;
+    }
+
+    public void setActivitiWorkflowEngine(ActivitiWorkflowEngine activitiWorkflowEngine)
+    {
+        this.activitiWorkflowEngine = activitiWorkflowEngine;
     }
 }

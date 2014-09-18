@@ -27,6 +27,7 @@
            distribution_folder=${project.build.directory}/distribution/alfresco-enterprise-${project.version}
            wcmqs_folder=${project.build.directory}/wcmqs
            alfresco_amps_source_directory=${project.build.directory}/dependency
+           alfrescosharepoint_component_enabled=0
         </bitrock.arguments>
         <alfresco.googledocs.version>2.0.8-22</alfresco.googledocs.version>
     </properties>
@@ -109,7 +110,6 @@
                                     <version>4.2.5-alfresco</version>
                                     <classifier>linux</classifier>
                                     <type>tgz</type>
-                                    <excludes>**/ROOT/**</excludes>									
                                     <outputDirectory>${project.build.directory}/binaries-linux-x64</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
@@ -118,7 +118,6 @@
                                     <version>4.2.5-alfresco</version>
                                     <classifier>osx</classifier>
                                     <type>tgz</type>
-                                    <excludes>**/ROOT/**</excludes>									
                                     <outputDirectory>${project.build.directory}/binaries-osx-x64</outputDirectory>
                                 </artifactItem>					
                                 <artifactItem>
@@ -127,7 +126,6 @@
                                     <version>4.2.5-alfresco</version>
                                     <classifier>windows</classifier>
                                     <type>tgz</type>
-                                    <excludes>**/ROOT/**</excludes>
                                     <outputDirectory>${project.build.directory}/binaries-windows-x64</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
@@ -136,7 +134,6 @@
                                     <version>4.2.5-alfresco</version>
                                     <classifier>windows</classifier>
                                     <type>tgz</type>
-                                    <excludes>**/ROOT/**</excludes>
                                     <outputDirectory>${project.build.directory}/binaries-windows</outputDirectory>
                                 </artifactItem>								
                             </artifactItems>

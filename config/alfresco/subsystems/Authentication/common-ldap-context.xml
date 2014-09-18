@@ -102,6 +102,17 @@
    -->
 
    <bean id="ldapInitialDirContextFactory" class="org.alfresco.repo.security.authentication.ldap.LDAPInitialDirContextFactoryImpl">
+
+      <property name="trustStorePath">
+         <value>${ldap.authentication.truststore.path}</value>
+      </property>
+      <property name="trustStoreType">
+         <value>${ldap.authentication.truststore.type}</value>
+      </property>
+      <property name="trustStorePassPhrase">
+         <value>${ldap.authentication.truststore.passphrase}</value>
+      </property>
+
       <property name="initialDirContextEnvironment">
          <map>
             <!-- The LDAP provider -->
@@ -132,6 +143,11 @@
             <!-- Automatically follow referrals -->
             <entry key="java.naming.referral">
                <value>follow</value>
+            </entry>
+
+            <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
+            <entry key="java.naming.security.protocol">
+               <value>${ldap.authentication.java.naming.security.protocol}</value>
             </entry>
          </map>
       </property>
@@ -186,6 +202,11 @@
             <!-- Automatically follow referrals -->
             <entry key="java.naming.referral">
                <value>follow</value>
+            </entry>
+
+            <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
+            <entry key="java.naming.security.protocol">
+               <value>${ldap.authentication.java.naming.security.protocol}</value>
             </entry>
          </map>
       </property>

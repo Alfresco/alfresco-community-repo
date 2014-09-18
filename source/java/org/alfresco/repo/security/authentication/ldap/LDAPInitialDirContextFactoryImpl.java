@@ -18,7 +18,13 @@
  */
 package org.alfresco.repo.security.authentication.ldap;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -41,9 +47,12 @@ import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactory;
 import org.alfresco.repo.security.authentication.AuthenticationDiagnostic;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -58,6 +67,48 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     private Map<String, String> defaultEnvironment = Collections.<String, String> emptyMap();
     private Map<String, String> authenticatedEnvironment = Collections.<String, String> emptyMap();
+    private String trustStorePath;
+    private String trustStoreType;
+    private String trustStorePassPhrase;
+
+    public String getTrustStorePath()
+    {
+        return trustStorePath;
+    }
+
+    public void setTrustStorePath(String trustStorePath)
+    {
+        if (PropertyCheck.isValidPropertyString(trustStorePath))
+        {
+            this.trustStorePath = trustStorePath;
+        }
+    }
+
+    public String getTrustStoreType()
+    {
+        return trustStoreType;
+    }
+
+    public void setTrustStoreType(String trustStoreType)
+    {
+        if (PropertyCheck.isValidPropertyString(trustStoreType))
+        {
+            this.trustStoreType = trustStoreType;
+        }
+    }
+
+    public String getTrustStorePassPhrase()
+    {
+        return trustStorePassPhrase;
+    }
+
+    public void setTrustStorePassPhrase(String trustStorePassPhrase)
+    {
+        if (PropertyCheck.isValidPropertyString(trustStorePassPhrase))
+        {
+            this.trustStorePassPhrase = trustStorePassPhrase;
+        }
+    }
 
     static
     {
@@ -113,6 +164,13 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     {
         String securityPrincipal = env.get(Context.SECURITY_PRINCIPAL);
         String providerURL = env.get(Context.PROVIDER_URL);
+
+        if (isSSLSocketFactoryRequired())
+        {
+            KeyStore trustStore = initTrustStore();
+            AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
+            env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
+        }
 
         if(diagnostic == null)
         {
@@ -392,6 +450,12 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         env.putAll(authenticatedEnvironment);
         env.remove(Context.SECURITY_PRINCIPAL);
         env.remove(Context.SECURITY_CREDENTIALS);
+        if (isSSLSocketFactoryRequired())
+        {
+            KeyStore trustStore = initTrustStore();
+            AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
+            env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
+        }
         try
         {
             new InitialDirContext(env);
@@ -418,6 +482,12 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "daftAsABrush");
         env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
+        if (isSSLSocketFactoryRequired())
+        {
+            KeyStore trustStore = initTrustStore();
+            AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
+            env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
+        }
         try
         {
 
@@ -447,6 +517,12 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         env.putAll(authenticatedEnvironment);
         env.put(Context.SECURITY_PRINCIPAL, "cn=daftAsABrush,dc=woof");
         env.put(Context.SECURITY_CREDENTIALS, "daftAsABrush");
+        if (isSSLSocketFactoryRequired())
+        {
+            KeyStore trustStore = initTrustStore();
+            AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
+            env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
+        }
         try
         {
 
@@ -481,6 +557,12 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
             env.putAll(authenticatedEnvironment);
             env.put(Context.SECURITY_PRINCIPAL, principal);
             env.put(Context.SECURITY_CREDENTIALS, "sdasdasdasdasd123123123");
+            if (isSSLSocketFactoryRequired())
+            {
+                KeyStore trustStore = initTrustStore();
+                AlfrescoSSLSocketFactory.initTrustedSSLSocketFactory(trustStore);
+                env.put("java.naming.ldap.factory.socket", AlfrescoSSLSocketFactory.class.getName());
+            }
             if (!checkedEnvs.contains(env))
             {
 
@@ -513,7 +595,80 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
         }
     }
 
+    /**
+     * Check if it required to use custom SSL socket factory with custom trustStore.
+     * <br>Required for LDAPS configuration. The <code>ldap.authentication.java.naming.security.protocol</code> should be set to "ssl" for LDAPS.
+     * <br>The following properties should be set:
+     * <ul>
+     * <li>ldap.authentication.truststore.path
+     * <li>ldap.authentication.truststore.type
+     * <li>ldap.authentication.truststore.passphrase
+     * <li>ldap.authentication.java.naming.security.protocol
+     * </ul>
+     *
+     * @return <code>true</code> if all the required properties are set
+     */
+    private boolean isSSLSocketFactoryRequired()
+    {
+        boolean result = false;
+        // Check for LDAPS config
+        String protocol = authenticatedEnvironment.get(Context.SECURITY_PROTOCOL);
+        if (protocol != null && protocol.equals("ssl"))
+        {
+            if (getTrustStoreType() != null && getTrustStorePath() != null && getTrustStoreType() != null)
+            {
+                result = true;
+            }
+            else
+            {
+                logger.warn("The SSL configuration for LDAPS is not full, the default configuration will be used.");
+            }
+        }
+        return result;
+    }
 
-
-
+    /**
+     * Initialize trustStore with Spring set properties:
+     * <ul>
+     * <li>ldap.authentication.truststore.path
+     * <li>ldap.authentication.truststore.type
+     * <li>ldap.authentication.truststore.passphrase
+     * </ul>
+     *
+     * @return {@link KeyStore} with loaded trustStore file
+     */
+    private KeyStore initTrustStore()
+    {
+        KeyStore ks;
+        String trustStoreType = getTrustStoreType();
+        try
+        {
+            ks = KeyStore.getInstance(trustStoreType);
+        }
+        catch (KeyStoreException kse)
+        {
+            throw new AlfrescoRuntimeException("No provider supports " + trustStoreType, kse);
+        }
+        try
+        {
+            ks.load(new FileInputStream(getTrustStorePath()), getTrustStorePassPhrase().toCharArray());
+        }
+        catch (FileNotFoundException fnfe)
+        {
+            throw new AlfrescoRuntimeException("The truststore file is not found.", fnfe);
+        }
+        catch (IOException ioe)
+        {
+            throw new AlfrescoRuntimeException("The truststore file cannot be read.", ioe);
+        }
+        catch (NoSuchAlgorithmException nsae)
+        {
+            throw new AlfrescoRuntimeException("Algorithm used to check the integrity of the truststore cannot be found.", nsae);
+        }
+        catch (CertificateException ce)
+        {
+            throw new AlfrescoRuntimeException("The certificates cannot be loaded from truststore.", ce);
+        }
+        return ks;
+    }
 }

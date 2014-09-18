@@ -25,6 +25,7 @@
            alfresco_svn_rootdir=${highest.basedir}
            alfresco_edition=enterprise
            distribution_folder=${project.build.directory}/distribution/alfresco-enterprise-${project.version}
+           wcmqs_folder=${project.build.directory}/wcmqs
            alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
         <alfresco.googledocs.version>2.0.8-22</alfresco.googledocs.version>
@@ -55,6 +56,14 @@
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+                                </artifactItem>
+                                <!-- WCMQS Distribution -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-wcmqs-distribution</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                 </artifactItem>
                                 <!-- Tomcat -->
                                 <artifactItem>

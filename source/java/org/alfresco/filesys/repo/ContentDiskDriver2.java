@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -667,12 +667,25 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 if(ctx.getPseudoFileOverlay().isPseudoFile(dirNodeRef, paths[1]))
                 {
                     PseudoFile pfile =  ctx.getPseudoFileOverlay().getPseudoFile(dirNodeRef, paths[1]);
-                    FileInfo pseudoFileInfo = pfile.getFileInfo();
                     if(logger.isDebugEnabled())
                     {
-                        logger.debug("returning psuedo file details:" + pseudoFileInfo);
+                        if (pfile != null)
+                        {
+                            logger.debug("returning psuedo file details:" + pfile);
+                        }
+                        else
+                        {
+                            logger.debug("Try to return deleted pseudo file :" + paths[1]);
+                        }
                     }
-                    return pseudoFileInfo;
+                    if (pfile != null)
+                    {
+                        return pfile.getFileInfo();
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException("The pseudo file was deleted");
+                    }
                 }
             }
             
@@ -1111,8 +1124,13 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             if (fileFolderService.exists(nodeRef))
             {
                 // Check if the folder is empty                        
-            	
-                if ( getCifsHelper().isFolderEmpty( nodeRef))
+                // Get pseudo files
+                PseudoFileList pseudoFileList = new PseudoFileList();
+                if (session.isPseudoFilesEnabled())
+                {
+                    pseudoFileList = ctx.getPseudoFileOverlay().searchPseudoFiles(nodeRef, "*");
+                }
+                if (getCifsHelper().isFolderEmpty(nodeRef) && pseudoFileList.isEmpty())
                 {                            
                     // Delete the folder node           
                     fileFolderService.delete(nodeRef);
@@ -2557,9 +2575,23 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     PseudoFile pfile =  ctx.getPseudoFileOverlay().getPseudoFile(dirNodeRef, paths[1]);
                     if(logger.isDebugEnabled())
                     {
-                        logger.debug("Opened pseudo file :" + pfile);
+                        if (pfile != null)
+                        {
+                            logger.debug("Opened pseudo file :" + pfile);
+                        }
+                        else
+                        {
+                            logger.debug("Try to open deleted pseudo file :" + paths[1]);
+                        }
                     }
-                    return pfile.getFile( path);
+                    if (pfile != null)
+                    {
+                        return pfile.getFile( path);
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException("The pseudo file was deleted");
+                    }
                 }
             }
 

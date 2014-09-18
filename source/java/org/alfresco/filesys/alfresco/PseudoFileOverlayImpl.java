@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2007-2010 Alfresco Software Limited.
+ * Copyright (C) 2007-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -261,7 +261,10 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         {
             return null;
         }
-        
+        if (isDeleted(parentDir, fname))
+        {
+            return null;
+        }
         if(context.isAlfrescoURLEnabled())
         {
             if(context.getURLFileName().equals(fname))

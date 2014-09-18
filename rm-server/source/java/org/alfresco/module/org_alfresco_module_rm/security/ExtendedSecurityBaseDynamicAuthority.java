@@ -24,6 +24,7 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.permissions.DynamicAuthority;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -54,6 +55,12 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     
     /** Application context */
     protected ApplicationContext applicationContext;
+    
+    /** model DAO */
+    protected ModelDAO modelDAO;
+    
+    /** permission reference */
+    protected Set<PermissionReference> requiredFor;
     
     // NOTE: we get the services directly from the application context in this way to avoid
     //       cyclic relationships and issues when loading the application context
@@ -89,9 +96,21 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
     {
         if (nodeService == null)
         {
-            nodeService = (NodeService)applicationContext.getBean("nodeService");
+            nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         }
         return nodeService;
+    }
+    
+    /**
+     * @return	model DAO
+     */
+    protected ModelDAO getModelDAO()
+    {
+    	if (modelDAO == null)
+    	{
+    		modelDAO = (ModelDAO)applicationContext.getBean("permissionsModelDAO");	
+    	}
+    	return modelDAO;
     }
     
     /**
@@ -160,16 +179,5 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
         }
         
         return result;
-    }    
-    
-    /**
-     * Base implementation
-     * 
-     * @see org.alfresco.repo.security.permissions.DynamicAuthority#requiredFor()
-     */
-    @Override
-    public Set<PermissionReference> requiredFor()
-    {
-        return null;
-    }
+    }        
 }

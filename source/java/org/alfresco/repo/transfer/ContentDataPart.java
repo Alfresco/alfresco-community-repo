@@ -81,7 +81,7 @@ public class ContentDataPart extends PartBase
     @Override
     protected long lengthOfData() throws IOException
     {
-        return data.getSize();
+        return contentService.getRawReader(data.getContentUrl()).getSize();
     }
 
     /* (non-Javadoc)

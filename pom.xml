@@ -25,7 +25,6 @@
            alfresco_svn_rootdir=${basedir}/../..
            alfresco_edition=community
            distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}
-           solr_folder=${project.build.directory}/solr
            alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
     </properties>
@@ -55,14 +54,6 @@
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr</artifactId>
-                                    <version>${project.version}</version>
-                                    <classifier>config</classifier>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/solr</outputDirectory>
                                 </artifactItem>
                                 <!-- Tomcat -->
                                 <artifactItem>
@@ -131,25 +122,6 @@
                                     <outputDirectory>${project.build.directory}/binaries-windows</outputDirectory>
                                 </artifactItem>
                             </artifactItems>								
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>get-solr</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>war</type>
-                                    <outputDirectory>${project.build.directory}/solr</outputDirectory>
-                                    <destFileName>apache-solr-1.4.1.war</destFileName>
-                                </artifactItem>
-                            </artifactItems>
                         </configuration>
                     </execution>
                     <execution>

@@ -20,6 +20,13 @@
 	    </actionList>
 	</folder>
 	<folder>
+	    <name>solr4</name>
+	    <destination>${alfresco_data_directory}/solr4</destination>
+	    <distributionFileList>
+                <distributionFile origin="${alfresco_solr4_source_directory}/*" allowWildcards="1" />
+	    </distributionFileList>
+	</folder>
+	<folder>
 	    <name>keystore</name>
 	    <destination>${alfresco_data_directory}/keystore</destination>
 	    <distributionFileList>

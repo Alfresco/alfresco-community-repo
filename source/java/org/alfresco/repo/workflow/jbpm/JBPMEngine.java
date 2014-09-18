@@ -941,11 +941,15 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
                     {
                         processSelect.append(" join process.processDefinition as definition");
                     }
+                    int exDefNum = 0;
                     for (String exDef : exludedDefs)
                     {
+                        exDefNum++;
+                        String varExDef = "varExDef" + exDefNum;
                         exDef = BPMEngineRegistry.getLocalId(exDef);
                         exDef = exDef.replaceAll("\\*", "%");
-                        processWhere.append(" and definition.name not like '").append(exDef).append("'");
+                        processWhere.append(" and definition.name not like :").append(varExDef);
+                        processMap.put(varExDef, exDef);
                     }
                 }
 

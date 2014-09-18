@@ -27,6 +27,8 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.TransactionalCache;
+import org.alfresco.repo.cache.TransactionalCache.ValueHolder;
 import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -57,8 +59,7 @@ public class NodeDAOTest extends TestCase
     private TransactionService transactionService;
     private RetryingTransactionHelper txnHelper;
     private NodeDAO nodeDAO;
-    private SimpleCache<Serializable, Node> rootNodesCache;
-    
+    private SimpleCache<Serializable, ValueHolder<Node>> rootNodesCache;    
     @SuppressWarnings("unchecked")
     @Override
     public void setUp()
@@ -71,7 +72,7 @@ public class NodeDAOTest extends TestCase
         txnHelper.setMaxRetryWaitMs(50);
         
         nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
-        rootNodesCache = (SimpleCache<Serializable, Node>) ctx.getBean("node.rootNodesSharedCache");
+        rootNodesCache = (SimpleCache<Serializable, ValueHolder<Node>>) ctx.getBean("node.rootNodesSharedCache");
     }
     
     public void testTransaction() throws Throwable
@@ -171,7 +172,8 @@ public class NodeDAOTest extends TestCase
         // Check each root node
         for (Serializable key : keys)
         {
-            NodeEntity node = (NodeEntity) rootNodesCache.get(key);
+            NodeEntity node = (NodeEntity) TransactionalCache.getSharedCacheValue(rootNodesCache, key);
+            
             // Create a good value
             NodeEntity clonedNode = (NodeEntity) node.clone();
             // Run equals and hashcode

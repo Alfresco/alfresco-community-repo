@@ -152,6 +152,7 @@ public class ResourceWebScriptHelper
      * @param selectParam
      * @return List<String> bean property names potentially using JSON Pointer syntax
      */
+    @SuppressWarnings("unchecked")
     public static List<String> getSelectClause(String selectParam) throws InvalidArgumentException
     {
         if (selectParam == null) return Collections.emptyList();
@@ -167,8 +168,7 @@ public class ResourceWebScriptHelper
 			{
 				return Arrays.asList(selectedPropsTree.getText());
 			}
-			@SuppressWarnings("unchecked")
-            List<Tree> children = (List<Tree>)selectedPropsTree.getChildren();
+			List<Tree> children = (List<Tree>) selectedPropsTree.getChildren();
 			if (children!= null && !children.isEmpty())
 			{
 				List<String> properties = new ArrayList<String>(children.size());

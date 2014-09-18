@@ -1101,9 +1101,12 @@ public class TestCMIS extends EnterpriseTestApi
 
             final List<SecondaryType> secondaryTypesList = doc.getSecondaryTypes();
             final List<String> secondaryTypes = new ArrayList<String>();
-            for(SecondaryType secondaryType : secondaryTypesList)
+            if (secondaryTypesList != null)
             {
-                secondaryTypes.add(secondaryType.getId());   
+                for(SecondaryType secondaryType : secondaryTypesList)
+                {
+                    secondaryTypes.add(secondaryType.getId());
+                }
             }
 
             secondaryTypes.add("P:sys:temporary");
@@ -1184,9 +1187,12 @@ public class TestCMIS extends EnterpriseTestApi
             Document doc = (Document)browserCmisSession11.getObject(doc3NodeRef.getId());
             final List<SecondaryType> secondaryTypesList = doc.getSecondaryTypes();
             final List<String> secondaryTypes = new ArrayList<String>();
-            for(SecondaryType secondaryType : secondaryTypesList)
+            if (secondaryTypesList != null)
             {
-                secondaryTypes.add(secondaryType.getId());   
+                for (SecondaryType secondaryType : secondaryTypesList)
+                {
+                    secondaryTypes.add(secondaryType.getId());
+                }
             }
 
             secondaryTypes.add("P:sys:temporary");

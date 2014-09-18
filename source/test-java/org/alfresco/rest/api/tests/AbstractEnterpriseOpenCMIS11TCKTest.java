@@ -22,7 +22,11 @@ import org.apache.chemistry.opencmis.tck.tests.crud.OperationContextTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.SetAndDeleteContentTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.UpdateSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryTestGroup;
+import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
+import org.apache.chemistry.opencmis.tck.tests.query.QueryForObject;
+import org.apache.chemistry.opencmis.tck.tests.query.QueryInFolderTest;
+import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
+import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningStateCreateTest;
@@ -68,10 +72,10 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
     @Test
     public void testCMISTCKQuery() throws Exception
     {
-        QueryTestGroup queryTestGroup = new QueryTestGroup();
+        OverrideQueryTestGroup queryTestGroup = new OverrideQueryTestGroup();
         JUnitHelper.run(queryTestGroup);
     }
-
+    
     class OverrideVersioningTestGroup extends AbstractSessionTestGroup
     {
         @Override
@@ -118,6 +122,26 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
             addTest(new MoveTest());
             addTest(new DeleteTreeTest());
             addTest(new OperationContextTest());
+        }
+    }
+
+    public class OverrideQueryTestGroup extends AbstractSessionTestGroup
+    {
+        @Override
+        public void init(Map<String, String> parameters) throws Exception
+        {
+            super.init(parameters);
+
+            setName("Query Test Group");
+            setDescription("Query and content changes tests.");
+
+            addTest(new QuerySmokeTest());
+            // The test fails on Lucene see MNT-11223
+//            addTest(new QueryRootFolderTest());
+            addTest(new QueryForObject());
+            addTest(new QueryLikeTest());
+            addTest(new QueryInFolderTest());
+            addTest(new ContentChangesSmokeTest());
         }
     }
 }

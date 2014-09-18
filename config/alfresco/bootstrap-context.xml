@@ -727,4 +727,18 @@
         class="org.alfresco.repo.workflow.activiti.ActivitiEngineInitializer">
         <property name="workflowAdminService" ref="workflowAdminService" />
     </bean>
+ 
+   <!-- Custom property editors -->
+   <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+      <property name="propertyEditorRegistrars">
+         <list>
+            <ref bean="customPropertyEditorRegistrar"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="customPropertyEditorRegistrar"
+      class="org.alfresco.util.CustomPropertyEditorRegistrar">
+      <property name="namespaceService" ref="NamespaceService"/>
+   </bean>
 </beans>

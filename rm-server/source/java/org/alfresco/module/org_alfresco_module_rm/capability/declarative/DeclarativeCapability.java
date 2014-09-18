@@ -29,6 +29,8 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
@@ -297,29 +299,42 @@ public class DeclarativeCapability extends AbstractCapability
     {
         int result = AccessDecisionVoter.ACCESS_ABSTAIN;
         
-        // Check we are dealing with a file plan component
-        if (filePlanService.isFilePlanComponent(nodeRef) == true)
+    	// check transaction cache
+        Map<String, Integer> map = TransactionalResourceHelper.getMap("rm.declarativeCapability");
+        String key = getName() + "|" + nodeRef.toString() + "|" + AuthenticationUtil.getRunAsUser();
+        if (map.containsKey(key))
         {
-            // Check the kind of the object, the permissions and the conditions
-            if (checkKinds(nodeRef) == true && checkPermissions(nodeRef) == true && checkConditions(nodeRef) == true)
-            {
-                // Opportunity for child implementations to extend 
-                result = evaluateImpl(nodeRef);
-            }
-            else
-            {
-                result = AccessDecisionVoter.ACCESS_DENIED;
-            }
+            result = map.get(key);
         }
-        
-        // Last chance for child implementations to veto/change the result
-        result = onEvaluate(nodeRef, result);
-        
-        // log access denied to help with debug
-        if (logger.isDebugEnabled() == true && AccessDecisionVoter.ACCESS_DENIED == result)
+        else
         {
-            logger.debug("Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
-        }
+	        // Check we are dealing with a file plan component
+	        if (filePlanService.isFilePlanComponent(nodeRef) == true)
+	        {
+	            // Check the kind of the object, the permissions and the conditions
+	            if (checkKinds(nodeRef) == true && checkPermissions(nodeRef) == true && checkConditions(nodeRef) == true)
+	            {
+	                // Opportunity for child implementations to extend 
+	                result = evaluateImpl(nodeRef);
+	            }
+	            else
+	            {
+	                result = AccessDecisionVoter.ACCESS_DENIED;
+	            }
+	        }
+	        
+	        // Last chance for child implementations to veto/change the result
+	        result = onEvaluate(nodeRef, result);
+	        
+	        // log access denied to help with debug
+	        if (logger.isDebugEnabled() == true && AccessDecisionVoter.ACCESS_DENIED == result)
+	        {
+	            logger.debug("Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
+	        }
+	        	
+	        result = evaluateImpl(nodeRef);
+	        map.put(key, result);
+	    }
         
         return result;
     }

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,15 +18,22 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,6 +51,9 @@ public class LockableAspectInterceptorTest
     private String userName;
     private String lockOwner;
     private LockableAspectInterceptor interceptor;
+    private LockService lockService;
+    private FileFolderService fileFolderService;
+    private ActionService actionService;
     
     @BeforeClass
     public static void setUpClass() throws Exception
@@ -70,6 +81,9 @@ public class LockableAspectInterceptorTest
         lockStore = (LockStore) appCtx.getBean("lockStore");
         rootNode = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         interceptor = (LockableAspectInterceptor) appCtx.getBean("lockableAspectInterceptor");
+        lockService = (LockService)appCtx.getBean("lockService");
+        fileFolderService = (FileFolderService) appCtx.getBean("FileFolderService");
+        actionService = (ActionService) appCtx.getBean("ActionService");
     }
     
     @Test
@@ -448,5 +462,99 @@ public class LockableAspectInterceptorTest
         assertNull(properties.get(ContentModel.PROP_LOCK_LIFETIME));
         assertNull(properties.get(ContentModel.PROP_LOCK_OWNER));
         assertNull(properties.get(ContentModel.PROP_EXPIRY_DATE));
+    }
+    
+    /*
+     * MNT-12049
+     * 1) Create Ephemeral lock
+     * 2) Put data to node
+     * 3) Unlock node
+     * 4) Check for lock - node must be unlocked
+     */
+    @Test
+    public void testEphemeralLock()
+    {
+    	// create a node
+        String fName = GUID.generate()+".doc";
+		QName nodeName = QName.createQName("http://www.alfresco.org/test/" + getClass().getSimpleName(), fName);
+        final NodeRef nodeRef = nodeService.createNode(
+                    rootNode,
+                    ContentModel.ASSOC_CHILDREN,
+                    nodeName,
+                    ContentModel.TYPE_CONTENT).getChildRef();
+
+        // lock node
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
+                {
+
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                    	lockService.lock(nodeRef, LockType.WRITE_LOCK, (int) 3600, Lifetime.EPHEMERAL, "someInfo");
+                        return null;
+                    }
+
+                };
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
+        
+        writeData(fName, nodeRef);
+        
+        // unlock node
+        RetryingTransactionCallback<Void> unlockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
+                {
+
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                    	lockService.unlock(nodeRef);
+                        return null;
+                    }
+
+                };
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(unlockExecuteImplCallBack);
+        
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+        assertNull(properties.get(ContentModel.PROP_LOCK_TYPE));
+        assertNull(properties.get(ContentModel.PROP_LOCK_LIFETIME));
+    }
+    
+    private void writeData(String fileName, final NodeRef fileNodeRef) 
+    {
+        nodeService.addAspect(fileNodeRef, ContentModel.ASPECT_NO_CONTENT, null);
+        // Access the content
+        ContentWriter writer = fileFolderService.getWriter(fileNodeRef);
+
+        // set content properties
+        writer.guessMimetype(fileName);
+        writer.guessEncoding();
+
+        // Get the input stream from the request data
+        InputStream is = getClass().getClassLoader().getResourceAsStream(
+              "farmers_markets_list_2003.doc");
+
+        // Write the new data to the content node
+        writer.putContent(is);
+
+        // write info about author
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.SYSTEM_USER_NAME);
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(
+        new RetryingTransactionCallback<Void>() {
+           public Void execute() throws Throwable 
+           {
+              // Create the action
+              Action action = actionService.createAction(ContentMetadataExtracter.EXECUTOR_NAME);
+              try 
+              {
+                 actionService.executeAction(action, fileNodeRef);
+              }
+              catch (Throwable th) 
+              {
+                 // do nothing
+              }
+              return null;
+           }
+        });
+        AuthenticationUtil.popAuthentication();
     }
 }

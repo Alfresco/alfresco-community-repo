@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -337,5 +338,39 @@ public class LockMethodTest
         
         assertFalse("File should note exist in repo any more.", nodeService.exists(nodeRef));
         assertFalse("File should note exist in trashcan.", nodeService.exists(new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, nodeRef.getId())));
+    }
+    
+    @Test
+    public void testMNT_11990() throws Exception
+    {
+        MockHttpServletRequest lockRequest = new MockHttpServletRequest(); 
+        lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 3600);        
+        lockRequest.addHeader(WebDAV.HEADER_IF, "(<" + WebDAV.makeLockToken(fileNodeRef, userName) + ">)");
+        lockRequest.setRequestURI("/" + TEST_FILE_NAME);
+
+        lockMethod.setDetails(lockRequest, new MockHttpServletResponse(), davHelper, folderNodeRef);
+        lockMethod.parseRequestHeaders();
+        lockMethod.parseRequestBody();
+        
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                try
+                {
+                    lockMethod.executeImpl();
+                    fail("Lock should not be refreshed for non-locked file.");
+                }
+                catch (WebDAVServerException e)
+                {
+                    assertEquals(e.getHttpStatusCode(), HttpServletResponse.SC_BAD_REQUEST);
+                }
+                return null;
+            }
+        };
+        
+        // try to refresh lock for non-locked node        
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
     }
 }

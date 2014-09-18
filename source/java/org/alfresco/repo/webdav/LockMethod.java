@@ -368,6 +368,15 @@ public class LockMethod extends WebDAVMethod
         if (hasLockToken())
         {
             lockInfo = checkNode(lockNodeInfo);
+
+            if (!lockInfo.isLocked() && m_request.getContentLength() == -1)
+            {
+                // MNT-11990 fix, LOCK method with If header and without body was sent, according to RFC 2518 section 7.8
+                // this form of LOCK MUST only be used to "refresh" a lock. But node is not actually locked. Fail this request.
+                // see http://www.ics.uci.edu/~ejw/authoring/protocol/rfc2518.html#rfc.section.7.8
+                throw new WebDAVServerException(HttpServletResponse.SC_BAD_REQUEST);
+            }
+            
             // If a request body is not defined and "If" header is sent we have createExclusive as false,
             // but we need to check a previous LOCK was an exclusive. I.e. get the property for node. It
             // is already has got in a checkNode method, so we need just get a scope from lockInfo.

@@ -70,7 +70,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.tomcat</groupId>
                                     <artifactId>tomcat</artifactId>
-                                    <version>7.0.53-alfresco</version>
+                                    <version>${dependency.tomcat.version}-alfresco</version>
                                     <classifier>win32</classifier>
                                     <type>zip</type>
                                     <excludes>**/ROOT/**</excludes>
@@ -79,7 +79,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.tomcat</groupId>
                                     <artifactId>tomcat</artifactId>
-                                    <version>7.0.53-alfresco</version>
+                                    <version>${dependency.tomcat.version}-alfresco</version>
                                     <classifier>win64</classifier>
                                     <type>zip</type>
                                     <excludes>**/ROOT/**</excludes>
@@ -88,7 +88,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.tomcat</groupId>
                                     <artifactId>tomcat</artifactId>
-                                    <version>7.0.53-alfresco</version>
+                                    <version>${dependency.tomcat.version}-alfresco</version>
                                     <classifier>unix</classifier>
                                     <type>zip</type>
                                     <excludes>**/ROOT/**</excludes>
@@ -97,7 +97,7 @@
                                 <artifactItem>
                                     <groupId>org.apache.tomcat</groupId>
                                     <artifactId>tomcat</artifactId>
-                                    <version>7.0.53-alfresco</version>
+                                    <version>${dependency.tomcat.version}-alfresco</version>
                                     <classifier>unix</classifier>
                                     <type>zip</type>
                                     <excludes>**/ROOT/**</excludes>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -69,11 +70,14 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.config.RepositoryFolderConfigBean;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
+
+import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 /**
  * Unit test for ImapServiceImpl
@@ -107,6 +111,7 @@ public class ImapServiceImplTest extends TestCase
     private AlfrescoImapUser user;
     private ImapService imapService;
     private UserTransaction txn;
+    private ContentService contentService;
 
     private NodeRef testImapFolderNodeRef;
     private Flags flags;
@@ -128,7 +133,7 @@ public class ImapServiceImplTest extends TestCase
         searchService = serviceRegistry.getSearchService();
         namespaceService = serviceRegistry.getNamespaceService();
         fileFolderService = serviceRegistry.getFileFolderService();
-
+        contentService = serviceRegistry.getContentService();
         
         flags = new Flags();
         flags.add(Flags.Flag.SEEN);
@@ -869,6 +874,53 @@ public class ImapServiceImplTest extends TestCase
         assertPathHierarchy(fullPathList, pathAfterRenaming);
     }
 
+    /**
+     * Test for MNT-12259
+     * There is a 5s gap to run the test, see {@link ImapServiceImpl#hideAndDelete}
+     * 
+     * @throws Exception 
+     */
+    public void testMoveViaDeleteAndAppend() throws Exception
+    {
+        AlfrescoImapUser poweredUser = new AlfrescoImapUser((USER_NAME + "@alfresco.com"), USER_NAME, USER_PASSWORD);
+        String fileName = "testfile" + GUID.generate();
+        String destinationName = "testFolder" + GUID.generate();
+        String destinationPath = IMAP_ROOT + AlfrescoImapConst.HIERARCHY_DELIMITER + destinationName;
+        String nodeContent = "test content";
+        NodeRef root = findCompanyHomeNodeRef();
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+        // Create node and destination folder
+        FileInfo origFile = fileFolderService.create(root, fileName, ContentModel.TYPE_CONTENT);
+        ContentWriter contentWriter = contentService.getWriter(origFile.getNodeRef(), ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype("text/plain");
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent(nodeContent);
+
+        FileInfo destinationNode = fileFolderService.create(root, destinationName, ContentModel.TYPE_FOLDER);
+        nodeService.addAspect(origFile.getNodeRef(), ImapModel.ASPECT_IMAP_CONTENT, null);
+
+        // Save the message and ensure the message id is set
+        SimpleStoredMessage origMessage = imapService.getMessage(origFile);
+        origMessage.getMimeMessage().saveChanges();
+
+        imapService.setFlag(origFile, Flags.Flag.DELETED, true);
+        // Delete the node
+        imapService.expungeMessage(origFile);
+
+        // Append the message to destination
+        AlfrescoImapFolder destinationMailbox = imapService.getOrCreateMailbox(poweredUser, destinationPath, true, false);
+        destinationMailbox.appendMessage(origMessage.getMimeMessage(), flags, null);
+
+        // Check the destination has the original file and only this file
+        FileInfo movedNode = fileFolderService.getFileInfo(origFile.getNodeRef());
+        assertNotNull("The file should exist.", movedNode);
+        assertEquals("The file name should not change.", fileName, movedNode.getName());
+        NodeRef newParentNodeRef = nodeService.getPrimaryParent(origFile.getNodeRef()).getParentRef();
+        assertEquals("The parent should change to destination.", destinationNode.getNodeRef(), newParentNodeRef);
+        assertEquals("There should be only one node in the destination folder", 1, nodeService.getChildAssocs(destinationNode.getNodeRef()).size());
+    }
+    
     /**
      * @param mailbox - {@link AlfrescoImapFolder} instance which should be checked
      */

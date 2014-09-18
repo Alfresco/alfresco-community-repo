@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,8 +43,12 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Utf7;
 import org.apache.commons.logging.Log;
@@ -309,10 +313,114 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             Date internalDate)
             throws FileExistsException, FileNotFoundException, IOException, MessagingException 
     {
-        long uid = createMimeMessageInFolder(this.folderInfo, message, flags);
+        long uid;
+        NodeRef sourceNodeRef = extractNodeRef(message);
+        if (isMoveOperation(sourceNodeRef))
+        {
+            uid = moveNode(this.folderInfo, message, flags, sourceNodeRef);
+        }
+        else
+        {
+            uid = createMimeMessageInFolder(this.folderInfo, message, flags);
+        }
         // Invalidate current folder status
         this.folderStatus = null;
         return uid;
+    }
+
+    /**
+     * Moves the node <code>sourceNodeRef</code> extracted from the message id.
+     * A part of a complex move operation.
+     * 
+     * @param folderInfo
+     * @param message
+     * @param flags
+     * @param sourceNodeRef
+     * @return UUID of the moved node
+     * @throws FileExistsException
+     * @throws FileNotFoundException
+     */
+    @SuppressWarnings("deprecation")
+    private long moveNode(FileInfo folderInfo, MimeMessage message, Flags flags, NodeRef sourceNodeRef)
+            throws FileExistsException, FileNotFoundException
+    {
+        FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
+        FileFilterMode.setClient(FileFilterMode.Client.imap);
+        fileFolderService.setHidden(sourceNodeRef, false);
+        FileInfo messageFile = fileFolderService.move(sourceNodeRef, folderInfo.getNodeRef(), null);
+        final long newMessageUid = (Long) messageFile.getProperties().get(ContentModel.PROP_NODE_DBID);
+        imapService.setFlag(messageFile, Flag.RECENT, true);
+        imapService.setFlag(messageFile, Flag.DELETED, false);
+        return newMessageUid;        
+    }
+
+    /**
+     * Extract a <code>NodeRef</code> from the message id.
+     * <br>Typical message id is "<74bad8aa-75a5-4063-8e46-9d1b5737f43b@alfresco.org>"
+     * <br>See {@link AbstractMimeMessage#updateMessageID()}
+     * 
+     * @param message
+     * @return null if nothing is found
+     */
+    private NodeRef extractNodeRef(MimeMessage message)
+    {
+        String uuid = null;
+        String messageId = null;
+        NodeRef result = null;
+        try
+        {
+            messageId = message.getMessageID();
+        }
+        catch (MessagingException me)
+        {
+            // we cannot use message id to extract nodeRef
+        }
+        
+        if (messageId != null)
+        {
+            if (messageId.startsWith("<"))
+            {
+                messageId = messageId.substring(1);
+            }
+            if (messageId.indexOf("@") != -1)
+            {
+                uuid = messageId.substring(0, messageId.indexOf("@"));
+            }
+            else
+            {
+                uuid = messageId;
+            }
+            result = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore", uuid);
+        }
+        return result;
+    }
+
+    /**
+     * Determine if it is a complex move operation, which consists of a create superseded by a delete.
+     * 
+     * @param sourceNodeRef
+     * @return 
+     */
+    @SuppressWarnings("deprecation")
+    private boolean isMoveOperation(NodeRef sourceNodeRef)
+    {
+        if (sourceNodeRef != null)
+        {
+            NodeService nodeService = serviceRegistry.getNodeService();
+            if (nodeService.exists(sourceNodeRef))
+            {
+                FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
+                FileInfo node = fileFolderService.getFileInfo(sourceNodeRef);
+                if (node != null)
+                {
+                    if (fileFolderService.isHidden(sourceNodeRef))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

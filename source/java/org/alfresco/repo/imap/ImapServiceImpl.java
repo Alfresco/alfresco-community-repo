@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -157,6 +159,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
 
     private final static Map<QName, Flags.Flag> qNameToFlag;
     private final static Map<Flags.Flag, QName> flagToQname;
+
+    private static final Timer deleteDelayTimer = new Timer();
 
     private boolean imapServerEnabled = false;
 
@@ -538,8 +542,68 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         Flags flags = getFlags(fileInfo);
         if (flags.contains(Flags.Flag.DELETED))
         {
-            fileFolderService.delete(fileInfo.getNodeRef());
+            // See MNT-12259
+            //fileFolderService.delete(fileInfo.getNodeRef());
+            hideAndDelete(fileInfo.getNodeRef());
             messageCache.remove(fileInfo.getNodeRef());
+        }
+    }
+    
+    /**
+     * Workaround for MNT-12259
+     * @param nodeRef
+     */
+    @SuppressWarnings("deprecation")
+    private void hideAndDelete(final NodeRef nodeRef)
+    {
+        FileFilterMode.setClient(FileFilterMode.Client.imap);
+        fileFolderService.setHidden(nodeRef, true);
+        {
+            // Get the current user
+            final String deleteDelayUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            // Add a timed task to really delete the file
+            TimerTask deleteDelayTask = new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    RunAsWork<Void> deleteDelayRunAs = new RunAsWork<Void>()
+                    {
+                        @Override
+                        public Void doWork() throws Exception
+                        {
+                             // Ignore if it is NOT hidden: the shuffle may have finished; the operation may have failed
+                            if (!nodeService.exists(nodeRef) || !fileFolderService.isHidden(nodeRef))
+                            {
+                                return null;
+                            }
+                            
+                            // Since this will run in a different thread, the client thread-local must be set
+                            // or else unhiding the node will not unhide it for IMAP.
+                            FileFilterMode.setClient(FileFilterMode.Client.imap);
+                            
+                            // Unhide the node, e.g. for archiving
+                            fileFolderService.setHidden(nodeRef, false);
+                            
+                            // This is the transaction-aware service
+                            fileFolderService.delete(nodeRef);
+                            return null;
+                        }
+                    };
+                    try
+                    {
+                        AuthenticationUtil.runAs(deleteDelayRunAs, deleteDelayUser);
+                    }
+                    catch (Throwable e)
+                    {
+                        // consume exception to avoid it leaking from the TimerTask and causing the Timer to
+                        // no longer accept tasks to be scheduled.
+                        logger.info("Exception thrown during IMAP delete timer task.", e);
+                    }
+                }
+            };
+            // Schedule a real delete 5 seconds after the current time
+            deleteDelayTimer.schedule(deleteDelayTask, 5000L);
         }
     }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,12 +19,24 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.content.AbstractStreamAwareProxy;
+import org.alfresco.repo.content.StreamAwareContentReaderProxy;
+import org.alfresco.repo.content.StreamAwareContentWriterProxy;
+import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentServiceTransientException;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,10 +54,26 @@ import org.apache.commons.logging.LogFactory;
 public abstract class AbstractContentTransformer2 extends AbstractContentTransformerLimits
 {
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);
-    
+
+    private ExecutorService executorService;
+
     private ContentTransformerRegistry registry;
     private boolean registerTransformer;
     private boolean retryTransformOnDifferentMimeType;
+
+    /**
+     * A flag that indicates that the transformer should be started in it own Thread so
+     * that it may be interrupted rather than using the timeout in the Reader.
+     * Need only be set for transformers that read their source data quickly but then
+     * take a long time to process the data (such as {@link PoiOOXMLContentTransformer}.
+     */
+    private Boolean useTimeoutThread = false;
+
+    /**
+     * Extra time added the timeout when using a Thread for the transformation so that
+     * a timeout from the Reader has a chance to happen first.
+     */
+    private long additionalThreadTimout = 2000;
 
     private static ThreadLocal<Integer> depth = new ThreadLocal<Integer>()
     {
@@ -209,8 +237,49 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
                 setReaderLimits(reader, writer, options);
 
                 // Transform
-                transformInternal(reader, writer, options);
-                
+                // MNT-12238: CLONE - CLONE - Upload of PPTX causes very high memory usage leading to system instability
+                // Limiting transformation up to configured amount of milliseconds to avoid very high RAM consumption
+                // and OOM during transforming problematic documents
+                TransformationOptionLimits limits = getLimits(reader.getMimetype(), writer.getMimetype(), options);
+
+                long timeoutMs = limits.getTimeoutMs();
+                if (!useTimeoutThread || (null == limits) || (-1 == timeoutMs))
+                {
+                    transformInternal(reader, writer, options);
+                }
+                else
+                {
+                    Future<?> submittedTask = null;
+                    StreamAwareContentReaderProxy proxiedReader = new StreamAwareContentReaderProxy(reader);
+                    StreamAwareContentWriterProxy proxiedWriter = new StreamAwareContentWriterProxy(writer);
+
+                    try
+                    {
+                        submittedTask = getExecutorService().submit(new TransformInternalCallable(proxiedReader, proxiedWriter, options));
+                        submittedTask.get(timeoutMs + additionalThreadTimout, TimeUnit.MILLISECONDS);
+                    }
+                    catch (TimeoutException e)
+                    {
+                        releaseResources(submittedTask, proxiedReader, proxiedWriter);
+                        throw new TimeoutException("Transformation failed due to timeout limit");
+                    }
+                    catch (InterruptedException e)
+                    {
+                        releaseResources(submittedTask, proxiedReader, proxiedWriter);
+                        throw new InterruptedException("Transformation failed, because the thread of the transformation was interrupted");
+                    }
+                    catch (ExecutionException e)
+                    {
+                        Throwable cause = e.getCause();
+                        if (cause instanceof TransformInternalCallableException)
+                        {
+                            cause = ((TransformInternalCallableException) cause).getCause();
+                        }
+
+                        throw cause;
+                    }
+                }
+
                 // record time
                 long after = System.currentTimeMillis();
                 recordTime(sourceMimetype, targetMimetype, after - before);
@@ -345,6 +414,31 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         }
     }
 
+    /**
+     * Cancels <code>task</code> and closes content accessors
+     * 
+     * @param task - {@link Future} task instance which specifies a transformation action
+     * @param proxiedReader - {@link AbstractStreamAwareProxy} instance which represents channel closing mechanism for content reader
+     * @param proxiedWriter - {@link AbstractStreamAwareProxy} instance which represents channel closing mechanism for content writer
+     */
+    private void releaseResources(Future<?> task, AbstractStreamAwareProxy proxiedReader, AbstractStreamAwareProxy proxiedWriter)
+    {
+        if (null != task)
+        {
+            task.cancel(true);
+        }
+
+        if (null != proxiedReader)
+        {
+            proxiedReader.release();
+        }
+
+        if (null != proxiedWriter)
+        {
+            proxiedWriter.release();
+        }
+    }
+
     public final void transform(
             ContentReader reader,
             ContentWriter writer,
@@ -399,7 +493,104 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
             transformerConfig.getStatistics(null, sourceMimetype, targetMimetype, true).recordTime(transformationTime);
         }
     }
-    
+
+    /**
+     * Gets the <code>ExecutorService</code> to be used for timeout-aware extraction.
+     * <p>
+     * If no <code>ExecutorService</code> has been defined a default of <code>Executors.newCachedThreadPool()</code> is used during {@link AbstractMappingMetadataExtracter#init()}.
+     * 
+     * @return the defined or default <code>ExecutorService</code>
+     */
+    protected ExecutorService getExecutorService()
+    {
+        if (null == executorService)
+        {
+            executorService = Executors.newCachedThreadPool();
+        }
+
+        return executorService;
+    }
+
+    /**
+     * Sets the <code>ExecutorService</code> to be used for timeout-aware transformation.
+     * 
+     * @param executorService - {@link ExecutorService} instance for timeouts
+     */
+    public void setExecutorService(ExecutorService executorService)
+    {
+        this.executorService = executorService;
+    }
+
+    /**
+     * {@link Callable} wrapper for the {@link AbstractContentTransformer2#transformInternal(ContentReader, ContentWriter, TransformationOptions)} method to handle timeouts.
+     */
+    private class TransformInternalCallable implements Callable<Void>
+    {
+        private ContentReader reader;
+
+        private ContentWriter writer;
+
+        private TransformationOptions options;
+
+        public TransformInternalCallable(ContentReader reader, ContentWriter writer, TransformationOptions options)
+        {
+            this.reader = reader;
+            this.writer = writer;
+            this.options = options;
+        }
+
+        @Override
+        public Void call() throws Exception
+        {
+            try
+            {
+                transformInternal(reader, writer, options);
+                return null;
+            }
+            catch (Throwable e)
+            {
+                throw new TransformInternalCallableException(e);
+            }
+        }
+    }
+
+    /**
+     * Exception wrapper to handle any {@link Throwable} from {@link AbstractContentTransformer2#transformInternal(ContentReader, ContentWriter, TransformationOptions)}
+     */
+    private class TransformInternalCallableException extends Exception
+    {
+        private static final long serialVersionUID = 7740560508772740658L;
+
+        public TransformInternalCallableException(Throwable cause)
+        {
+            super(cause);
+        }
+    }
+
+    /**
+     * @param useTimeoutThread - {@link Boolean} value which specifies timeout limiting mechanism for the current transformer
+     * @see AbstractContentTransformer2#useTimeoutThread
+     */
+    public void setUseTimeoutThread(Boolean useTimeoutThread)
+    {
+        if (null == useTimeoutThread)
+        {
+            useTimeoutThread = true;
+        }
+
+        this.useTimeoutThread = useTimeoutThread;
+    }
+
+    public void setAdditionalThreadTimout(long additionalThreadTimout)
+    {
+        this.additionalThreadTimout = additionalThreadTimout;
+    }
+
+    public Boolean isTransformationLimitedInternally()
+    {
+        return useTimeoutThread;
+    }
+
     /**
      * Records an error and updates the average time as if the transformation took a
      * long time, so that it is less likely to be called again.

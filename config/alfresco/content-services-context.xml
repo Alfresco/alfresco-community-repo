@@ -319,7 +319,17 @@
    <bean id="extracter.PDFBox"        class="org.alfresco.repo.content.metadata.PdfBoxMetadataExtracter"        parent="baseMetadataExtracter">
       <property name="documentSelector" ref="pdfBoxEmbededDocumentSelector" />
    </bean>
-   <bean id="extracter.Poi"           class="org.alfresco.repo.content.metadata.PoiMetadataExtracter"           parent="baseMetadataExtracter" />
+   <bean id="extracter.Poi"           class="org.alfresco.repo.content.metadata.PoiMetadataExtracter"           parent="baseMetadataExtracter">
+      <property name="poiFootnotesLimit" value="${content.transformer.Poi.poiFootnotesLimit}" />
+      <property name="poiExtractPropertiesOnly" value="${content.transformer.Poi.poiExtractPropertiesOnly}" />
+      <property name="poiAllowableXslfRelationshipTypes">
+         <list>
+            <!-- These values are valid for Office 2007, 2010 and 2013 -->
+            <value>http://schemas.openxmlformats.org/officeDocument/2006/relationships/presProps</value>
+            <value>http://schemas.openxmlformats.org/officeDocument/2006/relationships/viewProps</value>
+         </list>
+      </property>
+   </bean>
    <bean id="extracter.Office"        class="org.alfresco.repo.content.metadata.OfficeMetadataExtracter"        parent="baseMetadataExtracter" />
    <bean id="extracter.Mail"          class="org.alfresco.repo.content.metadata.MailMetadataExtracter"          parent="baseMetadataExtracter" />
    <bean id="extracter.Html"          class="org.alfresco.repo.content.metadata.HtmlMetadataExtracter"          parent="baseMetadataExtracter" />

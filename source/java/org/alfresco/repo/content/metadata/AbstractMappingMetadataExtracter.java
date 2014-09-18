@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -44,6 +44,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.StreamAwareContentReaderProxy;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -2051,18 +2052,20 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
             return extractRaw(reader);
         }
         FutureTask<Map<String, Serializable>> task = null;
+        StreamAwareContentReaderProxy proxiedReader = null;
         try
         {
-            task = new FutureTask<Map<String,Serializable>>(new ExtractRawCallable(reader));
+            proxiedReader = new StreamAwareContentReaderProxy(reader);
+            task = new FutureTask<Map<String,Serializable>>(new ExtractRawCallable(proxiedReader));
             getExecutorService().execute(task);
             return task.get(limits.getTimeoutMs(), TimeUnit.MILLISECONDS);
         }
         catch (TimeoutException e)
         {
             task.cancel(true);
-            if (reader.isChannelOpen())
+            if (null != proxiedReader)
             {
-                reader.getReadableChannel().close();
+                proxiedReader.release();
             }
             throw e;
         }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -38,6 +38,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.patch.AlfrescoPoiPatchUtils;
 import org.apache.tika.embedder.Embedder;
 import org.apache.tika.extractor.DocumentSelector;
 import org.apache.tika.io.TemporaryResources;
@@ -96,7 +97,9 @@ public abstract class TikaPoweredMetadataExtracter
     private DateTimeFormatter tikaUTCDateFormater;
     private DateTimeFormatter tikaDateFormater;
     protected DocumentSelector documentSelector;
-    
+
+    private String extractorContext = null;
+
     /**
      * Builds up a list of supported mime types by merging
      * an explicit list with any that Tika also claims to support
@@ -127,23 +130,38 @@ public abstract class TikaPoweredMetadataExtracter
        }
        return types;
     }
-    
+
+    public TikaPoweredMetadataExtracter(String extractorContext, ArrayList<String> supportedMimeTypes)
+    {
+       this(extractorContext, new HashSet<String>(supportedMimeTypes), null);
+    }
+
     public TikaPoweredMetadataExtracter(ArrayList<String> supportedMimeTypes)
     {
-       this(new HashSet<String>(supportedMimeTypes), null);
+       this(null, new HashSet<String>(supportedMimeTypes), null);
     }
+
     public TikaPoweredMetadataExtracter(ArrayList<String> supportedMimeTypes, ArrayList<String> supportedEmbedMimeTypes)
     {
-       this(new HashSet<String>(supportedMimeTypes), new HashSet<String>(supportedEmbedMimeTypes));
+       this(null, new HashSet<String>(supportedMimeTypes), new HashSet<String>(supportedEmbedMimeTypes));
     }
+
     public TikaPoweredMetadataExtracter(HashSet<String> supportedMimeTypes)
     {
-       this(supportedMimeTypes, null);
+       this(null, supportedMimeTypes, null);
     }
+
     public TikaPoweredMetadataExtracter(HashSet<String> supportedMimeTypes, HashSet<String> supportedEmbedMimeTypes)
     {
+        this(null, supportedMimeTypes, supportedEmbedMimeTypes);
+    }
+
+    public TikaPoweredMetadataExtracter(String extractorContext, HashSet<String> supportedMimeTypes, HashSet<String> supportedEmbedMimeTypes)
+    {
         super(supportedMimeTypes, supportedEmbedMimeTypes);
-        
+
+        this.extractorContext = extractorContext;
+
         // TODO Once TIKA-451 is fixed this list will get nicer
         DateTimeParser[] parsersUTC = {
             DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss'Z'").getParser(),
@@ -160,7 +178,17 @@ public abstract class TikaPoweredMetadataExtracter
         this.tikaUTCDateFormater = new DateTimeFormatterBuilder().append(null, parsersUTC).toFormatter().withZone(DateTimeZone.UTC);
         this.tikaDateFormater = new DateTimeFormatterBuilder().append(null, parsers).toFormatter();
     }
-    
+
+    /**
+     * Gets context for the current implementation
+     * 
+     * @return {@link String} value which determines current context
+     */
+    protected String getExtractorContext()
+    {
+        return extractorContext;
+    }
+
     /**
      * Version which also tries the ISO-8601 formats (in order..),
      *  and similar formats, which Tika makes use of
@@ -316,6 +344,9 @@ public abstract class TikaPoweredMetadataExtracter
         Map<String, Serializable> rawProperties = newRawMap();
 
         InputStream is = null;
+
+        // Parse using properties of the context of current implementation
+        boolean contextPresented = null != extractorContext;
         try
         {
             is = getInputStream(reader); 
@@ -338,6 +369,12 @@ public abstract class TikaPoweredMetadataExtracter
             else 
             {
                handler = new NullContentHandler(); 
+            }
+
+            // Set POI properties context if available...
+            if (contextPresented)
+            {
+                AlfrescoPoiPatchUtils.setContext(extractorContext);
             }
 
             parser.parse(is, handler, metadata, context);
@@ -399,6 +436,12 @@ public abstract class TikaPoweredMetadataExtracter
         }
         finally
         {
+            // Reset POI properties context
+            if (contextPresented)
+            {
+                AlfrescoPoiPatchUtils.setContext(null);
+            }
+
             if (is != null)
             {
                 try { is.close(); } catch (IOException e) {}

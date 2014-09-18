@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -108,6 +108,7 @@ public class TikaAutoContentTransformer extends TikaPoweredContentTransformer
     public TikaAutoContentTransformer(TikaConfig tikaConfig)
     {
        super( buildMimeTypes(tikaConfig) );
+       setUseTimeoutThread(true);
     }
     
     /**

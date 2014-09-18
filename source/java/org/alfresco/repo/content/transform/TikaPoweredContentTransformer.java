@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,14 +32,12 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tika.extractor.DocumentSelector;
-import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
@@ -68,6 +66,14 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
             MimetypeMap.MIMETYPE_HTML,
             MimetypeMap.MIMETYPE_XHTML,
             MimetypeMap.MIMETYPE_XML});
+
+    private static final double MEGABYTES = 1024.0 * 1024.0;
+
+    private static final String USAGE_PATTERN = "Content transformation has completed:\n" +
+                                                "    Transformer: %s\n" +
+                                                "    Content Reader: %s\n" +
+                                                "    Memory (MB): Used/Total/Maximum - %f/%f/%f\n" +
+                                                "    Time Spent: %d ms";
 
     protected List<String> sourceMimeTypes;
     protected DocumentSelector documentSelector;
@@ -225,22 +231,24 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
           );
        }
 
-       // Prefer the File if available - it takes less memory to process
-       InputStream is;
-       if(reader instanceof FileContentReader) 
-       {
-          is = TikaInputStream.get( ((FileContentReader)reader).getFile(), metadata );
-       }
-       else
-       {
-          is = reader.getContentInputStream();
-       }
-       
+       InputStream is = reader.getContentInputStream();
+
+       long startTime = 0;
        try {
+          if (logger.isDebugEnabled())
+          {
+             startTime = System.currentTimeMillis();
+          }
+
           parser.parse(is, handler, metadata, context);
        } 
        finally
        {
+          if(logger.isDebugEnabled())
+          {
+             logger.debug(calculateMemoryAndTimeUsage(reader, startTime));
+          }
+
           if (is != null)
           {
               try { is.close(); } catch (Throwable e) {}
@@ -254,5 +262,14 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
               try { os.close(); } catch (Throwable e) {}
           }
       }
+    }
+
+    private String calculateMemoryAndTimeUsage(ContentReader reader, long startTime)
+    {
+        long endTime = System.currentTimeMillis();
+        Runtime runtime = Runtime.getRuntime();
+        long totalMemory = runtime.totalMemory();
+        return String.format(USAGE_PATTERN, this.getClass().getName(), reader, (totalMemory - runtime.freeMemory()) / MEGABYTES, totalMemory / MEGABYTES, runtime.maxMemory()
+                / MEGABYTES, (endTime - startTime));
     }
 }

@@ -42,6 +42,8 @@ import org.activiti.engine.ManagementService;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.delegate.event.ActivitiEventType;
+import org.activiti.engine.delegate.event.impl.ActivitiEventBuilder;
 import org.activiti.engine.form.StartFormData;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.history.HistoricProcessInstanceQuery;
@@ -85,8 +87,10 @@ import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.repo.workflow.WorkflowEngine;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.WorkflowNodeConverter;
+import org.alfresco.repo.workflow.WorkflowNotificationUtils;
 import org.alfresco.repo.workflow.WorkflowObjectFactory;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
+import org.alfresco.repo.workflow.activiti.variable.ScriptNodeVariableType;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -2455,6 +2459,14 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         return query;
     }
 
+    public void dispatchPackageUpdatedEvent(Object variableValue, String taskId, String executionId, String processInstanceId, String processDefinitionId)
+    {
+        runtimeService.dispatchEvent(
+           ActivitiEventBuilder.createVariableEvent(ActivitiEventType.VARIABLE_UPDATED, WorkflowNotificationUtils.PROP_PACKAGE,
+                            variableValue, new ScriptNodeVariableType(), 
+                            taskId, executionId, processInstanceId, processDefinitionId));
+    }
+    
     /**
      * @param nodeConverter the nodeConverter to set
      */

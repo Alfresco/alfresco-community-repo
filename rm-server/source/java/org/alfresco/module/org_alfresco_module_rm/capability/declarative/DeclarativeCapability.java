@@ -332,7 +332,6 @@ public class DeclarativeCapability extends AbstractCapability
 	            logger.debug("Capability " + getName() + " returned an Access Denied result during evaluation of node " + nodeRef.toString());
 	        }
 	        	
-	        result = evaluateImpl(nodeRef);
 	        map.put(key, result);
 	    }
         

@@ -4,16 +4,14 @@
 <!-- sample bean configuration to test cache configurations -->
 <beans>
    
-   <bean name="simpleCache1" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+   <bean name="objectCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
    
-   <bean name="backingCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+   <bean name="backingCache" class="org.alfresco.repo.cache.SerializingSimpleCache" />
    
    <bean name="transactionalCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache"><ref bean="backingCache" /></property>
       <property name="name"><value>transactionalCache</value></property>
       <property name="maxCacheSize"><value>200000</value></property>
    </bean>
-   
-   <bean name="objectCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
    
 </beans>

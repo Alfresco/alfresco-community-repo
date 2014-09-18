@@ -26,6 +26,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.cache.TransactionalCache.ValueHolder;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -53,10 +54,9 @@ public class CacheTest extends TestCase
                     ApplicationContextHelper.CONFIG_LOCATIONS[0]});
     
     private ServiceRegistry serviceRegistry;
-    private SimpleCache<String, Object> standaloneCache;
-    private SimpleCache<String, Object> backingCache;
-    private TransactionalCache<String, Object> transactionalCache;
     private SimpleCache<String, Object> objectCache;
+    private SimpleCache<String, ValueHolder<Object>> backingCache;
+    private TransactionalCache<String, Object> transactionalCache;
     
     @SuppressWarnings("unchecked")
     @Override
@@ -68,10 +68,9 @@ public class CacheTest extends TestCase
         }
         
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        standaloneCache = (SimpleCache<String, Object>) ctx.getBean("simpleCache1");
-        backingCache = (SimpleCache<String, Object>) ctx.getBean("backingCache");
-        transactionalCache = (TransactionalCache<String, Object>) ctx.getBean("transactionalCache");
         objectCache = (SimpleCache<String, Object>) ctx.getBean("objectCache");
+        backingCache = (SimpleCache<String, ValueHolder<Object>>) ctx.getBean("backingCache");
+        transactionalCache = (TransactionalCache<String, Object>) ctx.getBean("transactionalCache");
         
         // Make sure that the backing cache is empty
         backingCache.clear();
@@ -85,7 +84,7 @@ public class CacheTest extends TestCase
     public void tearDown()
     {
         serviceRegistry = null;
-        standaloneCache = null;
+        objectCache = null;
         backingCache = null;
         transactionalCache = null;
     }
@@ -94,30 +93,26 @@ public class CacheTest extends TestCase
     {
         assertNotNull(serviceRegistry);
         assertNotNull(backingCache);
-        assertNotNull(standaloneCache);
-        assertNotNull(transactionalCache);
         assertNotNull(objectCache);
+        assertNotNull(transactionalCache);
     }
     
     public void testObjectCache() throws Exception
     {
+        objectCache.clear();
+        
         objectCache.put("A", this);
         Object obj = objectCache.get("A");
         assertTrue("Object not cached properly", this == obj);
-    }
-    
-    public void testEhcacheAdaptors() throws Exception
-    {
-        backingCache.put("A", "AAA");
-        assertNull("Second cache should not have first's present", standaloneCache.get("A"));
+
+        objectCache.put("A", "AAA");
+        assertEquals("AAA", objectCache.get("A"));
         
-        assertEquals("AAA", backingCache.get("A"));
+        Collection<String> keys = objectCache.getKeys();
+        assertEquals("Cache didn't return correct number of keys", 1, keys.size());
         
-        Collection<String> keys = backingCache.getKeys();
-        assertEquals("Backing cache didn't return correct number of keys", 1, keys.size());
-        
-        backingCache.remove("A");
-        assertNull(backingCache.get("A"));
+        objectCache.remove("A");
+        assertNull(objectCache.get("A"));
     }
     
     public void testTransactionalCacheNoTxn() throws Exception
@@ -127,18 +122,18 @@ public class CacheTest extends TestCase
         // no transaction - do a put
         transactionalCache.put(key, value);
         // check that the value appears in the backing cache, backingCache
-        assertEquals("Backing cache not used for put when no transaction present", value, backingCache.get(key));
+        assertEquals("Backing cache not used for put when no transaction present", value, TransactionalCache.getSharedCacheValue(backingCache, key));
         
         // remove the value from the backing cache and check that it is removed from the transaction cache
         backingCache.remove(key);
         assertNull("Backing cache not used for removed when no transaction present", transactionalCache.get(key));
         
         // add value into backing cache
-        backingCache.put(key, value);
+        TransactionalCache.putSharedCacheValue(backingCache, key, value);
         // remove it from the transactional cache
         transactionalCache.remove(key);
         // check that it is gone from the backing cache
-        assertNull("Non-transactional remove didn't go to backing cache", backingCache.get(key));
+        assertNull("Non-transactional remove didn't go to backing cache", TransactionalCache.getSharedCacheValue(backingCache, key));
     }
     
     private static final String NEW_GLOBAL_ONE = "new_global_one";
@@ -153,7 +148,7 @@ public class CacheTest extends TestCase
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
 
         // Add items to the global cache
-        backingCache.put(NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
         
         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
@@ -195,9 +190,9 @@ public class CacheTest extends TestCase
     public void testTransactionalCacheWithSingleTxn() throws Throwable
     {
         // add item to global cache
-        backingCache.put(NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
-        backingCache.put(NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
-        backingCache.put(NEW_GLOBAL_THREE, NEW_GLOBAL_THREE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_THREE, NEW_GLOBAL_THREE);
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -215,7 +210,7 @@ public class CacheTest extends TestCase
             // read 2 from the cache
             assertEquals("Item not read from backing cache", NEW_GLOBAL_TWO, transactionalCache.get(NEW_GLOBAL_TWO));
             // Change the backing cache
-            backingCache.put(NEW_GLOBAL_TWO, NEW_GLOBAL_TWO + "-updated");
+            TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO + "-updated");
             // Ensure read-committed
             assertEquals("Read-committed not preserved", NEW_GLOBAL_TWO, transactionalCache.get(NEW_GLOBAL_TWO));
             
@@ -254,8 +249,8 @@ public class CacheTest extends TestCase
             
             // check that backing cache was updated with the in-transaction changes
             assertFalse("Item was not removed from backing cache", backingCache.contains(NEW_GLOBAL_ONE));
-            assertNull("Item could still be fetched from backing cache", backingCache.get(NEW_GLOBAL_ONE));
-            assertEquals("Item not updated in backing cache", "XXX", backingCache.get(UPDATE_TXN_THREE));
+            assertNull("Item could still be fetched from backing cache", TransactionalCache.getSharedCacheValue(backingCache, NEW_GLOBAL_ONE));
+            assertEquals("Item not updated in backing cache", "XXX", TransactionalCache.getSharedCacheValue(backingCache, UPDATE_TXN_THREE));
             
             // Check that the transactional cache serves get requests
             assertEquals("Transactional cache must serve post-commit get requests", "XXX",
@@ -342,9 +337,9 @@ public class CacheTest extends TestCase
     public void testTransactionalCacheDisableSharedCaches() throws Throwable
     {
         // add item to global cache
-        backingCache.put(NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
-        backingCache.put(NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
-        backingCache.put(NEW_GLOBAL_THREE, NEW_GLOBAL_THREE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_THREE, NEW_GLOBAL_THREE);
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -432,7 +427,7 @@ public class CacheTest extends TestCase
             int count = (int) Math.pow(10D, (double)i);
             
             // test standalone
-            long timePlain = runPerformanceTestOnCache(standaloneCache, count);
+            long timePlain = runPerformanceTestOnCache(objectCache, count);
             
             // do transactional cache in a transaction
             TransactionService transactionService = serviceRegistry.getTransactionService();
@@ -524,7 +519,7 @@ public class CacheTest extends TestCase
 
         txn.begin();
         
-        backingCache.put("A", null);
+        TransactionalCache.putSharedCacheValue(backingCache, "A", null);
         transactionalCache.put("A", "AAA");
         
         try
@@ -581,8 +576,14 @@ public class CacheTest extends TestCase
             RetryingTransactionCallback<Object> callback,
             boolean readOnly,
             String key,
-            Object expectedValue) throws Throwable
+            Object expectedValue,
+            boolean mustContainKey) throws Throwable
     {
+        if (expectedValue != null && !mustContainKey)
+        {
+            throw new IllegalArgumentException("Why have a value when the key should not be there?");
+        }
+        
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction(readOnly);
         try
@@ -595,8 +596,9 @@ public class CacheTest extends TestCase
         {
             try { txn.rollback(); } catch (Throwable ee) {}
         }
-        Object actualValue = backingCache.get(key);
+        Object actualValue = TransactionalCache.getSharedCacheValue(backingCache, key);
         assertEquals("Backing cache value was not correct", expectedValue, actualValue);
+        assertEquals("Backing cache contains(key): ", mustContainKey, backingCache.contains(key));
         
         // Clear the backing cache to ensure that subsequent tests don't run into existing data
         backingCache.clear();
@@ -610,8 +612,8 @@ public class CacheTest extends TestCase
     public void testValueLockingInTxn() throws Exception
     {
         // add item to global cache
-        backingCache.put(DEFINITIVE_TWO, "initial_two");
-        backingCache.put(DEFINITIVE_THREE, "initial_three");
+        TransactionalCache.putSharedCacheValue(backingCache, DEFINITIVE_TWO, "initial_two");
+        TransactionalCache.putSharedCacheValue(backingCache, DEFINITIVE_THREE, "initial_three");
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -668,9 +670,9 @@ public class CacheTest extends TestCase
             txn.commit();
 
             // Check post-commit values
-            assertEquals("Definitive change not written through.", DEFINITIVE_ONE, backingCache.get(DEFINITIVE_ONE));
-            assertEquals("Definitive change not written through.", DEFINITIVE_TWO, backingCache.get(DEFINITIVE_TWO));
-            assertEquals("Definitive change not written through.", null, backingCache.get(DEFINITIVE_THREE));
+            assertEquals("Definitive change not written through.", DEFINITIVE_ONE, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_ONE));
+            assertEquals("Definitive change not written through.", DEFINITIVE_TWO, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_TWO));
+            assertEquals("Definitive change not written through.", null, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_THREE));
         }
         finally
         {
@@ -696,25 +698,25 @@ public class CacheTest extends TestCase
             public Object execute() throws Throwable
             {
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
-                backingCache.put(COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);         // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);  // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);   // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);  // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);   // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);  // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);   // Immutable: Assume backing cache is correct
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);  // Mutable: Shared cache value checked
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);   // Mutable: Shared cache value checked
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);  // Mutable: Shared cache value checked
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);   // Mutable: Shared cache value checked
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);  // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);   // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);  // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);   // Immutable: Assume backing cache is correct
     }
     /**
      * <ul>
@@ -730,25 +732,59 @@ public class CacheTest extends TestCase
             public Object execute() throws Throwable
             {
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Mutable: Object handle is match
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Mutable: Object handle is match
+        executeAndCheck(callback, false, COMMON_KEY, null, false);         // Mutable: No equality check
+        executeAndCheck(callback, true, COMMON_KEY, null, false);          // Mutable: No equality check
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Immutable: Object handle is match
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Immutable: Object handle is match
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A, true);  // Immutable: Assumed to be same
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A, true);   // Immutable: Assumed to be same
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Mutable: Object handle is match
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Mutable: Object handle is match
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A, true);  // Mutable: Equality check done
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A, true);   // Mutable: Equality check done
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Immutable: Object handle is match
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Immutable: Object handle is match
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A, true);  // Immutable: Assumed to be same
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A, true);   // Immutable: Assumed to be same
+    }
+    /**
+     * <ul>
+     *   <li>Add to the transaction cache</li>
+     *   <li>Add <tt>null</tt> to the backing cache</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentAddAgainstAddNull()throws Throwable
+    {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null);
+                return null;
+            }
+        };
+        transactionalCache.setAllowEqualsChecks(false);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null, false);          // Mutable: No equality check
+        executeAndCheck(callback, true, COMMON_KEY, null, false);           // Mutable: No equality check
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null, true);           // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, null, true);            // Immutable: Assume backing cache is correct
+        
+        transactionalCache.setAllowEqualsChecks(true);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null, false);          // Mutable: Equality check done
+        executeAndCheck(callback, true, COMMON_KEY, null, false);           // Mutable: Equality check done
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null, true);           // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, null, true);            // Immutable: Assume backing cache is correct
     }
     /**
      * <ul>
@@ -770,19 +806,19 @@ public class CacheTest extends TestCase
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Mutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Mutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A, true);  // Mutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A, true);   // Mutable: Add back to backing cache
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A, true);  // Immutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A, true);   // Immutable: Add back to backing cache
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Mutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Mutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A, true);  // Mutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A, true);   // Mutable: Add back to backing cache
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A);  // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A);   // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_A, true);  // Immutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_A, true);   // Immutable: Add back to backing cache
     }
     /**
      * <ul>
@@ -798,27 +834,27 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
-                backingCache.put(COMMON_KEY, VALUE_TWO_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_TWO_A);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);         // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);         // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);          // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_TWO_A);  // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_TWO_A);   // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_TWO_A, true);  // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_TWO_A, true);   // Immutable: Assume backing cache is correct
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);         // Mutable: Shared cache value checked failed
-        executeAndCheck(callback, true, COMMON_KEY, null);          // Mutable: Shared cache value checked failed
+        executeAndCheck(callback, false, COMMON_KEY, null, false);         // Mutable: Shared cache value checked failed
+        executeAndCheck(callback, true, COMMON_KEY, null, false);          // Mutable: Shared cache value checked failed
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_TWO_A);  // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_TWO_A);   // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_TWO_A, true);  // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_TWO_A, true);   // Immutable: Assume backing cache is correct
     }
     /**
      * <ul>
@@ -834,27 +870,27 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
-                backingCache.put(COMMON_KEY, null);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);         // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);           // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);  // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);   // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, true);           // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, null, true);            // Immutable: Assume backing cache is correct
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);         // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);           // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);  // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);   // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, true);           // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, null, true);            // Immutable: Assume backing cache is correct
     }
     /**
      * <ul>
@@ -870,27 +906,63 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.put(COMMON_KEY, null);
-                backingCache.put(COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);         // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);           // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);  // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);   // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);    // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);     // Immutable: Assume backing cache is correct
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);         // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);           // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);  // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);   // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);    // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);     // Immutable: Assume backing cache is correct
+    }
+    /**
+     * <ul>
+     *   <li>Add to the backing cache</li>
+     *   <li>Update the transactional cache with a <tt>null</tt> value</li>
+     *   <li>Update the backing cache with a <tt>null</tt> value</li>
+     *   <li>Commit</li>
+     * </ul>
+     */
+    public void testConcurrentUpdateNullAgainstUpdateNull()throws Throwable
+    {
+        RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                transactionalCache.put(COMMON_KEY, null);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null);
+                return null;
+            }
+        };
+        transactionalCache.setAllowEqualsChecks(false);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null, false);          // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);           // Mutable: Pessimistic removal
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null, true);           // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, null, true);            // Immutable: Assume backing cache is correct
+
+        transactionalCache.setAllowEqualsChecks(true);
+        transactionalCache.setMutable(true);
+        executeAndCheck(callback, false, COMMON_KEY, null, true);           // Mutable: Equality check
+        executeAndCheck(callback, true, COMMON_KEY, null, true);            // Mutable: Equality check
+        transactionalCache.setMutable(false);
+        executeAndCheck(callback, false, COMMON_KEY, null, true);           // Immutable: Equality check
+        executeAndCheck(callback, true, COMMON_KEY, null, true);            // Immutable: Equality check
     }
     /**
      * <ul>
@@ -906,7 +978,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
                 backingCache.remove(COMMON_KEY);
                 return null;
@@ -914,19 +986,19 @@ public class CacheTest extends TestCase
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);      // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);       // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);      // Immutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);       // Immutable: Add back to backing cache
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);      // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);       // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);      // Immutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);       // Immutable: Add back to backing cache
     }
     /**
      * <ul>
@@ -942,7 +1014,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
                 backingCache.clear();
                 return null;
@@ -950,19 +1022,19 @@ public class CacheTest extends TestCase
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);      // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);       // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);      // Immutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);       // Immutable: Add back to backing cache
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);      // Immutable: Add back to backing cache
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);       // Immutable: Add back to backing cache
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);      // Immutable: Add back to backing cache
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);       // Immutable: Add back to backing cache
     }
     /**
      * <ul>
@@ -980,25 +1052,25 @@ public class CacheTest extends TestCase
             {
                 backingCache.remove(COMMON_KEY);
                 transactionalCache.remove(COMMON_KEY);
-                backingCache.put(COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Remove from backing cache
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Remove from backing cache
     }
     /**
      * <ul>
@@ -1016,25 +1088,25 @@ public class CacheTest extends TestCase
             {
                 backingCache.remove(COMMON_KEY);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
-                backingCache.put(COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);      // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);       // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);      // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);       // Immutable: Assume backing cache is correct
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);      // Mutable: Shared cache value checked
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);       // Mutable: Shared cache value checked
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);      // Mutable: Shared cache value checked
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);       // Mutable: Shared cache value checked
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B);      // Immutable: Assume backing cache is correct
-        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B);       // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, false, COMMON_KEY, VALUE_ONE_B, true);      // Immutable: Assume backing cache is correct
+        executeAndCheck(callback, true, COMMON_KEY, VALUE_ONE_B, true);       // Immutable: Assume backing cache is correct
     }
     /**
      * <ul>
@@ -1050,27 +1122,27 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.remove(COMMON_KEY);
-                backingCache.put(COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
                 return null;
             }
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Remove from backing cache
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Pessimistic removal
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Pessimistic removal
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Pessimistic removal
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Pessimistic removal
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Remove from backing cache
     }
     /**
      * <ul>
@@ -1086,7 +1158,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.remove(COMMON_KEY);
                 backingCache.remove(COMMON_KEY);
                 return null;
@@ -1094,19 +1166,19 @@ public class CacheTest extends TestCase
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Remove from backing cache
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Remove from backing cache
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Remove from backing cache
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Remove from backing cache
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Remove from backing cache
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Remove from backing cache
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Remove from backing cache
     }
     /**
      * <ul>
@@ -1122,7 +1194,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                backingCache.put(COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
                 transactionalCache.remove(COMMON_KEY);
                 backingCache.clear();
                 return null;
@@ -1130,18 +1202,18 @@ public class CacheTest extends TestCase
         };
         transactionalCache.setAllowEqualsChecks(false);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Nothing to do
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Nothing to do
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Nothing to do
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Nothing to do
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Nothing to do
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Nothing to do
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Nothing to do
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Nothing to do
 
         transactionalCache.setAllowEqualsChecks(true);
         transactionalCache.setMutable(true);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Mutable: Nothing to do
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Mutable: Nothing to do
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Mutable: Nothing to do
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Mutable: Nothing to do
         transactionalCache.setMutable(false);
-        executeAndCheck(callback, false, COMMON_KEY, null);             // Immutable: Nothing to do
-        executeAndCheck(callback, true, COMMON_KEY, null);              // Immutable: Nothing to do
+        executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Nothing to do
+        executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Nothing to do
     }
 }

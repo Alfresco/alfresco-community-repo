@@ -42,6 +42,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.cache.TransactionalCache;
+import org.alfresco.repo.cache.TransactionalCache.ValueHolder;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeEntity;
@@ -128,9 +130,9 @@ public class NodeServiceTest
     private static TransactionService txnService;
     private static PolicyComponent policyComponent;
     private static CannedQueryDAO cannedQueryDAOForTesting;
-    private static SimpleCache<Serializable, Serializable> nodesCache;
-    private static SimpleCache<Serializable, Serializable> propsCache;
-    private static SimpleCache<Serializable, Serializable> aspectsCache;
+    private static SimpleCache<Serializable, ValueHolder<Serializable>> nodesCache;
+    private static SimpleCache<Serializable, ValueHolder<Serializable>> propsCache;
+    private static SimpleCache<Serializable, ValueHolder<Serializable>> aspectsCache;
     
     private static Long deletedTypeQNameId;
     
@@ -151,9 +153,9 @@ public class NodeServiceTest
         cannedQueryDAOForTesting = (CannedQueryDAO) APP_CONTEXT_INIT.getApplicationContext().getBean("cannedQueryDAOForTesting");
         
         // Get the caches for later testing
-        nodesCache = (SimpleCache<Serializable, Serializable>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.nodesSharedCache");
-        propsCache = (SimpleCache<Serializable, Serializable>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.propertiesSharedCache");
-        aspectsCache = (SimpleCache<Serializable, Serializable>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.aspectsSharedCache");
+        nodesCache = (SimpleCache<Serializable, ValueHolder<Serializable>>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.nodesSharedCache");
+        propsCache = (SimpleCache<Serializable, ValueHolder<Serializable>>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.propertiesSharedCache");
+        aspectsCache = (SimpleCache<Serializable, ValueHolder<Serializable>>) APP_CONTEXT_INIT.getApplicationContext().getBean("node.aspectsSharedCache");
         
         // Clear the caches to remove fluff
         nodesCache.clear();
@@ -812,7 +814,7 @@ public class NodeServiceTest
     /**
      * Looks for a key that contains the toString() of the value
      */
-    private Object findCacheValue(SimpleCache<Serializable, Serializable> cache, Serializable key)
+    private Object findCacheValue(SimpleCache<Serializable, ValueHolder<Serializable>> cache, Serializable key)
     {
         Collection<Serializable> keys = cache.getKeys();
         for (Serializable keyInCache : keys)
@@ -821,7 +823,7 @@ public class NodeServiceTest
             String keyStr = key.toString();
             if (keyInCacheStr.endsWith(keyStr))
             {
-                Object value = cache.get(keyInCache);
+                Object value = TransactionalCache.getSharedCacheValue(cache, keyInCache);
                 return value;
             }
         }

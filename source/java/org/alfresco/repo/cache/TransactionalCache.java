@@ -83,7 +83,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     /** enable/disable write through to the shared cache */
     private boolean disableSharedCache;
     /** the shared cache that will get updated after commits */
-    private SimpleCache<Serializable, Object> sharedCache;
+    private SimpleCache<Serializable, ValueHolder<V>> sharedCache;
     /** can the cached values be modified */
     private boolean isMutable;
     /** can values be compared using full equality checking */
@@ -145,7 +145,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * 
      * @param sharedCache           underlying cache shared by transactions
      */
-    public void setSharedCache(SimpleCache<Serializable, Object> sharedCache)
+    public void setSharedCache(SimpleCache<Serializable, ValueHolder<V>> sharedCache)
     {
         this.sharedCache = sharedCache;
     }
@@ -406,15 +406,46 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
     
     /**
-     * Fetches a value from the shared cache.
+     * Fetches a value from the shared cache.  If values were wrapped,
+     * then they will be unwrapped before being returned.  If code requires
+     * direct access to the wrapper object as well, then this call should not
+     * be used.
      * 
      * @param key           the key
      * @return              Returns the value or <tt>null</tt>
      */
     @SuppressWarnings("unchecked")
-    private V getSharedCacheValue(Serializable key)
+    public static <KEY extends Serializable, VAL> VAL getSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key)
     {
-        return (V) sharedCache.get(key);
+        Object possibleWrapper = sharedCache.get(key);
+        if (possibleWrapper == null)
+        {
+            return null;
+        }
+        else if (possibleWrapper instanceof ValueHolder)
+        {
+            ValueHolder<VAL> wrapper = (ValueHolder<VAL>) possibleWrapper;
+            return wrapper.getValue();
+        }
+        else
+        {
+            throw new IllegalStateException("All entries for TransactionalCache must be put using TransactionalCache.putSharedCacheValue.");
+        }
+    }
+    
+    /**
+     * Values written to the backing cache need proper wrapping and unwrapping
+     * 
+     * @param sharedCache           the cache to operate on
+     * @param key                   the key
+     * @param value                 the value to wrap
+     * 
+     * @since 4.2.3
+     */
+    public static <KEY extends Serializable, VAL> void putSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key, VAL value)
+    {
+        ValueHolder<VAL> wrapper = new ValueHolder<VAL>(value);
+        sharedCache.put(key, wrapper);
     }
     
     /**
@@ -551,7 +582,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 {
                     // There is no in-txn entry for the key
                     // Use the value direct from the shared cache
-                    V value = getSharedCacheValue(key);
+                    V value = TransactionalCache.getSharedCacheValue(sharedCache, key);
                     bucket = new ReadCacheBucket<V>(value);
                     txnData.updatedItemsCache.put(key, bucket);
                     return value;
@@ -561,7 +592,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         // no value found - must we ignore the shared cache?
         if (!ignoreSharedCache)
         {
-            V value = getSharedCacheValue(key);
+            V value = TransactionalCache.getSharedCacheValue(sharedCache, key);
             // go to the shared cache
             if (isDebugEnabled)
             {
@@ -590,7 +621,6 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * Where a transaction is present, a cache of updated items is lazily added to the
      * thread and the <tt>Object</tt> put onto that. 
      */
-    @SuppressWarnings("unchecked")
     public void put(K keyIn, V value)
     {
         final Serializable key = getTenantAwareCacheKey(keyIn);
@@ -599,7 +629,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         if (AlfrescoTransactionSupport.getTransactionId() == null)  // not in transaction
         {
             // no transaction
-            sharedCache.put(key, value);
+            TransactionalCache.putSharedCacheValue(sharedCache, key, value);
             // done
             if (isDebugEnabled)
             {
@@ -652,9 +682,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                         txnData.haveIssuedFullWarning = true;
                     }
                 }
-                Object existingValueObj = txnData.noSharedCacheRead ? null : sharedCache.get(key);
+                ValueHolder<V> existingValueHolder = txnData.noSharedCacheRead ? null : sharedCache.get(key);
                 CacheBucket<V> bucket = null;
-                if (existingValueObj == null)
+                if (existingValueHolder == null)
                 {
                     // ALF-5134: Performance of Alfresco cluster less than performance of single node
                     // The 'null' marker that used to be inserted also triggered an update in the afterCommit
@@ -667,7 +697,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 else
                 {
                     // Record the existing value as is
-                    bucket = new UpdateCacheBucket<V>((V)existingValueObj, value);
+                    bucket = new UpdateCacheBucket<V>(existingValueHolder, value);
                 }
                 txnData.updatedItemsCache.put(key, bucket);
                 // remove the item from the removed cache, if present
@@ -1045,7 +1075,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
          * @param key               the key that the bucket was stored against
          */
         public void doPreCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly);
         /**
@@ -1055,7 +1085,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
          * @param key               the key that the bucket was stored against
          */
         public void doPostCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly);
     }
@@ -1079,21 +1109,21 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             return value;
         }
         public void doPreCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
         }
         public void doPostCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
-            Object sharedObj = sharedCache.get(key);
-            if (sharedObj == null)
+            ValueHolder<BV> sharedObjValueHolder = sharedCache.get(key);
+            if (sharedObjValueHolder == null)
             {
                 // Nothing has changed, write it through
-                sharedCache.put(key, value);
+                TransactionalCache.putSharedCacheValue(sharedCache, key, value);
             }
             else if (!mutable)
             {
@@ -1101,15 +1131,9 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 // The assumption is that the value will be correct because the values are immutable
                 // Don't write it unnecessarily.
             }
-            else if (sharedObj == value)
+            else if (allowEqualsCheck && EqualsHelper.nullSafeEquals(value, sharedObjValueHolder.getValue()))
             {
-                // Someone else put exactly the same value into the cache
-                // Don't write it unnecessarily.
-            }
-            else if (allowEqualsCheck && EqualsHelper.nullSafeEquals(value, sharedObj))
-            {
-                // Someone else added a value but we have validated that it is the same
-                // as the new one that we where going to add.
+                // The value we want to write is the same as the one in the shared cache.
                 // Don't write it unnecessarily.
             }
             else
@@ -1131,10 +1155,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         private static final long serialVersionUID = 7885689778259779578L;
         
         private final BV value;
-        private final BV originalValue;
-        public UpdateCacheBucket(BV originalValue, BV value)
+        private final ValueHolder<BV> originalValueHolder;
+        public UpdateCacheBucket(ValueHolder<BV> originalValueHolder, BV value)
         {
-            this.originalValue = originalValue;
+            this.originalValueHolder = originalValueHolder;
             this.value = value;
         }
         public BV getValue()
@@ -1142,47 +1166,45 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             return value;
         }
         public void doPreCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
         }
         public void doPostCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
-            Object sharedObj = sharedCache.get(key);
-            if (sharedObj == null)
+            ValueHolder<BV> sharedObjValueHolder = sharedCache.get(key);
+            if (sharedObjValueHolder == null)
             {
                 // Someone removed the value
                 if (!mutable)
                 {
                     // We can assume that our value is correct because it's immutable
-                    sharedCache.put(key, value);
+                    TransactionalCache.putSharedCacheValue(sharedCache, key, value);
                 }
                 else
                 {
-                    // The value is mutable, so we must behave pessimistically
+                    // The value is mutable, so we must behave pessimistically i.e. leave the shared cache empty
                 }
             }
             else if (!mutable)
             {
-                // Someone else has already updated the value.
-                // This is not normally seen for immutable values.  The assumption is that the values
-                // are equal.
+                // We assume the configuration is correct and therefore, that we do not need to compare
+                // the cached value with the updated value.  This applies to null as well.
+            }
+            else if (allowEqualsCheck && EqualsHelper.nullSafeEquals(value, sharedObjValueHolder.getValue()))
+            {
+                // The value we want to write is the same as the one in the shared cache.
                 // Don't write it unnecessarily.
             }
-            else if (sharedObj == originalValue)
+            else if (EqualsHelper.nullSafeEquals(originalValueHolder, sharedObjValueHolder))
             {
-                // Nothing has changed, write it through
-                sharedCache.put(key, value);
-            }
-            else if (allowEqualsCheck && EqualsHelper.nullSafeEquals(value, sharedObj))
-            {
-                // Someone else updated the value but we have validated that it is the same
-                // as the one that we where going to update.
-                // Don't write it unnecessarily.
+                // The value in the cache did not change from what we observed before.
+                // Update the value.
+                TransactionalCache.putSharedCacheValue(sharedCache, key, value);
             }
             else
             {
@@ -1211,13 +1233,13 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             return value;
         }
         public void doPreCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
         }
         public void doPostCommit(
-                SimpleCache<Serializable, Object> sharedCache,
+                SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
                 boolean mutable, boolean allowEqualsCheck, boolean readOnly)
         {
@@ -1336,6 +1358,59 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public int hashCode()
         {
             return hashCode;
+        }
+    }
+
+    /**
+     * A wrapper object to carry object values, but forcing a straight equality check
+     * based on a random integer only.  This is used in cases where cache values do NOT
+     * have an adequate equals method and we expect serialization of objects.
+     * 
+     * @author Derek Hulley
+     * @since 4.2.4
+     */
+    public static final class ValueHolder<V2> implements Serializable
+    {
+        private static final long serialVersionUID = -3462098329153772713L;
+        
+        /**
+         * A random, positive integer since we only have to
+         * prevent short-term duplication between values with the same keys.
+         */
+        private final int rand;
+        private final V2 value;
+        private ValueHolder(V2 value)
+        {
+            
+            this.rand = (int) (Math.random() * Integer.MAX_VALUE);
+            this.value = value;
+        }
+        public final V2 getValue()
+        {
+            return value;
+        }
+        @Override
+        public final int hashCode()
+        {
+            return rand;
+        }
+        @SuppressWarnings("rawtypes")
+        @Override
+        public final boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            ValueHolder other = (ValueHolder) obj;
+            return this.rand == other.rand;
+        }
+        @Override
+        public final String toString()
+        {
+            return "ValueHolder [value=" + value + "]";
         }
     }
 }

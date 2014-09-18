@@ -236,7 +236,8 @@ public class AlfrescoImapHostManager implements ImapHostManager
 
         AlfrescoImapFolder result = folderCache.get(folderPath);
 
-        return result;
+        // if folder isn't in cache then add it via registerMailBox method
+        return result != null ? result : registerMailBox(imapService.getOrCreateMailbox(alfrescoUser, mailboxName, true, false));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -254,7 +254,13 @@ public class BlogServiceImpl implements BlogService
         {
             // Comment from the old JavaScript:
             // disable permission inheritance. The result is that only the creator will have access to the draft
-            permissionService.setInheritParentPermissions(postNode.getChildRef(), false);
+            NodeRef draft = postNode.getChildRef();
+            permissionService.setInheritParentPermissions(draft, false);
+            
+            // MNT-12082: give permissions to the post creator. He should be able to comment in his post's
+            // forumFolder and commentsFolder, where owner is System user
+            String creator = (String) nodeService.getProperty(draft, ContentModel.PROP_CREATOR);
+            permissionService.setPermission(draft, creator, permissionService.getAllPermission(), true);
         }
         else
         {
@@ -474,6 +480,10 @@ public class BlogServiceImpl implements BlogService
         // this
         if (!permissionService.getInheritParentPermissions(blogPostNode))
         {
+            // MNT-12082 
+            String creator = (String) nodeService.getProperty(blogPostNode, ContentModel.PROP_CREATOR);
+            permissionService.deletePermission(blogPostNode, creator, permissionService.getAllPermission());
+            
             permissionService.setInheritParentPermissions(blogPostNode, true);
         }
 

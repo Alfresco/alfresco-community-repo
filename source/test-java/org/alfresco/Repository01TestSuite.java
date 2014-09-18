@@ -225,6 +225,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.node.archive.LargeArchiveAndRestoreTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.node.cleanup.TransactionCleanupTest.class));
         suite.addTestSuite(org.alfresco.repo.node.db.DbNodeServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.node.db.DbNodeServiceImplPropagationTest.class);
     }
     
     static void tests36(TestSuite suite) // Fails with previous tests

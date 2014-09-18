@@ -2913,7 +2913,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
 
     /**
      * Propagate, if necessary, a <b>cm:modified</b> timestamp change to the parent of the
-     * given association.  The parent node has to be <b>cm:auditable</b> and the association
+     * given association, along with the <b>cm:modifier</b> of who changed it.  
+     * The parent node has to be <b>cm:auditable</b> and the association
      * has to be marked for propagation as well.
      * 
      * @param assocRef          the association to propagate along
@@ -2928,44 +2929,79 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         AssociationDefinition assocDef = dictionaryService.getAssociation(assocRef.getTypeQName());
         if (assocDef == null || !assocDef.isChild())
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Not propagating cm:auditable for unknown association type " + assocRef.getTypeQName());
+            }
             return;
         }
         ChildAssociationDefinition childAssocDef = (ChildAssociationDefinition) assocDef;
         if (!childAssocDef.getPropagateTimestamps())
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Not propagating cm:auditable for association type " + childAssocDef.getName());
+            }
             return;
         }
+        
         // The dictionary says propagate.  Now get the parent node and prompt the touch.
         NodeRef parentNodeRef = assocRef.getParentRef();
         
         // Do not propagate if the cm:auditable behaviour is off
         if (!policyBehaviourFilter.isEnabled(parentNodeRef, ContentModel.ASPECT_AUDITABLE))
         {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Not propagating cm:auditable for non-auditable parent on " + assocRef);
+            }
             return;
         }
         
         Pair<Long, NodeRef> parentNodePair = getNodePairNotNull(parentNodeRef);
         Long parentNodeId = parentNodePair.getFirst();
+        
+        // Get the ID of the child that triggered this update
+        NodeRef childNodeRef = assocRef.getChildRef();
+        Pair<Long, NodeRef> childNodePair = getNodePairNotNull(childNodeRef);
+        Long childNodeId = childNodePair.getFirst();
+        
         // If we have already modified a particular parent node in the current txn,
         // it is not necessary to start a new transaction to tweak the cm:modified date.
         // But if the parent node was NOT touched, then doing so in this transaction would
         // create excessive concurrency and retries; in latter case we defer to a small,
         // post-commit isolated transaction.
-        if (TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_PRE).contains(parentNodeId))
+        if (TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_PRE).containsKey(parentNodeId))
         {
             // It is already registered in the current transaction.
+            // Modified By will be taken from the previous node to touch it
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Update of cm:auditable already requested for " + parentNodePair);
+            }
             return;
         }
+        
         if (nodeDAO.isInCurrentTxn(parentNodeId))
         {
             // The parent and child are in the same transaction
-            TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_PRE).add(parentNodeId);
+            TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_PRE).put(parentNodeId, childNodeId);
             // Make sure that it is not processed after the transaction
-            TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_POST).remove(parentNodeId);
+            TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_POST).remove(parentNodeId);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Performing in-transaction cm:auditable update for " + parentNodePair + " from " + childNodePair);
+            }
         }
         else
         {
-            TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_POST).add(parentNodeId);
+            TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_POST).put(parentNodeId, childNodeId);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Requesting later cm:auditable update for " + parentNodePair + " from " + childNodePair);
+            }
         }
         
         // Bind a listener for post-transaction manipulation
@@ -2976,7 +3012,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     private static final String KEY_AUDITABLE_PROPAGATION_POST = "node.auditable.propagation.post";
     private AuditableTransactionListener auditableTransactionListener = new AuditableTransactionListener();
     /**
-     * Wrapper to set the <b>cm:modified</b> time on individual nodes.
+     * Wrapper to set the <b>cm:modified</b> time and <b>cm:modifier</b> on 
+     * individual nodes.
      * 
      * @author Derek Hulley
      * @since 3.4.6
@@ -2992,7 +3029,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 throw new IllegalStateException("Attempting to modify parent cm:modified in read-only txn.");
             }
             
-            Set<Long> parentNodeIds = TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_PRE);
+            Map<Long,Long> parentNodeIds = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_PRE);
             if (parentNodeIds.size() == 0)
             {
                 return;
@@ -3005,7 +3042,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         @Override
         public void afterCommit()
         {
-            Set<Long> parentNodeIds = TransactionalResourceHelper.getSet(KEY_AUDITABLE_PROPAGATION_POST);
+            Map<Long,Long> parentNodeIds = TransactionalResourceHelper.getMap(KEY_AUDITABLE_PROPAGATION_POST);
             if (parentNodeIds.size() == 0)
             {
                 return;
@@ -3015,16 +3052,16 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
 
         /**
-         * @param parentNodeIds         the parent node IDs that need to be touched for <b>cm:modified</b>
+         * @param parentNodeIds         the parent node IDs that need to be touched for <b>cm:modified</b>, and the updating child node from which to get the <b>cm:modifier</b> from
          * @param modifiedDate          the date to set
          * @param useCurrentTxn         <tt>true</tt> to use the current transaction
          */
-        private void process(final Set<Long> parentNodeIds, Date modifiedDate, boolean useCurrentTxn)
+        private void process(final Map<Long,Long> parentNodeIds, Date modifiedDate, boolean useCurrentTxn)
         {
             // Walk through the IDs
-            for (Long parentNodeId: parentNodeIds)
+            for (Long parentNodeId: parentNodeIds.keySet())
             {
-                processSingle(parentNodeId, modifiedDate, useCurrentTxn);
+                processSingle(parentNodeId, parentNodeIds.get(parentNodeId), modifiedDate, useCurrentTxn);
             }
         }
         
@@ -3032,10 +3069,11 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
          * Touch a single node in a new, writable txn
          * 
          * @param parentNodeId          the parent node to touch
+         * @param childNodeId           the child node from which to get the <b>cm:modifier</b> from
          * @param modifiedDate          the date to set
          * @param useCurrentTxn         <tt>true</tt> to use the current transaction
          */
-        private void processSingle(final Long parentNodeId, final Date modifiedDate, boolean useCurrentTxn)
+        private void processSingle(final Long parentNodeId, final Long childNodeId, final Date modifiedDate, boolean useCurrentTxn)
         {
             RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
             txnHelper.setMaxRetries(1);
@@ -3044,6 +3082,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                 @Override
                 public Void execute() throws Throwable
                 {
+                    // Get the details of the parent, and check it's valid to update
                     Pair<Long, NodeRef> parentNodePair = nodeDAO.getNodePair(parentNodeId);
                     if (parentNodePair == null)
                     {
@@ -3055,12 +3094,47 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
                     }
                     NodeRef parentNodeRef = parentNodePair.getSecond();
                     
+                    // Fetch the modification details from the child, as best we can
+                    Pair<Long, NodeRef> childNodePair = nodeDAO.getNodePair(childNodeId);
+                    String modifiedByToPropagate = null;
+                    Date modifiedDateToPropagate = modifiedDate;
+                    if (childNodePair == null)
+                    {
+                        // Child has gone away, can't fetch details from children's properties
+                        modifiedByToPropagate = AuthenticationUtil.getFullyAuthenticatedUser();
+                    }
+                    else if (!nodeDAO.hasNodeAspect(childNodeId, ContentModel.ASPECT_AUDITABLE))
+                    {
+                        // Child isn't auditable, can't fetch details
+                        return null;
+                    }
+                    else
+                    {
+                        // Get the child's modification details
+                        modifiedByToPropagate = (String)nodeDAO.getNodeProperty(childNodeId, ContentModel.PROP_MODIFIER);
+                        modifiedDateToPropagate = (Date)nodeDAO.getNodeProperty(childNodeId, ContentModel.PROP_MODIFIED);
+                    }
+                    
+                    // Did another child get there first?
+                    Date parentModifiedAt = (Date)nodeDAO.getNodeProperty(parentNodeId, ContentModel.PROP_MODIFIED);
+                    if (parentModifiedAt != null && modifiedDateToPropagate != null 
+                            && parentModifiedAt.getTime() > modifiedDateToPropagate.getTime())
+                    {
+                        // Parent was modified more recently, don't update
+                        if(logger.isDebugEnabled())
+                        {
+                            logger.debug("Parent " + parentNodeRef + " was modified more recently than child " + 
+                                         childNodePair + " so not propogating auditable details");
+                        }
+                        return null;
+                    }
+
                     // Invoke policy behaviour
                     invokeBeforeUpdateNode(parentNodeRef);
 
                     // Touch the node; it is cm:auditable
-                    boolean changed = nodeDAO.setModifiedDate(parentNodeId, modifiedDate);
-                    
+                    boolean changed = nodeDAO.setModifiedProperties(parentNodeId, modifiedDate, modifiedByToPropagate);
+
                     if (changed)
                     {
                         // Invoke policy behaviour

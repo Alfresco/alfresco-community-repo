@@ -354,8 +354,21 @@ public interface NodeDAO extends NodeBulkLoader
      * @param nodeId            the node to change
      * @param modifiedDate      the date to set for <b>cm:modified</b>
      * @return                  Returns <tt>true</tt> if the <b>cm:modified</b> property was actually set
+     * @deprecated Use {@link #setModifiedProperties(Long, Date, String)} to also change the <b>cm:modifier</b> property
      */
     public boolean setModifiedDate(Long nodeId, Date date);
+    
+    /**
+     * Pull the <b>cm:modified</b> up to the current time without changing any other
+     * <b>cm:auditable</b> properties.  The change may be done in the current transaction
+     * or in a later transaction.
+     * 
+     * @param nodeId            the node to change
+     * @param modifiedDate      the date to set for <b>cm:modified</b>
+     * @param modifiedBy        the name to set for <b>cm:modifier</b>
+     * @return                  Returns <tt>true</tt> if the <b>cm:modified</b> and <b>cm:modifier</b> properties were actually set
+     */
+    public boolean setModifiedProperties(Long nodeId, Date modifiedDate, String modifiedBy);
     
     /*
      * Aspects

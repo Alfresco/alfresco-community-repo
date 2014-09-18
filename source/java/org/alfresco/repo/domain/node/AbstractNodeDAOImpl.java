@@ -2454,6 +2454,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     @Override
     public boolean setModifiedDate(Long nodeId, Date modifiedDate)
     {
+        return setModifiedProperties(nodeId, modifiedDate, null);
+    }
+
+    @Override
+    public boolean setModifiedProperties(Long nodeId, Date modifiedDate, String modifiedBy) {
         // Do nothing if the node is not cm:auditable
         if (!hasNodeAspect(nodeId, ContentModel.ASPECT_AUDITABLE))
         {
@@ -2469,13 +2474,17 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         {
             // The properties should be present
             auditableProps = new AuditablePropertiesEntity();
-            auditableProps.setAuditValues(null, modifiedDate, true, 1000L);
+            auditableProps.setAuditValues(modifiedBy, modifiedDate, true, 1000L);
             dateChanged = true;
         }
         else
         {
             auditableProps = new AuditablePropertiesEntity(auditableProps);
             dateChanged = auditableProps.setAuditModified(modifiedDate, 1000L);
+            if (dateChanged)
+            {
+            	auditableProps.setAuditModifier(modifiedBy);
+            }
         }
         if (dateChanged)
         {

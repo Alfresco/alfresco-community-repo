@@ -195,7 +195,6 @@ public class TaggingServiceTest extends BaseWebScriptTest
     
     public void testTagCountSearch() throws Exception
     {
-        int TAGS_NUM = 1200;
         boolean removeTestFolder = false;
         boolean removeTagScope = false;
         FileInfo testFolderInfo = null;
@@ -214,7 +213,7 @@ public class TaggingServiceTest extends BaseWebScriptTest
             //generate content with tag
             UserTransaction transaction = transactionService.getUserTransaction();
             transaction.begin();
-            for (int i = 0; i < TAGS_NUM; i++)
+            for (int i = 0; i < 1200; i++)
             {
                 FileInfo file = this.fileFolderService.create(testFolderInfo.getNodeRef(), "testDoc" + i + ".txt", ContentModel.TYPE_CONTENT);
                 this.taggingService.addTag(file.getNodeRef(), tagName);
@@ -252,22 +251,12 @@ public class TaggingServiceTest extends BaseWebScriptTest
             }
             
             // tag count via tagScope API
-            int BREAK_COUNT = 80;
-            int counter = 1;
-            do
-            {
-                response = sendRequest(new GetRequest("api/tagscopes/node/" + testRoot.toString().replace(":/", "") + "/tags"), 200);
-                jsonObj = new JSONObject(response.getContentAsString());
-                tagsArr = jsonObj.getJSONArray("tags");
-                number = getTagNumber(tagName, tagsArr);
-                if (number == TAGS_NUM)
-                {
-                    break;
-                }
-                Thread.sleep(500);
-            }
-            while (counter ++ <= BREAK_COUNT);
-            assertEquals("Checking a search via tagScope API: Tag number must be "+ TAGS_NUM + ", because node is a tag scope.", TAGS_NUM, number);
+            response = sendRequest(new GetRequest("api/tagscopes/node/" + testRoot.toString().replace(":/", "") + "/tags"), 200);
+            jsonObj = new JSONObject(response.getContentAsString());
+            tagsArr = jsonObj.getJSONArray("tags");
+            number = getTagNumber(tagName, tagsArr);
+            assertEquals("Checking a search via tagScope API: Tag number must be 1200, because node is a tag scope.", 1200, number);
+            
         }
         finally
         {

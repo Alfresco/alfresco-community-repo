@@ -5,8 +5,12 @@
     <canBeEdited>1</canBeEdited>
     <selected>1</selected>
     <show>1</show>
+    <shouldPackRuleList>
+        <isTrue value="${alfrescosharepoint_component_enabled}" />
+    </shouldPackRuleList>
 
     <parameterList>
+        <booleanParameter name="alfrescosharepoint_component_enabled" ask="0" value="1" />
         <stringParameter>
             <name>alfresco_sharepoint_port</name>
             <title>Alfresco SharePoint Port</title>

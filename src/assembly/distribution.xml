@@ -35,6 +35,44 @@
             </includes>
         </dependencySet>
 
+        <!-- SOLR -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>alf_data/solr</outputDirectory>
+            <outputFileNameMapping>apache-solr-1.4.1.war</outputFileNameMapping>
+            <includes>
+                <include>*:alfresco-solr:war</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>alf_data/solr</outputDirectory>
+            <unpack>true</unpack>
+            <includes>
+                <include>*:alfresco-solr:zip:config*</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>alf_data/solr4</outputDirectory>
+            <outputFileNameMapping>apache-solr-4.8.1.war</outputFileNameMapping>
+            <includes>
+                <include>*:alfresco-solr4:war</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>alf_data/solr4</outputDirectory>
+            <unpack>true</unpack>
+            <includes>
+                <include>*:alfresco-solr4:zip:config*</include>
+            </includes>
+        </dependencySet>
+
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
@@ -52,6 +90,9 @@
             <includes>
                 <include>org.alfresco:alfresco*:war</include>
             </includes>
+            <excludes>
+                <exclude>org.alfresco:alfresco-solr*:war</exclude>
+            </excludes>
         </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>

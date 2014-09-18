@@ -3205,36 +3205,6 @@
         </property>
     </bean>
     
-    <bean id="patch.addTagScopeAspect"
-        class="org.alfresco.repo.admin.patch.impl.AddTagScopeAspect"
-        parent="basePatch">
-        <!-- Patch is disabled, see MNT-11511 -->
-        <property name="ignored">
-            <value>true</value>
-        </property>
-        <property name="id">
-            <value>patch.addTagScopeAspect</value>
-        </property>
-        <property name="description">
-            <value>patch.addTagScopeAspect.description</value>
-        </property>
-        <property name="fixesFromSchema">
-            <value>0</value>
-        </property>
-        <property name="fixesToSchema">
-            <value>8001</value>
-        </property>
-        <property name="targetSchema">
-            <value>8002</value>
-        </property>
-        <property name="repository">
-            <ref bean="repositoryHelper"/>
-        </property>
-        <property name="taggingService">
-            <ref bean="TaggingService"/>
-        </property>
-    </bean>
-    
     <bean id="patch.siteAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
         <property name="id"><value>patch.siteAdministrators</value></property>
         <property name="description"><value>patch.siteAdministrators.description</value></property>

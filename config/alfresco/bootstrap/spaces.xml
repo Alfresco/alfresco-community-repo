@@ -17,9 +17,6 @@
 		<app:icon>space-icon-default</app:icon>
 		<cm:title>${spaces.company_home.name}</cm:title>
 		<cm:description>${spaces.company_home.description}</cm:description>
-                <view:aspects>
-                   <cm:tagscope/>
-                </view:aspects>
 		<cm:contains>
 			<cm:folder view:childName="${spaces.dictionary.childname}">
             <view:acl view:inherit="false">

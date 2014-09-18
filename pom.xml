@@ -287,6 +287,7 @@
         <dependency>
             <groupId>xalan</groupId>
             <artifactId>xalan</artifactId>
+            <!-- Need to override xalan version for tests - see ACE-2803 -->
             <version>2.7.0</version>
             <scope>provided</scope>
         </dependency>

@@ -27,7 +27,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Date;
 
 import com.sun.star.task.ErrorCodeIOException;
 import net.sf.jooreports.converter.DocumentFamily;
@@ -38,7 +37,11 @@ import net.sf.jooreports.openoffice.connection.OpenOfficeException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.pdfbox.exceptions.COSVisitorException;
@@ -333,23 +336,13 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
                     "   writer: " + writer);
         }
 
-        // MNT-11279 fix. Because of the creating temp files for transformations the document's header with file name field
-        // could be changed to temporary file's name.
-        // Get the original file name which was on upload.
-        String origFileName = getOriginalFileName(options);
-        // Create a temp folder and put source and target files into it. (i.e. tempFromFile and tempToFile will be placed
-        // into such folder)
-        File tempSubfolder = new File(TempFileProvider.getTempDir() + File.separator +
-                                              origFileName + "-" + getTempFilePrefix() + "-"
-                                              + getTempFilePrefix() + "-" + new Date().getTime());
-        tempSubfolder.mkdir();
-
         // create temporary files to convert from and to
-        // The source file should have the name which was on upload
-        File tempFromFile = new File(tempSubfolder, origFileName );
+        File tempFromFile = TempFileProvider.createTempFile(
+                getTempFilePrefix()+"-source-",
+                "." + sourceExtension);
         File tempToFile = TempFileProvider.createTempFile(
-                origFileName + "-" + getTempFilePrefix()+"-target-",
-                "." + targetExtension, tempSubfolder);
+                getTempFilePrefix()+"-target-",
+                "." + targetExtension);
         
         // There is a bug (reported in ALF-219) whereby JooConverter (the Alfresco Community Edition's 3rd party
         // OpenOffice connector library) struggles to handle zero-size files being transformed to pdf.
@@ -422,12 +415,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
             getLogger().debug("transformation successful");
         }
     }
-
-    private String getOriginalFileName(TransformationOptions options)
-    {
-        return transformerDebug == null ? null : transformerDebug.getFileName(options, true, -1);
-    }
-
+    
     private boolean temporaryMsFile(TransformationOptions options)
     {
         String fileName = transformerDebug == null ? null : transformerDebug.getFileName(options, true, -1);

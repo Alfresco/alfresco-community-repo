@@ -135,47 +135,6 @@ public class OpenOfficeContentTransformerTest extends AbstractContentTransformer
     }
     
     /**
-     * MNT-11279. Transform docx document that contains head with value "documentName" to pdf.
-     * 
-     */
-    public void testDocxFieldToPdf()
-    {
-        if (!worker.isAvailable())
-        {
-            // no connection
-            return;
-        }
-        URL docxUrl = this.getClass().getClassLoader().getResource("misc/Test-Header-Office-2010.docx");
-        assertNotNull("URL was unexpectedly null", docxUrl);
-
-        File docxSourceFile = new File(docxUrl.getFile());
-        assertTrue("Test file does not exist.", docxSourceFile.exists());
-        
-        File pdfTargetFile = TempFileProvider.createTempFile(getName() + "-target-", ".pdf");
-        
-        ContentReader reader = new FileContentReader(docxSourceFile);
-        reader.setMimetype(MimetypeMap.MIMETYPE_WORD);
-        ContentWriter writer = new FileContentWriter(pdfTargetFile);
-        writer.setMimetype(MimetypeMap.MIMETYPE_PDF);
-        
-        transformer.transform(reader, writer);
-        
-        //Transform to txt for checking content
-        reader = new FileContentReader(pdfTargetFile);
-        reader.setMimetype(MimetypeMap.MIMETYPE_PDF);
-        
-        File txtTargetFile = TempFileProvider.createTempFile(getName() + "-target-", ".txt");
-        
-        writer = new FileContentWriter(txtTargetFile);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        
-        transformer.transform(reader, writer);
-        
-        String txtContent = writer.getReader().getContentString();
-        assertTrue("Transformed document must contains real document name", txtContent.contains("Document File Name: Test-Header-Office-2010Test-Header-Office-2010"));    
-    }
-    
-    /**
      * Some transformations fail intermittently within OOo on our test server.
      * Rather than exclude these transformations from product code, where they
      * may work (e.g. due to different OOo version installed), they are excluded

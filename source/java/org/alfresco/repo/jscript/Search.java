@@ -670,9 +670,16 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 {
                     sp.setDefaultFieldName(defaultField);
                 }
-                if (defaultOperator != null)
+                if (defaultOperator != null && defaultOperator.length() != 0)
                 {
-                    sp.setDefaultOperator(Operator.valueOf(defaultOperator.toUpperCase()));
+                    try
+                    {
+                        sp.setDefaultOperator(Operator.valueOf(defaultOperator.toUpperCase()));
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        // ignore invalid Operator and the default value will be used
+                    }
                 }
                 if (namespace != null)
                 {

@@ -1,4 +1,5 @@
 <project default="all">
+
     <macrodef name="sign-installer">
         <attribute name="file"/>
         <sequential>
@@ -35,7 +36,6 @@
     <target name="sign">
         <sign-installer file="${project.build.directory}/${installer.name}-${project.version}-installer-win-x32.exe"/>
         <sign-installer file="${project.build.directory}/${installer.name}-${project.version}-installer-win-x64.exe"/>
-
     </target>
 
     <target name="package-osx">
@@ -47,4 +47,13 @@
             </tarfileset>
         </tar>
     </target>
+
+    <target name="delete-binaries">
+        <delete dir="${project.build.directory}/binaries-linux-x64" />
+        <delete dir="${project.build.directory}/binaries-osx-x64" />
+        <delete dir="${project.build.directory}/binaries-windows-x64" />
+        <delete dir="${project.build.directory}/binaries-windows" />
+        <delete dir="${project.build.directory}/distribution" />
+    </target>
+
 </project>

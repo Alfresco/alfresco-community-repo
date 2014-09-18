@@ -8,7 +8,7 @@
       <property name="host" value="${alfresco.rmi.services.host}" />
       <property name="retries" value="${alfresco.rmi.services.retries}" />
    </bean>
-                         
+
    <bean id="baseServiceExporter" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" abstract="true">
       <property name="registryPort" value="${alfresco.rmi.services.port}" />
       <property name="registryServerSocketFactory" ref="hostConfigurableSocketFactory" />
@@ -26,10 +26,10 @@
             <value>5</value>
         </property>
     </bean>
-    
+
     <!-- Ensure backward compatibility with installations that control custom properties through repository-properties -->
     <bean id="legacyConfigPostProcessor" class="org.alfresco.repo.management.subsystems.LegacyConfigPostProcessor"/>
-    
+
     <!-- Global properties used in property expansion throughout the container, overridable via JNDI or System properties -->
     <bean id="global-properties" class="org.alfresco.config.JndiPropertiesFactoryBean">
         <property name="locations">
@@ -74,12 +74,12 @@
         </property>
         <property name="searchSystemEnvironment">
             <value>false</value>
-        </property>        
+        </property>
         <property name="propertiesPersister">
         	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
-        </property>        
+        </property>
     </bean>
-    
+
     <!-- Expand global properties and version information in bean definitions -->
     <bean id="repository-properties" parent="common-placeholder-configurer">
         <property name="locations">
@@ -136,15 +136,15 @@
     <bean id="dynamicExporter" class="org.alfresco.repo.management.DynamicMBeanExporter">
        <property name="server" ref="alfrescoMBeanServer"/>
     </bean>
-    
+
     <bean id="managedResource" class="org.alfresco.repo.management.DummyManagedResource">
     </bean>
 
-    <!--  
+    <!--
         The local in process RMI registry which will be bound to the address in
-        java.rmi.server.hostname 
+        java.rmi.server.hostname
     -->
-    
+
     <bean id="registry"
           class="org.springframework.remoting.rmi.RmiRegistryFactoryBean"
           lazy-init="true">
@@ -205,10 +205,10 @@
         <property name="transactionService"><ref bean="transactionService"/></property>
         <property name="authenticationService"><ref bean="authenticationService"/></property>
     </bean>
-    
+
     <!-- from Thor -->
     <bean id="defaultDataSource" parent="baseDefaultDataSource" />
-    
+
     <!-- Datasource bean -->
     <bean id="baseDefaultDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" abstract="true">
         <property name="driverClassName">
@@ -290,7 +290,7 @@
             <ref bean="defaultDataSource" />
         </property>
     </bean>
-    
+
     <bean id="dataSourceCheck" class="org.alfresco.repo.domain.schema.DataSourceCheck">
         <constructor-arg index="0" value="${db.url}" />
         <constructor-arg index="1" value="${db.username}" />
@@ -404,7 +404,7 @@
     <bean id="cannedQueryRegistry" class="org.alfresco.util.registry.NamedObjectRegistry">
         <property name="storageType" value="org.alfresco.query.CannedQueryFactory"/>
     </bean>
-   
+
     <!--                        -->
     <!-- I18N                   -->
     <!--                        -->
@@ -438,9 +438,9 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- Repo-based Message Service (based on Core I18NUtil) -->
-    
+
     <bean id="messageService" class="org.alfresco.repo.i18n.MessageServiceImpl">
         <property name="tenantService">
             <ref bean="tenantService"/>
@@ -473,16 +473,16 @@
     <!--                               -->
 
     <bean id="lockStoreFactory" class="org.alfresco.repo.lock.mem.DefaultLockStoreFactory"/>
-    
+
     <bean id="lockStore" factory-bean="lockStoreFactory" factory-method="createLockStore"/>
-    
+
     <bean id="lockableAspectInterceptor" class="org.alfresco.repo.lock.mem.LockableAspectInterceptor" init-method="init">
         <property name="nodeService" ref="dbNodeService"/>
         <property name="lockService" ref="lockService"/>
         <property name="lockStore" ref="lockStore"/>
         <property name="authenticationService" ref="authenticationService"/>
     </bean>
-    
+
     <bean id="lockService" class="org.alfresco.repo.lock.LockServiceImpl" init-method="init">
         <property name="nodeService" ref="nodeService" />
         <property name="tenantService" ref="tenantService" />
@@ -492,7 +492,7 @@
         <property name="authenticationService" ref="authenticationService" />
         <property name="searchService" ref="admSearchService" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
-        <property name="nodeIndexer" ref="nodeIndexer"/>      
+        <property name="nodeIndexer" ref="nodeIndexer"/>
         <property name="authorityService" ref="authorityService"/>
     </bean>
 
@@ -500,7 +500,7 @@
     <!--  Version Service   -->
     <!--                               -->
 
- 
+
     <bean id="versionService" class="org.alfresco.repo.version.Version2ServiceImpl" init-method="initialise">
         <property name="nodeService">
             <ref bean="NodeService" />
@@ -548,8 +548,8 @@
 
     <bean id="serialVersionLabelPolicy" class="org.alfresco.repo.version.common.versionlabel.SerialVersionLabelPolicy" >
     </bean>
-    
-    <bean id="registerContentWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register"> 
+
+    <bean id="registerContentWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register">
        <property name="versionService">
             <ref bean="versionService" />
         </property>
@@ -563,8 +563,8 @@
              <ref bean="serialVersionLabelPolicy" />
         </property>
     </bean>
-    
-    <bean id="registerMLContainerWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register"> 
+
+    <bean id="registerMLContainerWithVersionService" class="org.alfresco.repo.version.VersionServiceVersionLabelRegistrationBean" init-method="register">
        <property name="versionService">
             <ref bean="versionService" />
         </property>
@@ -578,9 +578,9 @@
              <ref bean="serialVersionLabelPolicy" />
         </property>
     </bean>
-    
+
     <!--  -->
-    
+
     <bean id="versionMigrator" class="org.alfresco.repo.version.VersionMigrator" init-method="init">
         <property name="dbNodeService">
             <ref bean="mtAwareNodeService" />
@@ -610,7 +610,7 @@
             <value>500</value>
         </property>
     </bean>
-    
+
     <bean id="versionableAspect" class="org.alfresco.repo.version.VersionableAspect" init-method="init">
         <property name="policyComponent">
             <ref bean="policyComponent" />
@@ -664,7 +664,7 @@
 
     <!-- Constraint Registry -->
     <bean id="cm:constraintRegistry" class="org.alfresco.repo.dictionary.constraint.ConstraintRegistry" />
-    
+
     <!-- A constraint that does nothing -->
     <bean id="noop.storeSelectorConstraint" class="org.alfresco.repo.dictionary.constraint.NoOpConstraint" init-method="initialize" >
        <property name="shortName">
@@ -721,7 +721,7 @@
                             <value>org.alfresco.repo.i18n.MessageService</value>
                         </property>
                     </bean>
-                </property> 
+                </property>
                 <property name="proxyInterfaces">
                     <list>
                         <value>org.alfresco.service.cmr.i18n.MessageLookup</value>
@@ -766,14 +766,14 @@
                 <!-- Implementation models -->
                 <value>org/alfresco/repo/action/actionModel.xml</value>
                 <value>org/alfresco/repo/rule/ruleModel.xml</value>
-                
+
                 <!--  Version models -->
                 <value>org/alfresco/repo/version/version_model.xml</value> <!-- deprecated -->
-                <value>org/alfresco/repo/version/version2_model.xml</value>                
+                <value>org/alfresco/repo/version/version2_model.xml</value>
 
                 <!-- Email model -->
                 <value>alfresco/model/emailServerModel.xml</value>
-                
+
                 <!-- Calendar model -->
                 <value>alfresco/model/calendarModel.xml</value>
 
@@ -785,19 +785,19 @@
 
                 <!-- Remote Credentials model -->
                 <value>alfresco/model/remoteCredentialsModel.xml</value>
-                
+
                 <!-- Share Data Lists model -->
                 <value>alfresco/model/datalistModel.xml</value>
-                
+
                 <!-- QuickShare (aka PublicView) -->
                 <value>alfresco/model/quickShareModel.xml</value>
-                
+
                 <!-- Share UI model -->
                 <value>alfresco/model/shareUiModel.xml</value>
-                
+
                 <!-- Site model -->
                 <value>alfresco/model/siteModel.xml</value>
-                
+
                 <!-- Content Publishing model -->
                 <value>alfresco/model/publishingModel.xml</value>
             </list>
@@ -818,7 +818,7 @@
             </list>
         </property>
     </bean>
-    
+
     <!-- TODO - deprecate and replace with mechanism that does not rely on init-method (see AR-2207) -->
     <bean id="extension.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
         <property name="models">
@@ -827,7 +827,7 @@
             </list>
         </property>
     </bean>
-    
+
     <!--                           -->
     <!-- CheckOut/CheckIn Service  -->
     <!--                           -->
@@ -855,7 +855,7 @@
 
     <bean id="checkedOutAspect" class="org.alfresco.repo.coci.CheckedOutAspect" init-method="init">
         <property name="policyComponent" ref="policyComponent" />
-    </bean>   
+    </bean>
 
     <!-- Multilingual Document-->
     <bean id="multilingualDocumentAspect" class="org.alfresco.repo.model.ml.MultilingualDocumentAspect" init-method="init">
@@ -940,7 +940,7 @@
             <value>${system.serverMode}</value>
         </property>
     </bean>
-    
+
     <bean id="serverDescriptorDAO" class="org.alfresco.repo.descriptor.ServerDescriptorDAOImpl">
        <property name="repositoryName">
            <value>${repository.name}</value>
@@ -997,7 +997,7 @@
            <ref bean="searchService"/>
        </property>
     </bean>
-    
+
     <!-- Clustered (DB) locking Service -->
     <bean id="jobLockService" class="org.alfresco.repo.lock.JobLockServiceImpl" destroy-method="shutdown">
         <property name="retryingTransactionHelper">
@@ -1019,19 +1019,19 @@
                 </property>
                 <property name="forceWritable">
                     <value>true</value>
-                </property>				
+                </property>
             </bean>
         </property>
         <property name="lockDAO" ref="lockDAO" />
         <property name="defaultRetryCount"><value>10</value></property>
         <property name="defaultRetryWait"><value>20</value></property>
     </bean>
-    
+
     <bean id="licenseResourceComponent" class="org.alfresco.repo.descriptor.LicenseResourceComponent">
        <property name="externalLicenseLocation">
            <value>${location.license.external}</value>
        </property>
-       <property name="sharedLicenseLocation"> 
+       <property name="sharedLicenseLocation">
            <value>${location.license.shared}</value>
        </property>
        <property name="embeddedLicenseLocation">
@@ -1050,17 +1050,17 @@
            </list>
         </property>
     </bean>
-    
+
     <!-- Replacement for Spring's multicaster, that queues up events until the application is started -->
     <bean id="applicationEventMulticaster" class="org.alfresco.repo.management.SafeApplicationEventMulticaster"/>
-   
+
    <bean id="repositoryState" class="org.alfresco.repo.admin.RepositoryState" />
-   
+
    <!-- Alfresco Events Publisher -->
    <bean id="eventPublisher" class="org.alfresco.repo.events.NoOpEventPublisher" />
-   
+
    <!-- index subsystem proxies -->
-   
+
     <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
@@ -1102,7 +1102,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="lucene" class="org.alfresco.repo.management.subsystems.LuceneChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
@@ -1120,7 +1120,7 @@
             </list>
         </property>
     </bean>
-    
+
     <bean id="noindex" class="org.alfresco.repo.management.subsystems.NoIndexChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>
@@ -1138,7 +1138,7 @@
             </list>
         </property>
     </bean>
-   
+
    <bean id="indexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1152,7 +1152,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="admSearchService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1166,7 +1166,7 @@
          </list>
       </property>
    </bean>
-   
+
     <bean id="versionSearchService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1180,13 +1180,13 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="searchService" class="org.alfresco.repo.search.impl.SearchServiceSubSystemDelegator">
       <property name="subSystem" ref ="searchServiceSubsystemProxy" />
       <property name="nodeService" ref="mlAwareNodeService" />
       <property name="dictionaryService" ref="dictionaryService" />
    </bean>
-   
+
    <bean id="searchServiceSubsystemProxy" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1200,7 +1200,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="admLuceneIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory" depends-on="Search" >
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1215,7 +1215,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="admLuceneUnIndexedIndexerAndSearcherFactory" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1230,8 +1230,8 @@
          </list>
       </property>
    </bean>
-   
-   
+
+
    <bean id="indexerComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1245,7 +1245,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="queryRegisterComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1259,7 +1259,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="categoryService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1273,7 +1273,7 @@
          </list>
       </property>
    </bean>
-   
+
     <bean id="indexRecoveryComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1287,9 +1287,9 @@
          </list>
       </property>
    </bean>
-   
+
    <!-- only required for lucene index test support -->
-   
+
    <bean id="LuceneFullTextSearchIndexer" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1303,8 +1303,8 @@
          </list>
       </property>
    </bean>
-   
-   
+
+
    <bean id="ftsIndexerTrigger" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1320,7 +1320,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="adm.luceneQueryEngineImpl" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1334,7 +1334,7 @@
          </list>
       </property>
    </bean>
-   
+
     <bean id="indexConfigurationChecker" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1348,7 +1348,7 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="statsService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1362,7 +1362,7 @@
          </list>
       </property>
    </bean>
-   
+
     <bean id="solrTrackingComponent" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
       <property name="sourceApplicationContextFactory">
          <ref bean="Search" />
@@ -1376,11 +1376,30 @@
          </list>
       </property>
    </bean>
-   
+
    <bean id="defaultImageResolver" class="org.alfresco.util.DefaultImageResolver" />
-   
+
    <bean id="nameChecker" class="org.alfresco.repo.dictionary.constraint.NameChecker">
       <property name="dictionaryService" ref="dictionaryService" />
    </bean>
 
+   <!-- Custom property editors -->
+   <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+      <property name="propertyEditorRegistrars">
+         <list>
+            <ref bean="customPropertyEditorRegistrar"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="customPropertyEditorRegistrar"
+      class="org.alfresco.util.CustomPropertyEditorRegistrar">
+      <property name="namespaceService" ref="NamespaceService"/>
+   </bean>
+
+   <!--  Annotated behaviour bean post processor -->
+   <bean id="annotatedBehaviourBeanPostProcessor" class="org.alfresco.repo.policy.annotation.AnnotatedBehaviourPostProcessor">
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
 </beans>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -2427,7 +2427,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 {
                     activityService.postActivity(
                             ActivityType.SITE_USER_REMOVED, shortName,
-                            ACTIVITY_TOOL, getActivityUserData(authorityName, ""));
+                            ACTIVITY_TOOL, getActivityUserData(authorityName, ""), authorityName);
                 }
                 else if (authorityType == AuthorityType.GROUP)
                 {

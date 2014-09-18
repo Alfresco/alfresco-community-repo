@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.workflow;
 
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -100,7 +101,14 @@ public class WorkflowQNameConverter
             }
             qName = name.replaceFirst("_", ":");
         }
-        return QName.createQName(qName, prefixResolver);
+        try
+        {
+            return QName.createQName(qName, prefixResolver);
+        }
+        catch (NamespaceException ne)
+        {
+            return QName.createQName(NamespaceService.DEFAULT_URI, name);
+        }
     }
 
     private String convertQNameToName(QName name)

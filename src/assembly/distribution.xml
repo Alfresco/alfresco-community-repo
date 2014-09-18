@@ -21,6 +21,14 @@
             <directory>${highest.basedir}/projects/alfresco-jlan/jni</directory>
             <outputDirectory>bin</outputDirectory>
         </fileSet>
+        <!-- Empty endorsed folder -->
+        <fileSet>
+            <directory>src/assembly</directory>
+            <outputDirectory>web-server/endorsed</outputDirectory>
+            <excludes>
+                <exclude>*</exclude>
+            </excludes>
+        </fileSet>
     </fileSets>
 
     <dependencySets>
@@ -100,14 +108,6 @@
             <outputFileNameMapping>share.war</outputFileNameMapping>
             <includes>
                 <include>org.alfresco:share*:war</include>
-            </includes>
-        </dependencySet>
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>web-server/endorsed</outputDirectory>
-            <includes>
-                <include>xalan:*</include>
             </includes>
         </dependencySet>
         <dependencySet>

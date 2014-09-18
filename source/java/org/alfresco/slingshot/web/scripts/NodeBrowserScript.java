@@ -54,9 +54,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ISO9075;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -69,17 +66,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author dcaruana
  * @author wabson
  */
-public class NodeBrowserScript extends DeclarativeWebScript implements Serializable, ApplicationContextAware
+public class NodeBrowserScript extends DeclarativeWebScript implements Serializable
 {
     private static final long serialVersionUID = 48743409337475896L;
-    
-    private transient ApplicationContext applicationContext = null;
-    
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
 
     private Long searchElapsedTime = null;
 
@@ -157,9 +146,7 @@ public class NodeBrowserScript extends DeclarativeWebScript implements Serializa
 
 	protected NamespaceService getNamespaceService()
     {
-	    // used by serialised bean objects
-	    if (namespaceService == null) namespaceService = (NamespaceService)applicationContext.getBean("NamespaceService");
-        return namespaceService;
+        return this.namespaceService;
     }
 
     /**
@@ -665,6 +652,7 @@ public class NodeBrowserScript extends DeclarativeWebScript implements Serializa
 		private static final long serialVersionUID = 6982292337846270774L;
 		
 		protected QName name;
+		private String prefixString = null;
 
 		public QNameBean(QName name)
 		{
@@ -680,7 +668,7 @@ public class NodeBrowserScript extends DeclarativeWebScript implements Serializa
 		{
 			try
 			{
-				return name.toPrefixString(getNamespaceService());
+				return prefixString != null ? prefixString : (prefixString = name.toPrefixString(getNamespaceService()));
 			}
 			catch(NamespaceException e)
 			{

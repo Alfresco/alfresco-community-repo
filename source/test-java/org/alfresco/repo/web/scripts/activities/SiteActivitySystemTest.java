@@ -531,21 +531,21 @@ public class SiteActivitySystemTest extends TestCase
         // site 2, with 4 users, each with 1 join, 1 role change = 4x2 = 8
         // site 3, with 3 users, each with 1 join, 1 role change = 3x2 = 6
         
-        // user 1 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 2 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 3 belongs to 3 sites = (2x8)+(1x6) = 22
-        // user 4 belongs to 2 sites = (2x8) = 16
+        // user 1 belongs to 3 sites = (2x9)+(1x7) = 25
+        // user 2 belongs to 3 sites = (2x9)+(1x7) = 25
+        // user 3 belongs to 3 sites = (2x9)+(1x7) = 25
+        // user 4 belongs to 2 sites = (2x9) = 18
         
-        getUserFeed(user1, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site 1
+        getUserFeed(user1, ticket, true, 16);  // 16 = (25 - 9) due to feed control - exclude site 1
         getUserFeed(user2, ticket, true, 0);   // 0 = due to feed control - exclude site membership activities (across all sites)
-        getUserFeed(user3, ticket, true, 14);  // 14 = (22 - 8) due to feed control - exclude site membership activities for site 1
-        getUserFeed(user4, ticket, true, 16);  // 16 = no feed control
+        getUserFeed(user3, ticket, true, 16);  // 16 = (25 - 9) due to feed control - exclude site membership activities for site 1
+        getUserFeed(user4, ticket, true, 18);  // 18 = no feed control
         
         // as user1
         
         ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
         
-        getUserFeed(user1, ticket, false, 14);
+        getUserFeed(user1, ticket, false, 16);
         
         // as user2
         
@@ -553,7 +553,7 @@ public class SiteActivitySystemTest extends TestCase
         
         try
         {
-            getUserFeed(user1, ticket, true, 14);
+            getUserFeed(user1, ticket, true, 16);
             
             fail("User feed should only be accessible to user or an admin");
         }
@@ -567,12 +567,12 @@ public class SiteActivitySystemTest extends TestCase
         ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, user1, USER_PW);
         
         getUserFeed(null, site1, ticket, false, false, false, 0);
-        getUserFeed(null, site2, ticket, false, false, false, 8);
-        getUserFeed(null, site3, ticket, false, false, false, 6);
+        getUserFeed(null, site2, ticket, false, false, false, 9);
+        getUserFeed(null, site3, ticket, false, false, false, 7);
         
-        getUserFeed(null, null, ticket, false, false, false, 14); // no filter
+        getUserFeed(null, null, ticket, false, false, false, 16); // no filter
         getUserFeed(null, null, ticket, false, true, false, 12);  // exclude any from user1
-        getUserFeed(null, null, ticket, false, false, true, 2);   // exclude all except user1
+        getUserFeed(null, null, ticket, false, false, true, 4);   // exclude all except user1
         getUserFeed(null, null, ticket, false, true, true, 0);    // exclude all (NOOP)
         
         // TODO - add more (eg. other non-admin user activities)

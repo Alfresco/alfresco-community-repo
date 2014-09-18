@@ -34,6 +34,11 @@
             <value>workspace://SpacesStore</value>
          </list>
       </property>
+      <property name="excludedTypes">
+          <list>
+              <value>{http://www.alfresco.org/model/download/1.0}download</value>
+          </list>
+      </property>
    </bean>
    
    <bean id="usageQuotaProtector" class="org.alfresco.repo.usage.UsageQuotaProtector" init-method="init">

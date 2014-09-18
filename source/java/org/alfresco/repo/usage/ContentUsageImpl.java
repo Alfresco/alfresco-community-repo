@@ -77,6 +77,8 @@ public class ContentUsageImpl implements ContentUsageService,
     
     private List<String> stores;
     
+    private Set<QName> excludedTypes = new HashSet<QName>();
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -120,6 +122,14 @@ public class ContentUsageImpl implements ContentUsageService,
     public List<String> getStores()
     {
         return this.stores;
+    }
+    
+    public void setExcludedTypes(List<String> excludedTypes)
+    {
+        for (String exType : excludedTypes)
+        {
+            this.excludedTypes.add(QName.createQName(exType));
+        }
     }
     
     /**
@@ -431,7 +441,7 @@ public class ContentUsageImpl implements ContentUsageService,
     
     private void incrementUserUsage(String userName, long contentSize, NodeRef contentNodeRef)
     {
-        if (! authenticationContext.isSystemUserName(userName))
+        if (!authenticationContext.isSystemUserName(userName) && !excludedTypes.contains(nodeService.getType(contentNodeRef)))
         {
             // increment usage - add positive delta
             if (logger.isDebugEnabled()) logger.debug("incrementUserUsage: username="+userName+", contentSize="+contentSize+", contentNodeRef="+contentNodeRef);

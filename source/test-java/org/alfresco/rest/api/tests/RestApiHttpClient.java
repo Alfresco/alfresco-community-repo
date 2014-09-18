@@ -20,6 +20,7 @@ package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -35,7 +36,6 @@ import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.axis.utils.ByteArrayOutputStream;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;

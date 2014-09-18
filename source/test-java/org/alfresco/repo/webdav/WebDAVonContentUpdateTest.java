@@ -68,7 +68,7 @@ public class WebDAVonContentUpdateTest
     private static ApplicationContext ctx;
 
     private static final String TEST_DATA_FILE_NAME = "filewithdata.txt";
-    private static final String DAV_LOCK_INFO_XML = "davLockInfo.xml";
+    private static final String DAV_LOCK_INFO_XML = "davLockInfoAdmin.xml";
     private byte[] testDataFile;
     private byte[] davLockInfoFile;
 

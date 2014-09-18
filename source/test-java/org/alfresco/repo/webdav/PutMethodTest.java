@@ -20,10 +20,13 @@ package org.alfresco.repo.webdav;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.lock.UnableToAquireLockException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -33,6 +36,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -50,6 +54,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import java.io.InputStream;
@@ -71,11 +76,14 @@ public class PutMethodTest
 {
     private static ApplicationContext ctx;
 
-    private static final String USER_NAME = "user-" + GUID.generate();
+    private static final String USER1_NAME = "user1-" + PutMethodTest.class.getName();
+    private static final String USER2_NAME = "user2-" + PutMethodTest.class.getName();
     private static final String TEST_DATA_FILE_NAME = "filewithdata.txt";
-    private static final String DAV_LOCK_INFO_XML = "davLockInfo.xml";
+    private static final String DAV_LOCK_INFO_ADMIN = "davLockInfoAdmin.xml";
+    private static final String DAV_LOCK_INFO_USER2 = "davLockInfoUser2.xml";
     private byte[] testDataFile;
-    private byte[] davLockInfoFile;
+    private byte[] davLockInfoAdminFile;
+    private byte[] davLockInfoUser2File;
 
     private MockHttpServletRequest request;
     private MockHttpServletResponse response;
@@ -91,6 +99,8 @@ public class PutMethodTest
     private PersonService personService;
     private LockService lockService;
     private ContentService contentService;
+    private CheckOutCheckInService checkOutCheckInService;
+    private PermissionService permissionService;
 
     private NodeRef companyHomeNodeRef;
     private NodeRef versionableDoc;
@@ -120,6 +130,8 @@ public class PutMethodTest
         personService = ctx.getBean("PersonService", PersonService.class);
         lockService = ctx.getBean("LockService", LockService.class);
         contentService = ctx.getBean("contentService", ContentService.class);
+        checkOutCheckInService = ctx.getBean("CheckOutCheckInService", CheckOutCheckInService.class);
+        permissionService = ctx.getBean("PermissionService", PermissionService.class);
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
 
@@ -138,30 +150,20 @@ public class PutMethodTest
         });
         txn = transactionService.getUserTransaction();
         txn.begin();
-        if (!authenticationService.authenticationExists(USER_NAME))
-        {
-            authenticationService.createAuthentication(USER_NAME, "PWD".toCharArray());
-        }
-
-        if (!personService.personExists(USER_NAME))
-        {
-            PropertyMap ppOne = new PropertyMap();
-            ppOne.put(ContentModel.PROP_USERNAME, USER_NAME);
-            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
-            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
-            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
-            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
-
-            personService.createPerson(ppOne);
-        }
+        createUser(USER1_NAME);
+        createUser(USER2_NAME);
 
         InputStream testDataIS = getClass().getClassLoader().getResourceAsStream(TEST_DATA_FILE_NAME);
-        InputStream davLockInfoIS = getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_XML);
+        InputStream davLockInfoAdminIS = getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_ADMIN);
+        InputStream davLockInfoUser2IS = getClass().getClassLoader().getResourceAsStream(DAV_LOCK_INFO_USER2);
+        
         testDataFile = IOUtils.toByteArray(testDataIS);
-        davLockInfoFile = IOUtils.toByteArray(davLockInfoIS);
+        davLockInfoAdminFile = IOUtils.toByteArray(davLockInfoAdminIS);
+        davLockInfoUser2File = IOUtils.toByteArray(davLockInfoUser2IS);
 
         testDataIS.close();
-        davLockInfoIS.close();
+        davLockInfoAdminIS.close();
+        davLockInfoUser2IS.close();
 
         // Create a test file with versionable aspect and content
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
@@ -179,6 +181,26 @@ public class PutMethodTest
         txn.begin();
     }
 
+    private void createUser(String userName)
+    {
+        if (!authenticationService.authenticationExists(userName))
+        {
+            authenticationService.createAuthentication(userName, "PWD".toCharArray());
+        }
+
+        if (!personService.personExists(userName))
+        {
+            PropertyMap ppOne = new PropertyMap();
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+
+            personService.createPerson(ppOne);
+        }
+    }
+
     @After
     public void tearDown() throws Exception
     {
@@ -186,22 +208,22 @@ public class PutMethodTest
         request = null;
         response = null;
         testDataFile = null;
-        davLockInfoFile = null;
+        davLockInfoAdminFile = null;
 
-        // Delete the user, as admin
+        if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+        {
+            txn.rollback();
+        }
+        else
+        {
+            txn.commit();
+        }
+        
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        if (this.personService.personExists(USER_NAME))
-        {
-            this.personService.deletePerson(USER_NAME);
-        }
-        if (this.authenticationService.authenticationExists(USER_NAME))
-        {
-            this.authenticationService.deleteAuthentication(USER_NAME);
-        }
+        deleteUser(USER1_NAME);
+        deleteUser(USER2_NAME);
 
         nodeService.deleteNode(versionableDoc);
-
-        txn.commit();
 
         // As per MNT-10037 try to create a node and delete it in the next txn
         txn = transactionService.getUserTransaction();
@@ -225,6 +247,19 @@ public class PutMethodTest
         txn.commit();
 
         AuthenticationUtil.clearCurrentSecurityContext();
+    }
+
+    private void deleteUser(String userName)
+    {
+        // Delete the user, as admin
+        if (this.personService.personExists(userName))
+        {
+            this.personService.deletePerson(userName);
+        }
+        if (this.authenticationService.authenticationExists(userName))
+        {
+            this.authenticationService.deleteAuthentication(userName);
+        }
     }
 
     @Test
@@ -365,7 +400,7 @@ public class PutMethodTest
         lockService.lock(testFileInfo.getNodeRef(), LockType.WRITE_LOCK);
         try
         {
-            AuthenticationUtil.setFullyAuthenticatedUser(USER_NAME);
+            AuthenticationUtil.setFullyAuthenticatedUser(USER1_NAME);
             executeMethod(WebDAV.METHOD_PUT, testFileInfo.getName(), testDataFile, null);
 
             fail("The PUT execution should fail with a 423 error");
@@ -387,6 +422,187 @@ public class PutMethodTest
     }
 
     /**
+     * Putting a content to a working copy file
+     * <p>
+     * Create and check out a file by user1
+     * <p>
+     * Try to put the content to the working copy by user2
+     * 
+     * See MNT-8614.
+     */
+    @SuppressWarnings("deprecation")
+    @Test
+    public void testPutContentToWorkingCopy() throws Exception
+    {
+        FileInfo folder = fileFolderService.create(companyHomeNodeRef, "folder-" + GUID.generate(), ContentModel.TYPE_FOLDER);
+        permissionService.setInheritParentPermissions(folder.getNodeRef(), false);
+        permissionService.setPermission(folder.getNodeRef(), USER1_NAME, permissionService.getAllPermission(), true);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USER1_NAME);
+        FileInfo testFileInfo = fileFolderService.create(folder.getNodeRef(), "file-" + GUID.generate(), ContentModel.TYPE_CONTENT);
+        NodeRef workingCopyNodeRef = checkOutCheckInService.checkout(testFileInfo.getNodeRef());
+        String workingCopyName = fileFolderService.getFileInfo(workingCopyNodeRef).getName();
+        String pathToWC = "/" + folder.getName() + "/" + workingCopyName;
+        String pathToOriginal = "/" + folder.getName() + "/" + testFileInfo.getName();
+
+        // Negative test, try to edit the WC without permissions.
+        AuthenticationUtil.setFullyAuthenticatedUser(USER2_NAME);
+        try
+        {
+            lockService.lock(workingCopyNodeRef, LockType.WRITE_LOCK);
+        }
+        catch (AccessDeniedException ade)
+        {
+            // expected
+        }
+
+        try
+        {
+            executeMethod(WebDAV.METHOD_LOCK, pathToWC, davLockInfoUser2File, null);
+
+            fail("The LOCK execution should fail with a 401 error");
+        }
+        catch (WebDAVServerException wse)
+        {
+            // The execution failed and it is expected
+            assertTrue("The status code was " + wse.getHttpStatusCode() + ", but should be " + HttpServletResponse.SC_UNAUTHORIZED,
+                    wse.getHttpStatusCode() == HttpServletResponse.SC_UNAUTHORIZED);
+        }
+        catch (Exception e)
+        {
+            fail("Unexpected exception occurred: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+        }
+
+        // Construct IF HEADER
+        String lockToken = workingCopyNodeRef.getId() + WebDAV.LOCK_TOKEN_SEPERATOR + USER2_NAME;
+        String lockHeaderValue = "(<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">)";
+        HashMap<String, String> headers = new HashMap<String, String>();
+        headers.put(WebDAV.HEADER_IF, lockHeaderValue);
+        try
+        {
+            executeMethod(WebDAV.METHOD_PUT, pathToWC, testDataFile, headers);
+            fail("The PUT execution should fail with a 423 error");
+        }
+        catch (WebDAVServerException wse)
+        {
+            // The execution failed and it is expected
+            assertTrue("The status code was " + wse.getHttpStatusCode() + ", but should be " + HttpServletResponse.SC_UNAUTHORIZED,
+                    wse.getHttpStatusCode() == HttpServletResponse.SC_UNAUTHORIZED);
+        }
+        catch (Exception e)
+        {
+            fail("Unexpected exception occurred: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+        }
+
+        // Positive test
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        permissionService.setPermission(folder.getNodeRef(), USER2_NAME, permissionService.getAllPermission(), true);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USER2_NAME);
+        try
+        {
+            executeMethod(WebDAV.METHOD_LOCK, pathToWC, davLockInfoUser2File, null);
+
+            assertEquals("File should be locked", LockStatus.LOCK_OWNER, lockService.getLockStatus(workingCopyNodeRef));
+        }
+        catch (Exception e)
+        {
+            fail("Failed to lock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+        }
+
+        headers = new HashMap<String, String>();
+        headers.put(WebDAV.HEADER_IF, lockHeaderValue);
+        try
+        {
+            executeMethod(WebDAV.METHOD_PUT, pathToWC, testDataFile, headers);
+
+            assertTrue("File does not exist.", nodeService.exists(workingCopyNodeRef));
+            assertEquals("Filename is not correct", workingCopyName, nodeService.getProperty(workingCopyNodeRef, ContentModel.PROP_NAME));
+            assertTrue("Expected return status is " + HttpServletResponse.SC_NO_CONTENT + ", but returned is " + response.getStatus(),
+                    HttpServletResponse.SC_NO_CONTENT == response.getStatus());
+
+            assertTrue("File should have NO_CONTENT aspect", nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_NO_CONTENT));
+            InputStream updatedFileIS = fileFolderService.getReader(workingCopyNodeRef).getContentInputStream();
+            byte[] updatedFile = IOUtils.toByteArray(updatedFileIS);
+            updatedFileIS.close();
+            assertTrue("The content has to be equal", ArrayUtils.isEquals(testDataFile, updatedFile));
+        }
+        catch (Exception e)
+        {
+            fail("Failed to upload a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+        }
+
+        headers = new HashMap<String, String>();
+        headers.put(WebDAV.HEADER_LOCK_TOKEN, "<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">");
+        try
+        {
+            executeMethod(WebDAV.METHOD_UNLOCK, pathToWC, null, headers);
+
+            assertTrue("Expected return status is " + HttpServletResponse.SC_NO_CONTENT + ", but returned is " + response.getStatus(),
+                    HttpServletResponse.SC_NO_CONTENT == response.getStatus());
+            assertFalse("File should not have NO_CONTENT aspect", nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_NO_CONTENT));
+            assertEquals("File should be unlocked", LockStatus.NO_LOCK, lockService.getLockStatus(workingCopyNodeRef));
+        }
+        catch (Exception e)
+        {
+            fail("Failed to unlock a file: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+        }
+
+        // Negative test try to lock or edit the original file
+        AuthenticationUtil.setFullyAuthenticatedUser(USER2_NAME);
+        try
+        {
+            lockService.lock(testFileInfo.getNodeRef(), LockType.WRITE_LOCK);
+        }
+        catch (UnableToAquireLockException uale)
+        {
+            // expected
+        }
+
+        try
+        {
+            executeMethod(WebDAV.METHOD_LOCK, pathToOriginal, davLockInfoUser2File, null);
+
+            fail("The LOCK execution should fail with a 423 error");
+        }
+        catch (WebDAVServerException wse)
+        {
+            // The execution failed and it is expected
+            assertTrue("The status code was " + wse.getHttpStatusCode() + ", but should be " + WebDAV.WEBDAV_SC_LOCKED, wse.getHttpStatusCode() == WebDAV.WEBDAV_SC_LOCKED);
+        }
+        catch (Exception e)
+        {
+            fail("Unexpected exception occurred: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+        }
+
+        // Construct IF HEADER
+        lockToken = testFileInfo.getNodeRef().getId() + WebDAV.LOCK_TOKEN_SEPERATOR + USER2_NAME;
+        lockHeaderValue = "(<" + WebDAV.OPAQUE_LOCK_TOKEN + lockToken + ">)";
+        headers = new HashMap<String, String>();
+        headers.put(WebDAV.HEADER_IF, lockHeaderValue);
+        try
+        {
+            executeMethod(WebDAV.METHOD_PUT, pathToOriginal, testDataFile, headers);
+            fail("The PUT execution should fail with a 423 error");
+        }
+        catch (WebDAVServerException wse)
+        {
+            // The execution failed and it is expected
+            assertTrue("The status code was " + wse.getHttpStatusCode() + ", but should be " + WebDAV.WEBDAV_SC_LOCKED, wse.getHttpStatusCode() == WebDAV.WEBDAV_SC_LOCKED);
+        }
+        catch (Exception e)
+        {
+            fail("Unexpected exception occurred: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+        }
+
+        AuthenticationUtil.setFullyAuthenticatedUser(USER1_NAME);
+        checkOutCheckInService.checkin(workingCopyNodeRef, null);
+
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        nodeService.deleteNode(folder.getNodeRef());
+    }
+    
+    /**
      * Putting a content and check versioning
      * <p>
      * The node will be deleted in after test.
@@ -399,7 +615,7 @@ public class PutMethodTest
         // Lock the node
         try
         {
-            executeMethod(WebDAV.METHOD_LOCK, versionableDocName, davLockInfoFile, null);
+            executeMethod(WebDAV.METHOD_LOCK, versionableDocName, davLockInfoAdminFile, null);
 
             assertEquals("The version should not advance", "1.0", nodeService.getProperty(versionableDoc, ContentModel.PROP_VERSION_LABEL));
         }
@@ -497,7 +713,7 @@ public class PutMethodTest
 
         try
         {
-            executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoFile, null);
+            executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoAdminFile, null);
 
             assertEquals("File should be locked", LockStatus.LOCK_OWNER, lockService.getLockStatus(fileNoderef));
         }
@@ -565,7 +781,7 @@ public class PutMethodTest
         // Lock the node
         try
         {
-            executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoFile, null);
+            executeMethod(WebDAV.METHOD_LOCK, fileName, davLockInfoAdminFile, null);
             ResultSet resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, "PATH:\"/app:company_home//cm:" + fileName + "\"");
             fileNoderef = resultSet.getNodeRef(0);
             resultSet.close();

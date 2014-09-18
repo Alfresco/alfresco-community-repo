@@ -31,7 +31,7 @@
 
     <property name="installer.name" value="alfresco-community" />
 
-    <target name="all" depends="sign, package-osx"/>
+    <target name="all" depends="sign, package-osx, delete-binaries"/>
 
     <target name="sign">
         <sign-installer file="${project.build.directory}/${installer.name}-${project.version}-installer-win-x32.exe"/>

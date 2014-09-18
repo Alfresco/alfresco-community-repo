@@ -69,11 +69,23 @@ DescriptorService descriptorService = (DescriptorService)context.getBean("descri
             <p>WARNING: License has failed to deploy and the system is in Read Only mode. Please visit the <a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>
 <% 
    }
-   else if (descriptorService.getLicenseDescriptor().getLicenseMode().toString().equals("ENTERPRISE"))
+   if (descriptorService.getLicenseDescriptor() != null && descriptorService.getLicenseDescriptor().getLicenseMode().toString().equals("ENTERPRISE"))
    {
 %>
             <p><a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>
-<% } %>
+            <p></p>
+            <p><a href="http://support.alfresco.com">Alfresco Support</a></p>
+<%
+   }
+   else
+   {
+%>
+            <p></p>
+            <p><a href="http://forums.alfresco.com/">Alfresco Forums</a></p>
+            <p><a href="http://issues.alfresco.com/">Alfresco JIRA</a></p>
+<%
+   }
+%>
             <p></p>
             <p><a href="./cmisatom">CMIS AtomPub Binding: AtomPub Service Document</a></p>
             <p><a href="./cmisws/cmis?wsdl">CMIS Web Services Binding: WSDL Documents</a></p>

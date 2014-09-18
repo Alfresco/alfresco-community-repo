@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -318,13 +318,17 @@ public class CommentsPost extends DeclarativeWebScript {
             public NodeRef doWork() throws Exception
             {
                 NodeRef commentsFolder = null;
+                AuthenticationUtil.pushAuthentication();
                 
                 // ALF-5240: turn off auditing round the discussion node creation to prevent
                 // the source document from being modified by the first user leaving a comment
                 behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
                 
                 try
-                {
+                {  
+                    // MNT-12082: set System user for creating forumFolder and commentsFolder nodes
+                    AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+                    
                     nodeService.addAspect(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussable"), null);
                     nodeService.addAspect(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "commentsRollup"), null);
                     List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion"), RegexQNamePattern.MATCH_ALL);
@@ -344,6 +348,7 @@ public class CommentsPost extends DeclarativeWebScript {
                 }
                 finally
                 {
+                    AuthenticationUtil.popAuthentication();
                     behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
                 }
                 

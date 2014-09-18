@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,6 +26,7 @@ import org.alfresco.repo.web.scripts.activities.feed.control.FeedControlTest;
 import org.alfresco.repo.web.scripts.admin.AdminWebScriptTest;
 import org.alfresco.repo.web.scripts.audit.AuditWebScriptTest;
 import org.alfresco.repo.web.scripts.blogs.BlogServiceTest;
+import org.alfresco.repo.web.scripts.comment.CommentsApiTest;
 import org.alfresco.repo.web.scripts.dictionary.DictionaryRestApiTest;
 import org.alfresco.repo.web.scripts.discussion.DiscussionRestApiTest;
 import org.alfresco.repo.web.scripts.facet.FacetRestApiTest;
@@ -97,6 +98,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( SOLRWebScriptTest.class );
         suite.addTestSuite( SubscriptionServiceRestApiTest.class );
         suite.addTestSuite( FacetRestApiTest.class );
+        suite.addTestSuite( CommentsApiTest.class );		
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

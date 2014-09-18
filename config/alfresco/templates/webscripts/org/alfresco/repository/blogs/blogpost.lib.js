@@ -16,6 +16,8 @@ function setOrUpdateReleasedAndUpdatedDates(node)
    // only set if was previously draft - as only the owner/admin can do this
    if (!node.inheritsPermissions())
    {
+      // MNT-12082
+      node.removePermission("All", node.getOwner());
       node.setInheritsPermissions(true);
    }
    

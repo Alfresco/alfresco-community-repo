@@ -51,6 +51,7 @@ public class SearchTestSuite extends TestSuite
         suite.addTestSuite(QueryRegisterComponentTest.class);
         suite.addTestSuite(SearcherComponentTest.class);
         suite.addTestSuite(SearchServiceTest.class);
+        suite.addTestSuite(DocumentNavigatorTest.class);
         suite.addTestSuite(ADMLuceneCategoryTest.class);
         suite.addTestSuite(ADMLuceneTest.class);
         suite.addTestSuite(ALF947Test.class);

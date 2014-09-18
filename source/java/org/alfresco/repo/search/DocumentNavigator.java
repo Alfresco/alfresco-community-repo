@@ -368,6 +368,12 @@ public class DocumentNavigator extends DefaultNavigator implements NamedAccessNa
         // decode the localname
         localName = ISO9075.decode(localName);
         
+        // MNT-10730
+        if (localName != null && (localName.equalsIgnoreCase("true") || localName.equalsIgnoreCase("false")))
+        {
+            return Collections.singletonList(new Boolean(Boolean.parseBoolean(localName))).iterator();
+        }
+        
         ChildAssociationRef assocRef = (ChildAssociationRef) contextNode;
         NodeRef childRef = assocRef.getChildRef();
         QName qName = QName.createQName(namespaceURI, localName);

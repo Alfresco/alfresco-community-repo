@@ -127,7 +127,10 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     @Override
     public List<ActivityFeedEntity> selectUserFeedsToClean(int maxFeedSize) throws SQLException
     {
-        return template.selectList("alfresco.activities.select_activity_user_feeds_greater_than_max", maxFeedSize);
+        ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
+        params.setMaxFeedSize(maxFeedSize);
+        
+        return template.selectList("alfresco.activities.select_activity_user_feeds_greater_than_max", params);
     }
 
     @Override
@@ -197,7 +200,10 @@ public class ActivityFeedDAOImpl extends ActivitiesDAOImpl implements ActivityFe
     @Override
     public List<ActivityFeedEntity> selectSiteFeedsToClean(int maxFeedSize) throws SQLException
     {
-        return template.selectList("alfresco.activities.select_activity_site_feeds_greater_than_max", maxFeedSize);
+        ActivityFeedQueryEntity params = new ActivityFeedQueryEntity();
+        params.setMaxFeedSize(maxFeedSize);
+        
+        return template.selectList("alfresco.activities.select_activity_site_feeds_greater_than_max", params);
     }
     
     @SuppressWarnings("unchecked")

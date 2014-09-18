@@ -3391,4 +3391,15 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V4.1-update-activiti-nullable-columns" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V4.1-update-activiti-nullable-columns" />
+        <property name="description" value="patch.schemaUpgradeScript.description" />
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>8005</value></property>
+        <property name="targetSchema"><value>8006</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.1/${db.script.dialect}/update-activiti-nullable-columns.sql</value>
+        </property>
+    </bean>
+
 </beans>

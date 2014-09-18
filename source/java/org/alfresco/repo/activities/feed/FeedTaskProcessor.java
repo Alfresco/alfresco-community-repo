@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.activities.post.lookup.PostLookup;
+import org.alfresco.repo.domain.activities.ActivitiesDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostEntity;
@@ -649,7 +650,7 @@ public abstract class FeedTaskProcessor
         
         for (FeedControlEntity feedControl : feedControls)
         {
-            if (((feedControl.getSiteNetwork() == null) || (feedControl.getSiteNetwork().length() == 0)) && (feedControl.getAppTool() != null))
+            if (ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE.equals(feedControl.getSiteNetwork()) && (feedControl.getAppTool() != null))
             {
                 if (feedControl.getAppTool().equals(activityPost.getAppTool()))
                 {

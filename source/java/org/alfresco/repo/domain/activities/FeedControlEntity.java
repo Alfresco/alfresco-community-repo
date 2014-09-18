@@ -28,8 +28,8 @@ import org.alfresco.service.cmr.activities.FeedControl;
 public class FeedControlEntity
 { 
     private Long id; // internal DB-generated id
-    private String feedUserId;
-    private String siteNetwork;
+    private String feedUserId = ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
+    private String siteNetwork = ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
     private String appTool;
     
     private Date lastModified; // when inserted
@@ -44,13 +44,22 @@ public class FeedControlEntity
     
     public FeedControlEntity(String feedUserId)
     {
-        this.feedUserId = feedUserId;
+        if (feedUserId != null && feedUserId.length() > 0)
+        {
+            this.feedUserId = feedUserId;
+        }
     }
     
     public FeedControlEntity(String feedUserId, FeedControl feedControl)
     {
-        this.feedUserId = feedUserId;
-        this.siteNetwork = feedControl.getSiteId();
+        if (feedUserId != null && feedUserId.length() > 0)
+        {
+            this.feedUserId = feedUserId;
+        }
+        if (feedControl.getSiteId() != null && feedControl.getSiteId().length() > 0)
+        {
+            this.siteNetwork = feedControl.getSiteId();
+        }
         this.appTool = feedControl.getAppToolId();
         this.lastModified = new Date();
     }
@@ -77,7 +86,10 @@ public class FeedControlEntity
 
     public void setSiteNetwork(String siteNetwork)
     {
-        this.siteNetwork = siteNetwork;
+        if (siteNetwork != null && siteNetwork.length() > 0)
+        {
+            this.siteNetwork = siteNetwork;
+        }
     }
 
     public String getAppTool()
@@ -97,7 +109,10 @@ public class FeedControlEntity
 
     public void setFeedUserId(String feedUserId)
     {
-        this.feedUserId = feedUserId;
+        if (feedUserId != null && feedUserId.length() > 0)
+        {
+            this.feedUserId = feedUserId;
+        }
     }
 
     public Date getLastModified()

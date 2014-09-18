@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
+import org.alfresco.repo.domain.activities.ActivitiesDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
@@ -317,7 +318,7 @@ public class FeedNotifierTest
         boolean found = false;
         for (ActivityFeedEntity feed : feeds)
         {
-            if (feed.getActivityType().equals(activityType) && (feed.getSiteNetwork() == null || feed.getSiteNetwork().isEmpty()))
+            if (feed.getActivityType().equals(activityType) && ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE.equals(feed.getSiteNetwork()))
             {
                 found = true;
             }

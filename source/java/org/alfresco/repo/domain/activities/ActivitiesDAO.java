@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,8 @@ import java.sql.SQLException;
  */
 public interface ActivitiesDAO
 {
+    public static final String KEY_ACTIVITY_NULL_VALUE = "@@NULL@@";
+    
     public void startTransaction() throws SQLException;
     
     public void commitTransaction() throws SQLException;

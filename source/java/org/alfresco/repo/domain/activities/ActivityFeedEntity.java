@@ -46,10 +46,10 @@ public class ActivityFeedEntity
     private Long id; // internal DB-generated id
     private String activityType;
     private String activitySummary;
-    private String feedUserId;
+    private String feedUserId = ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
     private String postUserId;
     private NodeRef postUserAvatarNodeRef;
-    private String siteNetwork;
+    private String siteNetwork = ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
     private String appTool;
     private Date postDate;
     private Date feedDate; // for debug
@@ -83,7 +83,10 @@ public class ActivityFeedEntity
     
     public void setFeedUserId(String userid)
     {
-        this.feedUserId = userid;
+        if (userid != null && userid.length() > 0)
+        {
+            this.feedUserId = userid;
+        }
     }
     
     public String getPostUserId()
@@ -103,7 +106,10 @@ public class ActivityFeedEntity
     
     public void setSiteNetwork(String siteNetwork) 
     {
-        this.siteNetwork = siteNetwork;
+        if (siteNetwork != null && siteNetwork.length() > 0)
+        {
+            this.siteNetwork = siteNetwork;
+        }
     }
 	
     public String getActivityType()

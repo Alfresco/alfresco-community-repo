@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.activities.ActivitiesDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedDAO;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.lock.JobLockService;
@@ -305,7 +306,7 @@ public class FeedCleaner implements NodeServicePolicies.BeforeDeleteNodePolicy
                     String feedUserId = userFeedTooMany.getFeedUserId();
                     // Rather than filter out the two usernames that indicate site-specific
                     // feed entries, we can just filter them out now.
-                    if (feedUserId == null || feedUserId.length() == 0)
+                    if (ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE.equals(feedUserId))
                     {
                         if (logger.isTraceEnabled())
                         {

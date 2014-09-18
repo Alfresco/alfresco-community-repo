@@ -28,8 +28,14 @@ public class ActivityFeedQueryEntity
 {
     private Long minId;
     private Long maxId;
+    private int maxFeedSize;
     private String feedUserId;
     private String siteNetwork;
+    
+    public String getNullValue()
+    {
+        return ActivitiesDAO.KEY_ACTIVITY_NULL_VALUE;
+    }
     
     public Long getMinId()
     {
@@ -50,6 +56,16 @@ public class ActivityFeedQueryEntity
 	{
 		this.maxId = maxId;
 	}
+
+    public int getMaxFeedSize()
+    {
+        return maxFeedSize;
+    }
+    
+    public void setMaxFeedSize(int maxFeedSize)
+    {
+        this.maxFeedSize = maxFeedSize;
+    }
 
     public String getFeedUserId()
     {

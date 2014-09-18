@@ -78,7 +78,7 @@
       <![CDATA[
       select id as id, activity_type as activityType, activity_summary as activitySummary, post_user_id as postUserId, site_network as siteNetwork, post_date as postDate
       from alf_activity_feed
-      where (feed_user_id = '' or feed_user_id is null)
+      where feed_user_id = #{nullValue}
       and site_network = #{siteNetwork}
       order by post_date desc
       ]]>

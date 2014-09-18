@@ -56,6 +56,7 @@
                 <ref bean="patch.db-V3.3-modify-index-permission_id" />
                 <ref bean="patch.db-V3.2-AddFKIndexes" />
                 <ref bean="patch.db-V3.2-AddFKIndexes-2" />
+				<ref bean="patch.db-V4.1-update-activiti-nullable-columns" />
             </list>
         </property>
         <property name="postUpdateScriptPatches">

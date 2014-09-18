@@ -27,7 +27,6 @@
         <!-- AMPS -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
             <outputDirectory>amps</outputDirectory>
             <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
             <includes>

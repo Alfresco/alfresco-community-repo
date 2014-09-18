@@ -3391,26 +3391,4 @@
         </property>
     </bean>
 
-    <bean id="patch.replaceForbiddenTagCharSequencesPatch"
-          class="org.alfresco.repo.admin.patch.impl.ReplaceForbiddenTagCharSequencesPatch"
-          parent="basePatch">
-        <property name="id">
-            <value>patch.replaceForbiddenTagCharSequencesPatch</value>
-        </property>
-        <property name="description">
-            <value>patch.replaceForbiddenTagCharSequencesPatch.description</value>
-        </property>
-        <property name="fixesFromSchema">
-            <value>0</value>
-        </property>
-        <property name="fixesToSchema">
-            <value>8005</value>
-        </property>
-        <property name="targetSchema">
-            <value>8006</value>
-        </property>
-        <property name="taggingService">
-            <ref bean="TaggingService"/>
-        </property>
-    </bean>
 </beans>

@@ -25,16 +25,13 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.text.Collator;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -76,7 +73,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -113,10 +109,6 @@ public class TaggingServiceImpl implements TaggingService,
     
     /** Tag Details Delimiter */
     private static final String TAG_DETAILS_DELIMITER = "|";
-    /** Next tag delimiter */
-    private static final String NEXT_TAG_DELIMITER = "\n";
-    
-    private static Set<String> FORBIDDEN_TAGS_SEQUENCES = new HashSet<String>(Arrays.asList(new String[] {NEXT_TAG_DELIMITER, TAG_DETAILS_DELIMITER}));
     
     /** Policy behaviour */
     private JavaBehaviour updateTagBehaviour;
@@ -728,14 +720,6 @@ public class TaggingServiceImpl implements TaggingService,
      */
     private NodeRef getTagNodeRef(StoreRef storeRef, String tag, boolean create)
     {
-        for (String forbiddenSequence : FORBIDDEN_TAGS_SEQUENCES)
-        {
-            if (create && tag.contains(forbiddenSequence))
-            {
-                throw new IllegalArgumentException("Tag name must not contain " + StringEscapeUtils.escapeJava(forbiddenSequence) + " char sequence");
-            }
-        }
-        
         NodeRef tagNodeRef = null;
         Collection<ChildAssociationRef> results = this.categoryService.getRootCategories(storeRef, ContentModel.ASPECT_TAGGABLE, tag, create);
         if (!results.isEmpty())
@@ -1330,7 +1314,7 @@ public class TaggingServiceImpl implements TaggingService,
         {
             if (bFirst == false)
             {
-                result.append(NEXT_TAG_DELIMITER);
+                result.append("\n");
             }
             else
             {

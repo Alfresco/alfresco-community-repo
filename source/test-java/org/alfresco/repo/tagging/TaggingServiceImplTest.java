@@ -124,9 +124,6 @@ public class TaggingServiceImplTest extends TestCase
     private static final String TAG_5 = "tag five";
     private static final String TAG_I18N = "àâæçéèêëîïôœùûüÿñ";
     
-    private static final String BAD_TAG = "bad \n tag";
-    private static final String BAD_TAG2 = "Broken|2";
-    
     private static final String UPPER_TAG = "House";
     private static final String LOWER_TAG = "house";
     
@@ -2161,56 +2158,5 @@ public class TaggingServiceImplTest extends TestCase
         assertEquals(tags.get(0).getCount(), 10);
         assertEquals(tags.get(1).getCount(), 20);
         assertEquals(tags.get(2).getCount(), 1);
-    }
-    
-    /* Test adding tags containing \n and | chars. Test all ways to create tag (e.g. createTag, addTag, setTags) */
-    public void testBadTags()
-    {
-        testTag(BAD_TAG);
-        testTag(BAD_TAG2);
-    }
-    	
-    private void testTag(final String tag)
-    {
-        this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
-            @Override
-            public Void execute() throws Throwable
-            {
-                try
-                {
-                    taggingService.createTag(storeRef, tag);
-                    fail();
-                }
-                catch(IllegalArgumentException iae)
-                {
-                    //
-                }
-                
-                try
-                {
-                    taggingService.addTag(document, tag);
-                    fail();
-                }
-                catch(IllegalArgumentException iae)
-                {
-                    //
-                }
-                
-                try
-                {
-                    List<String> setTags = new ArrayList<String>(2);
-                    setTags.add(tag);
-                    taggingService.setTags(document, setTags);
-                    
-                    fail();
-                }
-                catch(IllegalArgumentException iae)
-                {
-                    //
-                }
-                
-                return null;
-            }
-        });    	
     }
 }

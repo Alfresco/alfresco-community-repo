@@ -880,6 +880,9 @@
                 <directory>config</directory>
                 <excludes>
                     <exclude>alfresco/version.properties</exclude>
+                    <!-- ACE-2318 Exclude alfresco-jmxrmi.* from repository JAR -->
+                    <exclude>alfresco/alfresco-jmxrmi.access</exclude>
+                    <exclude>alfresco/alfresco-jmxrmi.password</exclude>
                 </excludes>
             </resource>
             <resource>

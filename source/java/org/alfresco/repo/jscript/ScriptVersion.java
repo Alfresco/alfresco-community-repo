@@ -20,15 +20,17 @@ package org.alfresco.repo.jscript;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.util.ParameterCheck;
 import org.mozilla.javascript.Scriptable;
 
 /**
  * Scriptable Version
- * 
+ *
  * @author davidc
  */
 public final class ScriptVersion implements Serializable
@@ -39,8 +41,6 @@ public final class ScriptVersion implements Serializable
     private Scriptable scope;
     private ServiceRegistry services;
     private Version version;
-    private static ValueConverter converter = new ValueConverter();
-    
 
     /**
      * Construct
@@ -54,37 +54,37 @@ public final class ScriptVersion implements Serializable
 
     /**
      * Gets the date the version was created
-     * 
+     *
      * @return  the date the version was created
      */
     public Date getCreatedDate()
     {
-        return version.getCreatedDate();
+        return version.getFrozenModifiedDate();
     }
-    
+
     /**
      * Gets the creator of the version
-     * 
+     *
      * @return  the creator of the version
      */
     public String getCreator()
     {
-        return version.getCreator();
+        return version.getFrozenModifier();
     }
 
     /**
      * Gets the version label
-     * 
+     *
      * @return  the version label
      */
     public String getLabel()
     {
         return version.getVersionLabel();
     }
-    
+
     /**
      * Gets the version type
-     * 
+     *
      * @return  "MAJOR", "MINOR"
      */
     public String getType()
@@ -98,10 +98,10 @@ public final class ScriptVersion implements Serializable
             return "";
         }
     }
-    
+
     /**
      * Gets the version description (or checkin comment)
-     * 
+     *
      * @return the version description
      */
     public String getDescription()
@@ -112,22 +112,43 @@ public final class ScriptVersion implements Serializable
 
     /**
      * Gets the node ref represented by this version
-     * 
+     *
      * @return  node ref
      */
     public NodeRef getNodeRef()
     {
         return version.getVersionedNodeRef();
     }
-    
+
     /**
      * Gets the node represented by this version
-     * 
+     *
      * @return  node
      */
     public ScriptNode getNode()
     {
         return new ScriptNode(version.getFrozenStateNodeRef(), services, scope);
     }
-    
+
+    /**
+     * Get the map containing the version property values
+     *
+     * @return  the map containing the version properties
+     */
+    public Map<String, Serializable> getVersionProperties()
+    {
+        return version.getVersionProperties();
+    }
+
+    /**
+     * Gets the value of a named version property.
+     *
+     * @param name  the name of the property
+     * @return      the value of the property
+     */
+    public Serializable getVersionProperty(String name)
+    {
+        ParameterCheck.mandatoryString("name", name);
+        return version.getVersionProperty(name);
+    }
 }

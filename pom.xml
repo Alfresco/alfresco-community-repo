@@ -227,7 +227,7 @@
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <sqlCommand>drop database if exists alfresco</sqlCommand>
+                            <sqlCommand>${db.drop.command}</sqlCommand>
                         </configuration>
                     </execution>
                     <execution>
@@ -237,7 +237,7 @@
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <sqlCommand>create database alfresco</sqlCommand>
+                            <sqlCommand>${db.create.command}</sqlCommand>
                         </configuration>
                     </execution>
                 </executions>

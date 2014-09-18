@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,11 +19,14 @@
 
 package org.alfresco.repo.invitation;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.mail.internet.MimeMessage;
 
@@ -40,6 +43,7 @@ import org.alfresco.service.cmr.invitation.InvitationSearchCriteria;
 import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
@@ -51,6 +55,7 @@ import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ReflectionUtils;
+import org.alfresco.repo.processor.TemplateServiceImpl;
 
 /**
  * Unit tests of Invitation Service
@@ -66,6 +71,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     private boolean startSendEmails;
     protected InvitationServiceImpl invitationServiceImpl;
     protected WorkflowAdminServiceImpl workflowAdminService;
+    private TemplateService templateService;
  
     protected final static String SITE_SHORT_NAME_INVITE = "InvitationTest";
     protected final static String SITE_SHORT_NAME_RED = "InvitationTestRed";
@@ -104,6 +110,8 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
                     .getBean("authenticationComponent");
         this.invitationServiceImpl = (InvitationServiceImpl) applicationContext.getBean("invitationService");
         this.workflowAdminService = (WorkflowAdminServiceImpl)applicationContext.getBean(WorkflowAdminServiceImpl.NAME); 
+        
+        this.templateService = (TemplateServiceImpl)applicationContext.getBean("templateService");
         
         this.startSendEmails = invitationServiceImpl.isSendEmails();
         
@@ -582,6 +590,70 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         siteService.removeMembership(resourceName, inviteeBUserName);
     }
 
+    public void testMNT11775() throws Exception
+    {
+        String inviteeUserName = USER_TWO;
+        Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
+        String resourceName = SITE_SHORT_NAME_INVITE;
+        String inviteeRole = SiteModel.SITE_COLLABORATOR;
+        String comments = "please sir, let me in!";
+
+        /**
+         * New invitation from User TWO
+         */
+        this.authenticationComponent.setCurrentUser(USER_TWO);
+        ModeratedInvitation invitation = invitationService.inviteModerated(comments, inviteeUserName, resourceType, resourceName, inviteeRole);
+
+        String invitationId = invitation.getInviteId();
+
+        /**
+         * Reject the invitation
+         */
+        this.authenticationComponent.setCurrentUser(USER_MANAGER);
+        invitationService.reject(invitationId, "Go away!");
+
+        /**
+         * Negative test attempt to approve an invitation that has been rejected
+         */
+        try
+        {
+            invitationService.approve(invitationId, "Have I not rejected this?");
+            assertTrue("rejected invitation not working", false);
+        }
+        catch (Exception e)
+        {
+            // An exception should have been thrown
+            e.printStackTrace();
+            System.out.println(e.toString());
+        }
+
+        /**
+         * process email message template
+         */
+        try
+        {
+            // Build our model
+            Map<String, Serializable> model = new HashMap<String, Serializable>(8, 1.0f);
+            model.put("resourceName", resourceName);
+            model.put("resourceType", resourceType);
+            model.put("inviteeRole", inviteeRole);
+            model.put("reviewComments", "Go away!");
+            model.put("inviteeUserName", inviteeUserName);
+
+            // Process the template
+            String emailMsg = templateService.processTemplate("freemarker", "/alfresco/bootstrap/invite/moderated-reject-email.ftl", model);
+
+            assertNotNull("Email message is null", emailMsg);
+            assertTrue("Email message doesn't contain review comment", emailMsg.contains("Go away!"));
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            System.out.println(ex.toString());
+            fail("Process email message template exception");
+        }
+    }
+    
     /**
      * Test nominated user - new user with whitespace in name. Related to
      * ETHREEOH-3030.

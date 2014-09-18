@@ -28,6 +28,7 @@
                <activiti:field name="script">
                   <activiti:string>
                      execution.setVariable('imwf_reviewOutcome', task.getVariable('imwf_reviewOutcome'));
+                     execution.setVariable('imwf_reviewComments', (task.hasVariable('imwf_reviewOutcome') ? task.getVariable('imwf_reviewOutcome') : task.getVariable('bpm_comment')));
                      execution.setVariable('imwf_reviewer', person.properties.userName);
                   </activiti:string>
                </activiti:field>

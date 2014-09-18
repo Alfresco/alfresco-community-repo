@@ -504,7 +504,7 @@
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>3.10-FINAL-20140910-alfresco-patched</version>
+            <version>3.10-FINAL-20140916-alfresco-patched</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>

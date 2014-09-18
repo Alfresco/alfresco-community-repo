@@ -169,7 +169,7 @@
 
     <bean id="sessionScript" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.Session">
         <property name="extensionName">
-            <value>session</value>
+            <value>sessionticket</value>
         </property>        
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>

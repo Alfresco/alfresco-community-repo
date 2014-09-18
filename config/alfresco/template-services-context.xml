@@ -50,7 +50,7 @@
     
     <bean id="sessionTemplateExtension" parent="baseTemplateImplementation" class="org.alfresco.repo.template.Session">
         <property name="extensionName">
-            <value>session</value>
+            <value>sessionticket</value>
         </property>
         <property name="serviceRegistry">
             <ref bean="ServiceRegistry"/>

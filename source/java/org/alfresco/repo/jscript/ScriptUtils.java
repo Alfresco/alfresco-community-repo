@@ -44,7 +44,7 @@ public class ScriptUtils extends BaseScopableProcessorExtension
     private final static String NAMESPACE_BEGIN = "" + QName.NAMESPACE_BEGIN;
     
     /** Services */
-    private ServiceRegistry services;
+    protected ServiceRegistry services;
     
     private NodeService unprotNodeService;
     

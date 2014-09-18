@@ -545,7 +545,6 @@ public class NodeBrowserScript extends DeclarativeWebScript
     		permissionInfo.put("entries", getPermissions(nodeRef));
     		permissionInfo.put("owner", this.getOwnableService().getOwner(nodeRef));
     		permissionInfo.put("inherit", this.getInheritPermissions(nodeRef));
-    		permissionInfo.put("entries", getPermissions(nodeRef));
     		permissionInfo.put("storePermissions", getStorePermissionMasks(nodeRef));
 
     		Map<String, Object> model = new HashMap<String, Object>();

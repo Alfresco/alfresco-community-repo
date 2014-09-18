@@ -24,16 +24,6 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>alfresco-remote-api</artifactId>
             <version>${project.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.axis</groupId>
-                    <artifactId>axis-jaxrpc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.axis</groupId>
-                    <artifactId>axis-saaj</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

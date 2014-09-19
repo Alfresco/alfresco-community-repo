@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.audit.extractor;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Derek Hulley
  * @since 3.2
  */
+@AlfrescoPublicApi
 public abstract class AbstractDataExtractor implements DataExtractor, InitializingBean, BeanNameAware
 {
     /** Logger that can be used by subclasses */

@@ -20,6 +20,8 @@ package org.alfresco.repo.audit.generator;
 
 import java.io.Serializable;
 
+import org.alfresco.api.AlfrescoPublicApi;   
+
 /**
  * Interface for Audit data value generators.These are used to produce auditable data values
  * extract auditable values from nothing; typically these values are derived from the system
@@ -30,6 +32,7 @@ import java.io.Serializable;
  * @author Derek Hulley
  * @since 3.2
  */
+@AlfrescoPublicApi
 public interface DataGenerator
 {
     /**

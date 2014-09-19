@@ -20,6 +20,8 @@ package org.alfresco.repo.audit.extractor;
 
 import java.io.Serializable;
 
+import org.alfresco.api.AlfrescoPublicApi;   
+
 /**
  * Interface for Audit data value extractors.  These are used to extract auditable values
  * from those arguments, return values, exceptions and any other value passed into the audit
@@ -32,6 +34,7 @@ import java.io.Serializable;
  * @author Derek Hulley
  * @since 3.2
  */
+@AlfrescoPublicApi
 public interface DataExtractor
 {
     /**

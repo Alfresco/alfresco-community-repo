@@ -1104,6 +1104,31 @@
         </property>
     </bean>
 
+    <bean id="solr4" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>false</value>
+        </property>
+        <property name="compositePropertyTypes">
+            <map>
+                <entry key="solr.store.mappings">
+                    <value>org.alfresco.repo.search.impl.solr.SolrStoreMapping</value>
+                </entry>
+            </map>
+        </property>
+        <property name="category">
+            <value>Search</value>
+        </property>
+        <property name="typeName">
+            <value>solr4</value>
+        </property>
+        <property name="instancePath">
+            <list>
+                <value>managed</value>
+                <value>solr4</value>
+            </list>
+        </property>
+    </bean>
+    
     <bean id="lucene" class="org.alfresco.repo.management.subsystems.LuceneChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
             <value>false</value>

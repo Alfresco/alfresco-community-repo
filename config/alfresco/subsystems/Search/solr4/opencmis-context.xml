@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+   <import resource="../common-opencmis-context.xml" />
+
+   <bean id="search.OpenCMISQueryService" class="org.alfresco.repo.search.impl.solr.SolrOpenCMISQueryServiceImpl" >
+       <property name="cmisDictionaryService">
+            <ref bean="OpenCMISDictionaryService" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="solrQueryLanguage">
+            <ref bean="search.cmis.alfresco.switching" />
+        </property>
+    </bean>
+
+   <bean id="search.OpenCMISQueryService1.1" class="org.alfresco.repo.search.impl.solr.SolrOpenCMISQueryServiceImpl" >
+       <property name="cmisDictionaryService">
+            <ref bean="OpenCMISDictionaryService1.1" />
+        </property>
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="alfrescoDictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="solrQueryLanguage">
+            <ref bean="search.cmis.alfresco.switching" />
+        </property>
+    </bean>
+    
+    <bean id="search.cmis.alfresco.index" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>solr-cmis</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+</beans>

@@ -1,0 +1,301 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <import resource="../common-search-context.xml" />
+
+    <bean id="search.indexerComponent" class="org.alfresco.repo.search.IndexerComponent">
+        <property name="storeRedirectorProxyFactory">
+            <ref bean="&amp;search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.searchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.admSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.solrIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+    <bean id="search.versionSearchService" class="org.alfresco.repo.search.SearcherComponent">
+        <property name="indexerAndSearcherFactory">
+            <ref bean="search.solrIndexerAndSearcherFactory" />
+        </property>
+    </bean>
+
+    <bean id="search.solrQueryHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrQueryHTTPClient" init-method="init">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="nodeDAO">
+            <ref bean="nodeDAO" />
+        </property>
+        <property name="alternativeDictionary" value="${solr.cmis.alternativeDictionary}" />
+        <property name="permissionService">
+            <ref bean="permissionService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService" />
+        </property>
+        <property name="repositoryState">
+            <ref bean="repositoryState" />
+        </property>
+        <property name="languageMappings">
+            <map>
+                <entry key="lucene" value="alfresco" />
+                <entry key="solr-alfresco" value="alfresco" />
+                <entry key="cmis-strict" value="cmis" />
+                <entry key="cmis-alfresco" value="cmis" />
+                <entry key="solr-cmis" value="cmis" />
+                <entry key="fts-alfresco" value="afts" />
+                <entry key="solr-fts-alfresco" value="afts" />
+            </map>
+        </property>
+        <property name="storeMappings">
+            <ref bean="solr.store.mappings" />
+        </property>
+        <property name="includeGroupsForRoleAdmin">
+        	<value>${solr.query.includeGroupsForRoleAdmin}</value>
+        </property>
+        <property name="maximumResultsFromUnlimitedQuery">
+            <value>${solr.query.maximumResultsFromUnlimitedQuery}</value>
+        </property>
+    </bean>
+    
+    
+    <!--The configurable RPC user mappings - actually a post-processed composite property! -->
+    <bean id="solr.store.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
+        <property name="sourceList">
+            <list>
+                <bean class="org.alfresco.repo.search.impl.solr.SolrStoreMapping">
+                    <property name="beanName">
+                        <value>solrMappingAlfresco</value>
+                    </property>
+                    <property name="httpClientFactory">
+                        <value>solrHttpClientFactory</value>
+                    </property>
+                    <property name="baseUrl">
+                        <value>/solr4/alfresco</value>
+                    </property>
+                    <property name="protocol">
+                        <value>workspace</value>
+                    </property>
+                    <property name="identifier">
+                        <value>SpacesStore</value>
+                    </property>
+                </bean>
+                <bean class="org.alfresco.repo.search.impl.solr.SolrStoreMapping">
+                    <property name="beanName">
+                        <value>solrMappingArchive</value>
+                    </property>
+                    <property name="httpClientFactory">
+                        <value>solrHttpClientFactory</value>
+                    </property>
+                    <property name="baseUrl">
+                        <value>/solr4/archive</value>
+                    </property>
+                     <property name="protocol">
+                        <value>archive</value>
+                    </property>
+                    <property name="identifier">
+                        <value>SpacesStore</value>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="solrHttpClientFactory" class="org.alfresco.httpclient.HttpClientFactory" init-method="init">
+        <property name="secureCommsType" value="${solr.secureComms}"/>
+        <property name="sSLEncryptionParameters" ref="sslEncryptionParameters"/>
+        <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
+        <property name="keyStoreParameters" ref="keyStoreParameters"/>
+        <property name="encryptionParameters" ref="md5EncryptionParameters"/>
+        <property name="host" value="${solr.host}"/>
+        <property name="port" value="${solr.port}"/>
+        <property name="sslPort" value="${solr.port.ssl}"/>
+        <property name="maxTotalConnections" value="${solr.max.total.connections}"/>
+        <property name="maxHostConnections" value="${solr.max.host.connections}"/>
+    </bean>
+
+    <bean id="solrAdminClient" class="org.alfresco.repo.solr.SOLRAdminClient" init-method="init">
+      <property name="solrHost" value="${solr.host}"/>
+      <property name="solrPort" value="${solr.port}"/>
+      <property name="solrsslPort" value="${solr.port.ssl}"/>
+      <property name="solrUser" value="${solr.solrUser}"/>
+      <property name="solrPassword" value="${solr.solrPassword}"/>
+      <property name="solrPingCronExpression" value="${solr.solrPingCronExpression}"/>
+      <property name="solrConnectTimeout" value="${solr.solrConnectTimeout}"/>
+      <property name="httpClientFactory" ref="solrHttpClientFactory"/>
+       <property name="scheduler">
+            <ref bean="searchSchedulerFactory" />
+        </property>
+    </bean>
+    
+    
+    <bean id="search.solrAdminHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrAdminHTTPClient" init-method="init">
+        <property name="httpClientFactory" ref="solrHttpClientFactory"/>
+    </bean>
+    
+
+	<bean id="search.lucene.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>lucene</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+        
+    </bean>
+    
+    <bean id="search.solr.alfresco" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>solr-alfresco</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+        
+    </bean>
+   
+    <bean id="search.lucene.xpath" class="org.alfresco.repo.search.impl.solr.SolrXPathQueryLanguage" >
+        <property name="solrQueryLanguage" >
+	        <ref bean="search.fts.alfresco.index" />
+	    </property>
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>xpath</value>
+        </property>
+    </bean>
+
+    <bean id="search.fts.alfresco.index" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage"  >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>solr-fts-alfresco</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+    
+    <bean id="search.solr.cmis" class="org.alfresco.repo.search.impl.solr.SolrQueryLanguage" >
+	    <property name="factories">
+			<list>
+			    <ref bean="search.indexerAndSearcherFactory" />
+			</list>
+        </property>
+        <property name="name">
+            <value>solr-cmis</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
+    </bean>
+ 
+    <bean id="search.indexerAndSearcherFactory" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.repo.search.IndexerAndSearcher</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.solrIndexerAndSearcherFactory"></ref>
+        </property>
+    </bean>
+ 
+    <bean id="search.solrIndexerAndSearcherFactory"
+        class="org.alfresco.repo.search.impl.solr.SolrIndexerAndSearcherFactory">
+        <property name="nodeService">
+            <ref bean="mlAwareNodeService" />
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="queryRegister">
+            <ref bean="search.queryRegisterComponent" />
+        </property>
+    </bean>
+    
+    <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneIndexerAndSearcherFactory"/>
+    <alias name="search.indexerAndSearcherFactory" alias="search.admLuceneUnIndexedIndexerAndSearcherFactory"/>
+    
+    <bean id="search.categoryService" class="org.alfresco.repo.service.StoreRedirectorProxyFactory">
+        <property name="proxyInterface">
+            <value>org.alfresco.service.cmr.search.CategoryService</value>
+        </property>
+        <property name="defaultBinding">
+            <ref bean="search.luceneCategoryService"></ref>
+        </property>
+        <property name="redirectedProtocolBindings">
+            <map>
+                <entry key="workspace">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+                <entry key="versionStore">
+                    <ref bean="search.luceneCategoryService"></ref>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+    <bean id="search.luceneCategoryService" class="org.alfresco.repo.search.impl.solr.SolrCategoryServiceImpl">
+        <property name="nodeService">
+            <ref bean="nodeService" />
+        </property>
+        <property name="publicNodeService">
+            <ref bean="NodeService" />
+        </property>
+        <property name="tenantService">
+            <ref bean="tenantService"/>
+        </property>
+        <property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
+        <property name="namespacePrefixResolver">
+            <ref bean="namespaceService" />
+        </property>
+        <property name="indexerAndSearcher">
+            <ref bean="search.indexerAndSearcherFactory" />
+        </property>
+    </bean>
+    
+     <bean
+         id="search.indexRecoveryComponent"
+         class="org.alfresco.repo.search.impl.solr.SolrIndexRecovery" >
+   </bean>
+   
+	<bean id="search.indexConfigurationChecker" class="org.alfresco.repo.admin.DummyIndexConfigurationCheckerImpl">
+    </bean>
+    
+   <bean id="search.statsService" class="org.alfresco.repo.search.impl.solr.SolrStatsService">
+     <property name="searcher">
+         <ref bean="search.indexerAndSearcherFactory" />
+     </property>
+   </bean>
+	
+</beans>

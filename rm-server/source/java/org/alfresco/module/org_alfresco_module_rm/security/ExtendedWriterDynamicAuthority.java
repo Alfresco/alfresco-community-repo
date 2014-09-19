@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.security;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,7 +55,11 @@ public class ExtendedWriterDynamicAuthority extends ExtendedSecurityBaseDynamicA
     {
     	if (requiredFor == null)
     	{
-    		requiredFor = Collections.singleton(getModelDAO().getPermissionReference(null, RMPermissionModel.FILE_RECORDS));
+    		requiredFor = new HashSet<PermissionReference>(3);
+    		Collections.addAll(requiredFor, 
+    						   getModelDAO().getPermissionReference(null, RMPermissionModel.READ_RECORDS),
+    				           getModelDAO().getPermissionReference(null, RMPermissionModel.FILING), 
+    				           getModelDAO().getPermissionReference(null, RMPermissionModel.FILE_RECORDS));
     	}
     	
     	return requiredFor;

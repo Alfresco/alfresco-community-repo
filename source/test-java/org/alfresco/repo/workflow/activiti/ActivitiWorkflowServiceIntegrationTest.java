@@ -148,26 +148,34 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         props.put(ContentModel.PROP_NAME, "MNT-11522-testfile.txt");
         final ChildAssociationRef childAssoc = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "MNT-11522-test"), ContentModel.TYPE_CONTENT, props);
-        NodeRef node = childAssoc.getChildRef();
-        Date lastDate = new Date();
-        nodeService.setProperty(node, ContentModel.PROP_MODIFIED, lastDate);
+        NodeRef addedNodeRef = childAssoc.getChildRef();
+        Date lastModifiedDate = (Date)nodeService.getProperty(addedNodeRef, ContentModel.PROP_MODIFIED);        
         WorkflowDefinition definition = deployDefinition(getPooledReviewDefinitionPath());
         
         assertNotNull(definition);
         
         // Create workflow parameters
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-        NodeRef wfPackage = workflowService.createPackage(null);
-        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        NodeRef workflowPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, workflowPackage);
+        NodeRef group = groupManager.get(GROUP);
+        assertNotNull(group);
+        params.put(WorkflowModel.ASSOC_GROUP_ASSIGNEE, group);
         
-        ChildAssociationRef childAs = nodeService.addChild(wfPackage, node,  WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                 QName.createValidLocalName((String)nodeService.getProperty(node, ContentModel.PROP_NAME))));
+        nodeService.addChild(workflowPackage, addedNodeRef,  WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                QName.createValidLocalName((String)nodeService.getProperty(addedNodeRef, ContentModel.PROP_NAME))));
         
-        WorkflowPath startTask = workflowService.startWorkflow(definition.getId(), params);
-        assertNotNull(startTask);
+        WorkflowPath workflowPath = workflowService.startWorkflow(definition.getId(), params);
+        assertNotNull(workflowPath);
+        assertTrue(workflowPath.isActive());
+        final String workflowInstanceId = workflowPath.getInstance().getId();
+        
+        // End start task to progress workflow
+        WorkflowTask startTask = workflowService.getStartTask(workflowInstanceId);
         String startTaskId = startTask.getId();
-        assertEquals(lastDate, nodeService.getProperty(node, ContentModel.PROP_MODIFIED));
         workflowService.endTask(startTaskId, null);
+        
+        assertEquals(lastModifiedDate, nodeService.getProperty(addedNodeRef, ContentModel.PROP_MODIFIED));
     }
     
     public void testGetWorkflowTaskDefinitionsWithMultiInstanceTask()

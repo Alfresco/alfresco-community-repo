@@ -36,6 +36,7 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.publishing.PublishingEventHelper;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
@@ -90,6 +91,7 @@ public class StartWorkflowWizard extends BaseWizardBean
    
    transient private WorkflowService workflowService;
    transient private InvitationService invitationService;
+   transient private BehaviourFilter policyBehaviourFilter;
    
    protected Node startTaskNode;
    protected List<Node> resources;
@@ -115,6 +117,20 @@ public class StartWorkflowWizard extends BaseWizardBean
          this.unprotectedNodeService = (NodeService) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "nodeService");
       }
       return this.unprotectedNodeService;
+   }
+   
+   public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
+   {
+       this.policyBehaviourFilter = policyBehaviourFilter;
+   }
+   
+   protected BehaviourFilter getBehaviourFilter()
+   {
+	   if(this.policyBehaviourFilter == null)
+	   {
+		   this.policyBehaviourFilter = (BehaviourFilter) FacesHelper.getManagedBean(FacesContext.getCurrentInstance(), "policyBehaviourFilter");
+	   }
+	   return this.policyBehaviourFilter;
    }
    
    protected Map<String, WorkflowDefinition> getWorkflows()
@@ -203,11 +219,20 @@ public class StartWorkflowWizard extends BaseWizardBean
          
       for (String addedItem : this.packageItemsToAdd)
       {
-        NodeRef addedNodeRef = new NodeRef(addedItem);
-        this.getUnprotectedNodeService().addChild(workflowPackage, addedNodeRef, 
-              WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-              QName.createValidLocalName((String)this.getNodeService().getProperty(
-                    addedNodeRef, ContentModel.PROP_NAME))));
+         NodeRef addedNodeRef = new NodeRef(addedItem);
+         //MNT-11522. fix bug. add behavior filter for add items in workflow package.
+         try
+         {
+             this.getBehaviourFilter().disableBehaviour(addedNodeRef, ContentModel.ASPECT_AUDITABLE);	
+             this.getUnprotectedNodeService().addChild(workflowPackage, addedNodeRef, 
+                   WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                   QName.createValidLocalName((String)this.getNodeService().getProperty(
+                         addedNodeRef, ContentModel.PROP_NAME))));
+         }
+         finally
+         {
+             this.getBehaviourFilter().enableBehaviour(addedNodeRef, ContentModel.ASPECT_AUDITABLE);
+         }
       }
       
       // setup the context for the workflow (this is the space the workflow was launched from)

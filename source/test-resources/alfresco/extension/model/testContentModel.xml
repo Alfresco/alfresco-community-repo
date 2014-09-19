@@ -722,42 +722,42 @@
             <property name="cm:publisher">
                <title>Publisher</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
             <property name="cm:contributor">
                <title>Contributor</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
             <property name="cm:type">
                <title>Type</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
             <property name="cm:identifier">
                <title>Identifier</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
             <property name="cm:dcsource">
                <title>Source</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
             <property name="cm:coverage">
                <title>Coverage</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
             <property name="cm:rights">
                <title>Rights</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
             <property name="cm:subject">
                <title>Subject</title>
                <type>d:text</type>
-               <mandatory enforced="false">true</mandatory>
+               <mandatory enforced="false">false</mandatory>
             </property>
          </properties>
          <mandatory-aspects>

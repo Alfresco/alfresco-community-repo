@@ -18,6 +18,7 @@
  */
 package org.alfresco.model;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
@@ -27,6 +28,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author gavinc
  */
+@AlfrescoPublicApi
 public interface ForumModel
 {
     //

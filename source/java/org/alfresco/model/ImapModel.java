@@ -18,6 +18,7 @@
  */
 package org.alfresco.model;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -25,6 +26,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Mike Shavnev
  */
+@AlfrescoPublicApi
 public interface ImapModel
 {
     static final String IMAP_MODEL_1_0_URI = "http://www.alfresco.org/model/imap/1.0";

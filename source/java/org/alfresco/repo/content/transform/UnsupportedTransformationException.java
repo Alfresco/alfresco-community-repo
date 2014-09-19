@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
@@ -28,6 +29,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public class UnsupportedTransformationException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 9039331287661301086L;

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.api.AlfrescoPublicApi;  
 
 /**
  * Interface to obtain the configuration and performance data for every
@@ -25,6 +26,7 @@ package org.alfresco.repo.content.transform;
  *  
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public interface TransformerStatistics
 {
     /**

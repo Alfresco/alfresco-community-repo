@@ -28,6 +28,7 @@ import static org.alfresco.service.cmr.repository.TransformationOptionLimits.OPT
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -45,6 +46,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public abstract class AbstractContentTransformerLimits extends ContentTransformerHelper implements ContentTransformer
 {
     /** Indicates if 'page' limits are supported. */

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content.transform;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
@@ -29,6 +30,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * @author dward
  */
 // TODO Modify ContentTransformerWorker to understand transformer limits. At the moment no workers use them
+@AlfrescoPublicApi
 public interface ContentTransformerWorker
 {
     /**

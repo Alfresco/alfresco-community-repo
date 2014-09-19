@@ -26,6 +26,7 @@ import java.io.RandomAccessFile;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.repo.content.AbstractContentWriter;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -40,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class FileContentWriter extends AbstractContentWriter
 {
     private static final Log logger = LogFactory.getLog(FileContentWriter.class);

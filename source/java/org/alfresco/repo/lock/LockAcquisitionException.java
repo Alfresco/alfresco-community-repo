@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.lock;
 
+import org.alfresco.api.AlfrescoPublicApi;  
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.namespace.QName;
 
@@ -27,6 +28,7 @@ import org.alfresco.service.namespace.QName;
  * @author Derek Hulley
  * @since 3.2
  */
+@AlfrescoPublicApi
 public class LockAcquisitionException extends AlfrescoRuntimeException
 {
     private static final long serialVersionUID = 8215858379509645862L;

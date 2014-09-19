@@ -21,6 +21,7 @@ package org.alfresco.repo.content.transform;
 import java.io.File;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -41,6 +42,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author Neil McErlean
  */
+@AlfrescoPublicApi
 public class FailoverContentTransformer extends AbstractContentTransformer2 implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(FailoverContentTransformer.class);

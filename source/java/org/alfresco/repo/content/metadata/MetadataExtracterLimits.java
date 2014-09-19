@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import org.alfresco.api.AlfrescoPublicApi;    
+
 /**
  * Represents maximum values (that result in exceptions if exceeded) or
  * limits on values (that result in EOF (End Of File) being returned
@@ -25,6 +27,7 @@ package org.alfresco.repo.content.metadata;
  * 
  * @author Ray Gauss II
  */
+@AlfrescoPublicApi
 public class MetadataExtracterLimits
 {
     private long timeoutMs = -1;

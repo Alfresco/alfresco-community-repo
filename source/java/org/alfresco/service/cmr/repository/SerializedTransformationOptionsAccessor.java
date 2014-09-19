@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.repository;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
 
 /**
@@ -26,6 +27,7 @@ import org.alfresco.service.cmr.rendition.RenditionServiceException;
  * 
  * @author Ray Gauss II
  */
+@AlfrescoPublicApi
 public interface SerializedTransformationOptionsAccessor
 {
     

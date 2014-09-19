@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.lock;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -39,6 +40,7 @@ import org.alfresco.service.namespace.QName;
  * @author Derek Hulley
  * @since 3.2
  */
+@AlfrescoPublicApi
 public interface JobLockService
 {
     /**
@@ -208,6 +210,7 @@ public interface JobLockService
      * @author Derek Hulley
      * @since 3.4.0b
      */
+    @AlfrescoPublicApi
     public interface JobLockRefreshCallback
     {
         /**

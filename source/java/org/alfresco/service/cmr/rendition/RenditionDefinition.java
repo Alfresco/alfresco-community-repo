@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.rendition;
 
 import java.io.Serializable;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -36,6 +37,7 @@ import org.alfresco.service.namespace.QName;
  * @author Nick Smith
  * @author Neil McErlean
  */
+@AlfrescoPublicApi
 public interface RenditionDefinition extends Action, Serializable
 {
     /**

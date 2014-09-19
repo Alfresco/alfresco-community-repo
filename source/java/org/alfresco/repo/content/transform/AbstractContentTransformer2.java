@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractStreamAwareProxy;
 import org.alfresco.repo.content.StreamAwareContentReaderProxy;
@@ -51,6 +52,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Derek Hulley
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public abstract class AbstractContentTransformer2 extends AbstractContentTransformerLimits
 {
     private static final Log logger = LogFactory.getLog(AbstractContentTransformer2.class);

@@ -31,6 +31,7 @@ import java.util.Map;
 
 import javax.faces.el.MethodNotFoundException;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -52,6 +53,7 @@ import org.springframework.beans.factory.InitializingBean;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class ComplexContentTransformer extends AbstractContentTransformer2 implements InitializingBean
 {
     /**

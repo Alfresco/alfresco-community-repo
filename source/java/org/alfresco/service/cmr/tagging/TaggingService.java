@@ -20,6 +20,7 @@ package org.alfresco.service.cmr.tagging;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi; 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
@@ -33,6 +34,7 @@ import org.alfresco.util.Pair;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface TaggingService
 {
     /**

@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.service.Auditable;
 
 /**
@@ -38,6 +39,7 @@ import org.alfresco.service.Auditable;
  * 
  * @author Kevin Roast
  */
+@AlfrescoPublicApi
 public interface TemplateService
 {
     /** Keys for default model values */

@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.rendition;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.repo.rendition.RenditionDefinitionPersister;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.action.ActionTrackingService;
@@ -33,6 +34,7 @@ import org.alfresco.service.namespace.QName;
  * @author Nick Smith
  * @author Neil McErlean
  */
+@AlfrescoPublicApi
 public interface RenditionService extends RenditionDefinitionPersister
 {
     /**

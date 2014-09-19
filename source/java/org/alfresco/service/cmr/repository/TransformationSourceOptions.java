@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.rendition.executer.AbstractRenderingEngine;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.PagedSourceOptions;
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.repository.PagedSourceOptions;
  * 
  * @author Ray Gauss II
  */
+@AlfrescoPublicApi
 public interface TransformationSourceOptions
 {
     
@@ -87,6 +89,7 @@ public interface TransformationSourceOptions
      * with {@link AbstractRenderingEngine}'s RenderContext being an implementer
      * of this interface.
      */
+    @AlfrescoPublicApi
     public interface TransformationSourceOptionsSerializer
     {
         

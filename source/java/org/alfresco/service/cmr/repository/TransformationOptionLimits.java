@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.util.EqualsHelper;
 
 /**
@@ -31,6 +32,7 @@ import org.alfresco.util.EqualsHelper;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public class TransformationOptionLimits implements Serializable
 {
     private static final long serialVersionUID = 1L;

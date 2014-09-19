@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -62,6 +63,7 @@ import org.apache.commons.logging.LogFactory;
  * set in FileInfo.
  *
  */
+@AlfrescoPublicApi
 public class HiddenAspect
 {
     private static Log logger = LogFactory.getLog(HiddenAspect.class);

@@ -271,6 +271,7 @@ public interface PersonService
      * @author janv
      * @since 4.0
      */
+    @AlfrescoPublicApi
     public class PersonInfo implements PermissionCheckValue
     {
         private final NodeRef nodeRef;

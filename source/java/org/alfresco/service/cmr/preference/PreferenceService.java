@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.preference;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.Auditable;
@@ -29,6 +30,7 @@ import org.alfresco.util.Pair;
 /**
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface PreferenceService
 {
     /**

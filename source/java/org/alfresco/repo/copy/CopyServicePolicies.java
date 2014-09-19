@@ -20,6 +20,7 @@ package org.alfresco.repo.copy;
 
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -125,6 +126,7 @@ public interface CopyServicePolicies
      *  overwritten. You are unable to make changes to what gets copied though, that must
      *  be done earlier via a {@link OnCopyNodePolicy}.
      */
+    @AlfrescoPublicApi
     public interface BeforeCopyPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCopy");
@@ -148,6 +150,7 @@ public interface CopyServicePolicies
      * The copy map contains all the nodes created during the copy, this helps to re-map
      * any potentially relative associations.
      */
+    @AlfrescoPublicApi
     public interface OnCopyCompletePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCopyComplete");

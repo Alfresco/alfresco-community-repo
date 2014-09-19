@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class ContentTransformerRegistry
 {
     private static final Log logger = LogFactory.getLog(ContentTransformerRegistry.class);

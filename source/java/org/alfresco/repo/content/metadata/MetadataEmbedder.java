@@ -21,6 +21,7 @@ package org.alfresco.repo.content.metadata;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.repo.content.ContentWorker;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -33,6 +34,7 @@ import org.alfresco.service.namespace.QName;
  * @author Ray Gauss II
  *
  */
+@AlfrescoPublicApi
 public interface MetadataEmbedder extends ContentWorker {
 
     /**

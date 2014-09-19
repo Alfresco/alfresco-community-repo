@@ -27,6 +27,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.text.MessageFormat;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.repo.content.AbstractContentReader;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
@@ -44,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class FileContentReader extends AbstractContentReader
     implements org.alfresco.service.cmr.repository.FileContentReader
 {

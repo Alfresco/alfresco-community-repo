@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.policy;
 
+import org.alfresco.api.AlfrescoPublicApi;  
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -53,6 +54,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public interface BehaviourFilter
 {
     /**

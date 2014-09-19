@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.repo.content.transform.TransformerDebug;
 
 /**
@@ -39,6 +40,7 @@ import org.alfresco.repo.content.transform.TransformerDebug;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public class TransformationOptionPair implements Serializable
 {
     private static final long serialVersionUID = 1L;

@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Properties;
 
+import org.alfresco.api.AlfrescoPublicApi;  
 import org.alfresco.util.LogAdapter;
 import org.apache.commons.logging.Log;
 
@@ -35,6 +36,7 @@ import org.apache.commons.logging.Log;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 abstract class TransformerLogger<T> extends LogAdapter implements LogEntries
 {
     static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("d MMM yyyy HH:mm:ss");

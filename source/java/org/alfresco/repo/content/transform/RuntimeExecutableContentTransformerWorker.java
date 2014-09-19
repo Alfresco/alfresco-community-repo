@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -62,6 +63,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @since 1.1
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class RuntimeExecutableContentTransformerWorker extends ContentTransformerHelper implements ContentTransformerWorker, InitializingBean
 {
     public static final String VAR_SOURCE = "source";

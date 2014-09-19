@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -31,6 +32,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * Utility class providing methods to access the Locale of the current thread and to get
  * Localised strings. These strings may be loaded from resource bundles deployed in the Repository.
  */
+@AlfrescoPublicApi
 public interface MessageService extends TenantDeployer, MessageLookup
 {
     /**

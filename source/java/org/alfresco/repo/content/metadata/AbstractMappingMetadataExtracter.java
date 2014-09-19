@@ -42,6 +42,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.StreamAwareContentReaderProxy;
@@ -108,6 +109,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  * @author Jesper Steen Møller
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 abstract public class AbstractMappingMetadataExtracter implements MetadataExtracter, MetadataEmbedder, BeanNameAware, ApplicationContextAware
 {
     public static final String NAMESPACE_PROPERTY_PREFIX = "namespace.prefix.";

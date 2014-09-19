@@ -33,6 +33,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi; 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
@@ -59,6 +60,7 @@ import org.springframework.aop.framework.ProxyFactory;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public abstract class AbstractContentWriter extends AbstractContentAccessor implements ContentWriter, MimetypeServiceAware
 {
     private static final Log logger = LogFactory.getLog(AbstractContentWriter.class);

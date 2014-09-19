@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.alfresco.api.AlfrescoPublicApi;  
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
@@ -30,6 +31,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public interface TransformerConfig
 {
     /**

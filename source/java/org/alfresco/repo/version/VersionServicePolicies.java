@@ -21,6 +21,7 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,6 +39,7 @@ public interface VersionServicePolicies
 	/**
 	 * Before create version policy interface.
 	 */
+	@AlfrescoPublicApi
 	public interface BeforeCreateVersionPolicy extends ClassPolicy
 	{
 	    public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCreateVersion");
@@ -54,6 +56,7 @@ public interface VersionServicePolicies
 	 * After create version policy interface
 	 *
 	 */
+	@AlfrescoPublicApi
 	public interface AfterCreateVersionPolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "afterCreateVersion");

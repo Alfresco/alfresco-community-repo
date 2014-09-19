@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import net.sf.jooreports.converter.DocumentFormatRegistry;
 
+import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
@@ -30,6 +31,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author dward
  */
+@AlfrescoPublicApi
 public class ProxyContentTransformer extends AbstractContentTransformer2
 {
     private ContentTransformerWorker worker;

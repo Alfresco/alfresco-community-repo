@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.datatype.TypeConverter;
 import org.alfresco.service.namespace.QName;
 
@@ -36,6 +37,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 3.0.0
  */
+@AlfrescoPublicApi
 public class TransformationOptions implements Cloneable
 {
     /** Option map names to preserve backward compatibility */

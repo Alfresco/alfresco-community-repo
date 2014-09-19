@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.processor;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.processor.Processor;
 import org.alfresco.processor.ProcessorExtension;
 
@@ -26,6 +27,7 @@ import org.alfresco.processor.ProcessorExtension;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public abstract class BaseProcessorExtension implements ProcessorExtension
 {
 	/** The processor */

@@ -18,11 +18,14 @@
  */
 package org.alfresco.repo.content.transform.magick;
 
+import org.alfresco.api.AlfrescoPublicApi;    
+
 /**
  * Image resize options
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi 
 public class ImageResizeOptions
 {
     /** The width */

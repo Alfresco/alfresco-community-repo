@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi; 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.ContentAccessor;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -37,6 +38,7 @@ import org.springframework.beans.factory.BeanNameAware;
  * 
  * @author dward
  */
+@AlfrescoPublicApi
 public class ContentTransformerHelper implements BeanNameAware
 {
     private static final Log logger = LogFactory.getLog(ContentTransformerHelper.class);

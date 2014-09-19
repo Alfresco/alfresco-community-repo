@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -30,6 +31,7 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author Kevin Roast
  */
+@AlfrescoPublicApi
 public interface TemplateProperties extends TemplateNodeRef
 {
     /**

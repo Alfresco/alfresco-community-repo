@@ -36,6 +36,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.transform.TransformerDebug;
@@ -64,6 +65,7 @@ import org.springframework.util.FileCopyUtils;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public abstract class AbstractContentReader extends AbstractContentAccessor implements ContentReader
 {
     private static final Log logger = LogFactory.getLog(AbstractContentReader.class);

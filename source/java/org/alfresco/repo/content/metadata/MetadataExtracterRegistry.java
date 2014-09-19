@@ -29,6 +29,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.alfresco.api.AlfrescoPublicApi;  
+
 /**
  * Holds and provides the most appropriate metadate extracter for a particular
  * mimetype.
@@ -38,6 +40,7 @@ import org.apache.commons.logging.LogFactory;
  * @see org.alfresco.repo.content.metadata.MetadataExtracter
  * @author Jesper Steen Møller
  */
+@AlfrescoPublicApi
 public class MetadataExtracterRegistry
 {
     private static final Log logger = LogFactory.getLog(MetadataExtracterRegistry.class);

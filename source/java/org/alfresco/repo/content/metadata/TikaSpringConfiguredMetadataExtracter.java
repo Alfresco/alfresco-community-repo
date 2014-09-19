@@ -21,6 +21,7 @@ package org.alfresco.repo.content.metadata;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +48,7 @@ import org.apache.tika.parser.Parser;
  * @since 3.4
  * @author Nick Burch
  */
+@AlfrescoPublicApi
 public class TikaSpringConfiguredMetadataExtracter extends TikaPoweredMetadataExtracter
 {
     protected static Log logger = LogFactory.getLog(TikaSpringConfiguredMetadataExtracter.class);

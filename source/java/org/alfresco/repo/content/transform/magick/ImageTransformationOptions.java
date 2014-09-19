@@ -21,6 +21,7 @@ package org.alfresco.repo.content.transform.magick;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.repository.TransformationSourceOptions;
 
@@ -29,6 +30,7 @@ import org.alfresco.service.cmr.repository.TransformationSourceOptions;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public class ImageTransformationOptions extends TransformationOptions
 {
     public static final String OPT_COMMAND_OPTIONS = "commandOptions";

@@ -36,6 +36,7 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
+import org.alfresco.api.AlfrescoPublicApi;  
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.filestore.FileContentReader;
@@ -72,6 +73,7 @@ import org.springframework.util.ResourceUtils;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public class TransformerDebug
 {
     private static final String FINISHED_IN = "Finished in ";
@@ -80,6 +82,7 @@ public class TransformerDebug
     private final Log logger;
     private final Log info;
 
+    @AlfrescoPublicApi 
     private enum Call
     {
         AVAILABLE,
@@ -87,6 +90,7 @@ public class TransformerDebug
         AVAILABLE_AND_TRANSFORM
     };
     
+    @AlfrescoPublicApi
     private static class ThreadInfo
     {
         private static final ThreadLocal<ThreadInfo> threadInfo = new ThreadLocal<ThreadInfo>()
@@ -137,6 +141,7 @@ public class TransformerDebug
         }
     }
     
+    @AlfrescoPublicApi
     private static class Frame
     {
         private static final AtomicInteger uniqueId = new AtomicInteger(0);
@@ -213,6 +218,7 @@ public class TransformerDebug
         }
     }
     
+    @AlfrescoPublicApi
     private class UnavailableTransformer
     {
         private final String name;
@@ -1392,6 +1398,7 @@ public class TransformerDebug
         }
     }
 
+    @AlfrescoPublicApi
     private abstract class TestTransform
     {
         String run(String sourceExtension, String targetExtension, String use)

@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -81,6 +82,7 @@ import org.xml.sax.SAXException;
  * @since 3.4
  * @author Nick Burch
  */
+@AlfrescoPublicApi
 public abstract class TikaPoweredMetadataExtracter
         extends AbstractMappingMetadataExtracter
         implements MetadataEmbedder

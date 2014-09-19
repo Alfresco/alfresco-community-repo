@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
@@ -28,6 +29,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  * 
  * @author Alan Davis
  */
+@AlfrescoPublicApi
 public interface TransformerSelector
 {
     /**

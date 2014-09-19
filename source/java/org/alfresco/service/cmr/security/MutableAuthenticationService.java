@@ -18,6 +18,7 @@
  */
 package org.alfresco.service.cmr.security;
 
+import org.alfresco.api.AlfrescoPublicApi;     
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.Auditable;
 
@@ -26,6 +27,7 @@ import org.alfresco.service.Auditable;
  * 
  * @author dward
  */
+@AlfrescoPublicApi
 public interface MutableAuthenticationService extends AuthenticationService
 {
     /**

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.content;
 
+import org.alfresco.api.AlfrescoPublicApi;    
 import org.alfresco.repo.policy.ClassPolicy;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,6 +45,7 @@ public interface ContentServicePolicies
 	 * changed; the specific properties are irrelevant.  This is primarily useful to determine
 	 * when a new file is introduced into the system.
 	 */
+	@AlfrescoPublicApi
 	public interface OnContentUpdatePolicy extends ClassPolicy
 	{
 	    public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentUpdate");

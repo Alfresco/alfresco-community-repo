@@ -138,7 +138,37 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
             PropertyDefinition priorDef =  propertyDefs.get(WorkflowModel.PROP_PRIORITY);
             assertEquals(props.get(WorkflowModel.PROP_PRIORITY),Integer.valueOf(priorDef.getDefaultValue()));        
         }
-    }   
+    }
+
+    public void testReviewAndPooledNotModifiedDate()
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+        
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, "MNT-11522-testfile.txt");
+        final ChildAssociationRef childAssoc = nodeService.createNode(companyHome, ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, "MNT-11522-test"), ContentModel.TYPE_CONTENT, props);
+        NodeRef node = childAssoc.getChildRef();
+        Date lastDate = new Date();
+        nodeService.setProperty(node, ContentModel.PROP_MODIFIED, lastDate);
+        WorkflowDefinition definition = deployDefinition(getPooledReviewDefinitionPath());
+        
+        assertNotNull(definition);
+        
+        // Create workflow parameters
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        NodeRef wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        
+        ChildAssociationRef childAs = nodeService.addChild(wfPackage, node,  WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                 QName.createValidLocalName((String)nodeService.getProperty(node, ContentModel.PROP_NAME))));
+        
+        WorkflowPath startTask = workflowService.startWorkflow(definition.getId(), params);
+        assertNotNull(startTask);
+        String startTaskId = startTask.getId();
+        assertEquals(lastDate, nodeService.getProperty(node, ContentModel.PROP_MODIFIED));
+        workflowService.endTask(startTaskId, null);
+    }
     
     public void testGetWorkflowTaskDefinitionsWithMultiInstanceTask()
     {

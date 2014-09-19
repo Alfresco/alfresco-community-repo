@@ -1660,7 +1660,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
         if (allVisible)
         {
-            nodeService.removeAspect(nodeRef, ContentModel.ASPECT_HIDDEN);
+            hiddenAspect.showNode(nodeRef, true);
         }
         else
         {

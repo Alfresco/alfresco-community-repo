@@ -120,6 +120,7 @@
                <value>${cifs.tcpipSMB.port}</value>
             </property>
             <property name="platforms">
+<!--               Unchecked, Unknown, WINDOWS, LINUX, SOLARIS, MACOSX, AIX -->
                <value>linux,solaris,macosx</value>
             </property>
             <property name="ipv6Enabled">

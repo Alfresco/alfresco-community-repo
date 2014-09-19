@@ -121,5 +121,11 @@ public interface DescriptorService
      * @return          Returns a message telling the user what happened
      */
     public String loadLicense(InputStream licenseStream);
+    
+    /**
+     * Is this service bootstrapped?
+     * @return	true,  the service is bootstrapped and available
+     */
+    boolean isBootstrapped();
 
 }

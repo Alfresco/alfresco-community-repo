@@ -20,6 +20,12 @@ package org.alfresco.repo.management.subsystems;
 
 import java.io.IOException;
 
+import org.alfresco.repo.descriptor.DescriptorServiceAvailableEvent;
+import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ApplicationEvent;
 
 /**
  * {@link SwitchableApplicationContextFactory} that only allows the subsystem to be switched
@@ -31,9 +37,13 @@ import java.io.IOException;
  * @author Matt Ward
  */
 public class CryptodocSwitchableApplicationContextFactory extends SwitchableApplicationContextFactory
+	
 {
     private static final String SOURCE_BEAN_PROPERTY = "sourceBeanName";
     private String unencryptedContentStoreBeanName;
+    private String encryptedContentStoreBeanName;
+    private DescriptorService descriptorService;
+    private static final Log logger = LogFactory.getLog(CryptodocSwitchableApplicationContextFactory.class);
     
     @Override
     public boolean isUpdateable(String name)
@@ -44,9 +54,27 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
         }
         
         boolean updateable = true;
-        if (name.equals(SOURCE_BEAN_PROPERTY) && !getCurrentSourceBeanName().equals(unencryptedContentStoreBeanName))
+        if (name.equals(SOURCE_BEAN_PROPERTY))
         {
-            updateable = false;
+        	if(getCurrentSourceBeanName().equals(unencryptedContentStoreBeanName))
+        	{
+        		if(descriptorService != null)
+        		{
+        			LicenseDescriptor license = descriptorService.getLicenseDescriptor();
+        			if(license != null && license.isCryptodocEnabled())
+        			{
+        				return true;
+        			}
+        			return false;
+        		}
+        	}
+
+        	// can the source bean name be changed?
+        	if(!getCurrentSourceBeanName().equals(unencryptedContentStoreBeanName))
+        	{
+        		// the subsystem has been switched once.
+        		return false;
+        	}
         }
         return updateable;
     }
@@ -68,9 +96,20 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
         this.unencryptedContentStoreBeanName = unencryptedContentStoreBeanName;
     }
     
-    
-    
-    protected class CryptoSwitchableState extends SwitchableState
+	public String getEncryptedContentStoreBeanName() 
+	{
+		return encryptedContentStoreBeanName;
+	}
+
+	public void setEncryptedContentStoreBeanName(
+			String encryptedContentStoreBeanName) 
+	{
+	    this.encryptedContentStoreBeanName = encryptedContentStoreBeanName;
+	}
+
+
+
+	protected class CryptoSwitchableState extends SwitchableState
     {
         protected CryptoSwitchableState(String sourceBeanName)
         {
@@ -82,9 +121,33 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
         {
             if (!isUpdateable(name))
             {
-                throw new IllegalStateException("Switching to an unencrypted content store is not possible.");
+            	if(value.equalsIgnoreCase(unencryptedContentStoreBeanName))
+            	{
+            		throw new IllegalStateException("Switching to an unencrypted content store is not possible.");
+            	}
+            	if(value.equalsIgnoreCase(encryptedContentStoreBeanName))
+            	{
+            		throw new IllegalStateException("Switching to an encrypted content store is not licensed.");
+            	}
+                throw new IllegalStateException("Switching to an unknown content store is not possible." + value);
             }
             super.setProperty(name, value);
         }
     }
+	
+	public void onApplicationEvent(ApplicationEvent event)
+	{
+		
+		if(logger.isDebugEnabled())
+		{
+			logger.debug("event : " + event);
+		}
+		
+		if (event instanceof DescriptorServiceAvailableEvent)
+		{
+			descriptorService = ((DescriptorServiceAvailableEvent)event).getDescriptorService();
+		}
+	    super.onApplicationEvent(event);
+	}
+
 }

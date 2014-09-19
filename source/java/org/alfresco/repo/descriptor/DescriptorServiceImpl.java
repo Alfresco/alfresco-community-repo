@@ -65,6 +65,8 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     @SuppressWarnings("unused")
     private Object heartBeat;
     
+    private boolean isBootstrapped;
+    
     /**
      * The version of the software
      */
@@ -245,6 +247,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             }
         };
         AuthenticationUtil.runAs(bootstrapWork, AuthenticationUtil.getSystemUserName());
+        isBootstrapped = true;
         // Broadcast that the descriptor service is now available
         ((ApplicationContext) event.getSource()).publishEvent(new DescriptorServiceAvailableEvent(this));
     }
@@ -763,4 +766,10 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             }
         }
     }
+
+	@Override
+	public boolean isBootstrapped() {
+		
+		return isBootstrapped;
+	}
 }

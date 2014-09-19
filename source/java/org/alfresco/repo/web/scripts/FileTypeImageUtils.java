@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.faces.context.FacesContext;
 import javax.servlet.ServletContext;
 
+import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.service.cmr.repository.FileTypeImageSize;
 
 /**
@@ -31,6 +32,7 @@ import org.alfresco.service.cmr.repository.FileTypeImageSize;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public class FileTypeImageUtils
 {
     private static final String IMAGE_PREFIX16 = "/images/filetypes/";

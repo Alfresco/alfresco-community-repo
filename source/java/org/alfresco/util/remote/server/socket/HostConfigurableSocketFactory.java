@@ -115,12 +115,20 @@ public class HostConfigurableSocketFactory implements RMIServerSocketFactory, RM
               if(i >= retries)
               {
                  // We're out of retries, abort
+                 if (logger.isErrorEnabled())
+                 {
+                    logger.error("Failed to create server socket on port " + port + ", tried " + (i+1) + " times.");
+                 }
                  throw e;
               }
               else
               {
                  // Sleep and try again
-                 logger.warn("Port in-use, retrying", e);
+                 if (logger.isWarnEnabled())
+                 {
+                    logger.warn("Port " + port + " in-use, will retry after " + retryInterval +
+                                " millis (was attempt #" + (i+1) + ")");
+                 }
                  try
                  {
                     Thread.sleep(retryInterval);

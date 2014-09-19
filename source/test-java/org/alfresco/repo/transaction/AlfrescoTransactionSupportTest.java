@@ -127,22 +127,70 @@ public class AlfrescoTransactionSupportTest extends TestCase
         // anonymous inner class to test it
         TransactionListener listener = new TransactionListener()
         {
+            @Override
             public void flush()
             {
                 strings.add("flush");
             }
+            @Override
             public void beforeCommit(boolean readOnly)
             {
                 strings.add("beforeCommit");
             }
+            @Override
             public void beforeCompletion()
             {
                 strings.add("beforeCompletion");
             }
+            @Override
             public void afterCommit()
             {
                 strings.add("afterCommit");
             }
+            @Override
+            public void afterRollback()
+            {
+                strings.add("afterRollback");
+            }
+        };
+        
+        // begin a transaction
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        
+        // register it
+        AlfrescoTransactionSupport.bindListener(listener);
+
+        // test commit
+        txn.commit();
+        assertTrue("beforeCommit not called on listener", strings.contains("beforeCommit"));
+        assertTrue("beforeCompletion not called on listener", strings.contains("beforeCompletion"));
+        assertTrue("afterCommit not called on listener", strings.contains("afterCommit"));
+    }
+    
+    public void testListenerNew() throws Exception
+    {
+        final List<String> strings = new ArrayList<String>(1);
+
+        // anonymous inner class to test it
+        org.alfresco.util.transaction.TransactionListener listener = new org.alfresco.util.transaction.TransactionListener()
+        {
+            @Override
+            public void beforeCommit(boolean readOnly)
+            {
+                strings.add("beforeCommit");
+            }
+            @Override
+            public void beforeCompletion()
+            {
+                strings.add("beforeCompletion");
+            }
+            @Override
+            public void afterCommit()
+            {
+                strings.add("afterCommit");
+            }
+            @Override
             public void afterRollback()
             {
                 strings.add("afterRollback");

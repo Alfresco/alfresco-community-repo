@@ -247,6 +247,18 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
     }
     
     /**
+     * Method maintained for backward compatibility:
+     * <a href="https://issues.alfresco.com/jira/browse/ACE-2801">ACE-2801: Package change for TransactionListener</a>.
+     * 
+     * @see TransactionSupportUtil
+     * @see #bindListener(org.alfresco.util.transaction.TransactionListener)
+     */
+    public static void bindListener(org.alfresco.repo.transaction.TransactionListener listener)
+    {
+        AlfrescoTransactionSupport.bindListener((org.alfresco.util.transaction.TransactionListener) listener);
+    }
+    
+    /**
      * Method that registers a <tt>Listener</tt> against
      * the transaction.
      * <p> will be better for the caller
@@ -254,6 +266,8 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * 
      * @param indexerAndSearcher the Lucene indexer to perform transaction completion
      *      tasks on
+     *      
+     * @since 5.0
      */
     public static void bindListener(TransactionListener listener)
     {

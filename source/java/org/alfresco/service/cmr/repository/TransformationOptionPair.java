@@ -48,6 +48,7 @@ public class TransformationOptionPair implements Serializable
     /**
      * Action to take place for a given pair of values. 
      */
+    @AlfrescoPublicApi
     public enum Action
     {
         THROW_EXCEPTION

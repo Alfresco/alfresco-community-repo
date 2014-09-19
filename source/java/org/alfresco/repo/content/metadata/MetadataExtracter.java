@@ -48,6 +48,7 @@ public interface MetadataExtracter extends ContentWorker
      * @author Derek Hulley
      * @author Jesper Steen Møller
      */
+    @AlfrescoPublicApi
     public enum OverwritePolicy
     {
         /**

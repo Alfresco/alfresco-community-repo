@@ -1110,7 +1110,7 @@
         </property>
         <property name="compositePropertyTypes">
             <map>
-                <entry key="solr.store.mappings">
+                <entry key="solr4.store.mappings">
                     <value>org.alfresco.repo.search.impl.solr.SolrStoreMapping</value>
                 </entry>
             </map>

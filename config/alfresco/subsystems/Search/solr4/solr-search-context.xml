@@ -58,7 +58,7 @@
             </map>
         </property>
         <property name="storeMappings">
-            <ref bean="solr.store.mappings" />
+            <ref bean="solr4.store.mappings" />
         </property>
         <property name="includeGroupsForRoleAdmin">
         	<value>${solr.query.includeGroupsForRoleAdmin}</value>
@@ -70,7 +70,7 @@
     
     
     <!--The configurable RPC user mappings - actually a post-processed composite property! -->
-    <bean id="solr.store.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
+    <bean id="solr4.store.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
         <property name="sourceList">
             <list>
                 <bean class="org.alfresco.repo.search.impl.solr.SolrStoreMapping">

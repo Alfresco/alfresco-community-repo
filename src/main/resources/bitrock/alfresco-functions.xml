@@ -59,6 +59,22 @@
                             <pattern>@@ALFRESCO_SOLR_DIR@@</pattern>
                             <value>${alfresco_data_directory.dos.unix}/solr</value>
                         </substitution>
+                        <substitution>
+                            <pattern>@@ALFRESCO_SOLR4_DIR@@</pattern>
+                            <value>${installdir.unix}/solr4</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@ALFRESCO_SOLR4_DATA_DIR@@</pattern>
+                            <value>${alfresco_data_directory.unix}/solr4/index</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@ALFRESCO_SOLR4_MODEL_DIR@@</pattern>
+                            <value>${alfresco_data_directory.unix}/solr4/model</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@ALFRESCO_SOLR4_CONTENT_DIR@@</pattern>
+                            <value>${alfresco_data_directory.unix}/solr4/content</value>
+                        </substitution>
  		        <substitution>
                             <pattern>@@BITROCK_ALFRESCO_LICENSE_DIR@@</pattern>
                             <value>${installdir.unix}</value>

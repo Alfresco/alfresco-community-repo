@@ -12,8 +12,8 @@
 	    </distributionFileList>
 	    <actionList>
 	        <createDirectory path="${tomcat_server_directory}/conf/Catalina" />
-		<createDirectory path="${tomcat_server_directory}/conf/Catalina/localhost" />	    
-		<copyFile>
+            <createDirectory path="${tomcat_server_directory}/conf/Catalina/localhost" />	    
+            <copyFile>
                     <origin>${alfresco_data_directory}/solr/context.xml</origin>
                     <destination>${tomcat_server_directory}/conf/Catalina/localhost/solr.xml</destination>
 	        </copyFile>
@@ -21,10 +21,18 @@
 	</folder>
 	<folder>
 	    <name>solr4</name>
-	    <destination>${alfresco_data_directory}/solr4</destination>
+	    <destination>${installdir}/solr4</destination>
 	    <distributionFileList>
                 <distributionFile origin="${alfresco_solr4_source_directory}/*" allowWildcards="1" />
 	    </distributionFileList>
+        <actionList>
+            <createDirectory path="${tomcat_server_directory}/conf/Catalina" />
+            <createDirectory path="${tomcat_server_directory}/conf/Catalina/localhost" />    
+            <copyFile>
+                    <origin>${installdir}/solr4/context.xml</origin>
+                    <destination>${tomcat_server_directory}/conf/Catalina/localhost/solr4.xml</destination>
+            </copyFile>
+        </actionList>
 	</folder>
 	<folder>
 	    <name>keystore</name>
@@ -48,8 +56,23 @@
     </folderList>
     <postInstallationActionList>
         <alfrescoConfigure alfrescoFiles="${alfresco_data_directory}/solr/archive-SpacesStore/conf/solrcore.properties;${alfresco_data_directory}/solr/workspace-SpacesStore/conf/solrcore.properties;${tomcat_server_directory}/conf/Catalina/localhost/solr.xml" />
+        <alfrescoConfigure alfrescoFiles="${installdir}/solr4/archive-SpacesStore/conf/solrcore.properties;${installdir}/solr4/workspace-SpacesStore/conf/solrcore.properties;${tomcat_server_directory}/conf/Catalina/localhost/solr4.xml" />
 	<substitute>
 	    <files>${alfresco_data_directory}/solr/archive-SpacesStore/conf/solrcore.properties;${alfresco_data_directory}/solr/workspace-SpacesStore/conf/solrcore.properties</files>
+	    <type>exact</type>
+	    <substitutionList>
+	        <substitution>
+		    <pattern>alfresco.port=8080</pattern>
+		    <value>alfresco.port=${application_server_port}</value>
+		</substitution>
+	        <substitution>
+		    <pattern>alfresco.port.ssl=8443</pattern>
+		    <value>alfresco.port.ssl=${tomcat_server_ssl_port}</value>
+		</substitution>
+	    </substitutionList>
+	</substitute>		
+	<substitute>
+	    <files>${installdir}/solr4/archive-SpacesStore/conf/solrcore.properties;${installdir}/solr4/workspace-SpacesStore/conf/solrcore.properties</files>
 	    <type>exact</type>
 	    <substitutionList>
 	        <substitution>

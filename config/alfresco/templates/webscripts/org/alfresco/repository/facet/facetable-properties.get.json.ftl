@@ -5,17 +5,17 @@
         "properties" : [
             <#list properties as property>
             {
-                "name" : "${property.propertyDefinition.name.prefixString}",
-                "longqname" : "${property.propertyDefinition.name?string}",
-                <#if property.localisedTitle??>
-                "title" : "${property.localisedTitle}",
+                "name" : "${property.shortQname}",
+                "longqname" : "${property.qname?string}",
+                <#if property.title??>
+                "title" : "${property.title}",
                 </#if>
                 "displayName" : "${property.displayName}",
-                <#if property.propertyDefinition.containerClass.name??>
-                "containerClassType" : "${property.propertyDefinition.containerClass.name.prefixString}",
+                <#if property.containerClassType??>
+                "containerClassType" : "${property.containerClassType.prefixString}",
                 </#if>
-                "dataType" : "${property.propertyDefinition.dataType.name.prefixString}",
-                "modelQName" : "${property.propertyDefinition.model.name.prefixString}"
+                "dataType" : "${property.dataType.prefixString}",
+                "modelQName" : "${property.modelQname.prefixString}"
             }<#if property_has_next>,</#if>
             </#list>
         ]

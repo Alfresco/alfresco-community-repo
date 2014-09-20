@@ -116,6 +116,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     private boolean includeGroupsForRoleAdmin = false;
     
     private int maximumResultsFromUnlimitedQuery = Integer.MAX_VALUE;
+
+    private boolean anyDenyDenies;
 	
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
 
@@ -206,6 +208,17 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     public void setMaximumResultsFromUnlimitedQuery(int maximumResultsFromUnlimitedQuery)
     {
         this.maximumResultsFromUnlimitedQuery = maximumResultsFromUnlimitedQuery;
+    }
+
+    /**
+     * When set, a single DENIED ACL entry for any authority will result in
+     * access being denied as a whole. See system property {@code security.anyDenyDenies}
+     * 
+     * @param anyDenyDenies
+     */
+    public void setAnyDenyDenies(boolean anyDenyDenies)
+    {
+        this.anyDenyDenies = anyDenyDenies;
     }
 
     /**
@@ -443,6 +456,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                 }
             }
             body.put("authorities", authorities);
+            body.put("anyDenyDenies", anyDenyDenies);
             
             JSONArray tenants = new JSONArray();
             tenants.put(tenantService.getCurrentUserDomain());

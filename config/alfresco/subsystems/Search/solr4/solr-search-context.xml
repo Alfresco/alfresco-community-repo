@@ -66,6 +66,7 @@
         <property name="maximumResultsFromUnlimitedQuery">
             <value>${solr.query.maximumResultsFromUnlimitedQuery}</value>
         </property>
+        <property name="anyDenyDenies" value="${security.anyDenyDenies}"/>
     </bean>
     
     

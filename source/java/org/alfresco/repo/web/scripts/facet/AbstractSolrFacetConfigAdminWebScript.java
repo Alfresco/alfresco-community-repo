@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -69,6 +71,9 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
     protected static final String PARAM_CUSTOM_PROPERTIES = "customProperties";
     protected static final String CUSTOM_PARAM_NAME = "name";
     protected static final String CUSTOM_PARAM_VALUE = "value";
+
+    // The pattern is equivalent to the pattern defined in the forms-runtime.js
+    protected static final Pattern FILTER_ID_PATTERN = Pattern.compile("([\"\\*\\\\\\>\\<\\?\\/\\:\\|]+)|([\\.]?[\\.]+$)");
 
     protected SolrFacetService facetService;
 
@@ -188,6 +193,16 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
             throw new JSONException("Invalid JSONObject in the Custom Properties JSON. [" + paramName + "] cannot be null.");
         }
 
+    }
+
+    protected void validateFilterID(String filterID)
+    {
+        Matcher matcher = FILTER_ID_PATTERN.matcher(filterID);
+        if (matcher.find())
+        {
+            throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST,
+                        "Invalid Filter Id. The characters \" * \\ < > ? / : | are not allowed. The Filter Id cannot end with a dot.");
+        }
     }
 
     private Serializable getSerializableValue(Object object) throws JSONException

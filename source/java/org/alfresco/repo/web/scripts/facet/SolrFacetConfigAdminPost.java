@@ -77,6 +77,8 @@ public class SolrFacetConfigAdminPost extends AbstractSolrFacetConfigAdminWebScr
             json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
             final String filterID = json.getString(PARAM_FILTER_ID);
+            validateFilterID(filterID);
+
             final String facetQNameStr = json.getString(PARAM_FACET_QNAME);
             final QName facetQName = QName.createQName(facetQNameStr);
             final String displayName = json.getString(PARAM_DISPLAY_NAME);

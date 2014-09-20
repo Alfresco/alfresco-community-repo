@@ -52,8 +52,8 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     public static final Log logger = LogFactory.getLog(FacetablePropertiesGet.class);
     public static final String PROPERTIES_KEY = "properties";
     
-    private static final String MAX_ITEMS                  = "maxItems";
-    private static final String SKIP_COUNT                 = "skipCount";
+    private static final String QUERY_PARAM_MAX_ITEMS                  = "maxItems";
+    private static final String QUERY_PARAM_SKIP_COUNT                 = "skipCount";
     private static final int    DEFAULT_MAX_ITEMS_PER_PAGE = 50;
     
     private static final String TEMPLATE_VAR_CLASSNAME = "classname";
@@ -125,8 +125,8 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         
         // Create paging
         ScriptPagingDetails paging = new ScriptPagingDetails(
-                                             getNonNegativeIntParameter(req, MAX_ITEMS, DEFAULT_MAX_ITEMS_PER_PAGE),
-                                             getNonNegativeIntParameter(req, SKIP_COUNT, 0));
+                                             getNonNegativeIntParameter(req, QUERY_PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS_PER_PAGE),
+                                             getNonNegativeIntParameter(req, QUERY_PARAM_SKIP_COUNT, 0));
         
         model.put(PROPERTIES_KEY, ModelUtil.page(filteredFacetableProperties, paging));
         model.put("paging", ModelUtil.buildPaging(paging));
@@ -240,8 +240,15 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         @Override public int compareTo(FacetablePropertyData that)
         {
             final int modelComparison = this.propDef.getModel().getName().compareTo(that.propDef.getModel().getName());
-            return modelComparison != 0 ? modelComparison :
-                                          this.propDef.getName().compareTo(that.propDef.getName());
+            final int classComparison = this.propDef.getContainerClass().getName().compareTo(that.propDef.getContainerClass().getName());
+            final int propComparison  = this.propDef.getName().compareTo(that.propDef.getName());
+            
+            final int result;
+            if      (modelComparison != 0) { result = modelComparison; }
+            else if (classComparison != 0) { result = classComparison; }
+            else                           { result = propComparison; }
+            
+            return result;
         }
     }
 }

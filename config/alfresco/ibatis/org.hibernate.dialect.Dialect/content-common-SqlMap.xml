@@ -462,6 +462,7 @@
         where
             e.master_key_alias = #{masterKeyAlias}
             and <![CDATA[e.id > #{id}]]> 
+        order by e.id asc
     </select>
     
     <select id="select_CountSymmetricKeysByMasterKey" parameterType="String" resultType="java.lang.Integer">

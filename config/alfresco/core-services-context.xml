@@ -1408,6 +1408,20 @@
    <bean id="nameChecker" class="org.alfresco.repo.dictionary.constraint.NameChecker">
       <property name="dictionaryService" ref="dictionaryService" />
    </bean>
+   
+   <bean id="suggesterService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+      <property name="sourceApplicationContextFactory">
+         <ref bean="Search" />
+      </property>
+      <property name="sourceBeanName">
+         <value>search.suggesterService</value>
+      </property>
+      <property name="interfaces">
+         <list>
+            <value>org.alfresco.service.cmr.search.SuggesterService</value>
+         </list>
+      </property>
+   </bean>
 
    <!-- Custom property editors -->
    <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">

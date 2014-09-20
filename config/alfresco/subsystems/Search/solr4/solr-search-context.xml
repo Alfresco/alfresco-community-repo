@@ -298,6 +298,15 @@
      <property name="searcher">
          <ref bean="search.indexerAndSearcherFactory" />
      </property>
-   </bean>
-	
+    </bean>
+   
+    <bean id="search.suggesterService" class="org.alfresco.repo.search.impl.solr.SolrSuggesterServiceImpl">
+        <property name="enabled">
+            <value>${solr.suggester.enabled}</value>
+        </property>
+        <property name="solrAdminHTTPClient">
+            <ref bean="search.solrAdminHTTPCLient" />
+        </property>
+    </bean>
+
 </beans>

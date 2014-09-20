@@ -106,19 +106,28 @@ public class SolrAdminHTTPClient
 		this.httpClientFactory = httpClientFactory;
 	}
 
-	public JSONObject execute(HashMap<String, String>args)
-    {   
+    public JSONObject execute(HashMap<String, String> args)
+    {
+        return execute(adminUrl, args);
+    }
+
+    public JSONObject execute(String relativeHandlerPath, HashMap<String, String> args)
+    {
+        ParameterCheck.mandatory("relativeHandlerPath", relativeHandlerPath);
+        ParameterCheck.mandatory("args", args);
+
+        String path = getPath(relativeHandlerPath);
         try
-        {   
+        {
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
-            
-            for(String key : args.keySet())
+
+            for (String key : args.keySet())
             {
                 String value = args.get(key);
-                if(url.length() == 0)
+                if (url.length() == 0)
                 {
-                    url.append(adminUrl);
+                    url.append(path);
                     url.append("?");
                     url.append(encoder.encode(key, "UTF-8"));
                     url.append("=");
@@ -129,27 +138,27 @@ public class SolrAdminHTTPClient
                     url.append("&");
                     url.append(encoder.encode(key, "UTF-8"));
                     url.append("=");
-                    url.append(encoder.encode(value, "UTF-8")); 
+                    url.append(encoder.encode(value, "UTF-8"));
                 }
-                
+
             }
-          
-            //PostMethod post = new PostMethod(url.toString());
+
+            // PostMethod post = new PostMethod(url.toString());
             GetMethod get = new GetMethod(url.toString());
-            
+
             try
             {
                 httpClient.executeMethod(get);
 
-                if(get.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || get.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+                if (get.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || get.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
                 {
-	    	        Header locationHeader = get.getResponseHeader("location");
-	    	        if (locationHeader != null)
-	    	        {
-	    	            String redirectLocation = locationHeader.getValue();
-	    	            get.setURI(new URI(redirectLocation, true));
-	    	            httpClient.executeMethod(get);
-	    	        }
+                    Header locationHeader = get.getResponseHeader("location");
+                    if (locationHeader != null)
+                    {
+                        String redirectLocation = locationHeader.getValue();
+                        get.setURI(new URI(redirectLocation, true));
+                        httpClient.executeMethod(get);
+                    }
                 }
 
                 if (get.getStatusCode() != HttpServletResponse.SC_OK)
@@ -182,6 +191,22 @@ public class SolrAdminHTTPClient
         catch (JSONException e)
         {
             throw new LuceneQueryParserException("", e);
+        }
+    }
+
+    private String getPath(String path)
+    {
+        if (path.startsWith(baseUrl))
+        {
+            return path;
+        }
+        else if (path.startsWith("/"))
+        {
+            return baseUrl + path;
+        }
+        else
+        {
+            return baseUrl + '/' + path;
         }
     }
 

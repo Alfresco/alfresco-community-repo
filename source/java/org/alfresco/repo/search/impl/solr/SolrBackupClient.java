@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -51,10 +51,22 @@ public class SolrBackupClient implements InitializingBean
     private int numberToKeep;
 
     private String core;
+    
+    private boolean fixNumberToKeepOffByOneError = false;
 
     private SOLRAdminClient solrAdminClient;
 
     
+    
+    
+    /**
+     * @param fixNumberToKeepOffByOneError the fixNumberToKeepOffByOneError to set
+     */
+    public void setFixNumberToKeepOffByOneError(boolean fixNumberToKeepOffByOneError)
+    {
+        this.fixNumberToKeepOffByOneError = fixNumberToKeepOffByOneError;
+    }
+
     public void setSolrAdminClient(SOLRAdminClient solrAdminClient)
     {
         this.solrAdminClient = solrAdminClient;
@@ -142,7 +154,14 @@ public class SolrBackupClient implements InitializingBean
             params.set("qt", "/"+core+"/replication");
             params.set("command", "backup"); 
             params.set("location", remoteBackupLocation);
-            params.set("numberToKeep", numberToKeep);
+            if(fixNumberToKeepOffByOneError)
+            {
+                params.set("numberToKeep", numberToKeep > 1 ? (numberToKeep + 1) : numberToKeep);
+            }
+            else
+            {
+                params.set("numberToKeep", numberToKeep);
+            }
             
             try
             {

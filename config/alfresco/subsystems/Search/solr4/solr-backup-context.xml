@@ -49,6 +49,9 @@
         <property name="solrAdminClient">
             <ref bean="solrAdminClient" />
         </property>
+        <property name="fixNumberToKeepOffByOneError">
+            <value>true</value>
+        </property>
     </bean>
     
     <!--  archive://SpacesStore - archive -->

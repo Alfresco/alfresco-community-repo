@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -114,26 +114,26 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
 
                 Date now = new Date();
 
-                JSONObject alfresco = summary.getJSONObject("alfresco");
-                String alfrescoLag = alfresco.getString("TX Lag");
-                String alfrescoActive = alfresco.getString("Active");
-                String alfrescoDuration = alfresco.getString("TX Duration");
-                String alfrescoLastIndexedTxn = alfresco.getString("Id for last TX in index");
-                String alfrescoApproxTxnsReminaing = alfresco.getString("Approx transactions remaining");
-                String alfrescoApproxIndexingTimeReminaing = alfresco.getString("Approx transaction indexing time remaining");
-                String alfrescoDisk = alfresco.getString("On disk (GB)");
-                String alfrescoMemory = alfresco.getString("Total Searcher Cache (GB)");
+                JSONObject alfresco = summary.has("alfresco") ? summary.getJSONObject("alfresco") : null;
+                String alfrescoLag = alfresco == null ? "Unavailable" : alfresco.getString("TX Lag");
+                String alfrescoActive =  alfresco == null ? "false" : alfresco.getString("Active");
+                String alfrescoDuration =  alfresco == null ? "Unavailable" : alfresco.getString("TX Duration");
+                String alfrescoLastIndexedTxn =  alfresco == null ? "Unavailable" : alfresco.getString("Id for last TX in index");
+                String alfrescoApproxTxnsReminaing =  alfresco == null ? "Unavailable" : alfresco.getString("Approx transactions remaining");
+                String alfrescoApproxIndexingTimeReminaing =  alfresco == null ? "Unavailable" : alfresco.getString("Approx transaction indexing time remaining");
+                String alfrescoDisk =  alfresco == null ? "Unavailable" : alfresco.getString("On disk (GB)");
+                String alfrescoMemory =  alfresco == null ? "Unavailable" : alfresco.getString("Total Searcher Cache (GB)");
                
 
-                JSONObject archive = summary.getJSONObject("archive");
-                String archiveLag = archive.getString("TX Lag");
-                String archiveActive = archive.getString("Active");
-                String archiveDuration = archive.getString("TX Duration");
-                String archiveLastIndexedTxn = archive.getString("Id for last TX in index");
-                String archiveApproxTxnsReminaing = archive.getString("Approx transactions remaining");
-                String archiveApproxIndexingTimeReminaing = archive.getString("Approx transaction indexing time remaining");
-                String archiveDisk = archive.getString("On disk (GB)");
-                String archiveMemory = archive.getString("Total Searcher Cache (GB)");
+                JSONObject archive = summary.has("archive") ? summary.getJSONObject("archive") : null;
+                String archiveLag = archive == null ? "Unavailable" : archive.getString("TX Lag");
+                String archiveActive = archive == null ? "false" : archive.getString("Active");
+                String archiveDuration = archive == null ? "Unavailable" : archive.getString("TX Duration");
+                String archiveLastIndexedTxn = archive == null ? "Unavailable" : archive.getString("Id for last TX in index");
+                String archiveApproxTxnsReminaing = archive == null ? "Unavailable" : archive.getString("Approx transactions remaining");
+                String archiveApproxIndexingTimeReminaing = archive == null ? "Unavailable" : archive.getString("Approx transaction indexing time remaining");
+                String archiveDisk = archive == null ? "Unavailable" : archive.getString("On disk (GB)");
+                String archiveMemory = archive == null ? "Unavailable" : archive.getString("Total Searcher Cache (GB)");
 
                 if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
                 {

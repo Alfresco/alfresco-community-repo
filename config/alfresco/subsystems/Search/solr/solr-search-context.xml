@@ -81,7 +81,7 @@
                         <value>solrHttpClientFactory</value>
                     </property>
                     <property name="baseUrl">
-                        <value>/solr/alfresco</value>
+                        <value>${solr.baseUrl}/alfresco</value>
                     </property>
                     <property name="protocol">
                         <value>workspace</value>
@@ -98,7 +98,7 @@
                         <value>solrHttpClientFactory</value>
                     </property>
                     <property name="baseUrl">
-                        <value>/solr/archive</value>
+                        <value>${solr.baseUrl}/archive</value>
                     </property>
                      <property name="protocol">
                         <value>archive</value>
@@ -133,14 +133,16 @@
       <property name="solrPingCronExpression" value="${solr.solrPingCronExpression}"/>
       <property name="solrConnectTimeout" value="${solr.solrConnectTimeout}"/>
       <property name="httpClientFactory" ref="solrHttpClientFactory"/>
-       <property name="scheduler">
-            <ref bean="searchSchedulerFactory" />
-        </property>
+      <property name="baseUrl" value="${solr.baseUrl}"/>
+      <property name="scheduler">
+         <ref bean="searchSchedulerFactory" />
+      </property>
     </bean>
     
     
     <bean id="search.solrAdminHTTPCLient" class="org.alfresco.repo.search.impl.solr.SolrAdminHTTPClient" init-method="init">
         <property name="httpClientFactory" ref="solrHttpClientFactory"/>
+        <property name="baseUrl" value="${solr.baseUrl}"/>
     </bean>
     
 

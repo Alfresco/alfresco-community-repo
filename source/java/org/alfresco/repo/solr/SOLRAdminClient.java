@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -65,6 +65,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
 	private String solrUser;
 	private String solrPassword;
 	private String solrPingCronExpression;
+	private String baseUrl;
 	private CommonsHttpSolrServer server;
 	private int solrConnectTimeout = 30000; // ms
 
@@ -123,8 +124,13 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
 	{
 		this.httpClientFactory = httpClientFactory;
 	}
-    
-	/**
+   
+    public void setBaseUrl(String baseUrl)
+    {
+        this.baseUrl = baseUrl;
+    }
+
+    /**
      * @param scheduler the scheduler to set
      */
     public void setScheduler(Scheduler scheduler)
@@ -148,7 +154,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
 	    	sb.append(solrHost);
 	    	sb.append(":");
 	    	sb.append(httpClientFactory.isSSL() ? solrSSLPort: solrPort);
-	    	sb.append("/solr");
+	    	sb.append(baseUrl);
 			this.solrUrl = sb.toString();
 			HttpClient httpClient = httpClientFactory.getHttpClient();
 

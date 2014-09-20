@@ -1821,6 +1821,12 @@
       <property name="facetService" ref="solrFacetService"/>
    </bean>
    <bean
+      id="webscript.org.alfresco.repository.facet.facetable-properties.get"
+      class="org.alfresco.repo.web.scripts.facet.FacetablePropertiesGet"
+      parent="baseSolrFacetConfigAdminWebscript">
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
+   <bean
       id="webscript.org.alfresco.repository.facet.solr-facet-config-admin.get"
       class="org.alfresco.repo.web.scripts.facet.SolrFacetConfigAdminGet"
       parent="baseSolrFacetConfigAdminWebscript">

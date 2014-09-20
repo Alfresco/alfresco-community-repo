@@ -57,7 +57,9 @@ public class FacetRestApiTest extends BaseWebScriptTest
     private static final String NON_SEARCH_ADMIN_USER = "nonSearchAdmin";
 
     private static final String FACETS = "facets";
-
+    
+    private final static String GET_ALL_FACETABLE_PROPERTIES_URL      = "/api/facet/facetable-properties";
+    private final static String GET_SPECIFIC_FACETABLE_PROPERTIES_URL = "/api/facet/classes/{classname}/facetable-properties";
     private final static String GET_FACETS_URL       = "/api/facet/facet-config";
     private final static String PUT_FACET_URL_FORMAT = "/api/facet/facet-config/{0}?relativePos={1}";
     private final static String POST_FACETS_URL      = GET_FACETS_URL;
@@ -620,7 +622,53 @@ public class FacetRestApiTest extends BaseWebScriptTest
             }
         }, SEARCH_ADMIN_USER);
     }
-
+    
+    public void testGetAllFacetableProperties() throws Exception
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override public Void doWork() throws Exception
+            {
+                final Response rsp = sendRequest(new GetRequest(GET_ALL_FACETABLE_PROPERTIES_URL), 200);
+                
+                // For now, we'll only perform limited testing of the response as we primarily
+                // want to know that the GET call succeeded and that it correctly identified
+                // *some* facetable properties.
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+                
+                JSONObject properties = jsonRsp.getJSONObject(FacetablePropertiesGet.PROPERTIES_KEY);
+                
+                final int arbitraryLimit = 25;
+                assertTrue("Expected 'many' properties, but found 'not very many'", properties.length() > arbitraryLimit);
+                
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+    }
+    
+    public void testGetFacetablePropertiesForSpecificContentClasses() throws Exception
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override public Void doWork() throws Exception
+            {
+                final Response rsp = sendRequest(new GetRequest(GET_SPECIFIC_FACETABLE_PROPERTIES_URL.replace("{classname}", "cm:content")), 200);
+                
+                // For now, we'll only perform limited testing of the response as we primarily
+                // want to know that the GET call succeeded and that it correctly identified
+                // *some* facetable properties.
+                JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+                
+                JSONObject properties = jsonRsp.getJSONObject(FacetablePropertiesGet.PROPERTIES_KEY);
+                
+                final int arbitraryLimit = 100;
+                assertTrue("Expected 'not very many' properties, but found 'many'", properties.length() < arbitraryLimit);
+                
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+    }
+    
     private List<String> getListFromJsonArray(JSONArray facetsArray) throws JSONException
     {
         List<String> result = new ArrayList<>();

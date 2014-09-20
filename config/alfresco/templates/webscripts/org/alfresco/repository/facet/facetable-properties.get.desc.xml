@@ -1,0 +1,21 @@
+<webscript>
+   <shortname>GET facetable properties defined within the repository</shortname>
+   <description>
+   <![CDATA[
+   Get limited property definition data for properties deemed to be facetable.
+   
+   http://<host>:<port>/alfresco/api/facet/facetable-properties
+   
+   Example response from this web script:
+   
+   {
+      TODO
+   }
+   ]]>
+   </description>
+   <url>/api/facet/classes/{classname}/facetable-properties</url>
+   <url>/api/facet/facetable-properties</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction>required</transaction>
+</webscript>

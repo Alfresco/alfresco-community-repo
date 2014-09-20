@@ -64,16 +64,7 @@
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>alf_data/solr4</outputDirectory>
-            <outputFileNameMapping>apache-solr-4.8.1.war</outputFileNameMapping>
-            <includes>
-                <include>*:alfresco-solr4:war</include>
-            </includes>
-        </dependencySet>
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>alf_data/solr4</outputDirectory>
+            <outputDirectory>solr4</outputDirectory>
             <unpack>true</unpack>
             <includes>
                 <include>*:alfresco-solr4:zip:config*</include>
@@ -89,6 +80,8 @@
                 <include>org.alfresco:alfresco-mmt</include>
             </includes>
         </dependencySet>
+
+        <!-- Webapps -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
@@ -108,6 +101,23 @@
             <outputFileNameMapping>share.war</outputFileNameMapping>
             <includes>
                 <include>org.alfresco:share*:war</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/webapps</outputDirectory>
+            <outputFileNameMapping>solr4.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-solr4:war</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>web-server/endorsed</outputDirectory>
+            <includes>
+                <include>xalan:*</include>
             </includes>
         </dependencySet>
         <dependencySet>

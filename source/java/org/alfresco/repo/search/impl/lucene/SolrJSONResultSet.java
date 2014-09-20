@@ -112,12 +112,29 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
             for(int i = 0; i < numDocs; i++)
             {
                 JSONObject doc = docs.getJSONObject(i);
-                JSONArray dbids = doc.getJSONArray("DBID");
-                Long dbid = dbids.getLong(0);
-                Float score = Float.valueOf(doc.getString("score"));
-                
-                rawDbids.add(dbid);
-                rawScores.add(score);;
+                JSONArray dbids = doc.optJSONArray("DBID");
+                if(dbids != null)
+                {
+                    Long dbid = dbids.getLong(0);
+                    Float score = Float.valueOf(doc.getString("score"));
+                    rawDbids.add(dbid);
+                    rawScores.add(score);
+                }
+                else
+                {
+                    Long dbid = doc.optLong("DBID");
+                    if(dbid != null)
+                    {
+                        Float score = Float.valueOf(doc.getString("score"));
+                        rawDbids.add(dbid);
+                        rawScores.add(score);
+                    }
+                    else
+                    {
+                        // No DBID found 
+                        throw new LuceneQueryParserException("No DBID found for doc ...");
+                    }
+                }
                 
             }
             

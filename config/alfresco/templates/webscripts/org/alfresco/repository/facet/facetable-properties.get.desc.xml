@@ -4,17 +4,34 @@
    <![CDATA[
    Get limited property definition data for properties deemed to be facetable.
    
-   http://<host>:<port>/alfresco/api/facet/facetable-properties
+   http://<host>:<port>/alfresco/api/facet/facetable-properties[?nsp=eg]
+   http://<host>:<port>/alfresco/api/facet/classes/eg:aspectOrType/facetable-properties
    
    Example response from this web script:
    
    {
-      TODO
+      "data" : {
+        "properties" : [
+          {
+            "name" : "eg:propName1",
+            "displayName" : "eg:propName1",
+            "dataType" : "d:text",
+            "modelQName" : "eg:examplemodel"
+          },
+          {
+            "name" : "eg:propName2",
+            "title" : "Useful Metadata",
+            "displayName" : "eg:propName2 (Useful Metadata)",
+            "dataType" : "d:text",
+            "modelQName" : "eg:examplemodel"
+          }
+        ]
+     }
    }
    ]]>
    </description>
-   <url>/api/facet/classes/{classname}/facetable-properties</url>
-   <url>/api/facet/facetable-properties</url>
+   <url>/api/facet/classes/{classname}/facetable-properties?nsp={namespacePrefix?}</url>
+   <url>/api/facet/facetable-properties?nsp={namespacePrefix?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>

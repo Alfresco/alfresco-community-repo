@@ -19,9 +19,13 @@
 
 package org.alfresco.repo.web.scripts.facet;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetService.FacetablePropertyData;
 import org.alfresco.service.namespace.NamespaceException;
@@ -45,6 +49,9 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     public static final Log logger = LogFactory.getLog(FacetablePropertiesGet.class);
     public static final String PROPERTIES_KEY = "properties";
     
+    private static final String TEMPLATE_VAR_CLASSNAME = "classname";
+    private static final String QUERY_PARAM_NAMESPACE = "nsp";
+    
     private NamespaceService namespaceService;
     
     public void setNamespaceService(NamespaceService service) { this.namespaceService = service; }
@@ -59,7 +66,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     {
         // There are multiple defined URIs for this REST endpoint. Some define a "classname" template var.
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        final String contentClassName = templateVars.get("classname");
+        final String contentClassName = templateVars.get(TEMPLATE_VAR_CLASSNAME);
         
         QName contentClassQName;
         try
@@ -82,13 +89,59 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
             facetableProperties = facetService.getFacetableProperties(contentClassQName);
         }
         
-        model.put(PROPERTIES_KEY, facetableProperties);
+        // The webscript allows for some further filtering of results:
+        List<ResultFilter> filters = new ArrayList<>();
+        
+        // By property QName namespace:
+        final String namespaceFilter = req.getParameter(QUERY_PARAM_NAMESPACE);
+        if (namespaceFilter != null)
+        {
+            filters.add(new ResultFilter()
+            {
+                @Override public boolean filter(FacetablePropertyData facetableProperty)
+                {
+                    final QName propQName = facetableProperty.getPropertyDefinition().getName();
+                    Collection<String> prefixes = namespaceService.getPrefixes(propQName.getNamespaceURI());
+                    return prefixes.contains(namespaceFilter);
+                }
+            });
+        }
+        
+        Set<FacetablePropertyData> filteredFacetableProperties = filter(facetableProperties, filters);
+        model.put(PROPERTIES_KEY, filteredFacetableProperties);
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("Retrieved " + facetableProperties.size() + " available facets");
+            logger.debug("Retrieved " + facetableProperties.size() + " available facets; filtered to " + filteredFacetableProperties.size());
         }
         
         return model;
+    }
+    
+    /** This type defines the (inclusion) filtering of {@link FacetablePropertyData} in the response to this webscript. */
+    private static interface ResultFilter
+    {
+        public boolean filter(FacetablePropertyData facetableProperty);
+    }
+    
+    /**
+     * This method returns a new Set instance containing only those {@link FacetablePropertyData data} that
+     * satisfy all {@link ResultFilter filters}.
+     */
+    private Set<FacetablePropertyData> filter(Set<FacetablePropertyData> propsData, List<ResultFilter> filters)
+    {
+        Set<FacetablePropertyData> filteredResult = new TreeSet<>();
+        
+        for (FacetablePropertyData prop : propsData)
+        {
+            boolean passedAllFilters = true;
+            for (ResultFilter filter : filters)
+            {
+                if (!filter.filter(prop)) { passedAllFilters = false; }
+            }
+             if (passedAllFilters) { filteredResult.add(prop); }
+        }
+        
+        return filteredResult;
     }
 }

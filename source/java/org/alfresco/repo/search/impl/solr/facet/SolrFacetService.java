@@ -20,7 +20,6 @@
 package org.alfresco.repo.search.impl.solr.facet;
 
 import java.util.List;
-import java.util.SortedSet;
 
 import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
@@ -34,6 +33,7 @@ import org.alfresco.service.namespace.QName;
  * Solr Facet service configuration API.
  * 
  * @author Jamal Kaabi-Mofrad
+ * @author Neil Mc Erlean
  * @since 5.0
  */
 public interface SolrFacetService
@@ -108,84 +108,17 @@ public interface SolrFacetService
     /**
      * This method offers a convenient access point for getting all Facetable
      * content properties defined in the repository.
-     * @return a collection of facetable {@link FacetablePropertyData}s.
+     * @return a collection of facetable {@link PropertyDefinition}s.
      * @see Facetable
      */
-    public SortedSet<FacetablePropertyData> getFacetableProperties();
+    public List<PropertyDefinition> getFacetableProperties();
     
     /**
      * This method offers a convenient access point for getting all Facetable
      * content properties defined on the specified content class (type or aspect).
      * @param contentClass the QName of an aspect or type, whose facetable properties are sought.
-     * @return a collection of facetable {@link FacetablePropertyData}s.
+     * @return a collection of facetable {@link PropertyDefinition}s.
      * @see Facetable
      */
-    public SortedSet<FacetablePropertyData> getFacetableProperties(QName contentClass);
-    
-    /** A simple POJO/DTO intended primarily for use in an FTL model and rendering in the JSON API. */
-    public static class FacetablePropertyData implements Comparable<FacetablePropertyData>
-    {
-        private final PropertyDefinition propDef;
-        private final String             localisedTitle;
-        private final String             displayName;
-        
-        public FacetablePropertyData(PropertyDefinition propDef, String localisedTitle)
-        {
-            this.propDef        = propDef;
-            this.localisedTitle = localisedTitle;
-            this.displayName    = propDef.getName().getPrefixString() +
-                                  (localisedTitle == null ? "" : " (" + localisedTitle + ")");
-        }
-        
-        public PropertyDefinition getPropertyDefinition() { return this.propDef; }
-        public String             getLocalisedTitle()     { return this.localisedTitle; }
-        public String             getDisplayName()        { return this.displayName; }
-        
-        @Override public int hashCode()
-        {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((displayName == null) ? 0 : displayName.hashCode());
-            result = prime * result + ((localisedTitle == null) ? 0 : localisedTitle.hashCode());
-            result = prime * result + ((propDef == null) ? 0 : propDef.hashCode());
-            return result;
-        }
-        
-        @Override public boolean equals(Object obj)
-        {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            FacetablePropertyData other = (FacetablePropertyData) obj;
-            if (displayName == null)
-            {
-                if (other.displayName != null)
-                    return false;
-            } else if (!displayName.equals(other.displayName))
-                return false;
-            if (localisedTitle == null)
-            {
-                if (other.localisedTitle != null)
-                    return false;
-            } else if (!localisedTitle.equals(other.localisedTitle))
-                return false;
-            if (propDef == null)
-            {
-                if (other.propDef != null)
-                    return false;
-            } else if (!propDef.equals(other.propDef))
-                return false;
-            return true;
-        }
-        
-        @Override public int compareTo(FacetablePropertyData that)
-        {
-            final int modelComparison = this.propDef.getModel().getName().compareTo(that.propDef.getModel().getName());
-            return modelComparison != 0 ? modelComparison :
-                                          this.propDef.getName().compareTo(that.propDef.getName());
-        }
-    }
+    public List<PropertyDefinition> getFacetableProperties(QName contentClass);
 }

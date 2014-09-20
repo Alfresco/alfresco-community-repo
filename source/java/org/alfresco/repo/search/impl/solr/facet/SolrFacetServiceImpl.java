@@ -769,9 +769,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
     }
     
-    @Override public SortedSet<FacetablePropertyData> getFacetableProperties()
+    @Override public List<PropertyDefinition> getFacetableProperties()
     {
-        final SortedSet<FacetablePropertyData> result = new TreeSet<>();
+        final List<PropertyDefinition> result = new ArrayList<>();
         
         final List<QName> allContentClasses = CollectionUtils.flatten(dictionaryService.getAllAspects(), dictionaryService.getAllTypes());
         
@@ -783,9 +783,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         return result;
     }
     
-    @Override public SortedSet<FacetablePropertyData> getFacetableProperties(QName contentClass)
+    @Override public List<PropertyDefinition> getFacetableProperties(QName contentClass)
     {
-        final SortedSet<FacetablePropertyData> result = new TreeSet<>();
+        final List<PropertyDefinition> result = new ArrayList<>();
         
         final Map<QName, PropertyDefinition> propertyDefs = dictionaryService.getPropertyDefs(contentClass);
         
@@ -798,7 +798,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                 switch (propIsFacetable)
                 {
                 case TRUE:
-                    result.add(toFacetablePropertyData(prop.getValue()));
+                    result.add(prop.getValue());
                     break;
                 case FALSE:
                     // The value is not facetable. Do nothing.
@@ -808,7 +808,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                     final DataTypeDefinition datatype = prop.getValue().getDataType();
                     if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
                     {
-                        result.add(toFacetablePropertyData(prop.getValue()));
+                        result.add(prop.getValue());
                         break;
                     }
                     break;
@@ -820,13 +820,6 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
         
         return result;
-    }
-    
-    /** This method returns a {@link FacetablePropertyData} for the specified {@link PropertyDefinition}. */
-    private FacetablePropertyData toFacetablePropertyData(PropertyDefinition propDef)
-    {
-        String title = propDef.getTitle(dictionaryService);
-        return new FacetablePropertyData(propDef, title);
     }
     
     // TODO Consider moving into dictionary code.

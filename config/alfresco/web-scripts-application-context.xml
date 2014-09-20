@@ -1819,6 +1819,7 @@
     <!-- Get/Post/Put/Delete Solr FacetConfig -->
    <bean id="baseSolrFacetConfigAdminWebscript" abstract="true" parent="webscript">
       <property name="facetService" ref="solrFacetService"/>
+      <property name="namespaceService" ref="namespaceService"/>
    </bean>
    <bean
       id="webscript.org.alfresco.repository.facet.facetable-properties.get"

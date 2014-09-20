@@ -34,6 +34,7 @@ import org.alfresco.repo.search.impl.solr.facet.SolrFacetModel;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -76,6 +77,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
     protected static final Pattern FILTER_ID_PATTERN = Pattern.compile("([\"\\*\\\\\\>\\<\\?\\/\\:\\|]+)|([\\.]?[\\.]+$)");
 
     protected SolrFacetService facetService;
+    protected NamespaceService namespaceService;
 
     /**
      * @param facetService the facetService to set
@@ -83,6 +85,14 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
     public void setFacetService(SolrFacetService facetService)
     {
         this.facetService = facetService;
+    }
+
+    /**
+     * @param namespaceService the namespaceService to set
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
     }
 
     @Override

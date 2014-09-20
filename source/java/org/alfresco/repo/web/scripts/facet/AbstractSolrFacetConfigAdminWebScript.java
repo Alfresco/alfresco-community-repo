@@ -245,7 +245,7 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         }
         if (logger.isDebugEnabled())
         {
-            logger.debug("Resolved facet's custom property name [" + qnameStr + "] into [" + typeQName + "]");System.out.println("QQQQQQQQQQQQQQQQQQQQQQQQQQQQQ:Resolved facet's custom property name [" + qnameStr + "] into [" + typeQName + "]");
+            logger.debug("Resolved facet's custom property name [" + qnameStr + "] into [" + typeQName + "]");
         }
         return typeQName;
     }

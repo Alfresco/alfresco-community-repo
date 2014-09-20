@@ -14,12 +14,14 @@
         "properties" : [
           {
             "name" : "eg:propName1",
+            "longqname" : "{http://www.alfresco.org/model/example/1.0}propName1",
             "displayName" : "eg:propName1",
             "dataType" : "d:text",
             "modelQName" : "eg:examplemodel"
           },
           {
             "name" : "eg:propName2",
+            "longqname" : "{http://www.alfresco.org/model/example/1.0}propName2",
             "title" : "Useful Metadata",
             "displayName" : "eg:propName2 (Useful Metadata)",
             "dataType" : "d:text",

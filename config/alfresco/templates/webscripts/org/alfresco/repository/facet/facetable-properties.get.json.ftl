@@ -5,6 +5,7 @@
             <#list properties as property>
             {
                 "name" : "${property.propertyDefinition.name.prefixString}",
+                "longqname" : "${property.propertyDefinition.name?string}",
                 <#if property.localisedTitle??>
                 "title" : "${property.localisedTitle}",
                 </#if>

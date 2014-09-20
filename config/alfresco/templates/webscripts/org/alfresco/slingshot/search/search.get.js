@@ -15,7 +15,8 @@ function main()
       pageSize: (args.pageSize !== null) ? parseInt(args.pageSize, 10) : DEFAULT_PAGE_SIZE,
       startIndex: (args.startIndex !== null) ? parseInt(args.startIndex, 10) : 0,
       facetFields: args.facetFields,
-      filters: args.filters
+      filters: args.filters,
+      spell: (args.spellcheck !== null) ? (args.spellcheck == "true") : false
    };
    
    model.data = getSearchResults(params);

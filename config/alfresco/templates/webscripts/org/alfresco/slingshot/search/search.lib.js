@@ -658,7 +658,8 @@ function processResults(nodes, maxPageResults, startIndex, rootNode, meta)
          numberFound: meta ? meta.numberFound : -1
       },
       facets: meta ? meta.facets : null,
-      items: results
+      items: results,
+      spellcheck: meta ? meta.spellcheck : null
    });
 }
 
@@ -1141,7 +1142,9 @@ function getSearchResults(params)
          defaultOperator: qt.operator,
          onerror: "no-results",
          sort: sortColumns,
-         fieldFacets: params.facetFields !== null ? params.facetFields.split(",") : null
+         fieldFacets: params.facetFields !== null ? params.facetFields.split(",") : null,
+         searchTerm: params.term,
+         spellCheck: params.spell
       };
       var rs = search.queryResultSet(queryDef);
       nodes = rs.nodes;

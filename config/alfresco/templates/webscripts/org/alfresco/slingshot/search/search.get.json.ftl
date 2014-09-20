@@ -60,6 +60,24 @@
 			"tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>]
 		}<#if item_has_next>,</#if>
 		</#list>
-	]
+	],
+	"spellcheck":
+	{
+	  <#if data.spellcheck?? && data.spellcheck.spellCheckExist>
+			"searchRequest": "${data.spellcheck.originalSearchTerm}",
+	  	<#if data.spellcheck.searchedFor>
+	       <#list data.spellcheck.results as collationQueryStr>
+	  		"searchedFor": "${collationQueryStr?string}"
+	  		<#break>
+	 		</#list>
+	  	<#else>
+	  		"searchSuggestions": [
+	  		<#list data.spellcheck.results as suggestion>
+	  		"${suggestion?string}"<#if suggestion_has_next>,</#if>
+	  		</#list>
+	  		]
+	  	</#if>
+	  </#if>
+	}
 }
 </#escape>

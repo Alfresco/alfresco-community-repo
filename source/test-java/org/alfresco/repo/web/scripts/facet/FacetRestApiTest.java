@@ -488,7 +488,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
 
                 filter.put("filterID", "<script>alert('Maliciouse-FilterID')</script>");
                 // Post the filter
-                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 500);
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 400);
 
                 // Retrieve all filters
                 response = sendRequest(new GetRequest(GET_FACETS_URL), 200);

@@ -846,11 +846,13 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 // Calculate name path
                 Collection<Collection<String>> namePaths = new ArrayList<Collection<String>>(2);
                 nodeMetaData.setNamePaths(namePaths);
-                for (Path path : directPaths)
+                for (Pair<Path, QName>  catPair : paths)
                 {
+                    Path path = catPair.getFirst();
+                    
                     boolean added = false;
                     List<String> namePath = new ArrayList<String>(path.size());
-                    for (Path.Element pathElement : path)
+                    NEXT_ELEMENT: for (Path.Element pathElement : path)
                     {
                         if (!(pathElement instanceof ChildAssocElement))
                         {
@@ -873,7 +875,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                             // DH: There is no particular constraint here.  This is just a decision made.
                             namePath.clear();
                             // We have to continue down the path as there could be a name path lower down
-                            continue;
+                            continue NEXT_ELEMENT;
                         }
                         // We can finally add the name to the path
                         namePath.add(childNodeName);

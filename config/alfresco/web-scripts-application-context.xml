@@ -1825,6 +1825,7 @@
       id="webscript.org.alfresco.repository.facet.facetable-properties.get"
       class="org.alfresco.repo.web.scripts.facet.FacetablePropertiesGet"
       parent="baseSolrFacetConfigAdminWebscript">
+      <property name="dictionaryService" ref="dictionaryService" />
       <property name="namespaceService" ref="namespaceService" />
    </bean>
    <bean

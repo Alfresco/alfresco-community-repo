@@ -25,8 +25,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetService.FacetablePropertyData;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -57,9 +59,11 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     private static final String TEMPLATE_VAR_CLASSNAME = "classname";
     private static final String QUERY_PARAM_NAMESPACE  = "nsp";
     
-    private NamespaceService namespaceService;
+    private DictionaryService dictionaryService;
+    private NamespaceService  namespaceService;
     
-    public void setNamespaceService(NamespaceService service) { this.namespaceService = service; }
+    public void setDictionaryService(DictionaryService service) { this.dictionaryService = service; }
+    public void setNamespaceService (NamespaceService service)  { this.namespaceService  = service; }
     
     @Override protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status, final Cache cache)
     {
@@ -87,11 +91,11 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         final SortedSet<FacetablePropertyData> facetableProperties;
         if (contentClassQName == null)
         {
-            facetableProperties = facetService.getFacetableProperties();
+            facetableProperties = toFacetablePropertyDataSet(facetService.getFacetableProperties());
         }
         else
         {
-            facetableProperties = facetService.getFacetableProperties(contentClassQName);
+            facetableProperties = toFacetablePropertyDataSet(facetService.getFacetableProperties(contentClassQName));
         }
         
         // The webscript allows for some further filtering of results:
@@ -155,5 +159,89 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         }
         
         return filteredResult;
+    }
+    
+    /** This method returns a {@link FacetablePropertyData} for the specified {@link PropertyDefinition}. */
+    private FacetablePropertyData toFacetablePropertyData(PropertyDefinition propDef)
+    {
+        String title = propDef.getTitle(dictionaryService);
+        return new FacetablePropertyData(propDef, title);
+    }
+    
+    private SortedSet<FacetablePropertyData> toFacetablePropertyDataSet(Collection<PropertyDefinition> propDefs)
+    {
+        SortedSet<FacetablePropertyData> result = new TreeSet<>();
+        for (PropertyDefinition propDef : propDefs)
+        {
+            result.add(toFacetablePropertyData(propDef));
+        }
+        return result;
+    }
+    
+    /** A simple POJO/DTO intended primarily for use in an FTL model and rendering in the JSON API. */
+    public static class FacetablePropertyData implements Comparable<FacetablePropertyData>
+    {
+        private final PropertyDefinition propDef;
+        private final String             localisedTitle;
+        private final String             displayName;
+        
+        public FacetablePropertyData(PropertyDefinition propDef, String localisedTitle)
+        {
+            this.propDef        = propDef;
+            this.localisedTitle = localisedTitle;
+            this.displayName    = propDef.getName().getPrefixString() +
+                                  (localisedTitle == null ? "" : " (" + localisedTitle + ")");
+        }
+        
+        public PropertyDefinition getPropertyDefinition() { return this.propDef; }
+        public String             getLocalisedTitle()     { return this.localisedTitle; }
+        public String             getDisplayName()        { return this.displayName; }
+        
+        @Override public int hashCode()
+        {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((displayName == null) ? 0 : displayName.hashCode());
+            result = prime * result + ((localisedTitle == null) ? 0 : localisedTitle.hashCode());
+            result = prime * result + ((propDef == null) ? 0 : propDef.hashCode());
+            return result;
+        }
+        
+        @Override public boolean equals(Object obj)
+        {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            FacetablePropertyData other = (FacetablePropertyData) obj;
+            if (displayName == null)
+            {
+                if (other.displayName != null)
+                    return false;
+            } else if (!displayName.equals(other.displayName))
+                return false;
+            if (localisedTitle == null)
+            {
+                if (other.localisedTitle != null)
+                    return false;
+            } else if (!localisedTitle.equals(other.localisedTitle))
+                return false;
+            if (propDef == null)
+            {
+                if (other.propDef != null)
+                    return false;
+            } else if (!propDef.equals(other.propDef))
+                return false;
+            return true;
+        }
+        
+        @Override public int compareTo(FacetablePropertyData that)
+        {
+            final int modelComparison = this.propDef.getModel().getName().compareTo(that.propDef.getModel().getName());
+            return modelComparison != 0 ? modelComparison :
+                                          this.propDef.getName().compareTo(that.propDef.getName());
+        }
     }
 }

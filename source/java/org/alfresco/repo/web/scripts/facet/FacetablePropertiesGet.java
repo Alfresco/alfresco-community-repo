@@ -30,6 +30,10 @@ import java.util.TreeSet;
 
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetService.SyntheticPropertyDefinition;
+import org.alfresco.repo.web.scripts.facet.FacetablePropertyFTL.FacetablePropertyFTLComparator;
+import org.alfresco.repo.web.scripts.facet.FacetablePropertyFTL.SpecialFacetablePropertyFTL;
+import org.alfresco.repo.web.scripts.facet.FacetablePropertyFTL.StandardFacetablePropertyFTL;
+import org.alfresco.repo.web.scripts.facet.FacetablePropertyFTL.SyntheticFacetablePropertyFTL;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespaceException;
@@ -101,7 +105,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         // 'synthetic' properties like size and mimetype. See below for more details.
         final Map<String, Object> model = new HashMap<>();
         
-        final SortedSet<FacetablePropertyFTLModel> facetableProperties;
+        final SortedSet<FacetablePropertyFTL<?>> facetableProperties;
         if (contentClassQName == null)
         {
             facetableProperties = toFacetablePropertyModel(facetService.getFacetableProperties(), userLocale);
@@ -117,6 +121,10 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
             facetableProperties.addAll(toFacetablePropertyModel_(facetableSyntheticProperties, userLocale));
         }
         
+        // Always add some hard-coded facetable "properties"
+        facetableProperties.add(new SpecialFacetablePropertyFTL("TAG", "Tag"));
+        facetableProperties.add(new SpecialFacetablePropertyFTL("SITE", "Site"));
+        
         // The webscript allows for some further filtering of results:
         List<ResultFilter> filters = new ArrayList<>();
         
@@ -126,7 +134,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         {
             filters.add(new ResultFilter()
             {
-                @Override public boolean filter(FacetablePropertyFTLModel facetableProperty)
+                @Override public boolean filter(FacetablePropertyFTL<?> facetableProperty)
                 {
                     final QName propQName = facetableProperty.getQname();
                     Collection<String> prefixes = namespaceService.getPrefixes(propQName.getNamespaceURI());
@@ -135,7 +143,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
             });
         }
         
-        List<FacetablePropertyFTLModel> filteredFacetableProperties = filter(facetableProperties, filters);
+        List<FacetablePropertyFTL<?>> filteredFacetableProperties = filter(facetableProperties, filters);
         
         if (logger.isDebugEnabled())
         {
@@ -154,24 +162,24 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     }
     
     /**
-     * This type defines the (inclusion) filtering of {@link FacetablePropertyFTLModel property data}
+     * This type defines the (inclusion) filtering of {@link FacetablePropertyFTL property data}
      * in the response to this webscript.
      */
     private static interface ResultFilter
     {
         /** @return {@code true} if the specified property should be included. */
-        public boolean filter(FacetablePropertyFTLModel facetableProperty);
+        public boolean filter(FacetablePropertyFTL<?> facetableProperty);
     }
     
     /**
-     * This method returns a new List instance containing only those {@link FacetablePropertyFTLModel property data}
+     * This method returns a new List instance containing only those {@link FacetablePropertyFTL property data}
      * that satisfy all {@link ResultFilter filters}.
      */
-    private List<FacetablePropertyFTLModel> filter(Collection<FacetablePropertyFTLModel> propsData, List<ResultFilter> filters)
+    private List<FacetablePropertyFTL<?>> filter(Collection<FacetablePropertyFTL<?>> propsData, List<ResultFilter> filters)
     {
-        final List<FacetablePropertyFTLModel> filteredResult = new ArrayList<>();
+        final List<FacetablePropertyFTL<?>> filteredResult = new ArrayList<>();
         
-        for (FacetablePropertyFTLModel prop : propsData)
+        for (FacetablePropertyFTL<?> prop : propsData)
         {
             boolean passedAllFilters = true;
             for (ResultFilter filter : filters)
@@ -184,16 +192,16 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         return filteredResult;
     }
     
-    /** This method returns a {@link FacetablePropertyFTLModel} for the specified {@link PropertyDefinition}. */
-    private FacetablePropertyFTLModel toFacetablePropertyModel(PropertyDefinition propDef, Locale locale)
+    /** This method returns a {@link FacetablePropertyFTL} for the specified {@link PropertyDefinition}. */
+    private FacetablePropertyFTL<?> toFacetablePropertyModel(PropertyDefinition propDef, Locale locale)
     {
         String title = propDef.getTitle(messageLookup, locale);
-        return new FacetablePropertyFTLModel(propDef, title);
+        return new StandardFacetablePropertyFTL(propDef, title);
     }
     
-    /** This method returns a {@link FacetablePropertyFTLModel} for the specified {@link SyntheticPropertyDefinition}. */
-    private FacetablePropertyFTLModel toFacetablePropertyModel(SyntheticPropertyDefinition propDef,
-                                                               Locale locale)
+    /** This method returns a {@link FacetablePropertyFTL} for the specified {@link SyntheticPropertyDefinition}. */
+    private FacetablePropertyFTL<?> toFacetablePropertyModel(SyntheticPropertyDefinition propDef,
+                                                          Locale locale)
     {
         // Note the hard-coded assumption here that all synthetic properties are defined only
         // within the cm:content property type. This code is not designed to be extended.
@@ -203,16 +211,16 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         final String i18nKeyPrefix = "cm_contentmodel.property.cm_content.cm_content.";
         final String localisedTitle = I18NUtil.getMessage(i18nKeyPrefix + propDef.syntheticPropertyName, locale);
         
-        return new SyntheticFacetablePropertyFTLModel(propDef.containingPropertyDef,
-                                                      localisedTitle,
-                                                      propDef.syntheticPropertyName,
-                                                      propDef.dataTypeDefinition);
+        return new SyntheticFacetablePropertyFTL(propDef.containingPropertyDef,
+                                                 localisedTitle,
+                                                 propDef.syntheticPropertyName,
+                                                 propDef.dataTypeDefinition);
     }
     
-    private SortedSet<FacetablePropertyFTLModel> toFacetablePropertyModel(Collection<PropertyDefinition> propDefs,
-                                                                          Locale locale)
+    private SortedSet<FacetablePropertyFTL<?>> toFacetablePropertyModel(Collection<PropertyDefinition> propDefs,
+                                                                     Locale locale)
     {
-        SortedSet<FacetablePropertyFTLModel> result = new TreeSet<>();
+        SortedSet<FacetablePropertyFTL<?>> result = new TreeSet<>(new FacetablePropertyFTLComparator());
         for (PropertyDefinition propDef : propDefs)
         {
             result.add(toFacetablePropertyModel(propDef, locale));
@@ -221,153 +229,16 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     }
     
     // Note: the trailing underscore in this method name is to prevent a clash between this method and the
-    // one that takes a Collection<PropertyDefinition> as type erasure means that both methods would have the
-    // same signature without the trailing underscore.
-    private SortedSet<FacetablePropertyFTLModel> toFacetablePropertyModel_(Collection<SyntheticPropertyDefinition> propDefs,
-                                                                           Locale locale)
+    // one that takes a Collection<PropertyDefinition> as Java's type erasure means that both methods would have the
+    // same signature, without the trailing underscore.
+    private SortedSet<FacetablePropertyFTL<?>> toFacetablePropertyModel_(Collection<SyntheticPropertyDefinition> propDefs,
+                                                                      Locale locale)
     {
-        SortedSet<FacetablePropertyFTLModel> result = new TreeSet<>();
+        SortedSet<FacetablePropertyFTL<?>> result = new TreeSet<>(new FacetablePropertyFTLComparator());
         for (SyntheticPropertyDefinition propDef : propDefs)
         {
             result.add(toFacetablePropertyModel(propDef, locale));
         }
         return result;
-    }
-    
-    /** A simple POJO/DTO intended primarily for use in an FTL model and rendering in the JSON API. */
-    public static class FacetablePropertyFTLModel implements Comparable<FacetablePropertyFTLModel>
-    {
-        /** The Alfresco property definition which declares this facetable property. */
-        protected final PropertyDefinition propDef;
-        
-        /** The localised title for this property. */
-        protected final String localisedTitle;
-        
-        /** A display name for this property. */
-        protected String displayName;
-        
-        /**
-         * @param propDef The {@link PropertyDefinition}.
-         * @param localisedTitle The localised title for this property e.g. "Titre".
-         */
-        public FacetablePropertyFTLModel(PropertyDefinition propDef, String localisedTitle)
-        {
-            this.propDef        = propDef;
-            this.localisedTitle = localisedTitle;
-            this.displayName    = getShortQname() + (localisedTitle == null ? "" : " (" + localisedTitle + ")");
-        }
-        
-        // We use "*Qname*" (small 'n') in these accessors to make the FTL less ambiguous.
-        public String getShortQname()         { return propDef.getName().getPrefixString(); }
-        
-        public QName  getQname()              { return propDef.getName(); }
-        
-        public String getTitle()              { return localisedTitle; }
-        
-        public String getDisplayName()        { return displayName; }
-        
-        public QName  getContainerClassType() { return propDef.getContainerClass().getName(); }
-        
-        public QName  getDataType()           { return propDef.getDataType().getName(); }
-        
-        public QName  getModelQname()         { return propDef.getModel().getName(); }
-        
-        @Override public boolean equals(Object obj)
-        {
-            if (this == obj)                  { return true; }
-            if (obj == null)                  { return false; }
-            if (getClass() != obj.getClass()) { return false; }
-            
-            FacetablePropertyFTLModel other = (FacetablePropertyFTLModel) obj;
-            if (displayName == null)
-            {
-                if (other.displayName != null) { return false; }
-            } else if (!displayName.equals(other.displayName)) { return false; }
-            if (localisedTitle == null)
-            {
-                if (other.localisedTitle != null)
-                    return false;
-            } else if (!localisedTitle.equals(other.localisedTitle))
-                return false;
-            if (propDef == null)
-            {
-                if (other.propDef != null)
-                    return false;
-            } else if (!propDef.equals(other.propDef))
-                return false;
-            return true;
-        }
-        
-        @Override public int hashCode()
-        {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((displayName == null) ? 0 : displayName.hashCode());
-            result = prime * result + ((localisedTitle == null) ? 0 : localisedTitle.hashCode());
-            result = prime * result + ((propDef == null) ? 0 : propDef.hashCode());
-            return result;
-        }
-        
-        @Override public int compareTo(FacetablePropertyFTLModel that)
-        {
-            final int modelComparison = this.propDef.getModel().getName().compareTo(that.propDef.getModel().getName());
-            final int classComparison = this.propDef.getContainerClass().getName().compareTo(that.propDef.getContainerClass().getName());
-            final int propComparison  = this.propDef.getName().compareTo(that.propDef.getName());
-            // this comparison matters because it incorporates SyntheticProperties like size & mimetype. See below.
-            final int propWithSynthetic = this.getShortQname().compareTo(that.getShortQname());
-            
-            final int result;
-            if      (modelComparison != 0) { result = modelComparison; }
-            else if (classComparison != 0) { result = classComparison; }
-            else if (propComparison != 0)  { result = propComparison; }
-            else                           { result = propWithSynthetic; }
-            
-            return result;
-        }
-    }
-    
-    /**
-     * This class represents a facetable property, which is not actually an Alfresco
-     * content property. Examples are the {@code size} and {@code MIME type} fields
-     * within the {@code cm:content} property type.
-     */
-    public static class SyntheticFacetablePropertyFTLModel extends FacetablePropertyFTLModel
-    {
-        /** This is the name of the synthetic property e.g. "size". Not localised. */
-        private final String syntheticPropertyName;
-        
-        /** The type of this synthetic data property. */
-        private final QName datatype;
-        
-        /**
-         * @param containingPropDef     The {@link PropertyDefinition}.
-         * @param localisedTitle        The localised title of this synthetic property e.g. "taille".
-         * @param syntheticPropertyName The synthetic property name e.g. "size".
-         * @param datatype              The datatype of the synthetic property.
-         */
-        public SyntheticFacetablePropertyFTLModel(PropertyDefinition containingPropDef,
-                                                  String localisedTitle,
-                                                  String syntheticPropertyName,
-                                                  QName  datatype)
-        {
-            super(containingPropDef, localisedTitle);
-            this.syntheticPropertyName = syntheticPropertyName;
-            this.datatype              = datatype;
-            this.displayName           = getShortQname() + (localisedTitle == null ? "" : " (" + localisedTitle + ")");
-        }
-        
-        @Override public String getShortQname()
-        {
-            return super.getShortQname() + "." + this.syntheticPropertyName;
-        }
-        
-        @Override public QName getQname()
-        {
-            final QName containingPropQName = super.getQname();
-            return QName.createQName(containingPropQName.getNamespaceURI(),
-                                     containingPropQName.getLocalName() + "." + this.syntheticPropertyName);
-        }
-        
-        @Override public QName getDataType() { return datatype; }
     }
 }

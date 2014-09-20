@@ -66,6 +66,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
@@ -769,9 +770,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
     }
     
-    @Override public Set<PropertyDefinition> getFacetableProperties()
+    @Override public Set<Pair<String, PropertyDefinition>> getFacetableProperties()
     {
-        final Set<PropertyDefinition> result = new HashSet<>();
+        final Set<Pair<String, PropertyDefinition>> result = new HashSet<>();
         
         final List<QName> allContentClasses = CollectionUtils.flatten(dictionaryService.getAllAspects(), dictionaryService.getAllTypes());
         
@@ -783,9 +784,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         return result;
     }
     
-    @Override public Set<PropertyDefinition> getFacetableProperties(QName contentClass)
+    @Override public Set<Pair<String, PropertyDefinition>> getFacetableProperties(QName contentClass)
     {
-        final Set<PropertyDefinition> result = new HashSet<>();
+        final Set<Pair<String, PropertyDefinition>> result = new HashSet<>();
         
         final Map<QName, PropertyDefinition> propertyDefs = dictionaryService.getPropertyDefs(contentClass);
         
@@ -798,7 +799,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                 switch (propIsFacetable)
                 {
                 case TRUE:
-                    result.add(prop.getValue());
+                    result.add(toTitledPropDef(prop.getValue()));
                     break;
                 case FALSE:
                     // The value is not facetable. Do nothing.
@@ -808,7 +809,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
                     final DataTypeDefinition datatype = prop.getValue().getDataType();
                     if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
                     {
-                        result.add(prop.getValue());
+                        result.add(toTitledPropDef(prop.getValue()));
                         break;
                     }
                     break;
@@ -820,6 +821,16 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
         
         return result;
+    }
+    
+    /**
+     * This method returns a {@link Pair} of the user-displayable property title (if available)
+     * and the {@link PropertyDefinition} itself.
+     */
+    private Pair<String, PropertyDefinition> toTitledPropDef(PropertyDefinition propDef)
+    {
+        String title = propDef.getTitle(dictionaryService);
+        return new Pair<>(title, propDef);
     }
     
     // TODO Consider moving into dictionary code.

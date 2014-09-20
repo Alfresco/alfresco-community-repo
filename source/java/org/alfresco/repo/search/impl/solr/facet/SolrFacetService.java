@@ -29,6 +29,7 @@ import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 
 /**
  * Solr Facet service configuration API.
@@ -108,17 +109,17 @@ public interface SolrFacetService
     /**
      * This method offers a convenient access point for getting all Facetable
      * content properties defined in the repository.
-     * @return a collection of facetable {@link PropertyDefinition}s.
+     * @return a collection of facetable {@link PropertyDefinition}s, as follows: Pair<title, propDef>.
      * @see Facetable
      */
-    public Set<PropertyDefinition> getFacetableProperties();
+    public Set<Pair<String, PropertyDefinition>> getFacetableProperties();
     
     /**
      * This method offers a convenient access point for getting all Facetable
      * content properties defined on the specified content class (type or aspect).
      * @param contentClass the QName of an aspect or type, whose facetable properties are sought.
-     * @return a collection of facetable {@link PropertyDefinition}s.
+     * @return a collection of facetable {@link PropertyDefinition}s, as follows: Pair<title, propDef>.
      * @see Facetable
      */
-    public Set<PropertyDefinition> getFacetableProperties(QName contentClass);
+    public Set<Pair<String, PropertyDefinition>> getFacetableProperties(QName contentClass);
 }

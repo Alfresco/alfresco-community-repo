@@ -38,7 +38,6 @@ import org.alfresco.service.namespace.QName;
  */
 public interface SolrFacetService
 {
-
     /**
      * Gets all the available facets.
      * 
@@ -117,9 +116,42 @@ public interface SolrFacetService
      * This method offers a convenient access point for getting all Facetable
      * content properties defined on the specified content class (type or aspect) or any of its inherited properties.
      * @param contentClass the QName of an aspect or type, whose facetable properties are sought.
-     * @param includeInheritedProperties {@code true} to include properties defined on supertypes.
      * @return a collection of facetable {@link PropertyDefinition}s.
      * @see Facetable
      */
     public List<PropertyDefinition> getFacetableProperties(QName contentClass);
+    
+    /**
+     * This method gets all synthetic, facetable properties across all content models in the repository.
+     */
+    public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties();
+    
+    /**
+     * This method gets all synthetic, facetable properties defined on the specified content class (type or aspect) or any of its inherited properties.
+     * @param contentClass the QName of an aspect or type, whose synthetic, facetable properties are sought.
+     */
+    public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties(QName contentClass);
+    
+    /**
+     * This class represents a special case of a property, examples being file size and MIME type, which
+     * are not modelled as Alfresco content model properties, but are instead stored as components
+     * within properties of type {@code cm:content}.
+     */
+    public class SyntheticPropertyDefinition
+    {
+        public final PropertyDefinition containingPropertyDef;
+        public final String             syntheticPropertyName;
+        public final QName              dataTypeDefinition;
+        
+        public SyntheticPropertyDefinition(PropertyDefinition containingPropertyDef, String syntheticPropertyName,
+                                           QName syntheticDataTypeDefinition)
+        {
+            this.containingPropertyDef = containingPropertyDef;
+            this.syntheticPropertyName = syntheticPropertyName;
+            this.dataTypeDefinition    = syntheticDataTypeDefinition;
+        }
+        
+        @Override public String toString() { return SyntheticPropertyDefinition.class.getSimpleName() +
+                                                    "[" + this.syntheticPropertyName + "]"; }
+    }
 }

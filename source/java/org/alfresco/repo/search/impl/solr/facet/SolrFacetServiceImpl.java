@@ -791,24 +791,25 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         
         if (propertyDefs != null)
         {
-            for (Map.Entry<QName, PropertyDefinition> prop : propertyDefs.entrySet())
+            for (final Map.Entry<QName, PropertyDefinition> prop : propertyDefs.entrySet())
             {
-                final Facetable propIsFacetable  = prop.getValue().getFacetable();
+                final PropertyDefinition propDef = prop.getValue();
+                final Facetable propIsFacetable  = propDef.getFacetable();
                 
                 switch (propIsFacetable)
                 {
                 case TRUE:
-                    result.add(prop.getValue());
+                    result.add(propDef);
                     break;
                 case FALSE:
                     // The value is not facetable. Do nothing.
                     break;
                 case UNSET:
                     // These values may be facetable.
-                    final DataTypeDefinition datatype = prop.getValue().getDataType();
+                    final DataTypeDefinition datatype = propDef.getDataType();
                     if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
                     {
-                        result.add(prop.getValue());
+                        result.add(propDef);
                         break;
                     }
                     break;
@@ -822,7 +823,54 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         return result;
     }
     
-    // TODO Consider moving into dictionary code.
+    @Override public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties()
+    {
+        final List<SyntheticPropertyDefinition> result = new ArrayList<>();
+        
+        final List<QName> allContentClasses = CollectionUtils.flatten(dictionaryService.getAllAspects(), dictionaryService.getAllTypes());
+        
+        for (QName contentClass : allContentClasses)
+        {
+            result.addAll(getFacetableSyntheticProperties(contentClass));
+        }
+        
+        return result;
+    }
+    
+    @Override public List<SyntheticPropertyDefinition> getFacetableSyntheticProperties(QName contentClass)
+    {
+        final List<SyntheticPropertyDefinition> result = new ArrayList<>();
+        
+        final Map<QName, PropertyDefinition> propertyDefs = dictionaryService.getPropertyDefs(contentClass);
+        
+        if (propertyDefs != null)
+        {
+            for (final Map.Entry<QName, PropertyDefinition> prop : propertyDefs.entrySet())
+            {
+                final PropertyDefinition propDef = prop.getValue();
+                
+                // Only properties of type cm:content can expand to synthetic properties.
+                if (DataTypeDefinition.CONTENT.equals(propDef.getDataType().getName()))
+                {
+                    // We do not want to treat the cm:content property itself as facetable.
+                    // It is a content URL whose value is not suitable for facetting.
+                    //   e.g. 2010/1/22/13/14/6e228904-d5d2-4a99-b7b1-8fe7c03c71f3.bin|mimetype=application/octet-stream|size=728|encoding=UTF-8|locale=en_GB_
+                    //
+                    // However there are elements within that content URL which *are* facetable and are correctly treated as such by SOLR.
+                    // As these are not actually Alfresco content properties, we must return artificial PropertyDefinition objects:
+                    result.add(new SyntheticPropertyDefinition(propDef, "size", DataTypeDefinition.LONG));
+                    result.add(new SyntheticPropertyDefinition(propDef, "mimetype", DataTypeDefinition.TEXT));
+                }
+                else
+                {
+                    // Intentionally empty. Only cm:content's size and mimetype are currently supported.
+                }
+            }
+        }
+        
+        return result;
+    }
+    
     private boolean isNumeric(DataTypeDefinition datatype)
     {
         boolean result;

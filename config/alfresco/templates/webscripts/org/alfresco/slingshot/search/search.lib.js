@@ -1039,24 +1039,37 @@ function getSearchResults(params)
 
       // we processed the search terms, so suffix the PATH query
       var path = null;
+      var site = null
       if (!params.repo)
       {
-         path = SITES_SPACE_QNAME_PATH;
-         if (params.siteId !== null && params.siteId.length > 0)
+    	 if (params.siteId !== null && params.siteId.length > 0 )
          {
-            path += "cm:" + search.ISO9075Encode(params.siteId) + "/";
+    		 if (params.containerId !== null && params.containerId.length > 0)
+    	     {
+    			 // Old way
+    			 path = SITES_SPACE_QNAME_PATH;
+    			 path += "cm:" + search.ISO9075Encode(params.siteId) + "/";
+    			 path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
+    	     }
+    		 else
+    	     {
+    			 site = "SITE:\"" + params.siteId + "\"" ;
+    		 }
          }
-         else
+    	 else
          {
-            path += "*/";
-         }
-         if (params.containerId !== null && params.containerId.length > 0)
-         {
-            path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
-         }
-         else
-         {
-            path += "*/";
+    		 if (params.containerId !== null && params.containerId.length > 0)
+    	     {
+    			 //Old way
+    			 path = SITES_SPACE_QNAME_PATH;
+    			 path += "*/";
+    			 path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
+    			 
+    	     }
+    		 else
+    	     {
+    			 site = "SITE:\"_ALL_SITES_\"" ;
+    		 }
          }
       }
 
@@ -1068,6 +1081,10 @@ function getSearchResults(params)
       else if (path !== null)
       {
          ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ')';
+      }
+      else if (site !== null)
+      {
+         ftsQuery = site + ' AND (' + ftsQuery + ')';
       }
       ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"st:site"' +
                                    ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system';

@@ -769,9 +769,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         }
     }
     
-    @Override public Set<FacetablePropertyData> getFacetableProperties()
+    @Override public SortedSet<FacetablePropertyData> getFacetableProperties()
     {
-        final Set<FacetablePropertyData> result = new TreeSet<>();
+        final SortedSet<FacetablePropertyData> result = new TreeSet<>();
         
         final List<QName> allContentClasses = CollectionUtils.flatten(dictionaryService.getAllAspects(), dictionaryService.getAllTypes());
         
@@ -783,9 +783,9 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
         return result;
     }
     
-    @Override public Set<FacetablePropertyData> getFacetableProperties(QName contentClass)
+    @Override public SortedSet<FacetablePropertyData> getFacetableProperties(QName contentClass)
     {
-        final Set<FacetablePropertyData> result = new TreeSet<>();
+        final SortedSet<FacetablePropertyData> result = new TreeSet<>();
         
         final Map<QName, PropertyDefinition> propertyDefs = dictionaryService.getPropertyDefs(contentClass);
         

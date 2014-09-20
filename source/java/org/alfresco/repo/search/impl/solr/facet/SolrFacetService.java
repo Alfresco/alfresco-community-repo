@@ -20,7 +20,7 @@
 package org.alfresco.repo.search.impl.solr.facet;
 
 import java.util.List;
-import java.util.Set;
+import java.util.SortedSet;
 
 import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
@@ -111,7 +111,7 @@ public interface SolrFacetService
      * @return a collection of facetable {@link FacetablePropertyData}s.
      * @see Facetable
      */
-    public Set<FacetablePropertyData> getFacetableProperties();
+    public SortedSet<FacetablePropertyData> getFacetableProperties();
     
     /**
      * This method offers a convenient access point for getting all Facetable
@@ -120,7 +120,7 @@ public interface SolrFacetService
      * @return a collection of facetable {@link FacetablePropertyData}s.
      * @see Facetable
      */
-    public Set<FacetablePropertyData> getFacetableProperties(QName contentClass);
+    public SortedSet<FacetablePropertyData> getFacetableProperties(QName contentClass);
     
     /** A simple POJO/DTO intended primarily for use in an FTL model and rendering in the JSON API. */
     public static class FacetablePropertyData implements Comparable<FacetablePropertyData>

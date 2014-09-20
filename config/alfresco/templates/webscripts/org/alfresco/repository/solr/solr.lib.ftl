@@ -101,6 +101,15 @@
          </#if>
          </#if>
          </#if>
+         <#if filter.includePaths??>
+         <#if nodeMetaData.namePaths??>
+         , "namePaths": [
+           <#list nodeMetaData.namePaths as namePath>
+           ${namePath}<#if namePath_has_next>,</#if>
+           </#list>
+         ]
+         </#if>
+         </#if>
          <#if filter.includeParentAssociations??>
          <#if nodeMetaData.parentAssocs??>
          <#if (nodeMetaData.parentAssocs?size > 0)>

@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts.solr;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -285,8 +286,25 @@ public class NodesMetaDataGet extends DeclarativeWebScript
             }
             this.ancestors = ancestors;
             this.paths = paths;
-            // TODO: Convert name paths to required strings
-            this.namePaths = null;              // TODO: use a JSON-friendly string
+            
+            
+            // convert name Paths to Strings
+            List<String> namePaths = new ArrayList<String>();
+            if(nodeMetaData.getNamePaths() != null)
+            {
+                for(Collection<String> namePath : nodeMetaData.getNamePaths())
+                {
+                    JSONObject o = new JSONObject();
+                    JSONArray array = new JSONArray();
+                    for(String element : namePath)
+                    {
+                        array.put(solrSerializer.serializeValue(String.class, element));
+                    }
+                    o.put("namePath", array);
+                    namePaths.add(o.toString(3));
+                }
+            }
+            this.namePaths = namePaths;
 
             this.owner = nodeMetaData.getOwner();
             this.childAssocs = nodeMetaData.getChildAssocs();
@@ -330,6 +348,10 @@ public class NodesMetaDataGet extends DeclarativeWebScript
         public List<String> getPaths()
         {
             return paths;
+        }
+        public List<String> getNamePaths()
+        {
+            return namePaths;
         }
         public QName getNodeType()
         {

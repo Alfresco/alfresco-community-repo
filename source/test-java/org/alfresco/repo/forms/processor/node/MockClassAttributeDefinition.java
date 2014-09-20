@@ -181,6 +181,12 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
     }
 
     @Override
+    public String getDescription(MessageLookup messageLookup, Locale locale)
+    {
+        return description;
+    }
+
+    @Override
     public IndexTokenisationMode getIndexTokenisationMode()
     {
         return null;
@@ -210,6 +216,12 @@ public class MockClassAttributeDefinition implements PropertyDefinition, Associa
         return title;
     }
 
+    @Override
+    public String getTitle(MessageLookup messageLookup, Locale locale)
+    {
+        return title;
+    }
+    
     @Override
     public boolean isIndexed()
     {

@@ -81,8 +81,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
             eventPublisher.publishEvent(new EventPreparator(){
                 @Override
                 public Event prepareEvent(String user, String networkId, String transactionId)
-                {                
-                    return new RepositoryEventImpl("login", transactionId, networkId, new Date().getTime(), username);
+                {
+                	// TODO need to fix up to pass correct seqNo and alfrescoClientId
+                    return new RepositoryEventImpl(-1l, "login", transactionId, networkId, new Date().getTime(),
+                    		username, null);
                 }
             });
             

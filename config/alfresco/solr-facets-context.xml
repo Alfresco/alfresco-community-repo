@@ -27,6 +27,7 @@
    </bean>
    <bean id="solrFacetService" class="org.alfresco.repo.search.impl.solr.facet.SolrFacetServiceImpl">
       <property name="nodeService" ref="nodeService" />
+      <property name="dictionaryService" ref="dictionaryService" />
       <property name="authorityService" ref="authorityService" />
       <property name="namespaceService" ref="namespaceService" />
       <property name="searchService" ref="SearchService" />

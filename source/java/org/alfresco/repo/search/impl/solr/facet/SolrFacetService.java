@@ -20,7 +20,15 @@
 package org.alfresco.repo.search.impl.solr.facet;
 
 import java.util.List;
+import java.util.Set;
+
+import org.alfresco.repo.dictionary.Facetable;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.MissingFacetId;
+import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Solr Facet service configuration API.
@@ -96,4 +104,21 @@ public interface SolrFacetService
      * @throws DuplicateFacetId if there is a duplicate filter ID in the list.
      */
     public void reorderFacets(List<String> filterIds);
+    
+    /**
+     * This method offers a convenient access point for getting all Facetable
+     * content properties defined in the repository.
+     * @return a collection of facetable {@link PropertyDefinition}s.
+     * @see Facetable
+     */
+    public Set<PropertyDefinition> getFacetableProperties();
+    
+    /**
+     * This method offers a convenient access point for getting all Facetable
+     * content properties defined on the specified content class (type or aspect).
+     * @param contentClass the QName of an aspect or type, whose facetable properties are sought.
+     * @return a collection of facetable {@link PropertyDefinition}s.
+     * @see Facetable
+     */
+    public Set<PropertyDefinition> getFacetableProperties(QName contentClass);
 }

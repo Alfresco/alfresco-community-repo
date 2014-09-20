@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
@@ -53,6 +54,9 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -91,6 +95,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     private static final StoreRef FACET_STORE = new StoreRef("workspace://SpacesStore");
 
     private AuthorityService authorityService;
+    private DictionaryService dictionaryService;
     protected NodeService nodeService;
     private NamespaceService namespaceService;
     private SearchService searchService;
@@ -110,6 +115,14 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
+    }
+
+    /**
+     * @param dictionaryService the dictionaryService to set
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -754,5 +767,85 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             ArrayList<String> serializableProp = new ArrayList<>(facetIds);
             nodeService.setProperty(getFacetsRoot(), SolrFacetModel.PROP_FACET_ORDER, serializableProp);
         }
+    }
+    
+    @Override public Set<PropertyDefinition> getFacetableProperties()
+    {
+        final Set<PropertyDefinition> result = new HashSet<>();
+        
+        final List<QName> allContentClasses = CollectionUtils.flatten(dictionaryService.getAllAspects(), dictionaryService.getAllTypes());
+        
+        for (QName contentClass : allContentClasses)
+        {
+            result.addAll(getFacetableProperties(contentClass));
+        }
+        
+        return result;
+    }
+    
+    @Override public Set<PropertyDefinition> getFacetableProperties(QName contentClass)
+    {
+        final Set<PropertyDefinition> result = new HashSet<>();
+        
+        final Map<QName, PropertyDefinition> propertyDefs = dictionaryService.getPropertyDefs(contentClass);
+        
+        if (propertyDefs != null)
+        {
+            for (Map.Entry<QName, PropertyDefinition> prop : propertyDefs.entrySet())
+            {
+                final Facetable propIsFacetable  = prop.getValue().getFacetable();
+                
+                switch (propIsFacetable)
+                {
+                case TRUE:
+                    result.add(prop.getValue());
+                    break;
+                case FALSE:
+                    // The value is not facetable. Do nothing.
+                    break;
+                case UNSET:
+                    // These values may be facetable.
+                    final DataTypeDefinition datatype = prop.getValue().getDataType();
+                    if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
+                    {
+                        result.add(prop.getValue());
+                        break;
+                    }
+                    break;
+                default:
+                    // This should never happen. If it does, it's a programming error.
+                    throw new IllegalStateException("Failed to handle " + Facetable.class.getSimpleName() + " type: " + propIsFacetable);
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    // TODO Consider moving into dictionary code.
+    private boolean isNumeric(DataTypeDefinition datatype)
+    {
+        boolean result;
+        try
+        {
+            Class<?> clazz = Class.forName(datatype.getJavaClassName());
+            result = Number.class.isAssignableFrom(clazz);
+        } catch (ClassNotFoundException e)
+        {
+            result = false;
+        }
+        return result;
+    }
+    
+    private boolean isDateLike(DataTypeDefinition datatype)
+    {
+        return DataTypeDefinition.DATE.equals(datatype.getName()) ||
+               DataTypeDefinition.DATETIME.equals(datatype.getName());
+    }
+    
+    private boolean isFacetableText(DataTypeDefinition datatype)
+    {
+        // For now at least, we're excluding MLTEXT
+        return DataTypeDefinition.TEXT.equals(datatype.getName());
     }
 }

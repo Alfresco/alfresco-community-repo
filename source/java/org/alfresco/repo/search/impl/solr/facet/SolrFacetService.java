@@ -123,7 +123,7 @@ public interface SolrFacetService
     public Set<FacetablePropertyData> getFacetableProperties(QName contentClass);
     
     /** A simple POJO/DTO intended primarily for use in an FTL model and rendering in the JSON API. */
-    public static class FacetablePropertyData
+    public static class FacetablePropertyData implements Comparable<FacetablePropertyData>
     {
         private final PropertyDefinition propDef;
         private final String             localisedTitle;
@@ -180,6 +180,12 @@ public interface SolrFacetService
                 return false;
             return true;
         }
+        
+        @Override public int compareTo(FacetablePropertyData that)
+        {
+            final int modelComparison = this.propDef.getModel().getName().compareTo(that.propDef.getModel().getName());
+            return modelComparison != 0 ? modelComparison :
+                                          this.propDef.getName().compareTo(that.propDef.getName());
+        }
     }
-    
 }

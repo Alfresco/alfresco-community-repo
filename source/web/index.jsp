@@ -87,11 +87,10 @@ DescriptorService descriptorService = (DescriptorService)context.getBean("descri
    }
 %>
             <p></p>
-            <p><a href="./api/-default-/public/cmis/versions/1.0/atom">CMIS 1.0 AtomPub Service Document</a></p>
-            <p><a href="./api/-default-/public/cmis/versions/1.0/soap">CMIS 1.0 Web Services WSDL Document</a></p>
-            <p><a href="./api/-default-/public/cmis/versions/1.1/atom">CMIS 1.1 AtomPub Service Document</a></p>
-            <p><a href="./api/-default-/public/cmis/versions/1.1/soap">CMIS 1.1 Web Services WSDL Document</a></p>
-            <p><a href="./api/-default-/public/cmis/versions/1.1/browser">CMIS 1.1 Browser Binding URL</a></p>
+            <p><a href="./api/-default-/public/cmis/versions/1.0/atom">CMIS 1.0 AtomPub Binding Service Document</a></p>
+            <p><a href="./cmisws/cmis?wsdl">CMIS 1.0 Web Services Binding WSDL Documents</a></p>
+            <p><a href="./api/-default-/public/cmis/versions/1.1/atom">CMIS 1.1 AtomPub Binding Service Document</a></p>
+            <p><a href="./api/-default-/public/cmis/versions/1.1/browser">CMIS 1.1 Browser Binding Service URL</a></p>
          </div>
          
       </div>

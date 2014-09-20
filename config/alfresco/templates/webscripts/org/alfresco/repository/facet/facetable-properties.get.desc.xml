@@ -34,8 +34,8 @@
    }
    ]]>
    </description>
-   <url>/api/facet/classes/{classname}/facetable-properties?nsp={namespacePrefix?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
-   <url>/api/facet/facetable-properties?nsp={namespacePrefix?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+   <url>/api/facet/classes/{classname}/facetable-properties?nsp={namespacePrefix?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;locale={locale?}</url>
+   <url>/api/facet/facetable-properties?nsp={namespacePrefix?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}&amp;locale={locale?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>

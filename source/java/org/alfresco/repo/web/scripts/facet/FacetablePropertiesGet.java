@@ -23,12 +23,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.i18n.MessageLookup;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -58,11 +61,15 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     
     private static final String TEMPLATE_VAR_CLASSNAME = "classname";
     private static final String QUERY_PARAM_NAMESPACE  = "nsp";
+    private static final String QUERY_PARAM_LOCALE  = "locale";
     
-    private DictionaryService dictionaryService;
     private NamespaceService  namespaceService;
+    private MessageLookup messageLookup;
     
-    public void setDictionaryService(DictionaryService service) { this.dictionaryService = service; }
+    public FacetablePropertiesGet()
+    {
+        messageLookup = new StaticMessageLookup();
+    }
     public void setNamespaceService (NamespaceService service)  { this.namespaceService  = service; }
     
     @Override protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status, final Cache cache)
@@ -73,6 +80,9 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     
     @Override protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        final String userLocaleString = req.getParameter(QUERY_PARAM_LOCALE);
+        final Locale userLocale = (userLocaleString == null) ? Locale.getDefault() : new Locale(userLocaleString);
+        
         // There are multiple defined URIs for this REST endpoint. Some define a "classname" template var.
         Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         final String contentClassName = templateVars.get(TEMPLATE_VAR_CLASSNAME);
@@ -91,11 +101,11 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         final SortedSet<FacetablePropertyData> facetableProperties;
         if (contentClassQName == null)
         {
-            facetableProperties = toFacetablePropertyDataSet(facetService.getFacetableProperties());
+            facetableProperties = toFacetablePropertyDataSet(facetService.getFacetableProperties(), userLocale);
         }
         else
         {
-            facetableProperties = toFacetablePropertyDataSet(facetService.getFacetableProperties(contentClassQName));
+            facetableProperties = toFacetablePropertyDataSet(facetService.getFacetableProperties(contentClassQName), userLocale);
         }
         
         // The webscript allows for some further filtering of results:
@@ -162,18 +172,18 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     }
     
     /** This method returns a {@link FacetablePropertyData} for the specified {@link PropertyDefinition}. */
-    private FacetablePropertyData toFacetablePropertyData(PropertyDefinition propDef)
+    private FacetablePropertyData toFacetablePropertyData(PropertyDefinition propDef, Locale locale)
     {
-        String title = propDef.getTitle(dictionaryService);
+        String title = propDef.getTitle(messageLookup, locale);
         return new FacetablePropertyData(propDef, title);
     }
     
-    private SortedSet<FacetablePropertyData> toFacetablePropertyDataSet(Collection<PropertyDefinition> propDefs)
+    private SortedSet<FacetablePropertyData> toFacetablePropertyDataSet(Collection<PropertyDefinition> propDefs, Locale locale)
     {
         SortedSet<FacetablePropertyData> result = new TreeSet<>();
         for (PropertyDefinition propDef : propDefs)
         {
-            result.add(toFacetablePropertyData(propDef));
+            result.add(toFacetablePropertyData(propDef, locale));
         }
         return result;
     }

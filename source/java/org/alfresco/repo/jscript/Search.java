@@ -587,8 +587,10 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 String defaultField = (String)def.get("defaultField");
                 String defaultOperator = (String)def.get("defaultOperator");
                 String searchTerm = (String) def.get("searchTerm");
-                boolean spellCheck = (boolean) def.get("spellCheck");
-                
+                Object spellCheckObject = def.get("spellCheck");
+                boolean spellCheck = (spellCheckObject == null) ? false : (boolean) spellCheckObject;
+
+
                 // extract supplied values
                 
                 // sorting columns

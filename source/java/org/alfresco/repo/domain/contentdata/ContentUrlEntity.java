@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.domain.contentdata;
 
+import java.io.Serializable;
+
 import org.alfresco.repo.domain.CrcHelper;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
@@ -31,9 +33,13 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.2
  */
-public class ContentUrlEntity
+public class ContentUrlEntity implements Serializable
 {
-    public static final Long CONST_LONG_ZERO = new Long(0L);
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -7697859151521433536L;
+	public static final Long CONST_LONG_ZERO = new Long(0L);
     public static final String EMPTY_URL = "empty";
     
     private Long id;
@@ -42,7 +48,9 @@ public class ContentUrlEntity
     private long contentUrlCrc;
     private long size;
     private Long orphanTime;
-    
+
+    private ContentUrlKeyEntity contentUrlKey;
+
     public ContentUrlEntity()
     {
         this.size = 0L;
@@ -114,7 +122,31 @@ public class ContentUrlEntity
         }
     }
 
-    public Long getId()
+    public ContentUrlKeyEntity getContentUrlKey()
+    {
+		return contentUrlKey;
+	}
+
+	public static ContentUrlEntity setContentUrlKey(ContentUrlEntity existing, ContentUrlKeyEntity contentUrlKey)
+	{
+		ContentUrlEntity ret = new ContentUrlEntity();
+		ret.setContentUrl(existing == null ? null : existing.getContentUrl());
+		ret.setContentUrlShort(existing == null ? null : existing.getContentUrlShort());
+		ret.setContentUrlCrc(existing == null ? null : existing.getContentUrlCrc());
+		ret.setContentUrlKey(contentUrlKey);
+		ret.setOrphanTime(existing == null ? null : existing.getOrphanTime());
+		ret.setSize(existing == null ? null : existing.getSize());
+		ret.setId(existing == null ? null : existing.getId());
+        // done
+        return ret;
+	}
+
+	public void setContentUrlKey(ContentUrlKeyEntity contentUrlKey)
+	{
+		this.contentUrlKey = contentUrlKey;
+	}
+
+	public Long getId()
     {
         return id;
     }

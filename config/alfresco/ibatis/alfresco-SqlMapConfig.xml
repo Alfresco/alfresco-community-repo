@@ -47,6 +47,7 @@ Inbound settings from iBatis
         <typeAlias alias="ContentUrl" type="org.alfresco.repo.domain.contentdata.ContentUrlEntity"/>
         <typeAlias alias="ContentUrlUpdate" type="org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity"/>
         <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
+        <typeAlias alias="ContentUrlKey" type="org.alfresco.repo.domain.contentdata.ContentUrlKeyEntity"/>
         <typeAlias alias="ContentUrlOrphanQuery" type="org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery"/>
         
         <!-- Locale -->
@@ -176,6 +177,7 @@ Inbound settings from iBatis
     
     <typeHandlers> 
         <typeHandler javaType="java.io.Serializable" jdbcType="BLOB" handler="org.alfresco.ibatis.SerializableTypeHandler"/>
+        <typeHandler javaType="_byte[]" jdbcType="BLOB" handler="org.alfresco.ibatis.ByteArrayTypeHandler"/>
     </typeHandlers>
         
     <mappers>

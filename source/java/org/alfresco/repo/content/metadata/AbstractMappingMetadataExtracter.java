@@ -1120,7 +1120,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
         if (!isSupported(mimetype))
         {
             throw new AlfrescoRuntimeException(
-                    "Metadata extracter does not support mimetype: \n" +
+                    "Metadata extracter does not support mimetype: " + mimetype + "\n" +
                     "   reader: " + reader + "\n" +
                     "   supported: " + supportedMimetypes + "\n" +
                     "   extracter: " + this);

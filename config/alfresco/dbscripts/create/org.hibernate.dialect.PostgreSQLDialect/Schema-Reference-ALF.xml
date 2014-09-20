@@ -25,6 +25,7 @@
     <sequence name="alf_child_assoc_seq"/>
     <sequence name="alf_content_data_seq"/>
     <sequence name="alf_content_url_seq"/>
+    <sequence name="alf_content_url_enc_seq"/>
     <sequence name="alf_encoding_seq"/>
     <sequence name="alf_locale_seq"/>
     <sequence name="alf_lock_resource_seq"/>
@@ -1179,6 +1180,74 @@
           <columnnames>
             <columnname>content_size</columnname>
             <columnname>id</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
+    <table name="alf_content_url_encryption">
+      <columns>
+        <column name="id" order="1">
+          <type>int8</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="content_url_id" order="2">
+          <type>int8</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="algorithm" order="3">
+          <type>varchar(10)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="key_size" order="4">
+          <type>int4</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="encrypted_key" order="5">
+          <type>bytea</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="master_keystore_id" order="6">
+          <type>varchar(20)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="master_key_alias" order="7">
+          <type>varchar(15)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="unencrypted_file_size" order="8">
+          <type>int8</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="alf_content_url_encryption_pkey">
+        <columnnames>
+          <columnname order="1">id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_cont_enc_url">
+          <localcolumn>content_url_id</localcolumn>
+          <targettable>alf_content_url</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_alf_cont_enc_url" unique="true">
+          <columnnames>
+            <columnname>content_url_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_cont_enc_mka" unique="false">
+          <columnnames>
+            <columnname>master_key_alias</columnname>
           </columnnames>
         </index>
       </indexes>

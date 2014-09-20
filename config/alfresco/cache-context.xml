@@ -84,7 +84,15 @@
    <bean name="contentDataSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.contentDataSharedCache"/>
    </bean>
-   
+
+   <bean name="contentUrlSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.contentUrlSharedCache"/>
+   </bean>
+
+   <bean name="contentUrlMasterKeySharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.contentUrlMasterKeySharedCache"/>
+   </bean>
+
    <!-- ===================================== -->
    <!-- ID lookup for general, shared, immutable entities       -->
    <!-- ===================================== -->

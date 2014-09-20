@@ -31,9 +31,11 @@ import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.repo.domain.contentdata.AbstractContentDataDAOImpl;
 import org.alfresco.repo.domain.contentdata.ContentDataEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
+import org.alfresco.repo.domain.contentdata.ContentUrlKeyEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery;
 import org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.ibatis.session.RowBounds;
@@ -45,6 +47,7 @@ import org.springframework.dao.DataIntegrityViolationException;
  * iBatis-specific implementation of the ContentData DAO.
  * 
  * @author Derek Hulley
+ * @author sglover
  * @since 3.2
  */
 public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
@@ -62,16 +65,20 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String UPDATE_CONTENT_DATA = "alfresco.content.update_ContentData";
     private static final String DELETE_CONTENT_DATA = "alfresco.content.delete_ContentData";
     private static final String DELETE_CONTENT_URLS = "alfresco.content.delete_ContentUrls";
-    
-    
-    private SqlSessionTemplate template;
+    private static final String DELETE_CONTENT_URL_KEYS = "alfresco.content.delete_ContentUrlKeys";
+    private static final String DELETE_SYMMETRIC_KEY = "alfresco.content.delete_KeyData";
+    private static final String UPDATE_SYMMETRIC_KEY = "alfresco.content.update_KeyData";
+    private static final String INSERT_SYMMETRIC_KEY = "alfresco.content.insert.insert_KeyData";
+    private static final String SELECT_SYMMETRIC_KEYS_BY_MASTER_KEY = "alfresco.content.select_SymmetricKeysByMasterKey";
+    private static final String COUNT_SYMMETRIC_KEYS_BY_MASTER_KEY = "alfresco.content.select_CountSymmetricKeysByMasterKey";
+
+    protected SqlSessionTemplate template;
     
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
     {
         this.template = sqlSessionTemplate;
     }
-    
-    
+
     public Pair<Long, String> createContentUrlOrphaned(String contentUrl, Date orphanTime)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
@@ -85,7 +92,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     }
 
     @Override
-    protected ContentUrlEntity createContentUrlEntity(String contentUrl, long size)
+    protected ContentUrlEntity createContentUrlEntity(String contentUrl, long size, ContentUrlKeyEntity contentUrlKeyEntity)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
@@ -93,7 +100,14 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         contentUrlEntity.setOrphanTime(null);
         /* Long id = (Long) */ template.insert(INSERT_CONTENT_URL, contentUrlEntity);
         /*contentUrlEntity.setId(id);*/
-        
+
+        if(contentUrlKeyEntity != null)
+        {
+	        template.insert(INSERT_SYMMETRIC_KEY, contentUrlKeyEntity);
+
+//	        contentUrlEntity.setContentUrlKey(contentUrlKeyEntity);
+        }
+
         // Done
         return contentUrlEntity;
     }
@@ -103,13 +117,13 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setId(id);
-        contentUrlEntity = template.selectOne(SELECT_CONTENT_URL_BY_ID, contentUrlEntity);
+        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_ID, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
 
     @Override
-    protected ContentUrlEntity getContentUrlEntity(String contentUrl)
+    public ContentUrlEntity getContentUrlEntity(String contentUrl)
     {
         ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
         contentUrlEntity.setContentUrl(contentUrl);
@@ -122,7 +136,6 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         return contentUrlEntity;
     }
 
-    @SuppressWarnings("unchecked")
     public void getContentUrlsOrphaned(
             final ContentUrlHandler contentUrlHandler,
             final Long maxOrphanTimeExclusive,
@@ -132,7 +145,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         
         ContentUrlOrphanQuery query = new ContentUrlOrphanQuery();
         query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
-        List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED,
+        List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED, 
                                                                                       query, 
                                                                                       new RowBounds(0, maxResults));
         // Pass the result to the callback
@@ -159,6 +172,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
      */
     public int deleteContentUrls(List<Long> ids)
     {
+        template.delete(DELETE_CONTENT_URL_KEYS, ids);
         return template.delete(DELETE_CONTENT_URLS, ids);
     }
 
@@ -171,7 +185,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         {
             contentUrlEntity.setContentUrlShort(contentUrlEntity.getContentUrlShort().toLowerCase());
         }
-        contentUrlEntity = template.selectOne(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
+        contentUrlEntity = (ContentUrlEntity) template.selectOne(SELECT_CONTENT_URL_BY_KEY_UNREFERENCED, contentUrlEntity);
         // Done
         return contentUrlEntity;
     }
@@ -206,12 +220,11 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     {
         Map<String, Object> params = new HashMap<String, Object>(11);
         params.put("id", id);
-        ContentDataEntity contentDataEntity = template.selectOne(SELECT_CONTENT_DATA_BY_ID, params);
+        ContentDataEntity contentDataEntity = (ContentDataEntity) template.selectOne(SELECT_CONTENT_DATA_BY_ID, params);
         // Done
         return contentDataEntity;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<ContentDataEntity> getContentDataEntitiesForNodes(Set<Long> nodeIds)
     {
@@ -266,7 +279,6 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         IdsEntity idsEntity = new IdsEntity();
         idsEntity.setIdOne(nodeId);
         idsEntity.setIds(new ArrayList<Long>(qnameIds));
-        @SuppressWarnings("unchecked")
         List<Long> ids = template.selectList(SELECT_CONTENT_DATA_BY_NODE_AND_QNAME, idsEntity);
         // Delete each one
         for (Long id : ids)
@@ -284,4 +296,49 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
             }
         }
     }
+
+	@Override
+	protected int updateContentUrlEntity(ContentUrlEntity existing, ContentUrlEntity entity)
+	{
+		int ret = 0;
+
+		ContentUrlKeyEntity existingContentUrlKey = existing.getContentUrlKey();
+		ContentUrlKeyEntity contentUrlKey = entity.getContentUrlKey();
+		contentUrlKey.setContentUrlId(existing.getId());
+		if(existingContentUrlKey == null)
+		{
+			ret = template.insert(INSERT_SYMMETRIC_KEY, contentUrlKey);
+		}
+		else if (!EqualsHelper.nullSafeEquals(existingContentUrlKey, contentUrlKey))
+		{
+			ret = template.update(UPDATE_SYMMETRIC_KEY, contentUrlKey);
+		}
+
+		return ret;
+	}
+
+	@Override
+	protected int deleteContentUrlEntity(long id)
+	{
+        Map<String, Object> params = new HashMap<String, Object>(11);
+        params.put("id", id);
+		return template.delete(DELETE_SYMMETRIC_KEY, params);
+	}
+
+	@Override
+	public List<ContentUrlKeyEntity> getSymmetricKeysByMasterKeyAlias(String masterKeyAlias, long fromId, int maxResults)
+	{
+		ContentUrlKeyEntity entity = new ContentUrlKeyEntity();
+		entity.setMasterKeyAlias(masterKeyAlias);
+		entity.setId(fromId);
+		List<ContentUrlKeyEntity> results = template.selectList(SELECT_SYMMETRIC_KEYS_BY_MASTER_KEY, 
+				entity, new RowBounds(0, maxResults));
+		return results;
+	}
+
+	@Override
+	public int countSymmetricKeysForMasterKeyAlias(String masterKeyAlias)
+	{
+		return (Integer)template.selectOne(COUNT_SYMMETRIC_KEYS_BY_MASTER_KEY, masterKeyAlias);
+	}
 }

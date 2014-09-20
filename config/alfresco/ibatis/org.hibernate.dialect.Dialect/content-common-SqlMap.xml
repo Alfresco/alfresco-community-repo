@@ -29,19 +29,36 @@
         <result property="contentUrlCrc" column="content_url_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="size" column="content_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="orphanTime" column="orphan_time" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentUrlKey.contentUrlId" column="content_url_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentUrlKey.keySize" column="key_size" jdbcType="INTEGER" javaType="int"/>
+        <result property="contentUrlKey.encryptedKeyAsBytes" column="encrypted_key" jdbcType="BLOB" javaType="_byte[]"/>
+        <result property="contentUrlKey.algorithm" column="algorithm" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="contentUrlKey.masterKeystoreId" column="master_keystore_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="contentUrlKey.masterKeyAlias" column="master_key_alias" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="contentUrlKey.unencryptedFileSize" column="unencrypted_file_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
   
     <resultMap id="result_ContentData" type="ContentData">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="contentUrlId" column="content_url_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="contentUrl" column="content_url" jdbcType="VARCHAR" javaType="java.lang.String"/>
         <result property="size" column="content_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="mimetypeId" column="content_mimetype_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="encodingId" column="content_encoding_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="localeId" column="content_locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
-  
+
+    <resultMap id="result_ContentUrlKey" type="ContentUrlKey">
+        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="contentUrlId" column="content_url_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="keySize" column="key_size" jdbcType="INTEGER" javaType="int"/>
+        <result property="encryptedKeyAsBytes" column="encrypted_key" jdbcType="BLOB" javaType="_byte[]"/>
+        <result property="algorithm" column="algorithm" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="masterKeystoreId" column="master_keystore_id" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="masterKeyAlias" column="master_key_alias" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="unencryptedFileSize" column="unencrypted_file_size" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
@@ -70,7 +87,17 @@
         <parameter property="encodingId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
-  
+
+    <parameterMap id="parameter_ContentUrlKey" type="ContentUrlKey">
+        <parameter property="contentUrlId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="keySize" jdbcType="INTEGER" javaType="int"/>
+        <parameter property="algorithm" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="encryptedKeyAsBytes" jdbcType="BLOB" javaType="_byte[]"/>
+        <parameter property="masterKeystoreId" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="masterKeyAlias" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <parameter property="unencryptedFileSize" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+
     <!--                -->
     <!-- SQL Snippets   -->
     <!--                -->
@@ -114,7 +141,29 @@
         insert into alf_content_data (id, version, content_url_id, content_mimetype_id, content_encoding_id, content_locale_id) 
         values (#{id}, #{version}, #{contentUrlId,jdbcType=BIGINT}, #{mimetypeId,jdbcType=BIGINT}, #{encodingId,jdbcType=BIGINT}, #{localeId,jdbcType=BIGINT})
     </sql>
-    
+
+    <sql id="insert_KeyData_AutoIncrement">
+        insert into alf_content_url_encryption
+        (
+            content_url_id, key_size, algorithm, encrypted_key, master_keystore_id, master_key_alias, unencrypted_file_size
+        )
+        values
+        (
+            ?, ?, ?, ?, ?, ?, ?
+        )
+    </sql>
+
+    <sql id="insert_KeyData_Sequence">
+        insert into alf_content_url_encryption
+        (
+            id, content_url_id, key_size, algorithm, encrypted_key, master_keystore_id, master_key_alias, unencrypted_file_size
+        )
+        values
+        (
+            #{id}, #{contentUrlId}, #{keySize}, #{algorithm}, #{encryptedKeyAsBytes}, #{masterKeystoreId}, #{masterKeyAlias}, #{unencryptedFileSize}
+        )
+    </sql>
+
     <!--                -->
     <!-- Statements     -->
     <!--                -->
@@ -162,19 +211,43 @@
     <!-- Get the content URL entity by ID -->
     <select id="select_ContentUrlById" parameterType="ContentUrl" resultMap="result_ContentUrl">
         select
-            *
+            u.id as id,
+            u.content_url as content_url,
+            u.content_url_short as content_url_short,
+            u.content_url_crc as content_url_crc,
+            u.content_size as content_size,
+            u.orphan_time as orphan_time,
+            ce.algorithm as algorithm,
+            ce.key_size as key_size,
+            ce.encrypted_key as encrypted_key,
+            ce.master_keystore_id as master_keystore_id,
+            ce.master_key_alias as master_key_alias,
+            ce.unencrypted_file_size as unencrypted_file_size
         from
-            alf_content_url
+            alf_content_url u
+            left join alf_content_url_encryption ce on (u.id = ce.content_url_id)
         where
-            id = #{id}
+            u.id = #{id}
     </select>
 
     <!-- Get the content URL entity by unique key -->
     <select id="select_ContentUrlByKey" parameterType="ContentUrl" resultMap="result_ContentUrl">
         select
-            *
+            u.id as id,
+            u.content_url as content_url,
+            u.content_url_short as content_url_short,
+            u.content_url_crc as content_url_crc,
+            u.content_size as content_size,
+            u.orphan_time as orphan_time,
+            ce.algorithm as algorithm,
+            ce.key_size as key_size,
+            ce.encrypted_key as encrypted_key,
+            ce.master_keystore_id as master_keystore_id,
+            ce.master_key_alias as master_key_alias,
+            ce.unencrypted_file_size as unencrypted_file_size
         from
-            alf_content_url
+            alf_content_url u
+            left join alf_content_url_encryption ce on (u.id = ce.content_url_id)
         where
             content_url_short = #{contentUrlShort} and
             content_url_crc = #{contentUrlCrc}
@@ -246,13 +319,23 @@
         </foreach>
     </delete>
 
+    <delete id="delete_ContentUrlKeys" parameterType="list">
+        delete
+        from
+            alf_content_url_encryption
+        where
+            content_url_id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+
     <!-- Get the ContentData entity by ID -->
     <select id="select_ContentDataById" parameterMap="parameter_IdMap" resultMap="result_ContentData">
         select
             cd.id as id,
             cd.version as version,
             cd.content_url_id as content_url_id,
-            cu.content_url as content_url,
             cu.content_size as content_size,
             cd.content_mimetype_id as content_mimetype_id,
             cd.content_encoding_id as content_encoding_id,
@@ -270,7 +353,6 @@
             cd.id as id,
             cd.version as version,
             cd.content_url_id as content_url_id,
-            cu.content_url as content_url,
             cu.content_size as content_size,
             cd.content_mimetype_id as content_mimetype_id,
             cd.content_encoding_id as content_encoding_id,
@@ -327,4 +409,66 @@
             id = ?
     </delete>
 
+    <select id="select_SymmetricKeyByContentId" parameterMap="parameter_IdMap" resultMap="result_ContentUrlKey">
+        select
+            e.id,
+            e.content_url_id,
+            e.key_size,
+            e.algorithm,
+            e.encrypted_key,
+            e.master_keystore_id,
+            e.master_key_alias,
+            e.unencrypted_file_size
+        from
+            alf_content_url_encryption e
+        where
+            e.content_url_id = #{contentUrlId}
+    </select>
+
+    <update id="update_KeyData" parameterType="ContentUrlKey">
+        update
+            alf_content_url_encryption
+        set
+            key_size = #{keySize},
+            algorithm = #{algorithm},
+            encrypted_key = #{encryptedKeyAsBytes},
+            master_keystore_id = #{masterKeystoreId},
+            master_key_alias = #{masterKeyAlias},
+            unencrypted_file_size = #{unencryptedFileSize}
+        where
+            id = #{id}
+    </update>
+
+    <delete id="delete_KeyData" parameterMap="parameter_IdMap">
+        delete
+        from
+            alf_content_url_encryption e
+        where
+            id = ?
+    </delete>
+
+    <select id="select_SymmetricKeysByMasterKey" parameterType="ContentUrlKey" resultMap="result_ContentUrlKey">
+        select
+            e.id,
+            e.content_url_id,
+            e.key_size,
+            e.algorithm,
+            e.encrypted_key,
+            e.master_keystore_id,
+            e.master_key_alias,
+            e.unencrypted_file_size
+        from
+            alf_content_url_encryption e
+        where
+            e.master_key_alias = #{masterKeyAlias}
+            and <![CDATA[e.id > #{id}]]> 
+    </select>
+    
+    <select id="select_CountSymmetricKeysByMasterKey" parameterType="String" resultType="java.lang.Integer">
+        select count(*)
+        from
+            alf_content_url_encryption e
+        where
+            e.master_key_alias = #{masterKeyAlias}
+    </select>
 </mapper>

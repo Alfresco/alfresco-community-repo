@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,11 +18,14 @@
  */
 package org.alfresco.repo.content.caching;
 
-import java.io.File;
-import java.util.Arrays;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.util.Arrays;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.cache.SimpleCache;
@@ -34,10 +37,10 @@ import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 import org.junit.internal.runners.JUnit38ClassRunner;
 import org.junit.runner.RunWith;
-
 
 /**
  * Tests for the CachingContentStore that benefit from a full set of tests
@@ -54,11 +57,9 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
     private ContentCacheImpl cache;
     
     
-    @Override
-    public void setUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.setUp();
-        
         File tempDir = TempFileProvider.getTempDir();
         
         backingStore = new FileContentStore(ctx,

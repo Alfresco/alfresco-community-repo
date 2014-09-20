@@ -1145,6 +1145,74 @@
         </index>
       </indexes>
     </table>
+    <table name="alf_content_url_encryption">
+      <columns>
+        <column name="id" order="1">
+          <type>bigint</type>
+          <nullable>false</nullable>
+          <autoincrement>true</autoincrement>
+        </column>
+        <column name="content_url_id" order="2">
+          <type>bigint</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="algorithm" order="3">
+          <type>varchar(10)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="key_size" order="4">
+          <type>int</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="encrypted_key" order="5">
+          <type>blob</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="master_keystore_id" order="6">
+          <type>varchar(20)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="master_key_alias" order="7">
+          <type>varchar(15)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="unencrypted_file_size" order="8">
+          <type>bigint</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="PRIMARY">
+        <columnnames>
+          <columnname order="1">id</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="fk_alf_cont_enc_url">
+          <localcolumn>content_url_id</localcolumn>
+          <targettable>alf_content_url</targettable>
+          <targetcolumn>id</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="idx_alf_cont_enc_url" unique="true">
+          <columnnames>
+            <columnname>content_url_id</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_cont_enc_mka" unique="false">
+          <columnnames>
+            <columnname>master_key_alias</columnname>
+          </columnnames>
+        </index>
+      </indexes>
+    </table>
     <table name="alf_encoding">
       <columns>
         <column name="id" order="1">

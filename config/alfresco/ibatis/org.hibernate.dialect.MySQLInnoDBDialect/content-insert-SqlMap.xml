@@ -20,4 +20,7 @@
         <include refid="alfresco.content.insert_ContentData_AutoIncrement"/>
     </insert>
 
+    <insert id="insert_KeyData" parameterMap="alfresco.content.parameter_ContentUrlKey" useGeneratedKeys="true" keyProperty="id">
+        <include refid="alfresco.content.insert_KeyData_AutoIncrement"/>
+    </insert>
 </mapper>

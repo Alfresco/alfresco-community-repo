@@ -16,6 +16,7 @@
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-LockTables.sql</value>
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentTables.sql</value>
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-PropertyValueTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentUrlEncryptionTables.sql</value>
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuditTables.sql</value>
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
@@ -86,6 +87,7 @@
                 <ref bean="patch.db-V4.1-ChildAssoc-OrderBy" />
                 <ref bean="patch.db-V4.1-createIdxAlfNodeTQN" />
                 <ref bean="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" />
+				<ref bean="patch.db-V5.0-ContentUrlEncryptionTables" />
             </list>
         </property>
     </bean>

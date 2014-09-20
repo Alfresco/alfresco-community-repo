@@ -43,5 +43,12 @@
         <include refid="alfresco.content.insert_ContentData_Sequence"/>
         
     </insert>
-    
+
+    <insert id="insert_KeyData" parameterType="ContentUrlKey">
+        <selectKey resultType="long" keyProperty="id" order="BEFORE" >
+            select nextVal('alf_content_url_enc_seq')
+        </selectKey>
+
+        <include refid="alfresco.content.insert_KeyData_Sequence"/>
+    </insert>
 </mapper>

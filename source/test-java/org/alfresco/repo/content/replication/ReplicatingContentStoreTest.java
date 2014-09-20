@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,6 +17,10 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.content.replication;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -38,6 +42,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -59,11 +64,9 @@ public class ReplicatingContentStoreTest extends AbstractWritableContentStoreTes
     private ContentStore primaryStore;
     private List<ContentStore> secondaryStores;
     
-    @Override
-    public void setUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.setUp();
-        
         File tempDir = TempFileProvider.getTempDir();
         // create a primary file store
         String storeDir = tempDir.getAbsolutePath() + File.separatorChar + GUID.generate();

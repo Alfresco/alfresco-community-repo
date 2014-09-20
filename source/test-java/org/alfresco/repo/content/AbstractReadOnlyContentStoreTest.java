@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,11 @@
  */
 package org.alfresco.repo.content;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -26,14 +31,19 @@ import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
 import org.alfresco.repo.content.ContentStore.ContentUrlHandler;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.BaseApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -44,14 +54,22 @@ import org.springframework.context.ApplicationContext;
  * @see org.alfresco.service.cmr.repository.ContentReader
  * @see org.alfresco.service.cmr.repository.ContentWriter
  * 
+ * @author sglover
  * @author Derek Hulley
  */
-public abstract class AbstractReadOnlyContentStoreTest extends TestCase
+public abstract class AbstractReadOnlyContentStoreTest
 {
-    protected static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+	protected static ApplicationContext ctx;
+
     private static Log logger = LogFactory.getLog(AbstractReadOnlyContentStoreTest.class);
-    
+
+	@Rule public TestName name = new TestName();
+
+	protected String getName()
+	{
+		return name.getMethodName();
+	}
+
     protected TransactionService transactionService;
     private UserTransaction txn;
     
@@ -60,11 +78,17 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
         super();
     }
 
+    @BeforeClass
+    public static void beforeClass() throws Exception
+    {
+    	ctx = BaseApplicationContextHelper.getApplicationContext(ApplicationContextHelper.CONFIG_LOCATIONS);
+    }
+
     /**
      * Starts a transaction
      */
-    @Override
-    public void setUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
         transactionService = (TransactionService) ctx.getBean("TransactionService");
         txn = transactionService.getUserTransaction();
@@ -74,8 +98,8 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
     /**
      * Rolls back the transaction
      */
-    @Override
-    public void tearDown() throws Exception
+    @After
+    public void after() throws Exception
     {
         try { txn.rollback(); } catch (Throwable e) {e.printStackTrace();}
     }
@@ -144,6 +168,7 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
         }
     }
     
+    @Test
     public void testSetUp() throws Exception
     {
         // check that the store remains the same
@@ -182,6 +207,7 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
     /**
      * Checks that the error handling for <i>inappropriate</i> content URLs
      */
+    @Test
     public void testIllegalReadableContentUrls()
     {
         ContentStore store = getStore();
@@ -193,13 +219,14 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
     /**
      * Checks that the various methods of obtaining a reader are supported.
      */
+    @Test
     public void testGetReaderForExistingContentUrl() throws Exception
     {
         ContentStore store = getStore();
         String contentUrl = getExistingContentUrl();
         if (contentUrl == null)
         {
-            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            logger.warn("Store test testGetReaderForExistingContentUrl not possible on " + store.getClass().getName());
             return;
         }
         // Get the reader
@@ -227,13 +254,14 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
      * <p>
      * Only executes if the reader implements {@link RandomAccessContent}.
      */
+    @Test
     public void testRandomAccessRead() throws Exception
     {
         ContentStore store = getStore();
         String contentUrl = getExistingContentUrl();
         if (contentUrl == null)
         {
-            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            logger.warn("Store test testRandomAccessRead not possible on " + store.getClass().getName());
             return;
         }
         // Get the reader
@@ -256,6 +284,7 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
         fileChannel.close();
     }
     
+    @Test
     public void testBlockedWriteOperations() throws Exception
     {
         ContentStore store = getStore();
@@ -277,7 +306,7 @@ public abstract class AbstractReadOnlyContentStoreTest extends TestCase
         String contentUrl = getExistingContentUrl();
         if (contentUrl == null)
         {
-            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            logger.warn("Store test testBlockedWriteOperations not possible on " + store.getClass().getName());
             return;
         }
         // Ensure that we can't delete a URL

@@ -36,7 +36,6 @@ public class ContentDataEntity
     private Long id;
     private Long version;
     private Long contentUrlId;
-    private String contentUrl;
     private Long size;
     private Long mimetypeId;
     private Long encodingId;
@@ -45,8 +44,8 @@ public class ContentDataEntity
     public ContentDataEntity()
     {
     }
-    
-    @Override
+
+	@Override
     public int hashCode()
     {
         return (id == null ? 0 : id.hashCode());
@@ -69,15 +68,14 @@ public class ContentDataEntity
             return false;
         }
     }
-    
-    @Override
+
+	@Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);
         sb.append("ContentDataEntity")
           .append("[ ID=").append(id)
           .append(", contentUrlId=").append(contentUrlId)
-          .append(", contentUrl=").append(contentUrl)
           .append(", size=").append(size)
           .append(", mimetype=").append(mimetypeId)
           .append(", encoding=").append(encodingId)
@@ -126,16 +124,6 @@ public class ContentDataEntity
     public void setContentUrlId(Long contentUrlId)
     {
         this.contentUrlId = contentUrlId;
-    }
-
-    public String getContentUrl()
-    {
-        return contentUrl;
-    }
-
-    public void setContentUrl(String contentUrl)
-    {
-        this.contentUrl = contentUrl;
     }
 
     public Long getSize()

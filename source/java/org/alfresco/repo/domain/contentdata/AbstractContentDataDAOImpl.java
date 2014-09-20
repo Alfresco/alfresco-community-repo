@@ -19,7 +19,6 @@
 package org.alfresco.repo.domain.contentdata;
 
 import java.io.Serializable;
-import java.sql.Savepoint;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +28,6 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
-import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.encoding.EncodingDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
@@ -54,11 +52,14 @@ import org.springframework.dao.DataIntegrityViolationException;
  * IDs into <code>ContentData</code> instances.
  * 
  * @author Derek Hulley
+ * @author sglover
  * @since 3.2
  */
 public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
 {
     private static final String CACHE_REGION_CONTENT_DATA = "ContentData";
+    private static final String CACHE_REGION_CONTENT_URL = "ContentUrl";
+
     /**
      * Content URL IDs to delete before final commit.
      */
@@ -67,10 +68,10 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     private static Log logger = LogFactory.getLog(AbstractContentDataDAOImpl.class);
     
     private final ContentDataCallbackDAO contentDataCallbackDAO;
-    private ControlDAO controlDAO;
-    private MimetypeDAO mimetypeDAO;
-    private EncodingDAO encodingDAO;
-    private LocaleDAO localeDAO;
+    private final ContentUrlCallbackDAO contentUrlCallbackDAO;
+    protected MimetypeDAO mimetypeDAO;
+    protected EncodingDAO encodingDAO;
+    protected LocaleDAO localeDAO;
     private EagerContentStoreCleaner contentStoreCleaner;
 
     /**
@@ -80,24 +81,20 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * VALUE KEY: NONE<br/>
      */
     private EntityLookupCache<Long, ContentData, Serializable> contentDataCache;
-    
+
+    private EntityLookupCache<Long, ContentUrlEntity, String> contentUrlCache;
+
     /**
      * Default constructor
      */
     public AbstractContentDataDAOImpl()
     {
         this.contentDataCallbackDAO = new ContentDataCallbackDAO();
+        this.contentUrlCallbackDAO = new ContentUrlCallbackDAO();
         this.contentDataCache = new EntityLookupCache<Long, ContentData, Serializable>(contentDataCallbackDAO);
+        this.contentUrlCache = new EntityLookupCache<Long, ContentUrlEntity, String>(contentUrlCallbackDAO);
     }
 
-    /**
-     * @param controlDAO        create Savepoints
-     */
-    public void setControlDAO(ControlDAO controlDAO)
-    {
-        this.controlDAO = controlDAO;
-    }
-    
     public void setMimetypeDAO(MimetypeDAO mimetypeDAO)
     {
         this.mimetypeDAO = mimetypeDAO;
@@ -133,7 +130,15 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
                 CACHE_REGION_CONTENT_DATA,
                 contentDataCallbackDAO);
     }
-    
+
+    public void setContentUrlCache(SimpleCache<Long, ContentUrlEntity> contentUrlCache)
+    {
+        this.contentUrlCache = new EntityLookupCache<Long, ContentUrlEntity, String>(
+                contentUrlCache,
+                CACHE_REGION_CONTENT_URL,
+                contentUrlCallbackDAO);
+    }
+
     /**
      * A <b>content_url</b> entity was dereferenced.  This makes no assumptions about the
      * current references - dereference deletion is handled in the commit phase.
@@ -177,6 +182,49 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             throw new DataIntegrityViolationException("No ContentData value exists for ID " + id);
         }
         return entityPair;
+    }
+
+    @Override
+    public void updateContentUrl(ContentUrlEntity contentUrl)
+    {
+        if (contentUrl == null)
+        {
+            throw new IllegalArgumentException("Cannot look up ContentData by null ID.");
+        }
+    	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByValue(contentUrl);
+    	if(pair != null)
+    	{
+    		contentUrlCache.updateValue(pair.getFirst(), contentUrl);
+    	}
+    	else
+    	{
+    		pair = contentUrlCache.getOrCreateByValue(contentUrl);
+    		contentUrlCache.updateValue(pair.getFirst(), contentUrl);
+    	}
+    }
+
+    @Override
+    public ContentUrlEntity getContentUrl(String contentUrl)
+    {
+        if (contentUrl == null)
+        {
+            throw new IllegalArgumentException("Cannot look up ContentData by null ID.");
+        }
+        ContentUrlEntity entity = new ContentUrlEntity();
+        entity.setContentUrl(contentUrl);
+    	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByValue(entity);
+    	return (pair == null ? null : pair.getSecond());
+    }
+
+    @Override
+    public ContentUrlEntity getContentUrl(Long contentUrlId)
+    {
+        if (contentUrlId == null)
+        {
+            throw new IllegalArgumentException("Cannot look up ContentData by null ID.");
+        }
+    	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByKey(contentUrlId);
+    	return (pair == null ? null : pair.getSecond());
     }
 
     public void cacheContentDataForNodes(Set<Long> nodeIds)
@@ -245,7 +293,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             }
             ContentData contentData = makeContentData(contentDataEntity);
             // Done
-            return new Pair<Long, ContentData>(key, contentData);            
+            return new Pair<Long, ContentData>(key, contentData);
         }
 
         @Override
@@ -265,15 +313,89 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             return deleteContentDataEntity(key);
         }
     }
-    
+
+    /**
+     * Callback for <b>alf_content_url</b> DAO.
+     */
+    private class ContentUrlCallbackDAO extends EntityLookupCallbackDAOAdaptor<Long, ContentUrlEntity, String>
+    {
+        /**
+         * @return                  Returns the Node's NodeRef
+         */
+        @Override
+        public String getValueKey(ContentUrlEntity value)
+        {
+            return value.getContentUrl();
+        }
+
+        /**
+         * Looks the node up based on the NodeRef of the given node
+         */
+        @Override
+        public Pair<Long, ContentUrlEntity> findByValue(ContentUrlEntity entity)
+        {
+        	String contentUrl = entity.getContentUrl();
+        	ContentUrlEntity ret = getContentUrlEntity(contentUrl);
+        	return (ret != null ? new Pair<Long, ContentUrlEntity>(ret.getId(), ret) : null);
+        }
+
+        public Pair<Long, ContentUrlEntity> createValue(ContentUrlEntity value)
+        {
+        	ContentUrlEntity contentUrlEntity = createContentUrlEntity(value.getContentUrl(), value.getSize(), value.getContentUrlKey());
+            // Done
+            return new Pair<Long, ContentUrlEntity>(contentUrlEntity.getId(), contentUrlEntity);
+        }
+
+        public Pair<Long, ContentUrlEntity> findByKey(Long id)
+        {
+        	ContentUrlEntity contentUrlEntity = getContentUrlEntity(id);
+            if (contentUrlEntity == null)
+            {
+                return null;
+            }
+            // Done
+            return new Pair<Long, ContentUrlEntity>(contentUrlEntity.getId(), contentUrlEntity);
+        }
+
+        @Override
+        public int updateValue(Long id, ContentUrlEntity value)
+        {
+            ContentUrlEntity contentUrlEntity = getContentUrlEntity(id);
+            if (contentUrlEntity == null)
+            {
+                return 0;           // The client (outer-level code) will decide if this is an error
+            }
+            return updateContentUrlEntity(contentUrlEntity, value);
+        }
+
+        @Override
+        public int deleteByKey(Long id)
+        {
+        	return deleteContentUrlEntity(id);
+        }
+    }
+
     /**
      * Translates this instance into an externally-usable <code>ContentData</code> instance.
      */
     private ContentData makeContentData(ContentDataEntity contentDataEntity)
     {
         // Decode content URL
-        String contentUrl = contentDataEntity.getContentUrl();
+    	Long contentUrlId = contentDataEntity.getContentUrlId();
+    	String contentUrl = null;
+    	if(contentUrlId != null)
+    	{
+	    	Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(contentUrlId);
+	        if (entityPair == null)
+	        {
+	            throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + contentUrlId);
+	        }
+	    	ContentUrlEntity contentUrlEntity = entityPair.getSecond();
+	    	contentUrl = contentUrlEntity.getContentUrl();
+    	}
+
         long size = contentDataEntity.getSize() == null ? 0L : contentDataEntity.getSize().longValue();
+
         // Decode mimetype
         Long mimetypeId = contentDataEntity.getMimetypeId();
         String mimetype = null;
@@ -281,6 +403,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             mimetype = mimetypeDAO.getMimetype(mimetypeId).getSecond();
         }
+
         // Decode encoding
         Long encodingId = contentDataEntity.getEncodingId();
         String encoding = null;
@@ -288,6 +411,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             encoding = encodingDAO.getEncoding(encodingId).getSecond();
         }
+
         // Decode locale
         Long localeId = contentDataEntity.getLocaleId();
         Locale locale = null;
@@ -295,16 +419,17 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             locale = localeDAO.getLocalePair(localeId).getSecond();
         }
+
         // Build the ContentData
         ContentData contentData = new ContentData(contentUrl, mimetype, size, encoding, locale);
         // Done
         return contentData;
     }
-    
+
     /**
      * Translates the {@link ContentData} into persistable values using the helper DAOs
      */
-    private ContentDataEntity createContentDataEntity(ContentData contentData)
+    protected ContentDataEntity createContentDataEntity(ContentData contentData)
     {
         // Resolve the content URL
         Long contentUrlId = null;
@@ -312,9 +437,13 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         long size = contentData.getSize();
         if (contentUrl != null)
         {
-            // We must find or create the ContentUrlEntity
-            contentUrlId = getOrCreateContentUrlEntity(contentUrl, size).getId();
+        	ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        	contentUrlEntity.setContentUrl(contentUrl);
+        	contentUrlEntity.setSize(size);
+        	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
+        	contentUrlId = pair.getFirst();
         }
+
         // Resolve the mimetype
         Long mimetypeId = null;
         String mimetype = contentData.getMimetype();
@@ -346,10 +475,22 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     /**
      * Translates the {@link ContentData} into persistable values using the helper DAOs
      */
-    private int updateContentDataEntity(ContentDataEntity contentDataEntity, ContentData contentData)
+    protected int updateContentDataEntity(ContentDataEntity contentDataEntity, ContentData contentData)
     {
         // Resolve the content URL
-        String oldContentUrl = contentDataEntity.getContentUrl();
+        Long oldContentUrlId = contentDataEntity.getContentUrlId();
+        ContentUrlEntity contentUrlEntity = null;
+        if(oldContentUrlId != null)
+        {
+	        Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(oldContentUrlId);
+	        if (entityPair == null)
+	        {
+	            throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + oldContentUrlId);
+	        }
+	        contentUrlEntity = entityPair.getSecond();
+        }
+
+        String oldContentUrl = (contentUrlEntity != null ? contentUrlEntity.getContentUrl() : null);
         String newContentUrl = contentData.getContentUrl();
         if (!EqualsHelper.nullSafeEquals(oldContentUrl, newContentUrl))
         {
@@ -360,16 +501,23 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             }
             if (newContentUrl != null)
             {
-                Long contentUrlId = getOrCreateContentUrlEntity(newContentUrl, contentData.getSize()).getId();
-                contentDataEntity.setContentUrlId(contentUrlId);
-                contentDataEntity.setContentUrl(newContentUrl);
+            	if(contentUrlEntity == null)
+            	{
+	            	contentUrlEntity = new ContentUrlEntity();
+	            	contentUrlEntity.setContentUrl(newContentUrl);
+            	}
+            	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
+            	Long newContentUrlId = pair.getFirst();
+            	contentUrlEntity.setId(newContentUrlId);
+            	contentDataEntity.setContentUrlId(newContentUrlId);
             }
             else
             {
+                contentDataEntity.setId(null);
                 contentDataEntity.setContentUrlId(null);
-                contentDataEntity.setContentUrl(null);
             }
         }
+
         // Resolve the mimetype
         Long mimetypeId = null;
         String mimetype = contentData.getMimetype();
@@ -391,84 +539,27 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             localeId = localeDAO.getOrCreateLocalePair(locale).getFirst();
         }
-        
+
         contentDataEntity.setMimetypeId(mimetypeId);
         contentDataEntity.setEncodingId(encodingId);
         contentDataEntity.setLocaleId(localeId);
-        
-        return updateContentDataEntity(contentDataEntity);
-    }
 
-    /**
-     * Method to create (or get an existing) content URL.  The URL will be unorphaned
-     * whether it has been created or is being re-used.
-     * @param isReferenced if <code>true</code> we won't worry about eagerly deleting the content on transaction rollback
-     */
-    private ContentUrlEntity getOrCreateContentUrlEntity(String contentUrl, long size)
-    {
-        // Try to insert the content first.  Usually, the insert will not clash with anything
-        // as content URL re-use is far less frequent than new content creation.
-        ContentUrlEntity contentUrlEntity = null;
-        Savepoint savepoint = controlDAO.createSavepoint("getOrCreateContentUrlEntity");
-        try
-        {
-            contentUrlEntity = createContentUrlEntity(contentUrl, size);
-            controlDAO.releaseSavepoint(savepoint);
-        }
-        catch (RuntimeException e)
-        {
-            controlDAO.rollbackToSavepoint(savepoint);
-            // See if this was caused by an existing URL
-            contentUrlEntity = getContentUrlEntity(contentUrl);
-            // If it exists, then we can just re-use it, but check that the size is consistent
-            if (contentUrlEntity == null)
-            {
-                // The error was caused by something else.  Perhaps another, as-yet-unseen
-                // row clashes with this.  Just propagate the exception and let retrying
-                // happen as required.
-                throw e;
-            }
-            // Reuse it
-            long existingSize = contentUrlEntity.getSize();
-            if (size != existingSize)
-            {
-                logger.warn(
-                        "Re-using Content URL, but size is mismatched: \n" +
-                        "   Inbound: " + contentUrl + "\n" +
-                        "   Existing: " + contentUrlEntity);
-            }
-            // Check orphan state
-            Long oldOrphanTime = contentUrlEntity.getOrphanTime();
-            if (oldOrphanTime != null)
-            {
-                Long id = contentUrlEntity.getId();
-                int updated = updateContentUrlOrphanTime(id, null, oldOrphanTime);
-                if (updated == 0)
-                {
-                    throw new ConcurrencyFailureException("Failed to remove orphan time: " + contentUrlEntity);
-                }
-            }
-        }
-        // Done
-        return contentUrlEntity;
+        return updateContentDataEntity(contentDataEntity);
     }
 
     /**
      * @param contentUrl    the content URL to create or search for
      */
-    protected abstract ContentUrlEntity createContentUrlEntity(String contentUrl, long size);
-    
+    protected abstract ContentUrlEntity createContentUrlEntity(String contentUrl, long size, ContentUrlKeyEntity contentUrlKey);
+
     /**
      * @param id            the ID of the <b>content url</b> entity
      * @return              Return the entity or <tt>null</tt> if it doesn't exist
      */
     protected abstract ContentUrlEntity getContentUrlEntity(Long id);
-    
-    /**
-     * @param contentUrl    the URL of the <b>content url</b> entity
-     * @return              Return the entity or <tt>null</tt> if it doesn't exist
-     */
+
     protected abstract ContentUrlEntity getContentUrlEntity(String contentUrl);
+
     
     /**
      * @param contentUrl    the URL of the <b>content url</b> entity
@@ -501,7 +592,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * @return              Returns the entity or <tt>null</tt> if it doesn't exist
      */
     protected abstract ContentDataEntity getContentDataEntity(Long id);
-    
+
     
     /**
      * @param nodeIds       the node ID
@@ -516,14 +607,16 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * @return              Returns the number of rows updated (should be 1)
      */
     protected abstract int updateContentDataEntity(ContentDataEntity entity);
-    
+
     /**
      * Delete the entity with the given ID
      * 
      * @return              Returns the number of rows deleted
      */
     protected abstract int deleteContentDataEntity(Long id);
-    
+    protected abstract int deleteContentUrlEntity(long id);
+    protected abstract int updateContentUrlEntity(ContentUrlEntity existing, ContentUrlEntity entity);
+
     /**
      * Transactional listener that deletes unreferenced <b>content_url</b> entities.
      * 

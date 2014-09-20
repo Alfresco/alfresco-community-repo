@@ -18,6 +18,12 @@
  */
 package org.alfresco.repo.content.filestore;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.nio.ByteBuffer;
 
@@ -32,6 +38,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -46,11 +53,9 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
 {
     private FileContentStore store;
     
-    @Override
-    public void setUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.setUp();
-        
         // create a store that uses a subdirectory of the temp directory
         File tempDir = TempFileProvider.getTempDir();
         store = new FileContentStore(ctx,

@@ -21,10 +21,10 @@ package org.alfresco.repo.content.filestore;
 import java.io.File;
 
 import org.alfresco.repo.content.AbstractReadOnlyContentStoreTest;
-import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 /**
@@ -40,11 +40,9 @@ public class ReadOnlyFileContentStoreTest extends AbstractReadOnlyContentStoreTe
 {
     private FileContentStore store;
     
-    @Override
-    public void setUp() throws Exception
+    @Before
+    public void before() throws Exception
     {
-        super.setUp();
-        
         // create a store that uses a subdirectory of the temp directory
         File tempDir = TempFileProvider.getTempDir();
         store = new FileContentStore(ctx,

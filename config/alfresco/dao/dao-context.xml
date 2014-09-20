@@ -168,7 +168,7 @@
    <bean id="contentDataDAO" class="org.alfresco.repo.domain.contentdata.ibatis.ContentDataDAOImpl">
       <property name="sqlSessionTemplate" ref="contentSqlSessionTemplate"/>
       <property name="contentDataCache" ref="contentDataCache"/>
-      <property name="controlDAO" ref="controlDAO"/>
+      <property name="contentUrlCache" ref="contentUrlCache"/>
       <property name="mimetypeDAO" ref="mimetypeDAO"/>
       <property name="encodingDAO" ref="encodingDAO"/>
       <property name="localeDAO" ref="localeDAO"/>

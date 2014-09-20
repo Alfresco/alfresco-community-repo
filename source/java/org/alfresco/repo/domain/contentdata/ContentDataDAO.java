@@ -118,4 +118,51 @@ public interface ContentDataDAO
      * Delete a batch of content URL entities.
      */
     int deleteContentUrls(List<Long> ids);
+
+    /**
+     * Get a content url entity by contentUrl
+     * 
+     * @since 5.0
+     * @param contentUrl
+     * @return
+     */
+    ContentUrlEntity getContentUrl(String contentUrl);
+
+    /**
+     * Get a content url entity by contentUrlId
+     * 
+     * @since 5.0
+     * @param contentUrlId
+     * @return
+     */
+    ContentUrlEntity getContentUrl(Long contentUrlId);
+
+    /**
+     * Update a content url
+     * 
+     * @since 5.0
+     * @param contentUrlEntity
+     * @return
+     */
+    void updateContentUrl(ContentUrlEntity contentUrlEntity);
+
+    /**
+     * Get symmetric keys entities for symmetric keys that have been encrypted using the given
+     * master key, starting from 'fromId' and returning at most 'maxResults' entities.
+     * 
+     * @since 5.0
+     * @param contentUrlEntity
+     * @return
+     */
+    List<ContentUrlKeyEntity> getSymmetricKeysByMasterKeyAlias(String masterKeyAlias, long fromId, int maxResults);
+
+    /**
+     * Count symmetric keys entities for symmetric keys that have been encrypted using the given
+     * master key
+     * 
+     * @since 5.0
+     * @param masterKeyAlias
+     * @return
+     */
+    int countSymmetricKeysForMasterKeyAlias(String masterKeyAlias);
 }

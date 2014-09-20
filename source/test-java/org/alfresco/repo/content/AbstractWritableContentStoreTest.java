@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,6 +17,12 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.content;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,6 +45,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Test;
 
 /**
  * Abstract base class that provides a set of tests for implementations
@@ -53,7 +60,7 @@ import org.apache.commons.logging.LogFactory;
 @SuppressWarnings("deprecation")
 public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyContentStoreTest
 {
-    private static Log logger = LogFactory.getLog(AbstractWritableContentStoreTest.class);
+    protected static Log logger = LogFactory.getLog(AbstractWritableContentStoreTest.class);
     
     public AbstractWritableContentStoreTest()
     {
@@ -68,7 +75,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     protected String getExistingContentUrl()
     {
         ContentWriter writer = getWriter();
-        writer.putContent("Content for " + getName());
+        writer.putContent("Content for getExistingContentUrl");
         return writer.getContentUrl();
     }
     
@@ -84,7 +91,8 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         ContentStore store = getStore();
         return store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
     }
-    
+
+    @Test
     public void testSetUp() throws Exception
     {
         // check that the store remains the same
@@ -93,6 +101,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertTrue("The same instance of the store must be returned for getStore", store == getStore());
     }
     
+    @Test
     public void testWritable() throws Exception
     {
         ContentStore store = getStore();
@@ -102,6 +111,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Just checks that the method doesn't blow up
      */
+    @Test
     public void testSpaceFree() throws Exception
     {
         ContentStore store = getStore();
@@ -111,6 +121,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Just checks that the method doesn't blow up
      */
+    @Test
     public void testSpaceTotal() throws Exception
     {
         ContentStore store = getStore();
@@ -120,6 +131,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Just check that the method doesn't blow up
      */
+    @Test
     public void testRootLocation() throws Exception
     {
         ContentStore store = getStore();
@@ -148,6 +160,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Checks that the error handling for <i>inappropriate</i> content URLs
      */
+    @Test
     public void testIllegalWritableContentUrls()
     {
         ContentStore store = getStore();
@@ -159,10 +172,11 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Get a writer and write a little bit of content before reading it.
      */
+    @Test
     public void testSimpleUse()
     {
         ContentStore store = getStore();
-        String content = "Content for " + getName();
+        String content = "Content for testSimpleUse";
         
         ContentWriter writer = store.getWriter(ContentStore.NEW_CONTENT_CONTEXT);
         assertNotNull("Writer may not be null", writer);
@@ -186,6 +200,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Checks that the various methods of obtaining a reader are supported.
      */
+    @Test
     public synchronized void testGetReader() throws Exception
     {
         ContentStore store = getStore();
@@ -200,7 +215,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         ContentReader readerFromWriterBeforeWrite = writer.getReader();
         assertNotNull("A reader must always be available from the writer", readerFromWriterBeforeWrite);
         
-        String content = "Content for " + getName();
+        String content = "Content for testGetReader";
         
         // write some content
         long before = System.currentTimeMillis();
@@ -255,6 +270,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
      * Check that a reader is immutable, i.e. that a reader fetched before a
      * write doesn't suddenly become aware of the content once it has been written.
      */
+    @Test
     public void testReaderImmutability()
     {
         ContentWriter writer = getWriter();
@@ -264,7 +280,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertFalse(readerBeforeWrite.exists());
         
         // Write some content
-        writer.putContent("Content for " + getName());
+        writer.putContent("Content for testReaderImmutability");
         assertFalse("Reader's state changed after write", readerBeforeWrite.exists());
         try
         {
@@ -281,6 +297,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertTrue("New reader after write should be directed to new content", readerAfterWrite.exists());
     }
     
+    @Test
     public void testMimetypAndEncodingAndLocale() throws Exception
     {
         ContentWriter writer = getWriter();
@@ -309,6 +326,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertEquals("Encoding and decoding of strings failed", content, contentCheck);
     }
     
+    @Test
     public void testClosedState() throws Exception
     {
         ContentWriter writer = getWriter();
@@ -375,11 +393,12 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         return found[0];
     }
 
+    @Test
     public void testDeleteSimple() throws Exception
     {
         ContentStore store = getStore();
         ContentWriter writer = getWriter();
-        writer.putContent("Content for " + getName());
+        writer.putContent("Content for testDeleteSimple");
         String contentUrl = writer.getContentUrl();
         assertTrue("Content must now exist", store.exists(contentUrl));
         try
@@ -388,7 +407,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         }
         catch (UnsupportedOperationException e)
         {
-            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            logger.warn("Store test testDeleteSimple not possible on " + store.getClass().getName());
             return;
         }
         assertFalse("Content must now be removed", store.exists(contentUrl));
@@ -399,12 +418,13 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
      * <p>
      * Only applies when {@link #getStore()} returns a value.
      */
+    @Test
     public void testDeleteReaderStates() throws Exception
     {
         ContentStore store = getStore();
         ContentWriter writer = getWriter();
         
-        String content = "Content for " + getName();
+        String content = "Content for testDeleteReaderStates";
         String contentUrl = writer.getContentUrl();
 
         // write some bytes, but don't close the stream
@@ -481,6 +501,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     /**
      * Checks that the writer can have a listener attached
      */
+    @Test
     public void testWriteStreamListener() throws Exception
     {
         ContentWriter writer = getWriter();
@@ -507,6 +528,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
      * If the resource accessed by {@link #getReader()} and {@link #getWriter()} is not the same, then
      * values written and read won't be the same.
      */
+    @Test
     public void testWriteAndReadString() throws Exception
     {
         ContentWriter writer = getWriter();
@@ -521,6 +543,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertEquals("Write and read didn't work", content, check);
     }
     
+    @Test
     public void testStringTruncation() throws Exception
     {
         String content = "1234567890";
@@ -537,11 +560,12 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertEquals("Truncated strings don't match", "12345", checkContent);
     }
     
+    @Test
     public void testReadAndWriteFile() throws Exception
     {
         ContentWriter writer = getWriter();
         
-        File sourceFile = TempFileProvider.createTempFile(getName(), ".txt");
+        File sourceFile = TempFileProvider.createTempFile("testReadAndWriteFile", ".txt");
         sourceFile.deleteOnExit();
         // dump some content into the temp file
         String content = "ABC";
@@ -555,7 +579,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertTrue("Stream close not detected", writer.isClosed());
         
         // create a sink temp file
-        File sinkFile = TempFileProvider.createTempFile(getName(), ".txt");
+        File sinkFile = TempFileProvider.createTempFile("testReadAndWriteFile", ".txt");
         sinkFile.deleteOnExit();
         
         // get the content into our temp file
@@ -573,6 +597,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertEquals("Write out of and read into files failed", content, check);
     }
     
+    @Test
     public void testReadAndWriteStreamByPull() throws Exception
     {
         ContentWriter writer = getWriter();
@@ -593,11 +618,12 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         assertEquals("Write out and read in using streams failed", content, check);
     }
     
+    @Test
     public void testReadAndWriteStreamByPush() throws Exception
     {
         ContentWriter writer = getWriter();
 
-        String content = "ABC";
+        String content = "Some Random Content";
         // get the content output stream
         OutputStream os = writer.getContentOutputStream();
         os.write(content.getBytes());
@@ -611,7 +637,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         InputStream is = reader.getContentInputStream();
         byte[] buffer = new byte[100];
         int count = is.read(buffer);
-        assertEquals("No content read", 3, count);
+        assertEquals("No content read", content.length(), count);
         is.close();
         String check = new String(buffer, 0, count);
         
@@ -623,6 +649,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
      * <p>
      * Only applies when {@link #getStore()} returns a value.
      */
+    @Test
     public void testListUrls() throws Exception
     {
         ContentStore store = getStore();
@@ -633,7 +660,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
         }
         catch (UnsupportedOperationException e)
         {
-            logger.warn("Store test " + getName() + " not possible on " + store.getClass().getName());
+            logger.warn("Store test testListUrls not possible on " + store.getClass().getName());
             return;
         }
         // Proceed with the test
@@ -662,6 +689,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
      * <p>
      * Only executes if the writer implements {@link RandomAccessContent}.
      */
+    @Test
     public void testRandomAccessWrite() throws Exception
     {
         ContentWriter writer = getWriter();
@@ -727,6 +755,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
      * <p>
      * Only executes if the reader implements {@link RandomAccessContent}.
      */
+    @Test
     public void testRandomAccessRead() throws Exception
     {
         ContentWriter writer = getWriter();

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.search.SuggesterParameters;
 import org.alfresco.service.cmr.search.SuggesterResult;
 import org.alfresco.service.cmr.search.SuggesterService;
 import org.alfresco.util.Pair;
@@ -77,7 +78,7 @@ public class AutoSuggestSearchGet extends DeclarativeWebScript
             return model;
         }
 
-        SuggesterResult result = suggesterService.getSuggestions(term, limit);
+        SuggesterResult result = suggesterService.getSuggestions(new SuggesterParameters(term, limit, false));
         List<Pair<String, Integer>> suggestedTerms = result.getSuggestions();
         for (Pair<String, Integer> pair : suggestedTerms)
         {

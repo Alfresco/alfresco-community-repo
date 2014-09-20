@@ -1,3 +1,4 @@
+<#import "../generic-paged-results.lib.ftl" as genericPaging />
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
     "data" : {
@@ -16,5 +17,7 @@
             </#list>
         ]
     }
+    
+   <@genericPaging.pagingJSON />
 }
 </#escape>

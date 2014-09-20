@@ -24,13 +24,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.SortedSet;
 
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetService.FacetablePropertyData;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ModelUtil;
+import org.alfresco.util.ScriptPagingDetails;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -49,8 +50,12 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     public static final Log logger = LogFactory.getLog(FacetablePropertiesGet.class);
     public static final String PROPERTIES_KEY = "properties";
     
+    private static final String MAX_ITEMS                  = "maxItems";
+    private static final String SKIP_COUNT                 = "skipCount";
+    private static final int    DEFAULT_MAX_ITEMS_PER_PAGE = 50;
+    
     private static final String TEMPLATE_VAR_CLASSNAME = "classname";
-    private static final String QUERY_PARAM_NAMESPACE = "nsp";
+    private static final String QUERY_PARAM_NAMESPACE  = "nsp";
     
     private NamespaceService namespaceService;
     
@@ -79,7 +84,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         
         final Map<String, Object> model = new HashMap<>();
         
-        final Set<FacetablePropertyData> facetableProperties;
+        final SortedSet<FacetablePropertyData> facetableProperties;
         if (contentClassQName == null)
         {
             facetableProperties = facetService.getFacetableProperties();
@@ -107,13 +112,20 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
             });
         }
         
-        Set<FacetablePropertyData> filteredFacetableProperties = filter(facetableProperties, filters);
-        model.put(PROPERTIES_KEY, filteredFacetableProperties);
+        List<FacetablePropertyData> filteredFacetableProperties = filter(facetableProperties, filters);
         
         if (logger.isDebugEnabled())
         {
             logger.debug("Retrieved " + facetableProperties.size() + " available facets; filtered to " + filteredFacetableProperties.size());
         }
+        
+        // Create paging
+        ScriptPagingDetails paging = new ScriptPagingDetails(
+                                             getNonNegativeIntParameter(req, MAX_ITEMS, DEFAULT_MAX_ITEMS_PER_PAGE),
+                                             getNonNegativeIntParameter(req, SKIP_COUNT, 0));
+        
+        model.put(PROPERTIES_KEY, ModelUtil.page(filteredFacetableProperties, paging));
+        model.put("paging", ModelUtil.buildPaging(paging));
         
         return model;
     }
@@ -125,12 +137,12 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     }
     
     /**
-     * This method returns a new Set instance containing only those {@link FacetablePropertyData data} that
+     * This method returns a new List instance containing only those {@link FacetablePropertyData data} that
      * satisfy all {@link ResultFilter filters}.
      */
-    private Set<FacetablePropertyData> filter(Set<FacetablePropertyData> propsData, List<ResultFilter> filters)
+    private List<FacetablePropertyData> filter(Collection<FacetablePropertyData> propsData, List<ResultFilter> filters)
     {
-        Set<FacetablePropertyData> filteredResult = new TreeSet<>();
+        List<FacetablePropertyData> filteredResult = new ArrayList<>();
         
         for (FacetablePropertyData prop : propsData)
         {

@@ -249,6 +249,40 @@ public abstract class AbstractSolrFacetConfigAdminWebScript extends DeclarativeW
         }
         return typeQName;
     }
-
+    
+    /**
+     * Retrieves the named parameter as an integer, if the parameter is not present the default value is returned.
+     * 
+     * @param req The WebScript request
+     * @param paramName The name of parameter to look for.
+     * @param defaultValue The default value that should be returned if parameter is not present in request or is negative.
+     * @return The request parameter or default value
+     * @throws WebScriptException if the named parameter cannot be converted to int (HTTP rsp 400).
+     */
+    protected int getNonNegativeIntParameter(WebScriptRequest req, String paramName, int defaultValue)
+    {
+        final String paramString = req.getParameter(paramName);
+        
+        final int result;
+        
+        if (paramString != null)
+        {
+            try
+            {
+                final int paramInt = Integer.valueOf(paramString);
+                
+                if   (paramInt < 0) { result = defaultValue; }
+                else                { result = paramInt; }
+            }
+            catch (NumberFormatException e) 
+            {
+                throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            }
+        }
+        else { result = defaultValue; }
+        
+        return result;
+    }
+    
     abstract protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache);
 }

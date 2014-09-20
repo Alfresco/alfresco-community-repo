@@ -4,8 +4,8 @@
    <![CDATA[
    Get limited property definition data for properties deemed to be facetable.
    
-   http://<host>:<port>/alfresco/api/facet/facetable-properties[?nsp=eg]
-   http://<host>:<port>/alfresco/api/facet/classes/eg:aspectOrType/facetable-properties
+   http://<host>:<port>/alfresco/api/facet/facetable-properties[?nsp=eg&skipCount=50&maxItems=10]
+   http://<host>:<port>/alfresco/api/facet/classes/eg:aspectOrType/facetable-properties[?skipCount=50&maxItems=10]
    
    Example response from this web script:
    
@@ -32,8 +32,8 @@
    }
    ]]>
    </description>
-   <url>/api/facet/classes/{classname}/facetable-properties?nsp={namespacePrefix?}</url>
-   <url>/api/facet/facetable-properties?nsp={namespacePrefix?}</url>
+   <url>/api/facet/classes/{classname}/facetable-properties?nsp={namespacePrefix?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
+   <url>/api/facet/facetable-properties?nsp={namespacePrefix?}&amp;skipCount={skipCount?}&amp;maxItems={maxItems?}</url>
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>

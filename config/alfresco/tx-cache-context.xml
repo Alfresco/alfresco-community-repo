@@ -84,7 +84,7 @@
          <value>org.alfresco.cache.contentUrlMasterKeyTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="${cache.contentUrlMasterKeySharedCache.tx.maxItems}" />
-      <property name="mutable" value="true" />
+      <property name="mutable" value="false" />
       <property name="allowEqualsChecks" value="false" />
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>

@@ -500,6 +500,7 @@
                            <value>__CheckInOut.exe</value>
                         </property>
                      </bean>
+                     <!-- 
                      <bean class="org.alfresco.filesys.repo.desk.JavaScriptDesktopAction">
                         <property name="name">
                            <value>JavaScriptURL</value>
@@ -517,6 +518,7 @@
                            <value>copyToTarget</value>
                         </property>
                      </bean>
+                     -->
                      <!-- Other desktop actions which may be enabled -->
                      <!--
                         <bean class="org.alfresco.filesys.repo.desk.EchoDesktopAction"> <property name="name">

@@ -123,11 +123,6 @@
             <artifactId>alfresco-messaging-repo</artifactId>
             <version>1.1-SNAPSHOT</version>
         </dependency>
-       <dependency>
-            <groupId>org.alfresco.services</groupId>
-            <artifactId>alfresco-events-repo</artifactId>
-            <version>1.1-SNAPSHOT</version>
-        </dependency>
 
         <!-- Test dependencies -->
         <dependency>

@@ -462,6 +462,24 @@
         </property>
     </bean>
 
+    <bean id="take-ownership" class="org.alfresco.repo.action.executer.TakeOwnershipActionExecuter" parent="action-executer">
+       <property name="publicAction">
+          <value>false</value>
+       </property>
+       <property name="nodeService">
+          <ref bean="NodeService" />
+       </property>
+       <property name="ownableService">
+          <ref bean="OwnableService"></ref>
+       </property>
+       <property name="applicableTypes">
+          <list>
+             <value>{http://www.alfresco.org/model/content/1.0}content</value>
+             <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+          </list>
+       </property>
+    </bean>
+
     <!-- Import mail action executor from the OutboundSMTP subsystem -->
     <bean id="mail" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
         <property name="sourceApplicationContextFactory">

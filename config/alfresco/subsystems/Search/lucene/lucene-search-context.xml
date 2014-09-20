@@ -401,4 +401,7 @@
            <ref bean="search.searchService"/>
        </property>
     </bean>
+    
+    <bean id="search.suggesterService" class="org.alfresco.repo.search.impl.DummySuggesterServiceImpl">
+    </bean>
 </beans>

@@ -129,5 +129,7 @@
             <value>solr-cmis</value>
         </property>
     </bean>
-	
+    
+    <bean id="search.suggesterService" class="org.alfresco.repo.search.impl.DummySuggesterServiceImpl">
+    </bean>
 </beans>

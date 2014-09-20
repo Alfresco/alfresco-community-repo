@@ -1878,5 +1878,10 @@
          <ref bean="OwnableService" />
       </property>
    </bean>
+   
+    <!-- AutoSuggest web script -->
+    <bean id="webscript.org.alfresco.slingshot.search.auto-suggest-search.get" class="org.alfresco.repo.web.scripts.search.AutoSuggestSearchGet" parent="webscript">
+       <property name="suggesterService" ref="suggesterService"/>
+    </bean>
     
 </beans>

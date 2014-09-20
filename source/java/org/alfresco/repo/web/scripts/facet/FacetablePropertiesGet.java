@@ -356,9 +356,18 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
             this.displayName           = getShortQname() + (localisedTitle == null ? "" : " (" + localisedTitle + ")");
         }
         
-        @Override public String getShortQname() { return super.getShortQname() +
-                                                         "." + this.syntheticPropertyName; }
+        @Override public String getShortQname()
+        {
+            return super.getShortQname() + "." + this.syntheticPropertyName;
+        }
         
-        @Override public QName getDataType()    { return datatype; }
+        @Override public QName getQname()
+        {
+            final QName containingPropQName = super.getQname();
+            return QName.createQName(containingPropQName.getNamespaceURI(),
+                                     containingPropQName.getLocalName() + "." + this.syntheticPropertyName);
+        }
+        
+        @Override public QName getDataType() { return datatype; }
     }
 }

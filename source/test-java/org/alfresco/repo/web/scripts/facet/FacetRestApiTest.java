@@ -636,7 +636,8 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 // *some* facetable properties.
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
                 
-                JSONObject properties = jsonRsp.getJSONObject(FacetablePropertiesGet.PROPERTIES_KEY);
+                JSONObject data = jsonRsp.getJSONObject("data");
+                JSONArray properties = data.getJSONArray(FacetablePropertiesGet.PROPERTIES_KEY);
                 
                 final int arbitraryLimit = 25;
                 assertTrue("Expected 'many' properties, but found 'not very many'", properties.length() > arbitraryLimit);
@@ -659,7 +660,8 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 // *some* facetable properties.
                 JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
                 
-                JSONObject properties = jsonRsp.getJSONObject(FacetablePropertiesGet.PROPERTIES_KEY);
+                JSONObject data = jsonRsp.getJSONObject("data");
+                JSONArray properties = data.getJSONArray(FacetablePropertiesGet.PROPERTIES_KEY);
                 
                 final int arbitraryLimit = 100;
                 assertTrue("Expected 'not very many' properties, but found 'many'", properties.length() < arbitraryLimit);

@@ -23,11 +23,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetService.FacetablePropertyData;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -73,7 +72,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         
         final Map<String, Object> model = new HashMap<>();
         
-        final Set<Pair<String, PropertyDefinition>> facetableProperties;
+        final Set<FacetablePropertyData> facetableProperties;
         if (contentClassQName == null)
         {
             facetableProperties = facetService.getFacetableProperties();

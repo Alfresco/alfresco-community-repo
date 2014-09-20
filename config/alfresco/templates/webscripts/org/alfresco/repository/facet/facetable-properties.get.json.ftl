@@ -1,15 +1,19 @@
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
-    "properties" : {
-        <#list properties as property>
-        "${property.second.name.prefixString}" : {
-             <#if property.first??>
-             "title" : "${property.first}",
-             </#if>
-             "dataType" : "${property.second.dataType.name.prefixString}",
-             "modelQName" : "${property.second.model.name.prefixString}"
-        }<#if property_has_next>,</#if>
-        </#list>
+    "data" : {
+        "properties" : [
+            <#list properties as property>
+            {
+                "name" : "${property.propertyDefinition.name.prefixString}",
+                <#if property.localisedTitle??>
+                "title" : "${property.localisedTitle}",
+                </#if>
+                "displayName" : "${property.displayName}",
+                "dataType" : "${property.propertyDefinition.dataType.name.prefixString}",
+                "modelQName" : "${property.propertyDefinition.model.name.prefixString}"
+            }<#if property_has_next>,</#if>
+            </#list>
+        ]
     }
 }
 </#escape>

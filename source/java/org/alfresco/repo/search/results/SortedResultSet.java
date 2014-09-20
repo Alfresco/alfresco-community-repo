@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
+import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -938,6 +939,12 @@ public class SortedResultSet implements ResultSet
     public Map<String, Integer> getFacetQueries()
     {
         return resultSet.getFacetQueries();
+    }
+    
+    @Override
+    public SpellCheckResult getSpellCheckResult()
+    {
+        return resultSet.getSpellCheckResult();
     }
 
 }

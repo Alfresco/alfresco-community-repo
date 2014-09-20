@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
 
 /**
@@ -128,4 +129,9 @@ public abstract class AbstractResultSet implements ResultSet
         return Collections.emptyMap();
     }    
     
+    @Override
+    public SpellCheckResult getSpellCheckResult()
+    {
+        return new SpellCheckResult(null, null, false);
+    }
 }

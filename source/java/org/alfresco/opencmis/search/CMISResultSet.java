@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.ResultSetSPI;
+import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
 
 /**
@@ -358,5 +359,11 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     public Map<String, Integer> getFacetQueries()
     {
         return Collections.emptyMap();
+    }
+    
+    @Override
+    public SpellCheckResult getSpellCheckResult()
+    {
+        return new SpellCheckResult(null, null, false);
     }
 }

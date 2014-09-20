@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
 
 /**
@@ -357,5 +358,11 @@ public class FilteringResultSet extends ACLEntryAfterInvocationProvider implemen
     public Map<String, Integer> getFacetQueries()
     {
         return unfiltered.getFacetQueries();
+    }
+    
+    @Override
+    public SpellCheckResult getSpellCheckResult()
+    {
+        return unfiltered.getSpellCheckResult();
     }
 }

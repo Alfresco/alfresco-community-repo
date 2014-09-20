@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -79,6 +80,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     
     private long lastIndexedTxId;
     
+    private SpellCheckResult spellCheckResult;
     /**
      * Detached result set based on that provided
      * @param resultSet
@@ -193,7 +195,37 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
                     }
                 }
             }
-            
+            // process Spell check 
+            JSONObject spellCheckJson = (JSONObject) json.opt("spellcheck");
+            if (spellCheckJson != null)
+            {
+                List<String> list = new ArrayList<>(3);
+                String flag = "";
+                boolean searchedFor = false;
+                if (spellCheckJson.has("searchInsteadFor"))
+                {
+                    flag = "searchInsteadFor";
+                    searchedFor = true;
+                    list.add(spellCheckJson.getString(flag));
+
+                }
+                else if (spellCheckJson.has("didYouMean"))
+                {
+                    flag = "didYouMean";
+                    JSONArray suggestions = spellCheckJson.getJSONArray(flag);
+                    for (int i = 0, lenght = suggestions.length(); i < lenght; i++)
+                    {
+                        list.add(suggestions.getString(i));
+                    }
+                }
+
+                spellCheckResult = new SpellCheckResult(flag, list, searchedFor);
+
+            }
+            else
+            {
+                spellCheckResult = new SpellCheckResult(null, null, false);
+            }
         }
         catch (JSONException e)
         {
@@ -426,5 +458,12 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     public Map<String, Integer> getFacetQueries()
     {
         return Collections.unmodifiableMap(facetQueries);
+    }
+
+
+    @Override
+    public SpellCheckResult getSpellCheckResult()
+    {
+        return this.spellCheckResult;
     }
 }

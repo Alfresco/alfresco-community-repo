@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SpellCheckResult;
 import org.alfresco.util.Pair;
 
 /**
@@ -256,5 +257,11 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     public Map<String, Integer> getFacetQueries()
     {
         return wrapped.getFacetQueries();
+    }
+    
+    @Override
+    public SpellCheckResult getSpellCheckResult()
+    {
+        return wrapped.getSpellCheckResult();
     }
 }

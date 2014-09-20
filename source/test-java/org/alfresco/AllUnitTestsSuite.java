@@ -42,6 +42,7 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.lock.LockUtilsTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.lock.mem.LockStoreImplTest.class));
         suite.addTestSuite(org.alfresco.repo.module.ModuleDetailsImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.module.ModuleVersionNumberTest.class);
         suite.addTestSuite(org.alfresco.repo.module.tool.ModuleManagementToolTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.module.tool.WarHelperImplTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.nodelocator.NodeLocatorServiceImplTest.class));

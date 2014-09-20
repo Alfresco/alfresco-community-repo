@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.alfresco.util.VersionNumber;
@@ -230,7 +231,7 @@ public class ModuleManagementTool implements LogOutput
                 throw new ModuleManagementToolException("No module.properties file has been found in the installing .amp file '" + ampFileLocation + "'");
             }
             String installingId = installingModuleDetails.getId();
-            VersionNumber installingVersion = installingModuleDetails.getVersion();
+            ModuleVersionNumber installingVersion = installingModuleDetails.getVersion();
             
             //A series of checks
             warHelper.checkCompatibleVersion(warFile, installingModuleDetails);
@@ -285,6 +286,10 @@ public class ModuleManagementTool implements LogOutput
                 TVFS.umount();
             }               
         }
+        catch (AlfrescoRuntimeException exception)
+        {
+            throw new ModuleManagementToolException("An error was encountered during deployment of the AMP into the WAR: " + exception.getMessage(), exception);
+        }
         catch (IOException exception)
         {
             throw new ModuleManagementToolException("An IO error was encountered during deployment of the AMP into the WAR", exception);
@@ -292,13 +297,13 @@ public class ModuleManagementTool implements LogOutput
     }
 
     private void uninstallIfNecessary(String warFileLocation, ModuleDetails installedModuleDetails, boolean preview,
-                boolean forceInstall, VersionNumber installingVersion) throws IOException
+                boolean forceInstall, ModuleVersionNumber installingVersion) throws IOException
     {
         // Now clean up the old instance
         if (installedModuleDetails != null)
         {
             String installedId = installedModuleDetails.getId();
-            VersionNumber installedVersion = installedModuleDetails.getVersion();
+            ModuleVersionNumber installedVersion = installedModuleDetails.getVersion();
             
             int compareValue = installedVersion.compareTo(installingVersion);
             if (compareValue > 0)
@@ -655,6 +660,7 @@ public class ModuleManagementTool implements LogOutput
      * Lists all the currently installed modules in the WAR
      * 
      * @param warLocation   the war location
+     * @throws ModuleManagementToolException
      */
     public void listModules(String warLocation)
     {
@@ -687,6 +693,10 @@ public class ModuleManagementTool implements LogOutput
                                 moduleFound = true;
                                 is = new TFileInputStream(moduleProperties);
                                 moduleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is);
+                            }
+                            catch (AlfrescoRuntimeException exception)
+                            {
+                                throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "' " + exception.getMessage(), exception);
                             }
                             catch (IOException exception)
                             {

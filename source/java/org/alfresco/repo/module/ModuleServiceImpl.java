@@ -196,7 +196,7 @@ public class ModuleServiceImpl implements ApplicationContextAware, ModuleService
             if (moduleDetails == null)
             {
                 // Get the specifics of the missing module and add them to the list.
-                VersionNumber currentVersion = moduleComponentHelper.getVersion(moduleId);
+                ModuleVersionNumber currentVersion = moduleComponentHelper.getVersion(moduleId);
                 
                 ModuleDetails newModuleDetails = new ModuleDetailsImpl(moduleId, currentVersion, "", "");
                 

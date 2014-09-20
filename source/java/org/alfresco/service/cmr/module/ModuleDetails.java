@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.util.VersionNumber;
 
 /**
@@ -73,7 +74,7 @@ public interface ModuleDetails extends Serializable
      * 
      * @return  module version number
      */
-    VersionNumber getVersion();
+    ModuleVersionNumber getVersion();
     
     /**
      * Get the title of the module

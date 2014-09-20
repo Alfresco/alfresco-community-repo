@@ -24,15 +24,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyCheck;
-import org.alfresco.util.VersionNumber;
 import org.springframework.beans.factory.BeanNameAware;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Implementation of a {@link org.alfresco.repo.module.ModuleComponent} to provide
@@ -58,9 +57,9 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     private String moduleId;
     private String name;
     private String description;
-    private VersionNumber sinceVersion;
-    private VersionNumber appliesFromVersion;
-    private VersionNumber appliesToVersion;
+    private ModuleVersionNumber sinceVersion;
+    private ModuleVersionNumber appliesFromVersion;
+    private ModuleVersionNumber appliesToVersion;
     private List<ModuleComponent> dependsOn;
     /** Defaults to <tt>true</tt> */
     private boolean executeOnceOnly;
@@ -68,9 +67,9 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
 
     public AbstractModuleComponent()
     {
-        sinceVersion = VersionNumber.VERSION_ZERO;
-        appliesFromVersion = VersionNumber.VERSION_ZERO;
-        appliesToVersion = VersionNumber.VERSION_BIG;
+        sinceVersion = ModuleVersionNumber.VERSION_ZERO;
+        appliesFromVersion = ModuleVersionNumber.VERSION_ZERO;
+        appliesToVersion = ModuleVersionNumber.VERSION_BIG;
         dependsOn = new ArrayList<ModuleComponent>(0);
         executeOnceOnly = true;
         executed = new HashMap<String, Boolean>(1);
@@ -226,7 +225,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
     /**
      * {@inheritDoc}
      */
-    public VersionNumber getSinceVersionNumber()
+    public ModuleVersionNumber getSinceVersionNumber()
     {
         return sinceVersion;
     }
@@ -236,13 +235,13 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
      */
     public void setSinceVersion(String version)
     {
-        this.sinceVersion = new VersionNumber(version);
+        this.sinceVersion = new ModuleVersionNumber(version);
     }
 
     /**
      * {@inheritDoc}
      */
-    public VersionNumber getAppliesFromVersionNumber()
+    public ModuleVersionNumber getAppliesFromVersionNumber()
     {
         return appliesFromVersion;
     }
@@ -253,13 +252,13 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
      */
     public void setAppliesFromVersion(String version)
     {
-        this.appliesFromVersion = new VersionNumber(version);
+        this.appliesFromVersion = new ModuleVersionNumber(version);
     }
 
     /**
      * {@inheritDoc}
      */
-    public VersionNumber getAppliesToVersionNumber()
+    public ModuleVersionNumber getAppliesToVersionNumber()
     {
         return appliesToVersion;
     }
@@ -270,7 +269,7 @@ public abstract class AbstractModuleComponent implements ModuleComponent, BeanNa
      */
     public void setAppliesToVersion(String version)
     {
-        this.appliesToVersion = new VersionNumber(version);
+        this.appliesToVersion = new ModuleVersionNumber(version);
     }
 
     /**

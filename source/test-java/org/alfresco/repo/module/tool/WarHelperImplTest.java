@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +13,7 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 import org.alfresco.repo.module.ModuleDetailsImpl;
+import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.VersionNumber;
@@ -23,7 +23,6 @@ import org.springframework.util.FileCopyUtils;
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TConfig;
 import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.fs.archive.zip.ZipDriver;
 import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 
@@ -76,7 +75,7 @@ public class WarHelperImplTest extends WarHelperImpl
     {
         TFile theWar = getFile(".war", "module/test.war");   //Version 4.1.0
 
-        ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+        ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new ModuleVersionNumber("9999"), "Test Mod", "Testing module");
         installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
         try
         {
@@ -131,7 +130,7 @@ public class WarHelperImplTest extends WarHelperImpl
     {
         //Now check the compatible versions using the manifest
     	TFile theWar = getFile(".war", "module/share-3.4.11.war");
-    	ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+    	ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new ModuleVersionNumber("9999"), "Test Mod", "Testing module");
         installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
         try
         {
@@ -181,7 +180,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         
     	theWar = getFile(".war", "module/share-4.2.a.war");
-    	installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+    	installingModuleDetails = new ModuleDetailsImpl("test_it",  new ModuleVersionNumber("9999"), "Test Mod", "Testing module");
         installingModuleDetails.setRepoVersionMin(new VersionNumber("101.1"));
         //this should fail BUT we are using a non-numeric version number so instead it passes without validation
         this.checkCompatibleVersionUsingManifest(theWar, installingModuleDetails);
@@ -312,7 +311,7 @@ public class WarHelperImplTest extends WarHelperImpl
     {
         TFile theWar = getFile(".war", "module/empty.war");  
 
-        ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new VersionNumber("9999"), "Test Mod", "Testing module");
+        ModuleDetails installingModuleDetails = new ModuleDetailsImpl("test_it",  new ModuleVersionNumber("9999"), "Test Mod", "Testing module");
         installingModuleDetails.setRepoVersionMin(new VersionNumber("10.1"));
         this.checkCompatibleVersion(theWar, installingModuleDetails); //does not throw exception
         this.checkCompatibleEdition(theWar, installingModuleDetails); //does not throw exception 

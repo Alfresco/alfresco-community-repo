@@ -58,17 +58,17 @@ public interface ModuleComponent
     /**
      * @return Returns the version number of the module for which this component was introduced.
      */
-    VersionNumber getSinceVersionNumber();
+    ModuleVersionNumber getSinceVersionNumber();
     
     /**
      * @return Returns the smallest version number of the module to which this component applies.
      */
-    VersionNumber getAppliesFromVersionNumber();
+    ModuleVersionNumber getAppliesFromVersionNumber();
     
     /**
      * @return Returns the largest version number of the module to which this component applies.
      */
-    VersionNumber getAppliesToVersionNumber();
+    ModuleVersionNumber getAppliesToVersionNumber();
     
     /**
      * A list of module components that <b>must</b> be executed prior to this instance.

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.module;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -28,9 +29,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.registry.RegistryKey;
 import org.alfresco.repo.admin.registry.RegistryService;
+import org.alfresco.repo.module.tool.ModuleManagementToolException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.Tenant;
@@ -49,6 +50,7 @@ import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.VersionNumber;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Helper class to split up some of the code for managing module components.  This class handles
@@ -421,13 +423,13 @@ public class ModuleComponentHelper
      * @param moduleId
      * @return
      */
-    VersionNumber getVersion(String moduleId)
+    ModuleVersionNumber getVersion(String moduleId)
     {
         RegistryKey moduleKeyCurrentVersion = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
                 REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
-        VersionNumber versionCurrent = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
-        return versionCurrent;
+        Serializable versionCurrent = registryService.getProperty(moduleKeyCurrentVersion);
+        return getModuleVersionNumber(versionCurrent);
     }
     
     /**
@@ -456,7 +458,7 @@ public class ModuleComponentHelper
             {
                 // Get the specifics of the missing module
                 
-                VersionNumber versionCurrent = getVersion(moduleId);
+                ModuleVersionNumber versionCurrent = getVersion(moduleId);
                 // The module is missing, so warn
                 loggerService.warn(I18NUtil.getMessage(MSG_MISSING, moduleId, versionCurrent));
             }
@@ -527,7 +529,7 @@ public class ModuleComponentHelper
     private void startModule(ModuleDetails module, Set<String> startedModules, Set<ModuleComponent> executedComponents)
     {
         String moduleId = module.getId();
-        VersionNumber moduleNewVersion = module.getVersion();
+        ModuleVersionNumber moduleNewVersion = module.getVersion();
         
         // Double check whether we have done this module already
         if (startedModules.contains(moduleId))
@@ -596,8 +598,8 @@ public class ModuleComponentHelper
         RegistryKey moduleKeyCurrentVersion = new RegistryKey(
                 ModuleComponentHelper.URI_MODULES_1_0,
                 REGISTRY_PATH_MODULES, moduleId, REGISTRY_PROPERTY_CURRENT_VERSION);
-        VersionNumber moduleInstallVersion = (VersionNumber) registryService.getProperty(moduleKeyInstalledVersion);
-        VersionNumber moduleCurrentVersion = (VersionNumber) registryService.getProperty(moduleKeyCurrentVersion);
+        Serializable moduleInstallVersion = registryService.getProperty(moduleKeyInstalledVersion);
+        Serializable moduleCurrentVersion = registryService.getProperty(moduleKeyCurrentVersion);
         String msg = null;
         if (moduleCurrentVersion == null)                                 // No previous record of it
         {
@@ -609,21 +611,23 @@ public class ModuleComponentHelper
         }
         else                                    // It is an upgrade or is the same
         {
+            ModuleVersionNumber currentModuleVersion = getModuleVersionNumber(moduleCurrentVersion);
+            
             // Check that we have an installed version
             if (moduleInstallVersion == null)
             {
                 // A current version, but no installed version
                 logger.warn(I18NUtil.getMessage(WARN_NO_INSTALL_VERSION, moduleId, moduleCurrentVersion));
                 // Record the install version
-                registryService.addProperty(moduleKeyInstalledVersion, moduleCurrentVersion);
+                registryService.addProperty(moduleKeyInstalledVersion, currentModuleVersion);
                 moduleInstallVersion = moduleCurrentVersion;
             }
             
-            if (moduleCurrentVersion.compareTo(moduleNewVersion) == 0)       // The current version is the same
+            if (currentModuleVersion.compareTo(moduleNewVersion) == 0)       // The current version is the same
             {
                 msg = I18NUtil.getMessage(MSG_STARTING, moduleId, moduleNewVersion);
             }
-            else if (moduleCurrentVersion.compareTo(moduleNewVersion) > 0)   // Downgrading not supported
+            else if (currentModuleVersion.compareTo(moduleNewVersion) > 0)   // Downgrading not supported
             {
                 throw AlfrescoRuntimeException.create(ERR_NO_DOWNGRADE, moduleId, moduleCurrentVersion, moduleNewVersion);
             }
@@ -652,12 +656,20 @@ public class ModuleComponentHelper
         }
     }
     
+    protected ModuleVersionNumber getModuleVersionNumber(Serializable moduleVersion)
+    {
+        if (moduleVersion instanceof ModuleVersionNumber) return (ModuleVersionNumber) moduleVersion;
+        if (moduleVersion instanceof VersionNumber) return new ModuleVersionNumber((VersionNumber)moduleVersion);
+        if (moduleVersion instanceof String) return new ModuleVersionNumber((String)moduleVersion);
+        throw new ModuleManagementToolException("Invalid moduleVersion");
+    }
+
     /**
      * Execute the component, respecting dependencies.
      */
     private void executeComponent(
             String moduleId,
-            VersionNumber currentVersion,
+            ModuleVersionNumber currentVersion,
             ModuleComponent component,
             Set<ModuleComponent> executedComponents)
     {
@@ -676,8 +688,8 @@ public class ModuleComponentHelper
         executedComponents.add(component);
         
         // Check the version applicability
-        VersionNumber minVersion = component.getAppliesFromVersionNumber();
-        VersionNumber maxVersion = component.getAppliesToVersionNumber();
+        ModuleVersionNumber minVersion = component.getAppliesFromVersionNumber();
+        ModuleVersionNumber maxVersion = component.getAppliesToVersionNumber();
         if (currentVersion.compareTo(minVersion) < 0 || currentVersion.compareTo(maxVersion) > 0)
         {
             // It is out of the allowable range for execution so we just ignore it

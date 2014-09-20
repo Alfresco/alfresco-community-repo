@@ -49,7 +49,7 @@ public class ModuleDetailsImpl implements ModuleDetails
 
     private String id;
     private List<String> aliases;
-    private VersionNumber version;
+    private ModuleVersionNumber version;
     private String title;
     private String description;
     private List<String> editions;
@@ -77,6 +77,7 @@ public class ModuleDetailsImpl implements ModuleDetails
      * whitespace strings are not supported.
      * 
      * @param properties        the set of properties
+     * @Throws AlfrescoRuntimeException if unable to parse values
      */
     public ModuleDetailsImpl(Properties properties)
     {
@@ -136,11 +137,11 @@ public class ModuleDetailsImpl implements ModuleDetails
         {
             try
             {
-                version = new VersionNumber(trimmedProperties.getProperty(PROP_VERSION));
+                version = new ModuleVersionNumber(trimmedProperties.getProperty(PROP_VERSION));
             }
             catch (Throwable e)
             {
-                throw new AlfrescoRuntimeException("Unable to parse version information: " + trimmedProperties.getProperty(PROP_VERSION), e);
+                throw new AlfrescoRuntimeException("Unable to parse version information: " + PROP_VERSION + ", " + trimmedProperties.getProperty(PROP_VERSION), e);
             }
         }
         // TITLE
@@ -152,12 +153,26 @@ public class ModuleDetailsImpl implements ModuleDetails
         // REPO MIN
         if (trimmedProperties.getProperty(PROP_REPO_VERSION_MIN) != null)
         {
-            repoVersionMin = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MIN));
+            try
+            {
+                repoVersionMin = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MIN));
+            }
+            catch (Throwable t)
+            {
+                throw new AlfrescoRuntimeException("Unable to parse repo version min: " + PROP_REPO_VERSION_MIN + ", " + repoVersionMin, t);
+            }
         }
         // REPO MAX
         if (trimmedProperties.getProperty(PROP_REPO_VERSION_MAX) != null)
         {
-            repoVersionMax = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MAX));
+            try
+            {
+                repoVersionMax = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MAX));
+            }
+            catch (Throwable t)
+            {
+                throw new AlfrescoRuntimeException("Unable to parse repo version max: " + PROP_REPO_VERSION_MAX + ", " + repoVersionMax, t);
+            }
         }
         // DEPENDENCIES
         this.dependencies = extractDependencies(trimmedProperties);
@@ -174,7 +189,7 @@ public class ModuleDetailsImpl implements ModuleDetails
             }
             catch (Throwable e)
             {
-                throw new AlfrescoRuntimeException("Unable to parse install date: " + installDateStr, e);
+                throw new AlfrescoRuntimeException("Unable to parse install date: " + PROP_INSTALL_DATE + ", " + installDateStr, e);
             }
         }
         // INSTALL STATE
@@ -187,7 +202,7 @@ public class ModuleDetailsImpl implements ModuleDetails
             }
             catch (Throwable e)
             {
-                throw new AlfrescoRuntimeException("Unable to parse install state: " + installStateStr, e);
+                throw new AlfrescoRuntimeException("Unable to parse install state: " + PROP_INSTALL_STATE +", " + installStateStr, e);
             }
         }
         // Check
@@ -215,7 +230,7 @@ public class ModuleDetailsImpl implements ModuleDetails
      * @param title             title   
      * @param description       description
      */
-    public ModuleDetailsImpl(String id, VersionNumber versionNumber, String title, String description)
+    public ModuleDetailsImpl(String id, ModuleVersionNumber versionNumber, String title, String description)
     {
         // Set defaults
         this();
@@ -345,7 +360,7 @@ public class ModuleDetailsImpl implements ModuleDetails
         return aliases;
     }
 
-    public VersionNumber getVersion()
+    public ModuleVersionNumber getVersion()
     {
         return version;
     }
@@ -467,7 +482,7 @@ public class ModuleDetailsImpl implements ModuleDetails
 
         private String dependencyId;
         private String versionStr;
-        private List<Pair<VersionNumber, VersionNumber>> versionRanges;
+        private List<Pair<ModuleVersionNumber, ModuleVersionNumber>> versionRanges;
         
         private ModuleDependencyImpl(String dependencyId, String versionStr)
         {
@@ -491,9 +506,9 @@ public class ModuleDetailsImpl implements ModuleDetails
             return sb.toString();
         }
 
-        private static List<Pair<VersionNumber, VersionNumber>> buildVersionRanges(String versionStr)
+        private static List<Pair<ModuleVersionNumber, ModuleVersionNumber>> buildVersionRanges(String versionStr)
         {
-            List<Pair<VersionNumber, VersionNumber>> versionRanges = new ArrayList<Pair<VersionNumber, VersionNumber>>(1);
+            List<Pair<ModuleVersionNumber, ModuleVersionNumber>> versionRanges = new ArrayList<Pair<ModuleVersionNumber, ModuleVersionNumber>>(1);
             StringTokenizer rangesTokenizer = new StringTokenizer(versionStr, ",");
             while (rangesTokenizer.hasMoreTokens())
             {
@@ -513,8 +528,8 @@ public class ModuleDetailsImpl implements ModuleDetails
                 }
                 // The range must have at least one version in it
                 StringTokenizer rangeTokenizer = new StringTokenizer(range, "-", false);
-                VersionNumber versionLower = null;
-                VersionNumber versionUpper = null;
+                ModuleVersionNumber versionLower = null;
+                ModuleVersionNumber versionUpper = null;
                 while (rangeTokenizer.hasMoreTokens())
                 {
                     String version = rangeTokenizer.nextToken();
@@ -524,12 +539,12 @@ public class ModuleDetailsImpl implements ModuleDetails
                         if (version.equals("*"))
                         {
                             // Unbounded lower version
-                            versionLower = VersionNumber.VERSION_ZERO;
+                            versionLower = ModuleVersionNumber.VERSION_ZERO;
                         }
                         else
                         {
                             // Explicit lower bound
-                            versionLower = new VersionNumber(version);
+                            versionLower = new ModuleVersionNumber(version);
                         }
                     }
                     else if (versionUpper == null)
@@ -537,12 +552,12 @@ public class ModuleDetailsImpl implements ModuleDetails
                         if (version.equals("*"))
                         {
                             // Unbounded upper version
-                            versionUpper = VersionNumber.VERSION_BIG;
+                            versionUpper = ModuleVersionNumber.VERSION_BIG;
                         }
                         else
                         {
                             // Explicit upper bound
-                            versionUpper = new VersionNumber(version);
+                            versionUpper = new ModuleVersionNumber(version);
                         }
                     }
                 }
@@ -565,7 +580,7 @@ public class ModuleDetailsImpl implements ModuleDetails
                     versionLower = versionUpper;
                 }
                 // Create the range pair
-                Pair<VersionNumber, VersionNumber> rangePair = new Pair<VersionNumber, VersionNumber>(versionLower, versionUpper);
+                Pair<ModuleVersionNumber, ModuleVersionNumber> rangePair = new Pair<ModuleVersionNumber, ModuleVersionNumber>(versionLower, versionUpper);
                 versionRanges.add(rangePair);
             }
             return versionRanges;
@@ -594,12 +609,12 @@ public class ModuleDetailsImpl implements ModuleDetails
                 return false;
             }
             // Check the version number
-            VersionNumber checkVersion = moduleDetails.getVersion();
+            ModuleVersionNumber checkVersion = moduleDetails.getVersion();
             boolean matched = false;
-            for (Pair<VersionNumber, VersionNumber> versionRange : versionRanges)
+            for (Pair<ModuleVersionNumber, ModuleVersionNumber> versionRange : versionRanges)
             {
-                VersionNumber versionLower = versionRange.getFirst();
-                VersionNumber versionUpper = versionRange.getSecond();
+                ModuleVersionNumber versionLower = versionRange.getFirst();
+                ModuleVersionNumber versionUpper = versionRange.getSecond();
                 if (checkVersion.compareTo(versionLower) < 0)
                 {
                     // The version is too low

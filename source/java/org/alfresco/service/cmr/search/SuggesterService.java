@@ -36,11 +36,10 @@ public interface SuggesterService
     public boolean isEnabled();
 
     /**
-     * Get suggestions for the specified term
+     * Get suggestions for the specified term {@link SuggesterParameters#term}
      * 
-     * @param term the term to use for the search
-     * @param limit the number of suggestions for Solr to return
+     * @param suggesterParameters the parameters to use
      * @return term suggestions result. Never <i>null</i>
      */
-    public SuggesterResult getSuggestions(String term, int limit);
+    public SuggesterResult getSuggestions(SuggesterParameters suggesterParameters);
 }

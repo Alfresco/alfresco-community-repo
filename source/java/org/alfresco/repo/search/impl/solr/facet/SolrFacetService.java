@@ -115,8 +115,9 @@ public interface SolrFacetService
     
     /**
      * This method offers a convenient access point for getting all Facetable
-     * content properties defined on the specified content class (type or aspect).
+     * content properties defined on the specified content class (type or aspect) or any of its inherited properties.
      * @param contentClass the QName of an aspect or type, whose facetable properties are sought.
+     * @param includeInheritedProperties {@code true} to include properties defined on supertypes.
      * @return a collection of facetable {@link PropertyDefinition}s.
      * @see Facetable
      */

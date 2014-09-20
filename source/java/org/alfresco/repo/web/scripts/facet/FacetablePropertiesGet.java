@@ -27,6 +27,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -72,7 +73,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         
         final Map<String, Object> model = new HashMap<>();
         
-        final Set<PropertyDefinition> facetableProperties;
+        final Set<Pair<String, PropertyDefinition>> facetableProperties;
         if (contentClassQName == null)
         {
             facetableProperties = facetService.getFacetableProperties();

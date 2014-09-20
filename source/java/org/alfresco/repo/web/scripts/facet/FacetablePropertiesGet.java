@@ -80,6 +80,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     
     @Override protected Map<String, Object> unprotectedExecuteImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        // We use any provided locale to localise some elements of the webscript response, but not all.
         final String userLocaleString = req.getParameter(QUERY_PARAM_LOCALE);
         final Locale userLocale = (userLocaleString == null) ? Locale.getDefault() : new Locale(userLocaleString);
         
@@ -87,7 +88,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
         final String contentClassName = templateVars.get(TEMPLATE_VAR_CLASSNAME);
         
-        QName contentClassQName;
+        final QName contentClassQName;
         try
         {
             contentClassQName = contentClassName == null ? null : QName.createQName(contentClassName, namespaceService);
@@ -96,6 +97,8 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
             throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unrecognised classname: " + contentClassName, e);
         }
         
+        // Build an FTL model of facetable properties - this includes normal Alfresco properties and also
+        // 'synthetic' properties like size and mimetype. See below for more details.
         final Map<String, Object> model = new HashMap<>();
         
         final SortedSet<FacetablePropertyFTLModel> facetableProperties;
@@ -117,7 +120,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         // The webscript allows for some further filtering of results:
         List<ResultFilter> filters = new ArrayList<>();
         
-        // By property QName namespace:
+        // Filter by property QName namespace:
         final String namespaceFilter = req.getParameter(QUERY_PARAM_NAMESPACE);
         if (namespaceFilter != null)
         {
@@ -151,21 +154,22 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
     }
     
     /**
-     * This type defines the (inclusion) filtering of {@link FacetablePropertyFTLModel}
+     * This type defines the (inclusion) filtering of {@link FacetablePropertyFTLModel property data}
      * in the response to this webscript.
      */
     private static interface ResultFilter
     {
+        /** @return {@code true} if the specified property should be included. */
         public boolean filter(FacetablePropertyFTLModel facetableProperty);
     }
     
     /**
-     * This method returns a new List instance containing only those {@link FacetablePropertyFTLModel data} that
-     * satisfy all {@link ResultFilter filters}.
+     * This method returns a new List instance containing only those {@link FacetablePropertyFTLModel property data}
+     * that satisfy all {@link ResultFilter filters}.
      */
     private List<FacetablePropertyFTLModel> filter(Collection<FacetablePropertyFTLModel> propsData, List<ResultFilter> filters)
     {
-        List<FacetablePropertyFTLModel> filteredResult = new ArrayList<>();
+        final List<FacetablePropertyFTLModel> filteredResult = new ArrayList<>();
         
         for (FacetablePropertyFTLModel prop : propsData)
         {
@@ -187,7 +191,8 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         return new FacetablePropertyFTLModel(propDef, title);
     }
     
-    private FacetablePropertyFTLModel toFacetablePropertyModel_(SyntheticPropertyDefinition propDef,
+    /** This method returns a {@link FacetablePropertyFTLModel} for the specified {@link SyntheticPropertyDefinition}. */
+    private FacetablePropertyFTLModel toFacetablePropertyModel(SyntheticPropertyDefinition propDef,
                                                                Locale locale)
     {
         // Note the hard-coded assumption here that all synthetic properties are defined only
@@ -215,13 +220,16 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
         return result;
     }
     
+    // Note: the trailing underscore in this method name is to prevent a clash between this method and the
+    // one that takes a Collection<PropertyDefinition> as type erasure means that both methods would have the
+    // same signature without the trailing underscore.
     private SortedSet<FacetablePropertyFTLModel> toFacetablePropertyModel_(Collection<SyntheticPropertyDefinition> propDefs,
                                                                            Locale locale)
     {
         SortedSet<FacetablePropertyFTLModel> result = new TreeSet<>();
         for (SyntheticPropertyDefinition propDef : propDefs)
         {
-            result.add(toFacetablePropertyModel_(propDef, locale));
+            result.add(toFacetablePropertyModel(propDef, locale));
         }
         return result;
     }
@@ -249,7 +257,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
             this.displayName    = getShortQname() + (localisedTitle == null ? "" : " (" + localisedTitle + ")");
         }
         
-        // We use "*Qname*" (small 'n') in these accessors to make the FTL easier to write.
+        // We use "*Qname*" (small 'n') in these accessors to make the FTL less ambiguous.
         public String getShortQname()         { return propDef.getName().getPrefixString(); }
         
         public QName  getQname()              { return propDef.getName(); }
@@ -335,6 +343,7 @@ public class FacetablePropertiesGet extends AbstractSolrFacetConfigAdminWebScrip
          * @param containingPropDef     The {@link PropertyDefinition}.
          * @param localisedTitle        The localised title of this synthetic property e.g. "taille".
          * @param syntheticPropertyName The synthetic property name e.g. "size".
+         * @param datatype              The datatype of the synthetic property.
          */
         public SyntheticFacetablePropertyFTLModel(PropertyDefinition containingPropDef,
                                                   String localisedTitle,

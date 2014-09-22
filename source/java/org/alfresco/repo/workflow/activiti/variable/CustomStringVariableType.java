@@ -30,7 +30,8 @@ import org.activiti.engine.impl.variable.ValueFields;
  * @author Frederik Heremans
  * @since 4.2
  */
-public class CustomStringVariableType extends StringType {
+public class CustomStringVariableType extends StringType 
+{
     protected static final int MAX_TEXT_LENGTH = 4000;
     
     public CustomStringVariableType()

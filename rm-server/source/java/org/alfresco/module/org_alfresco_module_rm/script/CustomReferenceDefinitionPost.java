@@ -18,11 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -49,7 +51,7 @@ public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
         QName customReference = addCustomReference(requestContent, customReferenceType);
 
         Map<String, Object> model = new HashMap<String, Object>();
-        String servicePath = getServicePath(req);
+        String servicePath = req.getServicePath();
         Map<String, Object> customReferenceData = getCustomReferenceData(customReferenceType, customReference, servicePath);
         model.putAll(customReferenceData);
 
@@ -69,28 +71,13 @@ public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
 
         if (CustomReferenceType.PARENT_CHILD.equals(customReferenceType))
         {
-            String source = (String) getJSONObjectValue(requestContent, SOURCE);
-            if (StringUtils.isBlank(source))
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Source is blank.");
-            }
-
-            String target = (String) getJSONObjectValue(requestContent, TARGET);
-            if (StringUtils.isBlank(target))
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Target is blank.");
-            }
-
+            String source = getStringValueFromJSONObject(requestContent, SOURCE);
+            String target = getStringValueFromJSONObject(requestContent, TARGET);
             referenceQName = getRmAdminService().addCustomChildAssocDefinition(source, target);
         }
         else if (CustomReferenceType.BIDIRECTIONAL.equals(customReferenceType))
         {
-            String label = (String) getJSONObjectValue(requestContent, LABEL);
-            if (StringUtils.isBlank(label))
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Label is blank.");
-            }
-
+            String label = getStringValueFromJSONObject(requestContent, LABEL);
             referenceQName = getRmAdminService().addCustomAssocDefinition(label);
         }
         else

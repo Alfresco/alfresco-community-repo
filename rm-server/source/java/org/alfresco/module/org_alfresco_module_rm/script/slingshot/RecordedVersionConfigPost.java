@@ -18,7 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
-import java.io.IOException;
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,12 +28,9 @@ import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -65,30 +64,8 @@ public class RecordedVersionConfigPost extends AbstractRmWebScript implements Re
      */
     private RecordableVersionPolicy getRecordableVersionPolicy(WebScriptRequest req)
     {
-        String recordedVersion = getRecordedVersion(req);
+        JSONObject requestContent = getRequestContentAsJsonObject(req);
+        String recordedVersion = getStringValueFromJSONObject(requestContent, RECORDED_VERSION);
         return RecordableVersionPolicy.valueOf(recordedVersion);
-    }
-
-    /**
-     * Gets the recorded version parameter value from the request
-     *
-     * @param req The webscript request
-     * @return The recorded version parameter value
-     */
-    private String getRecordedVersion(WebScriptRequest req)
-    {
-        try
-        {
-            // Convert the request content to JSON
-            String content = req.getContent().getContent();
-            JSONObject jsonObject = new JSONObject(new JSONTokener(content));
-            checkMandatoryJsonParam(jsonObject, RECORDED_VERSION);
-            return jsonObject.getString(RECORDED_VERSION);
-        }
-        catch (JSONException | IOException ex)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not parse JSON from req.", ex);
-        }
     }
 }

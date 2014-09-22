@@ -65,13 +65,14 @@
    <!-- Base bean for custom reference definition web scripts -->
    <bean id="rmCustomReferenceDefinitionBase" parent="rmBaseWebscript" abstract="true">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
-      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!-- REST impl for GET Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinitions.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
-      parent="rmCustomReferenceDefinitionBase" />
+      parent="rmCustomReferenceDefinitionBase">
+      <property name="dictionaryService" ref="DictionaryService" />
+   </bean>
 
    <!-- REST impl for PUT Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinition.put"

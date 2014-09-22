@@ -24,135 +24,169 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.http.HttpServletResponse;
-
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class provides the implementation for the customrefdefinitions.get webscript.
+ * Implementation for Java backed webscript to get RM custom reference definitions.
  *
  * @author Neil McErlean
+ * @author Tuna Aksoy
  */
-public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
+public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
 {
-    private static final String REFERENCE_TYPE = "referenceType";
-    private static final String REF_ID = "refId";
-    private static final String LABEL = "label";
-    private static final String SOURCE = "source";
-    private static final String TARGET = "target";
-    private static final String CUSTOM_REFS = "customRefs";
-    private static Log logger = LogFactory.getLog(CustomReferenceDefinitionsGet.class);
-
-    private RecordsManagementAdminService rmAdminService;
-    private DictionaryService dictionaryService;
-
-    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
-    {
-        this.rmAdminService = rmAdminService;
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
+    /**
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     */
     @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        String referenceId = getRequestParameterValue(req, REF_ID);
+        Map<QName, AssociationDefinition> customReferenceDefinitions = getCustomReferenceDefinitions(referenceId);
+        List<Map<String, String>> customReferenceData = getCustomReferenceData(customReferenceDefinitions);
+
         Map<String, Object> model = new HashMap<String, Object>();
+        model.put(CUSTOM_REFS, customReferenceData);
 
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String refId = templateVars.get(REF_ID);
+        return model;
+    }
 
-        if (logger.isDebugEnabled())
+    /**
+     * Gets the custom reference definition(s) for the given reference id
+     *
+     * @param referenceId The reference id
+     * @return If the reference id is not blank the custom definition for the given reference id will be returned,
+     * otherwise all custom definitions will be returned.
+     */
+    private Map<QName, AssociationDefinition> getCustomReferenceDefinitions(String referenceId)
+    {
+        Map<QName, AssociationDefinition> customReferenceDefinitions = new HashMap<QName, AssociationDefinition>();
+
+        if (StringUtils.isNotBlank(referenceId))
         {
-            logger.debug("Getting custom reference definitions with refId: " + refId);
+            QName referenceQName = getCustomReferenceQName(referenceId);
+            AssociationDefinition associationDefinition = getAssosiationDefinitionForCustomReference(referenceQName);
+            customReferenceDefinitions.put(referenceQName, associationDefinition);
+        }
+        else
+        {
+            customReferenceDefinitions.putAll(getRmAdminService().getCustomReferenceDefinitions());
         }
 
-        Map<QName, AssociationDefinition> currentCustomRefs = rmAdminService.getCustomReferenceDefinitions();
+        return customReferenceDefinitions;
+    }
 
-        // If refId has been provided then this is a request for a single custom-ref-defn.
-        // else it is a request for them all.
-        if (refId != null)
+    /**
+     * Gets the association definition for the given reference QName
+     *
+     * @param referenceQName The reference QName
+     * @return The association definition for the given reference QName
+     */
+    private AssociationDefinition getAssosiationDefinitionForCustomReference(QName referenceQName)
+    {
+        AssociationDefinition associationDefinition = getRmAdminService().getCustomReferenceDefinitions().get(referenceQName);
+        if (associationDefinition == null)
         {
-            QName qn = rmAdminService.getQNameForClientId(refId);
+            StringBuilder msg = new StringBuilder();
+            msg.append("Unable to find association definition for the reference: '");
+            msg.append(referenceQName.getLocalName());
+            msg.append("'.");
+            String errorMsg = msg.toString();
 
-            AssociationDefinition assDef = currentCustomRefs.get(qn);
-            if (assDef == null)
-            {
-                StringBuilder msg = new StringBuilder();
-                msg.append("Unable to find reference: ").append(refId);
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug(msg.toString());
-                }
-                throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
-                        msg.toString());
-            }
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, errorMsg);
+        }
+        return associationDefinition;
+    }
 
-            currentCustomRefs = new HashMap<QName, AssociationDefinition>(1);
-            currentCustomRefs.put(qn, assDef);
+    /**
+     * Gets the custom reference type from the association definition
+     *
+     * @param associationDefinition The association definition
+     * @return Returns the custom reference type which is either parent/child or bidirectional
+     */
+    private CustomReferenceType getCustomReferenceType(AssociationDefinition associationDefinition)
+    {
+        CustomReferenceType referenceType;
+
+        if (associationDefinition instanceof ChildAssociationDefinition)
+        {
+            referenceType = CustomReferenceType.PARENT_CHILD;
+        }
+        else if (associationDefinition instanceof AssociationDefinition)
+        {
+            referenceType = CustomReferenceType.BIDIRECTIONAL;
+        }
+        else
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Unsupported association definition: '");
+            msg.append(associationDefinition.getName().getLocalName());
+            msg.append("'.");
+            String errorMsg = msg.toString();
+
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, errorMsg);
         }
 
-        List<Map<String, String>> listOfReferenceData = new ArrayList<Map<String, String>>();
+        return referenceType;
+    }
 
-        for (Entry<QName, AssociationDefinition> entry : currentCustomRefs.entrySet())
+    /**
+     * Gets the custom reference data
+     *
+     * @param customReferenceDefinitions The custom reference definitions
+     * @return Custom reference data
+     */
+    private List<Map<String, String>> getCustomReferenceData(Map<QName, AssociationDefinition> customReferenceDefinitions)
+    {
+        List<Map<String, String>> customReferences = new ArrayList<Map<String, String>>();
+
+        for (Entry<QName, AssociationDefinition> entry : customReferenceDefinitions.entrySet())
         {
-            Map<String, String> data = new HashMap<String, String>();
+            Map<String, String> customReference = new HashMap<String, String>();
+            AssociationDefinition associationDefinition = entry.getValue();
+            CustomReferenceType referenceType = getCustomReferenceType(associationDefinition);
+            String title = getAssociationDefinitionTitle(associationDefinition);
 
-            AssociationDefinition nextValue = entry.getValue();
-
-            CustomReferenceType referenceType = nextValue instanceof ChildAssociationDefinition ?
-                    CustomReferenceType.PARENT_CHILD : CustomReferenceType.BIDIRECTIONAL;
-
-            data.put(REFERENCE_TYPE, referenceType.toString());
-
-            // It is the title which stores either the label, or the source and target.
-            String nextTitle = nextValue.getTitle(dictionaryService);
             if (CustomReferenceType.PARENT_CHILD.equals(referenceType))
             {
-                if (nextTitle != null)
-                {
-                    String[] sourceAndTarget = rmAdminService.splitSourceTargetId(nextTitle);
-                    data.put(SOURCE, sourceAndTarget[0]);
-                    data.put(TARGET, sourceAndTarget[1]);
-                    data.put(REF_ID, entry.getKey().getLocalName());
-                }
+                String[] sourceAndTarget = getRmAdminService().splitSourceTargetId(title);
+                customReference.put(SOURCE, sourceAndTarget[0]);
+                customReference.put(TARGET, sourceAndTarget[1]);
             }
             else if (CustomReferenceType.BIDIRECTIONAL.equals(referenceType))
             {
-                if (nextTitle != null)
-                {
-                    data.put(LABEL, nextTitle);
-                    data.put(REF_ID, entry.getKey().getLocalName());
-                }
-            }
-            else
-            {
-                throw new WebScriptException("Unsupported custom reference type: " + referenceType);
+                customReference.put(LABEL, title);
             }
 
-            listOfReferenceData.add(data);
+            String referenceId = entry.getKey().getLocalName();
+            customReference.put(REF_ID, referenceId);
+            customReference.put(REFERENCE_TYPE, referenceType.toString());
+
+            customReferences.add(customReference);
         }
 
-        if (logger.isDebugEnabled())
+        return customReferences;
+    }
+
+    /**
+     * Gets the association definition title
+     *
+     * @param associationDefinition The association definition
+     * @return The title of the association definition
+     */
+    private String getAssociationDefinitionTitle(AssociationDefinition associationDefinition)
+    {
+        String title = associationDefinition.getTitle(getDictionaryService());
+        if (StringUtils.isBlank(title))
         {
-            logger.debug("Retrieved custom reference definitions: " + listOfReferenceData.size());
+            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Association definition title is blank.");
         }
-
-        model.put(CUSTOM_REFS, listOfReferenceData);
-
-        return model;
+        return title;
     }
 }

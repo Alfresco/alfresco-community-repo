@@ -18,19 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONException;
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -42,113 +35,100 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * the source/target (for parent/child references).
  *
  * @author Neil McErlean
+ * @author Tuna Aksoy
  */
-public class CustomReferenceDefinitionPut extends AbstractRmWebScript
+public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
 {
-    private static final String URL = "url";
-    private static final String REF_ID = "refId";
-    private static final String TARGET = "target";
-    private static final String SOURCE = "source";
-    private static final String LABEL = "label";
-
-    private RecordsManagementAdminService rmAdminService;
-
-    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
-    {
-        this.rmAdminService = rmAdminService;
-    }
-
-	/*
+	/**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        JSONObject json = null;
-        Map<String, Object> ftlModel = null;
-        try
-        {
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+        JSONObject requestContent = getRequestContentAsJsonObject(req);
+        String referenceId = getReferenceId(req);
+        updateCustomReference(requestContent, referenceId);
 
-            ftlModel = updateCustomReference(req, json);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
-        catch (IllegalArgumentException iae)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                  iae.getMessage(), iae);
-        }
+        Map<String, Object> model = new HashMap<String, Object>();
+        String servicePath = getServicePath(req);
+        Map<String, Object> customReferenceData = getCustomReferenceData(servicePath, referenceId);
+        model.putAll(customReferenceData);
 
-        return ftlModel;
+        return model;
     }
 
     /**
-     * Applies custom properties.
+     * Gets the reference id from the webscript request
+     *
+     * @param req The webscript request
+     * @return The reference id
      */
-    @SuppressWarnings("rawtypes")
-    protected Map<String, Object> updateCustomReference(WebScriptRequest req, JSONObject json) throws JSONException
+    private String getReferenceId(WebScriptRequest req)
+    {
+        String referenceId = getRequestParameterValue(req, REF_ID);
+        if (StringUtils.isBlank(referenceId))
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Reference id is blank.");
+        }
+        return referenceId;
+    }
+
+    /**
+     * Updates the custom reference
+     *
+     * @param requestContent The request content as json object
+     * @param referenceId The reference id
+     */
+    private void updateCustomReference(JSONObject requestContent, String referenceId)
+    {
+        QName referenceQName = getCustomReferenceQName(referenceId);
+        CustomReferenceType customReferenceType = getCustomReferenceType(requestContent);
+
+        if (CustomReferenceType.PARENT_CHILD.equals(customReferenceType))
+        {
+            String source = (String) getJSONObjectValue(requestContent, SOURCE);
+            if (StringUtils.isBlank(source))
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Source is blank.");
+            }
+
+            String target = (String) getJSONObjectValue(requestContent, TARGET);
+            if (StringUtils.isBlank(target))
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Target is blank.");
+            }
+
+            getRmAdminService().updateCustomChildAssocDefinition(referenceQName, source, target);
+        }
+        else if (CustomReferenceType.BIDIRECTIONAL.equals(customReferenceType))
+        {
+            String label = (String) getJSONObjectValue(requestContent, LABEL);
+            if (StringUtils.isBlank(label))
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Label is blank.");
+            }
+
+            getRmAdminService().updateCustomAssocDefinition(referenceQName, label);
+        }
+        else
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unsupported custom reference type.");
+        }
+    }
+
+    /**
+     * Gets the custom reference data
+     *
+     * @param servicePath The service path
+     * @param String The reference id
+     * @return The custom reference data
+     */
+    private Map<String, Object> getCustomReferenceData(String servicePath, String referenceId)
     {
         Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, Serializable> params = new HashMap<String, Serializable>();
-
-        for (Iterator iter = json.keys(); iter.hasNext(); )
-        {
-            String nextKeyString = (String)iter.next();
-            Serializable nextValue = (Serializable)json.get(nextKeyString);
-
-            params.put(nextKeyString, nextValue);
-        }
-
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String refId = templateVars.get(REF_ID);
-        // refId cannot be null as it is defined within the URL
-        params.put(REF_ID, (Serializable)refId);
-
-        // Ensure that the reference actually exists.
-        QName refQName = rmAdminService.getQNameForClientId(refId);
-        if (refQName == null)
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                    "Could not find reference definition for: " + refId);
-        }
-
-        String newLabel = (String)params.get(LABEL);
-        String newSource = (String)params.get(SOURCE);
-        String newTarget = (String)params.get(TARGET);
-
-        // Determine whether it's a bidi or a p/c ref
-        AssociationDefinition assocDef = rmAdminService.getCustomReferenceDefinitions().get(refQName);
-        if (assocDef == null)
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND,
-                    "Could not find reference definition for: " + refId);
-        }
-
-        if (assocDef instanceof ChildAssociationDefinition)
-        {
-            if (newSource != null || newTarget != null)
-            {
-                rmAdminService.updateCustomChildAssocDefinition(refQName, newSource, newTarget);
-            }
-        }
-        else if (newLabel != null)
-        {
-            rmAdminService.updateCustomAssocDefinition(refQName, newLabel);
-        }
-
-        result.put(URL, req.getServicePath());
-        result.put("refId", refQName.getLocalName());
-        result.put("success", Boolean.TRUE);
-
+        result.put(URL, servicePath);
+        result.put(REF_ID, referenceId);
+        result.put(SUCCESS, Boolean.TRUE);
         return result;
     }
 }

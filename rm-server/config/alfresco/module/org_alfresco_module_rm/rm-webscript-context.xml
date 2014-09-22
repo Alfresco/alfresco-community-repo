@@ -62,27 +62,26 @@
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
    </bean>
 
-   <!-- REST impl for GET Custom Reference Definitions -->
-   <bean id="webscript.org.alfresco.rma.customrefdefinitions.get"
-      class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
-      parent="webscript">
+   <!-- Base bean for custom reference definition web scripts -->
+   <bean id="rmCustomReferenceDefinitionBase" parent="rmBaseWebscript" abstract="true">
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
       <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
+   <!-- REST impl for GET Custom Reference Definitions -->
+   <bean id="webscript.org.alfresco.rma.customrefdefinitions.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
+      parent="rmCustomReferenceDefinitionBase" />
+
    <!-- REST impl for PUT Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinition.put"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPut"
-      parent="rmBaseWebscript">
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
-   </bean>
+      parent="rmCustomReferenceDefinitionBase" />
 
    <!-- REST impl for POST Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinition.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPost"
-      parent="rmBaseWebscript">
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
-   </bean>
+      parent="rmCustomReferenceDefinitionBase" />
 
    <!-- REST impl for GET Custom Reference Instances -->
    <bean id="webscript.org.alfresco.rma.customrefs.get"

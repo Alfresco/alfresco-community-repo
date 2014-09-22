@@ -18,162 +18,105 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.surf.util.ParameterCheck;
+import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 /**
  * Implementation for Java backed webscript to add RM custom reference definitions
  * to the custom model.
- * 
+ *
  * @author Neil McErlean
+ * @author Tuna Aksoy
  */
-public class CustomReferenceDefinitionPost extends AbstractRmWebScript
+public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
 {
-    private static final String URL = "url";
-    private static final String REF_ID = "refId";
-    private static final String TARGET = "target";
-    private static final String SOURCE = "source";
-    private static final String LABEL = "label";
-    private static final String REFERENCE_TYPE = "referenceType";
-
-    private static Log logger = LogFactory.getLog(CustomReferenceDefinitionPost.class);
-    
-    private RecordsManagementAdminService rmAdminService;
-    
-    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
-    {
-        this.rmAdminService = rmAdminService;
-    }
-
-	/*
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+    /**
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        JSONObject json = null;
-        Map<String, Object> ftlModel = null;
-        try
-        {
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-            
-            ftlModel = addCustomReference(req, json);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
-        }
-        catch (IllegalArgumentException iae)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                  iae.getMessage(), iae);
-        }
-        
-        return ftlModel;
+        JSONObject requestContent = getRequestContentAsJsonObject(req);
+        CustomReferenceType customReferenceType = getCustomReferenceType(requestContent);
+        QName customReference = addCustomReference(requestContent, customReferenceType);
+
+        Map<String, Object> model = new HashMap<String, Object>();
+        String servicePath = getServicePath(req);
+        Map<String, Object> customReferenceData = getCustomReferenceData(customReferenceType, customReference, servicePath);
+        model.putAll(customReferenceData);
+
+        return model;
     }
-    
+
     /**
-     * Applies custom properties.
+     * Adds custom reference to the model
+     *
+     * @param requestContent The request content as json object
+     * @param customReferenceType The custom reference type
+     * @return Returns the {@link QName} of the new custom reference
      */
-    @SuppressWarnings("rawtypes")
-    protected Map<String, Object> addCustomReference(WebScriptRequest req, JSONObject json) throws JSONException
+    private QName addCustomReference(JSONObject requestContent, CustomReferenceType customReferenceType)
+    {
+        QName referenceQName;
+
+        if (CustomReferenceType.PARENT_CHILD.equals(customReferenceType))
+        {
+            String source = (String) getJSONObjectValue(requestContent, SOURCE);
+            if (StringUtils.isBlank(source))
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Source is blank.");
+            }
+
+            String target = (String) getJSONObjectValue(requestContent, TARGET);
+            if (StringUtils.isBlank(target))
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Target is blank.");
+            }
+
+            referenceQName = getRmAdminService().addCustomChildAssocDefinition(source, target);
+        }
+        else if (CustomReferenceType.BIDIRECTIONAL.equals(customReferenceType))
+        {
+            String label = (String) getJSONObjectValue(requestContent, LABEL);
+            if (StringUtils.isBlank(label))
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Label is blank.");
+            }
+
+            referenceQName = getRmAdminService().addCustomAssocDefinition(label);
+        }
+        else
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unsupported custom reference type.");
+        }
+
+        return referenceQName;
+    }
+
+    /**
+     * Gets the custom reference data
+     *
+     * @param customReferenceType The custom reference type
+     * @param customReference The qualified name of the custom reference
+     * @param servicePath The service path
+     * @return The custom reference data
+     */
+    private Map<String, Object> getCustomReferenceData(CustomReferenceType customReferenceType, QName customReference, String servicePath)
     {
         Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, Serializable> params = new HashMap<String, Serializable>();
-        
-        for (Iterator iter = json.keys(); iter.hasNext(); )
-        {
-            String nextKeyString = (String)iter.next();
-            Serializable nextValue = (Serializable)json.get(nextKeyString);
-            
-            params.put(nextKeyString, nextValue);
-        }
-        String refTypeParam = (String)params.get(REFERENCE_TYPE);
-        ParameterCheck.mandatory(REFERENCE_TYPE, refTypeParam);
-        CustomReferenceType refTypeEnum = CustomReferenceType.getEnumFromString(refTypeParam);
-        
-        boolean isChildAssoc = refTypeEnum.equals(CustomReferenceType.PARENT_CHILD);
-        
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Creating custom ");
-            if (isChildAssoc)
-            {
-                msg.append("child ");
-            }
-            msg.append("assoc");
-            logger.debug(msg.toString());
-        }
-
-        QName generatedQName;
-        if (isChildAssoc)
-        {
-            String source = (String)params.get(SOURCE);
-            String target = (String)params.get(TARGET);
-            
-            generatedQName = rmAdminService.addCustomChildAssocDefinition(source, target);
-        }
-        else
-        {
-            String label = (String)params.get(LABEL);
-            
-            generatedQName = rmAdminService.addCustomAssocDefinition(label);
-        }
-
-        result.put(REFERENCE_TYPE, refTypeParam);
-
-        String qnameLocalName;
-        if (refTypeParam.equals(CustomReferenceType.BIDIRECTIONAL.toString()))
-        {
-            Serializable labelParam = params.get(LABEL);
-            // label is mandatory for bidirectional refs only
-            ParameterCheck.mandatory(LABEL, labelParam);
-
-            qnameLocalName = generatedQName.getLocalName();
-            result.put(REF_ID, qnameLocalName);
-        }
-        else if (refTypeParam.equals(CustomReferenceType.PARENT_CHILD.toString()))
-        {
-            Serializable sourceParam = params.get(SOURCE);
-            Serializable targetParam = params.get(TARGET);
-            // source,target mandatory for parent/child refs only
-            ParameterCheck.mandatory(SOURCE, sourceParam);
-            ParameterCheck.mandatory(TARGET, targetParam);
-
-            qnameLocalName = generatedQName.getLocalName();
-            result.put(REF_ID, qnameLocalName);
-        }
-        else
-        {
-            throw new WebScriptException("Unsupported reference type: " + refTypeParam);
-        }
-        result.put(URL, req.getServicePath() + "/" + qnameLocalName);
-        
-        result.put("success", Boolean.TRUE);
-        
+        String qnameLocalName = customReference.getLocalName();
+        result.put(REFERENCE_TYPE, customReferenceType.toString());
+        result.put(REF_ID, qnameLocalName);
+        result.put(URL, servicePath + PATH_SEPARATOR + qnameLocalName);
+        result.put(SUCCESS, Boolean.TRUE);
         return result;
     }
 }

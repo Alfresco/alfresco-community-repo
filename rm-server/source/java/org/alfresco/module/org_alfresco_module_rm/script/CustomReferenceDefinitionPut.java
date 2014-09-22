@@ -18,11 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
+import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -46,31 +49,15 @@ public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         JSONObject requestContent = getRequestContentAsJsonObject(req);
-        String referenceId = getReferenceId(req);
+        String referenceId = getRequestParameterValue(req, REF_ID);
         updateCustomReference(requestContent, referenceId);
 
         Map<String, Object> model = new HashMap<String, Object>();
-        String servicePath = getServicePath(req);
+        String servicePath = req.getServicePath();
         Map<String, Object> customReferenceData = getCustomReferenceData(servicePath, referenceId);
         model.putAll(customReferenceData);
 
         return model;
-    }
-
-    /**
-     * Gets the reference id from the webscript request
-     *
-     * @param req The webscript request
-     * @return The reference id
-     */
-    private String getReferenceId(WebScriptRequest req)
-    {
-        String referenceId = getRequestParameterValue(req, REF_ID);
-        if (StringUtils.isBlank(referenceId))
-        {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Reference id is blank.");
-        }
-        return referenceId;
     }
 
     /**
@@ -86,28 +73,13 @@ public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
 
         if (CustomReferenceType.PARENT_CHILD.equals(customReferenceType))
         {
-            String source = (String) getJSONObjectValue(requestContent, SOURCE);
-            if (StringUtils.isBlank(source))
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Source is blank.");
-            }
-
-            String target = (String) getJSONObjectValue(requestContent, TARGET);
-            if (StringUtils.isBlank(target))
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Target is blank.");
-            }
-
+            String source = getStringValueFromJSONObject(requestContent, SOURCE);
+            String target = getStringValueFromJSONObject(requestContent, TARGET);
             getRmAdminService().updateCustomChildAssocDefinition(referenceQName, source, target);
         }
         else if (CustomReferenceType.BIDIRECTIONAL.equals(customReferenceType))
         {
-            String label = (String) getJSONObjectValue(requestContent, LABEL);
-            if (StringUtils.isBlank(label))
-            {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Label is blank.");
-            }
-
+            String label = getStringValueFromJSONObject(requestContent, LABEL);
             getRmAdminService().updateCustomAssocDefinition(referenceQName, label);
         }
         else

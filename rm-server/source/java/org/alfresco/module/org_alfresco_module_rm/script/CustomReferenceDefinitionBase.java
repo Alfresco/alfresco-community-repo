@@ -18,14 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Base class for custom reference definition classes
@@ -48,9 +47,6 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
     /** Records Management Admin Service */
     private RecordsManagementAdminService rmAdminService;
 
-    /** Dictionary Service */
-    private DictionaryService dictionaryService;
-
     /**
      * Sets the records management admin service
      *
@@ -69,26 +65,6 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
     protected RecordsManagementAdminService getRmAdminService()
     {
         return this.rmAdminService;
-    }
-
-    /**
-     * Sets the dictionary service
-     *
-     * @param dictionaryService The dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Gets the dictionary service instance
-     *
-     * @return The dictionary service instance
-     */
-    protected DictionaryService getDictionaryService()
-    {
-        return this.dictionaryService;
     }
 
     /**
@@ -121,22 +97,7 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
      */
     protected CustomReferenceType getCustomReferenceType(JSONObject requestContent)
     {
-        String referenceType = (String) getJSONObjectValue(requestContent, REFERENCE_TYPE);
-        if (StringUtils.isBlank(referenceType))
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Reference type is missing.");
-        }
+        String referenceType = getStringValueFromJSONObject(requestContent, REFERENCE_TYPE);
         return CustomReferenceType.getEnumFromString(referenceType);
-    }
-
-    /**
-     * Gets the service path from the webscript request
-     *
-     * @param req The webscript request
-     * @return The service path
-     */
-    protected String getServicePath(WebScriptRequest req)
-    {
-        return req.getServicePath();
     }
 }

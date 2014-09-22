@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.Map.Entry;
 
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
@@ -41,13 +44,36 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
 {
+    /** Dictionary Service */
+    private DictionaryService dictionaryService;
+
+    /**
+     * Sets the dictionary service
+     *
+     * @param dictionaryService The dictionary service
+     */
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
+    /**
+     * Gets the dictionary service instance
+     *
+     * @return The dictionary service instance
+     */
+    protected DictionaryService getDictionaryService()
+    {
+        return this.dictionaryService;
+    }
+
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String referenceId = getRequestParameterValue(req, REF_ID);
+        String referenceId = getRequestParameterValue(req, REF_ID, false);
         Map<QName, AssociationDefinition> customReferenceDefinitions = getCustomReferenceDefinitions(referenceId);
         List<Map<String, String>> customReferenceData = getCustomReferenceData(customReferenceDefinitions);
 

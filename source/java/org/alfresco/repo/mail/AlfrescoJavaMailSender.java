@@ -26,6 +26,7 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.URLName;
 
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.pool.KeyedPoolableObjectFactory;
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
 import org.slf4j.Logger;
@@ -286,5 +287,31 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
     public void setMinEvictableIdleTime(long time)
     {
         transportPool.setMinEvictableIdleTimeMillis(time);
+    }
+
+    @Override
+    public void setUsername(String userName)
+    {
+        if (PropertyCheck.isValidPropertyString(userName))
+        {
+            super.setUsername(userName);
+        }
+        else
+        {
+            super.setUsername(null);
+        }
+    }
+
+    @Override
+    public void setPassword(String password)
+    {
+        if (PropertyCheck.isValidPropertyString(password))
+        {
+            super.setPassword(password);
+        }
+        else
+        {
+            super.setPassword(null);
+        }
     }
 }

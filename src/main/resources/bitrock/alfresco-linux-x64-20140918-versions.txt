@@ -1,6 +1,6 @@
-alfresco Stack - 20130724
+alfresco Stack - 20140918
 gcc 3.4.6
-java 1.7.0_25
+java 1.6.0_45
 pkg-config 0.22
 libtool 1.5.8
 make 3.81
@@ -18,20 +18,21 @@ swftools 0.9.1
 libstdcplusplus 0
 ncurses 5.6
 readline 5.2
-openssl 0.9.8o
+openssl 0.9.8y
 apr 1.4.6
-tomcat-native 1.1.27
-postgresql 9.2.4
-libreoffice 4.0.1
+tomcat-native 1.1.29
+postgresql 9.3.5
+libreoffice 4.2.5
 manager 1
-java 1.7.0_25
-tomcat 7.0.42
+java 1.7.0_67
+tomcat 7.0.53
 bitrock-alfresco 20130409
-alfresco 4.2.c
-alfrescosharepoint 3.4.b
+alfresco 5.0.a
+alfrescosharepoint 4.2.e
 alfrescowcmqs 3.4.b
 keystore 20111026
-alfresco-solr 4.0.d
+alfresco-solr 4.2.e
+alfresco-solr4 4.2.e
 bitnami 
 japanese-fonts 1
 xpdf-japanese 1

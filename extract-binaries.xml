@@ -1,0 +1,99 @@
+<project default="extract-binaries">
+
+    <property name="binaries.linux" value="${project.build.directory}/binaries-linux-x64" />
+    <property name="binaries.osx" value="${project.build.directory}/binaries-osx-x64" />
+    <property name="binaries.win32" value="${project.build.directory}/binaries-windows" />
+    <property name="binaries.win64" value="${project.build.directory}/binaries-windows-x64" />
+
+    <target name="extract-binaries">
+        <mkdir dir="${binaries.linux}" />
+        <mkdir dir="${binaries.osx}" />
+        <mkdir dir="${binaries.win32}" />
+        <mkdir dir="${binaries.win64}" />
+
+        <!-- Accommodate poor Cygwin users -->
+        <pathconvert property="maven.localrepo" targetos="unix">
+            <map from="C:" to="/c" />
+            <path>
+                <pathelement path="${settings.localRepository}"/>
+            </path>
+        </pathconvert>
+
+        <!-- Tomcat -->
+        <echo>Extracting Tomcat...</echo>
+        <exec failonerror="true" executable="tar" dir="${binaries.linux}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-unix.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.osx}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-unix.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win32}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-win32.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win64}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-win64.tgz" />
+        </exec>
+
+        <!-- PostgreSQL -->
+        <echo>Extracting PostgreSQL...</echo>
+        <exec executable="tar" dir="${binaries.linux}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/postgresql/postgresql-distribution/${installer.postgresql.version}/postgresql-distribution-${installer.postgresql.version}-linux.tgz" />
+        </exec>
+        <exec executable="tar" dir="${binaries.osx}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/postgresql/postgresql-distribution/${installer.postgresql.version}/postgresql-distribution-${installer.postgresql.version}-osx.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win32}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/postgresql/postgresql-distribution/${installer.postgresql.version}/postgresql-distribution-${installer.postgresql.version}-win32.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win64}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/postgresql/postgresql-distribution/${installer.postgresql.version}/postgresql-distribution-${installer.postgresql.version}-win64.tgz" />
+        </exec>
+
+        <!-- Java -->
+        <echo>Extracting Java...</echo>
+        <exec executable="tar" dir="${binaries.linux}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/com/oracle/java/jre/${installer.java.version}/jre-${installer.java.version}-linux.tgz" />
+        </exec>
+        <exec executable="tar" dir="${binaries.osx}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/com/oracle/java/jre/${installer.java.version}/jre-${installer.java.version}-osx.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win32}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/com/oracle/java/jre/${installer.java.version}/jre-${installer.java.version}-win32.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win64}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/com/oracle/java/jre/${installer.java.version}/jre-${installer.java.version}-win64.tgz" />
+        </exec>
+
+        <!-- LibreOffice -->
+        <echo>Extracting LibreOffice...</echo>
+        <exec executable="tar" dir="${binaries.linux}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/libreoffice/libreoffice-dist/${installer.libreoffice.version}/libreoffice-dist-${installer.libreoffice.version}-linux.tgz" />
+        </exec>
+        <exec executable="tar" dir="${binaries.osx}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/libreoffice/libreoffice-dist/${installer.libreoffice.version}/libreoffice-dist-${installer.libreoffice.version}-osx.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win32}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/libreoffice/libreoffice-dist/${installer.libreoffice.version}/libreoffice-dist-${installer.libreoffice.version}-windows.tgz" />
+        </exec>
+        <exec failonerror="true" executable="tar" dir="${binaries.win64}">
+            <arg value="xf" />
+            <arg value="${maven.localrepo}/org/libreoffice/libreoffice-dist/${installer.libreoffice.version}/libreoffice-dist-${installer.libreoffice.version}-windows.tgz" />
+        </exec>
+    </target>
+
+</project>

@@ -116,6 +116,7 @@
         <setInstallerVariable name="installdiralfresco" value="${tomcat_server_directory}/webapps"/>
         <setInstallerVariable name="alfresco_database_user" value="${database_user}"/>
         <setInstallerVariable name="alfresco_database_password" value="${database_password}"/>
+        <setInstallerVariable name="alfresco_database_validate_query" value="SELECT 1"/> 
     </readyToInstallActionList>
     <folderList>
         <folder>
@@ -270,6 +271,14 @@
             </shouldPackRuleList>
 	</folder>
         <folder>
+            <description>//Program Files</description>
+            <destination>${installdir}/apps/alfresco</destination>
+            <name>alfrescobnconfig</name>
+            <distributionFileList>
+                <distributionDirectory origin="alfresco/*" includeFiles="*/bnconfig;*/bnconfig.app;*/bnconfig.exe" allowWildcards="1"/>
+            </distributionFileList>
+        </folder>
+        <folder>
             <name>licenses</name>
             <description>//Alfresco Licenses</description>
             <destination>${alfresco_base_application_directory}</destination>
@@ -314,6 +323,7 @@
         </folder>
     </folderList>
     <postInstallationActionList>
+
         <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/bin/service.bat;${tomcat_server_directory}/scripts/ctl.sh" />
         <actionGroup>
             <actionList>

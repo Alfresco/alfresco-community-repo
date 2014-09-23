@@ -13,7 +13,7 @@
 
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
-        <bitrock.folder>${binaries.folder}/bitrock/bitrock-8.5.1-20121129</bitrock.folder>
+        <bitrock.folder>${binaries.folder}/bitrock/bitrock-9.0.2</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
         <bitrock.arguments>
            --license
@@ -29,6 +29,116 @@
            alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
     </properties>
+
+    <dependencies>
+        <!-- These binaries are extracted using tar, to preserve symlinks -->
+
+        <!-- Tomcat -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>unix</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- Java -->
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- LibreOffice -->
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>windows</classifier>
+            <type>tgz</type>
+        </dependency>
+    </dependencies>
 
     <build>
         <resources>
@@ -65,73 +175,7 @@
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                 </artifactItem>
-                                <!-- Tomcat -->
-                                <artifactItem>
-                                    <groupId>org.apache.tomcat</groupId>
-                                    <artifactId>tomcat</artifactId>
-                                    <version>${dependency.tomcat.version}-alfresco</version>
-                                    <classifier>win32</classifier>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/binaries-windows</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.tomcat</groupId>
-                                    <artifactId>tomcat</artifactId>
-                                    <version>${dependency.tomcat.version}-alfresco</version>
-                                    <classifier>win64</classifier>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/binaries-windows-x64</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.tomcat</groupId>
-                                    <artifactId>tomcat</artifactId>
-                                    <version>${dependency.tomcat.version}-alfresco</version>
-                                    <classifier>unix</classifier>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/binaries-linux-x64</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.apache.tomcat</groupId>
-                                    <artifactId>tomcat</artifactId>
-                                    <version>${dependency.tomcat.version}-alfresco</version>
-                                    <classifier>unix</classifier>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/binaries-osx-x64</outputDirectory>
-                                </artifactItem>
-                                <!-- LibreOffice -->
-                                <artifactItem>
-                                    <groupId>org.libreoffice</groupId>
-                                    <artifactId>libreoffice-dist</artifactId>
-                                    <version>4.2.5-alfresco</version>
-                                    <classifier>linux</classifier>
-                                    <type>tgz</type>
-                                    <outputDirectory>${project.build.directory}/binaries-linux-x64</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.libreoffice</groupId>
-                                    <artifactId>libreoffice-dist</artifactId>
-                                    <version>4.2.5-alfresco</version>
-                                    <classifier>osx</classifier>
-                                    <type>tgz</type>
-                                    <outputDirectory>${project.build.directory}/binaries-osx-x64</outputDirectory>
-                                </artifactItem>					
-                                <artifactItem>
-                                    <groupId>org.libreoffice</groupId>
-                                    <artifactId>libreoffice-dist</artifactId>
-                                    <version>4.2.5-alfresco</version>
-                                    <classifier>windows</classifier>
-                                    <type>tgz</type>
-                                    <outputDirectory>${project.build.directory}/binaries-windows-x64</outputDirectory>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.libreoffice</groupId>
-                                    <artifactId>libreoffice-dist</artifactId>
-                                    <version>4.2.5-alfresco</version>
-                                    <classifier>windows</classifier>
-                                    <type>tgz</type>
-                                    <outputDirectory>${project.build.directory}/binaries-windows</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>								
+                            </artifactItems>
                         </configuration>
                     </execution>
                     <execution>
@@ -155,6 +199,25 @@
                                     <type>amp</type>
                                 </artifactItem>
                             </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Extract all the binaries: Tomcat, PostgreSQL, Java, LibreOffice -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>extract-binaries-tgz</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <ant antfile="extract-binaries.xml" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
@@ -292,18 +355,18 @@
                         <executions>
                             <execution>
                                 <id>sign-windows-installers</id>
-                                <phase>package</phase>
+                                <phase>verify</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
+                                <configuration>
+                                    <skip>${skipWinInstaller}</skip>
+                                    <target>
+                                        <ant antfile="sign.xml" />
+                                    </target>
+                                </configuration>
                             </execution>
                         </executions>
-                        <configuration>
-                            <skip>${skipWinInstaller}</skip>
-                            <target>
-                            	<ant antfile="sign.xml" />
-                            </target>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>

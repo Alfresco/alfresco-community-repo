@@ -65,7 +65,7 @@
         <setInstallerVariable name="libreoffice_distribution_folder" value="${binaries_folder}/libreoffice" />
         <setInstallerVariable name="swftools_distribution_folder" value="${binaries_folder}/swftools" />
         <setInstallerVariable name="tomcat_distribution_folder" value="${binaries_folder}/apache-tomcat" />
-        <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}/manager" />
+        <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}" />
 
         <!-- Building unix installers on Windows -->
         <dos2unix files="${postgres_distribution_folder}/share/postgres.bki">

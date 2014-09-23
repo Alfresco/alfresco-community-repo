@@ -1,10 +1,11 @@
+
                        Licensing and Legal information
 
-   This product is made available subject to the terms of GNU Lesser
-   General Public License Version 3. A copy of the LGPL license can be
+   This product is made available subject to the terms of the Mozilla
+   Public License, v. 2.0. A copy of the MPL Version 2 license can be
    found below.
 
-   See LGPL Version 3 below
+   See MPL Version 2 below
 
    Third Party Code Additional copyright notices and license terms
    applicable to portions of the Software can be found below in this
@@ -13,8 +14,10 @@
    All trademarks and registered trademarks mentioned herein are the
    property of their respective owners.
 
-   Copyright (c) 2000, 2010 Oracle, and/or its affiliates. All rights
-   reserved.
+   Copyright © 2000, 2014 LibreOffice contributors. All rights reserved.
+
+   This product is based on OpenOffice.org. Portions of this software are
+   copyright © 2000-2011, Oracle and/or its affiliates.
 
    This product has been created by The Document Foundation, incorporating
    many modifications from different contributors, see
@@ -22,6 +25,42 @@
 
    Note: Do not translate or localize this document. Only English version
    is legally binding.
+
+   Contents
+
+   Libraries
+
+   Extensions
+
+   Fonts
+
+   Dictionaries
+
+   Artwork
+
+   Miscellaneous
+
+   GNU Lesser General Public License Version 3
+
+   GNU Lesser General Public License Version 2.1
+
+   GNU Library General Public License Version 2
+
+   GNU General Public License Version 3
+
+   GNU General Public License Version 2
+
+   Mozilla Public License Version 1.1
+
+   Mozilla Public License Version 2.0
+
+   SIL Open Font License Version 1.1 – 26 February 2007
+
+   Apache License
+
+   The LaTeX Project Public License
+
+   Creative Commons Attribution-ShareAlike 3.0 Unported
 
        Third Party Code Additional Copyright Notices and License Terms
 
@@ -32,14 +71,6 @@ Apache Commons
    The following software may be included in this product: Apache Commons
    (codec, httpclient, lang, logging). Use of any of this software is
    governed by the terms of the license below:
-
-   See Apache License Version 2.0 below
-
-Apache Jakarta Tomcat
-
-   The following software may be included in this product: Apache Jakarta
-   Tomcat. Use of any of this software is governed by the terms of the
-   license below:
 
    See Apache License Version 2.0 below
 
@@ -78,101 +109,6 @@ beanshell
    Associates http://www.pat.net/~pat/
 
    See LGPL Version 3 below
-
-BerkeleyDB
-
-   The following software may be included in this product: BerkeleyDB. Use
-   of any of this software is governed by the terms of the license below:
-
-   Copyright (c) 1990-2004 Sleepycat Software. All rights reserved.
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-    1. Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the
-       distribution.
-    3. Redistributions in any form must be accompanied by information on
-       how to obtain complete source code for the DB software and any
-       accompanying software that uses the DB software. The source code
-       must either be included in the distribution or be available for no
-       more than the cost of distribution plus a nominal fee, and must be
-       freely redistributable under reasonable conditions. For an
-       executable file, complete source code means the source code for all
-       modules it contains. It does not include source code for modules or
-       files that typically accompany the major components of the
-       operating system on which the executable file runs.
-
-   THIS SOFTWARE IS PROVIDED BY SLEEPYCAT SOFTWARE ``AS IS'' AND ANY
-   EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-   IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-   PURPOSE, OR NON-INFRINGEMENT, ARE DISCLAIMED. IN NO EVENT SHALL
-   SLEEPYCAT SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-   Copyright (c) 1990, 1993, 1994, 1995 The Regents of the University of
-   California. All rights reserved.
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-    1. Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the
-       distribution.
-    3. Neither the name of the University nor the names of its
-       contributors may be used to endorse or promote products derived
-       from this software without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
-   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-   PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS
-   BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-   BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-   Copyright (c) 1995, 1996 The President and Fellows of Harvard
-   University. All rights reserved.
-
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-    1. Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the
-       distribution.
-    3. Neither the name of the University nor the names of its
-       contributors may be used to endorse or promote products derived
-       from this software without specific prior written permission.
-
-   THIS SOFTWARE IS PROVIDED BY HARVARD AND ITS CONTRIBUTORS ``AS IS'' AND
-   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-   PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL HARVARD OR ITS CONTRIBUTORS
-   BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
-   BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-   WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-   OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 C++ Boost Library
 
@@ -535,6 +471,20 @@ License.  */
    segment and dl_iterate_phdr to avoid register/deregister calls at
    DSO load/unload.  */
 
+Firebird
+
+   The applicable and approved licenses for the source files of the
+   Firebird RDBMS project are:
+
+   1) InterBase Public License (IPL), version 1.0
+
+   2) Initial Developer's Public License (IDPL), version 1.0
+
+   The IPL is copyright of Borland Corp., the other licenses are copyright
+   by the source code authors and contributors. Both are variants of the
+   Mozilla Public License V.1.1 (MPL). See
+   http://www.firebirdsql.org/en/licensing/
+
 fontconfig
 
    The following software may be included in this product: fontconfig. Use
@@ -591,6 +541,44 @@ Graphite2
    See LGPL Version 2.1 below
 
    See MPL Version 1.1 below
+
+HarfBuzz
+
+   HarfBuzz is licensed under the so-called "Old MIT" license. Details
+   follow. For parts of HarfBuzz that are licensed under different
+   licenses see individual files names COPYING in subdirectories where
+   applicable.
+
+   Copyright © 2010,2011,2012 Google, Inc.
+   Copyright © 2012 Mozilla Foundation
+   Copyright © 2011 Codethink Limited
+   Copyright © 2008,2010 Nokia Corporation and/or its subsidiary(-ies)
+   Copyright © 2009 Keith Stribley
+   Copyright © 2009 Martin Hosken and SIL International
+   Copyright © 2007 Chris Wilson
+   Copyright © 2006 Behdad Esfahbod
+   Copyright © 2005 David Turner
+   Copyright © 2004,2007,2008,2009,2010 Red Hat, Inc.
+   Copyright © 1998-2004 David Turner and Werner Lemberg
+
+   For full copyright notices consult the individual files in the package.
+
+   Permission is hereby granted, without written agreement and without
+   license or royalty fees, to use, copy, modify, and distribute this
+   software and its documentation for any purpose, provided that the above
+   copyright notice and the following two paragraphs appear in all copies
+   of this software.
+
+   IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE TO ANY PARTY FOR
+   DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING
+   OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE
+   COPYRIGHT HOLDER HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+   THE COPYRIGHT HOLDER SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING,
+   BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+   FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON
+   AN "AS IS" BASIS, AND THE COPYRIGHT HOLDER HAS NO OBLIGATION TO PROVIDE
+   MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 HSQLDB
 
@@ -718,6 +706,56 @@ Hyphen
    See LGPL Version 2.1 below
 
    See MPL Version 1.1 below
+
+IAccessible2
+
+   The following software may be included in this product: IAccessible2
+   API.
+
+   IAccessible2 IDL Specification
+
+   Copyright (c) 2007, 2013 Linux Foundation
+   Copyright (c) 2006 IBM Corporation
+   Copyright (c) 2000, 2006 Sun Microsystems, Inc.
+   All rights reserved.
+
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are
+   met:
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+
+    1. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in the
+       documentation and/or other materials provided with the
+       distribution.
+
+    1. Neither the name of the Linux Foundation nor the names of its
+       contributors may be used to endorse or promote products derived
+       from this software without specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+   IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+   TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+   PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+   HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+   This BSD License conforms to the Open Source Initiative "Simplified BSD
+   License" as published at:
+   http://www.opensource.org/licenses/bsd-license.php
+
+   IAccessible2 is a trademark of the Linux Foundation. The IAccessible2
+   mark may be used in accordance with the Linux Foundation Trademark
+   Policy to indicate compliance with the IAccessible2 specification.
+
+   Find out more about IAccessible2 at
+   http://accessibility.linuxfoundation.org/.
 
 ICU
 
@@ -905,6 +943,14 @@ JDOM
    <brett_AT_jdom_DOT_org>. For more information on the JDOM Project,
    please see http://www.jdom.org/.
 
+libatomic-ops
+
+   The following software may be included in this product: libatomic-ops.
+   Use of any of this software is governed by the terms of the license
+   below:
+
+   See GPL Version 2 below
+
 libcdr
 
    The following software may be included in this product: libcdr. Use of
@@ -958,6 +1004,31 @@ libcurl
    or other dealings in this Software without prior written authorization
    of the copyright holder.
 
+libeot
+
+   The following software may be included in this product: libeot. Use of
+   any of this software is governed by the terms of the license below:
+
+   See MPL Version 2 below
+
+libe-book
+
+   The following software may be included in this product: libe-book. Use
+   of any of this software is governed by the terms of the license below:
+
+   LGPL v2.1+ / MPL 2+
+
+   See LGPL Version 2.1 below
+
+   See MPL Version 2 below
+
+libetonyek
+
+   The following software may be included in this product: libetonyek. Use
+   of any of this software is governed by the terms of the license below:
+
+   See MPL Version 2 below
+
 libexttextcat
 
    The following software may be included in this product: libexttextcat.
@@ -995,6 +1066,14 @@ libexttextcat
    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+libfreehand
+
+   The following software may be included in this product: libfreehand.
+   Use of any of this software is governed by the terms of the license
+   below:
+
+   See MPL Version 2 below
+
 liblangtag
 
    The following software may be included in this product: liblangtag. Use
@@ -1014,6 +1093,28 @@ libmspub
    See LGPL Version 2 below
 
    See MPL Version 1.1 below
+
+libmwaw
+
+   The following software may be included in this product: libmwaw. Use of
+   any of this software is governed by the terms of the license below:
+
+   LGPL v2.1+ / MPL 2
+
+   See LGPL Version 2.1 below
+
+   See MPL Version 2 below
+
+libodfgen
+
+   The following software may be included in this product: libodfgen. Use
+   of any of this software is governed by the terms of the license below:
+
+   LGPL v2.1+ / MPL 2
+
+   See LGPL Version 2.1 below
+
+   See MPL Version 2 below
 
 liborcus
 
@@ -1148,11 +1249,11 @@ libvisio
    The following software may be included in this product: libvisio. Use
    of any of this software is governed by the terms of the license below:
 
-   MPL 1.1 / LGPL v2+ / GPL v2+
+   MPL 1.1+ / LGPL v2.1+ / GPL v2+
 
    See GPL Version 2 below
 
-   See LGPL Version 2 below
+   See LGPL Version 2.1 below
 
    See MPL Version 1.1 below
 
@@ -1161,21 +1262,33 @@ libwpd
    The following software may be included in this product: libwpd. Use of
    any of this software is governed by the terms of the license below:
 
+   LGPL v2.1+ / MPL 2
+
    See LGPL Version 2.1 below
+
+   See MPL Version 2 below
 
 libwpg
 
    The following software may be included in this product: libwpg. Use of
    any of this software is governed by the terms of the license below:
 
+   LGPL v2.1+ / MPL 2
+
    See LGPL Version 2.1 below
+
+   See MPL Version 2 below
 
 libwps
 
    The following software may be included in this product: libwps. Use of
    any of this software is governed by the terms of the license below:
 
+   LGPL v2.1+ / MPL 2
+
    See LGPL Version 2.1 below
+
+   See MPL Version 2 below
 
 libxml2
 
@@ -1794,6 +1907,13 @@ Pixman
    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+poppler
+
+   The following software may be included in this product: poppler. Use of
+   any of this software is governed by the terms of the license below:
+
+   See GPL Version 2 below
+
 PostgreSQL
 
    The following software may be included in this product: PostgreSQL. Use
@@ -2027,7 +2147,8 @@ Raptor RDF Parser Library
    the license below:
 
    Copyright (C) 2000-2008 David Beckett
-   Copyright (C) 2000-2005 University of Bristol. All Rights Reserved.
+   Copyright (C) 2000-2005 University of Bristol. All Rights
+   Reserved.
 
    All the licenses below are alternatives and if you select one license,
    that one alone applies.
@@ -2043,7 +2164,8 @@ Rasqal RDF Query Library
    the license below:
 
    Copyright (C) 2000-2008 David Beckett
-   Copyright (C) 2000-2005 University of Bristol. All Rights Reserved.
+   Copyright (C) 2000-2005 University of Bristol. All Rights
+   Reserved.
 
    All the licenses below are alternatives and if you select one license,
    that one alone applies.
@@ -2059,7 +2181,8 @@ Redland RDF Application Framework
    terms of the license below:
 
    Copyright (C) 2000-2008 David Beckett
-   Copyright (C) 2000-2005 University of Bristol. All Rights Reserved.
+   Copyright (C) 2000-2005 University of Bristol. All Rights
+   Reserved.
 
    All the licenses below are alternatives and if you select one license,
    that one alone applies.
@@ -2577,16 +2700,6 @@ XSLT MathML Library
    CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
    THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Xpdf
-
-   The following software may be included in this product: Xpdf. Use of
-   any of this software is governed by the terms of the license below:
-
-   The Xpdf software and documentation are copyright 1996-2007 Glyph &
-   Cog, LLC.
-
-   See GPL Version 2 below
-
 zlib
 
    The following software may be included in this product: zlib. Use of
@@ -2647,16 +2760,6 @@ Convert Text to Number
 
    See LGPL Version 3 below
 
-Diagram
-
-   The following software may be included in this product: Diagram. Use of
-   any of this software is governed by the terms of the license below:
-
-   Copyright © Tibor Hornyák and OxygenOffice Professional Team -
-   http://ooop.sf.net/
-
-   See LGPL Version 3 below
-
 OpenOffice.org2GoogleDocs - export & import to Google Docs, Zoho, WebDAV
 
    The following software may be included in this product:
@@ -2686,16 +2789,6 @@ LanguageTool Grammar Checker
 
    See LGPL Version 3 below
 
-Lightproof Grammar Checker
-
-   The following software may be included in this product: Lightproof
-   Grammar Checker. Use of any of this software is governed by the terms
-   of the license below:
-
-   2009-2010 (c) László Németh, license: GNU LGPL
-
-   See LGPL Version 3 below
-
 Numbertext
 
    The following software may be included in this product: Numbertext. Use
@@ -2721,15 +2814,14 @@ Numbertext
 
    See LGPL Version 3 below
 
-OpenOffice.org Blogger – Metaweblog support
+SmART Gallery (Diagram)
 
-   The following software may be included in this product: OpenOffice.org
-   Blogger. Use of any of this software is governed by the terms of the
+   The following software may be included in this product: SmART Gallery
+   (Diagram). Use of any of this software is governed by the terms of the
    license below:
 
-   Copyright © Caolán McNamara (2009) caolanm@redhat.com
-
-   Licensed under LGPLv3 or later.
+   Copyright © Tibor Hornyák and OxygenOffice Professional Team -
+   http://ooop.sf.net/
 
    See LGPL Version 3 below
 
@@ -2792,6 +2884,25 @@ Adobe PostScript® AFM files
    noted in the modified file(s); and that this paragraph is not modified.
    Adobe Systems has no responsibility or obligation to support the use of
    the AFM files.
+
+Caladea
+
+   Copyright (c) 2012 Huerta Tipografia
+
+   This Font Software is licensed under the Apache License, Version 2.0 as
+   shown below.
+
+   See Apache License Version 2.0 below
+
+Carlito
+
+   Copyright (c) 2010-2013 by tyPoland Lukasz Dziedzic with Reserved Font
+   Name "Carlito".
+
+   This Font Software is licensed under the SIL Open Font License, Version
+   1.1 as shown below.
+
+   See SIL Open Font License, Version 1.1 below
 
 Deja Vu
 
@@ -3567,7 +3678,7 @@ Dutch
 
    1. Name: Dutch word list for spell checking - OpenTaal
 
-   2. Version of words list: 2.00G; version of spell checking: 2.00G.
+   2. Version of words list: 2.10G; version of spell checking: 2.10G.
 
    3. Requirements: Hunspell 1.2.8 and higher
 
@@ -4103,6 +4214,20 @@ English (USA)
    associated documentation shall at all times remain with Princeton
    University and LICENSEE agrees to preserve same.
 
+  English sentence checker for LibreOffice
+
+   The following software may be included in this product: English
+   sentence checker. Use of any of this software is governed by the terms
+   of the license below:
+
+   2011-2012 (c) László Németh, license: MPL 1.1 / GPLv3+ / LGPLv3+
+
+   See GPL Version 3 below
+
+   See LGPL Version 3 below
+
+   See MPL Version 1.1 below
+
 Estonian
 
   Spelling dictionary
@@ -4363,6 +4488,46 @@ Hungarian
 
    See GPL Version 2 below
 
+  Hungarian sentence checker for LibreOffice
+
+   The following software may be included in this product: Hungarian
+   sentence checker. Use of any of this software is governed by the terms
+   of the license below:
+
+   2009-2012 (c) László Németh, license: MPL 1.1 / GPLv3+ / LGPLv3+
+
+   See GPL Version 3 below
+
+   See LGPL Version 3 below
+
+   See MPL Version 1.1 below
+
+Icelandic
+
+  Spelling dictionary and thesaurus
+
+   The wordlist was developed by Orðabók Háskólans in cooperation with
+   Reiknistofnun Háskóla Íslands in the early nineties and was released
+   into the public domain. Further modifications to the wordlist are also
+   released into the public domain.
+   The thesaurus and words in the spell checker with additional
+   morphological information are from the Icelandic Wiktionary Project,
+   http://is.wiktionary.org. Works released by the Wiktionary project are
+   under the Creative Commons Attribution-ShareAlike 3.0 Unported license.
+   You are free:
+   to Share — to copy, distribute and transmit the work
+   to Remix — to adapt the work
+   to make commercial use of the work
+   Under the following conditions:
+   Attribution — You must attribute the work in the manner specified by
+   the author or licensor (but not in any way that suggests that they
+   endorse you or your use of the work).
+   Share Alike — If you alter, transform, or build upon this work, you may
+   distribute the resulting work only under the same or similar license to
+   this one.
+
+   See CC-BY-SA 3.0 below
+
 Italian
 
   Spelling dictionary
@@ -4428,6 +4593,18 @@ Kurdish
    See LGPL Version 3 below
 
    See MPL Version 1.1 below
+
+Lao
+
+  Spelling dictionary
+
+   The following software may be included in this product: Lao spelling
+   dictionary. Use of any of this software is governed by the terms of the
+   license below:
+
+   Copyright (C) 2013 by Brian Eugene Wilson, Robert Martin Campbell
+
+   See LGPL Version 2.1 below
 
 Latvian
 
@@ -4626,11 +4803,11 @@ Polish
 
    See LGPL Version 2.1 below
 
-Portoguise
+Portuguese
 
   Spelling dictionary
 
-   The following software may be included in this product: Portoguise
+   The following software may be included in this product: Portuguese
    spelling dictionary. Use of any of this software is governed by the
    terms of the license below:
 
@@ -4638,51 +4815,17 @@ Portoguise
 
    Dep. Informatica, Universidade do Minho, Portugal
 
-   All dictionary files and associated programs are currently covered by
-   the GPL and BSD license.
-
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by the
-   Free Software Foundation; either version 2 of the License, or (at your
-   option) any later version.
+   GPL 2.0/LGPL 2.1/MPL 1.1 tri-license
 
    See GPL Version 2 below
 
-   Redistribution and use in source and binary forms, with or without
-   modification, are permitted provided that the following conditions are
-   met:
-    1. Redistributions of source code must retain the above copyright
-       notice, this list of conditions and the following disclaimer.
-    2. Redistributions in binary form must reproduce the above copyright
-       notice, this list of conditions and the following disclaimer in the
-       documentation and/or other materials provided with the
-       distribution.
-    3. All advertising materials mentioning features or use of this
-       software must display the following acknowledgement: This product
-       includes software developed by the University of California,
-       Berkeley and its contributors.
-    4. Neither the name of the name of the authors mentioned above, nor
-       the names of its contributors may be used to endorse or promote
-       products derived from this software without specific prior written
-       permission.
+   See LGPL Version 2.1 below
 
-   THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ''AS IS'' AND
-   ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-   PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS
-   BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-   SUBSTITUTE GOODS OR SERVICES;
-
-   LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-   AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-   THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-   DAMAGE.
+   See MPL Version 1.1 below
 
   Hyphenation patterns
 
-   The following software may be included in this product: Portoguise
+   The following software may be included in this product: Portuguese
    hyphenation patterns. Use of any of this software is governed by the
    terms of the license below:
 
@@ -4695,49 +4838,73 @@ Portoguise
 
   Thesaurus
 
-   The following software may be included in this product: Portoguise
+   The following software may be included in this product: Portuguese
    thesaurus. Use of any of this software is governed by the terms of the
    license below:
 
    See GPL Version 2 below
 
-Portoguise (Brazilian)
+Portuguese (Brazilian)
 
   Spelling dictionary
 
-   The following software may be included in this product: Portoguise
+   The following software may be included in this product: Portuguese
    (Brazilian) spelling dictionary. Use of any of this software is
    governed by the terms of the license below:
 
-   This dictionary is under development by Raimundo Moura and his team. It
-   is licensed under the terms of the GNU Lesser General Public License
-   version 2.1 (LGPLv2.1), as published by the Free Software Foundation.
-   The credits are available at http://www.broffice.org/creditos and
-   you can find new releases at
-   http://www.broffice.org/verortografico.
+   This dictionary is under continuous development by Raimundo Moura and
+   his team. It is icensed under the terms of the GNU Lesser General
+   Public License version 3 (LGPLv3), as published by the Free Software
+   Foundation, and Mozilla Public License as published by The Mozilla
+   Foundation. The credits are available at
+   http://pt-br.libreoffice.org/projetos/projeto-vero-verificador-ort
+   ografico/ and you can find new releases at
+   http://extensions.libreoffice.org
 
-   Copyright (C) 2006 - 2008 by Raimundo Santos Moura
-   <raimundomoura@openoffice.org>
+   Copyright (C) 2006 - 2013 by Raimundo Santos Moura
+   <raimundo.smoura@gmail.com>
 
-   See LGPL Version 2.1 below
+   See LGPL Version 3 below
+
+   See MPL Version 1.1 below
 
   Hyphenation patterns
 
-   The following software may be included in this product: Portoguise
+   The following software may be included in this product: Portuguese
    (Brazilian) hyphenation patterns. Use of any of this software is
    governed by the terms of the license below:
 
-   These hyphenation patterns are under development by Raimundo Moura and
-   his team. It is licensed under the terms of the GNU Lesser General
-   Public License version 2.1 (LGPLv2.1), as published by the Free
-   Software Foundation. The credits are available at
-   http://www.broffice.org/creditos and you can find new releases at
-   http://www.broffice.org/verortografico.
+   These hyphenation patterns are under continuous development by Raimundo
+   Moura and his team. It is icensed under the terms of the GNU Lesser
+   General Public License version 3 (LGPLv3), as published by the Free
+   Software Foundation, and Mozilla Public License as published by The
+   Mozilla Foundation. The credits are available at
+   http://pt-br.libreoffice.org/projetos/projeto-vero-verificador-ort
+   ografico/ and you can find new releases at
+   http://extensions.libreoffice.org
 
-   Copyright (C) 2008 - 2009 by Raimundo Santos Moura
-   <raimundomoura@openoffice.org>
+   Copyright (C) 2006 - 2013 by Raimundo Santos Moura
+   <raimundo.smoura@gmail.com>
 
-   See LGPL Version 2.1 below
+   See LGPL Version 3 below
+
+   See MPL Version 1.1 below
+
+  Portuguese Brazilian sentence checker for LibreOffice
+
+   The following software may be included in this product: Portuguese
+   (Brazilian) sentence checker. Use of any of this software is governed
+   by the terms of the license below:
+
+   MPL 1.1 / GPLv3+ / LGPLv3+
+
+   2013 © Raimundo Santos Moura
+
+   See GPL Version 3 below
+
+   See LGPL Version 3 below
+
+   See MPL Version 1.1 below
 
 Romanian
 
@@ -4833,6 +5000,15 @@ Russian
 
    Origin: Абрамовъ, Н. Словарь русскихъ синонимовъ и сходныхъ по смыслу
    выраженiй. Изд. 3-е, доп., Пг., 1911
+
+  Russian grammar checker
+
+   The following software may be included in this product: Russian grammar
+   checker. Use of any of this software is governed by the terms of the
+   license below:
+
+   2009, 2011, 2012 (c) Yakov Reztsov <yr at myooo dot ru>, license: MPL
+   1.1 / GPL / LGPL
 
 Scottish Gaelic
 
@@ -5259,61 +5435,6 @@ International Color Consortium sRGB Profiles
    without specific, written prior permission. Hewlett-Packard Company
    makes no representations about the suitability of this software for any
    purpose.
-
-MathML DTD
-
-   The following software may be included in this product: MathML DTD. Use
-   of any of this software is governed by the terms of the license below:
-
-  W3C^® SOFTWARE NOTICE AND LICENSE
-
-   Copyright © 1994-2001 World Wide Web Consortium,
-   (Massachusetts Institute of Technology, Institut National de
-   Recherche en Informatique et en Automatique, Keio University). All
-   Rights Reserved. http://www.w3.org/Consortium/Legal/
-
-   This W3C work (including software, documents, or other related items)
-   is being provided by the copyright holders under the following license.
-   By obtaining, using and/or copying this work, you (the licensee) agree
-   that you have read, understood, and will comply with the following
-   terms and conditions:
-
-   Permission to use, copy, modify, and distribute this software and its
-   documentation, with or without modification,  for any purpose and
-   without fee or royalty is hereby granted, provided that you include the
-   following on ALL copies of the software and documentation or portions
-   thereof, including modifications, that you make:
-    1. The full text of this NOTICE in a location viewable to users of the
-       redistributed or derivative work.
-    2. Any pre-existing intellectual property disclaimers, notices, or
-       terms and conditions. If none exist, a short notice of the
-       following form (hypertext is preferred, text is permitted) should
-       be used within the body of any redistributed or derivative code:
-       "Copyright © [$date-of-software] World Wide Web Consortium,
-       (Massachusetts Institute of Technology, Institut National
-       de Recherche en Informatique et en Automatique, Keio
-       University). All Rights Reserved.
-       http://www.w3.org/Consortium/Legal/"
-    3. Notice of any changes or modifications to the W3C files, including
-       the date changes were made. (We recommend you provide URIs to the
-       location from which the code is derived.)
-
-   THIS SOFTWARE AND DOCUMENTATION IS PROVIDED "AS IS," AND COPYRIGHT
-   HOLDERS MAKE NO REPRESENTATIONS OR WARRANTIES, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS
-   FOR ANY PARTICULAR PURPOSE OR THAT THE USE OF THE SOFTWARE OR
-   DOCUMENTATION WILL NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS,
-   TRADEMARKS OR OTHER RIGHTS.
-
-   COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL
-   OR CONSEQUENTIAL DAMAGES ARISING OUT OF ANY USE OF THE SOFTWARE OR
-   DOCUMENTATION.
-
-   The name and trademarks of copyright holders may NOT be used in
-   advertising or publicity pertaining to the software without specific,
-   written prior permission. Title to copyright in this software and any
-   associated documentation will at all times remain with copyright
-   holders.
 
                   GNU Lesser General Public License Version 3
 

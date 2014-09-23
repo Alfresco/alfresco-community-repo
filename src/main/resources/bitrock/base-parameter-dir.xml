@@ -201,6 +201,16 @@
         </directoryParameter>
     </parameterList>
     <readyToInstallActionList>
+        <throwError>
+            <text>Installation folder cannot contain spaces.</text>
+            <ruleList>
+                <compareText text="${installdir}" logic="contains" value=" "/>
+                <platformTest type="windows"/>
+                <compareText text="${base_allow_spaces}" value="0"/>
+                <compareText text="${installer_ui}" logic="equals" value="unattended"/>
+            </ruleList>
+        </throwError>
+
 	<actionGroup>
 	    <actionList>
 		<checkDirectoryTraversableRecursively directory="${installdir}" variable="is_not_travesable" />

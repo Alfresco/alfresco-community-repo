@@ -367,6 +367,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
         </passwordParameter>
 
         <stringParameter name="shmmax_error_message" value="" ask="0"/>
+        <stringParameter name="postgres_max_connections" ask="0" default=""/>
     </parameterList>
     <readyToInstallActionList>
         <setInstallerVariable name="database_vendor" value="postgres"/>
@@ -795,6 +796,13 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                                                 <isTrue value="${postgres_enable_silentmode}" />
                                             </ruleList>
                                         </substitution>
+                                        <substitution>
+                                            <pattern>max_connections\s*=\s*[0-9]+</pattern>
+                                            <value>max_connections = ${postgres_max_connections}</value>
+                                            <ruleList>
+                                                <compareText text="${postgres_max_connections}" logic="does_not_equal" value=""/>
+                                            </ruleList>
+                                        </substitution>
                                     </substitutionList>
                                 </substitute>
                                 <addTextToFile>
@@ -970,7 +978,7 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgr
 			      <!-- add -d to debug this action -->
                               <runProgram>
                                   <program>initdb.exe</program>
-                                  <programArguments>-U SYSTEM -E UTF8 -D ${postgres_data_directory.dos.unix}</programArguments>
+                                  <programArguments>-U SYSTEM -E UTF8 -D "${postgres_data_directory.dos.unix}"</programArguments>
                                   <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
                                   <ruleList>
                                       <compareText logic="equals" text="${installer_root_install}" value="1"/>
@@ -978,7 +986,7 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgr
                               </runProgram>
                               <runProgram>
                                   <program>initdb.exe</program>
-                                  <programArguments>-U postgres -E UTF8 -D ${postgres_data_directory.dos.unix}</programArguments>
+                                  <programArguments>-U postgres -E UTF8 -D "${postgres_data_directory.dos.unix}"</programArguments>
                                   <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
                                   <ruleList>
                                       <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
@@ -1040,6 +1048,13 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgr
 				      <compareText logic="does_not_equal" text="${postgres_logminerrorstatement_level}" value="default"/>
                                   </ruleList>
                               </substitution>
+                              <substitution>
+                                  <pattern>max_connections\s*=\s*[0-9]+</pattern>
+                                  <value>max_connections = ${postgres_max_connections}</value>
+                                  <ruleList>
+                                      <compareText text="${postgres_max_connections}" logic="does_not_equal" value=""/>
+                                  </ruleList>
+                              </substitution>
                           </substitutionList>
                       </substitute>
                       <addTextToFile>
@@ -1073,7 +1088,7 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgr
                                       <writeFile>
                                           <path>${postgres_root_directory}/bin/registerservice.bat</path>
                                           <text>@echo off
-start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\pg_ctl.exe register -N ${postgres_unique_service_name} -D ${postgres_data_directory.dos.unix} -w"</text>
+"${postgres_root_directory.dos}\bin\pg_ctl.exe" register -N ${postgres_unique_service_name} -D "${postgres_data_directory.dos.unix}" -w</text>
                                       </writeFile>
                                       <runProgram>
                                           <program>${postgres_root_directory}/bin/registerservice.bat</program>
@@ -1097,10 +1112,9 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\pg_ctl.exe register 
                           </ruleList>
                       </actionGroup>
  
-                         
                       <runProgram>
                           <program>pg_ctl.exe</program>
-                          <programArguments>-U postgres -w start -D ${postgres_data_directory.dos.unix}</programArguments>
+                          <programArguments>-U postgres -w start -D "${postgres_data_directory.dos.unix}"</programArguments>
                           <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
                           <ruleList>
                               <compareText logic="equals" text="${installer_root_install}" value="0"/>

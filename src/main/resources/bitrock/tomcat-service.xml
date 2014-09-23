@@ -90,6 +90,28 @@
                 <platformTest type="windows"/>
             </ruleList>
         </substitute>
+        <substitute>
+            <files>${application_server_directory}/bin/service.bat</files>
+            <type>exact</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>if not exist "%JAVA_HOME%\jre\bin\java.exe" goto noJavaHome</pattern>
+                    <value>rem if not exist "%JAVA_HOME%\jre\bin\java.exe" goto noJavaHome</value>
+                </substitution>
+                <substitution>
+                    <pattern>if not exist "%JAVA_HOME%\jre\bin\javaw.exe" goto noJavaHome</pattern>
+                    <value>rem if not exist "%JAVA_HOME%\jre\bin\javaw.exe" goto noJavaHome</value>
+                </substitution>
+                <substitution>
+                    <pattern>if not exist "%JAVA_HOME%\bin\javac.exe" goto noJavaHome</pattern>
+                    <value>rem if not exist "%JAVA_HOME%\bin\javac.exe" goto noJavaHome</value>
+                </substitution>
+                <substitution>
+                    <pattern>PR_JVM=%JAVA_HOME%\jre\bin\</pattern>
+                    <value>PR_JVM=%JAVA_HOME%\bin\</value>
+                </substitution>
+            </substitutionList>
+        </substitute>
 
         <!-- System owner service installation -->
         <actionGroup>
@@ -126,9 +148,22 @@
             <program>${application_server_directory.dos}\scripts\serviceinstall.bat</program>
             <programArguments>INSTALL ${tomcatservice_username} ${tomcatservice_password}</programArguments>
             <ruleList>
+                <isFalse value="${tomcatservice_notstart}" />
                 <compareValues value1="${tomcatservice_username}" logic="does_not_equal" value2=""/>
             </ruleList>
         </runProgram>
+
+        <!-- User owner service installation no start-->
+        <runProgram abortOnError="0" showMessageOnError="0">
+            <progressText>Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}</progressText>
+            <program>${application_server_directory.dos}\scripts\serviceinstall.bat</program>
+            <programArguments>INSTALL STOP ${tomcatservice_username} ${tomcatservice_password}</programArguments>
+            <ruleList>
+                <isTrue value="${tomcatservice_notstart}" />
+                <compareValues value1="${tomcatservice_username}" logic="does_not_equal" value2=""/>
+            </ruleList>
+        </runProgram>
+
 	<logMessage text="END: Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}" >
 	    <ruleList>
 		<platformTest type="windows" />

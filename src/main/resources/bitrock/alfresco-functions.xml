@@ -43,7 +43,7 @@
                 <ruleList>
                     <platformTest type="windows"/>
                 </ruleList>
-             </setInstallerVariableFromRegEx>	
+             </setInstallerVariableFromRegEx>
 	        <substitute>
 		    <files>${alfrescoFiles}</files>
 		    <substitutionList>
@@ -59,7 +59,7 @@
                             <pattern>@@ALFRESCO_SOLR_DIR@@</pattern>
                             <value>${alfresco_data_directory.dos.unix}/solr</value>
                         </substitution>
-                        <substitution>
+ 		        <substitution>
                             <pattern>@@ALFRESCO_SOLR4_DIR@@</pattern>
                             <value>${installdir.unix}/solr4</value>
                         </substitution>
@@ -102,7 +102,7 @@ img.exe=${'${img.root}'}/bin/convert</value>
                             <pattern>@@BITROCK_ALFRESCO_IMAGEMAGICK_ENV@@</pattern>
                             <value>img.root=${imagemagick_root_directory_windows.escape_backslashes}
 img.coders=${'${img.root}'}\\modules\\coders
-img.config=${'${img.root}'}\\config
+img.config=${'${img.root}'}
 img.gslib=${'${img.root}'}\\lib
 img.exe=${'${img.root}'}\\convert.exe</value>
                             <ruleList>
@@ -132,9 +132,19 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
+                            <value>${libreoffice_directory}/program/soffice.bin</value>
+                            <ruleList>
+                                <platformTest type="linux"/>
+                                <fileExists path="${libreoffice_directory}/program/soffice.bin"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
                             <value>${libreoffice_directory}/program/soffice</value>
                             <ruleList>
                                 <platformTest type="linux"/>
+                                <fileExists negate="1" path="${libreoffice_directory}/program/soffice.bin"/>
+                                <fileExists path="${libreoffice_directory}/program/soffice"/>
                             </ruleList>
                         </substitution>
                         <substitution>
@@ -142,6 +152,16 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${libreoffice_directory}/Contents/MacOS/soffice.bin</value>
                             <ruleList>
                                 <platformTest type="osx"/>
+                                <fileExists path="${libreoffice_directory}/Contents/MacOS/soffice.bin"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
+                            <value>${libreoffice_directory}/Contents/MacOS/soffice</value>
+                            <ruleList>
+                                <platformTest type="osx"/>
+                                <fileExists negate="1" path="${libreoffice_directory}/Contents/MacOS/soffice.bin"/>
+                                <fileExists path="${libreoffice_directory}/Contents/MacOS/soffice"/>
                             </ruleList>
                         </substitution>
 		        <substitution>
@@ -234,6 +254,10 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${alfresco_database_name}</value>
                         </substitution>
                         <substitution>
+                            <pattern>@@BITROCK_DB_VALIDATE_QUERY@@</pattern>
+                            <value>${alfresco_database_validate_query}</value>
+                        </substitution>
+                        <substitution>
                             <pattern>@@BITROCK_ALFRESCO_ADMIN_USERNAME@@</pattern>
                             <value>${alfresco_admin_username}</value>
                         </substitution>
@@ -256,6 +280,10 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         <substitution>
                             <pattern>@@BITROCK_TOMCAT_PORT@@</pattern>
                             <value>${application_server_port}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_APACHE_PORT@@</pattern>
+                            <value>${web_server_port}</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_TOMCAT_SSL_PORT@@</pattern>
@@ -291,7 +319,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_TOMCAT_ROOTDIR@@</pattern>
-                            <value>${tomcat_server_home}</value>
+                            <value>${tomcat_server_directory}</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_JAVA_HOME_UNIX@@</pattern>
@@ -303,6 +331,161 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </substitution>
                     </substitutionList>
 		</substitute>
+            </actionList>
+        </actionDefinition>
+        <actionDefinition name="alfrescoCheckJDBCDriver">
+            <parameterList>
+                <stringParameter name="jdbcdriver" />
+            </parameterList>
+            <actionList>
+                <setInstallerVariable name="alfresco_database_validate_query" value="">
+                <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                <ruleList>
+                    <compareText text="${jdbcdriver}" value="oracle.jdbc.OracleDriver"/>
+                    <compareText text="${jdbcdriver}" value="com.ibm.db2.jcc.DB2Driver"/>
+                </ruleList>
+                </setInstallerVariable>
+            </actionList>
+        </actionDefinition>
+        <actionDefinition name="alfrescoAutodetectJava">
+            <parameterList>
+                <stringParameter name="javaRequiredOrAbort" value="0"/>
+                <stringParameter name="javaRequiredJdk" value="0"/>
+                <stringParameter name="alfrescoInstallerBitness" value="64"/>
+            </parameterList>
+            <actionList>
+                <actionGroup>
+                    <actionList>
+                        <autodetectJava>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>1</showMessageOnError>
+                            <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again.</customErrorMessage>
+                            <promptUser>0</promptUser>
+                            <validVersionList>
+                                <validVersion>
+                                    <requireJDK>${javaRequiredJdk}</requireJDK>
+                                    <maxVersion/>
+                                    <minVersion>${java_min_version}</minVersion>
+                                    <vendor>sun</vendor>
+                                </validVersion>
+                                <validVersion>
+                                    <requireJDK>${javaRequiredJdk}</requireJDK>
+                                    <maxVersion/>
+                                    <minVersion>${java_min_version}</minVersion>
+                                    <vendor>openjdk</vendor>
+                                </validVersion>
+                            </validVersionList>
+                            <ruleList>
+                                <isFalse value="${javaRequiredOrAbort}" />
+                            </ruleList>
+                        </autodetectJava>
+                        <setInstallerVariable name="component(tomcat).parameter(java_is_jdk).value" value="1">
+                            <ruleList>
+                                <isTrue value="${javaRequiredJdk}"/>
+                                <isTrue value="${java_autodetected}"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <throwError>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>1</showMessageOnError>
+                            <text>The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Please install a 64bit version of Java before continuing, or go back and ensure the “Java” component is selected.</text>
+                            <ruleList>
+                                <compareText text="${alfrescoInstallerBitness}" logic="equals" value="64"/>
+                                <compareText text="${java_bitness}" value="32"/>
+                            </ruleList>
+                        </throwError>
+                        
+                        <autodetectJava>
+                            <abortOnError>1</abortOnError>
+                            <showMessageOnError>1</showMessageOnError>
+                            <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again.</customErrorMessage>
+                            <promptUser>0</promptUser>
+                            <validVersionList>
+                                <validVersion>
+                                    <requireJDK>${javaRequiredJdk}</requireJDK>
+                                    <maxVersion/>
+                                    <minVersion>${java_min_version}</minVersion>
+                                    <vendor>sun</vendor>
+                                </validVersion>
+                                <validVersion>
+                                    <requireJDK>${javaRequiredJdk}</requireJDK>
+                                    <maxVersion/>
+                                    <minVersion>${java_min_version}</minVersion>
+                                    <vendor>openjdk</vendor>
+                                </validVersion>
+                            </validVersionList>
+                            <ruleList>
+                                <isTrue value="${javaRequiredOrAbort}" />
+                            </ruleList>
+                        </autodetectJava>
+
+                        <setInstallerVariableFromRegEx>
+                            <name>java_home_directory</name>
+                            <text>${java_executable}</text>
+                            <pattern>/bin/java$</pattern>
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${java_executable}" value=""/>
+                                <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                            </ruleList>
+                        </setInstallerVariableFromRegEx>
+                        <setInstallerVariableFromRegEx>
+                            <name>java_home_directory</name>
+                            <substitution/>
+                            <text>${java_executable}</text>
+                            <pattern>/bin/java.exe$</pattern>
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${java_executable}" value=""/>
+                                <compareText logic="equals" text="${platform_name}" value="windows"/>
+                            </ruleList>
+                        </setInstallerVariableFromRegEx>
+                        <setInstallerVariableFromRegEx>
+                            <name>java_home_directory</name>
+                            <text>${java_home_directory}</text>
+                            <pattern>/jre$</pattern>
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${java_home_directory}" value=""/>
+                            </ruleList>
+                        </setInstallerVariableFromRegEx>
+                        <setInstallerVariable>
+                            <name>java_home_directory</name>
+                            <value>/usr/local/java</value>
+                            <ruleList>
+                                <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                                <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable>
+                            <name>java_home_directory</name>
+                            <value>${platform_install_prefix}\java</value>
+                            <ruleList>
+                                <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                                <compareText logic="equals" text="${platform_name}" value="windows"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <showWarning>
+                            <text>Java Home path contains spaces. Alfresco may not function properly, as the JVM itself has bugs when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces.</text>
+                            <ruleList>
+                                <compareText>
+                                    <text>${java_home_directory}</text>
+                                    <logic>contains</logic>
+                                    <value> </value>
+                                </compareText>
+                                <fileExists path="${java_home_directory}"/>
+                            </ruleList>
+                        </showWarning>
+                        <actionGroup>
+                            <actionList>
+                                <setInstallerVariable name="component(java).parameter(java_home_directory).ask" value="1"/>
+                            </actionList>
+                            <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                            <ruleList>
+                                <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                                <compareText logic="equals" text="${java_executable}" value=""/>
+                            </ruleList>
+                        </actionGroup>
+                    </actionList>
+                </actionGroup>
+                <setInstallerVariable name="component(java).parameter(java_installation_type).value" value="existing" />
             </actionList>
         </actionDefinition>
     </functionDefinitionList>

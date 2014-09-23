@@ -3,15 +3,13 @@
     <selected>1</selected>
     <show>0</show>
     <preBuildActionList>
-        <actionGroup>
-            <actionList>
-                <setInstallerVariable name="component(javaalfresco).selected" value="0" />
-                <setInstallerVariable name="component(javaalfresco).canBeEdited" value="0" />
-            </actionList>
+        <!-- Only OS X x64 supported -->
+        <setInstallerVariable name="component(javasettings).parameter(java_osx_arch).value" value="x64">
             <ruleList>
                 <compareText text="${platform_name}" value="osx" logic="equals" />
             </ruleList>
-        </actionGroup>
+        </setInstallerVariable>
+
         <setInstallerVariable name="component(alfresco).parameter(alfresco_database_name).default" value="alfresco" />
         <setInstallerVariable name="component(script).parameter(ctlscript_unix).value" value="alfresco.sh" />
 
@@ -29,16 +27,23 @@
         <setInstallerVariable name="component(java).canBeEdited" value="0" />
 	<setInstallerVariable name="component(java).detailedDescription" value="Java Component required to run the Alfresco server." />
         <setInstallerVariable name="component(java).parameter(java_required_jdk).value" value="1" />
-        <setInstallerVariable name="component(java).parameter(java_min_version).value" value="1.7.0_07" />
-        <setInstallerVariable name="component(java).parameter(java_required_or_abort).value" value="1" />
-       
+        <setInstallerVariable name="component(java).parameter(java_min_version).value" value="1.7.0_25" />
+        <!-- Alfresco don't won't to abort the installation if proper JDK not found -->
+        <setInstallerVariable name="component(java).parameter(java_required_or_abort).value" value="1"/>
         <setInstallerVariable name="component(tomcat).parameter(tomcat_dirname).value" value="tomcat" />
         
-        <setInstallerVariable name="component(baseparamdir).parameter(installdir).title" value="Installation folder" />
+        <setInstallerVariable name="component(baseparamdir).parameter(installdir).title" value="Installation Folder" />
         <setInstallerVariable name="component(baseparamdir).parameter(installdir).explanation" value="${'${tr('Please choose a folder to install ${product_fullname}')}'}" />
     </preBuildActionList>
 
     <initializationActionList>
+        <setInstallerVariable name="alfresco_installer_bitness" value="64"/>
+        <setInstallerVariable name="alfresco_installer_bitness" value="32">
+            <ruleList>
+                <compareText text="${project.installerFilename}" logic="does_not_contain" value="x64"/>
+                <compareText text="${project.installerFilename}" logic="contains" value="windows"/>
+            </ruleList>
+        </setInstallerVariable>
         <setInstallerVariable name="component(libreofficecomponent).parameter(libreofficeservice_notstart).value" value="1"/>
         <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_installed_as_service).value" value="0"/>
 	<setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_notstart).value" value="1" />
@@ -49,7 +54,8 @@
 	<setInstallerVariable name="component(postgres).parameter(postgres_logminmessage_level).value" value="fatal" />
 	<setInstallerVariable name="component(postgres).parameter(postgres_logminerrorstatement_level).value" value="fatal" />
 	<setInstallerVariable name="component(postgres).parameter(postgres_enable_silentmode).value" value="1" />
-	
+    <setInstallerVariable name="component(postgres).parameter(postgres_max_connections).value" value="300"/>
+
         <!--<setInstallerVariable name="component(mysql).parameter(mysql_data).parameter(mysql_database_username).value" value="alfresco"/>
         <setInstallerVariable name="component(alfresco).parameter(alfresco_database_name).value" value="alfresco"/>
         <setInstallerVariable name="component(mysql).parameter(mysql_installation_type).value" value="bundled"/>
@@ -62,140 +68,30 @@
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="component(baseparamdir).parameter(base_allow_spaces).value" value="0" />
-
-	<throwError>
-	    <text>This installer is for Windows 64 bit.  Please download the Windows 32 bit version.</text>
-	    <ruleList>
-		<compareText text="${project.installerFilename}" logic="contains" value="win-x64"/>
-		<platformTest type="windows"/>
-                <platformTest type="windows-x64" negate="1"/>
-	    </ruleList>
-	</throwError>
+        <!-- 50% in MB-->
+        <mathExpression text="int(ceil(${machine_total_memory}/2))" variable="java_xmx_setting"/>
+        <setInstallerVariable name="java_xmx_setting" value="2048">
+            <ruleList>
+                <compareValues value1="${machine_total_memory}" logic="less" value2="4096"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="java_xmx_setting" value="1024">
+            <ruleList>
+                <platformTest type="windows"/>
+                <platformTest negate="1" type="windows-x64"/> <!--set to 1GB if it is Windows 32 -->
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="component(tomcat).parameter(tomcat_memory_settings_unix).value" value="-XX:MaxPermSize=256M -Xms512M -Xmx${java_xmx_setting}M"/>
+        <setInstallerVariable name="component(tomcat).parameter(tomcat_extra_opts_unix).value" value="-XX:+DisableExplicitGC -Djava.awt.headless=true -Dalfresco.home=@@BITROCK_INSTALLDIR@@ -Dcom.sun.management.jmxremote -XX:ReservedCodeCacheSize=128m"/>
+        <setInstallerVariable name="component(tomcat).parameter(tomcat_extra_opts_windows).value">
+            <value>++JvmOptions="-XX:-DisableExplicitGC" ++JvmOptions="-XX:ReservedCodeCacheSize=128m" ++JvmOptions="-Dalfresco.home=@@BITROCK_INSTALLDIR@@" ++JvmOptions="-Dcom.sun.management.jmxremote" ++JvmOptions="-XX:MaxPermSize=512m"</value>
+        </setInstallerVariable>
+        <setInstallerVariable name="component(tomcat).parameter(tomcat_memory_settings_windows).value">
+            <value>--JvmMs 512 --JvmMx ${java_xmx_setting}</value>
+        </setInstallerVariable>
     </initializationActionList>
 
     <preInstallationActionList>
-	<showWarning>
-	    <text>Alfresco recommends at least 1024MB of memory.${machine_total_memory}MB detected.</text>
-	    <ruleList>
-		<compareValues value1="${machine_total_memory}" logic="less" value2="1024"/>
-	    </ruleList>
-	</showWarning>
-
-        <actionGroup>
-        <actionList>
-
-        <actionGroup>
-            <actionList>
-                <autodetectJava>
-                    <abortOnError>0</abortOnError>
-                    <showMessageOnError>1</showMessageOnError>
-                    <customErrorMessage>This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again.</customErrorMessage>
-                    <promptUser>0</promptUser>
-                    <validVersionList>
-                        <validVersion>
-                            <requireJDK>${java_required_jdk}</requireJDK>
-                            <maxVersion/>
-                            <minVersion>${java_min_version}</minVersion>
-                        </validVersion>
-                    </validVersionList>
-                    <ruleList>
-                        <isFalse value="${java_required_or_abort}" />
-                    </ruleList>
-                </autodetectJava>
-                <autodetectJava>
-                    <abortOnError>1</abortOnError>
-                    <showMessageOnError>1</showMessageOnError>
-                    <customErrorMessage>This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again.</customErrorMessage>
-                    <promptUser>0</promptUser>
-                    <validVersionList>
-                        <validVersion>
-                            <requireJDK>${java_required_jdk}</requireJDK>
-                            <maxVersion/>
-                            <minVersion>${java_min_version}</minVersion>
-                        </validVersion>
-                    </validVersionList>
-                    <ruleList>
-                        <isTrue value="${java_required_or_abort}" />
-                    </ruleList>
-                </autodetectJava>
-
-                <autodetectJava>
-                    <customErrorMessage>This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again.</customErrorMessage>
-                    <validVersionList>
-                        <validVersion>
-                            <maxVersion/>
-                            <minVersion>${java_min_version}</minVersion>
-                        </validVersion>
-                    </validVersionList>
-                    <ruleList>
-                        <platformTest type="osx"/>
-                    </ruleList>
-                </autodetectJava>
-                <setInstallerVariableFromRegEx>
-                    <name>java_home_directory</name>
-                    <text>${java_executable}</text>
-                    <pattern>/bin/java$</pattern>
-                    <ruleList>
-                        <compareText logic="does_not_equal" text="${java_executable}" value=""/>
-                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <setInstallerVariableFromRegEx>
-                    <name>java_home_directory</name>
-                    <substitution/>
-                    <text>${java_executable}</text>
-                    <pattern>/bin/java.exe$</pattern>
-                    <ruleList>
-                        <compareText logic="does_not_equal" text="${java_executable}" value=""/>
-                        <compareText logic="equals" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <setInstallerVariableFromRegEx>
-                    <name>java_home_directory</name>
-                    <text>${java_home_directory}</text>
-                    <pattern>/jre$</pattern>
-                    <ruleList>
-                        <compareText logic="does_not_equal" text="${java_home_directory}" value=""/>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <setInstallerVariable>
-                    <name>java_home_directory</name>
-                    <value>/usr/local/java</value>
-                    <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
-                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariable>
-                <setInstallerVariable>
-                    <name>java_home_directory</name>
-                    <value>${platform_install_prefix}\java</value>
-                    <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
-                        <compareText logic="equals" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariable>
-                <actionGroup>
-                    <actionList>
-                        <setInstallerVariable name="component(java).parameter(java_home_directory).ask" value="1"/>
-                    </actionList>
-                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
-                    <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
-                        <compareText logic="equals" text="${java_executable}" value=""/>
-                    </ruleList>
-                </actionGroup>
-            </actionList>
-        </actionGroup>
-
-        <setInstallerVariable name="component(java).parameter(java_installation_type).value" value="existing" />
-        </actionList>
-        <ruleList>
-            <compareText text="${installer_ui}" logic="equals" value="unattended"/>
-            <isFalse value="${component(javaalfresco).selected}" />
-        </ruleList>
-        </actionGroup>
-
-
                 <actionGroup>
                     <actionList>
                         <setInstallerVariable name="component(postgresservice).selected" value="0" />
@@ -212,119 +108,6 @@
 
 
     <componentSelectionValidationActionList>
-        <actionGroup>
-        <actionList>
-
-        <actionGroup>
-            <actionList>
-                <autodetectJava>
-                    <abortOnError>0</abortOnError>
-                    <showMessageOnError>1</showMessageOnError>
-                    <customErrorMessage>This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again.</customErrorMessage>
-                    <promptUser>0</promptUser>
-                    <validVersionList>
-                        <validVersion>
-                            <requireJDK>${java_required_jdk}</requireJDK>
-                            <maxVersion/>
-                            <minVersion>${java_min_version}</minVersion>
-                        </validVersion>
-                    </validVersionList>
-                    <ruleList>
-                        <isFalse value="${java_required_or_abort}" />
-                    </ruleList>
-                </autodetectJava>
-                <autodetectJava>
-                    <abortOnError>1</abortOnError>
-                    <showMessageOnError>1</showMessageOnError>
-                    <customErrorMessage>This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again.</customErrorMessage>
-                    <promptUser>0</promptUser>
-                    <validVersionList>
-                        <validVersion>
-                            <requireJDK>${java_required_jdk}</requireJDK>
-                            <maxVersion/>
-                            <minVersion>${java_min_version}</minVersion>
-                        </validVersion>
-                    </validVersionList>
-                    <ruleList>
-                        <isTrue value="${java_required_or_abort}" />
-                    </ruleList>
-                </autodetectJava>
-
-                <autodetectJava>
-                    <customErrorMessage>This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again.</customErrorMessage>
-                    <validVersionList>
-                        <validVersion>
-                            <maxVersion/>
-                            <minVersion>${java_min_version}</minVersion>
-                        </validVersion>
-                    </validVersionList>
-                    <ruleList>
-                        <platformTest type="osx"/>
-                    </ruleList>
-                </autodetectJava>
-                <setInstallerVariableFromRegEx>
-                    <name>java_home_directory</name>
-                    <text>${java_executable}</text>
-                    <pattern>/bin/java$</pattern>
-                    <ruleList>
-                        <compareText logic="does_not_equal" text="${java_executable}" value=""/>
-                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <setInstallerVariableFromRegEx>
-                    <name>java_home_directory</name>
-                    <substitution/>
-                    <text>${java_executable}</text>
-                    <pattern>/bin/java.exe$</pattern>
-                    <ruleList>
-                        <compareText logic="does_not_equal" text="${java_executable}" value=""/>
-                        <compareText logic="equals" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <setInstallerVariableFromRegEx>
-                    <name>java_home_directory</name>
-                    <text>${java_home_directory}</text>
-                    <pattern>/jre$</pattern>
-                    <ruleList>
-                        <compareText logic="does_not_equal" text="${java_home_directory}" value=""/>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <setInstallerVariable>
-                    <name>java_home_directory</name>
-                    <value>/usr/local/java</value>
-                    <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
-                        <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariable>
-                <setInstallerVariable>
-                    <name>java_home_directory</name>
-                    <value>${platform_install_prefix}\java</value>
-                    <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
-                        <compareText logic="equals" text="${platform_name}" value="windows"/>
-                    </ruleList>
-                </setInstallerVariable>
-                <actionGroup>
-                    <actionList>
-                        <setInstallerVariable name="component(java).parameter(java_home_directory).ask" value="1"/>
-                    </actionList>
-                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
-                    <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
-                        <compareText logic="equals" text="${java_executable}" value=""/>
-                    </ruleList>
-                </actionGroup>
-            </actionList>
-        </actionGroup>
-
-        <setInstallerVariable name="component(java).parameter(java_installation_type).value" value="existing" />
-        </actionList>
-        <ruleList>
-            <isFalse value="${component(javaalfresco).selected}" />
-        </ruleList>
-        </actionGroup>
-
         <actionGroup>
             <actionList> 
                 <setInstallerVariable name="component(java).parameter(java_installation_type).value" value="bundled" />
@@ -451,7 +234,7 @@
     </readyToInstallActionList>
 
     <postInstallationActionList>
-        <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/bin/service.bat;${tomcat_server_directory}/scripts/ctl.sh" />
+        <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/bin/service.bat;${tomcat_server_directory}/scripts/ctl.sh;${tomcat_server_directory}/bin/setenv.bat;${tomcat_server_directory}/bin/setenv.sh" />
     </postInstallationActionList>
 </component>
 

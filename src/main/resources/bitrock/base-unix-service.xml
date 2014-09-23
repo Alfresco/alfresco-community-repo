@@ -418,7 +418,7 @@ exit $RETVAL
                 &lt;string&gt;--socket=${database_root_directory}/tmp/mysql.sock&lt;/string&gt;
 		&lt;string&gt;--datadir=${database_root_directory}/data&lt;/string&gt;
                 &lt;string&gt;--log-error=${database_root_directory}/data/mysqld.log&lt;/string&gt;
-                &lt;string&gt;--pid-file=${database_root_directory}/data/${machine_hostname}.pid&lt;/string&gt;
+                &lt;string&gt;--pid-file=${database_root_directory}/data/mysqld.pid&lt;/string&gt;
                 &lt;string&gt;--lower-case-table-names=1&lt;/string&gt;
         &lt;/array&gt;
 	&lt;key&gt;RunAtLoad&lt;/key&gt;

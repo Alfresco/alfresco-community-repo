@@ -1,5 +1,5 @@
 <alfresco-config>
-
+   
    <!-- Global config section -->
    <config replace="true">
       <flags>
@@ -193,7 +193,7 @@
       <repository-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco</repository-url>
 
       <!--
-         Google Docsâ„¢ integration
+         Google Docs™ integration
       -->
       <google-docs>
          <!--
@@ -217,7 +217,7 @@
       -->
       <file-upload>
          <!--
-            Adobe Flashâ„¢
+            Adobe Flash™
             In certain environments, an HTTP request originating from Flash cannot be authenticated using an existing session.
             See: http://bugs.adobe.com/jira/browse/FP-4830
             For these cases, it is useful to disable the Flash-based uploader for Share Document Libraries.
@@ -264,71 +264,10 @@
    <!-- Repository Library config section -->
    <config evaluator="string-compare" condition="RepositoryLibrary" replace="true">
       <!--
-         Root nodeRef or xpath expression for top-level folder.
-         e.g. alfresco://user/home, /app:company_home/st:sites/cm:site1
-         If using an xpath expression, ensure it is properly ISO9075 encoded here.
-      -->
-      <root-node>alfresco://company/home</root-node>
-
-      <tree>
-         <!--
-            Whether the folder Tree component should enumerate child folders or not.
-            This is a relatively expensive operation, so should be set to "false" for Repositories with broad folder structures.
-         -->
-         <evaluate-child-folders>false</evaluate-child-folders>
-         
-         <!--
-            Optionally limit the number of folders shown in treeview throughout Share.
-         -->
-         <maximum-folder-count>500</maximum-folder-count>
-      </tree>
-
-      <!--
          Whether the link to the Repository Library appears in the header component or not.
       -->
       <visible>true</visible>
    </config>
-   
-   <!-- Kerberos settings -->
-   <!-- To enable kerberos rename this condition to "Kerberos" -->
-   <config evaluator="string-compare" condition="KerberosDisabled" replace="true">
-      <kerberos>
-         <!--
-            Password for HTTP service account.
-            The account name *must* be built from the HTTP server name, in the format :
-               HTTP/<server_name>@<realm>
-            (NB this is because the web browser requests an ST for the
-            HTTP/<server_name> principal in the current realm, so if we're to decode
-            that ST, it has to match.)
-         -->
-         <password>secret</password>
-         <!--
-            Kerberos realm and KDC address.
-         -->
-         <realm>ALFRESCO.ORG</realm>
-         <!--
-            Service Principal Name to use on the repository tier.
-            This must be like: HTTP/host.name@REALM
-         -->
-         <endpoint-spn>HTTP/repository.server.com@ALFRESCO.ORG</endpoint-spn>
-         <!--
-            JAAS login configuration entry name.
-         -->
-         <config-entry>ShareHTTP</config-entry>
-        <!--
-           A Boolean which when true strips the @domain sufix from Kerberos authenticated usernames.
-           Use together with stripUsernameSuffix property in alfresco-global.properties file.
-        -->
-        <stripUserNameSuffix>true</stripUserNameSuffix>
-      </kerberos>
-   </config>
-
-   <!-- Uncomment and modify the URL to Activiti Admin Console if required. -->
-   <!--
-   <config evaluator="string-compare" condition="ActivitiAdmin" replace="true">
-      <activiti-admin-url>http://localhost:8080/alfresco/activiti-admin</activiti-admin-url>
-   </config>
-   -->
 
    <config evaluator="string-compare" condition="Remote">
       <remote>
@@ -359,89 +298,16 @@
             <basic-auth>true</basic-auth>
             <identity>user</identity>
          </endpoint>
-         <!-- 
+         
          <endpoint>
             <id>activiti-admin</id>
             <name>Activiti Admin UI - user access</name>
             <description>Access to Activiti Admin UI, that requires user authentication</description>
             <connector-id>activiti-admin-connector</connector-id>
-            <endpoint-url>http://localhost:8080/alfresco/activiti-admin</endpoint-url>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/activiti-admin</endpoint-url>
             <identity>user</identity>
          </endpoint>
-         -->
       </remote>
    </config>
 
-   <!-- 
-        Overriding endpoints to reference an Alfresco server with external SSO enabled
-        NOTE: If utilising a load balancer between web-tier and repository cluster, the "sticky
-              sessions" feature of your load balancer must be used.
-        NOTE: If alfresco server location is not localhost:8080 then also combine changes from the
-              "example port config" section below.
-        *Optional* keystore contains SSL client certificate + trusted CAs.
-        Used to authenticate share to an external SSO system such as CAS
-        Remove the keystore section if not required i.e. for NTLM.
-        
-        NOTE: For Kerberos SSO rename the "KerberosDisabled" condition above to "Kerberos"
-        
-        NOTE: For external SSO, switch the endpoint connector to "AlfrescoHeader" and set
-              the userHeader to the name of the HTTP header that the external SSO
-              uses to provide the authenticated user name.
-   -->
-   <!--
-   <config evaluator="string-compare" condition="Remote">
-      <remote>
-         <keystore>
-             <path>alfresco/web-extension/alfresco-system.p12</path>
-             <type>pkcs12</type>
-             <password>alfresco-system</password>
-         </keystore>
-         
-         <connector>
-            <id>alfrescoCookie</id>
-            <name>Alfresco Connector</name>
-            <description>Connects to an Alfresco instance using cookie-based authentication</description>
-            <class>org.alfresco.web.site.servlet.SlingshotAlfrescoConnector</class>
-         </connector>
-         
-         <connector>
-            <id>alfrescoHeader</id>
-            <name>Alfresco Connector</name>
-            <description>Connects to an Alfresco instance using header and cookie-based authentication</description>
-            <class>org.alfresco.web.site.servlet.SlingshotAlfrescoConnector</class>
-            <userHeader>SsoUserHeader</userHeader>
-         </connector>
-
-         <endpoint>
-            <id>alfresco</id>
-            <name>Alfresco - user access</name>
-            <description>Access to Alfresco Repository WebScripts that require user authentication</description>
-            <connector-id>alfrescoCookie</connector-id>
-            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/wcs</endpoint-url>
-            <identity>user</identity>
-            <external-auth>true</external-auth>
-         </endpoint>
-      </remote>
-   </config>
-   -->
-
-   <!-- Cookie settings -->
-   <!-- To disable alfUsername2 cookie set enableCookie value to "false" -->
-   <!--
-   <plug-ins>
-      <element-readers>
-         <element-reader element-name="cookie" class="org.alfresco.web.config.cookie.CookieElementReader"/>
-      </element-readers>
-   </plug-ins>
-   
-   <config evaluator="string-compare" condition="Cookie" replace="true">
-      <cookie>
-         <enableCookie>false</enableCookie>
-         <cookies-to-remove>
-            <cookie-to-remove>alfUsername3</cookie-to-remove>
-            <cookie-to-remove>alfLogin</cookie-to-remove>
-         </cookies-to-remove>
-      </cookie>
-   </config>
-   -->
 </alfresco-config>

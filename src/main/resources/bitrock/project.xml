@@ -4,7 +4,7 @@
     <fullName>Alfresco Community Edition Stack</fullName>
     <!--readmeFile>README.txt</readmeFile-->
     <shortName>alfresco</shortName>
-    <version>3.4.b-1</version>
+    <version>4.2.e-0</version>
     <installerFilename>${product_shortname}-community-withpostgresql-${product_version}-${platform_name}-installer.${platform_exec_suffix}</installerFilename>
     <licenseFile></licenseFile>
     <wrapLicenseFileText>1</wrapLicenseFileText>
@@ -100,6 +100,7 @@
     <componentList>
         <include file="libreoffice-validations.xml" />
         <include file="base-functions.xml" />
+        <include file="tomcat-functions.xml" />
         <include file="alfresco-componentselection-java.xml" />
         <include file="alfresco-build-settings.xml" />
         <include file="alfresco-customstack-build-settings.xml" />
@@ -177,6 +178,7 @@
 	
     	<include file="alfrescodm.xml" />
     	<include file="alfresco-solr.xml" />
+        <include file="alfresco-solr4.xml"/>
         <include file="alfresco-apply-amps.xml" />
 
 	<include file="alfrescodm-postgres-database.xml" />
@@ -191,7 +193,7 @@
     	<include file="swftools.xml"/>
         <include file="alfresco-customstack-postgres-settings.xml" />
         <include file="alfresco-customstack-shortcuts.xml" />
-
+        <include file="alfresco-customstack-validations.xml"/>
         <!-- Tomcat cannot be started earlier, it needs to be done once alfresco is configured -->
 	<include file="tomcat-service.xml" />
 

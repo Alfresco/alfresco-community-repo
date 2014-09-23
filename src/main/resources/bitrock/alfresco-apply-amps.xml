@@ -38,7 +38,7 @@
                 <runProgram>
                     <progressText>Installing Alfresco Module Packages (AMPs)</progressText>
                     <program>${java_home_directory}/bin/java</program>
-                    <programArguments>-jar ${alfresco_commands_directory.dos.unix}/alfresco-mmt.jar install ${alfresco_amps_directory.dos.unix} ${installdiralfresco.dos.unix}/alfresco.war -directory -nobackup -force</programArguments> 
+                    <programArguments>-jar "${alfresco_commands_directory.unix}/alfresco-mmt.jar" install "${alfresco_amps_directory.unix}" "${installdiralfresco.unix}/alfresco.war" -directory -nobackup -force</programArguments> 
                     <ruleList>
                         <isTrue value="${alfresco_apply_amps}" />
                     </ruleList>
@@ -46,7 +46,7 @@
                 <runProgram>
                     <progressText>Installing Alfresco Module Packages (AMPs)</progressText>
                     <program>${java_home_directory}/bin/java</program>
-                    <programArguments>-jar ${alfresco_commands_directory.dos.unix}/alfresco-mmt.jar install ${alfresco_amps_share_directory.dos.unix} ${installdiralfresco.dos.unix}/share.war -directory -nobackup -force</programArguments> 
+                    <programArguments>-jar "${alfresco_commands_directory.unix}/alfresco-mmt.jar" install "${alfresco_amps_share_directory.unix}" "${installdiralfresco.unix}/share.war" -directory -nobackup -force</programArguments> 
                     <ruleList>
                         <isTrue value="${alfresco_apply_amps_share}" />
                     </ruleList>

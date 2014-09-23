@@ -16,7 +16,33 @@ Copyrighted by BitRock
     <selected>1</selected>
     <show>0</show>
     <functionDefinitionList>
-
+    <!-- Disabled until the ruleDefinition becomes mainstream --> 
+    <!--
+        <ruleDefinition name="isDefined">
+            <parameterList>
+                <stringParameter name="variable" default="" />
+                <stringParameter name="allowEmptyValues" value="1"/>
+            </parameterList>
+            <actionList>
+                <setInstallerVariable name="result" value="1"/>
+                <setInstallerVariable name="result" value="0">
+                    <ruleList>
+                        <compareText text="${${variable}}" logic="does_not_contain" value="***unknown variable ${${variable}}"/>
+                    </ruleList>
+                </setInstallerVariable>
+                <setInstallerVariable name="result" value="0">
+                    <ruleList>
+                        <isTrue value="${result}"/>
+                        <isFalse value="${allowEmptyValues}"/>
+                        <compareText text="${${variable}}" logic="equals" value=""/>
+                    </ruleList>
+                </setInstallerVariable>
+            </actionList>
+            <ruleList>
+                <isTrue value="${result}"/>
+            </ruleList>
+        </ruleDefinition>
+-->
       <actionDefinition name="countCharactersFromString">
         <parameterList>
           <stringParameter name="name" />
@@ -35,6 +61,7 @@ Copyrighted by BitRock
 		</conditionRuleList>
 	    </while>
 	    <setInstallerVariable name="${name}" value="${counter}" />
+            <globalVariables names="${name}" />
         </actionList>
       </actionDefinition>
 
@@ -71,7 +98,7 @@ Copyrighted by BitRock
 	    <globalVariables names="${variable}" />
 	</actionList>
       </actionDefinition>
-
+      
       <actionDefinition name="baseRemoveLibstdcIfExists">
         <parameterList>
         </parameterList>
@@ -321,8 +348,74 @@ ${baseStackPlatform}">
 		</iniFileSet>
             </actionList>
         </actionDefinition>
+        
+        <!-- Extract data from file setting variables from regexp outputs -->
+        <actionDefinition name="baseExtractInfoFromFile">
+            <parameterList>
+                <stringParameter name="path" />
+                <stringParameter name="pairsSet" />
+            </parameterList>
+            <actionList>
+                <readFile>
+                    <name>script_text</name>
+                    <path>${path}</path>
+                </readFile>
+                <foreach variables="var regexp" values="${pairsSet.escape_backslashes}"> 
+                <actionList>
+                    <globalVariables names="${var}"/>
+                    <setInstallerVariableFromRegEx>
+                        <text>${script_text}</text>
+                        <name>${var}</name>
+                        <substitution>\1</substitution>
+                        <pattern>${regexp}</pattern>
+                    </setInstallerVariableFromRegEx>
+                    </actionList>
+                </foreach>
+            </actionList>
+        </actionDefinition>
 
-      <!-- Autogenerates PHP apps variables -->
+        <!-- Extract data from file setting variables from xpath selectors -->
+        <actionDefinition name="baseExtractInfoFromXmlFile">
+            <parameterList>
+                <stringParameter name="path" />
+                <stringParameter name="pairsSet" />
+            </parameterList>
+            <actionList>
+                <foreach variables="var selector" values="${pairsSet.escape_backslashes}"> 
+                    <actionList>
+                        <globalVariables names="${var}"/>
+                        <xmlFileGet>
+                            <attribute></attribute>
+                            <element>${selector}</element>
+                            <file>${path}</file>
+                            <variable>${var}</variable>
+                        </xmlFileGet>
+                    </actionList>
+                </foreach>
+            </actionList>
+        </actionDefinition>
+
+        <actionDefinition name="baseValidateNotForbiddenUsername">
+            <parameterList>
+                <stringParameter name="username" value="" default=""/>
+                <stringParameter name="forbiddenUsernames" value="" default=""/>
+            </parameterList>
+            <actionList>
+                <foreach variables="forbidden_username" values="${forbiddenUsernames}"> 
+                    <actionList>
+                        <throwError>
+                            <text>Username '${username}' is reserved. Please use a different user name.</text>
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${forbidden_username}" value=""/>
+                                <compareText logic="equals" text="${username}" value="${forbidden_username}"/>
+                            </ruleList>               
+                        </throwError>
+                    </actionList>
+                </foreach>
+            </actionList>
+        </actionDefinition>
+
+        <!-- Autogenerates PHP apps variables -->
       <actionDefinition name="newPHPApp">
         <parameterList>
           <stringParameter name="applicationId" />
@@ -525,15 +618,34 @@ else {
 		<stringParameter name="path" value="" />
 		<stringParameter name="pattern" value="" />
 		<stringParameter name="permissions" value="" />
+                <stringParameter name="type" value=""/>
 	    </parameterList>
 	    <actionList>
 		<actionGroup>
 		    <actionList>
+                        <setInstallerVariable name="file_type" value=""/>
+                        <setInstallerVariable name="file_type" value=" -type d ">
+                            <ruleList>
+                                <compareText logic="equals" text="${type}" value="directories"/>    
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="file_type" value=" -type f ">
+                            <ruleList>
+                                <compareText logic="equals" text="${type}" value="files"/>    
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="file_name" value=""/>
+                        <setInstallerVariable name="file_name" value=" -name ${pattern} ">
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${pattern}" value=""/>    
+                            </ruleList>
+                        </setInstallerVariable>
+
 			<runProgram>
 			    <abortOnError>0</abortOnError>
 			    <showMessageOnError>0</showMessageOnError>
 			    <program>find</program>
-			    <programArguments>${path} -name ${pattern} -print0 | xargs -0 chmod ${permissions}</programArguments>
+			    <programArguments>${path} ${file_name} ${file_type} -print0 | xargs -0 chmod ${permissions}</programArguments>
 			</runProgram>
 		    </actionList>
 		    <ruleList>
@@ -641,7 +753,7 @@ else {
 			    <abortOnError>0</abortOnError>
 			    <showMessageOnError>1</showMessageOnError>
 			    <ruleList>
-				<compareText text="${groupFile}" logic="does_not_contain" value="${groupname}"/>
+				<compareText text="${groupFile}" logic="does_not_contain" value="^${groupname}:"/>
 			    </ruleList>
 			</addGroup>
 			<addGroupToUser>
@@ -870,7 +982,7 @@ ${serverName_cap}_SCRIPT=${scriptPath}
 		<actionGroup>
 		    <actionList>
 			<writeFile>
-			    <path>${logrotateDirectory}/${name}</path>
+			    <path>${logrotateDirectory}/${name}.conf</path>
 			    <text>${logs} {
   ${schedule}
   rotate ${rotate}
@@ -887,7 +999,7 @@ ${serverName_cap}_SCRIPT=${scriptPath}
 				 </ruleList>
 			</writeFile>
 			<writeFile>
-			    <path>${logrotate_directory}/${name}</path>
+			    <path>${logrotate_directory}/${name}.conf</path>
 			    <text>${text}</text>
 			    <ruleList>
 				<stringTest text="${text}" type="not_empty" />
@@ -896,10 +1008,146 @@ ${serverName_cap}_SCRIPT=${scriptPath}
 			</writeFile>
 		    </actionList>
 		    <ruleList>
-			<componentTest name="logrotate" logic="exists"/>
+                        <fileTest path="${logrotateDirectory}" condition="exists" />
 		    </ruleList>
 		</actionGroup>
 	    </actionList>
 	</actionDefinition>
+	<actionDefinition>
+	    <name>addMonit</name>
+	    <parameterList>
+		<stringParameter name="name" default=""/>
+		<stringParameter name="processName" default=""/>
+		<stringParameter name="dirName" default="" />
+		<stringParameter name="pidFile" default=""/>
+		<stringParameter name="startCommand" default=""/>
+		<stringParameter name="stopCommand" default=""/>
+		<stringParameter name="additionalOptions" default=""/>
+		<stringParameter name="monitDirectory" default="${installdir}/config/monit/conf.d" />
+	    </parameterList>
+	    <actionList>
+		<actionGroup>
+		    <actionList>
+			<setInstallerVariable name="processName" value="${name}" >
+			    <ruleList>
+				<stringTest text="${processName}" type="empty" />
+			    </ruleList>
+			</setInstallerVariable>
+			<setInstallerVariable name="dirName" value="${name}" >
+			    <ruleList>
+				<stringTest text="${dirName}" type="empty" />
+			    </ruleList>
+			</setInstallerVariable>
+			<setInstallerVariable name="startCommand" value="${installdir}/${dirName}/scripts/ctl.sh start" >
+			    <ruleList>
+				<stringTest text="${startCommand}" type="empty" />
+			    </ruleList>
+			</setInstallerVariable>
+			<setInstallerVariable name="stopCommand" value="${installdir}/${dirName}/scripts/ctl.sh stop" >
+			    <ruleList>
+				<stringTest text="${stopCommand}" type="empty" />
+			    </ruleList>
+			</setInstallerVariable>
+			<writeFile>
+			    <path>${monitDirectory}/${name}.conf</path>
+			    <text>check process ${processName}
+  with pidfile "${pidFile}"
+  start program = "${startCommand}" with timeout 90 seconds
+  stop program = "${stopCommand}" with timeout 90 seconds
+  ${additionalOptions}
+</text>
+                                <ruleList>
+				    <fileTest path="${monitDirectory}/${name}.conf" condition="not_exists" />
+				    <platformTest type="linux" />
+				</ruleList>
+			</writeFile>
+		    </actionList>
+		    <ruleList>
+                        <fileTest path="${monitDirectory}" condition="exists" />
+		    </ruleList>
+		</actionGroup>
+	    </actionList>
+	</actionDefinition>
+	<actionDefinition>
+	    <name>launchManager</name>
+	    <parameterList>
+	    </parameterList>
+	    <actionList>
+		<actionGroup>
+		    <actionList>
+                        <runProgram>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                            <program>${installdir}/manager-osx.app/Contents/MacOS/installbuilder.sh</program>
+                            <programArguments>--background &amp;</programArguments>
+                            <ruleList>
+                                <platformTest type="osx" />
+                            </ruleList>
+                        </runProgram>
+                        <runProgram>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                            <program>${installdir}/manager-${platform_name}.run</program>
+                            <programArguments>--background &amp;</programArguments>
+                            <ruleList>
+                                <platformTest type="linux" />
+                            </ruleList>
+                        </runProgram>
+                        <runProgram>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                            <program>explorer</program>
+                            <programArguments>"${installdir}\manager-${platform_name}.exe" 2&gt; NUL &gt; NUL &amp;</programArguments>
+                            <ruleList>
+                                <platformTest type="windows" />
+                            </ruleList>
+                        </runProgram>
+        	    </actionList>
+                    <ruleList>
+                        <compareText text="${installer_ui}" logic="equals" value="gui"/>
+                    </ruleList>
+		</actionGroup>
+	    </actionList>
+	</actionDefinition>
+    <actionDefinition name="getUserAndGroup">
+        <parameterList>
+            <stringParameter name="user" value=""/>
+            <stringParameter name="group" value=""/>
+            <stringParameter name="file" value=""/>
+        </parameterList>
+        <actionList>
+            <globalVariables names="${user} ${group}"/>
+            <setInstallerVariableFromScriptOutput>
+                <name>${user}</name>
+                <exec>stat</exec>
+                <execArgs>-c %U ${file}</execArgs>
+            </setInstallerVariableFromScriptOutput>
+            <setInstallerVariableFromScriptOutput>
+                <name>${group}</name>
+                <exec>stat</exec>
+                <execArgs>-c %G ${file}</execArgs>
+            </setInstallerVariableFromScriptOutput>
+        </actionList>
+    </actionDefinition>
+    <actionDefinition name="checkRubyVersion">
+        <parameterList>
+            <stringParameter name="rubyVersion" value="2.0.0"/>
+        </parameterList>
+        <actionList>
+            <throwError text="You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Please download and install Ruby Stack ${rubyVersion} version at bitnami.com site" >
+                <ruleEvaluationLogic>and</ruleEvaluationLogic>
+                <ruleList>
+                    <fileTest path="${installdir}/ruby/lib/ruby/gems/${rubyVersion}" condition="not_exists" />
+                    <ruleGroup>
+                        <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                        <ruleList>
+                            <compareText text="${base_stack_name}" logic="contains" value="Mega" />
+                            <compareText text="${base_stack_name}" logic="contains" value="Ruby" />
+                        </ruleList>
+                    </ruleGroup>
+                </ruleList>
+            </throwError>
+        </actionList>
+    </actionDefinition>
     </functionDefinitionList>
 </component>

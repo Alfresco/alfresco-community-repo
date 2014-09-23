@@ -14,12 +14,15 @@ fi
 
 ERROR=0
 MYSQL_SCRIPT=$INSTALLDIR/mysql/scripts/ctl.sh
+MONGODB_SCRIPT=$INSTALLDIR/mongodb/scripts/ctl.sh
 INGRES_SCRIPT=$INSTALLDIR/ingres/scripts/ctl.sh
+PHPFPM_SCRIPT=$INSTALLDIR/php/scripts/ctl.sh
 APACHE_SCRIPT=$INSTALLDIR/apache2/scripts/ctl.sh
 VARNISH_SCRIPT=$INSTALLDIR/varnish/scripts/ctl.sh
 NGINX_SCRIPT=$INSTALLDIR/nginx/scripts/ctl.sh
 HYPERSONIC_SCRIPT=$INSTALLDIR/hypersonic/scripts/ctl.sh
 SOLR_SCRIPT=$INSTALLDIR/apache-solr/scripts/ctl.sh
+ELASTICSEARCH_SCRIPT=$INSTALLDIR/elasticsearch/scripts/ctl.sh
 TOMCAT_SCRIPT=$INSTALLDIR/tomcat/scripts/ctl.sh
 RESIN_SCRIPT=$INSTALLDIR/resin/scripts/ctl.sh
 REDIS_SCRIPT=$INSTALLDIR/redis/scripts/ctl.sh
@@ -33,6 +36,7 @@ POSTGRESQL_SCRIPT=$INSTALLDIR/postgresql/scripts/ctl.sh
 NAGIOS_SCRIPT=$INSTALLDIR/nagios/scripts/ctl.sh
 JETTY_SCRIPT=$INSTALLDIR/jetty/scripts/ctl.sh
 JBOSS_SCRIPT=$INSTALLDIR/jboss/scripts/ctl.sh
+WILDFLY_SCRIPT=$INSTALLDIR/wildfly/scripts/ctl.sh
 MEMCACHED_SCRIPT=$INSTALLDIR/memcached/scripts/ctl.sh
 RABBITMQ_SCRIPT=$INSTALLDIR/rabbitmq-server/scripts/ctl.sh
 ACTIVEMQ_SCRIPT=$INSTALLDIR/activemq/scripts/ctl.sh
@@ -46,11 +50,17 @@ help() {
         if test -x $POSTGRESQL_SCRIPT; then	
 	    echo "       $0 (start|stop|restart|status) postgresql"
 	fi
+	if test -x $MONGODB_SCRIPT; then	
+	    echo "       $0 (start|stop|restart|status) mongodb"
+	fi
 	if test -x $INGRES_SCRIPT; then	
 	    echo "       $0 (start|stop|restart|status) ingres"
 	fi
 	if test -x $MEMCACHED_SCRIPT; then
 	    echo "       $0 (start|stop|restart|status) memcached"
+	fi
+	if test -x $PHPFPM_SCRIPT; then	
+	    echo "       $0 (start|stop|restart|status) php-fpm"
 	fi
 	if test -x $APACHE_SCRIPT; then	
 	    echo "       $0 (start|stop|restart|status) apache"
@@ -66,6 +76,9 @@ help() {
 	fi
 	if test -x $SOLR_SCRIPT; then	
 	    echo "       $0 (start|stop|restart|status) solr"
+	fi
+	if test -x $ELASTICSEARCH_SCRIPT; then	
+	    echo "       $0 (start|stop|restart|status) elasticsearch"
 	fi
 	if test -x $TOMCAT_SCRIPT; then	
 	    echo "       $0 (start|stop|restart|status) tomcat"
@@ -107,6 +120,9 @@ help() {
     if test -x $JBOSS_SCRIPT; then
         echo "       $0 (start|stop|restart|status) jboss"
     fi
+    if test -x $WILDFLY_SCRIPT; then
+    echo "       $0 (start|stop|restart|status) wildfly"
+    fi
 	cat <<EOF
 
 help       - this screen
@@ -117,6 +133,16 @@ status     - show the status of the service(s)
 
 EOF
 }
+
+
+# Disable Monit
+if [ -f "$INSTALLDIR/config/monit/bitnami.conf" ] && [ `id -u` = 0 ] && [ `which monit 2> /dev/null` ] && ( [ "x$1" = "xstop" ] || [ "x$1" = "xrestart" ] ); then
+    if [ "x$2" = "x" ]; then
+        monit unmonitor all
+    elif [ -f "$INSTALLDIR/config/monit/conf.d/$2.conf" ]; then
+        monit unmonitor $2
+    fi
+fi
 
 
 if [ "x$1" = "xhelp" ] || [ "x$1" = "x" ]; then
@@ -132,6 +158,11 @@ elif [ "x$1" = "xstart" ]; then
         if test -x $POSTGRESQL_SCRIPT; then	
             $POSTGRESQL_SCRIPT start  
             POSTGRESQL_ERROR=$?
+        fi
+    elif [ "x$2" = "xmongodb" ]; then
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT start
+            MONGODB_ERROR=$?
         fi
     elif [ "x$2" = "xingres" ]; then
         if test -x $INGRES_SCRIPT; then
@@ -158,6 +189,11 @@ elif [ "x$1" = "xstart" ]; then
             $SOLR_SCRIPT start  
             SOLR_ERROR=$?
         fi
+    elif [ "x$2" = "xelasticsearch" ]; then
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT start  
+            ELASTICSEARCH_ERROR=$?
+        fi
     elif [ "x$2" = "xtomcat" ]; then
         if test -x $TOMCAT_SCRIPT; then
             $TOMCAT_SCRIPT start  
@@ -168,6 +204,11 @@ elif [ "x$1" = "xstart" ]; then
             $JBOSS_SCRIPT start
             JBOSS_ERROR=$?
         fi
+    elif [ "x$2" = "xwildfly" ]; then
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT start
+            WILDFLY_ERROR=$?
+            fi
     elif [ "x$2" = "xresin" ]; then
         if test -x $RESIN_SCRIPT; then
             $RESIN_SCRIPT start  
@@ -203,6 +244,11 @@ elif [ "x$1" = "xstart" ]; then
         if test -x $VARNISH_SCRIPT; then
             $VARNISH_SCRIPT start  
             VARNISH_ERROR=$?
+        fi
+    elif [ "x$2" = "xphp-fpm" ]; then
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT start  
+            PHPFPM_ERROR=$?
         fi
     elif [ "x$2" = "xapache" ]; then
         if test -x $APACHE_SCRIPT; then	
@@ -245,6 +291,11 @@ elif [ "x$1" = "xstart" ]; then
             POSTGRESQL_ERROR=$?
             sleep 5
         fi
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT start
+            MONGODB_ERROR=$?
+            sleep 2
+        fi  
         if test -x $INGRES_SCRIPT; then
             $INGRES_SCRIPT start
             INGRES_ERROR=$?
@@ -271,6 +322,11 @@ elif [ "x$1" = "xstart" ]; then
             SOLR_ERROR=$?
         fi
 
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT start  
+            ELASTICSEARCH_ERROR=$?
+        fi
+
         if test -x $TOMCAT_SCRIPT; then
             $TOMCAT_SCRIPT start  
             TOMCAT_ERROR=$?
@@ -280,7 +336,10 @@ elif [ "x$1" = "xstart" ]; then
             $JBOSS_SCRIPT start
             JBOSS_ERROR=$?
         fi
-
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT start
+            WILDFLY_ERROR=$?
+        fi
         if test -x $RESIN_SCRIPT; then
             $RESIN_SCRIPT start  
             RESIN_ERROR=$?
@@ -309,7 +368,10 @@ elif [ "x$1" = "xstart" ]; then
             $LUCENE_SCRIPT start  
             LUCENE_ERROR=$?
         fi
-
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT start  
+            PHPFPM_ERROR=$?
+        fi
         if test -x $APACHE_SCRIPT; then	
             $APACHE_SCRIPT start  
             APACHE_ERROR=$?
@@ -358,6 +420,12 @@ elif [ "x$1" = "xstop" ]; then
             POSTGRESQL_ERROR=$?
             sleep 5
         fi
+    elif [ "x$2" = "xmongodb" ]; then
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT stop
+            MONGODB_ERROR=$?
+            sleep 2
+        fi        
     elif [ "x$2" = "xingres" ]; then
         if test -x $INGRES_SCRIPT; then
             $INGRES_SCRIPT stop
@@ -383,6 +451,11 @@ elif [ "x$1" = "xstop" ]; then
         if test -x $SOLR_SCRIPT; then
             $SOLR_SCRIPT stop
             SOLR_ERROR=$?
+        fi
+    elif [ "x$2" = "xelasticsearch" ]; then
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT stop
+            ELASTICSEARCH_ERROR=$?
         fi
     elif [ "x$2" = "xtomcat" ]; then
         if test -x $TOMCAT_SCRIPT; then
@@ -430,6 +503,11 @@ elif [ "x$1" = "xstop" ]; then
             $APACHE_SCRIPT stop
             APACHE_ERROR=$?
         fi
+    elif [ "x$2" = "xphp-fpm" ]; then
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT stop
+            PHPFPM_ERROR=$?
+        fi
     elif [ "x$2" = "xvarnish" ]; then
         if test -x $VARNISH_SCRIPT; then
             $VARNISH_SCRIPT stop
@@ -461,6 +539,11 @@ elif [ "x$1" = "xstop" ]; then
             $JBOSS_SCRIPT stop
             JBOSS_ERROR=$?
         fi
+    elif [ "x$2" = "xwildfly" ]; then
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT stop
+            WILDFLY_ERROR=$?
+        fi
     elif [ "x$2" = "x" ]; then
         if test -x $HYPERSONIC_SCRIPT; then
             $HYPERSONIC_SCRIPT stop
@@ -469,6 +552,10 @@ elif [ "x$1" = "xstop" ]; then
         if test -x $JBOSS_SCRIPT; then
             $JBOSS_SCRIPT stop
             JBOSS_ERROR=$?
+        fi
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT stop
+            WILDFLY_ERROR=$?
         fi
         if test -x $JETTY_SCRIPT; then
             $JETTY_SCRIPT stop
@@ -493,6 +580,10 @@ elif [ "x$1" = "xstop" ]; then
         if test -x $APACHE_SCRIPT; then	
             $APACHE_SCRIPT stop  
             APACHE_ERROR=$?
+        fi
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT stop  
+            PHPFPM_ERROR=$?
         fi
         if test -x $VARNISH_SCRIPT; then
             $VARNISH_SCRIPT stop
@@ -522,6 +613,10 @@ elif [ "x$1" = "xstop" ]; then
             SOLR_ERROR=$?
             sleep 3
         fi
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT stop
+            ELASTICSEARCH_ERROR=$?
+        fi
         if test -x $TOMCAT_SCRIPT; then
             $TOMCAT_SCRIPT stop
             TOMCAT_ERROR=$?
@@ -548,6 +643,10 @@ elif [ "x$1" = "xstop" ]; then
         if test -x $MYSQL_SCRIPT; then
             $MYSQL_SCRIPT stop
             MYSQL_ERROR=$?
+        fi
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT stop
+            MONGODB_ERROR=$?
         fi
         if test -x $INGRES_SCRIPT; then
             $INGRES_SCRIPT stop
@@ -576,6 +675,13 @@ elif [ "x$1" = "xrestart" ]; then
             sleep 5
             $POSTGRESQL_SCRIPT start
             POSTGRESQL_ERROR=$?
+        fi
+    elif [ "x$2" = "xmongodb" ]; then
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT stop
+            sleep 2
+            $MONGODB_SCRIPT start
+            MONGODB_ERROR=$?
         fi
    elif [ "x$2" = "xingres" ]; then
         if test -x $INGRES_SCRIPT; then	
@@ -610,6 +716,13 @@ elif [ "x$1" = "xrestart" ]; then
             sleep 5
             $SOLR_SCRIPT start
             SOLR_ERROR=$?
+        fi
+    elif [ "x$2" = "xelasticsearch" ]; then
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT stop
+            sleep 3
+            $ELASTICSEARCH_SCRIPT start
+            ELASTICSEARCH_ERROR=$?
         fi
     elif [ "x$2" = "xtomcat" ]; then
         if test -x $TOMCAT_SCRIPT; then
@@ -661,6 +774,13 @@ elif [ "x$1" = "xrestart" ]; then
             sleep 2
             $LUCENE_SCRIPT start
             LUCENE_ERROR=$?
+        fi
+    elif [ "x$2" = "xphp-fpm" ]; then
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT stop  
+            sleep 2
+            $PHPFPM_SCRIPT start
+            PHPFPM_ERROR=$?
         fi
     elif [ "x$2" = "xapache" ]; then
         if test -x $APACHE_SCRIPT; then	
@@ -719,6 +839,13 @@ elif [ "x$1" = "xrestart" ]; then
             $JBOSS_SCRIPT start
             JBOSS_ERROR=$?
         fi
+    elif [ "x$2" = "xwildfly" ]; then
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT stop
+            sleep 2
+            $WILDFLY_SCRIPT start
+            WILDFLY_ERROR=$?
+        fi
     elif [ "x$2" = "x" ]; then
         if test -x $HYPERSONIC_SCRIPT; then	
             $HYPERSONIC_SCRIPT stop
@@ -727,6 +854,10 @@ elif [ "x$1" = "xrestart" ]; then
         if test -x $JBOSS_SCRIPT; then
             $JBOSS_SCRIPT stop
             JBOSS_ERROR=$?
+        fi
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT stop
+            WILDFLY_ERROR=$?
         fi
         if test -x $JETTY_SCRIPT; then	
             $JETTY_SCRIPT stop
@@ -756,6 +887,10 @@ elif [ "x$1" = "xrestart" ]; then
             $APACHE_SCRIPT stop
             APACHE_ERROR=$?
         fi
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT stop
+            PHPFPM_ERROR=$?
+        fi
         #RUBY_APPLICATION_GENERIC_STOP
         if test -x $ZOPE_SCRIPT; then
             $ZOPE_SCRIPT stop
@@ -772,6 +907,10 @@ elif [ "x$1" = "xrestart" ]; then
         if test -x $SOLR_SCRIPT; then
             $SOLR_SCRIPT stop
             SOLR_ERROR=$?
+        fi
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT stop
+            ELASTICSEARCH_ERROR=$?
         fi
         if test -x $RESIN_SCRIPT; then
             $RESIN_SCRIPT stop
@@ -803,6 +942,13 @@ elif [ "x$1" = "xrestart" ]; then
             POSTGRESQL_ERROR=$?
             sleep 2
         fi          
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT stop
+            sleep 2
+            $MONGODB_SCRIPT start;
+            MONGODB_ERROR=$?
+            sleep 2
+        fi         
         if test -x $INGRES_SCRIPT; then
             $INGRES_SCRIPT stop
             sleep 7
@@ -822,6 +968,10 @@ elif [ "x$1" = "xrestart" ]; then
             $SOLR_SCRIPT start
             SOLR_ERROR=$?
         fi
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT start
+            ELASTICSEARCH_ERROR=$?
+        fi
         if test -x $TOMCAT_SCRIPT; then
             $TOMCAT_SCRIPT start
             TOMCAT_ERROR=$?
@@ -829,6 +979,10 @@ elif [ "x$1" = "xrestart" ]; then
         if test -x $JBOSS_SCRIPT; then
             $JBOSS_SCRIPT start
             JBOSS_ERROR=$?
+        fi
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT start
+            WILDFLY_ERROR=$?
         fi
         if test -x $RESIN_SCRIPT; then
             $RESIN_SCRIPT start
@@ -850,6 +1004,10 @@ elif [ "x$1" = "xrestart" ]; then
         if test -x $ZOPE_SCRIPT; then	
             $ZOPE_SCRIPT start  
             ZOPE_ERROR=$?
+        fi
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT start  
+            PHPFPM_ERROR=$?
         fi
         if test -x $APACHE_SCRIPT; then	
             $APACHE_SCRIPT start  
@@ -898,6 +1056,10 @@ elif [ "x$1" = "xstatus" ]; then
         if test -x $LIBREOFFICE_SCRIPT; then
             $LIBREOFFICE_SCRIPT status
         fi
+    elif [ "x$2" = "xmongodb" ]; then
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT status
+        fi        
     elif [ "x$2" = "xingres" ]; then
         if test -x $INGRES_SCRIPT; then	
             $INGRES_SCRIPT status  
@@ -918,6 +1080,10 @@ elif [ "x$1" = "xstatus" ]; then
     elif [ "x$2" = "xsolr" ]; then
         if test -x $SOLR_SCRIPT; then
             $SOLR_SCRIPT status
+        fi
+    elif [ "x$2" = "xelasticsearch" ]; then
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT status
         fi
     elif [ "x$2" = "xtomcat" ]; then
         if test -x $TOMCAT_SCRIPT; then
@@ -952,6 +1118,10 @@ elif [ "x$1" = "xstatus" ]; then
         if test -x $APACHE_SCRIPT; then	
             $APACHE_SCRIPT status
         fi
+    elif [ "x$2" = "xphp-fpm" ]; then
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT status
+        fi
     elif [ "x$2" = "xvarnish" ]; then
         if test -x $VARNISH_SCRIPT; then
             $VARNISH_SCRIPT status
@@ -980,6 +1150,10 @@ elif [ "x$1" = "xstatus" ]; then
         if test -x $JBOSS_SCRIPT; then
             $JBOSS_SCRIPT status
         fi
+    elif [ "x$2" = "xwildfly" ]; then
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT status
+        fi
     elif [ "x$2" = "x" ]; then
         if test -x $HYPERSONIC_SCRIPT; then
             $HYPERSONIC_SCRIPT status
@@ -989,6 +1163,9 @@ elif [ "x$1" = "xstatus" ]; then
         fi
         if test -x $JBOSS_SCRIPT; then
             $JBOSS_SCRIPT status
+        fi
+        if test -x $WILDFLY_SCRIPT; then
+            $WILDFLY_SCRIPT status
         fi
         if test -x $NAGIOS_SCRIPT; then
             $NAGIOS_SCRIPT status
@@ -1005,6 +1182,9 @@ elif [ "x$1" = "xstatus" ]; then
         if test -x $VARNISH_SCRIPT; then
             $VARNISH_SCRIPT status
             sleep 3
+        fi
+        if test -x $PHPFPM_SCRIPT; then	
+            $PHPFPM_SCRIPT status  
         fi
         if test -x $APACHE_SCRIPT; then	
             $APACHE_SCRIPT status  
@@ -1029,6 +1209,9 @@ elif [ "x$1" = "xstatus" ]; then
             $SOLR_SCRIPT status
             sleep 3
         fi
+        if test -x $ELASTICSEARCH_SCRIPT; then
+            $ELASTICSEARCH_SCRIPT status
+        fi
         if test -x $TOMCAT_SCRIPT; then
             $TOMCAT_SCRIPT status
             sleep 3
@@ -1052,6 +1235,9 @@ elif [ "x$1" = "xstatus" ]; then
             $POSTGRESQL_SCRIPT status
             sleep 3
         fi
+        if test -x $MONGODB_SCRIPT; then
+            $MONGODB_SCRIPT status
+        fi
         if test -x $MEMCACHED_SCRIPT; then
             $MEMCACHED_SCRIPT status
         fi
@@ -1065,11 +1251,17 @@ elif [ "x$1" = "xcleanpid" ]; then
     if test -x $JBOSS_SCRIPT; then
         $JBOSS_SCRIPT cleanpid
     fi
+    if test -x $WILDFLY_SCRIPT; then
+        $WILDFLY_SCRIPT cleanpid
+    fi
     if test -x $NAGIOS_SCRIPT; then
         $NAGIOS_SCRIPT cleanpid
     fi
     if test -x $SUBVERSION_SCRIPT; then
         $SUBVERSION_SCRIPT cleanpid
+    fi
+    if test -x $PHPFPM_SCRIPT; then	
+        $PHPFPM_SCRIPT cleanpid  
     fi
     if test -x $APACHE_SCRIPT; then	
         $APACHE_SCRIPT cleanpid  
@@ -1083,6 +1275,9 @@ elif [ "x$1" = "xcleanpid" ]; then
     if test -x $SOLR_SCRIPT; then
         $SOLR_SCRIPT cleanpid
     fi
+    if test -x $ELASTICSEARCH_SCRIPT; then
+        $ELASTICSEARCH_SCRIPT cleanpid
+    fi
     if test -x $TOMCAT_SCRIPT; then
         $TOMCAT_SCRIPT cleanpid
     fi
@@ -1091,6 +1286,9 @@ elif [ "x$1" = "xcleanpid" ]; then
     fi
     if test -x $POSTGRESQL_SCRIPT; then
         $POSTGRESQL_SCRIPT cleanpid
+    fi
+    if test -x $MONGODB_SCRIPT; then
+        $MONGODB_SCRIPT cleanpid
     fi
     if test -x $MEMCACHED_SCRIPT; then
         $MEMCACHED_SCRIPT cleanpid
@@ -1106,8 +1304,19 @@ else
     exit 1
 fi
 
+
+# Enable Monit
+if [ -f "$INSTALLDIR/config/monit/bitnami.conf" ] && [ `id -u` = 0 ] && [ `which monit 2> /dev/null` ] && ( [ "x$1" = "xstart" ] || [ "x$1" = "xrestart" ] ); then
+    if [ "x$2" = "x" ]; then
+        monit monitor all
+    elif [ -f "$INSTALLDIR/config/monit/conf.d/$2.conf" ]; then
+        monit monitor $2
+    fi
+fi
+
+
 # Checking for errors
-for e in $VARNISH_ERROR $APACHE_ERROR $NGINX_ERROR $MYSQL_ERROR $SUBVERSION_ERROR $SOLR_ERROR $TOMCAT_ERROR $REDIS_ERROR $RESIN_ERROR $MEMCACHED_ERROR $INGRES_ERROR $LIBREOFFICE_ERROR $LUCENE_ERROR $ZOPE_ERROR $POSTGRESQL_ERROR $THIRD_ERROR $NAGIOS_ERROR $RABBITMQ_ERROR $ACTIVEMQ_ERROR $JETTY_ERROR $JBOSS_ERROR $HYPERSONIC_ERROR; do
+for e in $VARNISH_ERROR $PHPFPM_ERROR $APACHE_ERROR $NGINX_ERROR $MYSQL_ERROR $MONGODB_ERROR $SUBVERSION_ERROR $SOLR_ERROR $ELASTICSEARCH_ERROR $TOMCAT_ERROR $REDIS_ERROR $RESIN_ERROR $MEMCACHED_ERROR $INGRES_ERROR $LIBREOFFICE_ERROR $LUCENE_ERROR $ZOPE_ERROR $POSTGRESQL_ERROR $THIRD_ERROR $NAGIOS_ERROR $RABBITMQ_ERROR $ACTIVEMQ_ERROR $JETTY_ERROR $JBOSS_ERROR $WILDFLY_ERROR $HYPERSONIC_ERROR; do
     if [ $e -gt 0 ]; then
         ERROR=$e
     fi

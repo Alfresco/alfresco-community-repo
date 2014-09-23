@@ -1,0 +1,588 @@
+<component>
+    <name>tomcatfunctions</name>
+    <description>//Tomcat Functions</description>
+    <show>0</show>
+    <selected>1</selected>
+    <functionDefinitionList>
+        <actionDefinition name="tomcatDisableWebsockets">
+            <parameterList>
+                <stringParameter name="tomcatRootDirectory" value="${application_server_directory}"/>
+            </parameterList>
+            <actionList>
+                <foreach variables="war" values="websocket-api.jar tomcat7-websocket.jar">
+                    <actionList>
+                        <continue>
+                            <ruleList>
+                                <fileTest path="${tomcatRootDirectory}/lib/${war}" condition="not_exists"/>
+                            </ruleList>
+                        </continue>
+                        <createDirectory path="${tomcatRootDirectory}/extra-lib"/>
+                        <renameFile origin="${tomcatRootDirectory}/lib/${war}" destination="${tomcatRootDirectory}/extra-lib"/>
+                    </actionList>
+                </foreach>
+            </actionList>
+        </actionDefinition>
+        <actionDefinition name="tomcatSetStartStopThreads">
+            <parameterList>
+                <stringParameter name="value" value=""/>
+                <stringParameter name="tomcatRootDirectory" value="${application_server_directory}"/>
+            </parameterList>
+            <actionList>
+                <xmlFileSet abortOnError="0" showMessageOnError="0">
+                    <element>//Service[@name="Catalina"]/Engine[@name="Catalina"]/Host[@name="localhost"]</element>
+                    <attribute>startStopThreads</attribute>
+                    <file>${tomcatRootDirectory}/conf/server.xml</file>
+                    <value>${value}</value>
+                    <ruleList>
+                        <compareText text="${value}" logic="does_not_equal" value=""/>
+                    </ruleList>                    
+                </xmlFileSet>
+            </actionList>
+        </actionDefinition>
+
+        <actionDefinition name="tomcatUserAdd">
+            <parameterList>
+                <stringParameter name="tomcatUserName" />
+                <booleanParameter name="tomcatBuiltInRole" value="0" />
+                <stringParameter name="tomcatUserPassword" />
+                <stringParameter name="tomcatUserRole" description="//Currently only one non-built-in role is accepted.For built-in roles use comma separated list" />
+                <stringParameter name="tomcatUserConfigurationFile" default="${tomcat_server_directory}/conf/tomcat-users.xml" />
+            </parameterList>
+            <actionList>
+                <substitute>
+                    <files>${tomcatUserConfigurationFile}</files>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>&lt;tomcat-users&gt;</pattern>
+                            <value>&lt;tomcat-users&gt;
+&lt;role rolename="${tomcatUserRole}"/&gt;</value>
+                            <ruleList>
+                                <isFalse value="${tomcatBuiltInRole}" />
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>&lt;/tomcat-users&gt;</pattern>
+                            <value>&lt;user username="${tomcatUserName}" password="${tomcatUserPassword}" roles="${tomcatUserRole}"/&gt;
+&lt;/tomcat-users&gt;</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+            </actionList>
+        </actionDefinition>
+        <ruleDefinition name="isValidVersion">
+            <parameterList>
+                <stringParameter name="version" default="" />
+                <stringParameter name="maxVersion" default="" />
+                <stringParameter name="minVersion" default="0" />
+            </parameterList>
+            <ruleList>
+                <compareVersions version1="${version}" logic="greater_or_equal" version2="${minVersion}" />
+                <ruleGroup>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+                        <stringTest text="${maxVersion}" type="empty" />
+                        <ruleGroup>
+                            <ruleList>
+                                <compareVersions version1="${version}" logic="less_or_equal" version2="${maxVersion}" />
+                            </ruleList>
+                        </ruleGroup>
+                    </ruleList>
+                </ruleGroup>
+            </ruleList>
+        </ruleDefinition>
+        <actionDefinition name="tomcatAutodetect">
+            <parameterList>
+                <!-- Currently we return the most recent version" -->
+                <stringParameter name="detectedVersionId" value=""/>
+                <stringParameter name="maxVersion" value=""/>
+                <stringParameter name="minVersion" value="5"/>
+            </parameterList>
+                <!-- tomcatPath Default value
+                Tomcat 6,7 use /usr/share in RedHat
+                Tomcat 6,7 use /usr/share and /var/lib in Ubuntu
+                Tomcat 5 uses /usr/local-->
+            <actionList>
+                <logMessage text="#####     BEGIN System Tomcat Autodetection     #####" />
+                <globalVariables names="${detectedVersionId}"/>
+                <setInstallerVariable name="${detectedVersionId}" value=""/>
+                <setInstallerVariable name="tomcatPath" value="/usr/share/tomcat /usr/local/tomcat"/> <!--Tomcat6,7 Tomcat5-->
+                <foreach variables="tomcatHomePath">
+                    <values>${tomcatPath}</values>
+                    <actionList>
+                        <setInstallerVariableFromScriptOutput>
+                            <name>pathToCatalina</name>
+                            <exec>find</exec>
+                            <execArgs>${tomcatHomePath}*/lib/ -name catalina.jar</execArgs>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                        </setInstallerVariableFromScriptOutput>
+                        <continue>
+                            <ruleList>
+                                <compareText text="${pathToCatalina}" logic="equals" value=""/>
+                            </ruleList>
+                        </continue>
+                        <foreach variables="path">
+                            <values>${pathToCatalina}</values>
+                            <actionList>
+                                <setInstallerVariableFromRegEx> <!--A way to distinguish between different installations-->
+                                    <name>tomcatFolderName</name>
+                                    <text>${path}</text>
+                                    <pattern>.*/(.*)/lib/catalina.jar</pattern>
+                                    <substitution>\1</substitution>
+                                </setInstallerVariableFromRegEx>
+                                
+                                <!--Tomcat 6,7-->
+                                <actionGroup>
+                                    <actionList>
+                                        <setInstallerVariable name="tomcatVersionId" value="${tomcatFolderName}" />
+                                        <!--lib dir common to RedHat and Ubuntu-->
+                                        <setInstallerVariableFromRegEx> <!--A way to distinguish between different installations-->
+					    <name>${tomcatVersionId}_version</name>
+					    <text>${tomcatFolderName}</text>
+					    <pattern>tomcat(\d*)</pattern>
+					    <substitution>\1</substitution>
+					</setInstallerVariableFromRegEx>
+                                        <actionGroup>
+                                            <actionList>
+                                            <setInstallerVariable name="${tomcatVersionId}_home_directory" value="/usr/share/${tomcatFolderName}"/>
+                                        
+                                            <!--REDHAT (or not debian/ubuntu)-->
+                                            <actionGroup>
+                                                <actionList>
+                                                    <setInstallerVariable name="${tomcatVersionId}_instance_directory" value="/usr/share/${tomcatFolderName}"/>
+                                                    <!--getUserAndGroup>
+                                                        <user>${tomcatVersionId}_user</user>
+                                                        <group>${tomcatVersionId}_group</group>
+                                                        <file>/usr/share/${tomcatFolderName}/webapps</file>
+                                                    </getUserAndGroup-->
+                                                </actionList>
+                                                <ruleList>
+                                                    <!--compareText text="${linux_distribution}" logic="equals" value="redhat"/-->
+                                                    <fileExists path="/usr/share/${tomcatFolderName}/webapps"/>
+                                                </ruleList>
+                                            </actionGroup>
+                                        
+                                            <!--UBUNTU-->
+                                            <actionGroup>
+                                                <actionList>
+                                                    <setInstallerVariable name="${tomcatVersionId}_instance_directory" value="/var/lib/${tomcatFolderName}"/>
+                                                    <!--getUserAndGroup>
+                                                        <user>${tomcatVersionId}_user</user>
+                                                        <group>${tomcatVersionId}_group</group>
+                                                        <file>/var/lib/${tomcatFolderName}/webapps</file>
+                                                    </getUserAndGroup-->
+                                                </actionList>
+                                                <ruleList>
+                                                    <compareText text="${linux_distribution}" logic="equals" value="debian"/>
+                                                    <fileExists path="/var/lib/${tomcatFolderName}/webapps"/>
+                                                </ruleList>
+                                            </actionGroup>
+                                            </actionList>
+                                            <ruleList>
+                                                <fileExists path="/usr/share/${tomcatFolderName}/lib"/>
+                                            </ruleList>
+                                        </actionGroup>
+                                    </actionList>
+                                    <ruleList>
+                                        <compareText text="${tomcatHomePath}" value="/usr/share/tomcat"/>
+                                    </ruleList>
+                                </actionGroup>
+                                
+                                <!--Tomcat5-->
+                                <actionGroup>
+                                    <actionList>
+                                        <!--common dirs in RedHat and Ubuntu-->
+                                        <setInstallerVariable name="tomcatVersionId" value="tomcat5" />
+                                        <setInstallerVariable name="${tomcatVersionId}_version" value="5" />
+                                        <setInstallerVariable name="${tomcatVersionId}_instance_directory" value="/usr/local/${tomcatFolderName}"/>
+                                        <setInstallerVariable name="${tomcatVersionId}_home_directory" value="/usr/local/${tomcatFolderName}"/>
+                                        <!--getUserAndGroup>
+                                            <user>${tomcatVersionId}_user</user>
+                                            <group>${tomcatVersionId}_group</group>
+                                            <file>/usr/local/${tomcatFolderName}/webapps</file>
+                                        </getUserAndGroup-->
+                                    </actionList>
+                                    <ruleList>
+                                        <compareText text="${tomcatHomePath}" value="/usr/local/tomcat"/>
+                                        <fileExists path="/usr/local/${tomcatFolderName}/webapps"/>
+                                        <fileExists path="/usr/local/${tomcatFolderName}/common/lib"/>
+                                    </ruleList>
+                                </actionGroup>
+                                <!--set global variables-->
+                                <actionGroup>
+                                    <actionList>
+                                        <setInstallerVariable name="${detectedVersionId}" value="${tomcatVersionId}"/>
+                                    </actionList>
+                                    <ruleList>
+                                        <compareText text="${${tomcatVersionId}_instance_directory}" logic="does_not_equal" value=""/>
+                                        <compareText text="${${tomcatVersionId}_home_directory}" logic="does_not_equal" value=""/>
+                                        <isValidVersion version="${${tomcatVersionId}_version}" maxVersion="${maxVersion}" minVersion="${minVersion}"/>
+                                        <ruleGroup>
+                                            <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                                            <ruleList>
+                                                <stringTest text="${${detectedVersionId}}" type="empty" />
+                                                <compareVersions version1="${${tomcatVersionId}_version}" logic="greater" version2="${${${detectedVersionId}}_version}" />
+                                            </ruleList>
+                                        </ruleGroup>
+                                    </ruleList>
+                                </actionGroup>
+                            </actionList>
+                        </foreach>
+                    </actionList>
+                </foreach>
+                <globalVariables names="${${detectedVersionId}}_instance_directory ${${detectedVersionId}}_home_directory ${${detectedVersionId}}_version" >
+                    <ruleList>
+                        <stringTest text="${${detectedVersionId}}" type="not_empty" />
+                    </ruleList>
+                </globalVariables>
+                <logMessage text="Detected ${${detectedVersionId}}" />
+                <logMessage text="tomcat_home_directory: ${${${detectedVersionId}}_home_directory} " />
+                <logMessage text="tomcat_instance_directory: ${${${detectedVersionId}}_instance_directory} " />
+                <logMessage text="#####     END System Tomcat Autodetection     #####" />
+            </actionList>
+        </actionDefinition>
+
+        <actionDefinition name="tomcatSaveConfigurationToFile">
+            <parameterList>
+                <stringParameter name="tomcatPropertiesFile" default="${installdir}/properties.ini" />
+                <stringParameter name="tomcatServerPort" default="${application_server_port}" />
+                <stringParameter name="tomcatSSLPort" default="${application_server_ssl_port}" />
+                <stringParameter name="tomcatShutdownPort" default="${application_server_shutdown_port}" />
+                <stringParameter name="tomcatAJPPort" default="${application_server_ajp_port}" />
+                <stringParameter name="tomcatRootDirectory" default="${application_server_directory}" />
+                <stringParameter name="tomcatDomain" default="${application_server_domain}" />
+                <stringParameter name="tomcatConfDirectory" default="${application_server_conf_directory}" />
+                <stringParameter name="tomcatUniqueServiceName" default="${tomcat_unique_service_name}" />
+                <stringParameter name="tomcatUser" default="${tomcat_user}" />
+                <stringParameter name="tomcatGroup" default="${tomcat_group}" />
+            </parameterList>
+            <actionList>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_server_port</key>
+                    <value>${tomcatServerPort}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_server_ssl_port</key>
+                    <value>${tomcatSSLPort}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_server_shutdown_port</key>
+                    <value>${tomcatShutdownPort}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_server_ajp_port</key>
+                    <value>${tomcatAJPport}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_root_directory</key>
+                    <value>${tomcatRootDirectory}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_domainname</key>
+                    <value>${tomcatDomain}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_configuration_directory</key>
+                    <value>${tomcatConfDirectory}</value>
+                </iniFileSet>
+                <iniFileSet>
+                    <file>${installdir}/properties.ini</file>
+                    <section>Tomcat</section>
+                    <key>tomcat_unique_service_name</key>
+                    <value>${tomcatUniqueServiceName}</value>
+                    <ruleList>
+                        <platformTest type="windows"/>
+                    </ruleList>
+                </iniFileSet>
+                <actionGroup>
+                    <actionList>
+                        <iniFileSet>
+                            <file>${installdir}/properties.ini</file>
+                            <section>Tomcat</section>
+                            <key>tomcat_user</key>
+                            <value>${tomcatUser}</value>
+                        </iniFileSet>
+                        <iniFileSet>
+                            <file>${installdir}/properties.ini</file>
+                            <section>Tomcat</section>
+                            <key>tomcat_group</key>
+                            <value>${tomcatGroup}</value>
+                        </iniFileSet>
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="unix" />
+                    </ruleList>
+                </actionGroup>
+            </actionList>
+         </actionDefinition>
+
+
+         <actionDefinition name="tomcatLoadConfigurationFromFile">
+             <parameterList>
+                 <stringParameter name="tomcatServerPort" value="application_server_port" />
+                 <stringParameter name="tomcatSSLPort" value="application_server_ssl_port" />
+                 <stringParameter name="tomcatShutdownPort" value="application_server_shutdown_port" />
+                 <stringParameter name="tomcatAJPPort" value="application_server_ajp_port" />
+                 <stringParameter name="tomcatRootDirectory" value="application_server_directory" />
+                 <stringParameter name="tomcatDomain" value="application_server_domain" />
+                 <stringParameter name="tomcatConfDirectory" value="application_server_conf_directory" />
+                 <stringParameter name="tomcatUniqueServiceName" value="tomcat_unique_service_name" />
+                 <stringParameter name="tomcatUser" value="tomcat_user" />
+                 <stringParameter name="tomcatGroup" value="tomcat_group" />
+             </parameterList>
+             <actionList>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_server_port</key>
+                     <variable>${tomcatServerPort}</variable>
+                 </iniFileGet>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_server_ssl_port</key>
+                     <variable>${tomcatSSLPort}</variable>
+                 </iniFileGet>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_server_shutdown_port</key>
+                     <variable>${tomcatShutdownPort}</variable>
+                 </iniFileGet>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_server_ajp_port</key>
+                     <variable>${tomcatAJPPort}</variable>
+                 </iniFileGet>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_root_directory</key>
+                     <variable>${tomcatRootDirectory}</variable>
+                 </iniFileGet>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_domainname</key>
+                     <variable>${tomcatDomain}</variable>
+                 </iniFileGet>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_configuration_directory</key>
+                     <variable>${tomcatConfDirectory}</variable>
+                 </iniFileGet>
+                 <iniFileGet>
+                     <file>${installdir}/properties.ini</file>
+                     <section>Tomcat</section>
+                     <key>tomcat_unique_service_name</key>
+                     <variable>${tomcatUniqueServiceName}</variable>
+                     <ruleList>
+                         <platformTest type="windows"/>
+                     </ruleList>
+                 </iniFileGet>
+                 <actionGroup>
+                     <actionList>
+                         <iniFileGet>
+                             <file>${installdir}/properties.ini</file>
+                             <section>Tomcat</section>
+                             <key>tomcat_group</key>
+                             <variable>${tomcatGroup}</variable>
+                         </iniFileGet>
+                         <iniFileGet>
+                             <file>${installdir}/properties.ini</file>
+                             <section>Tomcat</section>
+                             <key>tomcat_user</key>
+                             <variable>${tomcatUser}</variable>
+                         </iniFileGet>
+                         <setInstallerVariable name="${tomcatRootDirectory}" value="${installdir}/apache-tomcat" >
+                            <ruleList>
+                                <compareText text="${${tomcatRootDirectory}}" logic="equals" value=""/>
+                            </ruleList>
+                        </setInstallerVariable>
+
+                         <setInstallerVariable name="${tomcatUser}" value="tomcat" >
+                            <ruleList>
+                                <compareText text="${${tomcatUser}}" logic="equals" value=""/>
+                            </ruleList>
+                        </setInstallerVariable>
+                         <setInstallerVariable name="${tomcatGroup}" value="tomcat" >
+                            <ruleList>
+                                <compareText text="${${tomcatGroup}}" logic="equals" value=""/>
+                            </ruleList>
+                        </setInstallerVariable>
+                     </actionList>
+                     <ruleList>
+                         <platformTest type="unix" />
+                     </ruleList>
+                 </actionGroup>
+                 <foreach variables="var" values="${tomcatServerPort}
+${tomcatSSLPort}
+${tomcatShutdownPort}
+${tomcatAJPPort}
+${tomcatRootDirectory}
+${tomcatDomain}
+${tomcatConfDirectory}
+${tomcatUniqueServiceName}
+${tomcatGroup}
+${tomcatUser}" >
+                     <actionList>
+                         <setInstallerVariable name="${var}" value="${${var}}" persist="1"/>
+                         <globalVariables names="${var}"/>
+                     </actionList>
+                 </foreach>
+             </actionList>
+         </actionDefinition>
+
+        <actionDefinition name="tomcatServer">
+            <parameterList>
+                <stringParameter name="action" default="start" description="//start/stop/restart/restartIfStarted"/>
+            </parameterList>
+            <actionList>
+                <!-- Get status -->
+                <actionGroup>
+                    <actionList>
+                        <setInstallerVariableFromScriptOutput>
+                            <exec>${installdir}/ctlscript.sh</exec>
+                            <execArgs>status tomcat</execArgs>
+                            <name>tomcatStatus</name>
+                        </setInstallerVariableFromScriptOutput>
+                        <setInstallerVariable name="tomcat_running" value="0" />
+                        <setInstallerVariable name="tomcat_running" value="1" >
+                            <ruleList>
+                                <compareText text="${tomcatStatus}" logic="contains" value="already running" />
+                            </ruleList>
+                        </setInstallerVariable>
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="unix" />
+                        <compareText text="${action}" logic="equals" value="restartIfStarted"/>                        
+                    </ruleList>
+                </actionGroup>
+                <actionGroup>
+                    <actionList>
+                        <tomcatLoadConfigurationFromFile/>
+                        <showInfo text="${tomcat_unique_service_name}" />
+                        <setInstallerVariable name="tomcat_running" value="0" />
+                        <setInstallerVariable name="tomcat_running" value="1" >
+                            <ruleList>
+                                <windowsServiceTest service="${tomcat_unique_service_name}" condition="is_running" />
+                            </ruleList>
+                        </setInstallerVariable>
+                        <showInfo text="${tomcat_running}" />
+                    </actionList>
+                    <ruleList>
+                        <platformTest type="windows" />
+                        <compareText text="${action}" logic="equals" value="restartIfStarted"/>                        
+                    </ruleList>
+                </actionGroup>
+                <actionGroup>
+                    <actionList>
+                        <runProgram>
+                            <program>${installdir}/ctlscript.sh</program>
+                            <programArguments>start tomcat</programArguments>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </runProgram>
+                        <runProgram>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                            <program>cmd.exe</program>			
+                            <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" START &amp;</programArguments>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </runProgram>
+                    </actionList>
+                    <ruleList>
+                        <compareText text="${action}" logic="equals" value="start"/>
+                    </ruleList>
+                </actionGroup>
+                
+                <actionGroup>
+                    <actionList>
+                        <runProgram>
+                            <program>${installdir}/ctlscript.sh</program>
+                            <programArguments>stop tomcat</programArguments>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>                    
+                        </runProgram>
+                        <runProgram>
+                            <abortOnError>0</abortOnError>
+                            <showMessageOnError>0</showMessageOnError>
+                            <program>cmd.exe</program>			
+                            <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" STOP &amp;</programArguments>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </runProgram>
+                    </actionList>
+                    <ruleList>
+                        <compareText text="${action}" logic="equals" value="stop"/>
+                    </ruleList>
+                </actionGroup>
+                
+                <actionGroup>
+                    <actionList>
+                        <runProgram>
+                            <program>${installdir}/ctlscript.sh</program>
+                            <programArguments>restart tomcat</programArguments>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </runProgram>
+
+                        <actionGroup>
+                            <actionList>
+                                <runProgram>
+                                    <abortOnError>0</abortOnError>
+                                    <showMessageOnError>0</showMessageOnError>
+                                    <program>cmd.exe</program>			
+                                    <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" STOP</programArguments>
+                                </runProgram>
+                                <runProgram>
+                                    <abortOnError>0</abortOnError>
+                                    <showMessageOnError>0</showMessageOnError>
+                                    <program>cmd.exe</program>			
+                                    <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" START &amp;</programArguments>
+                                </runProgram>
+                            </actionList>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </actionGroup>
+                    </actionList>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+                        <compareText text="${action}" logic="equals" value="restart"/>
+                        <ruleGroup>
+                            <ruleEvaluationLogic>and</ruleEvaluationLogic>
+                            <ruleList>
+                                <compareText text="${action}" logic="equals" value="restartIfStarted"/>
+                                <isTrue value="${tomcat_running}" />
+                            </ruleList>
+                        </ruleGroup>
+                    </ruleList>
+                </actionGroup>
+            </actionList>
+        </actionDefinition>
+
+    </functionDefinitionList>
+ </component>

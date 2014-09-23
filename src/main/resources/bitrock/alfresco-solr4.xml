@@ -1,0 +1,70 @@
+<component>
+    <name>alfrescosolr4</name>
+    <description>Solr4</description>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>1</show>
+    <folderList>
+      <folder>
+          <name>solr4</name>
+          <destination>${installdir}/solr4</destination>
+          <distributionFileList>
+                <distributionFile origin="${alfresco_solr4_source_directory}/*" allowWildcards="1" />
+          </distributionFileList>
+          <actionList>
+            <createDirectory path="${tomcat_server_directory}/conf/Catalina" />
+            <createDirectory path="${tomcat_server_directory}/conf/Catalina/localhost" />
+            <copyFile>
+                    <origin>${installdir}/solr4/context.xml</origin>
+                    <destination>${tomcat_server_directory}/conf/Catalina/localhost/solr4.xml</destination>
+            </copyFile>
+          </actionList>
+      </folder>
+      <folder>
+          <name>keystore</name>
+          <destination>${alfresco_data_directory}/keystore</destination>
+          <distributionFileList>
+                <distributionFile origin="${alfresco_keystore_source_directory}/*" allowWildcards="1" />
+          </distributionFileList>
+      </folder>
+      <folder>
+            <destination>${tomcat_server_directory}/conf</destination>
+            <name>tomcatusers</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/tomcat-users.xml" allowWildcards="0"/>
+                <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/server.xml" allowWildcards="0"/>
+            </distributionFileList>
+              <actionList>
+                <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/conf/server.xml" />
+              </actionList>
+        </folder>
+    </folderList>
+    <postInstallationActionList>
+       <alfrescoConfigure alfrescoFiles="${installdir}/solr4/archive-SpacesStore/conf/solrcore.properties;${installdir}/solr4/workspace-SpacesStore/conf/solrcore.properties;${tomcat_server_directory}/conf/Catalina/localhost/solr4.xml" />
+      <substitute>
+          <files>${installdir}/solr4/archive-SpacesStore/conf/solrcore.properties;${installdir}/solr4/workspace-SpacesStore/conf/solrcore.properties</files>
+          <type>exact</type>
+          <substitutionList>
+              <substitution>
+                <pattern>alfresco.port=8080</pattern>
+                <value>alfresco.port=${application_server_port}</value>
+              </substitution>
+              <substitution>
+                <pattern>alfresco.port.ssl=8443</pattern>
+                <value>alfresco.port.ssl=${tomcat_server_ssl_port}</value>
+            </substitution>
+          </substitutionList>
+      </substitute>
+      <substitute>
+          <files>${tomcat_server_directory}/scripts/ctl.sh</files>
+          <type>exact</type>
+          <substitutionList>
+              <substitution>
+                <pattern>-Dcom.sun.management.jmxremote</pattern>
+                <value>-Dcom.sun.management.jmxremote -Dsun.security.ssl.allowUnsafeRenegotiation=true</value>
+              </substitution>
+          </substitutionList>
+      </substitute>
+    </postInstallationActionList>
+</component>

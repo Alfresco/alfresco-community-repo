@@ -178,20 +178,6 @@
                     <permissions>744</permissions>
                     <files>${libreoffice_directory}/scripts/ctl.sh</files>
                 </changePermissions>
-                
-                <actionGroup>
-                    <actionList>
-                        <deleteFile path="${libreoffice_directory}/ure-link" abortOnError="0"/>
-                        <createSymLink abortOnError="0">
-                            <linkName>${libreoffice_directory}/ure-link</linkName>
-                            <target>${libreoffice_directory}/ure</target>
-                        </createSymLink>
-                    </actionList>
-                    <ruleList>
-                         <fileTest condition="is_file" path="${libreoffice_directory}/ure-link" />
-                    </ruleList>
-                </actionGroup>
-                
                 <runProgram abortOnError="0" showMessageOnError="0">
                     <progressText>Starting LibreOffice...</progressText>
                     <program>${libreoffice_directory}/scripts/ctl.sh</program>

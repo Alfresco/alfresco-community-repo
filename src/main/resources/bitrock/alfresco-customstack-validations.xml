@@ -1,0 +1,253 @@
+<component>
+    <name>alfrescovalidations</name>
+    <description></description>
+    <detailedDescription></detailedDescription>
+    <selected>1</selected>
+    <show>0</show>
+    <functionDefinitionList>
+        <actionDefinition name="alfrescoComponentsValidations">
+            <actionList>
+                <throwError>
+                    <text>You need to select at least one of the Solr components</text>
+                    <ruleList>
+                        <componentTest name="alfrescosolr4" logic="not_selected"/>
+                        <componentTest name="alfrescosolr" logic="not_selected"/>
+                    </ruleList>
+                </throwError>
+                <alfrescoAutodetectJava javaRequiredOrAbort="1" javaRequiredJdk="1" alfrescoInstallerBitness="${alfresco_installer_bitness}">
+                    <ruleList>
+                        <isFalse value="${component(javaalfresco).selected}" />
+                    </ruleList>
+                </alfrescoAutodetectJava>
+            </actionList>
+        </actionDefinition>
+    </functionDefinitionList>
+    <componentSelectionValidationActionList>
+        <alfrescoComponentsValidations/>
+    </componentSelectionValidationActionList>
+    <desktopShortcutList/>
+    <parameterList>
+        <stringParameter name="recommended_cpu_speed" value="2500" ask="0"/>
+        <stringParameter name="minimum_cpu_speed" value="1200" ask="0"/>
+        <stringParameter name="minimum_core_count" value="2" ask="0"/>
+        <stringParameter name="recommended_ram" value="4096" ask="0"/>
+        <stringParameter name="minimum_ram" value="512" ask="0"/>
+        <stringParameter name="minimum_file_descriptors" value="4096" ask="0"/>
+        <parameterGroup>
+            <name>netbd_ports</name>
+            <title>CIFS protocol ports configuration</title>
+            <explanation>Please, enter CIFS ports configuration</explanation>
+            <ask>0</ask>
+            <parameterList>
+                <stringParameter name="netbd_port" default="137" ask="0">
+                    <title>CIFS server port</title>
+                </stringParameter>
+                <stringParameter name="netbd_port_1" default="138" ask="0">
+                    <title>CIFS server port 1</title>
+                </stringParameter>
+                <stringParameter name="netbd_port_2" default="139" ask="0">
+                    <title>CIFS server port 2</title>
+                </stringParameter>
+                <stringParameter name="smb_port" value="445" ask="0">
+                    <title>SMB port</title>
+                </stringParameter>
+            </parameterList>
+        </parameterGroup>
+        <stringParameter name="smtp_port" value="25" ask="0">
+            <description>SMTP port</description>
+        </stringParameter>
+        <stringParameter name="imap_port" value="143" ask="0">
+            <description>IMAP port</description>
+        </stringParameter>
+    </parameterList>
+    <initializationActionList>
+        <throwError>
+            <text>This installer is for Windows 64 bit.  Please download the Windows 32 bit version.</text>
+            <ruleList>
+                <compareText text="${project.installerFilename}" logic="contains" value="win-x64"/>
+                <platformTest type="windows"/>
+                <platformTest type="windows-x64" negate="1"/>
+            </ruleList>
+        </throwError>
+        <!-- Network validation -->
+        <!-- Validate CIFS ports -->
+        <setInstallerVariable name="portList" value=""/>
+        <foreach variables="port_to_check">
+            <values>${netbd_port}, ${netbd_port_1}, ${netbd_port_2}, ${smb_port}</values>
+            <actionList>
+                <setInstallerVariable name="portList" value="${portList} ${port_to_check}">
+                    <ruleList>
+                        <portTest port="${port_to_check}" condition="cannot_bind"/>
+                    </ruleList>
+                </setInstallerVariable>
+            </actionList>
+        </foreach>
+        <showWarning>
+            <text>CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers).</text>
+            <ruleList>
+                <compareText text="${portList}" logic="does_not_equal" value=""/>
+                <isTrue value="${installer_is_root_install}"/>
+            </ruleList>
+        </showWarning>
+        <showWarning>
+            <text>CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port</text>
+            <ruleList>
+                <compareText text="${portList}" logic="does_not_equal" value=""/>
+                <isFalse value="${installer_is_root_install}"/>
+            </ruleList>
+        </showWarning>
+        
+        <!--Validate SMTP port-->
+        <showInfo>
+            <text>SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)</text>
+            <ruleList>
+                <isTrue value="${installer_is_root_install}"/>
+                <portTest port="${smtp_port}" condition="cannot_bind"/>
+            </ruleList>               
+        </showInfo>
+        <showInfo>
+            <text>SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port.</text>
+            <ruleList>
+                <isFalse value="${installer_is_root_install}"/>
+                <portTest port="${smtp_port}" condition="cannot_bind"/>
+            </ruleList>
+        </showInfo>
+
+        <!--Validate IMAP port-->
+        <showInfo>
+            <text>IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port</text>
+            <ruleList>
+                <isTrue value="${installer_is_root_install}"/>
+                <portTest port="${imap_port}" condition="cannot_bind"/>
+            </ruleList>               
+        </showInfo>
+        <!--Validate IMAP port-->
+        <showInfo>
+            <text>IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port</text>
+            <ruleList>
+                <isFalse value="${installer_is_root_install}"/>
+                <portTest port="${imap_port}" condition="cannot_bind"/>
+            </ruleList>               
+        </showInfo>
+
+        <!-- Database check. We will not implement it for now-->
+
+        <!-- File Descriptors validation-->
+        <showWarning>
+            <text>Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco.</text>
+            <ruleList>
+                <resourceLimitTest type="open_files" logic="less" value="${minimum_file_descriptors}"/>
+                <platformTest type="windows" negate="1"/>
+            </ruleList>
+        </showWarning>
+        <!-- Server Hardware -->
+        <!-- CPU Speed validation -->
+        <showWarning>
+            <text>CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz).</text>
+            <ruleList>
+                <compareValues>
+                    <logic>less</logic>
+                    <value1>${machine_cpu_speed}</value1>
+                    <value2>${recommended_cpu_speed}</value2>
+                </compareValues>
+                <compareValues>
+                    <logic>greater_or_equal</logic>
+                    <value1>${machine_cpu_speed}</value1>
+                    <value2>${minimum_cpu_speed}</value2>
+                </compareValues>
+            </ruleList>
+        </showWarning>
+        <throwError>
+            <text>CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more).</text>
+            <ruleList>
+                <compareValues>
+                    <logic>less</logic>
+                    <value1>${machine_cpu_speed}</value1>
+                    <value2>${minimum_cpu_speed}</value2>
+                </compareValues>
+            </ruleList>
+        </throwError>
+        <showWarning>
+            <text>Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz.</text>
+            <ruleList>
+                <compareValues>
+                    <logic>equals</logic>
+                    <value1>${machine_cpu_speed}</value1>
+                    <value2>0</value2>
+                </compareValues>
+            </ruleList>
+        </showWarning>
+        <!-- CPU Cores validation -->
+        <showWarning>
+            <text>This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)</text>
+            <ruleList>
+                <compareValues>
+                    <logic>less</logic>
+                    <value1>${machine_cpu_count}</value1>
+                    <value2>${minimum_core_count}</value2>
+                </compareValues>
+            </ruleList>
+        </showWarning>
+        <showWarning>
+            <text>Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)</text>
+            <ruleList>
+                <compareValues>
+                    <logic>equals</logic>
+                    <value1>${machine_cpu_count}</value1>
+                    <value2>0</value2>
+                </compareValues>
+            </ruleList>
+        </showWarning>
+        <!-- RAM validation -->
+        <throwError>
+            <text>${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB).</text>
+            <ruleList>
+                <compareValues>
+                    <logic>less</logic>
+                    <value1>${machine_total_memory}</value1>
+                    <value2>${minimum_ram}</value2>
+                </compareValues>
+            </ruleList>
+        </throwError>
+        <showWarning>
+            <text>${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM</text>
+            <ruleList>
+                <compareValues>
+                    <logic>less</logic>
+                    <value1>${machine_total_memory}</value1>
+                    <value2>${recommended_ram}</value2>
+                </compareValues>
+                <compareValues>
+                    <logic>greater_or_equal</logic>
+                    <value1>${machine_total_memory}</value1>
+                    <value2>${minimum_ram}</value2>
+                </compareValues>
+            </ruleList>
+        </showWarning>
+<!--        <showWarning>
+            <text>Alfresco recommends installation on a server with at least 4GB of RAM (this server has ${machine_total_memory} MB of memory). You may continue the installation, but please be aware that Alfresco may not perform optimally.</text>
+            <ruleList>
+                <compareValues value1="${machine_total_memory}" logic="less" value2="4096"/>
+                <compareValues value1="${machine_total_memory}" logic="greater_or_equal" value2="${recommended_ram}"/>
+            </ruleList>
+        </showWarning>-->
+        <showWarning>
+            <text>Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed.</text>
+            <ruleList>
+                <compareValues>
+                    <logic>equals</logic>
+                    <value1>${machine_total_memory}</value1>
+                    <value2>0</value2>
+                </compareValues>
+            </ruleList>
+        </showWarning>
+    </initializationActionList>
+    <preInstallationActionList>
+        <alfrescoComponentsValidations>
+            <ruleList>
+                <compareText text="${installer_ui}" logic="equals" value="unattended"/>
+            </ruleList>
+        </alfrescoComponentsValidations>
+    </preInstallationActionList>
+</component>
+

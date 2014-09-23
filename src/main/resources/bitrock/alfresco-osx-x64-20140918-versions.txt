@@ -1,0 +1,35 @@
+alfresco Stack - 20140918
+pkg-config 0.22
+libtool 1.5.8
+make 3.81
+zlib 1.2.3
+libiconv 1.11
+libpng 1.2.24
+jpegsrc 6b
+tiff 3.9.4
+freetype 2.3.4
+libwmf 0.2.8.4
+ghostscript 8.64
+imagemagick 6.8.6-6
+swftools 0.9.1
+libstdcplusplus 0
+ncurses 5.6
+readline 5.2
+openssl 0.9.8y
+apr 1.4.6
+tomcat-native 1.1.29
+postgresql 9.3.5
+libreoffice 4.2.5
+manager 1
+java 1.7.0_67
+tomcat 7.0.53
+bitrock-alfresco 20130409
+alfresco 5.0.a
+alfrescosharepoint 4.2.e
+alfrescowcmqs 3.4.b
+keystore 20111026
+alfresco-solr 4.2.e
+alfresco-solr4 4.2.e
+bitnami 
+japanese-fonts 1
+xpdf-japanese 1

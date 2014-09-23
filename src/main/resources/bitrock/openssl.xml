@@ -71,12 +71,28 @@ export CURL_CA_BUNDLE
                     <value>##### SSL ENV #####
 SSL_CERT_FILE=${common_root_directory}/openssl/certs/curl-ca-bundle.crt
 export SSL_CERT_FILE
+OPENSSL_CONF=${common_root_directory}/openssl/openssl.cnf
+export OPENSSL_CONF
 </value>
                 </setInstallerVariable>
-                <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${SSL_ENV_VAR}" />
+                <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${SSL_ENV_VAR}"/>
             </actionList>
             <ruleList>
                 <platformTest type="unix" />
+            </ruleList>
+        </actionGroup>
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="SSL_ENV_VAR">
+                    <value>rem ##### SSL ENV #####
+set OPENSSL_CONF=${apache_configuration_directory.dos}\openssl.cnf
+</value>
+                </setInstallerVariable>
+                <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${SSL_ENV_VAR}"/>
+            </actionList>
+            <ruleList>
+                <platformTest type="windows"/>
+                <componentTest logic="exists" name="apache"/>
             </ruleList>
         </actionGroup>
     </readyToInstallActionList>
@@ -93,6 +109,16 @@ curl.cainfo="${common_root_directory}/openssl/certs/curl-ca-bundle.crt"
 		<fileExists path="${php_configuration_directory}/php.ini" />
 	    </ruleList>
 	</addTextToFile>
+    <addTextToFile>
+        <file>${apache_configuration_directory.dos}\httpd.conf</file>
+        <text>SetEnv OPENSSL_CONF "${apache_configuration_directory}/openssl.cnf"
+SetEnv PATH "${'${PATH}'};${apache_server_directory}/bin;"
+</text>
+        <ruleList>
+            <platformTest type="windows"/>
+            <componentTest logic="exists" name="apache"/>
+        </ruleList>
+    </addTextToFile>
     </postInstallationActionList>
 </component>
 

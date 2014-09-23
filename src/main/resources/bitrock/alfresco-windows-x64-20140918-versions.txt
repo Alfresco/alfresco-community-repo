@@ -1,0 +1,21 @@
+alfresco Stack - 20140918
+libreoffice 4.2.5
+imagemagick 6.8.6-6-Q8
+ghostscript-windows 8.64
+swftools 0.9.1
+xpdf-japanese 1
+openssl 1.0.1i
+postgresql 9.3.5-1
+manager 1
+java 1.7.0_67
+tomcat 7.0.53
+bitrock-alfresco 20130409
+alfresco 5.0.a
+alfrescosharepoint 4.2.e
+alfrescowcmqs 3.4.b
+keystore 20111026
+alfresco-solr 4.2.e
+alfresco-solr4 4.2.e
+bitnami 
+japanese-fonts 1
+xpdf-japanese 1

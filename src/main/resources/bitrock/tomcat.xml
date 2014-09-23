@@ -5,7 +5,6 @@ Componentname: TOMCAT
 Short Description:
 This component is able to install and configurate the bundled Tomcat binaries it carries, or to configure an existing Tomcat server.
 
-Last Update: 20061031
 Copyrighted by BitRock
 
 System variables provided by this component:
@@ -17,53 +16,69 @@ System variables provided by this component:
   * application_server_ssl_port
   * application_server_ajp_port
   * application_server_directory
+  * application_server_conf_directory
   * application_server_domain
   * component(tomcat).tomcat_installation_type_options -> bundled / existing / bundledAndExisting (default if var is not set)
-  
-If tomcat version must be check (only 5.5) set installer variable 'tomcat_check_version' in project file.
 
-TODO LIST 
+  Notes on Tomcat directory structure:
+  CATALINA_BASE = Tomcat may be configured for multiple instances by defining $CATALINA_BASE for each instance. If multiple instances are not configured, $CATALINA_BASE is the same as $CATALINA_HOME. tomcat_server_directory points to the instance directory (CATALINA_BASE)
+ 
+  CATALINA_HOME = This represents the root of your Tomcat installation. Directory where the Tomcat binary distribution resides 
 
+  In bundled installations CATALINA_BASE=CATALINA_HOME (tomcat_server_directory=tomcat_home_directory)
 -->
+  
 <component>
     <name>tomcat</name>
-    <description>//Tomcat 5.5 Component</description>
+    <description>//Tomcat Component</description>
     <canBeEdited>1</canBeEdited>
     <show>0</show>
     <selected>1</selected>
-    <initializationActionList/>
     <parameterList>
-<!-- Hidden component -->
-<directoryParameter name="tomcat_distribution_folder" value="${build_project_directory}/apache-tomcat" ask="0" />
-<stringParameter>
+        <stringParameter>
             <name>tomcat_installation_type_options</name>
             <ask>0</ask>
             <default>bundledAndExisting</default>
             <value>bundledAndExisting</value>
         </stringParameter>
-<booleanParameter name="tomcat_show_ports" value="0" ask="0" />
+    
+        <!-- insternal configuration switches -->
+        <booleanParameter name="tomcat_show_ports" value="0" ask="0" />
+        <booleanParameter name="tomcat_existing_required_running" value="1" ask="0" />
+        <booleanParameter name="tomcat_force_home_directory_validation" value="0" ask="0" />
+        <booleanParameter name="tomcat_enable_websockets" value="1" ask="0" />
+        <booleanParameter name="tomcat_start_stop_threads" value="-1" ask="0" />
+        <booleanParameter name="java_is_jdk" value="0" ask="0"/>
 
-<!-- Hidden Paramter. Needs to be directory to work in unix -->
-
-<!--directoryParameter>
-                <name>tomcat_server_directory</name>
-            <ask>0</ask>
-            <default></default>
-            <value></value>
-        </directoryParameter-->
+        <!-- Tomcat settings for bundled component -->
+	<stringParameter name="tomcat_memory_settings_unix" value="-XX:MaxPermSize=256M -Xms256M -Xmx512M" ask="0" />
+	<stringParameter> 
+	    <name>tomcat_memory_settings_windows</name>
+	    <value>--JvmMs 256 --JvmMx 512 ++JvmOptions="-XX:MaxPermSize=256M"</value>
+	    <ask>0</ask>
+	</stringParameter>
+	<stringParameter name="tomcat_extra_opts_unix" value="-Djava.awt.headless=true -XX:+UseG1GC -Dfile.encoding=UTF-8" ask="0" />
+	<stringParameter>
+	    <name>tomcat_extra_opts_windows</name>
+	    <value>++JvmOptions="-Djava.awt.headless=true" ++JvmOptions="-XX:+UseG1GC" ++JvmOptions="-Dfile.encoding=UTF-8"</value>
+	    <ask>0</ask>
+	</stringParameter>
+        
+        <booleanParameter name="tomcat_disable_juli_login" value="0" ask="0"/>
+        <!-- directory to pack -->
+        <directoryParameter name="tomcat_distribution_folder" value="${build_project_directory}/apache-tomcat" ask="0" />
+        <!-- installed folder in installdir -->
         <stringParameter name="tomcat_dirname" value="apache-tomcat" ask="0" />
-        <directoryParameter>
-            <name>tomcat_server_home</name>
-            <ask>0</ask>
-            <default>${installdir}/${tomcat_dirname}</default>
-        </directoryParameter>
-        <booleanParameter>
-            <name>tomcat_check_version</name>
-            <default>no</default>
-            <value>no</value>
-            <ask>0</ask>
-        </booleanParameter>
-        <booleanParameter ask="0" name="tomcat_existing_required_running" value="1" />
+
+        <directoryParameter name="tomcat_default_existing_tomcat_instance" value="/usr/local/tomcat" ask="0" />
+        <!-- Tomcat detection -->
+        <booleanParameter name="tomcat_enable_autodetection" value="0" ask="0" />
+        <stringParameter name="tomcat_minimum_version" value="6" ask="0" />
+        <stringParameter name="tomcat_maximum_version" value="0" ask="0" />
+        <stringParameter name="tomcat_detected_id" value="0" ask="0" />
+
+
+        <!-- Installation type -->
         <choiceParameter>
             <name>tomcat_installation_type</name>
             <title>Please select the Tomcat configuration you wish to use</title>
@@ -120,94 +135,114 @@ TODO LIST
                 <setInstallerVariable name="application_server_vendor" value="tomcat"/>
             </postShowPageActionList>
         </choiceParameter>
+
         <directoryParameter>
             <name>tomcat_server_directory</name>
             <title>Tomcat Directory</title>
             <description>Tomcat directory:</description>
+            <!-- Actually it is looking for the tomcat instance -->
             <explanation>Please specify the directory where Tomcat is located.</explanation>
             <allowEmptyValue>0</allowEmptyValue>
             <ask>yes</ask>
-            <default>${tomcat_server_home}</default>
+            <cliOptionShow>0</cliOptionShow>
+            <cliOptionText>Directory where Tomcat webapps and conf directories are located. Only for installations on top of existing Tomcat.</cliOptionText>
+            <default>${installdir}/${tomcat_dirname}</default>
             <mustBeWritable>yes</mustBeWritable>
             <mustExist>1</mustExist>
             <width>40</width>
             <validationActionList>
                 <throwError>
                     <text>The directory you selected does not seem to be a valid Tomcat directory. Please try again.</text>
-                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
                         <fileTest path="${tomcat_server_directory}/conf/server.xml" condition="not_exists"/>
-
-<!--<fileTest path="${tomcat_server_directory}/webapps" condition="not_exists" />-->
                     </ruleList>
                 </throwError>
-                <showInfo>
-                    <text>Couldn't check Apache Tomcat Version.
-Tomcat 5.5 is recommended.</text>
-                    <ruleEvaluationLogic>and</ruleEvaluationLogic>
-                    <ruleList>
-                        <ruleGroup>
-                            <ruleEvaluationLogic>or</ruleEvaluationLogic>
-                            <ruleList>
-                                <regExMatch logic="matches" text="${tomcatversion}" pattern="unknown"/>
-                                <compareText logic="equals" text="${tomcatversion}" value=""/>
-                            </ruleList>
-                        </ruleGroup>
-                        <ruleGroup>
-                            <ruleEvaluationLogic>or</ruleEvaluationLogic>
-                            <ruleList>
-                                <fileTest condition="not_exists" path="${tomcat_server_directory}/webapps/ROOT/RELEASE-NOTES.txt"/>
-                                <fileContentTest>
-                                    <path>${tomcat_server_directory}/webapps/ROOT/RELEASE-NOTES.txt</path>
-                                    <logic>does_not_contain</logic>
-                                    <text>Apache Tomcat Version 5.5</text>
-                                </fileContentTest>
-                            </ruleList>
-                        </ruleGroup>
-                        <compareText logic="equals" text="${tomcat_check_version}" value="yes"/>
-                    </ruleList>
-                </showInfo>
             </validationActionList>
             <preShowPageActionList>
-                <setInstallerVariable name="tomcat_server_home" value="${env(CATALINA_BASE)}"/>
-                <setInstallerVariable name="tomcat_server_home" value="${env(CATALINA_HOME)}">
+                <setInstallerVariable name="tomcat_instance_directory" value="${env(CATALINA_BASE)}"/>
+                <setInstallerVariable name="tomcat_instance_directory" value="${env(CATALINA_HOME)}">
                     <ruleList>
-                        <compareText logic="equals" text="${tomcat_server_home}" value=""/>
+                        <compareText logic="equals" text="${tomcat_instance_directory}" value=""/>
                     </ruleList>
                 </setInstallerVariable>
+                <!-- TODO: update existing tomcat windows autodetection -->
                 <registryGet>
-                    <variable>tomcat_server_home</variable>
+                    <variable>tomcat_instance_directory</variable>
                     <key>HKEY_LOCAL_MACHINE\SOFTWARE\Apache Software Foundation\Tomcat\5.5</key>
                     <name>InstallPath</name>
                     <ruleList>
-                        <compareText logic="equals" text="${tomcat_server_home}" value=""/>
+                        <compareText logic="equals" text="${tomcat_instance_directory}" value=""/>
                         <compareText logic="equals" text="${platform_name}" value="windows"/>
                     </ruleList>
                 </registryGet>
-                <setInstallerVariable name="tomcat_server_home" value="${platform_install_prefix}\Apache Software Foundation\Tomcat 5.5">
+                <setInstallerVariable name="tomcat_instance_directory" value="${platform_install_prefix}\Apache Software Foundation\Tomcat 5.5">
                     <ruleList>
-                        <compareText logic="equals" text="${tomcat_server_home}" value=""/>
+                        <compareText logic="equals" text="${tomcat_instance_directory}" value=""/>
                         <compareText logic="equals" text="${platform_name}" value="windows"/>
                     </ruleList>
                 </setInstallerVariable>
-                <setInstallerVariable name="tomcat_server_home" value="/usr/local/tomcat">
+                <actionGroup>
+                    <actionList>
+                        <setInstallerVariable name="tomcat_detected_id" value="" />  
+		        <tomcatAutodetect detectedVersionId="tomcat_detected_id" minVersion="${tomcat_minimum_version}" maxVersion="${tomcat_maximum_version}" />
+			<setInstallerVariable name="tomcat_instance_directory" value="${${tomcat_detected_id}_instance_directory}">
+			    <ruleList>
+                                <compareText text="${tomcat_detected_id}" logic="does_not_equal" value="" />
+			    </ruleList>
+		        </setInstallerVariable>
+                    </actionList>
                     <ruleList>
-                        <compareText logic="equals" text="${tomcat_server_home}" value=""/>
+                        <isTrue value="${tomcat_enable_autodetection}" />
+                        <compareText text="${installer_root_install}" logic="equals" value="1"/>
+                    </ruleList>
+                </actionGroup>
+                <setInstallerVariable name="tomcat_instance_directory" value="${tomcat_default_existing_tomcat_instance}">
+                    <ruleList>
+                        <compareText logic="equals" text="${tomcat_instance_directory}" value=""/>
                         <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+                        <compareText logic="does_not_equal" text="${platform_name}" value="osx"/>
                     </ruleList>
                 </setInstallerVariable>
+                <setInstallerVariable name="tomcat_server_directory" value="${tomcat_instance_directory}" />
             </preShowPageActionList>
+            <postShowPageActionList>
+	        <setInstallerVariable name="tomcat_home_directory" value="${tomcat_server_directory}" />
+		<setInstallerVariable name="tomcat_home_directory" value="${${tomcat_detected_id}_home_directory}">
+		    <ruleList>
+                        <stringTest text="${tomcat_detected_id}" type="not_empty" />
+                        <compareText text="${tomcat_server_directory}" logic="equals" value="${${tomcat_detected_id}_instance_directory}" />
+		    </ruleList>
+		</setInstallerVariable>
+            </postShowPageActionList>
             <ruleList>
                 <compareText text="${tomcat_installation_type}" logic="equals" value="existing"/>
             </ruleList>
         </directoryParameter>
+        <directoryParameter>
+            <name>tomcat_home_directory</name>
+            <default>${tomcat_server_directory}</default>
+            <description>Location of bin and lib tomcat folders</description>
+            <cliOptionShow>0</cliOptionShow>
+            <cliOptionText>Directory where Tomcat lib and bin directories are located. Only valid for installations on top of existing Tomcat.</cliOptionText>
+            <ask>yes</ask>
+            <validationActionList>
+                <throwError>
+                    <text>The directory you selected does not seem to be a valid Tomcat directory. Please try again.</text>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleList>
+                        <fileTest path="${tomcat_home_directory}/bin" condition="not_exists"/>
+                        <fileTest path="${tomcat_home_directory}/lib" condition="not_exists"/>
+                    </ruleList> 
+                </throwError>
+            </validationActionList> 
+            <ruleList>
+                <fileTest path="${tomcat_home_directory}/lib" condition="not_exists"/>
+                <isTrue value="${tomcat_force_home_directory_validation}" />
+                <compareText text="${tomcat_installation_type}" logic="equals" value="existing"/>
+            </ruleList>
+        </directoryParameter>
 
-<!--<directoryParameter>
-	    <name>tomcat_server_appbase</name>
-	    <ask>0</ask>
-	    <default>${installdir}/${tomcat_dirname}/webapps</default>
-	</directoryParameter>-->
-<parameterGroup>
+        <parameterGroup>
             <name>tomcat_ports</name>
             <title>Tomcat Port Configuration</title>
             <explanation>Please enter the Tomcat configuration parameters you wish to use.</explanation>
@@ -239,12 +274,7 @@ Tomcat 5.5 is recommended.</text>
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat Server Port:</description>
-
-<!--                    <ruleList>
-                        <portTest condition="cannot_bind" port="${tomcat_server_port}" />
-                    </ruleList>
--->
-<validationActionList>
+		    <validationActionList>
                         <throwError>
                             <text>Unable to bind to the given port number. Please select another Tomcat Server Port.</text>
                             <ruleList>
@@ -276,12 +306,7 @@ Tomcat 5.5 is recommended.</text>
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat Shutdown Port:</description>
-
-<!--                    <ruleList>
-                        <portTest condition="cannot_bind" port="${tomcat_server_shutdown_port}" /> 
-                    </ruleList>
--->
-<validationActionList>
+		    <validationActionList>
                         <throwError>
                             <text>Unable to bind to the given port number. Please select another Tomcat Shutdown Port.</text>
                             <ruleList>
@@ -305,9 +330,6 @@ Tomcat 5.5 is recommended.</text>
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat SSL Port</description>
-                    <!--<ruleList>
-                        <portTest condition="cannot_bind" port="${tomcat_server_ssl_port}"/>
-                    </ruleList>-->
                     <validationActionList>
                         <throwError>
                             <text>Unable to bind to the given port number. Please select another Tomcat SSL Port.</text>
@@ -326,12 +348,7 @@ Tomcat 5.5 is recommended.</text>
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat AJP Port:</description>
-
-<!--		    <ruleList>
-			<portTest condition="cannot_bind" port="${tomcat_server_ajp_port}" />
-		    </ruleList>
--->
-<validationActionList>
+		    <validationActionList>
                         <throwError>
                             <text>Unable to bind to the given port number. Please select another Tomcat AJP Port.</text>
                             <ruleList>
@@ -373,37 +390,48 @@ Tomcat 5.5 is recommended.</text>
                 <portTest condition="cannot_bind" port="${tomcat_server_jmx_port}"/>
             </ruleList>
         </parameterGroup>
+
     </parameterList>
     <readyToInstallActionList>
-<!-- To use tomcat as alone server -->
-<setInstallerVariable name="tomcat_execute_abort_action_list" value="1"/>
+        <setInstallerVariable name="tomcat_home_directory" value="${tomcat_server_directory}">
+            <ruleList>
+                <compareText text="${tomcat_installation_type}" logic="equals" value="bundled" />
+            </ruleList>
+        </setInstallerVariable>
+  
+	<getUserAndGroup abortOnError="0" >
+	    <user>tomcat_user</user>
+	    <group>tomcat_group</group>
+	    <file>${tomcat_server_directory}/webapps</file>
+            <ruleList>
+                <compareText text="${tomcat_installation_type}" logic="equals" value="existing" />
+                <platformTest type="unix" />
+            </ruleList>
+	</getUserAndGroup>
+
+
+        <setInstallerVariable name="tomcat_execute_abort_action_list" value="1"/>
+
         <setInstallerVariable name="application_server_installation_type" value="${tomcat_installation_type}" persist="1"/>
+ 
         <setInstallerVariable name="application_server_directory" value="${tomcat_server_directory}" persist="1"/>
+        <setInstallerVariable name="application_server_conf_directory" value="${tomcat_server_directory}/conf" persist="1" />
+
         <setInstallerVariable name="application_server_port" value="${tomcat_server_port}" persist="1"/>
         <setInstallerVariable name="application_server_shutdown_port" value="${tomcat_server_shutdown_port}"/>
         <setInstallerVariable name="application_server_ssl_port" value="${tomcat_server_ssl_port}"/>
         <setInstallerVariable name="application_server_ajp_port" value="${tomcat_server_ajp_port}"/>
         <setInstallerVariable name="application_server_domain" value="${tomcat_server_domain}"/>
-        <setInstallerVariable name="application_server_conf_directory" value="${tomcat_server_directory}/conf"/>
- 
-        <setEnvironmentVariable name="CATALINA_HOME" value="${tomcat_server_directory}" />
 
-<!--<setInstallerVariable>
-	    <name>application_server_appbase</name>
-	    <value>${tomcat_server_appbase}</value>
+        <setEnvironmentVariable name="CATALINA_HOME" value="${tomcat_home_directory}" />
+        <setEnvironmentVariable name="CATALINA_BASE" value="${tomcat_server_directory}">
 	    <ruleList>
-		<compareText text="${tomcat_installation_type}" logic="equals" value="bundled" />
+                <compareText text="${tomcat_server_directory}" logic="does_not_equal" value="${tomcat_home_directory}" />
 	    </ruleList>
-	</setInstallerVariable>
-        <setInstallerVariable>
-	    <name>application_server_appbase</name>
-	    <value>${tomcat_server_directory}/webapps</value>
-	    <ruleList>
-		<compareText text="${tomcat_installation_type}" logic="equals" value="existing" />
-	    </ruleList>
-	</setInstallerVariable>-->
+        </setEnvironmentVariable>
    
     </readyToInstallActionList>
+
     <folderList>
         <folder>
             <name>tomcat</name>
@@ -414,6 +442,12 @@ Tomcat 5.5 is recommended.</text>
                 <distributionDirectory origin="${tomcat_distribution_folder}/*" allowWildcards="1" />
             </distributionFileList>
             <actionList>
+                <tomcatDisableWebsockets>
+                    <ruleList>
+                        <isFalse value="${tomcat_enable_websockets}"/> 
+                    </ruleList>
+                </tomcatDisableWebsockets>
+                <tomcatSetStartStopThreads value="${tomcat_start_stop_threads}"/>
                 <substitute>
                     <files>*/scripts/ctl.sh</files>
                     <substitutionList>
@@ -432,9 +466,8 @@ Tomcat 5.5 is recommended.</text>
                         </substitution>
                     </substitutionList>
                 </substitute>
-
-<!-- PORT SUBSTITUTIONS -->
-<substitute>
+		<!-- PORT SUBSTITUTIONS -->
+                <substitute>
                     <type>exact</type>
                     <files>${application_server_directory}/conf/server.xml;${application_server_directory}/conf/tomcat.conf</files>
                     <substitutionList>
@@ -457,41 +490,52 @@ Tomcat 5.5 is recommended.</text>
                     </substitutionList>
                 </substitute>
 
-<!-- SET JAVA_HOME + MEMORY SETTINGS -->
-
-<!-- LINUX -->
-
-<!--<actionGroup>
-		    <actionList>-->
-<writeFile>
+		<!-- SET JAVA_HOME + MEMORY SETTINGS -->
+		<writeFile>
                     <path>${application_server_directory}/bin/setenv.sh</path>
                     <text>JAVA_HOME=${java_home_directory}
-JRE_HOME=${java_home_directory}
-JAVA_OPTS="$JAVA_OPTS "
+JRE_HOME=$JAVA_HOME
+JAVA_OPTS="${tomcat_extra_opts_unix} $JAVA_OPTS "
+JAVA_OPTS="${tomcat_memory_settings_unix} $JAVA_OPTS " # java-memory-settings
 export JAVA_HOME
 export JRE_HOME
 export JAVA_OPTS
 			    </text>
                     <ruleList>
                         <platformTest type="unix"/>
+                        <platformTest type="osx" negate="yes" />
                     </ruleList>
                 </writeFile>
 
-<!-- WINDOWS -->
-<writeFile>
+		<writeFile>
                     <path>${application_server_directory}/bin/setenv.bat</path>
                     <text>set JAVA_HOME=${java_home_directory.dos}
-set JAVA_OPTS=%JAVA_OPTS%                  </text>
+set JRE_HOME=%JAVA_HOME%
+set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JAVA_OPTS%
+</text>
                     <ruleList>
                         <platformTest type="windows"/>
+                        <isFalse value="${java_is_jdk}"/>
+                    </ruleList>
+                </writeFile>
+                <writeFile>
+                    <path>${application_server_directory}/bin/setenv.bat</path>
+                    <text>set JAVA_HOME=${java_home_directory.dos}
+set JRE_HOME=%JAVA_HOME%\jre
+set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JAVA_OPTS%
+</text>
+                    <ruleList>
+                        <platformTest type="windows"/>
+                        <isTrue value="${java_is_jdk}"/>
                     </ruleList>
                 </writeFile>
 
-<!-- OSX -->
-<writeFile>
+		<writeFile>
                     <path>${application_server_directory}/bin/setenv.sh</path>
                     <text>export JAVA_HOME=${java_home_directory}
-JAVA_OPTS="$JAVA_OPTS "
+export JRE_HOME=$JAVA_HOME
+JAVA_OPTS="${tomcat_extra_opts_unix} $JAVA_OPTS "
+JAVA_OPTS="${tomcat_memory_settings_unix} $JAVA_OPTS "
 export JAVA_OPTS
                             </text>
                     <ruleList>
@@ -500,44 +544,92 @@ export JAVA_OPTS
                 </writeFile>
 		<addFilesToUninstaller files="${application_server_directory}/bin/setenv.sh;${application_server_directory}/bin/setenv.bat" />
 		<addFilesToUninstaller files="${application_server_directory}/bin/setenv.sh;${application_server_directory}/shared" />
-<!--</actionList>
-		    <ruleList>
-			<compareText logic="equals" text="${java_installation_type}" value="bundled" />			
-		    </ruleList>
-		</actionGroup>-->
 
-<!-- SET TOMCAT WINDOWS SERVICE -->
-<substitute>
-                    <files>${application_server_directory}/bin/service.bat</files>
-                    <type>exact</type>
-                    <substitutionList>
-                        <substitution>
-                            <pattern>--JvmOptions</pattern>
-                            <value>--StartPath "${installdir}" --Startup auto --JvmOptions</value>
-                        </substitution>
-                        <substitution>
-                            <pattern>set PR_DISPLAYNAME=Apache Tomcat %2</pattern>
-                            <value>set PR_DISPLAYNAME=${product_fullname} %2</value>
-                        </substitution>
-                    </substitutionList>
+		<!-- SET TOMCAT WINDOWS SERVICE -->
+                <actionGroup>
+                    <actionList>
+        	           	<substitute>
+                            <files>${application_server_directory}/bin/service.bat</files>
+                            <type>exact</type>
+                            <substitutionList>
+                                <substitution>
+                                    <pattern>--JvmOptions</pattern>
+                                    <value>--StartPath "${installdir}" --Startup auto --JvmOptions</value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>--JvmMx 256</pattern>
+                                    <value></value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>--JvmMs 128 ^</pattern>
+                                    <value></value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>--JvmMs 128</pattern>
+                                    <value></value>
+                                </substitution>
+                                <substitution>
+                                    <pattern>StopMode jvm</pattern>
+                                    <value>StopMode jvm %JAVA_OPTS%</value>
+                                </substitution>
+                                <!-- Tomcat 6 -->
+                                <substitution>
+                                    <pattern>set PR_DISPLAYNAME=Apache Tomcat %2</pattern>
+                                    <value>set PR_DISPLAYNAME=${product_fullname} %2</value>
+                                </substitution>
+                                <!-- Tomcat 7 -->
+                                <substitution>
+                                    <pattern>set PR_DISPLAYNAME=Apache Tomcat %1</pattern>
+                                    <value>set PR_DISPLAYNAME=%1</value>
+                                </substitution>
+                            </substitutionList>
+                        </substitute>
+                        <substitute>
+                            <files>${application_server_directory}/bin/service.bat</files>
+                            <type>regexp</type>
+                            <substitutionList>
+                                <!-- Tomcat 7 and 8 -->
+                                <substitution>
+                                    <pattern>set DISPLAYNAME=Apache Tomcat[^%]+%1</pattern>
+                                    <value>set DISPLAYNAME=%1</value>
+                                </substitution>
+                            </substitutionList>
+                        </substitute>
+                        <substitute>
+                            <files>${application_server_directory}/bin/service.bat</files>
+                            <type>exact</type>
+                            <substitutionList>
+                                <substitution>
+                                    <pattern>-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager;</pattern>
+                                    <value></value>
+                                </substitution>
+                            </substitutionList>
+                            <ruleList>
+                                <isTrue value="${tomcat_disable_juli_login}"/>
+                            </ruleList>
+                        </substitute>
+                    </actionList>
                     <ruleList>
                         <platformTest type="windows"/>
                     </ruleList>
-                </substitute>
+                </actionGroup>
             </actionList>
             <ruleList>
                 <compareText text="${tomcat_installation_type}" logic="equals" value="bundled"/>
             </ruleList>
         </folder>
     </folderList>
+    <postInstallationActionList>
+	<addLogrotate name="tomcat" logs="${application_server_directory}/logs/*.out ${application_server_directory}/logs/*.log" />
+    </postInstallationActionList>
+
     <installationAbortedActionList>
-<!-- WINDOWS -->
-<actionGroup>
+        <actionGroup>
             <actionList>
                 <runProgram>
                     <abortOnError>0</abortOnError>
                     <showMessageOnError>0</showMessageOnError>
-                    <program>sc</program>
+                    <program>net</program>
                     <programArguments>stop ${tomcat_unique_service_name}</programArguments>
                 </runProgram>
                 <runProgram>
@@ -558,8 +650,7 @@ export JAVA_OPTS
             </ruleList>
         </actionGroup>
 
-<!-- LINUX -->
-<actionGroup>
+	<actionGroup>
             <actionList>
                 <deleteFile path="${tomcat_server_directory}">
                     <ruleList>
@@ -569,7 +660,7 @@ export JAVA_OPTS
             </actionList>
             <ruleList>
                 <compareText text="${tomcat_execute_abort_action_list}" value="1" logic="equals"/>
-                <platformTest type="linux"/>
+                <platformTest type="unix"/>
             </ruleList>
         </actionGroup>
     </installationAbortedActionList>

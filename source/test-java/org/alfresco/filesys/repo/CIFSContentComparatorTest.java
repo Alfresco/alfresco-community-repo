@@ -114,13 +114,13 @@ public class CIFSContentComparatorTest extends TestCase
         contentComparator.init();
         
         ClassPathResource file0Resource = new ClassPathResource("filesys/ContentComparatorTest0.mpp");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTest0.mpp", file0Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTest0.mpp", file0Resource);
         
         ClassPathResource file1Resource = new ClassPathResource("filesys/ContentComparatorTest1.mpp");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTest1.mpp", file1Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTest1.mpp", file1Resource);
         
         ClassPathResource file2Resource = new ClassPathResource("filesys/ContentComparatorTest2.mpp");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTest2.mpp", file1Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTest2.mpp", file1Resource);
          
         File textFile = TempFileProvider.createTempFile("testCIFSContentComparator","txt");
         FileOutputStream os1 = new FileOutputStream(textFile);
@@ -180,10 +180,10 @@ public class CIFSContentComparatorTest extends TestCase
         contentComparator.init();
         
         ClassPathResource file0Resource = new ClassPathResource("filesys/ContentComparatorTest0.mpp");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTest0.mpp", file0Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTest0.mpp", file0Resource);
         
         ClassPathResource file1Resource = new ClassPathResource("filesys/ContentComparatorTest1.mpp");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTest1.mpp", file1Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTest1.mpp", file1Resource);
                 
         /**
          * Compare trivially different project files, should ignore trivial differences and be equal 
@@ -211,19 +211,19 @@ public class CIFSContentComparatorTest extends TestCase
         contentComparator.init();
         
         ClassPathResource file0Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-1.xls");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-1.xls", file0Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestExcel2003-1.xls", file0Resource);
         
         ClassPathResource file1Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-2.xls");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-2.xls", file1Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestExcel2003-2.xls", file1Resource);
         
         ClassPathResource file3Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-3.xls");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-3.xls", file3Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestExcel2003-3.xls", file3Resource);
         
         ClassPathResource file4Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-4.xls");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-4.xls", file4Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestExcel2003-4.xls", file4Resource);
         
         ClassPathResource file5Resource = new ClassPathResource("filesys/ContentComparatorTestExcel2003-5.xls");
-        assertNotNull("unable to find test resource filesys/filesys/ContentComparatorTestExcel2003-5.xls", file5Resource);
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestExcel2003-5.xls", file5Resource);
                 
         /**
          * Compare trivially different excel files, should ignore trivial differences and be equal 
@@ -265,6 +265,113 @@ public class CIFSContentComparatorTest extends TestCase
             reader.setEncoding("UTF-8");
             boolean result = contentComparator.isContentEqual(reader, file5);
             assertTrue("compare trivially different xls files, should be equal", result); 
+        }
+    }
+
+    /**
+     * Open and close of a PowerPoint 2003 file changes last edit username property hence changes file size.
+     *
+     * Test File 0 is created on initial PowerPoint instance
+     * Test File 1 file is edited on initial PowerPoint instance so that the file size has been increased by less than 3073 bytes.
+     * Test File 2 has been opened and closed on target PowerPoint instance hence lastEditUserName has been changed.
+     * Test File 3 has been opened edited and closed on target PowerPoint instance hence lastEditUserName has been changed
+     *     but the difference of sizes is still less than 3073 bytes.
+     * Test File 4 has been edited on initial PowerPoint instance so that the file size has been reduced.
+     * Test File 5 has been edited on initial PowerPoint instance so that the file size has been increased by more than 3072 bytes.
+     *
+     * @throws Exception
+     */
+    public void testDiffPowerPoint2003Files() throws Exception
+    {
+        CIFSContentComparator contentComparator = new CIFSContentComparator();
+        contentComparator.init();
+
+        ClassPathResource file0Resource = new ClassPathResource("filesys/ContentComparatorTestPowerPoint2003-0-initial.ppt");
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestPowerPoint2003-0-initial.ppt", file0Resource);
+
+        ClassPathResource file1Resource = new ClassPathResource("filesys/ContentComparatorTestPowerPoint2003-1-edited-lt-3073bytes.ppt");
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestPowerPoint2003-1-edited-lt-3073bytes.ppt", file1Resource);
+
+        ClassPathResource file2Resource = new ClassPathResource("filesys/ContentComparatorTestPowerPoint2003-2-opened-closed.ppt");
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestPowerPoint2003-2-opened-closed.ppt", file2Resource);
+
+        ClassPathResource file3Resource = new ClassPathResource("filesys/ContentComparatorTestPowerPoint2003-3-opened-edited-closed.ppt");
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestPowerPoint2003-3-opened-edited-closed.ppt", file3Resource);
+
+        ClassPathResource file4Resource = new ClassPathResource("filesys/ContentComparatorTestPowerPoint2003-4-edited-lt-0bytes.ppt");
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestPowerPoint2003-4-edited-lt-0bytes.ppt", file4Resource);
+
+        ClassPathResource file5Resource = new ClassPathResource("filesys/ContentComparatorTestPowerPoint2003-5-edited-gt-3072bytes.ppt");
+        assertNotNull("unable to find test resource filesys/ContentComparatorTestPowerPoint2003-5-edited-gt-3072bytes.ppt", file5Resource);
+
+        /**
+         * Compare different powerpoint files, should not be ignored
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file1 = file1Resource.getFile();
+
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-powerpoint");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file1);
+            assertTrue("compare different powerpoint files, should not be equal", !result);
+        }
+
+        /**
+         * Compare trivially different powerpoint files, should ignore trivial differences and be equal
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file2 = file2Resource.getFile();
+
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-powerpoint");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file2);
+            assertTrue("compare trivially different powerpoint files, should be equal", result);
+        }
+
+        /**
+         * Compare different powerpoint files, should not be ignored
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file3 = file1Resource.getFile();
+
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-powerpoint");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file3);
+            assertTrue("compare different powerpoint files, should not be equal", !result);
+        }
+
+        /**
+         * Compare different powerpoint files, should not be ignored
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file4 = file1Resource.getFile();
+
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-powerpoint");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file4);
+            assertTrue("compare different powerpoint files, should not be equal", !result);
+        }
+
+        /**
+         * Compare different powerpoint files, should not be ignored
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file5 = file1Resource.getFile();
+
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-powerpoint");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file5);
+            assertTrue("compare different powerpoint files, should not be equal", !result);
         }
     }
 }

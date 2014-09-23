@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,6 +17,7 @@ import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hslf.HSLFSlideShow;
 import org.apache.poi.poifs.filesystem.DirectoryEntry;
 import org.apache.poi.poifs.filesystem.EntryUtils;
 import org.apache.poi.poifs.filesystem.FilteringDirectoryNode;
@@ -50,6 +50,7 @@ public class CIFSContentComparator implements ContentComparator
     {   
         customComparators.put("application/vnd.ms-project", new MPPContentComparator());
         customComparators.put("application/vnd.ms-excel", new XLSContentComparator());
+        customComparators.put("application/vnd.ms-powerpoint", new PPTContentComparator());
     }  
 
     @Override
@@ -128,6 +129,22 @@ public class CIFSContentComparator implements ContentComparator
         }
     }
 
+    private boolean isContentIdentical(NPOIFSFileSystem fs1, NPOIFSFileSystem fs2, Collection<String> excludes) throws IOException
+    {
+        DirectoryEntry de1 = fs1.getRoot();
+        DirectoryEntry de2 = fs2.getRoot();
+
+        FilteringDirectoryNode fs1Filtered = new FilteringDirectoryNode(de1, excludes);
+        FilteringDirectoryNode fs2Filtered = new FilteringDirectoryNode(de2, excludes);
+
+        boolean retVal = EntryUtils.areDirectoriesIdentical(fs1Filtered, fs2Filtered);
+        if(logger.isDebugEnabled())
+        {
+            logger.debug("returning equal="+ retVal);
+        }
+        return retVal;
+    }
+
     // Comparator for MS Project
     private class MPPContentComparator implements ContentComparator
     {
@@ -162,22 +179,10 @@ public class CIFSContentComparator implements ContentComparator
                 excludes.add("Props9");
                 
                 leftIs = existingContent.getContentInputStream();
-                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(leftIs);              
-                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(newFile);                
+                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(leftIs);
+                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(newFile);
                 
-                DirectoryEntry de1 = fs1.getRoot();
-                DirectoryEntry de2 = fs2.getRoot();
-                
-                FilteringDirectoryNode fs1Filtered = new FilteringDirectoryNode(de1, excludes);
-                FilteringDirectoryNode fs2Filtered = new FilteringDirectoryNode(de2, excludes);
-                
-                boolean retVal = EntryUtils.areDirectoriesIdentical(fs1Filtered, fs2Filtered);
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("returning equal="+ retVal);
-                }
-                
-                return retVal;
+                return isContentIdentical(fs1, fs2, excludes);
             }
             catch (ContentIOException ce)
             {
@@ -241,7 +246,8 @@ public class CIFSContentComparator implements ContentComparator
                 tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "xls");
                 tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "xls");
                 
-                HSSFWorkbook wb1 = new HSSFWorkbook(existingContent.getContentInputStream());
+                leftIs = existingContent.getContentInputStream();
+                HSSFWorkbook wb1 = new HSSFWorkbook(leftIs);
                 HSSFWorkbook wb2 = new HSSFWorkbook(new FileInputStream(newFile));
                 wb1.writeProtectWorkbook("", "CIFSContentComparator");
                 wb2.writeProtectWorkbook("", "CIFSContentComparator");
@@ -249,23 +255,126 @@ public class CIFSContentComparator implements ContentComparator
                 wb1.write(new FileOutputStream(tpm1));
                 wb2.write(new FileOutputStream(tpm2));
                 
+                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm1);
+                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm2);
                 
-                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm1);              
-                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm2);                
-                
-                DirectoryEntry de1 = fs1.getRoot();
-                DirectoryEntry de2 = fs2.getRoot();
-                
-                FilteringDirectoryNode fs1Filtered = new FilteringDirectoryNode(de1, excludes);
-                FilteringDirectoryNode fs2Filtered = new FilteringDirectoryNode(de2, excludes);
-                
-                boolean retVal = EntryUtils.areDirectoriesIdentical(fs1Filtered, fs2Filtered);
-                if(logger.isDebugEnabled())
+                return isContentIdentical(fs1, fs2, excludes);
+            }
+            catch (ContentIOException ce)
+            {
+                logger.debug("Unable to compare contents", ce);
+                return false;
+            }
+            catch (IOException e)
+            {
+                logger.debug("Unable to compare contents", e);
+                return false;
+            }
+            finally
+            {
+            	if(tpm1 != null)
+            	{
+            		try 
+            		{
+            	        tpm1.delete();
+            		}
+            		catch (Exception e)
+            		{
+            			// ignore
+            		}
+            	}
+            	if(tpm2 != null)
+            	{
+            		try 
+            		{
+            		    tpm2.delete();
+        		    }
+        		    catch (Exception e)
+        		    {
+        			    // ignore
+        		    }
+            	}
+                if(leftIs != null)
                 {
-                    logger.debug("returning equal="+ retVal);
+                    try
+                    {
+                        leftIs.close();
+                    }
+                    catch (IOException e)
+                    {
+                       // Ignore
+                    }
                 }
+            }
+        }
+    }
                 
-                return retVal;
+    // Comparator for MS PowerPoint
+    private class PPTContentComparator implements ContentComparator
+    {
+                
+        @Override
+        public boolean isContentEqual(ContentReader existingContent, File newFile)
+        {
+            long fileSizesDifference = newFile.length() - existingContent.getSize();
+                
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("comparing two powerpoint files size:" + existingContent.getSize() + ", and " + newFile.length());
+            }
+
+            File tpm1 = null;
+            File tpm2 = null;
+            InputStream leftIs = null;
+            try
+            {
+                if(fileSizesDifference != 0)
+                {
+                    // ALF-18793
+                    // Experience has shown that the size of opened/closed file increases to 3072 bytes.
+                    // (That occurs only in case if the file has been created on one MS PowerPoint instance and opened/closed on another
+                    // due to change of lastEditUsername property (if they are different)).
+                    if (fileSizesDifference > 3072 && fileSizesDifference < 0)
+                    {
+                        logger.debug("powerpoint files are different size");
+                        // Different size
+                        return false;
+                    }
+
+                    Collection<String> excludes = new HashSet<String>();
+
+                    leftIs = existingContent.getContentInputStream();
+                    HSLFSlideShow slideShow1 = new HSLFSlideShow(leftIs);
+                    HSLFSlideShow slideShow2 = new HSLFSlideShow(new FileInputStream(newFile));
+
+                    String lastEditUsername1 = slideShow1.getCurrentUserAtom().getLastEditUsername();
+                    String lastEditUsername2 = slideShow2.getCurrentUserAtom().getLastEditUsername();
+
+                    if (lastEditUsername1.equals(lastEditUsername2))
+                    {
+                        logger.debug("powerpoint files are different size");
+                        // Different size
+                        return false;
+                    }
+                    else
+                    {
+                        //make sure that nothing has been changed except lastEditUsername
+
+                        tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "ppt");
+                        tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "ppt");
+
+                        slideShow1.write(new FileOutputStream(tpm1));
+                        slideShow1.write(new FileOutputStream(tpm2));
+
+                        NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm1);
+                        NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm2);
+
+                        return isContentIdentical(fs1, fs2, excludes);
+                    }
+                
+                }
+
+                return true;
             }
             catch (ContentIOException ce)
             {
@@ -315,8 +424,4 @@ public class CIFSContentComparator implements ContentComparator
             }
         }
     }
-
-    
-    
-    
 }

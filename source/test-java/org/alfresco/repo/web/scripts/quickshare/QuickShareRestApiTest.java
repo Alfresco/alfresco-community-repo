@@ -33,8 +33,11 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -45,6 +48,9 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
 import org.json.JSONArray;
@@ -78,6 +84,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private final static String SHARE_CONTENT_URL = "/api/internal/shared/node/{shared_id}/content";
     private final static String SHARE_CONTENT_THUMBNAIL_URL = "/api/internal/shared/node/{shared_id}/content/thumbnails/{thumbnailname}?c=force";
     
+    private static final String SITES_URL = "/api/sites";
+    
     // note: node_ref_3 => three segments, eg. store_protocol/store_id/node_uuid
     private final static String AUTH_METADATA_URL = "/api/node/{node_ref_3}/metadata";
     private final static String AUTH_CONTENT_URL = "/api/node/{node_ref_3}/content";
@@ -90,12 +98,15 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private static byte[] TEST_CONTENT = null;
     private final static String TEST_MIMETYPE_JPEG = MimetypeMap.MIMETYPE_IMAGE_JPEG;
     private final static String TEST_MIMETYPE_PNG = MimetypeMap.MIMETYPE_IMAGE_PNG;
+    private static File quickFile = null;
     
     private MutableAuthenticationService authenticationService;
+    private AuthenticationComponent authenticationComponent;
     private NodeService nodeService;
     private PersonService personService;
     private PermissionService permissionService;
     private ContentService contentService;
+    private SiteService siteService;
     private Repository repositoryHelper;
     private RetryingTransactionHelper transactionHelper;
     
@@ -106,10 +117,12 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     {
         super.setUp();
         authenticationService = (MutableAuthenticationService) getServer().getApplicationContext().getBean("AuthenticationService");
+        authenticationComponent = (AuthenticationComponent) getServer().getApplicationContext().getBean("AuthenticationComponent");
         nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
         contentService = (ContentService) getServer().getApplicationContext().getBean("ContentService");
         personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
         permissionService = (PermissionService) getServer().getApplicationContext().getBean("PermissionService");
+        siteService = (SiteService) getServer().getApplicationContext().getBean("SiteService"); 
         repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
         transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");
         
@@ -120,33 +133,12 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
         
-        testNode = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute() throws Throwable
-            {
-                // no pun intended
-                File quickFile = AbstractContentTransformerTest.loadQuickTestFile("jpg");
-                
-                
-                TEST_CONTENT = new byte[new Long(quickFile.length()).intValue()];
-                        
-                new FileInputStream(quickFile).read(TEST_CONTENT);
-                
-                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
-                props.put(ContentModel.PROP_NAME, TEST_NAME);
-                userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
-                ChildAssociationRef result = nodeService.createNode(userOneHome,
-                                                        ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS,
-                                                        ContentModel.TYPE_CONTENT, props);
-                
-                NodeRef nodeRef = result.getChildRef();
-                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-                writer.setMimetype(TEST_MIMETYPE_JPEG);
-                writer.putContent(quickFile);
-                
-                return nodeRef;
-            }
-        });
+        userOneHome = repositoryHelper.getUserHome(personService.getPerson(USER_ONE));
+        // no pun intended
+        quickFile = AbstractContentTransformerTest.loadQuickTestFile("jpg");
+        TEST_CONTENT = new byte[new Long(quickFile.length()).intValue()];
+        new FileInputStream(quickFile).read(TEST_CONTENT);
+        testNode = createTestFile(userOneHome, TEST_NAME, quickFile);
         
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
@@ -284,6 +276,40 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         rsp = sendRequest(new GetRequest(SHARE_CONTENT_THUMBNAIL_URL.replace("{shared_id}", sharedId).replace("{thumbnailname}", "doclib")), expectedStatusNotFound, USER_TWO);
     }
     
+    public void testUnshareContributer() throws UnsupportedEncodingException, IOException, JSONException
+    {
+    	final int expectedStatusOK = 200;
+        final int expectedStatusForbidden = 403;
+        
+        authenticationComponent.setCurrentUser("admin");
+    	
+        SiteInfo siteInfo = createSite("site" + RUN_ID);
+        siteService.setMembership(siteInfo.getShortName(), USER_ONE, SiteModel.SITE_CONSUMER);
+        siteService.setMembership(siteInfo.getShortName(), USER_TWO, SiteModel.SITE_CONTRIBUTOR);
+        
+        NodeRef siteDocLib = siteService.getContainer(siteInfo.getShortName(), SiteService.DOCUMENT_LIBRARY);
+        NodeRef testFile = createTestFile(siteDocLib, "unshare-test" + RUN_ID, quickFile);
+        
+        String strTestNodeRef = testFile.toString().replace("://", "/");
+        
+        authenticationComponent.setCurrentUser(USER_ONE);
+        
+        // share
+        Response rsp= sendRequest(new PostRequest(SHARE_URL.replace("{node_ref_3}", strTestNodeRef), "", APPLICATION_JSON), expectedStatusOK, USER_ONE);
+        JSONObject jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
+        String sharedId = jsonRsp.getString("sharedId");
+        assertNotNull(sharedId);
+        
+        // unshare
+        authenticationComponent.setCurrentUser(USER_TWO);
+        rsp = sendRequest(new DeleteRequest(UNSHARE_URL.replace("{shared_id}", sharedId)), expectedStatusForbidden, USER_ONE);
+        authenticationComponent.setCurrentUser(USER_ONE);
+        rsp = sendRequest(new DeleteRequest(UNSHARE_URL.replace("{shared_id}", sharedId)), expectedStatusOK, USER_ONE);
+        
+        authenticationComponent.setCurrentUser("admin");
+        deleteSite(siteInfo.getShortName());
+    }
+    
     /**
      * This test verifies that copying a shared node does not across the shared aspect and it's associated properties.
      * @throws IOException 
@@ -350,5 +376,67 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         {
             personService.deletePerson(userName);
         }
+    }
+    
+    private NodeRef createTestFile(final NodeRef parent, final String name, final File quickFile)
+    {
+    	return transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                props.put(ContentModel.PROP_NAME, name);
+                ChildAssociationRef result = nodeService.createNode(parent,
+                                                        ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS,
+                                                        ContentModel.TYPE_CONTENT, props);
+                
+                NodeRef nodeRef = result.getChildRef();
+                ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(TEST_MIMETYPE_JPEG);
+                writer.putContent(quickFile);
+                
+                return nodeRef;
+            }
+        });
+    }
+    
+    private SiteInfo createSite(final String shortName)
+    {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<SiteInfo>()
+           {
+              @Override
+              public SiteInfo execute() throws Throwable
+              {
+                  SiteInfo siteInfo = siteService.getSite(shortName);
+                  if (siteInfo != null)
+                  {
+                      // Tidy up after failed earlier run
+                      siteService.deleteSite(shortName);
+                  }
+                  
+                  // Do the create
+                  SiteInfo site = siteService.createSite("Testing", shortName, shortName, null, SiteVisibility.PUBLIC);
+                  
+                  // Ensure we have a doclib
+                  siteService.createContainer(shortName, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+                  
+                  // All done
+                  return site;
+              }
+           }, false, true
+        ); 
+    }
+    
+    private void deleteSite(final String shortName)
+    {
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+              @Override
+              public Void execute() throws Throwable
+              {
+                  siteService.deleteSite(shortName);
+                  return null;
+              }
+        }, false, true); 
     }
 }

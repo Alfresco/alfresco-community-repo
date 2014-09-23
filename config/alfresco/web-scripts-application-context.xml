@@ -1769,6 +1769,9 @@
     
     <!-- authenticated -->
     <bean id="webscript.org.alfresco.repository.quickshare.unshare.delete" class="org.alfresco.repo.web.scripts.quickshare.UnshareContentDelete" parent="org.alfresco.repository.quickshare.abstract">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="siteService" ref="SiteService" />
+        <property name="authenticationService" ref="AuthenticationService" />
     </bean>
     
     <!-- authenticated -->

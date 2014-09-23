@@ -23,7 +23,14 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.model.QuickShareModel;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -46,6 +53,21 @@ public class UnshareContentDelete extends AbstractQuickShareContent
 {
     private static final Log logger = LogFactory.getLog(ShareContentPost.class);
     
+    private NodeService nodeService;
+    private SiteService siteService;
+    private AuthenticationService authenticationService;
+    
+    public void setNodeService(NodeService nodeService) {
+        this.nodeService = nodeService;
+    }
+
+    public void setSiteService(SiteService siteService) {
+        this.siteService = siteService;
+    }
+    
+    public void setAuthenticationService(AuthenticationService authenticationService) {
+        this.authenticationService = authenticationService;
+    }
     
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
@@ -63,6 +85,20 @@ public class UnshareContentDelete extends AbstractQuickShareContent
             throw new WebScriptException(HttpServletResponse.SC_BAD_REQUEST, "A valid sharedId must be specified !");
         }
         
+        NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
+        String currentUser = authenticationService.getCurrentUserName();
+        
+        String siteName = getSiteName(nodeRef);
+        String sharedBy = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
+        if (!currentUser.equals(sharedBy) && siteName != null)
+        {
+            String role = siteService.getMembersRole(siteName, currentUser);
+            if (role.equals(SiteModel.SITE_CONSUMER) || role.equals(SiteModel.SITE_CONTRIBUTOR))
+            {
+                throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Can't perform unshare action: "+sharedId);
+            }
+        }
+        
         try
         {
             quickShareService.unshareContent(sharedId);
@@ -76,5 +112,25 @@ public class UnshareContentDelete extends AbstractQuickShareContent
             logger.error("Unable to find: "+sharedId+" ["+inre.getNodeRef()+"]");
             throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find: "+sharedId);
         }
+    }
+    
+    private String getSiteName(NodeRef nodeRef)
+    {
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        {
+            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+            if (nodeService.getPrimaryParent(nodeRef) != null)
+            {
+                parent = nodeService.getPrimaryParent(parent).getParentRef();
+            }
+        }
+        
+        if (parent == null)
+        {
+            return null;
+        }
+        
+        return nodeService.getProperty(parent, ContentModel.PROP_NAME).toString();
     }
 }

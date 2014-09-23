@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -65,6 +65,8 @@ import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.impl.node.ratings.RatingScheme;
@@ -195,6 +197,7 @@ public class RepoService
 	protected HiddenAspect hiddenAspect;
 	protected NetworksService networksService;
 	protected NamespaceService namespaceService;
+	protected RetryingTransactionHelper transactionHelper;
 
 	protected Activities activities;
 
@@ -252,6 +255,7 @@ public class RepoService
     	this.hiddenAspect = (HiddenAspect)applicationContext.getBean("hiddenAspect");
     	this.networksService = (NetworksService)applicationContext.getBean("networksService");
     	this.namespaceService = (NamespaceService)applicationContext.getBean("namespaceService"); 
+    	this.transactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
 
         Scheduler scheduler = (Scheduler)applicationContext.getBean("schedulerFactory");
     	
@@ -784,15 +788,37 @@ public class RepoService
     public void generateFeed() throws JobExecutionException, SQLException
     {
     	// process all outstanding activity posts
-    	postLookup.execute();
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                postLookup.execute();
+                return null;
+            }
+        }, false, true);
 
-        Long maxSequence = postDAO.getMaxActivitySeq();
+        Long maxSequence = getMaxActivitySeq();
         while(maxSequence != null)
         {
         	feedGenerator.execute();
 
-        	maxSequence = postDAO.getMaxActivitySeq();
+            maxSequence = getMaxActivitySeq();
         }
+    }
+    
+    private Long getMaxActivitySeq() throws SQLException
+    {
+        Long maxSequence = transactionHelper.doInTransaction(new RetryingTransactionCallback<Long>()
+        {
+            @Override
+            public Long execute() throws Throwable
+            {
+                return postDAO.getMaxActivitySeq();
+            }
+        }, true, true);
+
+        return maxSequence;
     }
     
     public Tag addTag(NodeRef nodeRef, String tag)

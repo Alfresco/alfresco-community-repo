@@ -36,6 +36,7 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.CommonsHttpSolrServer;
+import org.apache.solr.client.solrj.impl.XMLResponseParser;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
@@ -159,6 +160,7 @@ public class SOLRAdminClient implements ApplicationEventPublisherAware, Disposab
 			HttpClient httpClient = httpClientFactory.getHttpClient();
 
 			server = new CommonsHttpSolrServer(solrUrl, httpClient);
+			server.setParser(new XMLResponseParser());
 			// TODO remove credentials because we're using SSL?
 			Credentials defaultcreds = new UsernamePasswordCredentials(solrUser, solrPassword); 
 			server.getHttpClient().getState().setCredentials(new AuthScope(solrHost, solrPort, AuthScope.ANY_REALM), 

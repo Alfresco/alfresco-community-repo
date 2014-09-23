@@ -21,8 +21,8 @@
         <property name="storesToIgnorePolicies">
             <ref bean="storesToIgnorePolicies"/>
         </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService"/>
+        <property name="renditionService">
+            <ref bean="renditionService"/>
         </property>
     </bean>
 </beans>

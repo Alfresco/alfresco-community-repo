@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,7 +36,6 @@ import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -50,6 +49,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.junit.After;
 import org.junit.Before;
@@ -221,6 +221,52 @@ public class MultiUserRenditionTest
                     {
                         assertEquals("Incorrect rendition owner", ownableService.getOwner(adminPdfNode), ownableService.getOwner(renditionService.getRenditions(adminPdfNode).get(0).getChildRef()));
                         assertEquals("Incorrect rendition owner", ownableService.getOwner(nonAdminPdfNode), ownableService.getOwner(renditionService.getRenditions(nonAdminPdfNode).get(0).getChildRef()));
+                        return null;
+                    }
+                });
+    }
+    
+    @Test
+    public void testRenditionOwnerHasChangedAfterSourceOwnerChange()
+    {
+        // Now have each user create a rendition (thumbnail) of the other user's content node.
+        final QName doclibRendDefQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "doclib");
+        
+        // Create another doc as non-admin
+        AuthenticationUtil.setFullyAuthenticatedUser(NON_ADMIN_USER);
+        final Pair<NodeRef, NodeRef> nonAdminNodes = txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Pair<NodeRef, NodeRef>>()
+                {
+                    public Pair<NodeRef, NodeRef> execute() throws Throwable
+                    {
+                        NodeRef nonAdminPdfNode = createPdfDocumentAsCurrentlyAuthenticatedUser(NON_ADMIN_USER + "_content");
+                        renditionService.render(nonAdminPdfNode, doclibRendDefQName);
+                        // caches rendition owner
+                        NodeRef nonAdminRenditionNode = renditionService.getRenditions(nonAdminPdfNode).get(0).getChildRef();
+                        ownableService.getOwner(nonAdminRenditionNode);
+                        return new Pair<NodeRef, NodeRef>(nonAdminPdfNode, nonAdminRenditionNode);
+                    }
+                });
+        this.nodesToBeTidiedUp.add(nonAdminNodes.getFirst());
+        this.nodesToBeTidiedUp.add(nonAdminNodes.getSecond());
+
+        // change source owner to be Admin
+        AuthenticationUtil.setFullyAuthenticatedUser(ADMIN_USER);
+        txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        ownableService.setOwner(nonAdminNodes.getFirst(), ADMIN_USER);
+                        return null;
+                    }
+                });
+        
+        // test that rendition owner also has changed
+        txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        assertEquals("Incorrect rendition owner", ADMIN_USER, ownableService.getOwner(nonAdminNodes.getFirst()));
+                        assertEquals("Incorrect rendition owner", ADMIN_USER, ownableService.getOwner(nonAdminNodes.getSecond()));
                         return null;
                     }
                 });

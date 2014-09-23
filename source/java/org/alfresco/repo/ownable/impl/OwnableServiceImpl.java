@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,11 +21,11 @@ package org.alfresco.repo.ownable.impl;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
@@ -36,8 +36,8 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -68,7 +68,7 @@ public class OwnableServiceImpl implements
     private PolicyComponent policyComponent;
     private TenantService tenantService;
     private Set<String> storesToIgnorePolicies = Collections.emptySet();
-    private DictionaryService dictionaryService;
+    private RenditionService renditionService;
 
     public OwnableServiceImpl()
     {
@@ -113,11 +113,11 @@ public class OwnableServiceImpl implements
     
    
     /**
-     * @param dictionaryService the dictionaryService to set
+     * @param renditionService the renditionService to set
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void setRenditionService(RenditionService renditionService)
     {
-        this.dictionaryService = dictionaryService;
+        this.renditionService = renditionService;
     }
 
     public void afterPropertiesSet() throws Exception
@@ -126,7 +126,7 @@ public class OwnableServiceImpl implements
         PropertyCheck.mandatory(this, "authenticationService", authenticationService);
         PropertyCheck.mandatory(this, "nodeOwnerCache", nodeOwnerCache);
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
-        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
+        PropertyCheck.mandatory(this, "renditionService", renditionService);
     }
     
     public void init()
@@ -175,7 +175,7 @@ public class OwnableServiceImpl implements
                 new JavaBehaviour(this, "onCopyNode", NotificationFrequency.EVERY_EVENT));      
     }
 
-    // OwnableService implmentation
+    // OwnableService implementation
 
     public String getOwner(NodeRef nodeRef)
     {
@@ -184,7 +184,7 @@ public class OwnableServiceImpl implements
         if (userName == null)
         {
             // If ownership is not explicitly set then we fall back to the creator
-            if(isRendition(nodeRef))
+            if (isRendition(nodeRef))
             {
                 userName = getOwner(nodeService.getPrimaryParent(nodeRef).getParentRef());
             }
@@ -220,6 +220,23 @@ public class OwnableServiceImpl implements
             nodeService.setProperty(nodeRef, ContentModel.PROP_OWNER, userName);
         }
         cacheOwner(nodeRef, userName);
+        clearOwnerCacheForRenditions(nodeRef);
+    }
+
+    private void clearOwnerCacheForRenditions(final NodeRef nodeRef)
+    {
+       AuthenticationUtil.runAs(new RunAsWork<Void>()
+       {
+           public Void doWork() throws Exception
+           {
+              List<ChildAssociationRef> renditions = renditionService.getRenditions(nodeRef);
+              for (ChildAssociationRef rendition : renditions)
+              {
+                 nodeOwnerCache.remove(rendition.getChildRef());
+              }
+              return null;
+           }
+       }, AuthenticationUtil.getSystemUserName());
     }
 
     public void takeOwnership(NodeRef nodeRef)
@@ -338,18 +355,14 @@ public class OwnableServiceImpl implements
         }
     }
     
-    private boolean isRendition(NodeRef node)
+    private boolean isRendition(final NodeRef node)
     {
-        final QName aspectToCheckFor = RenditionModel.ASPECT_RENDITION;
-        
-        Set<QName> existingAspects = nodeService.getAspects(node);
-        for (QName nextAspect : existingAspects)
+        return AuthenticationUtil.runAs(new RunAsWork<Boolean>()
         {
-            if (nextAspect.equals(aspectToCheckFor) || dictionaryService.isSubClass(nextAspect, aspectToCheckFor))
+            public Boolean doWork() throws Exception
             {
-                return true;
+                return renditionService.isRendition(node);
             }
-        }
-        return false;
+        }, AuthenticationUtil.getSystemUserName());
     }
 }

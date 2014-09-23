@@ -261,11 +261,18 @@ public class SubscriptionServiceActivitiesTest
                         
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
                         assertEquals(USER_TWO_NAME + " had wrong feed size.", 0, feed.size());
-                        
-                        // userId1 + 5, userId2 + 0
-                        generateFeed();
-                        
-                        feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        return null;
+                    }
+                });
+        
+        
+        // userId1 + 5, userId2 + 0
+        generateFeed();
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
                         assertEquals(USER_ONE_NAME + " had wrong feed size", 5, feed.size());
                         
@@ -299,13 +306,12 @@ public class SubscriptionServiceActivitiesTest
         log.debug("And " + USER_TWO_NAME + " is now following " + USER_ONE_NAME);
         
         
+        // userId1 + 5, userId2 + 2
+        generateFeed();
         doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
                 {
                     @Override public Void execute() throws Throwable
                     {
-                        // userId1 + 5, userId2 + 2
-                        generateFeed();
-                        
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
                         assertEquals(USER_ONE_NAME + "'s feed was wrong size", 7, feed.size());
@@ -333,13 +339,12 @@ public class SubscriptionServiceActivitiesTest
         log.debug(USER_ONE_NAME + " added some content across the sites.");
         
         
+        // userId1 + 5, userId2 + 1
+        generateFeed();
         doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
                 {
                     @Override public Void execute() throws Throwable
                     {
-                        // userId1 + 5, userId2 + 1
-                        generateFeed();
-                        
                         List <String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
                         assertEquals(USER_ONE_NAME + "'s feed was wrong size", 12, feed.size());
@@ -353,11 +358,18 @@ public class SubscriptionServiceActivitiesTest
                         siteService.setMembership(modSite2.getShortName(),     USER_TWO_NAME, SiteModel.SITE_MANAGER);
                         
                         log.debug(USER_TWO_NAME + "'s role changed on some sites.");
-                        
-                        // userId1 + 2, userId2 + 2
-                        generateFeed();
-                        
-                        feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
+                        return null;
+                    }
+                });
+        
+        
+        // userId1 + 2, userId2 + 2
+        generateFeed();
+        doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
+                {
+                    @Override public Void execute() throws Throwable
+                    {
+                        List <String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
                         assertEquals(USER_ONE_NAME + "'s feed was wrong size", 16, feed.size());
                         
@@ -385,14 +397,12 @@ public class SubscriptionServiceActivitiesTest
         log.debug(USER_ONE_NAME + " has added some more content...");
         
         
-        
+        // userId1 + 5, userId2 + 3
+        generateFeed();
         doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
                 {
                     @Override public Void execute() throws Throwable
                     {
-                        // userId1 + 5, userId2 + 3
-                        generateFeed();
-                        
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         assertEquals("User's feed was wrong size", 21, feed.size());
                         

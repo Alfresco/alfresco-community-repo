@@ -122,6 +122,11 @@ public abstract class AbstractFeedGenerator implements FeedGenerator
         this.sysAdminParams = sysAdminParams;
     }
 
+    public TransactionService getTransactionService()
+    {
+        return transactionService;
+    }
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;

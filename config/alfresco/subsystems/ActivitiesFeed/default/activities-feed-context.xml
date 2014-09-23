@@ -90,6 +90,8 @@
    
    <bean id="feedGenerator" class="org.alfresco.repo.activities.feed.local.LocalFeedGenerator" parent="baseFeedGenerator">
       <property name="feedTaskProcessor" ref="FeedTaskProcessor"/>
+      <property name="batchSize" value="${activities.feed.generator.batchSize}"/>
+      <property name="numThreads" value="${activities.feed.generator.numThreads}"/>
    </bean>
    
    <bean id="feedTaskProcessor" class="org.alfresco.repo.activities.feed.local.LocalFeedTaskProcessor">

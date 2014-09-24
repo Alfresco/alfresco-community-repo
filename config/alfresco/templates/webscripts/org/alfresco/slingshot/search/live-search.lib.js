@@ -15,8 +15,6 @@
 
 const DEFAULT_MAX_RESULTS = 5;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
-const DISCUSSION_QNAMEPATH = "/fm:discussion";
-const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments";
 const SURF_CONFIG_QNAMEPATH = "/cm:surf-config/";
 
 /**
@@ -69,9 +67,7 @@ function getDocumentItem(container, node)
 {
    // check whether this is a valid folder or a file
    var item = null;
-   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) === -1 &&
-       !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH) &&
-       node.qnamePath.indexOf(SURF_CONFIG_QNAMEPATH) === -1)
+   if (node.qnamePath.indexOf(SURF_CONFIG_QNAMEPATH) === -1)
    {
       if (node.isDocument)
       {
@@ -126,7 +122,6 @@ function splitQNamePath(node)
          containerId: null
        };
    
-   // TODO: should we do this processing here? until it is clicked...
    if (path.match("^"+SITES_SPACE_QNAME_PATH) == SITES_SPACE_QNAME_PATH)
    {
       var tmp = path.substring(SITES_SPACE_QNAME_PATH.length),
@@ -219,7 +214,8 @@ function getDocResults(params)
          skipCount: params.startIndex
       }
    };
-   var nodes = search.query(queryDef),
+   var rs = search.queryResultSet(queryDef);
+       nodes = rs.nodes,
        results = [];
    
    if (logger.isLoggingEnabled())
@@ -247,7 +243,7 @@ function getDocResults(params)
       }
    }
    
-   return buildResults(results, params, (nodes.length > params.maxResults));
+   return buildResults(results, params, rs.meta.hasMore);
 }
 
 /**
@@ -280,7 +276,7 @@ function buildResults(data, params, more)
    return {
       totalRecords: data.length,
       startIndex: params.startIndex,
-      hasMoreRecords: (more === true),
+      hasMoreRecords: more,
       items: data
    };
 }

@@ -2,7 +2,7 @@
 {
 	"totalRecords": ${data.totalRecords?c},
 	"startIndex": ${data.startIndex?c},
-	"hasMoreRecords": ${data.hasMoreRecords?c},
+	"hasMoreRecords": ${data.hasMoreRecords?string},
 	"items":
 	[
 		<#list data.items as item>

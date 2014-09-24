@@ -20,8 +20,6 @@
 const DEFAULT_MAX_RESULTS = 250;
 const DEFAULT_PAGE_SIZE = 50;
 const SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
-const DISCUSSION_QNAMEPATH = "/fm:discussion";
-const COMMENT_QNAMEPATH = DISCUSSION_QNAMEPATH + "/cm:Comments";
 
 /**
  * Returns site information data structure.
@@ -98,41 +96,37 @@ function getRepositoryItem(folderPath, node, populate)
 
    // check whether this is a valid folder or a file
    var item = t = null;
-   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
-       !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH))
+   if (node.isContainer || node.isDocument)
    {
-      if (node.isContainer || node.isDocument)
+      if (!populate) return {};
+      item =
       {
-         if (!populate) return {};
-         item =
-         {
-            nodeRef: node.nodeRef.toString(),
-            tags: ((t = node.tags) !== null) ? t : [],
-            name: node.name,
-            displayName: node.name,
-            title: node.properties["cm:title"],
-            description: node.properties["cm:description"],
-            modifiedOn: node.properties["cm:modified"],
-            modifiedByUser: node.properties["cm:modifier"],
-            createdOn: node.properties["cm:created"],
-            createdByUser: node.properties["cm:creator"],
-            lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
-            mimetype: node.mimetype,
-            path: folderPath.join("/")
-         };
-         item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-         item.createdBy = getPersonDisplayName(item.createdByUser);
-      }
-      if (node.isContainer)
-      {
-         item.type = "folder";
-         item.size = -1;
-      }
-      else if (node.isDocument)
-      {
-         item.type = "document";
-         item.size = node.size;
-      }
+         nodeRef: node.nodeRef.toString(),
+         tags: ((t = node.tags) !== null) ? t : [],
+         name: node.name,
+         displayName: node.name,
+         title: node.properties["cm:title"],
+         description: node.properties["cm:description"],
+         modifiedOn: node.properties["cm:modified"],
+         modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
+         lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
+         mimetype: node.mimetype,
+         path: folderPath.join("/")
+      };
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
+   }
+   if (node.isContainer)
+   {
+      item.type = "folder";
+      item.size = -1;
+   }
+   else if (node.isDocument)
+   {
+      item.type = "document";
+      item.size = node.size;
    }
 
    return item;
@@ -154,43 +148,39 @@ function getDocumentItem(siteId, containerId, pathParts, node, populate)
 
    // check whether this is a valid folder or a file
    var item = t = null;
-   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
-       !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH))
+   if (node.isContainer || node.isDocument)
    {
-      if (node.isContainer || node.isDocument)
+      if (!populate) return {};
+      item =
       {
-         if (!populate) return {};
-         item =
-         {
-            site: getSiteData(siteId),
-            container: containerId,
-            nodeRef: node.nodeRef.toString(),
-            tags: ((t = node.tags) !== null) ? t : [],
-            name: node.name,
-            displayName: node.name,
-            title: node.properties["cm:title"],
-            description: node.properties["cm:description"],
-            modifiedOn: node.properties["cm:modified"],
-            modifiedByUser: node.properties["cm:modifier"],
-            createdOn: node.properties["cm:created"],
-            createdByUser: node.properties["cm:creator"],
-            lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
-            mimetype: node.mimetype,
-            path: pathParts.join("/")
-         };
-         item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-         item.createdBy = getPersonDisplayName(item.createdByUser);
-      }
-      if (node.isContainer)
-      {
-         item.type = "folder";
-         item.size = -1;
-      }
-      else if (node.isDocument)
-      {
-         item.type = "document";
-         item.size = node.size;
-      }
+         site: getSiteData(siteId),
+         container: containerId,
+         nodeRef: node.nodeRef.toString(),
+         tags: ((t = node.tags) !== null) ? t : [],
+         name: node.name,
+         displayName: node.name,
+         title: node.properties["cm:title"],
+         description: node.properties["cm:description"],
+         modifiedOn: node.properties["cm:modified"],
+         modifiedByUser: node.properties["cm:modifier"],
+         createdOn: node.properties["cm:created"],
+         createdByUser: node.properties["cm:creator"],
+         lastThumbnailModification: node.properties["cm:lastThumbnailModification"],
+         mimetype: node.mimetype,
+         path: pathParts.join("/")
+      };
+      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+      item.createdBy = getPersonDisplayName(item.createdByUser);
+   }
+   if (node.isContainer)
+   {
+      item.type = "folder";
+      item.size = -1;
+   }
+   else if (node.isDocument)
+   {
+      item.type = "document";
+      item.size = node.size;
    }
 
    return item;
@@ -396,29 +386,25 @@ function getLinkItem(siteId, containerId, pathParts, node, populate)
    }
 
    var item = t = null;
-   if (node.qnamePath.indexOf(COMMENT_QNAMEPATH) == -1 &&
-       !(node.qnamePath.match(DISCUSSION_QNAMEPATH+"$") == DISCUSSION_QNAMEPATH))
+   if (!populate) return {};
+   item =
    {
-      if (!populate) return {};
-      item =
-      {
-         site: getSiteData(siteId),
-         container: containerId,
-         nodeRef: node.nodeRef.toString(),
-         type: "link",
-         tags: ((t = node.tags) !== null) ? t : [],
-         name: node.name,
-         description: node.properties["cm:description"],
-         modifiedOn: node.properties["cm:modified"],
-         modifiedByUser: node.properties["cm:modifier"],
-         createdOn: node.properties["cm:created"],
-         createdByUser: node.properties["cm:creator"],
-         size: -1,
-         displayName: node.properties["lnk:title"]
-      };
-      item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
-      item.createdBy = getPersonDisplayName(item.createdByUser);
-   }
+      site: getSiteData(siteId),
+      container: containerId,
+      nodeRef: node.nodeRef.toString(),
+      type: "link",
+      tags: ((t = node.tags) !== null) ? t : [],
+      name: node.name,
+      description: node.properties["cm:description"],
+      modifiedOn: node.properties["cm:modified"],
+      modifiedByUser: node.properties["cm:modifier"],
+      createdOn: node.properties["cm:created"],
+      createdByUser: node.properties["cm:creator"],
+      size: -1,
+      displayName: node.properties["lnk:title"]
+   };
+   item.modifiedBy = getPersonDisplayName(item.modifiedByUser);
+   item.createdBy = getPersonDisplayName(item.createdByUser);
 
    return item;
 }
@@ -1043,34 +1029,35 @@ function getSearchResults(params)
       var site = null
       if (!params.repo)
       {
-    	 if (params.siteId !== null && params.siteId.length > 0 )
+         if (params.siteId !== null && params.siteId.length > 0 )
          {
-    		 if (params.containerId !== null && params.containerId.length > 0)
-    	     {
-    			 // Old way
-    			 path = SITES_SPACE_QNAME_PATH;
-    			 path += "cm:" + search.ISO9075Encode(params.siteId) + "/";
-    			 path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
-    	     }
-    		 else
-    	     {
-    			 site = "SITE:\"" + params.siteId + "\"" ;
-    		 }
+            if (params.containerId !== null && params.containerId.length > 0)
+            {
+               // using PATH to restrict to container and site
+               path = SITES_SPACE_QNAME_PATH;
+               path += "cm:" + search.ISO9075Encode(params.siteId) + "/";
+               path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
+            }
+            else
+            {
+               // use SITE syntax to restrict to specific site
+               site = "SITE:\"" + params.siteId + "\"" ;
+            }
          }
-    	 else
+         else
          {
-    		 if (params.containerId !== null && params.containerId.length > 0)
-    	     {
-    			 //Old way
-    			 path = SITES_SPACE_QNAME_PATH;
-    			 path += "*/";
-    			 path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
-    			 
-    	     }
-    		 else
-    	     {
-    			 site = "SITE:\"_ALL_SITES_\"" ;
-    		 }
+            if (params.containerId !== null && params.containerId.length > 0)
+            {
+               // using PATH to restrict to container and site
+               path = SITES_SPACE_QNAME_PATH;
+               path += "*/";
+               path += "cm:" + search.ISO9075Encode(params.containerId) + "/";
+            }
+            else
+            {
+               // use SITE syntax to restrict to specific site
+               site = "SITE:\"_ALL_SITES_\"" ;
+            }
          }
       }
 
@@ -1088,7 +1075,7 @@ function getSearchResults(params)
          ftsQuery = site + ' AND (' + ftsQuery + ')';
       }
       ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"st:site"' +
-                                   ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system';
+                                   ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system AND -QNAME:comment\\-*';
       
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name
@@ -1136,7 +1123,9 @@ function getSearchResults(params)
       var queryDef = {
          query: ftsQuery,
          language: "fts-alfresco",
-         page: {maxItems: params.maxResults * 2},    // allow for space for filtering out results
+         page: {
+            maxItems: params.maxResults + 1
+         },
          templates: qt.template,
          defaultField: "keywords",
          defaultOperator: qt.operator,

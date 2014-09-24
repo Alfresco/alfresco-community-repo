@@ -126,10 +126,10 @@ public class CustomRefsGet extends AbstractRmWebScript
         List<Map<String, String>> outwardReferenceData = new ArrayList<Map<String, String>>();
 
         List<AssociationRef> assocsFromThisNode = rmAdminService.getCustomReferencesFrom(nodeRef);
-        addBidirectionalReferenceData(outwardReferenceData, assocsFromThisNode);
+        outwardReferenceData.addAll(getBidirectionalReferenceData(assocsFromThisNode));
 
         List<ChildAssociationRef> childAssocs = rmAdminService.getCustomChildReferences(nodeRef);
-        addParentChildReferenceData(outwardReferenceData, childAssocs);
+        outwardReferenceData.addAll(getParentChildReferenceData(childAssocs));
 
         return outwardReferenceData;
     }
@@ -144,11 +144,11 @@ public class CustomRefsGet extends AbstractRmWebScript
     {
         List<Map<String, String>> inwardReferenceData = new ArrayList<Map<String, String>>();
 
-        List<AssociationRef> toAssocs = rmAdminService.getCustomReferencesTo(nodeRef);
-        addBidirectionalReferenceData(inwardReferenceData, toAssocs);
+        List<AssociationRef> assocsToThisNode = rmAdminService.getCustomReferencesTo(nodeRef);
+        inwardReferenceData.addAll(getBidirectionalReferenceData(assocsToThisNode));
 
         List<ChildAssociationRef> parentAssocs = rmAdminService.getCustomParentReferences(nodeRef);
-        addParentChildReferenceData(inwardReferenceData, parentAssocs);
+        inwardReferenceData.addAll(getParentChildReferenceData(parentAssocs));
 
         return inwardReferenceData;
     }
@@ -158,20 +158,21 @@ public class CustomRefsGet extends AbstractRmWebScript
      * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
      * parent/child references.
      *
-     * @param referenceData Reference data
      * @param childAssocs Association references
+     * @return The reference data
      */
-    private void addParentChildReferenceData(List<Map<String, String>> referenceData, List<ChildAssociationRef> childAssocs)
+    private List<Map<String, String>> getParentChildReferenceData(List<ChildAssociationRef> childAssocs)
     {
+        List<Map<String, String>> referenceData = new ArrayList<Map<String, String>>();
+
         for (ChildAssociationRef childAssRef : childAssocs)
         {
             Map<String, String> data = new HashMap<String, String>();
 
-            QName typeQName = childAssRef.getTypeQName();
-
             data.put(CHILD_REF, childAssRef.getChildRef().toString());
             data.put(PARENT_REF, childAssRef.getParentRef().toString());
 
+            QName typeQName = childAssRef.getTypeQName();
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
 
             if (assDef != null &&
@@ -180,16 +181,17 @@ public class CustomRefsGet extends AbstractRmWebScript
             {
                 String compoundTitle = assDef.getTitle(dictionaryService);
 
-                data.put(REF_ID, typeQName.getLocalName());
-
                 String[] sourceAndTarget = rmAdminService.splitSourceTargetId(compoundTitle);
                 data.put(SOURCE, sourceAndTarget[0]);
                 data.put(TARGET, sourceAndTarget[1]);
                 data.put(REFERENCE_TYPE, CustomReferenceType.PARENT_CHILD.toString());
+                data.put(REF_ID, typeQName.getLocalName());
 
                 referenceData.add(data);
             }
     	}
+
+        return referenceData;
     }
 
     /**
@@ -197,11 +199,13 @@ public class CustomRefsGet extends AbstractRmWebScript
      * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
      * bidirectional references.
      *
-     * @param referenceData Reference data
      * @param assocs Association references
+     * @return The reference data
      */
-    private void addBidirectionalReferenceData(List<Map<String, String>> referenceData, List<AssociationRef> assocs)
+    private List<Map<String, String>> getBidirectionalReferenceData(List<AssociationRef> assocs)
     {
+        List<Map<String, String>> referenceData = new ArrayList<Map<String, String>>();
+
         for (AssociationRef assRef : assocs)
         {
             Map<String, String> data = new HashMap<String, String>();
@@ -222,6 +226,8 @@ public class CustomRefsGet extends AbstractRmWebScript
                 referenceData.add(data);
             }
         }
+
+        return referenceData;
     }
 
     /**

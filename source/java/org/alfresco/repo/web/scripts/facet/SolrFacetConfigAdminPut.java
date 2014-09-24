@@ -137,7 +137,11 @@ public class SolrFacetConfigAdminPut extends AbstractSolrFacetConfigAdminWebScri
             final String filterID = json.getString(PARAM_FILTER_ID); // Must exist
 
             final String facetQNameStr = getValue(String.class, json.opt(PARAM_FACET_QNAME), null);
-            final QName facetQName = (facetQNameStr == null) ? null : QName.resolveToQName(namespaceService, facetQNameStr);
+            
+            // Note that in resolving the QName string here, we expect there to be some facet QNames which are not
+            // really QNames. These are SOLR/SearchService 'specials', examples being "SITE" or "TAG".
+            // These will be resolved here to a QName with no namespace.
+            final QName facetQName = (facetQNameStr == null) ? null : QName.createQName(facetQNameStr, namespaceService);
             final String displayName = getValue(String.class, json.opt(PARAM_DISPLAY_NAME), null);
             final String displayControl = getValue(String.class, json.opt(PARAM_DISPLAY_CONTROL), null);
             final int maxFilters = getValue(Integer.class, json.opt(PARAM_MAX_FILTERS), -1);

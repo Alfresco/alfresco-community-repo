@@ -1,7 +1,8 @@
+<#macro stripEmptyNamespace qnameString>${qnameString?replace("{}", "")}</#macro>
 <#macro facetJSON facet>
 <#escape x as jsonUtils.encodeJSONString(x)>
              "filterID" : "${facet.filterID}",
-             "facetQName" : "${facet.facetQName}",
+             "facetQName" : "<@stripEmptyNamespace qnameString=facet.facetQName?string/>",
              "displayName" : "${facet.displayName}",
              "displayControl" : "${facet.displayControl}",
              "maxFilters" : ${facet.maxFilters?c},

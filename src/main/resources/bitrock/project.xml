@@ -19,6 +19,8 @@
     <leftImage>images/alfresco_left.png</leftImage>
     <allowedLanguages>en fr es it de ja nl ru zh_CN no pt_BR</allowedLanguages>
     <enableRollback>0</enableRollback>
+    <windowsResourceOriginalFilename>${project.installerFilename}</windowsResourceOriginalFilename>
+    <windowsResourceFileDescription>${project.fullName} Installer</windowsResourceFileDescription>
 
     <platformOptionsList>
         <platformOptions>

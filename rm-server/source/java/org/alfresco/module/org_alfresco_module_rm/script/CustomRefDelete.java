@@ -18,14 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
+import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
@@ -33,109 +32,125 @@ import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation for Java backed webscript to remove RM custom reference instances
- * from a node.
+ * Implementation for Java backed webscript to remove RM custom reference instances from a node.
  *
  * @author Neil McErlean
+ * @author Tuna Aksoy
  */
 public class CustomRefDelete extends AbstractRmWebScript
 {
-    /** Logger */
-    private static Log logger = LogFactory.getLog(CustomRefDelete.class);
+    /** Constants */
+    private static final String REF_ID = "refId";
+    private static final String ST = "st";
+    private static final String SI = "si";
+    private static final String ID = "id";
 
-    /** RM Admin Service */
+    /** RM admin service */
     private RecordsManagementAdminService rmAdminService;
 
-    /** Rule Service */
+    /** Rule service */
     private RuleService ruleService;
 
     /**
-     * @param rmAdminService    RM Admin Service
+     * Sets the RM admin service
+     *
+     * @param rmAdminService RM admin service
      */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
-		this.rmAdminService = rmAdminService;
-	}
+        this.rmAdminService = rmAdminService;
+    }
 
     /**
-     * @param ruleService   Rule Service
+     * Sets the rule service
+     *
+     * @param ruleService Rule service
      */
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
 
-    /*
+    /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> ftlModel;
-        ruleService.disableRuleType(RuleType.OUTBOUND);
+        Map<String, Object> model = new HashMap<String, Object>(1);
 
         try
         {
-            ftlModel = removeCustomReferenceInstance(req);
+            ruleService.disableRuleType(RuleType.OUTBOUND);
+            removeCustomReferenceInstance(req);
+            model.put(SUCCESS, true);
         }
         finally
         {
             ruleService.enableRuleType(RuleType.OUTBOUND);
         }
 
-        return ftlModel;
+        return model;
     }
 
     /**
-     * Removes custom reference.
+     * Removes custom reference instance
+     *
+     * @param req The webscript request
      */
-    protected Map<String, Object> removeCustomReferenceInstance(WebScriptRequest req)
+    private void removeCustomReferenceInstance(WebScriptRequest req)
     {
-        NodeRef fromNodeRef = parseRequestForNodeRef(req);
+        NodeRef fromNode = parseRequestForNodeRef(req);
+        NodeRef toNodeRef = getToNode(req);
+        QName associationQName = getAssociationQName(req);
 
+        rmAdminService.removeCustomReference(fromNode, toNodeRef, associationQName);
+        rmAdminService.removeCustomReference(toNodeRef, fromNode, associationQName);
+    }
+
+    /**
+     * Gets the node from which the reference will be removed
+     *
+     * @param req The webscript request
+     * @return The node from which the reference will be removed
+     */
+    private NodeRef getToNode(WebScriptRequest req)
+    {
         // Get the toNode from the URL query string.
-        String storeType = req.getParameter("st");
-        String storeId = req.getParameter("si");
-        String nodeId = req.getParameter("id");
+        String storeType = req.getParameter(ST);
+        String storeId = req.getParameter(SI);
+        String nodeId = req.getParameter(ID);
 
-        // create the NodeRef and ensure it is valid
-        StoreRef storeRef = new StoreRef(storeType, storeId);
-        NodeRef toNodeRef = new NodeRef(storeRef, nodeId);
-
-        if (!this.nodeService.exists(toNodeRef))
+        // Create the NodeRef and ensure it is valid
+        NodeRef toNode = new NodeRef(storeType, storeId, nodeId);
+        if (!nodeService.exists(toNode))
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find to-node: " +
-            		toNodeRef.toString());
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find toNode: '" +
+                    toNode.toString() + "'.");
         }
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        return toNode;
+    }
 
-        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-        String clientsRefId = templateVars.get("refId");
-        QName qn = rmAdminService.getQNameForClientId(clientsRefId);
-        if (qn == null)
+    /**
+     * Gets the QName of the association
+     *
+     * @param req The webscript request
+     * @return QName of the association
+     */
+    private QName getAssociationQName(WebScriptRequest req)
+    {
+        String clientsRefId = getRequestParameterValue(req, REF_ID);
+        QName qName = rmAdminService.getQNameForClientId(clientsRefId);
+
+        if (qName == null)
         {
-            throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            		"Unable to find reference type: " + clientsRefId);
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
+                    "Unable to find reference type: '" + clientsRefId + "'.");
         }
 
-        if (logger.isDebugEnabled())
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Removing reference ").append(qn).append(" from ")
-                .append(fromNodeRef).append(" to ").append(toNodeRef);
-            logger.debug(msg.toString());
-        }
-
-        rmAdminService.removeCustomReference(fromNodeRef, toNodeRef, qn);
-        rmAdminService.removeCustomReference(toNodeRef, fromNodeRef, qn);
-
-        result.put("success", true);
-
-        return result;
+        return qName;
     }
 }

@@ -35,19 +35,19 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * This class provides the implementation for the customrefs.get webscript.
+ * Implementation for Java backed webscript to get RM custom references for a node.
  *
  * @author Neil McErlean
+ * @author Tuna Aksoy
  */
 public class CustomRefsGet extends AbstractRmWebScript
 {
+    /** Constants */
     private static final String REFERENCE_TYPE = "referenceType";
     private static final String REF_ID = "refId";
     private static final String LABEL = "label";
@@ -62,20 +62,18 @@ public class CustomRefsGet extends AbstractRmWebScript
     private static final String NODE_NAME = "nodeName";
     private static final String NODE_TITLE = "nodeTitle";
 
-    /** logger */
-    private static Log logger = LogFactory.getLog(CustomRefsGet.class);
-
-    /** records management admin service */
+    /** RM admin service */
     private RecordsManagementAdminService rmAdminService;
 
-    /** dictionary service */
+    /** Dictionary service */
     private DictionaryService dictionaryService;
 
-    /** capability service */
+    /** Capability service */
     private CapabilityService capabilityService;
 
     /**
-     * @param rmAdminService    records management admin service
+     * Sets the RM admin service
+     * @param rmAdminService RM admin service
      */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
@@ -83,7 +81,9 @@ public class CustomRefsGet extends AbstractRmWebScript
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * Sets the dictionary service
+     *
+     * @param dictionaryService Dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -91,7 +91,9 @@ public class CustomRefsGet extends AbstractRmWebScript
     }
 
     /**
-     * @param capabilityService capability service
+     * Sets the capability service
+     *
+     * @param capabilityService Capability service
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -102,46 +104,53 @@ public class CustomRefsGet extends AbstractRmWebScript
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
      */
     @Override
-    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> ftlModel = new HashMap<String, Object>();
+        Map<String, Object> model = new HashMap<String, Object>(4);
+        NodeRef nodeRef = parseRequestForNodeRef(req);
+        model.put(NODE_NAME, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
+        model.put(NODE_TITLE, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+        model.put(CUSTOM_REFS_FROM, getOutwardReferences(nodeRef));
+        model.put(CUSTOM_REFS_TO, getInwardReferenceData(nodeRef));
+        return model;
+    }
 
-        NodeRef node = parseRequestForNodeRef(req);
+    /**
+     * Gets all the references that come 'out' from this node
+     *
+     * @param nodeRef Node reference
+     * @return All the references that come 'out' from this node
+     */
+    private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef)
+    {
+        List<Map<String, String>> outwardReferenceData = new ArrayList<Map<String, String>>();
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Getting custom reference instances for " + node);
-        }
+        List<AssociationRef> assocsFromThisNode = rmAdminService.getCustomReferencesFrom(nodeRef);
+        addBidirectionalReferenceData(outwardReferenceData, assocsFromThisNode);
 
-        // All the references that come 'out' from this node.
-        List<Map<String, String>> listOfOutwardReferenceData = new ArrayList<Map<String, String>>();
+        List<ChildAssociationRef> childAssocs = rmAdminService.getCustomChildReferences(nodeRef);
+        addParentChildReferenceData(outwardReferenceData, childAssocs);
 
-        List<AssociationRef> assocsFromThisNode = this.rmAdminService.getCustomReferencesFrom(node);
-        addBidirectionalReferenceData(listOfOutwardReferenceData, assocsFromThisNode);
+        return outwardReferenceData;
+    }
 
-        List<ChildAssociationRef> childAssocs = this.rmAdminService.getCustomChildReferences(node);
-        addParentChildReferenceData(listOfOutwardReferenceData, childAssocs);
+    /**
+     * Gets all the references that come 'in' to this node
+     *
+     * @param nodeRef Node reference
+     * @return All the references that come 'in' to this node
+     */
+    private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef)
+    {
+        List<Map<String, String>> inwardReferenceData = new ArrayList<Map<String, String>>();
 
-        // All the references that come 'in' to this node.
-        List<Map<String, String>> listOfInwardReferenceData = new ArrayList<Map<String, String>>();
+        List<AssociationRef> toAssocs = rmAdminService.getCustomReferencesTo(nodeRef);
+        addBidirectionalReferenceData(inwardReferenceData, toAssocs);
 
-        List<AssociationRef> toAssocs = this.rmAdminService.getCustomReferencesTo(node);
-        addBidirectionalReferenceData(listOfInwardReferenceData, toAssocs);
+        List<ChildAssociationRef> parentAssocs = rmAdminService.getCustomParentReferences(nodeRef);
+        addParentChildReferenceData(inwardReferenceData, parentAssocs);
 
-        List<ChildAssociationRef> parentAssocs = this.rmAdminService.getCustomParentReferences(node);
-        addParentChildReferenceData(listOfInwardReferenceData, parentAssocs);
-
-    	if (logger.isDebugEnabled())
-    	{
-    		logger.debug("Retrieved custom reference instances: " + assocsFromThisNode);
-    	}
-
-        ftlModel.put(NODE_NAME, nodeService.getProperty(node, ContentModel.PROP_NAME));
-        ftlModel.put(NODE_TITLE, nodeService.getProperty(node, ContentModel.PROP_TITLE));
-        ftlModel.put(CUSTOM_REFS_FROM, listOfOutwardReferenceData);
-        ftlModel.put(CUSTOM_REFS_TO, listOfInwardReferenceData);
-
-        return ftlModel;
+        return inwardReferenceData;
     }
 
     /**
@@ -149,19 +158,19 @@ public class CustomRefsGet extends AbstractRmWebScript
      * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
      * parent/child references.
      *
-     * @param listOfReferenceData
-     * @param assocs
+     * @param referenceData Reference data
+     * @param childAssocs Association references
      */
-    private void addParentChildReferenceData(List<Map<String, String>> listOfReferenceData,List<ChildAssociationRef> childAssocs)
+    private void addParentChildReferenceData(List<Map<String, String>> referenceData, List<ChildAssociationRef> childAssocs)
     {
         for (ChildAssociationRef childAssRef : childAssocs)
-    	{
-    		Map<String, String> data = new HashMap<String, String>();
+        {
+            Map<String, String> data = new HashMap<String, String>();
 
-    		QName typeQName = childAssRef.getTypeQName();
+            QName typeQName = childAssRef.getTypeQName();
 
-    		data.put(CHILD_REF, childAssRef.getChildRef().toString());
-    		data.put(PARENT_REF, childAssRef.getParentRef().toString());
+            data.put(CHILD_REF, childAssRef.getChildRef().toString());
+            data.put(PARENT_REF, childAssRef.getParentRef().toString());
 
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
 
@@ -178,7 +187,7 @@ public class CustomRefsGet extends AbstractRmWebScript
                 data.put(TARGET, sourceAndTarget[1]);
                 data.put(REFERENCE_TYPE, CustomReferenceType.PARENT_CHILD.toString());
 
-                listOfReferenceData.add(data);
+                referenceData.add(data);
             }
     	}
     }
@@ -188,16 +197,16 @@ public class CustomRefsGet extends AbstractRmWebScript
      * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
      * bidirectional references.
      *
-     * @param listOfReferenceData
-     * @param assocs
+     * @param referenceData Reference data
+     * @param assocs Association references
      */
-    private void addBidirectionalReferenceData(List<Map<String, String>> listOfReferenceData, List<AssociationRef> assocs)
+    private void addBidirectionalReferenceData(List<Map<String, String>> referenceData, List<AssociationRef> assocs)
     {
         for (AssociationRef assRef : assocs)
-    	{
-    		Map<String, String> data = new HashMap<String, String>();
+        {
+            Map<String, String> data = new HashMap<String, String>();
 
-    		QName typeQName = assRef.getTypeQName();
+            QName typeQName = assRef.getTypeQName();
             AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
 
             if (assDef != null &&
@@ -210,16 +219,16 @@ public class CustomRefsGet extends AbstractRmWebScript
                 data.put(SOURCE_REF, assRef.getSourceRef().toString());
                 data.put(TARGET_REF, assRef.getTargetRef().toString());
 
-                listOfReferenceData.add(data);
+                referenceData.add(data);
             }
         }
     }
 
     /**
-     * Determine whether the current user has view capabilities on the given node.
+     * Determines whether the current user has view capabilities on the given node.
      *
-     * @param  nodeRef   node reference
-     * @return boolean   true if current user has view capability, false otherwise
+     * @param  nodeRef Node reference
+     * @return boolean <code>true</code> if current user has view capability, <code>false</code> otherwise
      */
     private boolean hasView(NodeRef nodeRef)
     {
@@ -230,6 +239,7 @@ public class CustomRefsGet extends AbstractRmWebScript
         {
             result = true;
         }
+
         return result;
     }
 }

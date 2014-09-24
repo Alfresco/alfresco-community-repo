@@ -95,8 +95,12 @@ import java.util.Map;
         {
             existing.remove(behaviourDefinition);
             size--;
-        }
 
+            for (BehaviourChangeObserver<B> listener : observers)
+            {
+                listener.removal(binding, behaviourDefinition.getBehaviour());
+            }
+        }
     } 
     
     

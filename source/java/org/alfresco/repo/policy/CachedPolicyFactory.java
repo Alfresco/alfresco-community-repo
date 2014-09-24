@@ -89,6 +89,12 @@ import org.apache.commons.logging.LogFactory;
                 clearCache("aggregate delegate", singleCache, binding);
                 clearCache("delegate collection", listCache, binding);
             }
+
+            public void removal(B binding, Behaviour behaviour)
+            {
+                clearCache("aggregate delegate", singleCache, binding);
+                clearCache("delegate collection", listCache, binding);
+            }
         });
     }
 

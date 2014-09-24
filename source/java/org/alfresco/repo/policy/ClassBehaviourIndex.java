@@ -77,6 +77,33 @@ import org.alfresco.util.LockHelper;
                     listener.addition(binding, behaviour);
                 }
             }
+
+            public void removal(B binding, Behaviour behaviour)
+            {
+                for (BehaviourChangeObserver<B> listener : observers)
+                {
+                    listener.removal(binding, behaviour);
+                }
+            }
+        });
+
+        this.classMap.addChangeObserver(new BehaviourChangeObserver<B>()
+        {
+            public void addition(B binding, Behaviour behaviour)
+            {
+                for (BehaviourChangeObserver<B> listener : observers)
+                {
+                    listener.addition(binding, behaviour);
+                }
+            }
+
+            public void removal(B binding, Behaviour behaviour)
+            {
+                for (BehaviourChangeObserver<B> listener : observers)
+                {
+                    listener.removal(binding, behaviour);
+                }
+            }
         });
 
         // Observe service binding changes and propagate to our own observers
@@ -88,6 +115,14 @@ import org.alfresco.util.LockHelper;
                 {
                     // Note: Don't specify class ref as service-level bindings affect all classes
                     listener.addition(null, behaviour);
+                }
+            }
+
+            public void removal(ServiceBehaviourBinding binding, Behaviour behaviour)
+            {
+                for (BehaviourChangeObserver<B> listener : observers)
+                {
+                    listener.removal(null, behaviour);
                 }
             }
         });

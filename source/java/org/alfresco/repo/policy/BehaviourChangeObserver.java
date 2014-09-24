@@ -34,5 +34,7 @@ package org.alfresco.repo.policy;
      * @param binding  the binding
      * @param behaviour  the behaviour attached to the binding
      */
-    public void addition(B binding, Behaviour behaviour);
+    void addition(B binding, Behaviour behaviour);
+
+    void removal(B binding, Behaviour behaviour);
 }

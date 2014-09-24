@@ -984,7 +984,7 @@ function getSearchResults(params)
 
    if (ftsQuery.length !== 0)
    {
-      if (params.filters !== null)
+      if (params.filters != null)
       {
          // comma separated list of filter pairs - filter|value|value|...
          var filters = params.filters.split(",");
@@ -1131,7 +1131,7 @@ function getSearchResults(params)
          defaultOperator: qt.operator,
          onerror: "no-results",
          sort: sortColumns,
-         fieldFacets: params.facetFields !== null ? params.facetFields.split(",") : null,
+         fieldFacets: params.facetFields != null ? params.facetFields.split(",") : null,
          searchTerm: params.term,
          spellCheck: params.spell
       };

@@ -141,7 +141,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         final String filterName = "filter" + System.currentTimeMillis();
         filters.add(filterName);
         filter.put("filterID", filterName);
-        filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test1");
+        filter.put("facetQName", "cm:test1");
         filter.put("displayName", "facet-menu.facet.test1");
         filter.put("displayControl", "alfresco/search/FacetFilters/test1");
         filter.put("maxFilters", 5);
@@ -291,7 +291,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 String filterNameOne = "filterOne" + System.currentTimeMillis();
                 filters.add(filterNameOne);
                 filter_one.put("filterID", filterNameOne);
-                filter_one.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test1");
+                filter_one.put("facetQName", "cm:test1");
                 filter_one.put("displayName", "facet-menu.facet.test1");
                 filter_one.put("displayControl", "alfresco/search/FacetFilters/test1");
                 filter_one.put("maxFilters", 5);
@@ -323,7 +323,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 String filterNameTwo = "filterTwo" + System.currentTimeMillis();
                 filters.add(filterNameTwo);
                 filter_two.put("filterID", filterNameTwo);
-                filter_two.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test2");
+                filter_two.put("facetQName", "cm:test2");
                 filter_two.put("displayName", "facet-menu.facet.test2");
                 filter_two.put("displayControl", "alfresco/search/FacetFilters/test2");
                 filter_two.put("maxFilters", 5);
@@ -368,7 +368,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 String filterName = "filter" + System.currentTimeMillis();
                 filters.add(filterName);
                 filter.put("filterID", filterName);
-                filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}content.size.test");
+                filter.put("facetQName", "cm:content.size.test");
                 filter.put("displayName", "facet-menu.facet.size.test");
                 filter.put("displayControl", "alfresco/search/FacetFilters/test");
                 filter.put("maxFilters", 5);
@@ -424,7 +424,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         final String filterName = "filter" + System.currentTimeMillis();
         filters.add(filterName);
         filter.put("filterID", filterName);
-        filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test1");
+        filter.put("facetQName", "cm:test1");
         filter.put("displayName", "facet-menu.facet.test1");
         filter.put("displayControl", "alfresco/search/FacetFilters/test1");
         filter.put("maxFilters", 5);
@@ -512,7 +512,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
         final String filterName = "filter" + System.currentTimeMillis();
         filters.add(filterName);
         filter.put("filterID", filterName);
-        filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}test");
+        filter.put("facetQName", "cm:test");
         filter.put("displayName", "facet-menu.facet.test1");
         filter.put("displayControl", "alfresco/search/FacetFilters/test");
         filter.put("maxFilters", 5);
@@ -595,7 +595,7 @@ public class FacetRestApiTest extends BaseWebScriptTest
                 // Change the facetQName value and update
                 singleValueJson = new JSONObject();
                 singleValueJson.put("filterID", filterName);
-                singleValueJson.put("facetQName", "{http://www.alfresco.org/model/content/1.0}testModifiedValue");
+                singleValueJson.put("facetQName", "cm:testModifiedValue");
                 // We simulate that 'testModifiedValue' QName doesn't have custom properties
                 singleValueJson.put("customProperties", new JSONObject());
                 sendRequest(new PutRequest(PUT_FACETS_URL, singleValueJson.toString(), "application/json"), 200);

@@ -18,44 +18,45 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import java.io.IOException;
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.namespace.QName;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Implementation for Java backed webscript to add RM custom reference instances
- * to a node.
+ * Implementation for Java backed webscript to add RM custom reference instances to a node.
  *
  * @author Neil McErlean
+ * @author Tuna Aksoy
  */
 public class CustomRefPost extends AbstractRmWebScript
 {
+    /** Constants */
     private static final String TO_NODE = "toNode";
     private static final String REF_ID = "refId";
 
-    /** RM Admin Service */
+    /** RM admin service */
     private RecordsManagementAdminService rmAdminService;
 
-    /** Rule Service */
+    /** Rule service */
     private RuleService ruleService;
 
     /**
-     * @param rmAdminService    RM Admin Service
+     * Sets the RM admin service
+     *
+     * @param rmAdminService RM admin service
      */
     public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
@@ -63,71 +64,89 @@ public class CustomRefPost extends AbstractRmWebScript
     }
 
     /**
-     * @param ruleService   Rule Service
+     * Sets the rule service
+     *
+     * @param ruleService Rule service
      */
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
 
-    /*
+    /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        JSONObject json = null;
-        Map<String, Object> ftlModel = null;
+        Map<String, Object> model = new HashMap<String, Object>(1);
+
         try
         {
             ruleService.disableRuleType(RuleType.INBOUND);
-
-            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
-
-            ftlModel = addCustomReferenceInstance(req, json);
-        }
-        catch (IOException iox)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                    "Could not read content from req.", iox);
-        }
-        catch (JSONException je)
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
-                        "Could not parse JSON from req.", je);
+            addCustomReferenceInstance(req);
+            model.put(SUCCESS, true);
         }
         finally
         {
             ruleService.enableRuleType(RuleType.INBOUND);
         }
 
-        return ftlModel;
+        return model;
     }
 
     /**
-     * Applies custom reference.
+     * Adds a custom reference instance
+     *
+     * @param req The webscript request
      */
-    protected Map<String, Object> addCustomReferenceInstance(WebScriptRequest req, JSONObject json) throws JSONException
+    protected void addCustomReferenceInstance(WebScriptRequest req)
     {
         NodeRef fromNode = parseRequestForNodeRef(req);
+        JSONObject json = getRequestContentAsJsonObject(req);
+        NodeRef toNode = getToNode(json);
+        QName associationQName = getAssociationQName(json);
 
-        Map<String, Object> result = new HashMap<String, Object>();
+        rmAdminService.addCustomReference(fromNode, toNode, associationQName);
+    }
 
-        String toNodeStg = json.getString(TO_NODE);
-        NodeRef toNode = new NodeRef(toNodeStg);
+    /**
+     * Gets the node to which the reference will be added
+     *
+     * @param json Request content as json object
+     * @return The node to which the reference will be added
+     */
+    private NodeRef getToNode(JSONObject json)
+    {
+        String toNodeString = getStringValueFromJSONObject(json, TO_NODE);
+        NodeRef toNode = new NodeRef(toNodeString);
 
-        String clientsRefId = json.getString(REF_ID);
-        QName qn = rmAdminService.getQNameForClientId(clientsRefId);
-        if (qn == null)
+        if (!nodeService.exists(toNode))
         {
-            throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-            		"Unable to find reference type: " + clientsRefId);
+            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find toNode: '" +
+                    toNode.toString() + "'.");
         }
 
-        rmAdminService.addCustomReference(fromNode, toNode, qn);
+        return toNode;
+    }
 
-        result.put("success", true);
+    /**
+     * Gets the QName of the association
+     *
+     * @param json Request content as json object
+     * @return QName of the association
+     */
+    private QName getAssociationQName(JSONObject json)
+    {
+        String clientsRefId = getStringValueFromJSONObject(json, REF_ID);
+        QName qName = rmAdminService.getQNameForClientId(clientsRefId);
 
-        return result;
+        if (qName == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
+                    "Unable to find reference type: '" + clientsRefId + "'.");
+        }
+
+        return qName;
     }
 }

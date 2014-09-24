@@ -43,6 +43,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
 {
     /** Constants */
     protected static final String PATH_SEPARATOR = "/";
+    protected static final String SUCCESS = "success";
 
     /** Disposition service */
     protected DispositionService dispositionService;

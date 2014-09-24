@@ -94,7 +94,7 @@ public final class WebScriptUtils
      *
      * @param req The webscript request
      * @param parameter The request parameter
-     * @param checkValue FIXME!!!
+     * @param checkValue Determines if the value of the parameter should be checked or not
      * @return The value of the request parameter
      */
     public static String getRequestParameterValue(WebScriptRequest req, String parameter, boolean checkValue)

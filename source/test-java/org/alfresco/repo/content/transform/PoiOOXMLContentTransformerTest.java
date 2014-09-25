@@ -40,7 +40,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
  */
 public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTest
 {
-    private static final int SMALL_TIMEOUT = 50;
+    private static final int SMALL_TIMEOUT = 30;
 
     private static final int ADDITIONAL_PROCESSING_TIME = 1500;
 
@@ -133,6 +133,7 @@ public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTe
         try
         {
             transformer.transform(sourceReader, tempWriter);
+			// should not get here unless transform is too fast
             long transformationTime = System.currentTimeMillis() - startTime;
             fail("Content transformation took " + transformationTime + " ms, but should have failed with a timeout at " + SMALL_TIMEOUT + " ms");
         }

@@ -162,7 +162,7 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
     
     // Bring our cached copies of the source beans in line with the application context factory, using a RW lock to
     // ensure consistency
-    private Object locateBean(MethodInvocation mi)
+    protected Object locateBean(MethodInvocation mi)
     {
         boolean haveWriteLock = false;
         this.lock.readLock().lock();

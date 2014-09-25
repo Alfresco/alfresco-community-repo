@@ -34,6 +34,7 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.admin.RepoModelDefinition;
 import org.alfresco.repo.content.ContentStore;
+import org.alfresco.repo.content.ContentStoreCaps;
 import org.alfresco.repo.dictionary.DictionaryComponent;
 import org.alfresco.repo.domain.tenant.TenantAdminDAO;
 import org.alfresco.repo.domain.tenant.TenantEntity;
@@ -282,11 +283,11 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         // register dictionary - to allow enable/disable tenant callbacks
         register(dictionaryComponent);
         
-        if (tenantFileContentStore instanceof TenantDeployer)
+        if (isTenantDeployer(tenantFileContentStore))
         {
             // register file store - to allow enable/disable tenant callbacks
             // note: tenantFileContentStore must be registed before dictionaryRepositoryBootstrap
-            register((TenantDeployer)tenantFileContentStore, 0);
+            register(tenantDeployer(tenantFileContentStore), 0);
         }
         
         UserTransaction userTransaction = transactionService.getUserTransaction();
@@ -304,7 +305,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             
             for (Tenant tenant : tenants)
             {
-                if ((! (tenantFileContentStore instanceof TenantRoutingContentStore)) && (! tenantFileContentStore.getRootLocation().equals(tenant.getRootContentStoreDir())))
+                if ((! (isTenantRoutingContentStore(tenantFileContentStore))) && (! tenantFileContentStore.getRootLocation().equals(tenant.getRootContentStoreDir())))
                 {
                     // eg. ALF-14121 - MT will not work with replicating-content-services-context.sample if tenants are not co-mingled
                     throw new AlfrescoRuntimeException("MT: cannot start tenants - TenantRoutingContentStore is not configured AND not all tenants use co-mingled content store");
@@ -438,9 +439,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 {
                     dictionaryComponent.init();
                     
-                    if (tenantFileContentStore instanceof TenantDeployer)
+                    if (isTenantDeployer(tenantFileContentStore))
                     {
-                        ((TenantDeployer)tenantFileContentStore).init();
+                        TenantDeployer deployer = tenantDeployer(tenantFileContentStore);
+                        deployer.init();
                     }
                     
                     // callback
@@ -553,9 +555,10 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
             
             dictionaryComponent.init();
             
-            if (tenantFileContentStore instanceof TenantDeployer)
+            if (isTenantDeployer(tenantFileContentStore))
             {
-                ((TenantDeployer)tenantFileContentStore).init();
+                TenantDeployer deployer = tenantDeployer(tenantFileContentStore);
+                deployer.init();
             }
             
             // import tenant-specific stores
@@ -1262,6 +1265,47 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
     }
      
+    protected TenantRoutingContentStore tenantRoutingContentStore(ContentStore contentStore)
+    {
+        if (contentStore instanceof TenantRoutingContentStore)
+        {
+            return (TenantRoutingContentStore) contentStore;
+        }
+        else if (contentStore instanceof ContentStoreCaps)
+        {
+            ContentStoreCaps capabilities = (ContentStoreCaps) contentStore;
+            return (TenantRoutingContentStore) capabilities.getTenantRoutingContentStore();
+        }
+        return null;
+    }
+    
+    protected boolean isTenantRoutingContentStore(ContentStore contentStore)
+    {
+        boolean router = tenantRoutingContentStore(contentStore) != null;
+        return router;
+    }
+    
+    protected TenantDeployer tenantDeployer(ContentStore contentStore)
+    {
+        if (contentStore instanceof TenantDeployer)
+        {
+            return (TenantDeployer) contentStore;
+        }
+        else if (contentStore instanceof ContentStoreCaps)
+        {
+            ContentStoreCaps capabilities = (ContentStoreCaps) contentStore;
+            return (TenantDeployer) capabilities.getTenantDeployer();
+        }
+        return null;
+    }
+    
+    protected boolean isTenantDeployer(ContentStore contentStore)
+    {
+        boolean deployer = tenantDeployer(contentStore) != null;
+        return deployer;
+    }
+    
+    
     private void initTenant(String tenantDomain, String contentRoot, String dbUrl)
     {
         validateTenantName(tenantDomain);
@@ -1277,7 +1321,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         }
         else
         {
-            if (! (tenantFileContentStore instanceof TenantRoutingContentStore))
+            if (! isTenantRoutingContentStore(tenantFileContentStore))
             {
                 // eg. ALF-14121 - MT will not work with replicating-content-services-context.sample
                 throw new AlfrescoRuntimeException("MT: cannot initialse tenant - TenantRoutingContentStore is not configured AND tenant is not using co-mingled content store (ie. default root location)");

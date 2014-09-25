@@ -45,7 +45,7 @@
     </bean>
 
     <!-- Import the selected ContentStore subsystem's fileContentStore bean for use in the main repository context -->
-    <bean id="fileContentStore" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+    <bean id="fileContentStore" class="org.alfresco.repo.management.subsystems.CryptodocSubsystemProxyFactory">
         <property name="sourceApplicationContextFactory">
             <ref bean="ContentStore" />
         </property>
@@ -55,6 +55,7 @@
         <property name="interfaces">
             <list>
                 <value>org.alfresco.repo.content.ContentStore</value>
+                <value>org.alfresco.repo.content.ContentStoreCaps</value>
             </list>
         </property>
     </bean>

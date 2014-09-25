@@ -101,8 +101,6 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "services", services);
-        
-        this.solrFacetHelper = new SolrFacetHelper(services);
     }
     
     public void setSolrFacetHelper(SolrFacetHelper solrFacetHelper)

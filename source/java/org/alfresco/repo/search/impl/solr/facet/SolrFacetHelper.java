@@ -105,7 +105,17 @@ public class SolrFacetHelper
         BUCKETED_FIELD_FACETS.add(MODIFIED_FIELD_FACET_QUERY);
         BUCKETED_FIELD_FACETS.add(CONTENT_SIZE_FIELD_FACET_QUERY);
     }
-
+    
+    /** These facet IDs are recognised by SOLR and can be used directly within facetted searches. */
+    private Set<String> specialFacetIds = Collections.emptySet();
+    {
+    }
+    
+    public void setSpecialFacetIds(Set<String> ids)
+    {
+        this.specialFacetIds = ids;
+    }
+    
     /** Facet value and facet query display label handlers */
     private Map<String, FacetLabelDisplayHandler> displayHandlers;
 
@@ -287,6 +297,15 @@ public class SolrFacetHelper
     public Set<String> getBucketedFieldFacets()
     {
         return Collections.unmodifiableSet(BUCKETED_FIELD_FACETS);
+    }
+    
+    /**
+     * Is the specified facet ID part of the list of "specials" which are
+     * handled by our SOLR service as is?
+     */
+    public boolean isSpecialFacetId(String facetId)
+    {
+        return specialFacetIds.contains(facetId);
     }
 
     /**

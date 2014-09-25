@@ -104,6 +104,12 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
         
         this.solrFacetHelper = new SolrFacetHelper(services);
     }
+    
+    public void setSolrFacetHelper(SolrFacetHelper solrFacetHelper)
+    {
+        this.solrFacetHelper = solrFacetHelper;
+    }
+    
     /**
      * Set the default store reference
      * 
@@ -717,8 +723,18 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 {
                     for (String field: facets)
                     {
-                        sp.addFieldFacet(new FieldFacet("@" + field));
+                        final FieldFacet fieldFacet;
+                        if (solrFacetHelper.isSpecialFacetId(field))
+                        {
+                            fieldFacet = new FieldFacet(field);
+                        }
+                        else
+                        {
+                            fieldFacet = new FieldFacet("@" + field);
+                        }
+                        sp.addFieldFacet(fieldFacet);
                     }
+                    
                     List<String> facetQueries = null;
                     // Workaround for ACE-1605
                     if (query.indexOf("created:") < 0 && query.indexOf("modified:") < 0)

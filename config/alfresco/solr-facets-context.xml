@@ -43,19 +43,4 @@
          <value>${solr_facets.root}</value>
       </property>
    </bean>
-   
-   <bean id="solrFacetHelper" class="org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper">
-      <constructor-arg index="0" ref="ServiceRegistry" />
-      <property name="specialFacetIds">
-         <set>
-            <value>SITE</value>
-            <value>TAG</value>
-            <value>ANCESTOR</value>
-            <value>PARENT</value>
-            <value>ASPECT</value>
-            <value>TYPE</value>
-            <value>OWNER</value>
-         </set>
-      </property>
-   </bean>
 </beans>

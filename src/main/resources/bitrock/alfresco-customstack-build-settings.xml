@@ -36,6 +36,7 @@
         <setInstallerVariable name="alfresco_wcmqs_config_source_file" value="${alfresco_svn_rootdir.unix}/modules/wcmquickstart/wcmquickstartclientapi/config/alfresco" />
 
         <!-- Binaries -->
+        <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}/manager" />
         <setInstallerVariable name="common_distribution_folder" value="${binaries_folder}/common-20140108" />
         <setInstallerVariable name="postgres_distribution_folder" value="${local_binaries_folder}/postgresql" />
         <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64" />

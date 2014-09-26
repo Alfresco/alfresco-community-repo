@@ -67,7 +67,7 @@ public class DispositionActionDefinitionDelete extends DispositionAbstractBase
         {
             if (dispositionActionDefinition.getIndex() >= index)
             {
-                dispositionService.removeDispositionActionDefinition(schedule, dispositionActionDefinition);
+                getDispositionService().removeDispositionActionDefinition(schedule, dispositionActionDefinition);
             }
         }
     }

@@ -19,16 +19,15 @@
 package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
-import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.namespace.QName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -41,69 +40,40 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
 {
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *      org.springframework.extensions.webscripts.Status,
+     *      org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         JSONObject requestContent = getRequestContentAsJsonObject(req);
-        CustomReferenceType customReferenceType = getCustomReferenceType(requestContent);
-        QName customReference = addCustomReference(requestContent, customReferenceType);
+        RelationshipDisplayName displayName = createDisplayName(requestContent);
+        RelationshipDefinition relationshipDefinition =  getRelationshipService().createRelationshipDefinition(displayName);
 
         Map<String, Object> model = new HashMap<String, Object>();
         String servicePath = req.getServicePath();
-        Map<String, Object> customReferenceData = getCustomReferenceData(customReferenceType, customReference, servicePath);
-        model.putAll(customReferenceData);
+        Map<String, Object> customRelationshipData = createRelationshipDefinitionData(relationshipDefinition, servicePath);
+        model.putAll(customRelationshipData);
 
         return model;
     }
 
     /**
-     * Adds custom reference to the model
+     * Creates relationship definition data for the ftl template
      *
-     * @param requestContent The request content as json object
-     * @param customReferenceType The custom reference type
-     * @return Returns the {@link QName} of the new custom reference
-     */
-    private QName addCustomReference(JSONObject requestContent, CustomReferenceType customReferenceType)
-    {
-        QName referenceQName;
-
-        if (CustomReferenceType.PARENT_CHILD.equals(customReferenceType))
-        {
-            String source = getStringValueFromJSONObject(requestContent, SOURCE);
-            String target = getStringValueFromJSONObject(requestContent, TARGET);
-            referenceQName = getRmAdminService().addCustomChildAssocDefinition(source, target);
-        }
-        else if (CustomReferenceType.BIDIRECTIONAL.equals(customReferenceType))
-        {
-            String label = getStringValueFromJSONObject(requestContent, LABEL);
-            referenceQName = getRmAdminService().addCustomAssocDefinition(label);
-        }
-        else
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unsupported custom reference type.");
-        }
-
-        return referenceQName;
-    }
-
-    /**
-     * Gets the custom reference data
-     *
-     * @param customReferenceType The custom reference type
-     * @param customReference The qualified name of the custom reference
+     * @param relationshipDefinition The relationship definition
      * @param servicePath The service path
-     * @return The custom reference data
+     * @return The relationship definition data
      */
-    private Map<String, Object> getCustomReferenceData(CustomReferenceType customReferenceType, QName customReference, String servicePath)
+    private Map<String, Object> createRelationshipDefinitionData(RelationshipDefinition relationshipDefinition, String servicePath)
     {
-        Map<String, Object> result = new HashMap<String, Object>();
-        String qnameLocalName = customReference.getLocalName();
-        result.put(REFERENCE_TYPE, customReferenceType.toString());
-        result.put(REF_ID, qnameLocalName);
-        result.put(URL, servicePath + PATH_SEPARATOR + qnameLocalName);
-        result.put(SUCCESS, Boolean.TRUE);
-        return result;
+        Map<String, Object> relationshipDefinitionData = new HashMap<String, Object>(4);
+        String uniqueName = relationshipDefinition.getUniqueName();
+        relationshipDefinitionData.put(REFERENCE_TYPE, relationshipDefinition.getType().toString());
+        relationshipDefinitionData.put(REF_ID, uniqueName);
+        relationshipDefinitionData.put(URL, servicePath + PATH_SEPARATOR + uniqueName);
+        relationshipDefinitionData.put(SUCCESS, Boolean.TRUE);
+        return relationshipDefinitionData;
     }
 }

@@ -227,7 +227,7 @@ public final class WebScriptUtils
             checkMandatoryJsonParam(jsonObject, key);
         }
 
-        String value;
+        String value = null;
 
         try
         {
@@ -239,7 +239,10 @@ public final class WebScriptUtils
         }
         catch (JSONException error)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not get value for the key '" + key + "'.", error);
+            if (checkValue)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not get value for the key '" + key + "'.", error);
+            }
         }
 
         return value;

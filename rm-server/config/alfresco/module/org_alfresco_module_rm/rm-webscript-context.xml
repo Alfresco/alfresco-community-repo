@@ -64,14 +64,13 @@
 
    <!-- Base bean for custom reference definition web scripts -->
    <bean id="rmCustomReferenceDefinitionBase" parent="rmBaseWebscript" abstract="true">
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="relationshipService" ref="RelationshipService" />
    </bean>
 
    <!-- REST impl for GET Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinitions.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
       parent="rmCustomReferenceDefinitionBase">
-      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!-- REST impl for PUT Custom Reference Definitions -->
@@ -88,8 +87,7 @@
    <bean id="webscript.org.alfresco.rma.customrefs.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefsGet"
       parent="rmBaseWebscript">
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
-      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="relationshipService" ref="RelationshipService" />
       <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
@@ -97,7 +95,7 @@
    <bean id="webscript.org.alfresco.rma.customref.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefPost"
       parent="rmBaseWebscript">
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="relationshipService" ref="RelationshipService" />
       <property name="ruleService" ref="RuleService" />
    </bean>
 
@@ -105,7 +103,7 @@
    <bean id="webscript.org.alfresco.rma.customref.delete"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefDelete"
       parent="rmBaseWebscript">
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="relationshipService" ref="RelationshipService" />
       <property name="ruleService" ref="RuleService" />
    </bean>
 

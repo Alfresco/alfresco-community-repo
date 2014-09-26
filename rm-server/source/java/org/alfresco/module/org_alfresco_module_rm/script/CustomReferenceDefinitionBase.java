@@ -20,11 +20,9 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.service.namespace.QName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.json.JSONObject;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 
 /**
  * Base class for custom reference definition classes
@@ -42,62 +40,41 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
     protected static final String TARGET = "target";
     protected static final String CUSTOM_REFS = "customRefs";
     protected static final String URL = "url";
-    protected static final String SUCCESS = "success";
 
-    /** Records Management Admin Service */
-    private RecordsManagementAdminService rmAdminService;
+    /** Relationship service */
+    private RelationshipService relationshipService;
 
     /**
-     * Sets the records management admin service
+     * Gets the relationship service instance
      *
-     * @param rmAdminService The records management admin service
+     * @return The relationship service instance
      */
-    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
+    protected RelationshipService getRelationshipService()
     {
-        this.rmAdminService = rmAdminService;
+        return this.relationshipService;
     }
 
     /**
-     * Gets the records management admin service instance
+     * Sets the relationship service instance
      *
-     * @return The records management admin service instance
+     * @param relationshipService The relationship service instance
      */
-    protected RecordsManagementAdminService getRmAdminService()
+    public void setRelationshipService(RelationshipService relationshipService)
     {
-        return this.rmAdminService;
+        this.relationshipService = relationshipService;
     }
 
     /**
-     * Gets the QName for the given custom reference id
-     *
-     * @param referenceId The reference id
-     * @return The QName for the given custom reference id
-     */
-    protected QName getCustomReferenceQName(String referenceId)
-    {
-        QName customReferenceQName = getRmAdminService().getQNameForClientId(referenceId);
-        if (customReferenceQName == null)
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Unable to find QName for the reference: '");
-            msg.append(referenceId);
-            msg.append("'.");
-            String errorMsg = msg.toString();
-
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, errorMsg);
-        }
-        return customReferenceQName;
-    }
-
-    /**
-     * Gets the custom reference type from the json object
+     * Creates the relationship display name from request content
      *
      * @param requestContent The request content as json object
-     * @return Returns the custom reference type which is either parent/child or bidirectional
+     * @return The relationship display name
      */
-    protected CustomReferenceType getCustomReferenceType(JSONObject requestContent)
+    protected RelationshipDisplayName createDisplayName(JSONObject requestContent)
     {
-        String referenceType = getStringValueFromJSONObject(requestContent, REFERENCE_TYPE);
-        return CustomReferenceType.getEnumFromString(referenceType);
+        String sourceText = getStringValueFromJSONObject(requestContent, SOURCE, false, false);
+        String targetText = getStringValueFromJSONObject(requestContent, TARGET, false, false);
+        String labelText = getStringValueFromJSONObject(requestContent, LABEL, false, false);
+        return new RelationshipDisplayName(sourceText, targetText, labelText);
     }
 }

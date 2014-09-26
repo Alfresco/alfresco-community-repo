@@ -63,11 +63,11 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         DispositionSchedule schedule = null;
         if (inherited)
         {
-            schedule = this.dispositionService.getDispositionSchedule(nodeRef);
+            schedule = getDispositionService().getDispositionSchedule(nodeRef);
         }
         else
         {
-            schedule = dispositionService.getAssociatedDispositionSchedule(nodeRef);
+            schedule = getDispositionService().getAssociatedDispositionSchedule(nodeRef);
         }
         if (schedule == null)
         {
@@ -132,7 +132,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
 
         if (actionDef.getPeriodProperty() != null)
         {
-            model.put("periodProperty", actionDef.getPeriodProperty().toPrefixString(this.namespaceService));
+            model.put("periodProperty", actionDef.getPeriodProperty().toPrefixString(getNamespaceService()));
         }
 
         if (actionDef.getLocation() != null)
@@ -181,7 +181,7 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         scheduleModel.put("nodeRef", schedule.getNodeRef().toString());
         scheduleModel.put("recordLevelDisposition", schedule.isRecordLevelDisposition());
         scheduleModel.put("canStepsBeRemoved",
-                    !this.dispositionService.hasDisposableItems(schedule));
+                    !getDispositionService().hasDisposableItems(schedule));
 
         if (schedule.getDispositionAuthority() != null)
         {
@@ -200,10 +200,10 @@ public class DispositionAbstractBase extends AbstractRmWebScript
         for (DispositionActionDefinition actionDef : schedule.getDispositionActionDefinitions())
         {
             NodeRef actionDefNodeRef = actionDef.getNodeRef();
-            if (nodeService.hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE))
+            if (getNodeService().hasAspect(actionDefNodeRef, RecordsManagementModel.ASPECT_UNPUBLISHED_UPDATE))
             {
                 unpublishedUpdates = true;
-                publishInProgress = ((Boolean)nodeService.getProperty(actionDefNodeRef, RecordsManagementModel.PROP_PUBLISH_IN_PROGRESS)).booleanValue();
+                publishInProgress = ((Boolean) getNodeService().getProperty(actionDefNodeRef, RecordsManagementModel.PROP_PUBLISH_IN_PROGRESS)).booleanValue();
             }
 
             actions.add(createActionDefModel(actionDef, actionsUrl + "/" + actionDef.getId()));

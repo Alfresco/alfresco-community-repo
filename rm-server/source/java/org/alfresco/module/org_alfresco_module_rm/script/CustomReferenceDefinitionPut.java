@@ -20,16 +20,14 @@ package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
 import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
-import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.service.namespace.QName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -42,65 +40,40 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
 {
-	/**
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+    /**
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *      org.springframework.extensions.webscripts.Status,
+     *      org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
+        String uniqueName = getRequestParameterValue(req, REF_ID);
         JSONObject requestContent = getRequestContentAsJsonObject(req);
-        String referenceId = getRequestParameterValue(req, REF_ID);
-        updateCustomReference(requestContent, referenceId);
+        RelationshipDisplayName displayName = createDisplayName(requestContent);
+        getRelationshipService().updateReleationshipDefinition(uniqueName, displayName);
 
         Map<String, Object> model = new HashMap<String, Object>();
         String servicePath = req.getServicePath();
-        Map<String, Object> customReferenceData = getCustomReferenceData(servicePath, referenceId);
+        Map<String, Object> customReferenceData = createRelationshipDefinitionData(servicePath, uniqueName);
         model.putAll(customReferenceData);
 
         return model;
     }
 
     /**
-     * Updates the custom reference
-     *
-     * @param requestContent The request content as json object
-     * @param referenceId The reference id
-     */
-    private void updateCustomReference(JSONObject requestContent, String referenceId)
-    {
-        QName referenceQName = getCustomReferenceQName(referenceId);
-        CustomReferenceType customReferenceType = getCustomReferenceType(requestContent);
-
-        if (CustomReferenceType.PARENT_CHILD.equals(customReferenceType))
-        {
-            String source = getStringValueFromJSONObject(requestContent, SOURCE);
-            String target = getStringValueFromJSONObject(requestContent, TARGET);
-            getRmAdminService().updateCustomChildAssocDefinition(referenceQName, source, target);
-        }
-        else if (CustomReferenceType.BIDIRECTIONAL.equals(customReferenceType))
-        {
-            String label = getStringValueFromJSONObject(requestContent, LABEL);
-            getRmAdminService().updateCustomAssocDefinition(referenceQName, label);
-        }
-        else
-        {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unsupported custom reference type.");
-        }
-    }
-
-    /**
-     * Gets the custom reference data
+     * Creates relationship definition data for the ftl template
      *
      * @param servicePath The service path
-     * @param String The reference id
-     * @return The custom reference data
+     * @param String The relationship unique name
+     * @return The relationship definition data
      */
-    private Map<String, Object> getCustomReferenceData(String servicePath, String referenceId)
+    private Map<String, Object> createRelationshipDefinitionData(String servicePath, String uniqueName)
     {
-        Map<String, Object> result = new HashMap<String, Object>();
-        result.put(URL, servicePath);
-        result.put(REF_ID, referenceId);
-        result.put(SUCCESS, Boolean.TRUE);
-        return result;
+        Map<String, Object> relationshipDefinitionData = new HashMap<String, Object>(3);
+        relationshipDefinitionData.put(URL, servicePath);
+        relationshipDefinitionData.put(REF_ID, uniqueName);
+        relationshipDefinitionData.put(SUCCESS, Boolean.TRUE);
+        return relationshipDefinitionData;
     }
 }

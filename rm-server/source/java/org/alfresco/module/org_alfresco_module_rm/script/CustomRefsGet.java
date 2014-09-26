@@ -22,21 +22,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -62,38 +63,46 @@ public class CustomRefsGet extends AbstractRmWebScript
     private static final String NODE_NAME = "nodeName";
     private static final String NODE_TITLE = "nodeTitle";
 
-    /** RM admin service */
-    private RecordsManagementAdminService rmAdminService;
-
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
+    /** Relationship service */
+    private RelationshipService relationshipService;
 
     /** Capability service */
     private CapabilityService capabilityService;
 
     /**
-     * Sets the RM admin service
-     * @param rmAdminService RM admin service
+     * Gets the relationship service instance
+     *
+     * @return The relationship service instance
      */
-    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
+    protected RelationshipService getRelationshipService()
     {
-        this.rmAdminService = rmAdminService;
+        return this.relationshipService;
     }
 
     /**
-     * Sets the dictionary service
+     * Sets the relationship service instance
      *
-     * @param dictionaryService Dictionary service
+     * @param relationshipService The relationship service instance
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void setRelationshipService(RelationshipService relationshipService)
     {
-        this.dictionaryService = dictionaryService;
+        this.relationshipService = relationshipService;
     }
 
     /**
-     * Sets the capability service
+     * Gets the capability service instance
      *
-     * @param capabilityService Capability service
+     * @return The capability service instance
+     */
+    protected CapabilityService getCapabilityService()
+    {
+        return this.capabilityService;
+    }
+
+    /**
+     * Sets the capability service instance
+     *
+     * @param capabilityService Capability service instance
      */
     public void setCapabilityService(CapabilityService capabilityService)
     {
@@ -101,15 +110,17 @@ public class CustomRefsGet extends AbstractRmWebScript
     }
 
     /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *      org.springframework.extensions.webscripts.Status,
+     *      org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> model = new HashMap<String, Object>(4);
         NodeRef nodeRef = parseRequestForNodeRef(req);
-        model.put(NODE_NAME, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME));
-        model.put(NODE_TITLE, nodeService.getProperty(nodeRef, ContentModel.PROP_TITLE));
+        model.put(NODE_NAME, getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME));
+        model.put(NODE_TITLE, getNodeService().getProperty(nodeRef, ContentModel.PROP_TITLE));
         model.put(CUSTOM_REFS_FROM, getOutwardReferences(nodeRef));
         model.put(CUSTOM_REFS_TO, getInwardReferenceData(nodeRef));
         return model;
@@ -124,13 +135,8 @@ public class CustomRefsGet extends AbstractRmWebScript
     private List<Map<String, String>> getOutwardReferences(NodeRef nodeRef)
     {
         List<Map<String, String>> outwardReferenceData = new ArrayList<Map<String, String>>();
-
-        List<AssociationRef> assocsFromThisNode = rmAdminService.getCustomReferencesFrom(nodeRef);
-        outwardReferenceData.addAll(getBidirectionalReferenceData(assocsFromThisNode));
-
-        List<ChildAssociationRef> childAssocs = rmAdminService.getCustomChildReferences(nodeRef);
-        outwardReferenceData.addAll(getParentChildReferenceData(childAssocs));
-
+        Set<Relationship> relationships = getRelationshipService().getRelationshipsFrom(nodeRef);
+        outwardReferenceData.addAll(getRelationshipData(relationships));
         return outwardReferenceData;
     }
 
@@ -143,91 +149,68 @@ public class CustomRefsGet extends AbstractRmWebScript
     private List<Map<String, String>> getInwardReferenceData(NodeRef nodeRef)
     {
         List<Map<String, String>> inwardReferenceData = new ArrayList<Map<String, String>>();
-
-        List<AssociationRef> assocsToThisNode = rmAdminService.getCustomReferencesTo(nodeRef);
-        inwardReferenceData.addAll(getBidirectionalReferenceData(assocsToThisNode));
-
-        List<ChildAssociationRef> parentAssocs = rmAdminService.getCustomParentReferences(nodeRef);
-        inwardReferenceData.addAll(getParentChildReferenceData(parentAssocs));
-
+        Set<Relationship> relationships = getRelationshipService().getRelationshipsTo(nodeRef);
+        inwardReferenceData.addAll(getRelationshipData(relationships));
         return inwardReferenceData;
     }
 
     /**
-     * This method goes through the associationRefs specified and constructs a Map<String, String>
-     * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
-     * parent/child references.
+     * Creates relationship data for the ftl template
      *
-     * @param childAssocs Association references
-     * @return The reference data
+     * @param relationships The relationships
+     * @return The relationship data
      */
-    private List<Map<String, String>> getParentChildReferenceData(List<ChildAssociationRef> childAssocs)
+    private List<Map<String, String>> getRelationshipData(Set<Relationship> relationships)
     {
-        List<Map<String, String>> referenceData = new ArrayList<Map<String, String>>();
+        List<Map<String, String>> relationshipData = new ArrayList<Map<String, String>>();
 
-        for (ChildAssociationRef childAssRef : childAssocs)
+        for (Relationship relationship : relationships)
         {
-            Map<String, String> data = new HashMap<String, String>();
+            String uniqueName = relationship.getUniqueName();
+            RelationshipDefinition relationshipDefinition = getRelationshipService().getRelationshipDefinition(uniqueName);
 
-            data.put(CHILD_REF, childAssRef.getChildRef().toString());
-            data.put(PARENT_REF, childAssRef.getParentRef().toString());
+            NodeRef source = relationship.getSource();
+            NodeRef target = relationship.getTarget();
 
-            QName typeQName = childAssRef.getTypeQName();
-            AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
-
-            if (assDef != null &&
-                hasView(childAssRef.getParentRef()) &&
-                hasView(childAssRef.getChildRef()))
+            if (relationshipDefinition != null && hasView(source) && hasView(target))
             {
-                String compoundTitle = assDef.getTitle(dictionaryService);
+                Map<String, String> data = new HashMap<String, String>();
 
-                String[] sourceAndTarget = rmAdminService.splitSourceTargetId(compoundTitle);
-                data.put(SOURCE, sourceAndTarget[0]);
-                data.put(TARGET, sourceAndTarget[1]);
-                data.put(REFERENCE_TYPE, CustomReferenceType.PARENT_CHILD.toString());
-                data.put(REF_ID, typeQName.getLocalName());
+                RelationshipType type = relationshipDefinition.getType();
+                RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
 
-                referenceData.add(data);
+                if (RelationshipType.BIDIRECTIONAL.equals(type))
+                {
+                    data.put(LABEL, displayName.getLabelText());
+                    data.put(SOURCE_REF, source.toString());
+                    data.put(TARGET_REF, target.toString());
+                }
+                else if (RelationshipType.PARENTCHILD.equals(type))
+                {
+                    data.put(SOURCE, displayName.getSourceText());
+                    data.put(TARGET, displayName.getTargetText());
+                    data.put(PARENT_REF, source.toString());
+                    data.put(CHILD_REF, target.toString());
+                }
+                else
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Unsupported relationship type '")
+                        .append(type)
+                        .append("'.");
+
+                    throw new WebScriptException(Status.STATUS_BAD_REQUEST, sb.toString());
+                }
+
+                data.put(REFERENCE_TYPE, type.toString().toLowerCase());
+                data.put(REF_ID, uniqueName);
+
+                relationshipData.add(data);
             }
-    	}
 
-        return referenceData;
-    }
-
-    /**
-     * This method goes through the associationRefs specified and constructs a Map<String, String>
-     * for each assRef. FTL-relevant data are added to that map. The associationRefs must all be
-     * bidirectional references.
-     *
-     * @param assocs Association references
-     * @return The reference data
-     */
-    private List<Map<String, String>> getBidirectionalReferenceData(List<AssociationRef> assocs)
-    {
-        List<Map<String, String>> referenceData = new ArrayList<Map<String, String>>();
-
-        for (AssociationRef assRef : assocs)
-        {
-            Map<String, String> data = new HashMap<String, String>();
-
-            QName typeQName = assRef.getTypeQName();
-            AssociationDefinition assDef = rmAdminService.getCustomReferenceDefinitions().get(typeQName);
-
-            if (assDef != null &&
-                hasView(assRef.getTargetRef()) &&
-                hasView(assRef.getSourceRef()))
-            {
-                data.put(LABEL, assDef.getTitle(dictionaryService));
-                data.put(REF_ID, typeQName.getLocalName());
-                data.put(REFERENCE_TYPE, CustomReferenceType.BIDIRECTIONAL.toString());
-                data.put(SOURCE_REF, assRef.getSourceRef().toString());
-                data.put(TARGET_REF, assRef.getTargetRef().toString());
-
-                referenceData.add(data);
-            }
         }
 
-        return referenceData;
+        return relationshipData;
     }
 
     /**
@@ -240,7 +223,7 @@ public class CustomRefsGet extends AbstractRmWebScript
     {
         boolean result = false;
 
-        Capability viewRecordCapability = capabilityService.getCapability(ViewRecordsCapability.NAME);
+        Capability viewRecordCapability = getCapabilityService().getCapability(ViewRecordsCapability.NAME);
         if (AccessStatus.ALLOWED.equals(viewRecordCapability.hasPermission(nodeRef)))
         {
             result = true;

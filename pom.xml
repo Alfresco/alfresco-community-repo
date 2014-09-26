@@ -66,14 +66,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- AMPS files -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-spp</artifactId>
-            <version>${project.version}</version>
-            <type>amp</type>
-        </dependency>
-
         <!-- JAR files, to extract alfresco/extension -->
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -133,5 +125,26 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- profiles to only depend on alfresco-spp when building Community: it is not built in Enterprise, and fails the build -->
+        <profile>
+            <id>community</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.alfresco</groupId>
+                    <artifactId>alfresco-spp</artifactId>
+                    <version>${project.version}</version>
+                    <type>amp</type>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>enterprise</id>
+        </profile>
+    </profiles>
 
 </project>

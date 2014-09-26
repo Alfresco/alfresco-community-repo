@@ -21,6 +21,7 @@
 <%@ page import="org.springframework.web.context.support.WebApplicationContextUtils" %>
 <%@ page import="org.alfresco.repo.admin.SysAdminParams" %>
 <%@ page import="org.alfresco.service.descriptor.DescriptorService" %>
+<%@ page import="org.alfresco.service.transaction.TransactionService" %>
 <%@ page import="org.alfresco.util.UrlUtil" %>
 
 <!-- Enterprise index-jsp placeholder -->
@@ -36,6 +37,7 @@ if (request.getMethod().equalsIgnoreCase("PROPFIND") || request.getMethod().equa
 WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(session.getServletContext());
 SysAdminParams sysAdminParams = (SysAdminParams)context.getBean("sysAdminParams");
 DescriptorService descriptorService = (DescriptorService)context.getBean("descriptorComponent");
+TransactionService transactionService = (TransactionService)context.getBean("transactionService");
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -63,10 +65,10 @@ DescriptorService descriptorService = (DescriptorService)context.getBean("descri
             <p></p>
             <p><a href="./s/index">Alfresco WebScripts Home</a> (admin only)</p>
 <%
-   if (descriptorService.getLicenseDescriptor() == null)
+   if (descriptorService.getLicenseDescriptor() == null && transactionService.isReadOnly())
    {
 %>
-            <p>WARNING: License has failed to deploy and the system is in Read Only mode. Please visit the <a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>
+            <p>WARNING: The system is in Read Only mode, the License may have failed to deploy. Please visit the <a href="./s/enterprise/admin">Alfresco Administration Console</a> (admin only)</p>
 <% 
    }
    if (descriptorService.getLicenseDescriptor() != null && descriptorService.getLicenseDescriptor().getLicenseMode().toString().equals("ENTERPRISE"))

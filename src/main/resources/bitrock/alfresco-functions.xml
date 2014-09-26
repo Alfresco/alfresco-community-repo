@@ -132,27 +132,9 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
-                            <value>${libreoffice_directory}/program/soffice.bin</value>
-                            <ruleList>
-                                <platformTest type="linux"/>
-                                <fileExists path="${libreoffice_directory}/program/soffice.bin"/>
-                            </ruleList>
-                        </substitution>
-                        <substitution>
-                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
                             <value>${libreoffice_directory}/program/soffice</value>
                             <ruleList>
                                 <platformTest type="linux"/>
-                                <fileExists negate="1" path="${libreoffice_directory}/program/soffice.bin"/>
-                                <fileExists path="${libreoffice_directory}/program/soffice"/>
-                            </ruleList>
-                        </substitution>
-                        <substitution>
-                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
-                            <value>${libreoffice_directory}/Contents/MacOS/soffice.bin</value>
-                            <ruleList>
-                                <platformTest type="osx"/>
-                                <fileExists path="${libreoffice_directory}/Contents/MacOS/soffice.bin"/>
                             </ruleList>
                         </substitution>
                         <substitution>
@@ -160,8 +142,6 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${libreoffice_directory}/Contents/MacOS/soffice</value>
                             <ruleList>
                                 <platformTest type="osx"/>
-                                <fileExists negate="1" path="${libreoffice_directory}/Contents/MacOS/soffice.bin"/>
-                                <fileExists path="${libreoffice_directory}/Contents/MacOS/soffice"/>
                             </ruleList>
                         </substitution>
 		        <substitution>

@@ -57,7 +57,6 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	protected WebScriptRequest req;
 	protected HttpServletRequest httpReq;
 	protected String networkId;
-	protected String repositoryId;
 	protected String operation;
 	protected String id; // object id (or path for browser binding)
 	protected String serviceName;
@@ -80,14 +79,8 @@ public class CMISHttpServletRequest implements HttpServletRequest
 			this.networkId = servletReq.getTenant();
 			if(TenantUtil.DEFAULT_TENANT.equals(this.networkId) || TenantUtil.SYSTEM_TENANT.equals(this.networkId))
 			{
-				this.repositoryId = TenantService.DEFAULT_DOMAIN;
+				this.networkId = TenantService.DEFAULT_DOMAIN;
 			}
-
-//			if(TenantUtil.DEFAULT_TENANT.equals(this.repositoryId) || TenantUtil.SYSTEM_TENANT.equals(this.repositoryId))
-//			{
-////				this.repositoryId = currentDescriptor.getId()/*TenantUtil.getCurrentDomain()*/;
-//				this.repositoryId = TenantUtil.getCurrentDomain();
-//			}
 		}
 
 		Match match = req.getServiceMatch();
@@ -117,9 +110,9 @@ public class CMISHttpServletRequest implements HttpServletRequest
 
 	protected void addAttributes()
 	{
-		if(repositoryId != null)
+		if(networkId != null)
 		{
-			httpReq.setAttribute(Constants.PARAM_REPOSITORY_ID, repositoryId);
+			httpReq.setAttribute(Constants.PARAM_REPOSITORY_ID, networkId);
 		}
 		httpReq.setAttribute("serviceName", serviceName);
 	}
@@ -129,7 +122,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		if(arg0.equals(Dispatcher.BASE_URL_ATTRIBUTE))
 		{
-			return baseUrlGenerator.getBaseUrl(this, repositoryId, binding);	
+			return baseUrlGenerator.getBaseUrl(this, networkId, binding);
 		}
 		else
 		{
@@ -223,7 +216,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		if(arg0.equals(Constants.PARAM_REPOSITORY_ID))
 		{
-			return repositoryId;
+			return networkId;
 		}
 		return httpReq.getParameter(arg0);
 	}
@@ -234,9 +227,9 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	{
 		Map map = httpReq.getParameterMap();
 		Map ret = new HashedMap(map);
-		if(repositoryId != null)
+		if(networkId != null)
 		{
-			ret.put(Constants.PARAM_REPOSITORY_ID, new String[] { repositoryId });
+			ret.put(Constants.PARAM_REPOSITORY_ID, new String[] { networkId });
 		}
 		return ret;
 	}
@@ -251,7 +244,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
 		{
 			l.add(e.nextElement());
 		}
-		if(repositoryId != null)
+		if(networkId != null)
 		{
 			l.add(Constants.PARAM_REPOSITORY_ID);
 		}
@@ -442,7 +435,28 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	@Override
 	public String getQueryString()
 	{
-		return httpReq.getQueryString();
+        StringBuilder queryString = new StringBuilder();
+        String reqQueryString = httpReq.getQueryString();
+
+        if(networkId != null)
+        {
+            if (reqQueryString == null)
+            {
+                queryString.append("repositoryId=");
+                queryString.append(networkId);
+            }
+            else
+            {
+                queryString.append(reqQueryString);
+                queryString.append("&repositoryId=");
+                queryString.append(networkId);
+            }
+            return queryString.toString();
+        }
+        else
+        {
+            return null;
+        }
 	}
 
 	@Override

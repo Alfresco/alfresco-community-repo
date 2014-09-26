@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -74,6 +74,7 @@ public class PublicApiHttpClient
 	private static final String BASE_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/{7}/versions/1";
 	private static final String PUBLICAPI_CMIS_SERVICE_URL = "{0}://{1}:{2}{3}{4}cmis/versions/{5}/{6}";
 	private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
+    private static final String PUBLICAPI_CMIS_URL_SUFFIX = "{0}/{1}/cmis/versions/{2}/{3}";
 	private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}cmisatom";
 
 	private String scheme = "http";
@@ -163,6 +164,22 @@ public class PublicApiHttpClient
 
 		return url.toString();
 	}
+
+    public String getPublicApiCmisUrlSuffix(String networkId, Binding binding, String version, String operation)
+    {
+        StringBuilder url = new StringBuilder();
+
+        url.append(MessageFormat.format(PUBLICAPI_CMIS_URL_SUFFIX,
+                new Object[] {networkId, "public", version, binding.toString().toLowerCase()}));
+
+        if(operation != null)
+        {
+            url.append("/");
+            url.append(operation);
+        }
+
+        return url.toString();
+    }
 	
 	public void setHost(String host)
 	{

@@ -19,18 +19,18 @@
 package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Set;
 
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.StringUtils;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -44,175 +44,93 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
 {
-    /** Dictionary Service */
-    private DictionaryService dictionaryService;
-
     /**
-     * Sets the dictionary service
-     *
-     * @param dictionaryService The dictionary service
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Gets the dictionary service instance
-     *
-     * @return The dictionary service instance
-     */
-    protected DictionaryService getDictionaryService()
-    {
-        return this.dictionaryService;
-    }
-
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status, org.springframework.extensions.webscripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
+     *      org.springframework.extensions.webscripts.Status,
+     *      org.springframework.extensions.webscripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String referenceId = getRequestParameterValue(req, REF_ID, false);
-        Map<QName, AssociationDefinition> customReferenceDefinitions = getCustomReferenceDefinitions(referenceId);
-        List<Map<String, String>> customReferenceData = getCustomReferenceData(customReferenceDefinitions);
+        String uniqueName = getRequestParameterValue(req, REF_ID, false);
+        Set<RelationshipDefinition> relationshipDefinitions = getRelationshipDefinitons(uniqueName);
+        List<Map<String, String>> relationshipDefinitionData = createRelationshipDefinitionData(relationshipDefinitions);
 
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put(CUSTOM_REFS, customReferenceData);
-
+        model.put(CUSTOM_REFS, relationshipDefinitionData);
         return model;
     }
 
     /**
-     * Gets the custom reference definition(s) for the given reference id
+     * Gets the relationship definition for the unique name. If the unique
+     * name is blank all relationship definitions will be retrieved
      *
-     * @param referenceId The reference id
-     * @return If the reference id is not blank the custom definition for the given reference id will be returned,
-     * otherwise all custom definitions will be returned.
+     * @param uniqueName The unique name of the relationship definition
+     * @return Relationship definition for the given unique name or all
+     * relationship definitions if unique name is blank
      */
-    private Map<QName, AssociationDefinition> getCustomReferenceDefinitions(String referenceId)
+    private Set<RelationshipDefinition> getRelationshipDefinitons(String uniqueName)
     {
-        Map<QName, AssociationDefinition> customReferenceDefinitions = new HashMap<QName, AssociationDefinition>();
+        Set<RelationshipDefinition> relationshipDefinitions = new HashSet<RelationshipDefinition>();
 
-        if (StringUtils.isNotBlank(referenceId))
+        if (isBlank(uniqueName))
         {
-            QName referenceQName = getCustomReferenceQName(referenceId);
-            AssociationDefinition associationDefinition = getAssosiationDefinitionForCustomReference(referenceQName);
-            customReferenceDefinitions.put(referenceQName, associationDefinition);
+            relationshipDefinitions.addAll(getRelationshipService().getRelationshipDefinitions());
         }
         else
         {
-            customReferenceDefinitions.putAll(getRmAdminService().getCustomReferenceDefinitions());
-        }
-
-        return customReferenceDefinitions;
-    }
-
-    /**
-     * Gets the association definition for the given reference QName
-     *
-     * @param referenceQName The reference QName
-     * @return The association definition for the given reference QName
-     */
-    private AssociationDefinition getAssosiationDefinitionForCustomReference(QName referenceQName)
-    {
-        AssociationDefinition associationDefinition = getRmAdminService().getCustomReferenceDefinitions().get(referenceQName);
-        if (associationDefinition == null)
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Unable to find association definition for the reference: '");
-            msg.append(referenceQName.getLocalName());
-            msg.append("'.");
-            String errorMsg = msg.toString();
-
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, errorMsg);
-        }
-        return associationDefinition;
-    }
-
-    /**
-     * Gets the custom reference type from the association definition
-     *
-     * @param associationDefinition The association definition
-     * @return Returns the custom reference type which is either parent/child or bidirectional
-     */
-    private CustomReferenceType getCustomReferenceType(AssociationDefinition associationDefinition)
-    {
-        CustomReferenceType referenceType;
-
-        if (associationDefinition instanceof ChildAssociationDefinition)
-        {
-            referenceType = CustomReferenceType.PARENT_CHILD;
-        }
-        else if (associationDefinition instanceof AssociationDefinition)
-        {
-            referenceType = CustomReferenceType.BIDIRECTIONAL;
-        }
-        else
-        {
-            StringBuilder msg = new StringBuilder();
-            msg.append("Unsupported association definition: '");
-            msg.append(associationDefinition.getName().getLocalName());
-            msg.append("'.");
-            String errorMsg = msg.toString();
-
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, errorMsg);
-        }
-
-        return referenceType;
-    }
-
-    /**
-     * Gets the custom reference data
-     *
-     * @param customReferenceDefinitions The custom reference definitions
-     * @return Custom reference data
-     */
-    private List<Map<String, String>> getCustomReferenceData(Map<QName, AssociationDefinition> customReferenceDefinitions)
-    {
-        List<Map<String, String>> customReferences = new ArrayList<Map<String, String>>();
-
-        for (Entry<QName, AssociationDefinition> entry : customReferenceDefinitions.entrySet())
-        {
-            Map<String, String> customReference = new HashMap<String, String>();
-            AssociationDefinition associationDefinition = entry.getValue();
-            CustomReferenceType referenceType = getCustomReferenceType(associationDefinition);
-            String title = getAssociationDefinitionTitle(associationDefinition);
-
-            if (CustomReferenceType.PARENT_CHILD.equals(referenceType))
+            RelationshipDefinition relationshipDefinition = getRelationshipService().getRelationshipDefinition(uniqueName);
+            if (relationshipDefinition != null)
             {
-                String[] sourceAndTarget = getRmAdminService().splitSourceTargetId(title);
-                customReference.put(SOURCE, sourceAndTarget[0]);
-                customReference.put(TARGET, sourceAndTarget[1]);
+                relationshipDefinitions.add(relationshipDefinition);
             }
-            else if (CustomReferenceType.BIDIRECTIONAL.equals(referenceType))
+        }
+
+        return relationshipDefinitions;
+    }
+
+    /**
+     * Creates relationship definition data for the ftl template
+     *
+     * @param relationshipDefinitions The relationship definitions
+     * @return The relationship definition data
+     */
+    private List<Map<String, String>> createRelationshipDefinitionData(Set<RelationshipDefinition> relationshipDefinitions)
+    {
+        List<Map<String, String>> relationshipDefinitionData = new ArrayList<Map<String, String>>();
+
+        for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)
+        {
+            Map<String, String> data = new HashMap<String, String>();
+
+            RelationshipType type = relationshipDefinition.getType();
+            RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
+
+            if (RelationshipType.BIDIRECTIONAL.equals(type))
             {
-                customReference.put(LABEL, title);
+                data.put(LABEL, displayName.getLabelText());
+            }
+            else if (RelationshipType.PARENTCHILD.equals(type))
+            {
+                data.put(SOURCE, displayName.getSourceText());
+                data.put(TARGET, displayName.getTargetText());
+            }
+            else
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Unsupported relationship type '")
+                    .append(type)
+                    .append("'.");
+
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, sb.toString());
             }
 
-            String referenceId = entry.getKey().getLocalName();
-            customReference.put(REF_ID, referenceId);
-            customReference.put(REFERENCE_TYPE, referenceType.toString());
+            data.put(REF_ID, relationshipDefinition.getUniqueName());
+            data.put(REFERENCE_TYPE, type.toString().toLowerCase());
 
-            customReferences.add(customReference);
+            relationshipDefinitionData.add(data);
         }
 
-        return customReferences;
-    }
-
-    /**
-     * Gets the association definition title
-     *
-     * @param associationDefinition The association definition
-     * @return The title of the association definition
-     */
-    private String getAssociationDefinitionTitle(AssociationDefinition associationDefinition)
-    {
-        String title = associationDefinition.getTitle(getDictionaryService());
-        if (StringUtils.isBlank(title))
-        {
-            throw new WebScriptException(Status.STATUS_INTERNAL_SERVER_ERROR, "Association definition title is blank.");
-        }
-        return title;
+        return relationshipDefinitionData;
     }
 }

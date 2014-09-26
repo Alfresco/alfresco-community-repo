@@ -85,7 +85,7 @@ public class RecordedVersionConfigGet extends AbstractRmWebScript implements Rec
     private boolean isVersionPolicySelected(RecordableVersionPolicy recordableVersionPolicy, NodeRef nodeRef)
     {
         boolean isVersionPolicySelected = false;
-        String policy = (String) nodeService.getProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY);
+        String policy = (String) getNodeService().getProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY);
         if (StringUtils.isNotBlank(policy))
         {
             if (RecordableVersionPolicy.valueOf(policy).equals(recordableVersionPolicy))

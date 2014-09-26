@@ -41,7 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * Implementation for Java backed webscript to add RM custom property definitions
  * to the custom model.
- * 
+ *
  * @author Neil McErlean
  */
 public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
@@ -101,22 +101,22 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
 
     /**
      * Applies custom properties.
-     * @throws CustomMetadataException 
+     * @throws CustomMetadataException
      */
     protected Map<String, Object> createPropertyDefinition(WebScriptRequest req, JSONObject json)
             throws JSONException, CustomMetadataException
     {
         Map<String, Object> result = new HashMap<String, Object>();
         Map<String, Serializable> params = getParamsFromUrlAndJson(req, json);
-        
+
         QName propertyQName = createNewPropertyDefinition(params);
         String localName = propertyQName.getLocalName();
-        
+
         result.put(PROP_ID, localName);
-    
+
         String urlResult = req.getServicePath() + "/" + propertyQName.getLocalName();
         result.put(URL, urlResult);
-    
+
         return result;
     }
 
@@ -127,33 +127,33 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         Map<String, Serializable> params;
         params = new HashMap<String, Serializable>();
         params.put(PARAM_ELEMENT, req.getParameter(PARAM_ELEMENT));
-        
+
         for (Iterator iter = json.keys(); iter.hasNext(); )
         {
             String nextKeyString = (String)iter.next();
             String nextValueString = json.getString(nextKeyString);
-            
+
             params.put(nextKeyString, nextValueString);
         }
-        
+
         return params;
     }
 
     /**
      * Create a property definition based on the parameter values provided
-     * 
+     *
      * @param params parameter values
      * @return {@link QName} qname of the newly created custom property
-     * @throws CustomMetadataException 
+     * @throws CustomMetadataException
      */
     protected QName createNewPropertyDefinition(Map<String, Serializable> params) throws CustomMetadataException
     {
-    	// Get the customisable type name        
+    	// Get the customisable type name
         String customisableElement = (String)params.get(PARAM_ELEMENT);
         QName customisableType = mapToTypeQName(customisableElement);
-        
+
         String label = URLDecoder.decode((String)params.get(PARAM_LABEL));
-        
+
         //According to the wireframes, type here can only be date|text|number
         Serializable serializableParam = params.get(PARAM_DATATYPE);
         QName type = null;
@@ -161,7 +161,7 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
         {
             if (serializableParam instanceof String)
             {
-                type = QName.createQName((String)serializableParam, namespaceService);
+                type = QName.createQName((String)serializableParam, getNamespaceService());
             }
             else if (serializableParam instanceof QName)
             {
@@ -172,41 +172,41 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
                 throw new AlfrescoRuntimeException("Unexpected type of dataType param: "+serializableParam+" (expected String or QName)");
             }
         }
-        
+
         // The title is actually generated, so this parameter will be ignored
         // by the RMAdminService
         String title = (String)params.get(PARAM_TITLE);
         String description = (String)params.get(PARAM_DESCRIPTION);
         String defaultValue = (String)params.get(PARAM_DEFAULT_VALUE);
-        
+
         boolean mandatory = false;
         serializableParam = params.get(PARAM_MANDATORY);
         if (serializableParam != null)
         {
             mandatory = Boolean.valueOf(serializableParam.toString());
         }
-        
+
         boolean isProtected = false;
         serializableParam = params.get(PARAM_PROTECTED);
         if (serializableParam != null)
         {
             isProtected = Boolean.valueOf(serializableParam.toString());
         }
-        
+
         boolean multiValued = false;
         serializableParam = params.get(PARAM_MULTI_VALUED);
         if (serializableParam != null)
         {
             multiValued = Boolean.valueOf(serializableParam.toString());
         }
-        
+
         serializableParam = params.get(PARAM_CONSTRAINT_REF);
         QName constraintRef = null;
         if (serializableParam != null)
         {
             if (serializableParam instanceof String)
             {
-                constraintRef = QName.createQName((String)serializableParam, namespaceService);
+                constraintRef = QName.createQName((String)serializableParam, getNamespaceService());
             }
             else if (serializableParam instanceof QName)
             {
@@ -217,29 +217,29 @@ public class CustomPropertyDefinitionPost extends BaseCustomPropertyWebScript
                 throw new AlfrescoRuntimeException("Unexpected type of constraintRef param: "+serializableParam+" (expected String or QName)");
             }
         }
-        
+
         // if propId is specified, use it.
         QName proposedQName = null;
         String propId = (String)params.get(PROP_ID);
         if (propId != null)
         {
-            proposedQName = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_PREFIX, propId, namespaceService);
+            proposedQName = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_PREFIX, propId, getNamespaceService());
         }
-        
+
         return rmAdminService.addCustomPropertyDefinition(
-        			proposedQName, 
-        			customisableType, 
-        			label, 
+        			proposedQName,
+        			customisableType,
+        			label,
         			type,
-        			title, 
-        			description, 
-        			defaultValue, 
-        			multiValued, 
-        			mandatory, 
-        			isProtected, 
+        			title,
+        			description,
+        			defaultValue,
+        			multiValued,
+        			mandatory,
+        			isProtected,
         			constraintRef);
     }
-    
-    
-    
+
+
+
 }

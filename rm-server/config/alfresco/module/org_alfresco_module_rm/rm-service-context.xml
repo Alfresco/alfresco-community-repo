@@ -1523,4 +1523,59 @@
          </value>
       </property>
    </bean>
+
+   <!--  Relationship Service  -->
+
+   <bean id="relationshipService" class="org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipServiceImpl">
+      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="namespacePrefixResolver" ref="namespaceService"/>
+   </bean>
+
+   <bean id="RelationshipService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService</value>
+      </property>
+      <property name="target">
+         <ref bean="relationshipService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="RelationshipService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="RelationshipService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="RelationshipService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="RelationshipService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipDefinitions=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipDefinition=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.createRelationshipDefinition=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.updateReleationshipDefinition=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.removeRelationshipDefinition=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.existsRelationshipDefinition=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipsFrom=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipsTo=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.addRelationship=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.removeRelationship=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
+   </bean>
 </beans>

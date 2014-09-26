@@ -374,7 +374,7 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     @Override
     public boolean hasMore()
     {
-       return numberFound.longValue() > (start.longValue() + page.size() + 1); 
+       return numberFound.longValue() > (start.longValue() + page.size());
     }
 
     /*

@@ -210,7 +210,7 @@ function getDocResults(params)
       defaultOperator: operator,
       onerror: "no-results",
       page: {
-         maxItems: params.maxResults + 1,
+         maxItems: params.maxResults,
          skipCount: params.startIndex
       }
    };

@@ -61,7 +61,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCase
 {
-    private static final int AMOUNT_OF_DAYS_BEFORE = -1;
+    private static final int AMOUNT_OF_DAYS_BEFORE = -2;
 
     private static final int TEST_DOCUMENTS_AMOUNT = 5;
 

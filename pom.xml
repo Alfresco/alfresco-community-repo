@@ -99,6 +99,26 @@
                 </executions>
             </plugin>
 
+            <!-- Override local resources - alfresco-global.properties, etc. -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>override-local-resources</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <nonFilteredFileExtensions>
+                                <nonFilteredFileExtension>properties</nonFilteredFileExtension>
+                            </nonFilteredFileExtensions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <!-- Extract all the binaries: Tomcat, PostgreSQL, Java, LibreOffice -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>

@@ -494,7 +494,6 @@
         <property name="searchService" ref="admSearchService" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="nodeIndexer" ref="nodeIndexer"/>
-        <property name="authorityService" ref="authorityService"/>
     </bean>
 
     <!--                               -->

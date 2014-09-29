@@ -127,17 +127,28 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
         }
         boolean isInDocLibrary = false;
         
-        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        
-        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();   
+             
+        if(nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
         {
-            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
-            if (parentName.equalsIgnoreCase("documentlibrary"))
+            String folderName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            if(folderName.equalsIgnoreCase("documentlibrary"))
             {
                 isInDocLibrary = true;
             }
+        }
+        else
+        {
+            while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+            {
+                String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+                if (parentName.equalsIgnoreCase("documentlibrary"))
+                {
+                    isInDocLibrary = true;
+                }
             
-            parent = nodeService.getPrimaryParent(parent).getParentRef();  
+                parent = nodeService.getPrimaryParent(parent).getParentRef();  
+            }
         }
         
         if (parent == null)

@@ -33,12 +33,12 @@ public interface RecordableVersionModel
     String RMV_PREFIX = "rmv";
 
     /** versionable aspect */
-    public QName ASPECT_VERSIONABLE = QName.createQName(RMV_URI, "versionable");
-    public QName PROP_RECORDABLE_VERSION_POLICY = QName.createQName(RMV_URI, "recordableVersionPolicy");
-    public QName PROP_FILE_PLAN = QName.createQName(RMV_URI, "filePlan");
-    
+    QName ASPECT_VERSIONABLE = QName.createQName(RMV_URI, "versionable");
+    QName PROP_RECORDABLE_VERSION_POLICY = QName.createQName(RMV_URI, "recordableVersionPolicy");
+    QName PROP_FILE_PLAN = QName.createQName(RMV_URI, "filePlan");
+
     /** recorded version aspect */
-    public QName ASPECT_RECORDED_VERSION = QName.createQName(RMV_URI, "recordedVersion");
-    public QName PROP_RECORD_NODE_REF = QName.createQName(RMV_URI, "recordNodeRef");
-    public QName PROP_FROZEN_OWNER = QName.createQName(RMV_URI, "frozenOwner");
+    QName ASPECT_RECORDED_VERSION = QName.createQName(RMV_URI, "recordedVersion");
+    QName PROP_RECORD_NODE_REF = QName.createQName(RMV_URI, "recordNodeRef");
+    QName PROP_FROZEN_OWNER = QName.createQName(RMV_URI, "frozenOwner");
 }

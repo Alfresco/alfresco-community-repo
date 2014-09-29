@@ -643,7 +643,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 });
             }
             final boolean nodeIdEqualsLastCached = (nodeId == null && lastCached == null) ||
-                                                    nodeId.equals(lastCached);
+                                                   (nodeId != null && nodeId.equals(lastCached));
             if (nodeIdEqualsLastCached && !toVisit.isEmpty())
             {
                 nodeDAO.cacheNodesById(toVisit);

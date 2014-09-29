@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.contentdata;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -155,6 +156,14 @@ public interface ContentDataDAO
      * @return
      */
     List<ContentUrlKeyEntity> getSymmetricKeysByMasterKeyAlias(String masterKeyAlias, long fromId, int maxResults);
+
+    /**
+     * Count symmetric keys entities for symmetric keys for all master keys
+     * 
+     * @since 5.0
+     * @return
+     */
+    Map<String, Integer> countSymmetricKeysForMasterKeys();
 
     /**
      * Count symmetric keys entities for symmetric keys that have been encrypted using the given

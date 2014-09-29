@@ -49,7 +49,8 @@ Inbound settings from iBatis
         <typeAlias alias="ContentData" type="org.alfresco.repo.domain.contentdata.ContentDataEntity"/>
         <typeAlias alias="ContentUrlKey" type="org.alfresco.repo.domain.contentdata.ContentUrlKeyEntity"/>
         <typeAlias alias="ContentUrlOrphanQuery" type="org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery"/>
-        
+        <typeAlias alias="SymmetricKeyCount" type="org.alfresco.repo.domain.contentdata.SymmetricKeyCount"/>
+
         <!-- Locale -->
         
         <typeAlias alias="Locale" type="org.alfresco.repo.domain.locale.LocaleEntity"/>

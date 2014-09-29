@@ -7,7 +7,7 @@
     <bean id="ContentStore" class="org.alfresco.repo.management.subsystems.CryptodocSwitchableApplicationContextFactory"
         parent="abstractPropertyBackedBean">
         <property name="autoStart">
-            <value>true</value>
+            <value>false</value>
         </property>
         <property name="category">
             <value>ContentStore</value>

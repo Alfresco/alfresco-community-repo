@@ -34,6 +34,7 @@ import org.alfresco.repo.domain.contentdata.ContentUrlEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlKeyEntity;
 import org.alfresco.repo.domain.contentdata.ContentUrlOrphanQuery;
 import org.alfresco.repo.domain.contentdata.ContentUrlUpdateEntity;
+import org.alfresco.repo.domain.contentdata.SymmetricKeyCount;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
@@ -71,6 +72,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String INSERT_SYMMETRIC_KEY = "alfresco.content.insert.insert_KeyData";
     private static final String SELECT_SYMMETRIC_KEYS_BY_MASTER_KEY = "alfresco.content.select_SymmetricKeysByMasterKey";
     private static final String COUNT_SYMMETRIC_KEYS_BY_MASTER_KEY = "alfresco.content.select_CountSymmetricKeysByMasterKey";
+    private static final String COUNT_SYMMETRIC_KEYS_FOR_MASTER_KEYS = "alfresco.content.select_CountSymmetricKeysForAllMasterKeys";
 
     protected SqlSessionTemplate template;
     
@@ -336,6 +338,20 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
 		return results;
 	}
 
+	@Override
+	public Map<String, Integer> countSymmetricKeysForMasterKeys()
+	{
+		Map<String, Integer> counts = new HashMap<>();
+
+		List<SymmetricKeyCount> res = template.selectList(COUNT_SYMMETRIC_KEYS_FOR_MASTER_KEYS);
+		for(SymmetricKeyCount count : res)
+		{
+			counts.put(count.getMasterKeyAlias(), count.getCount());
+		}
+
+		return counts;
+	}
+	
 	@Override
 	public int countSymmetricKeysForMasterKeyAlias(String masterKeyAlias)
 	{

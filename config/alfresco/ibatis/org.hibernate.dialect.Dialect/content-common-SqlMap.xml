@@ -10,6 +10,11 @@
     <!-- Result Maps    -->
     <!--                -->
 
+    <resultMap id="result_SymmetricKeyCount" type="SymmetricKeyCount">
+        <result property="masterKeyAlias" column="master_key_alias" jdbcType="VARCHAR" javaType="java.lang.String"/>
+        <result property="count" column="count" jdbcType="INTEGER" javaType="java.lang.Integer"/>
+    </resultMap>
+
     <resultMap id="result_Mimetype" type="Mimetype">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="version" column="version" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -464,7 +469,16 @@
             and <![CDATA[e.id > #{id}]]> 
         order by e.id asc
     </select>
-    
+
+    <select id="select_CountSymmetricKeysForAllMasterKeys" resultMap="result_SymmetricKeyCount">
+        select e.master_key_alias as master_key_alias, count(*) as count
+        from
+            alf_content_url_encryption e
+        group by
+            e.master_key_alias
+        having count(*) > 0
+    </select>
+
     <select id="select_CountSymmetricKeysByMasterKey" parameterType="String" resultType="java.lang.Integer">
         select count(*)
         from

@@ -18,16 +18,11 @@
  */
 package org.alfresco.repo.lock.mem;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import org.alfresco.repo.lock.LockUtils;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
-import org.alfresco.service.cmr.lock.LockStatus;
-import org.alfresco.service.cmr.lock.UnableToAquireLockException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -99,13 +94,6 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
         
         if (previousLockState != null)
         {
-            String userName = AuthenticationUtil.getFullyAuthenticatedUser();
-            String owner = previousLockState.getOwner();
-            Date expires = previousLockState.getExpires();
-            if (LockUtils.lockStatus(userName, owner, expires) == LockStatus.LOCKED)
-            {
-                throw new UnableToAquireLockException(nodeRef);
-            }            
             // Use ConcurrentMap.replace(key, old, new) so that we can ensure we don't encounter a
             // 'lost update' (i.e. someone else has locked a node while we were thinking about it).
             updated = map.replace(nodeRef, previousLockState, lockState);

@@ -53,7 +53,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Recordable version service implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3
  */
@@ -62,37 +62,37 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 {
     /** share logger with version2ServiceImpl */
     private static Log logger = LogFactory.getLog(Version2ServiceImpl.class);
-    
+
     /** key used to indicate a recordable version */
     public static final String KEY_RECORDABLE_VERSION = "recordable-version";
     public static final String KEY_FILE_PLAN = "file-plan";
-    
+
     /** file plan service */
     protected FilePlanService filePlanService;
-    
+
     /** file folder service */
     protected FileFolderService fileFolderService;
-    
+
     /** extended permission service */
     protected ExtendedPermissionService extendedPermissionService;
-    
+
     /** ownable service */
     protected OwnableService ownableService;
-    
+
     /** extended security service */
     protected ExtendedSecurityService extendedSecurityService;
-    
+
     /** authentication util helper */
-    protected AuthenticationUtil authenticationUtil;    
-    
+    protected AuthenticationUtil authenticationUtil;
+
     /**
      * @param filePlanService   file plan service
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }   
-    
+    }
+
     /**
      * @param fileFolderService file folder service
      */
@@ -100,7 +100,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.fileFolderService = fileFolderService;
     }
-    
+
     /**
      * @param extendedPermissionService extended permission service
      */
@@ -108,7 +108,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.extendedPermissionService = extendedPermissionService;
     }
-    
+
     /**
      * @param ownableService    ownable service
      */
@@ -116,7 +116,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.ownableService = ownableService;
     }
-    
+
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -124,7 +124,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.extendedSecurityService = extendedSecurityService;
     }
-    
+
     /**
      * @param authenticationUtil    authentication util helper
      */
@@ -132,7 +132,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.authenticationUtil = authenticationUtil;
     }
-    
+
     /**
      * @see org.alfresco.repo.version.Version2ServiceImpl#createVersion(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, int)
      */
@@ -140,13 +140,13 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     protected Version createVersion(NodeRef nodeRef, Map<String, Serializable> origVersionProperties, int versionNumber) throws ReservedVersionNameException
     {
         // TODO we only support recorded versions for sub types of cm:content
-        
+
         // create version properties if null
         if (origVersionProperties == null)
         {
             origVersionProperties = new HashMap<String, Serializable>(2);
         }
-        
+
         // only need to check the recordable version policy when the recordable version indicator is missing from the version properties
         if (!origVersionProperties.containsKey(KEY_RECORDABLE_VERSION))
         {
@@ -156,7 +156,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             {
                 versionType = (VersionType)origVersionProperties.get(VersionModel.PROP_VERSION_TYPE);
             }
-            
+
             // determine whether this is a recorded version or not
             if (isCreateRecordedVersion(nodeRef, versionType))
             {
@@ -176,10 +176,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                 origVersionProperties.put(KEY_FILE_PLAN, getFilePlan(nodeRef));
             }
         }
-        
+
         return super.createVersion(nodeRef, origVersionProperties, versionNumber);
     }
-    
+
     /**
      * @param nodeRef           node reference
      * @return {@link NodeRef}  associated file plan, default if none
@@ -193,7 +193,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
         return filePlan;
     }
-    
+
     /**
      * @return {@link NodeRef}  default file plan, exception if none
      */
@@ -206,10 +206,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
         return filePlan;
     }
-    
+
     /**
      * Determine whether this is a recorded version or not.
-     * 
+     *
      * @param nodeRef
      * @return
      */
@@ -222,15 +222,15 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             if (policyString != null)
             {
                 RecordableVersionPolicy policy = RecordableVersionPolicy.valueOf(policyString.toUpperCase());
-                if (RecordableVersionPolicy.ALL.equals(policy) || 
-                    (RecordableVersionPolicy.MAJOR_ONLY.equals(policy) && 
+                if (RecordableVersionPolicy.ALL.equals(policy) ||
+                    (RecordableVersionPolicy.MAJOR_ONLY.equals(policy) &&
                      VersionType.MAJOR.equals(versionType)))
                 {
                     result = true;
-                }                    
+                }
             }
         }
-        
+
         return result;
     }
 
@@ -238,18 +238,18 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
      * @see org.alfresco.repo.version.Version2ServiceImpl#createNewVersion(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map, int, org.alfresco.repo.policy.PolicyScope)
      */
     @Override
-    protected NodeRef createNewVersion( QName sourceTypeRef, 
+    protected NodeRef createNewVersion( QName sourceTypeRef,
                                         NodeRef versionHistoryRef,
-                                        Map<QName, Serializable> standardVersionProperties, 
+                                        Map<QName, Serializable> standardVersionProperties,
                                         Map<String, Serializable> versionProperties,
-                                        int versionNumber, 
+                                        int versionNumber,
                                         PolicyScope nodeDetails)
     {
         NodeRef version = null;
-        
+
         if (versionProperties.containsKey(KEY_RECORDABLE_VERSION) &&
             ((Boolean)versionProperties.get(KEY_RECORDABLE_VERSION)).booleanValue())
-        {            
+        {
             // create a recorded version
             version = createNewRecordedVersion(sourceTypeRef, versionHistoryRef, standardVersionProperties, versionProperties, versionNumber, nodeDetails);
         }
@@ -258,13 +258,13 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             // create a normal version
             version = super.createNewVersion(sourceTypeRef, versionHistoryRef, standardVersionProperties, versionProperties, versionNumber, nodeDetails);
         }
-        
+
         return version;
     }
-        
+
     /**
      * Creates a new recorded version
-     * 
+     *
      * @param sourceTypeRef
      * @param versionHistoryRef
      * @param standardVersionProperties
@@ -273,22 +273,22 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
      * @param nodeDetails
      * @return
      */
-    protected NodeRef createNewRecordedVersion(QName sourceTypeRef, 
+    protected NodeRef createNewRecordedVersion(QName sourceTypeRef,
                                                NodeRef versionHistoryRef,
-                                               Map<QName, Serializable> standardVersionProperties, 
+                                               Map<QName, Serializable> standardVersionProperties,
                                                Map<String, Serializable> versionProperties,
-                                               int versionNumber, 
+                                               int versionNumber,
                                                PolicyScope nodeDetails)
     {
         NodeRef versionNodeRef = null;
-        
+
         // Disable auto-version behaviour
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
-        
+
         // disable other behaviours that we don't want to trigger during this process
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
         policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
-        
+
         try
         {
             // get the destination file plan
@@ -297,56 +297,57 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             {
                 throw new AlfrescoRuntimeException("Can't create a new recorded version, because no file plan has been specified in the version properties.");
             }
-                        
+
             // create a copy of the source node and place in the file plan
             final NodeRef nodeRef = (NodeRef)standardVersionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
-            
+
             // create record
             NodeRef record = createRecord(nodeRef, filePlan);
 
             // create version nodeRef
             ChildAssociationRef childAssocRef = dbNodeService.createNode(
-                    versionHistoryRef, 
+                    versionHistoryRef,
                     Version2Model.CHILD_QNAME_VERSIONS,
-                    QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber), // TODO - testing - note: all children (of a versioned node) will have the same version number, maybe replace with a version sequence of some sort 001-...00n
-                    sourceTypeRef, 
+                    // TODO - testing - note: all children (of a versioned node) will have the same version number, maybe replace with a version sequence of some sort 001-...00n
+                    QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber),
+                    sourceTypeRef,
                     null);
-            versionNodeRef = childAssocRef.getChildRef();           
-            
+            versionNodeRef = childAssocRef.getChildRef();
+
             // add aspect with the standard version properties to the 'version' node
             nodeService.addAspect(versionNodeRef, Version2Model.ASPECT_VERSION, standardVersionProperties);
-            
-            // add the recordedVersion aspect with link to record 
+
+            // add the recordedVersion aspect with link to record
             nodeService.addAspect(versionNodeRef, ASPECT_RECORDED_VERSION, Collections.singletonMap(PROP_RECORD_NODE_REF, (Serializable)record));
-            
+
             // freeze auditable aspect information
             freezeAuditableAspect(nodeRef, versionNodeRef);
         }
         finally
         {
             // Enable behaviours
-            this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);            
+            this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
             this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
             this.policyBehaviourFilter.enableBehaviour(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
         }
-        
+
         // If the auditable aspect is not there then add it to the 'version' node (after original aspects have been frozen)
         if (dbNodeService.hasAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE) == false)
         {
             dbNodeService.addAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE, null);
         }
-        
+
         if (logger.isTraceEnabled())
         {
             logger.trace("createNewRecordedVersion created (" + versionNumber + ") " + versionNodeRef);
         }
-        
-        return versionNodeRef;        
+
+        return versionNodeRef;
     }
-    
+
     /**
      * Create record from current version
-     * 
+     *
      * @param nodeRef               state to freeze
      * @param filePlan              destination file plan
      * @return {@link NodeRef}      versioned record
@@ -356,15 +357,15 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         return authenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
             public NodeRef doWork() throws Exception
-            {                               
+            {
                 // get the unfiled record folder
                 final NodeRef unfiledRecordFolder = filePlanService.getUnfiledContainer(filePlan);
-                
+
                 // get the documents readers
                 Long aclId = dbNodeService.getNodeAclId(nodeRef);
                 Set<String> readers = extendedPermissionService.getReaders(aclId);
                 Set<String> writers = extendedPermissionService.getWriters(aclId);
-    
+
                 // add the current owner to the list of extended writers
                 Set<String> modifiedWrtiers = new HashSet<String>(writers);
                 if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
@@ -375,25 +376,25 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         modifiedWrtiers.add(owner);
                     }
                 }
-                
+
                 // add the current user as extended writer
                 modifiedWrtiers.add(authenticationUtil.getFullyAuthenticatedUser());
-    
+
                 // copy version state and create record
                 NodeRef record = null;
                 try
                 {
-                    List<AssociationRef> originalAssocs = null;                         
+                    List<AssociationRef> originalAssocs = null;
                     if (dbNodeService.hasAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM))
                     {
                         // take a note of any copyFrom information already on the node
                         originalAssocs = dbNodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
                     }
-                    
+
                     // create a copy of the original state and add it to the unfiled record container
                     FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
                     record = recordInfo.getNodeRef();
-                    
+
                     // remove added copy assocs
                     List<AssociationRef> recordAssocs = dbNodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
                     for (AssociationRef recordAssoc : recordAssocs)
@@ -403,7 +404,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                                 recordAssoc.getTargetRef(),
                                 ContentModel.ASSOC_ORIGINAL);
                     }
-                    
+
                     // re-add origional assocs or remove aspect
                     if (originalAssocs == null)
                     {
@@ -415,24 +416,24 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         {
                             dbNodeService.createAssociation(originalAssoc.getSourceRef(), originalAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
                         }
-                    }                    
+                    }
                 }
                 catch (FileNotFoundException e)
                 {
                     throw new AlfrescoRuntimeException("Can't create recorded version, because copy fails.", e);
                 }
-                                                           
+
                 // set extended security on record
                 extendedSecurityService.addExtendedSecurity(record, readers, writers);
-        
+
                 return record;
             }
         }, authenticationUtil.getAdminUserName());
     }
-    
+
     /**
      * Freezes audit aspect properties.
-     * 
+     *
      * @param nodeRef
      * @param versionNodeRef
      */
@@ -445,14 +446,14 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_CREATED, properties.get(ContentModel.PROP_CREATED));
             dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_MODIFIER, properties.get(ContentModel.PROP_MODIFIER));
             dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_MODIFIED, properties.get(ContentModel.PROP_MODIFIED));
-            dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_ACCESSED, properties.get(ContentModel.PROP_ACCESSED));   
+            dbNodeService.setProperty(versionNodeRef, Version2Model.PROP_QNAME_FROZEN_ACCESSED, properties.get(ContentModel.PROP_ACCESSED));
             if (properties.get(ContentModel.PROP_OWNER) != null)
             {
                 dbNodeService.setProperty(versionNodeRef, PROP_FROZEN_OWNER, properties.get(ContentModel.PROP_OWNER));
             }
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.version.Version2ServiceImpl#getVersion(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -460,13 +461,13 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     protected Version getVersion(NodeRef versionRef)
     {
         Version version = super.getVersion(versionRef);
-        
+
         NodeRef record = (NodeRef)dbNodeService.getProperty(versionRef, PROP_RECORD_NODE_REF);
         if (record != null)
         {
             version.getVersionProperties().put("RecordVersion", record);
         }
-        
+
         return version;
     }
 }

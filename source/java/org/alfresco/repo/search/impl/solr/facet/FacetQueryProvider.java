@@ -19,28 +19,22 @@
 
 package org.alfresco.repo.search.impl.solr.facet;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import java.util.List;
+import java.util.Map;
 
 /**
+ * A contract for classes which need to create a set of predefined facet queries.
+ * 
  * @author Jamal Kaabi-Mofrad
+ * @since 5.0
  */
-public class SolrFacetTestSuite extends TestSuite
+public interface FacetQueryProvider
 {
 
     /**
-     * Creates the test suite
-     *
-     * @return  the test suite
+     * Gets the created facet queries
+     * 
+     * @return read-only map of facet queries or an empty map.
      */
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JUnit4TestAdapter(SolrFacetQueriesDisplayHandlersTest.class));
-        suite.addTest(new JUnit4TestAdapter(SolrFacetServiceImplTest.class));
-        suite.addTest(new JUnit4TestAdapter(SolrFacetConfigTest.class));
-
-        return suite;
-    }
+    public Map<String, List<String>> getFacetQueries();
 }

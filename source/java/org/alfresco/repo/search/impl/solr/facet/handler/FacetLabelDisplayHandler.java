@@ -17,30 +17,22 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.repo.search.impl.solr.facet;
+package org.alfresco.repo.search.impl.solr.facet.handler;
 
-import junit.framework.JUnit4TestAdapter;
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 /**
+ * An interface for Solr facet value and facet query result display label handler.
+ * 
  * @author Jamal Kaabi-Mofrad
+ * @since 5.0
  */
-public class SolrFacetTestSuite extends TestSuite
+public interface FacetLabelDisplayHandler
 {
-
     /**
-     * Creates the test suite
-     *
-     * @return  the test suite
+     * Gets the user friendly display label for the returned facet value
+     * 
+     * @param value the facet value
+     * @return user friendly display label or the original value, if there is no result
      */
-    public static Test suite()
-    {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JUnit4TestAdapter(SolrFacetQueriesDisplayHandlersTest.class));
-        suite.addTest(new JUnit4TestAdapter(SolrFacetServiceImplTest.class));
-        suite.addTest(new JUnit4TestAdapter(SolrFacetConfigTest.class));
-
-        return suite;
-    }
+    public FacetLabel getDisplayLabel(String value);
 }

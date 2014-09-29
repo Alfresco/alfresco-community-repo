@@ -43,4 +43,118 @@
          <value>${solr_facets.root}</value>
       </property>
    </bean>
+
+   <!-- Facet Label Display Handler Registry -->
+   <bean id="facet.facetLabelDisplayHandlerRegistry" class="org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry" />
+
+   <!-- Abstract bean, defining base definition for all facet label display handlers -->
+   <bean id="baseFacetLabelDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.AbstractFacetLabelDisplayHandler"
+      abstract="true" init-method="register">
+      <property name="registry">
+          <ref bean="facet.facetLabelDisplayHandlerRegistry" />
+      </property>
+      <property name="serviceRegistry">
+          <ref bean="ServiceRegistry" />
+      </property>
+   </bean>
+
+   <bean id="facet.mimetypeDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.MimetypeDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg>
+         <set>
+            <value>@{http://www.alfresco.org/model/content/1.0}content.mimetype</value>
+         </set>
+      </constructor-arg>
+   </bean>
+
+   <bean id="facet.userNameDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.UserNameDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg>
+         <set>
+            <value>@{http://www.alfresco.org/model/content/1.0}creator</value>
+            <value>@{http://www.alfresco.org/model/content/1.0}modifier</value>
+         </set>
+      </constructor-arg>
+   </bean>
+
+   <bean id="facet.siteTitleDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.SiteTitleDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg>
+         <set>
+            <value>SITE</value>
+         </set>
+      </constructor-arg>
+   </bean>
+
+   <bean id="facet.contentSizeBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.ContentSizeBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg index="0">
+         <set>
+            <value>@{http://www.alfresco.org/model/content/1.0}content.size</value>
+         </set>
+      </constructor-arg>
+      <constructor-arg index="1">
+         <bean class="org.springframework.beans.factory.config.MapFactoryBean">
+            <property name="targetMapClass">
+               <value>java.util.LinkedHashMap</value>
+            </property>
+            <property name="sourceMap">
+               <map>
+                  <entry key="[0 TO 10240]" value="faceted-search.size.0-10KB.label" />
+                  <entry key="[10240 TO 102400]" value="faceted-search.size.10-100KB.label" />
+                  <entry key="[102400 TO 1048576]" value="faceted-search.size.100KB-1MB.label" />
+                  <entry key="[1048576 TO 16777216]" value="faceted-search.size.1-16MB.label" />
+                  <entry key="[16777216 TO 134217728]" value="faceted-search.size.16-128MB.label" />
+                  <entry key="[134217728 TO MAX]" value="faceted-search.size.over128.label" />
+               </map>
+            </property>
+         </bean>
+      </constructor-arg>
+   </bean>
+
+   <bean id="facet.dateBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.DateBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg index="0">
+         <set>
+            <value>@{http://www.alfresco.org/model/content/1.0}created</value>
+            <value>@{http://www.alfresco.org/model/content/1.0}modified</value>
+         </set>
+      </constructor-arg>
+      <constructor-arg index="1">
+         <bean class="org.springframework.beans.factory.config.MapFactoryBean">
+            <property name="targetMapClass">
+               <value>java.util.LinkedHashMap</value>
+            </property>
+            <property name="sourceMap">
+               <map>
+                  <!-- Bucket => yesterday TO today -->
+                  <entry key="[NOW/DAY-1DAY TO NOW/DAY+1DAY]" value="faceted-search.date.one-day.label" />
+                  <!-- Bucket => Last week TO today -->
+                  <entry key="[NOW/DAY-7DAYS TO NOW/DAY+1DAY]" value="faceted-search.date.one-week.label" />
+                  <!--  Bucket => Last month TO today -->
+                  <entry key="[NOW/DAY-1MONTH TO NOW/DAY+1DAY]" value="faceted-search.date.one-month.label" />
+                  <!--  Bucket => Last 6 months TO today -->
+                  <entry key="[NOW/DAY-6MONTHS TO NOW/DAY+1DAY]" value="faceted-search.date.six-months.label" />
+                  <!--  Bucket => Last year TO today -->
+                  <entry key="[NOW/DAY-1YEAR TO NOW/DAY+1DAY]" value="faceted-search.date.one-year.label" />
+               </map>
+            </property>
+         </bean>
+      </constructor-arg>
+   </bean>
+
+   <bean id="facet.solrFacetHelper" class="org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper" >
+      <constructor-arg>
+          <list>
+             <ref bean="facet.contentSizeBucketsDisplayHandler" />
+             <ref bean="facet.dateBucketsDisplayHandler" />
+          </list>
+      </constructor-arg>
+      <property name="specialFacetIds">
+         <set>
+            <value>SITE</value>
+            <value>TAG</value>
+            <value>ANCESTOR</value>
+            <value>PARENT</value>
+            <value>ASPECT</value>
+            <value>TYPE</value>
+            <value>OWNER</value>
+         </set>
+      </property>
+   </bean>
 </beans>

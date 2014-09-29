@@ -133,7 +133,7 @@ public class SolrFacetConfigTest
 
         // See if the overrides worked
         SolrFacetProperties creatorFP = defaultProps.get("test_filter_creator");
-        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}creator.__.u", creatorFP.getFacetQName().toString());
+        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}creator", creatorFP.getFacetQName().toString());
 
         String msg = "The value has not been overridden with the value from the custom properties";
         assertEquals(msg, 10, creatorFP.getMaxFilters());
@@ -160,7 +160,7 @@ public class SolrFacetConfigTest
         config.onBootstrap(applicationEvent);
 
         SolrFacetProperties creatorFP = config.getDefaultFacets().get("test_filter_creator");
-        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}creator.__.u", creatorFP.getFacetQName().toString());
+        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}creator", creatorFP.getFacetQName().toString());
         assertEquals(10, creatorFP.getMaxFilters());
         assertEquals(5, creatorFP.getHitThreshold());
         assertEquals(14, creatorFP.getMinFilterValueLength());
@@ -175,7 +175,7 @@ public class SolrFacetConfigTest
         config.onBootstrap(applicationEvent);
 
         creatorFP = config.getDefaultFacets().get("test_filter_creator");
-        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}creator.__.u", creatorFP.getFacetQName().toString());
+        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}creator", creatorFP.getFacetQName().toString());
         assertEquals(5, creatorFP.getMaxFilters());
         assertEquals(1, creatorFP.getHitThreshold());
         assertEquals(4, creatorFP.getMinFilterValueLength());

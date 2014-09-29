@@ -34,8 +34,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper.FacetLabel;
-import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper.FacetLabelDisplayHandler;
+import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabel;
+import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandler;
+import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -96,12 +97,14 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
     /** Solr facet helper */
     private SolrFacetHelper solrFacetHelper;
     
+    private FacetLabelDisplayHandlerRegistry facetLabelDisplayHandlerRegistry;
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "services", services);
-        this.solrFacetHelper = new SolrFacetHelper(services);
+        PropertyCheck.mandatory(this, "solrFacetHelper", solrFacetHelper);
+        PropertyCheck.mandatory(this, "facetLabelDisplayHandlerRegistry", facetLabelDisplayHandlerRegistry);
     }
     
     /**
@@ -146,6 +149,20 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
     
     // JavaScript API
     
+    /**
+     * @param solrFacetHelper the solrFacetHelper to set
+     */
+    public void setSolrFacetHelper(SolrFacetHelper solrFacetHelper)
+    {
+        this.solrFacetHelper = solrFacetHelper;
+    }
+    /**
+     * @param facetLabelDisplayHandlerRegistry the facetLabelDisplayHandlerRegistry to set
+     */
+    public void setFacetLabelDisplayHandlerRegistry(FacetLabelDisplayHandlerRegistry facetLabelDisplayHandlerRegistry)
+    {
+        this.facetLabelDisplayHandlerRegistry = facetLabelDisplayHandlerRegistry;
+    }
     public String getSearchSubsystem()
     {
         return (searchSubsystem == null) ? "" : searchSubsystem.getCurrentSourceBeanName();
@@ -717,34 +734,28 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 {
                     for (String field: facets)
                     {
-                        final FieldFacet fieldFacet;
-                        if (solrFacetHelper.isSpecialFacetId(field))
+                        final String modifiedField = "@" + field;
+                        if (solrFacetHelper.hasFacetQueries(modifiedField))
                         {
-                            fieldFacet = new FieldFacet(field);
+                            List<String> facetQueries = solrFacetHelper.getFacetQueries(modifiedField);
+                            addFacetQuery(sp, field, facetQueries, query);
                         }
                         else
                         {
-                            fieldFacet = new FieldFacet("@" + field);
+                            final FieldFacet fieldFacet;
+                            if (solrFacetHelper.isSpecialFacetId(field))
+                            {
+                                fieldFacet = new FieldFacet(field);
+                            }
+                            else
+                            {
+                                fieldFacet = new FieldFacet(modifiedField);
+                            }
+                            sp.addFieldFacet(fieldFacet);
                         }
-                        sp.addFieldFacet(fieldFacet);
-                    }
-                    
-                    List<String> facetQueries = null;
-                    // Workaround for ACE-1605
-                    if (query.indexOf("created:") < 0 && query.indexOf("modified:") < 0)
-                    {
-                        facetQueries = solrFacetHelper.getDefaultFacetQueries();
-                    }
-                    else
-                    {
-                        facetQueries = solrFacetHelper.createFacetQueriesFromSearchQuery(query);
-                    }
-                    for (String fq : facetQueries)
-                    {
-                        sp.addFacetQuery(fq);
                     }
                 }
-                
+
                 // error handling opions
                 boolean exceptionOnError = true;
                 if (onerror != null)
@@ -954,7 +965,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     if (f.getSecond() > 0)
                     {
                         String facetValue = f.getFirst();
-                        FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(ff.getField());
+                        FacetLabelDisplayHandler handler = facetLabelDisplayHandlerRegistry.getDisplayHandler(ff.getField());
                         String label = (handler == null) ? facetValue : handler.getDisplayLabel(facetValue).getLabel();
                         
                         facets.add(new ScriptFacetResult(facetValue, label, -1, f.getSecond()));
@@ -979,23 +990,23 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 if (entry.getValue() > 0)
                 {
                     String key = entry.getKey();
-                    // for example the key could be: {!afts}@{http://www.alfresco.org/model/content/1.0}created:[2013-10-29 TO 2014-04-29]
+                    // for example the key could be: {!afts}@{http://www.alfresco.org/model/content/1.0}created:[NOW/DAY-1DAY TO NOW/DAY+1DAY]
                     // qName => @{http://www.alfresco.org/model/content/1.0}created
                     // 7 => {!afts}
-                    String qName = key.substring(7, key.lastIndexOf(':'));
+                    key = key.substring(7);
+                    String qName = key.substring(0, key.lastIndexOf(':'));
 
                     // Retrieve the previous facet queries
                     List<ScriptFacetResult> fqs = facetMeta.get(qName);
                     if (fqs == null)
                     {
-                        // Shouldn't be here
-                        throw new AlfrescoRuntimeException("Field facet [" + qName + "] has"
-                                    + " not been registered with SolrFacetHelper.BUCKETED_FIELD_FACETS.");
+                        fqs = new ArrayList<>();
+                        logger.info("Field facet [" + key + "] has not been registered.");
                     }
-                    FacetLabelDisplayHandler handler = solrFacetHelper.getDisplayHandler(qName);
-                    FacetLabel facetLabel = (handler == null) ? new FacetLabel(qName, key.substring(qName.length(),
-                                key.length()), -1) : handler.getDisplayLabel(key);
-                    
+                    // Get the handler for this qName
+                    FacetLabelDisplayHandler handler = facetLabelDisplayHandlerRegistry.getDisplayHandler(qName);
+                    FacetLabel facetLabel = (handler == null) ? new FacetLabel(key, key, -1) : handler.getDisplayLabel(key);
+
                     fqs.add(new ScriptFacetResult(facetLabel.getValue(), facetLabel.getLabel(), facetLabel.getLabelIndex(), entry.getValue()));
                 }
             }// End of bucketing
@@ -1037,6 +1048,33 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
         return new Pair<Object[], Map<String,Object>>(res, meta);
     }
     
+    /**
+     * Adds facet queries to the {@code SearchParameters}
+     * 
+     * @param sp the SearchParameters
+     * @param field the requested field facet
+     * @param facetQueries list of generated facet queries
+     * @param query the requested search query
+     */
+    protected void addFacetQuery(SearchParameters sp, String field, List<String> facetQueries, String query)
+    {
+        // Workaround for ACE-1605
+        if (query.indexOf(field) < 0)
+        {
+            for (String fq : facetQueries)
+            {
+                sp.addFacetQuery(fq);
+            }
+        }
+        else
+        {
+            String fq = solrFacetHelper.createFacetQueriesFromSearchQuery(field, query);
+            if (fq != null)
+            {
+                sp.addFacetQuery(fq);
+            }
+        }
+    }
     
     /**
      * Search sort column 

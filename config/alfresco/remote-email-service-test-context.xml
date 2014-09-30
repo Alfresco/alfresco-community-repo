@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="remoteEmailServiceProperties" 
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="locations">
+            <list>
+                <value>classpath:alfresco/remote-email-service-test.properties</value>
+            </list>
+        </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
+    </bean>
+
+    <!-- Remote email-service. -->
+    <bean id="emailService" class="org.alfresco.email.server.EmailServiceRemotable">
+        <property name="rmiRegistryHost">
+            <value>${email.service.rmi.registry.host}</value>
+        </property>
+        <property name="rmiRegistryPort">
+            <value>${email.service.rmi.registry.port}</value>
+        </property>
+    </bean>
+
+</beans>

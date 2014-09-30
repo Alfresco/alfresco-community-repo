@@ -149,10 +149,16 @@
 alfresco.rmi.services.host=0.0.0.0
 
 #
+# RMI service ports for the individual services.
+# These seven services are available remotely.
 #
 # Assign individual ports for each service for best performance 
 # or run several services on the same port. You can even run everything on 50500 if needed.
 #
 # Select 0 to use a random unused port.
 # 
+#attribute.rmi.service.port=50503
+#authentication.rmi.service.port=50504
+#repo.rmi.service.port=50505
+#action.rmi.service.port=50506
 #monitor.rmi.service.port=50508

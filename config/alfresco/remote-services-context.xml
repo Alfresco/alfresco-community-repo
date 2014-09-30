@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING/DTD BEAN//EN"
+	"http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+
+    <!-- The AuthenticationService exported as an RMI service. -->
+	<bean id="rmiAuthenticationService" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" parent="baseServiceExporter">
+		<property name="service">
+			<ref bean="AuthenticationService"/>
+		</property>
+		<property name="serviceInterface">
+			<value>org.alfresco.service.cmr.security.AuthenticationService</value>
+		</property>
+		<property name="serviceName">
+			<value>authentication</value>
+		</property>
+	    <property name="enabled">
+			<value>${authentication.rmi.service.enabled}</value>
+		</property>
+		<property name="servicePort">
+			<value>${authentication.rmi.service.port}</value>
+		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
+		</property>
+	</bean>    
+	
+    <!-- A Simple Filesystem like API for the repo implementation.
+	     Unfinished, experimental, and probably ephemeral. -->
+    <bean id="repoRemoteService" class="org.alfresco.repo.remote.RepoRemoteService">
+        <property name="nodeService">
+        	<ref bean="mtAwareNodeService"/>
+        </property>
+        <property name="fileFolderService">
+            <ref bean="fileFolderService"/>
+        </property>
+        <property name="contentService">
+            <ref bean="contentService"/>
+        </property>
+    </bean>	
+
+	<!-- Transactionally wrapped version of above. -->
+    <bean id="RepoRemoteService" class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="proxyInterfaces">
+		    <value>org.alfresco.service.cmr.remote.RepoRemote</value>
+		</property>    
+		<property name="target">
+		    <ref bean="repoRemoteService"/>
+		</property>
+		<property name="transactionManager">
+		    <ref bean="transactionManager"/>
+		</property>
+		<property name="transactionAttributes">
+		    <props>
+		        <prop key="create*">${server.transaction.mode.default}</prop>
+		        <prop key="get*">${server.transaction.mode.readOnly}</prop>
+		        <prop key="lookup">${server.transaction.mode.readOnly}</prop>
+		        <prop key="read*">${server.transaction.mode.readOnly}</prop>
+		        <prop key="remove*">${server.transaction.mode.default}</prop>
+		        <prop key="rename">${server.transaction.mode.default}</prop>
+		        <prop key="write*">${server.transaction.mode.default}</prop>
+		    </props>
+		</property>
+	</bean>
+
+	<!-- The server side repo remote transport, to be exported via RMI, etc. -->
+    <bean id="repoRemoteTransport" class="org.alfresco.repo.remote.RepoRemoteTransportService">
+        <property name="authenticationService">
+            <ref bean="AuthenticationService"/>
+        </property>
+        <property name="repoRemote">
+            <ref bean="RepoRemoteService"/>
+        </property>
+        <property name="idleTimeout">
+            <value>30000</value>
+        </property>
+	</bean>
+
+	<!-- The RMI export of the repo remote transport. -->
+    <bean id="repoRemoteTransportRMI" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter" parent="baseServiceExporter">
+        <property name="service">
+            <ref bean="repoRemoteTransport"/>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.remote.RepoRemoteTransport</value>
+        </property>
+        <property name="serviceName">
+            <value>repo</value>
+        </property>
+        <property name="enabled">
+			<value>${repo.rmi.service.enabled}</value>
+		</property>
+        <property name="servicePort">
+			<value>${repo.rmi.service.port}</value>
+		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
+		</property>
+    </bean>	
+    
+    <!-- Remoting the ActionService -->
+    <bean id="actionServiceTransport" class="org.alfresco.repo.action.ActionServiceTransportImpl">
+    	<property name="actionService">
+    		<ref bean="ActionService"/>
+    	</property>
+    	<property name="authenticationService">
+    		<ref bean="AuthenticationService"/>
+    	</property>
+    </bean>
+    
+    <!-- The RMI export of the ActionService Transport -->
+    <bean id="actionServiceTransportRMI" class="org.alfresco.util.remote.server.AlfrescoRMIServiceExporter"  parent="baseServiceExporter">
+        <property name="service">
+            <ref bean="actionServiceTransport"/>
+        </property>
+        <property name="serviceInterface">
+            <value>org.alfresco.service.cmr.action.ActionServiceTransport</value>
+        </property>
+        <property name="serviceName">
+            <value>action</value>
+        </property>
+        <property name="enabled">
+			<value>${action.rmi.service.enabled}</value>
+		</property>
+        <property name="servicePort">
+			<value>${action.rmi.service.port}</value>
+		</property>
+		<property name="clientSocketFactory">
+			<ref bean="hostConfigurableSocketFactory" />
+		</property>
+    </bean>
+</beans>

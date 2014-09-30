@@ -12,6 +12,9 @@
     <splashImage>images/splash.png</splashImage>
     <allowLanguageSelection>1</allowLanguageSelection>
     <productDisplayIcon>${installdir}/alfresco.ico</productDisplayIcon>
+    <windowsExecutableIcon>images/alfresco.ico</windowsExecutableIcon>
+    <osxApplicationBundleIcon>images/alfresco.icns</osxApplicationBundleIcon>
+    <wmImage>images/alfresco.png</wmImage>
     <defaultLanguage>en</defaultLanguage>
     <defaultUnixDirectoryPermissions>755</defaultUnixDirectoryPermissions>
     <defaultUnixFilePermissions>644</defaultUnixFilePermissions>

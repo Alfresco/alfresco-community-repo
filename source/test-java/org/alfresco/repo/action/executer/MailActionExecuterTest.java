@@ -59,8 +59,9 @@ public class MailActionExecuterTest extends AbstractMailActionExecuterTest
         BRITISH_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "englishuser@test.com");
         FRENCH_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "frenchuser@test.com");
         AUSTRALIAN_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "australianuser@test.com");
+        EXTERNAL_USER = new AlfrescoPerson(APP_CONTEXT_INIT, "externaluser@externaldomain.com");
 
-        return RuleChain.outerRule(APP_CONTEXT_INIT).around(AUSTRALIAN_USER).around(BRITISH_USER).around(FRENCH_USER);
+        return RuleChain.outerRule(APP_CONTEXT_INIT).around(AUSTRALIAN_USER).around(BRITISH_USER).around(FRENCH_USER).around(EXTERNAL_USER);
     }
 
 }

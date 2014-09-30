@@ -1104,8 +1104,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     String fromActualUser = fromPersonName;
                     if (fromPersonName != null)
                     {
-                         NodeRef fromPerson = getPerson(fromPersonName);
-                         fromActualUser = (String) nodeService.getProperty(fromPerson, ContentModel.PROP_EMAIL);
+                         fromActualUser = getPersonEmail(fromPersonName);
                     }
               
                     if (fromActualUser != null && fromActualUser.length() != 0)

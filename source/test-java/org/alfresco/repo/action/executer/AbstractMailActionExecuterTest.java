@@ -79,6 +79,7 @@ public abstract class AbstractMailActionExecuterTest
     public static AlfrescoPerson BRITISH_USER = null;
     public static AlfrescoPerson FRENCH_USER = null;
     public static AlfrescoPerson AUSTRALIAN_USER = null;
+    public static AlfrescoPerson EXTERNAL_USER = null;
 
     private static String ALFRESCO_EE_USER = "plainUser";
 
@@ -524,6 +525,41 @@ public abstract class AbstractMailActionExecuterTest
         {
             // tidy up
             PERSON_SERVICE.deletePerson(USER_1);
+        }
+    }
+
+    /**
+     * ACE-2564
+     */
+    @Test
+    public void testSendEmailByExternalUser() throws IOException, MessagingException
+    {
+        final Serializable recipients = (Serializable) Arrays.asList(BRITISH_USER.getUsername());
+        final String subject = "";
+        final String template = "alfresco/templates/mail/test.txt.ftl";
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(EXTERNAL_USER.getUsername());
+        
+        MimeMessage message = null;
+        try
+        {
+            final String tenantId = getUsersHomeTenant(BRITISH_USER.getUsername());
+            message = TenantUtil.runAsTenant(new TenantRunAsWork<MimeMessage>()
+            {
+                @Override
+                public MimeMessage doWork() throws Exception
+                {
+                    return sendMessage(null, recipients, subject, template);
+                }
+            }, tenantId);
+
+            Assert.assertNotNull(message);
+            Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
         }
     }
 

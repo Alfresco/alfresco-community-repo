@@ -38,7 +38,14 @@
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat</artifactId>
             <version>${installer.tomcat.version}</version>
-            <classifier>unix</classifier>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>osx</classifier>
             <type>tgz</type>
         </dependency>
         <dependency>

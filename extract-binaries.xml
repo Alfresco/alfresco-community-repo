@@ -23,11 +23,11 @@
         <echo>Extracting Tomcat...</echo>
         <exec failonerror="true" executable="tar" dir="${binaries.linux}">
             <arg value="xf" />
-            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-unix.tgz" />
+            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-linux.tgz" />
         </exec>
         <exec failonerror="true" executable="tar" dir="${binaries.osx}">
             <arg value="xf" />
-            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-unix.tgz" />
+            <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-osx.tgz" />
         </exec>
         <exec failonerror="true" executable="tar" dir="${binaries.win32}">
             <arg value="xf" />

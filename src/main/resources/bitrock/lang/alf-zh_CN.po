@@ -1,11 +1,17 @@
-﻿msgid "${product_fullname} LibreOffice Service"
+msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB)."
+msgstr "${machine_total_memory} MB 的 RAM 不足够运行 Alfresco 用于测试或生产目的。Alfresco 可能无法正常运行，如果可以正常运行，其将不能发挥最佳性能。升级服务器，至少拥有 ${minimum_ram} MB 的 RAM（最好至少拥有 ${recommended_ram} MB）。"
+
+msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM"
+msgstr "${machine_total_memory} MB 的 RAM 不足够运行 Alfresco 用于测试或生产目的。Alfresco 可以正常用于开发目的，但是该服务器不适用于其他目的。升级服务器，至少具备 ${recommended_ram} MB 的 RAM"
+
+msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOffice 服务"
 
 msgid "${product_fullname} Service"
 msgstr "${product_fullname} 服务"
 
-msgid "${product_fullname} Virtual Server"
-msgstr "${product_fullname} 虚拟服务器"
+msgid "${product_shortname} manager tool"
+msgstr "${product_shortname} 管理员工具"
 
 msgid "Admin Password"
 msgstr "管理密码"
@@ -13,17 +19,11 @@ msgstr "管理密码"
 msgid "Admin Password:"
 msgstr "管理密码："
 
-msgid "Advanced - Configures server ports and service properties." 
+msgid "Advanced - Configures server ports and service properties."
 msgstr "高级 - 配置服务器端口和服务属性。"
-
-msgid "Also choose optional components to install."
-msgstr "还可以选择要安装的可选组件。"
 
 msgid "Alfresco"
 msgstr "Alfresco"
-
-msgid "Alfresco AVM Web Project Management for managing web site content."
-msgstr "用于管理网站内容的 Alfresco AVM Web Project Management。"
 
 msgid "Alfresco Community Edition Stack"
 msgstr "Alfresco Community Edition Stack"
@@ -36,9 +36,6 @@ msgstr "Alfresco Explorer"
 
 msgid "Alfresco FTP Port"
 msgstr "Alfresco FTP 端口"
-
-msgid "Alfresco Licenses"
-msgstr "Alfresco 许可证"
 
 msgid "Alfresco Module Packages"
 msgstr "Alfresco Module Package"
@@ -61,26 +58,41 @@ msgstr "Alfresco 网站"
 msgid "Alfresco data directory"
 msgstr "Alfresco 数据目录"
 
-msgid "Allow to choose an already installed service name if it contains a call to installdir/ctlscript"
-msgstr "允许选择已安装的服务名称，如果此名称包含对 installdir/ctlscript 的调用"
+msgid "Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco."
+msgstr "Alfresco 需要至少 ${minimum_file_descriptors} 个文件描述符。当 Alfresco 正常启动时，可能会在搜索引擎检索内容时出现错误。增加 Alfresco 的可用文件描述符数量。"
 
-msgid "Apache Service"
-msgstr "Apache 服务"
+msgid "Also choose optional components to install."
+msgstr "还可以选择要安装的可选组件。"
 
 msgid "Auto - Configure servers to start automatically"
 msgstr "自动 - 将服务器配置为自动启动"
 
-msgid "Common Component"
-msgstr "公共组件"
+msgid "CIFS protocol ports configuration"
+msgstr "CIFS 协议端口配置"
 
-msgid "Common installation directory"
-msgstr "公共安装目录"
+msgid "CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "CIFS 协议将不可用。无法绑定端口： ${portList}。考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口"
+
+msgid "CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers)."
+msgstr "CIFS 协议将不可用。检查正在使用以下端口运行的进程： ${portList}（例如现有 CIFS 服务器）。"
+
+msgid "CIFS server port"
+msgstr "CIFS 服务器端口"
+
+msgid "CIFS server port 1"
+msgstr "CIFS 服务器端口 1"
+
+msgid "CIFS server port 2"
+msgstr "CIFS 服务器端口 2"
+
+msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz)."
+msgstr "CPU 时钟速度 ${machine_cpu_speed} Mhz 低于推荐的用于测试或生产所使用的速度 (${recommended_cpu_speed} Mhz)。Alfresco 可以正常执行开发，但是该服务器不适用于其他目的。升级服务器，使其拥有较新的 CPU（CPU 时钟速度至少为 ${recommended_cpu_speed} Mhz）。"
+
+msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more)."
+msgstr "CPU 时钟速度 ${machine_cpu_speed} Mhz 低于 Alfresco 要求的最低速度 (${minimum_cpu_speed} Mhz)。Alfresco 将无法发挥最佳性能。升级服务器，使其拥有较新的 CPU（CPU 时钟速度至少为 ${minimum_cpu_speed} Mhz，最好为 ${recommended_cpu_speed} Mhz 或更高）。"
 
 msgid "Config Files"
 msgstr "配置文件"
-
-msgid "Couldn't check Apache Tomcat Version.\nTomcat 5.5 is recommended."
-msgstr "无法检查 Apache Tomcat 版本。\n建议使用 Tomcat 5.5。"
 
 msgid "Creating user and database"
 msgstr "创建用户和数据库"
@@ -103,17 +115,20 @@ msgstr "数据库名称"
 msgid "Database name:"
 msgstr "数据库名称："
 
+msgid "Deploying Alfresco. Please be patient."
+msgstr "部署 Alfresco。请耐心等待。"
+
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "是否要将 PostgreSQL 作为 Windows 服务安装？"
 
 msgid "Easy - Installs servers with the default configuration"
 msgstr "简单 - 使用默认配置安装服务器"
 
-msgid "Encoding"
-msgstr "编码"
-
 msgid "Extension Files"
 msgstr "扩展文件"
+
+msgid "Google Docs Integration"
+msgstr "Google Docs 集成"
 
 msgid "I wish to use an existing PostgreSQL database"
 msgstr "我希望使用现有的 PostgreSQL 数据库"
@@ -127,26 +142,23 @@ msgstr "我希望使用捆绑的 PostgreSQL 数据库"
 msgid "I wish to use the bundled Tomcat"
 msgstr "我希望使用捆绑的 Tomcat"
 
+msgid "IMAP port"
+msgstr "IMAP 端口"
+
+msgid "IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "IMAP 协议将不可用（注意： 默认为未启用）。无法绑定端口 ${imap_port}。考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口"
+
+msgid "IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "IMAP 协议将不可用（注意： 默认为未启用）。检查正在使用 ${imap_port} 运行的进程（例如现有 IMAP 服务器），在非 Windows 操作系统上，考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口"
+
 msgid "IP / Hostname"
 msgstr "IP/主机名"
-
-msgid "ImageMagick Component"
-msgstr "ImageMagick 组件"
-
-msgid "ImageMagick installation directory"
-msgstr "ImageMagick 安装目录"
-
-msgid "ImageMagick version"
-msgstr "ImageMagick 版本"
 
 msgid "Include Alfresco Web Quick Start."
 msgstr "包括 Alfresco Web Quick Start。"
 
-msgid "Include system ld library path in environment"
-msgstr "将系统 ld 库路径包括在环境中"
-
-msgid "Include system path in environment"
-msgstr "将系统路径包括在环境中"
+msgid "Include Google Docs Integration Features."
+msgstr "包括 Google Docs 集成功能。"
 
 msgid "Initializing database"
 msgstr "初始化数据库"
@@ -160,17 +172,17 @@ msgstr "将 ${product_fullname} 作为服务安装"
 msgid "Install PostgreSQL as service?"
 msgstr "将 PostgreSQL 作为服务安装？"
 
-msgid "Install application as a service on Unix systems"
-msgstr "在 Unix 系统上将应用程序作为服务安装"
-
 msgid "Install as a service"
 msgstr "作为服务安装"
+
+msgid "Installation Folder"
+msgstr "安装文件夹"
 
 msgid "Installation Type"
 msgstr "安装类型"
 
 msgid "Installation directory path is too long. The maximum number of characters allowed is ${base_installdir_max_characters}."
-msgstr "安装目录路径太长。 允许的最大字符数为 ${base_installdir_max_characters}。"
+msgstr "安装目录路径太长。允许的最大字符数为 ${base_installdir_max_characters}。"
 
 msgid "Installation folder"
 msgstr "安装文件夹"
@@ -191,7 +203,7 @@ msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_
 msgstr "将 Tomcat 作为名为 ${tomcat_unique_service_name} 的 Windows 服务安装"
 
 msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
-msgstr "您似乎没有足够的权限捆绑到端口，或端口已经被其他应用程序占用。 请选择其他端口。"
+msgstr "您似乎没有足够的权限捆绑到端口，或端口已经被其他应用程序占用。请选择其他端口。"
 
 msgid "JDBC Driver:"
 msgstr "JDBC 驱动程序："
@@ -211,20 +223,29 @@ msgstr "Java"
 msgid "Java Component required to run the Alfresco server."
 msgstr "运行 Alfresco 服务器所需的 Java 组件。"
 
+msgid "Java Home path contains spaces. Alfresco may not function properly, as the JVM itself has bugs when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Java 主路径包含空格。Alfresco 可能无法正常操作，因为当安装路径包含空格时，JVM 本身存在错误。在不包含空格的路径中重新安装 JVM。"
+
+msgid "Java is not installed in your Stack. This module requires to have Java installed."
+msgstr "Java 未安装在堆栈中。此模块要求安装 Java。"
+
 msgid "Launch ${product_fullname} Share"
 msgstr "启动 ${product_fullname} 共享"
 
-msgid "Libraries Files"
-msgstr "库文件"
+msgid "LibreOffice"
+msgstr "LibreOffice"
 
-msgid "License Folder Component"
-msgstr "许可证文件夹组件"
+msgid "LibreOffice Server Port"
+msgstr "LibreOffice 服务器端口"
 
-msgid "Licenses Files"
-msgstr "许可证文件"
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice 是多平台、开源办公软件套件，适用于文字处理、电子表格、演示文稿、图形以及文档转换所需的数据库。"
 
-msgid "Licenses destination"
-msgstr "许可证目标"
+msgid "Location of bin and lib tomcat folders"
+msgstr "bin 和 lib tomcat 文件夹的位置"
+
+msgid "Manager tool"
+msgstr "管理员工具"
 
 msgid "Manual - Configure servers to start services manually"
 msgstr "手动 - 将服务器配置为手动启动服务"
@@ -236,34 +257,19 @@ msgid "New Folder"
 msgstr "新建文件夹"
 
 msgid "Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended."
-msgstr "非 PostgreSQL 版本 8.1.4 安装。 建议使用 PostgreSQL 8.1.4。"
-
-msgid "Open SSL Component"
-msgstr "Open SSL 组件"
-
-msgid "LibreOffice"
-msgstr "LibreOffice"
-
-msgid "LibreOffice Server Port"
-msgstr "LibreOffice 服务器端口"
-
-msgid "LibreOffice Server port"
-msgstr "LibreOffice 服务器端口"
-
-msgid "LibreOffice installation directory"
-msgstr "LibreOffice 安装目录"
-
-msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
-msgstr "LibreOffice 是多平台、开源办公软件套件，适用于文字处理、电子表格、演示文稿、图形以及文档转换所需的数据库。"
-
-msgid "Parameters"
-msgstr "参数"
+msgstr "非 PostgreSQL 版本 8.1.4 安装。建议使用 PostgreSQL 8.1.4。"
 
 msgid "Password"
 msgstr "密码"
 
+msgid "Password must not contain leading or trailing spaces"
+msgstr "密码开头和结尾不应包含空格"
+
 msgid "Password:"
 msgstr "密码："
+
+msgid "Please choose a folder to install ${product_fullname}"
+msgstr "请选择要安装 ${product_fullname} 的文件夹"
 
 msgid "Please choose a port number for Alfresco to use to execute remote commands."
 msgstr "请选择 Alfresco 执行远程命令使用的端口号。"
@@ -273,9 +279,6 @@ msgstr "请选择 SharePoint 协议的端口号。"
 
 msgid "Please choose a port number to use for the integrated Alfresco FTP server."
 msgstr "请选择集成式 Alfresco FTP 服务器使用的端口号。"
-
-msgid "Please enter a port in the range 1-65535."
-msgstr "请在 1-65535 范围内输入端口号"
 
 msgid "Please enter a valid IP address or hostname"
 msgstr "请输入有效的 IP 地址或主机名"
@@ -301,8 +304,8 @@ msgstr "请输入数据库‘postgres’用户密码。"
 msgid "Please give a password to use for the Alfresco administrator account."
 msgstr "请提供 Alfresco 管理员帐户使用的密码。"
 
-msgid "Please give details of the Quickr server to use."
-msgstr "请提供要使用的 Quickr 服务器的详细信息。"
+msgid "Please select a different installation directory. The installation directory cannot contain symbolic links"
+msgstr "请另选一个安装路径。安装路径不能包含符号链接"
 
 msgid "Please select services startup type"
 msgstr "请选择服务启动类型"
@@ -319,11 +322,8 @@ msgstr "请指定 Tomcat 所在的目录。"
 msgid "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
 msgstr "请指定 psql、pg_restore 和 vacuumdb 二进制文件所在的目录"
 
-msgid "Please choose a folder to install ${product_fullname}"
-msgstr "请选择要安装 ${product_fullname} 的文件夹"
-
-msgid "Please, select the encoding type."
-msgstr "请选择编码类型。"
+msgid "Please, enter CIFS ports configuration"
+msgstr "请输入 CIFS 端口配置"
 
 msgid "Port:"
 msgstr "端口："
@@ -340,29 +340,11 @@ msgstr "PostgreSQL 是一种强大的开源对象相关的数据库系统。"
 msgid "PostgreSQL postgres user password"
 msgstr "PostgreSQL postgres 用户密码"
 
-msgid "PostgreSQL_initdb"
-msgstr "PostgreSQL_initdb"
-
 msgid "Program Files"
 msgstr "Program Files"
 
-msgid "Program Files Linux"
-msgstr "Program Files Linux"
-
-msgid "Program Files Windows"
-msgstr "Program Files Windows"
-
-msgid "Quickr Connector Support"
-msgstr "Quickr 连接器支持"
-
-msgid "Quickr Content Services"
-msgstr "Quickr 内容服务"
-
-msgid "Quickr Server:"
-msgstr "Quickr 服务器："
-
-msgid "Quickr and Lotus Notes support for communication with Alfresco."
-msgstr "支持与 Alfresco 通信的 Quickr 和 Lotus Notes"
+msgid "README"
+msgstr "README"
 
 msgid "README File"
 msgstr "README 文件"
@@ -370,29 +352,29 @@ msgstr "README 文件"
 msgid "README Folder Component"
 msgstr "README 文件夹组件"
 
-msgid "README destination"
-msgstr "README 目标"
-
 msgid "Re-enter password"
 msgstr "重新输入密码"
 
-msgid "Records Management"
-msgstr "Records Management"
-
-msgid "Records Management support. This is a separately licensed component and should only be installed if licensed."
-msgstr "Records Management 支持。 这是一种单独许可的组件，应仅在许可的情况下安装。"
-
 msgid "Repeat Password:"
 msgstr "确认密码："
+
+msgid "SMB port"
+msgstr "SMB 端口"
+
+msgid "SMTP port"
+msgstr "SMTP 端口"
+
+msgid "SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port."
+msgstr "SMTP 协议将不可用（注意： 默认为未启用）。无法绑定端口 ${smtp_port}。考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口。"
+
+msgid "SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)"
+msgstr "SMTP 协议将不可用（注意： 默认为未启用）。检查正在使用 ${smtp_port} 运行的进程（例如现有 SMTP 服务器）"
 
 msgid "SWFTOOLS Component"
 msgstr "SWFTOOLS 组件"
 
 msgid "SWFTOOLS installation directory"
 msgstr "SWFTOOLS 安装目录"
-
-msgid "Script for start/stop Services"
-msgstr "启动/停止服务的脚本"
 
 msgid "Select a folder"
 msgstr "选择文件夹"
@@ -402,15 +384,6 @@ msgstr "服务启动配置"
 
 msgid "Service script name"
 msgstr "服务脚本名称"
-
-msgid "Service script name:"
-msgstr "服务脚本名称："
-
-msgid "Set Installer Variables Java"
-msgstr "设置 Java 安装程序变量"
-
-msgid "Set Installer Variables Tomcat"
-msgstr "设置 Tomcat 安装程序变量"
 
 msgid "Set the database name for the database that will be created."
 msgstr "设置要创建的数据库的数据库名称。"
@@ -422,13 +395,10 @@ msgid "Set the user that will use the database."
 msgstr "设置要使用数据库的用户。"
 
 msgid "Setup will try to install new databases and will overwrite any existing duplicate. Do you wish you continue?"
-msgstr "安装程序将尝试安装新数据库，并覆盖任何现有的重复。 是否继续？"
+msgstr "安装程序将尝试安装新数据库，并覆盖任何现有的重复。是否继续？"
 
 msgid "SharePoint"
 msgstr "SharePoint"
-
-msgid "SharePoint Protocol Support."
-msgstr "SharePoint 协议支持。"
 
 msgid "SharePoint Protocol support."
 msgstr "SharePoint 协议支持。"
@@ -436,23 +406,26 @@ msgstr "SharePoint 协议支持。"
 msgid "Shortcuts Images"
 msgstr "快捷方式图像"
 
+msgid "Show next steps"
+msgstr "显示后续步骤"
+
+msgid "Solr1"
+msgstr "Solr1"
+
+msgid "Solr4"
+msgstr "Solr4"
+
+msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+msgstr "在您的系统中找不到支持 LibreOffice 所需的部分或全部资料库。fontconfig libSM libICE libXrender libXext\n强烈建议您放弃本次安装，并首先使用您的安装包管理器进行安装。\n有关更多信息，请访问 http://docs.alfresco.com/4,2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+
 msgid "Sorry, we only support PostgreSQL as service."
 msgstr "抱歉，我们只支持 PostgreSQL 服务。"
 
 msgid "Sorry, you need to be administrator."
 msgstr "抱歉，您需要为管理员。"
 
-msgid "Stack Scripts Directory"
-msgstr "Stack Scripts Directory"
-
 msgid "Start ${product_fullname} service"
 msgstr "启动 ${product_fullname} 服务"
-
-msgid "Start Virtual Server"
-msgstr "启动虚拟服务器"
-
-msgid "Start tomcat service"
-msgstr "启动 tomcat 服务"
 
 msgid "Starting LibreOffice..."
 msgstr "正在启动 LibreOffice..."
@@ -460,20 +433,17 @@ msgstr "正在启动 LibreOffice..."
 msgid "Starting servers ..."
 msgstr "正在启动服务器..."
 
-msgid "Starting servers. Please be patient"
-msgstr "启动服务器。 请耐心等待"
-
 msgid "Starting servers. Please be patient."
-msgstr "启动服务器。 请耐心等待。"
+msgstr "启动服务器。请耐心等待。"
 
 msgid "Stop ${product_fullname} service"
 msgstr "停止 ${product_fullname} 服务"
 
-msgid "Stop Virtual Server"
-msgstr "停止虚拟服务器"
-
 msgid "Stopping PostgreSQL..."
 msgstr "正在停止 PostgreSQL..."
+
+msgid "Stopping Services"
+msgstr "停止服务"
 
 msgid "Stopping servers"
 msgstr "停止服务器"
@@ -482,19 +452,28 @@ msgid "Stopping services"
 msgstr "停止服务"
 
 msgid "The ${product_shortname} service script file exists. Please insert a different name for the service script."
-msgstr "${product_shortname} 服务脚本文件已存在。 请插入不同的服务脚本名称。"
+msgstr "${product_shortname} 服务脚本文件已存在。请插入不同的服务脚本名称。"
 
 msgid "The Alfresco data directory tends to grow in size. Please choose where do you want to store it."
-msgstr "Alfresco 数据目录趋向于增大。 请选择存储位置。"
+msgstr "Alfresco 数据目录趋向于增大。请选择存储位置。"
+
+msgid "The current installation directory could not be accessed by non-root users. Please select a different installation directory or change the permissions to 755 for this folder."
+msgstr "非根用户无法访问当前的安装路径。请另选一个安装路径或将该文件夹的权限更改为 755。"
 
 msgid "The directory you selected does not seem to be a valid JDK directory. Please try again."
-msgstr "您所选的目录似乎是无效的 JDK 目录。 请重试。"
+msgstr "您所选的目录似乎是无效的 JDK 目录。请重试。"
 
 msgid "The directory you selected does not seem to be a valid Tomcat directory. Please try again."
-msgstr "您所选的目录似乎是无效的 Tomcat 目录。 请重试。"
+msgstr "您所选的目录似乎是无效的 Tomcat 目录。请重试。"
+
+msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
+msgstr "安装目录必须为仅包含字母、数字和字符（‘/’、‘.’、‘-’和‘_’）的路径。"
+
+msgid "The installation has detected that the current umask is set to permissions of ${base_umask}, the installation is now exiting. You should modify your umask to at least 0022 before launching the installer. After the installation has completed, reset the umask permissions to your original values."
+msgstr "安装已检测到当前的 umask 设置为权限 ${base_umask}，现在安装已退出。启动安装程序前，您应将您的 umask 修改为至少是 0022。安装完成后，将您的 umask 权限重新设置为您的原始值。"
 
 msgid "The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}"
-msgstr "安装程序目前无法在 ${installdir} 上获得可用空间。 请检查是否有足够的可用空间来安装 ${product_fullname}"
+msgstr "安装程序目前无法在 ${installdir} 上获得可用空间。请检查是否有足够的可用空间来安装 ${product_fullname}"
 
 msgid "The length of the password must be greater than 3 characters"
 msgstr "密码长度必须大于 3 个字符"
@@ -506,34 +485,31 @@ msgid "The path ${postgres_binary_directory} does not seem to contain a pg_vacuu
 msgstr "路径 ${postgres_binary_directory} 似乎不包含可执行的 pg_vacuumdb。"
 
 msgid "The path ${postgres_binary_directory} seems to be invalid. Please check if the directory contains the required binaries."
-msgstr "路径 ${postgres_binary_directory} 似乎无效。 请检查目录是否包含所需的二进制文件。"
+msgstr "路径 ${postgres_binary_directory} 似乎无效。请检查目录是否包含所需的二进制文件。"
 
 msgid "The selected folder is not empty. Please select a different folder"
-msgstr "所选的文件夹为空。 请选择其他文件夹"
+msgstr "所选的文件夹为空。请选择其他文件夹"
 
 msgid "The service script file exists. Please insert a different name for the service script."
-msgstr "服务脚本文件已存在。 请插入不同的服务脚本名称。"
+msgstr "服务脚本文件已存在。请插入不同的服务脚本名称。"
+
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Please install a 64bit version of Java before continuing, or go back and ensure the “Java” component is selected."
+msgstr "您选择的 Java 版本为 32 位，但该 Alfresco 的安装为 64 位。请安装 Java 64 位版本，然后再继续操作，或返回并确认已选择“Java”组件。"
 
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
-msgstr "${installdir} 上没有足够的可用空间。 您需要至少 ${base_needed_space} MB 才可安装 ${product_fullname}"
+msgstr "${installdir} 上没有足够的可用空间。您需要至少 ${base_needed_space} MB 才可安装 ${product_fullname}"
 
 msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
-msgstr "此安装程序适用于 Windows 64 位。  请下载 Windows 32 位版本。"
+msgstr "此安装程序适用于 Windows 64 位。请下载 Windows 32 位版本。"
+
+msgid "This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)"
+msgstr "该设备没有足够的 CPU（核心）以运行 Alfresco 用于非开发目的。Alfresco 将正常用于开发目的，但是该服务器不适用于任何其他目的。升级服务器，至少拥有 ${minimum_core_count} 个 CPU（核心）"
 
 msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
-msgstr "此版本打包后在 J2SE ${java_min_version} 或更高版本上运行。 请安装兼容的 Java 版本并重试。"
+msgstr "此版本打包后在 J2SE ${java_min_version} 或更高版本上运行。请安装兼容的 Java 版本并重试。"
 
 msgid "This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again."
-msgstr "此版本打包后在 J2SE ${java_min_version} 上运行。 请安装兼容的 Java 版本并重试。"
-
-msgid "This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again."
-msgstr "此版本打包后在 J2SE 7.0 或更高版本上运行。 请安装兼容的 Java 版本并重试。"
-
-msgid "This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again."
-msgstr "此版本打包后在 J2SE 7.0 上运行。 请安装兼容的 Java 版本并重试。"
-
-msgid "Tomcat 5.5 Component"
-msgstr "Tomcat 5.5 组件"
+msgstr "此版本打包后在 J2SE ${java_min_version} 上运行。请安装兼容的 Java 版本并重试。"
 
 msgid "Tomcat AJP Port:"
 msgstr "Tomcat AJP 端口："
@@ -551,7 +527,7 @@ msgid "Tomcat SSL Port"
 msgstr "Tomcat SSL 端口"
 
 msgid "Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Please select another Tomcat Shutdown Port."
-msgstr "Tomcat 服务器端口和 Tomcat 关闭端口不能为相同的端口。 请选择其他 Tomcat 关闭端口。"
+msgstr "Tomcat 服务器端口和 Tomcat 关闭端口不能为相同的端口。请选择其他 Tomcat 关闭端口。"
 
 msgid "Tomcat Server Port:"
 msgstr "Tomcat 服务器端口："
@@ -565,44 +541,50 @@ msgstr "Tomcat 目录："
 msgid "Tomcat installation:"
 msgstr "Tomcat 安装："
 
-msgid "Tomcat modifications due to java"
-msgstr "由 Java 导致的 Tomcat 修改"
-
 msgid "Unable to bind to the given port number. Please select another FTP Port."
-msgstr "无法捆绑到给定的端口号。 请选择其他 FTP 端口。"
+msgstr "无法捆绑到给定的端口号。请选择其他 FTP 端口。"
 
 msgid "Unable to bind to the given port number. Please select another RMI Port."
-msgstr "无法捆绑到给定的端口号。 请选择其他 RMI 端口。"
+msgstr "无法捆绑到给定的端口号。请选择其他 RMI 端口。"
 
 msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
-msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat AJP 端口。"
+msgstr "无法捆绑到给定的端口号。请选择其他 Tomcat AJP 端口。"
 
-msgid "Unable to bind to the given port number. Please select another Tomcat Server Port."
-msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat 服务器端口。"
-
-msgid "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
-msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat 关闭端口。"
+msgid "Unable to bind to the given port number. Please select another Tomcat JMX Port."
+msgstr "无法绑定提供的服务器端口。请选择其他 Tomcat JMX 端口。"
 
 msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
-msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat SSL 端口。"
+msgstr "无法捆绑到给定的端口号。请选择其他 Tomcat SSL 端口。"
 
-msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
-msgstr "无法捆绑到给定的端口号。 请选择其他 Tomcat AJP 端口。"
+msgid "Unable to bind to the given port number. Please select another Tomcat Server Port."
+msgstr "无法捆绑到给定的端口号。请选择其他 Tomcat 服务器端口。"
+
+msgid "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
+msgstr "无法捆绑到给定的端口号。请选择其他 Tomcat 关闭端口。"
 
 msgid "Unable to bind to the given port number. Please select another port for the SharePoint Protocol."
-msgstr "无法捆绑到给定的端口号。 请选择其他 SharePoint 协议端口。"
+msgstr "无法捆绑到给定的端口号。请选择其他 SharePoint 协议端口。"
 
 msgid "Unable to bind to the server port. Please make sure that Tomcat is not running."
-msgstr "无法捆绑到服务器端口。 请确保 Tomcat 没有在运行。"
+msgstr "无法捆绑到服务器端口。请确保 Tomcat 没有在运行。"
 
 msgid "Unable to connect to database. Please check your configuration."
-msgstr "无法连接到数据库。 请检查配置。"
+msgstr "无法连接到数据库。请检查配置。"
+
+msgid "Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)"
+msgstr "无法确定 CPU（核心）数量。该设备可能没有足够的 CPU（核心）以运行 Alfresco 用于非开发目的。手动验证该设备是否至少拥有 ${minimum_core_count} 个 CPU（核心）"
+
+msgid "Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz."
+msgstr "无法确定 CPU 时钟速度。该设备的运行速度可能不足以运行 Alfresco 用于测试或生产目的。手动验证该服务器的 CPU 时钟速度是否至少为 ${minimum_cpu_speed} Mhz。"
+
+msgid "Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed."
+msgstr "无法确定已安装的 RAM 大小。该设备可能没有足够的 RAM 以正确运行 Alfresco。手动验证该服务器是否至少已安装有 ${minimum_ram} MB 的 RAM（最好至少拥有 ${recommended_ram} MB）。"
 
 msgid "Unable to find a server running at given port number. Please select another one."
-msgstr "找不到在给定端口号运行的服务器。 请选择其他端口。"
+msgstr "找不到在给定端口号运行的服务器。请选择其他端口。"
 
 msgid "Unable to find any server running at port ${postgres_port}. Please start your database server."
-msgstr "找不到在 ${postgres_port} 端口运行的任何服务器。 请启动数据库服务器。"
+msgstr "找不到在 ${postgres_port} 端口运行的任何服务器。请启动数据库服务器。"
 
 msgid "Unable to get free disk space."
 msgstr "无法获得可用磁盘空间。"
@@ -613,6 +595,9 @@ msgstr "卸载 ${product_fullname}"
 msgid "Uninstall ${product_fullname} service"
 msgstr "卸载 ${product_fullname} 服务"
 
+msgid "Uninstalling service"
+msgstr "卸载服务"
+
 msgid "Uninstalling services"
 msgstr "卸载服务"
 
@@ -621,6 +606,9 @@ msgstr "用于配置命令文件夹中的内容目标"
 
 msgid "User"
 msgstr "用户"
+
+msgid "Username '${username}' is reserved. Please use a different user name."
+msgstr "用户名 '${username}' 已预留。请使用其他用户名。"
 
 msgid "Username:"
 msgstr "用户名："
@@ -638,10 +626,7 @@ msgid "War files"
 msgstr "War 文件"
 
 msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
-msgstr "在系统中找不到合适的 JDK 安装。 ${product_fullname} 要求 JDK ${java_min_version} 或更高版本。"
-
-msgid "Web Project Management (AVM)"
-msgstr "Web Project Management (AVM)"
+msgstr "在系统中找不到合适的 JDK 安装。${product_fullname} 要求 JDK ${java_min_version} 或更高版本。"
 
 msgid "Web Quick Start"
 msgstr "Web Quick Start"
@@ -652,56 +637,15 @@ msgstr "Web 服务器"
 msgid "Web Server domain:"
 msgstr "Web 服务器域："
 
+msgid "You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Please download and install Ruby Stack ${rubyVersion} version at bitnami.com site"
+msgstr "您正在尝试在不受支持的 Bitnami 堆栈中安装基于 Ruby ${rubyVersion} 的应用程序。请下载并安装 Ruby 堆栈 ${rubyVersion} 版本，网址为 bitnami.com"
+
 msgid "You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started."
-msgstr "您可以选择将 ${product_fullname} 注册为一项服务。 这样，每次启动机器时，它将会自动启动。"
+msgstr "您可以选择将 ${product_fullname} 注册为一项服务。这样，每次启动机器时，它将会自动启动。"
 
 msgid "You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat."
-msgstr "您已将 Tomcat 选为现有安装。 要使用新安装的应用程序，您必须重启 Tomcat。"
+msgstr "您已将 Tomcat 选为现有安装。要使用新安装的应用程序，您必须重启 Tomcat。"
 
-msgid "applyamps"
-msgstr "applyamps"
+msgid "You need to select at least one of the Solr components"
+msgstr "您需要选择至少一个 Solr 组件"
 
-msgid "mmtjar"
-msgstr "mmtjar"
-
-msgid "Please provide a password for the service account (postgres). If this account does not exist, the installer will create it."
-msgstr "请提供此服务帐户 (postgres) 的密码。 如果此帐户不存在，安装程序将创建帐户。"
-
-msgid "The password specified was incorrect. Please enter the correct password for the postgres Windows user account."
-msgstr "指定的密码不正确。 请输入 postgres Windows 用户帐户的正确密码。"
-
-msgid "README"
-msgstr "README"
-
-msgid "Windows 2008 requires that the password meets the following requirements:\n\n- It must be at least six characters long.\n- It must contain uppercase and lowercase characters.\n- It must contain numbers.\n- It must contain at least one of these special characters: @#$%!^&+=\n"
-msgstr "Windows 2008 要求密码符合以下要求：\n\n- 必须至少为 6 个字符长。\n- 必须包含大小写字符。\n- 必须包含数字。\n- 必须包含至少 1 个特殊字符：@#$%!^&+=\n"
-
-msgid "Postgres service account password"
-msgstr "Postgres 服务帐户密码"
-
-msgid "Deploying Alfresco. Please be patient."
-msgstr "部署 Alfresco。 请耐心等待。"
-
-msgid "Java is not installed in your Stack. This module requires to have Java installed."
-msgstr "Java 未安装在堆栈中。 此模块要求安装 Java。"
-
-msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
-msgstr "安装目录必须为仅包含字母、数字和字符（‘/’、‘.’、‘-’和‘_’）的路径。"
-
-msgid "Show next steps"
-msgstr "显示后续步骤"
-
-msgid "Alfresco recommends at least 1024MB of memory.${machine_total_memory}MB detected."
-msgstr "Alfresco 建议使用至少 1024MB 的内存。 检测到 ${machine_total_memory}MB。"
-
-msgid "Google Docs Integration"
-msgstr "Google Docs 集成"
-
-msgid "Include Google Docs Integration Features."
-msgstr "包括 Google Docs 集成功能。"
-
-msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
-msgstr "在您的系统中找不到支持 LibreOffice 所需的部分或全部资料库。 fontconfig libSM libICE libXrender libXext\n强烈建议您放弃本次安装，并首先使用您的安装包管理器进行安装。\n有关更多信息，请访问 http://docs.alfresco.com/4,2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
-
-msgid "Password must not contain leading or trailing spaces"
-msgstr "密码开头和结尾不应包含空格"

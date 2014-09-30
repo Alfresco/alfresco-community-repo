@@ -1,11 +1,17 @@
+msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB)."
+msgstr "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB)."
+
+msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM"
+msgstr "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM"
+
 msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOffice Service"
 
 msgid "${product_fullname} Service"
 msgstr "${product_fullname} Service"
 
-msgid "${product_fullname} Virtual Server"
-msgstr "${product_fullname} Virtual Server"
+msgid "${product_shortname} manager tool"
+msgstr "${product_shortname} manager tool"
 
 msgid "Admin Password"
 msgstr "Admin Password"
@@ -13,17 +19,11 @@ msgstr "Admin Password"
 msgid "Admin Password:"
 msgstr "Admin Password:"
 
-msgid "Advanced - Configures server ports and service properties." 
+msgid "Advanced - Configures server ports and service properties."
 msgstr "Advanced - Configures server ports and service properties."
-
-msgid "Also choose optional components to install."
-msgstr "Also choose optional components to install."
 
 msgid "Alfresco"
 msgstr "Alfresco"
-
-msgid "Alfresco AVM Web Project Management for managing web site content."
-msgstr "Alfresco AVM Web Project Management for managing web site content."
 
 msgid "Alfresco Community Edition Stack"
 msgstr "Alfresco Community Edition Stack"
@@ -36,9 +36,6 @@ msgstr "Alfresco Explorer"
 
 msgid "Alfresco FTP Port"
 msgstr "Alfresco FTP Port"
-
-msgid "Alfresco Licenses"
-msgstr "Alfresco Licenses"
 
 msgid "Alfresco Module Packages"
 msgstr "Alfresco Module Packages"
@@ -61,26 +58,41 @@ msgstr "Alfresco Website"
 msgid "Alfresco data directory"
 msgstr "Alfresco data directory"
 
-msgid "Allow to choose an already installed service name if it contains a call to installdir/ctlscript"
-msgstr "Allow to choose an already installed service name if it contains a call to installdir/ctlscript"
+msgid "Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco."
+msgstr "Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco."
 
-msgid "Apache Service"
-msgstr "Apache Service"
+msgid "Also choose optional components to install."
+msgstr "Also choose optional components to install."
 
 msgid "Auto - Configure servers to start automatically"
 msgstr "Auto - Configure servers to start automatically"
 
-msgid "Common Component"
-msgstr "Common Component"
+msgid "CIFS protocol ports configuration"
+msgstr "CIFS protocol ports configuration"
 
-msgid "Common installation directory"
-msgstr "Common installation directory"
+msgid "CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+
+msgid "CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers)."
+msgstr "CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers)."
+
+msgid "CIFS server port"
+msgstr "CIFS server port"
+
+msgid "CIFS server port 1"
+msgstr "CIFS server port 1"
+
+msgid "CIFS server port 2"
+msgstr "CIFS server port 2"
+
+msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz)."
+msgstr "CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz)."
+
+msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more)."
+msgstr "CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more)."
 
 msgid "Config Files"
 msgstr "Config Files"
-
-msgid "Couldn't check Apache Tomcat Version.\nTomcat 5.5 is recommended."
-msgstr "Couldn't check Apache Tomcat Version.\nTomcat 5.5 is recommended."
 
 msgid "Creating user and database"
 msgstr "Creating user and database"
@@ -103,17 +115,20 @@ msgstr "Database name"
 msgid "Database name:"
 msgstr "Database name:"
 
+msgid "Deploying Alfresco. Please be patient."
+msgstr "Deploying Alfresco. Please be patient."
+
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Do you want to install PostgreSQL as a Windows service?"
 
 msgid "Easy - Installs servers with the default configuration"
 msgstr "Easy - Installs servers with the default configuration"
 
-msgid "Encoding"
-msgstr "Encoding"
-
 msgid "Extension Files"
 msgstr "Extension Files"
+
+msgid "Google Docs Integration"
+msgstr "Google Docs Integration"
 
 msgid "I wish to use an existing PostgreSQL database"
 msgstr "I wish to use an existing PostgreSQL database"
@@ -127,26 +142,23 @@ msgstr "I wish to use the bundled PostgreSQL database"
 msgid "I wish to use the bundled Tomcat"
 msgstr "I wish to use the bundled Tomcat"
 
+msgid "IMAP port"
+msgstr "IMAP port"
+
+msgid "IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+
+msgid "IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+
 msgid "IP / Hostname"
 msgstr "IP / Hostname"
-
-msgid "ImageMagick Component"
-msgstr "ImageMagick Component"
-
-msgid "ImageMagick installation directory"
-msgstr "ImageMagick installation directory"
-
-msgid "ImageMagick version"
-msgstr "ImageMagick version"
 
 msgid "Include Alfresco Web Quick Start."
 msgstr "Include Alfresco Web Quick Start."
 
-msgid "Include system ld library path in environment"
-msgstr "Include system ld library path in environment"
-
-msgid "Include system path in environment"
-msgstr "Include system path in environment"
+msgid "Include Google Docs Integration Features."
+msgstr "Include Google Docs Integration Features."
 
 msgid "Initializing database"
 msgstr "Initializing database"
@@ -160,11 +172,11 @@ msgstr "Install ${product_fullname} as service"
 msgid "Install PostgreSQL as service?"
 msgstr "Install PostgreSQL as service?"
 
-msgid "Install application as a service on Unix systems"
-msgstr "Install application as a service on Unix systems"
-
 msgid "Install as a service"
 msgstr "Install as a service"
+
+msgid "Installation Folder"
+msgstr "Installation Folder"
 
 msgid "Installation Type"
 msgstr "Installation Type"
@@ -211,20 +223,29 @@ msgstr "Java"
 msgid "Java Component required to run the Alfresco server."
 msgstr "Java Component required to run the Alfresco server."
 
+msgid "Java Home path contains spaces. Alfresco may not function properly, as the JVM itself has bugs when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Java Home path contains spaces. Alfresco may not function properly, as the JVM itself has bugs when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+
+msgid "Java is not installed in your Stack. This module requires to have Java installed."
+msgstr "Java is not installed in your Stack. This module requires to have Java installed."
+
 msgid "Launch ${product_fullname} Share"
 msgstr "Launch ${product_fullname} Share"
 
-msgid "Libraries Files"
-msgstr "Libraries Files"
+msgid "LibreOffice"
+msgstr "LibreOffice"
 
-msgid "License Folder Component"
-msgstr "License Folder Component"
+msgid "LibreOffice Server Port"
+msgstr "LibreOffice Server Port"
 
-msgid "Licenses Files"
-msgstr "Licenses Files"
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
 
-msgid "Licenses destination"
-msgstr "Licenses destination"
+msgid "Location of bin and lib tomcat folders"
+msgstr "Location of bin and lib tomcat folders"
+
+msgid "Manager tool"
+msgstr "Manager tool"
 
 msgid "Manual - Configure servers to start services manually"
 msgstr "Manual - Configure servers to start services manually"
@@ -238,32 +259,17 @@ msgstr "New Folder"
 msgid "Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended."
 msgstr "Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended."
 
-msgid "Open SSL Component"
-msgstr "Open SSL Component"
-
-msgid "LibreOffice"
-msgstr "LibreOffice"
-
-msgid "LibreOffice Server Port"
-msgstr "LibreOffice Server Port"
-
-msgid "LibreOffice Server port"
-msgstr "LibreOffice Server port"
-
-msgid "LibreOffice installation directory"
-msgstr "LibreOffice installation directory"
-
-msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
-msgstr "LibreOffice is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
-
-msgid "Parameters"
-msgstr "Parameters"
-
 msgid "Password"
 msgstr "Password"
 
+msgid "Password must not contain leading or trailing spaces"
+msgstr "Password must not contain leading or trailing spaces"
+
 msgid "Password:"
 msgstr "Password:"
+
+msgid "Please choose a folder to install ${product_fullname}"
+msgstr "Please choose a folder to install ${product_fullname}"
 
 msgid "Please choose a port number for Alfresco to use to execute remote commands."
 msgstr "Please choose a port number for Alfresco to use to execute remote commands."
@@ -273,9 +279,6 @@ msgstr "Please choose a port number for the SharePoint protocol."
 
 msgid "Please choose a port number to use for the integrated Alfresco FTP server."
 msgstr "Please choose a port number to use for the integrated Alfresco FTP server."
-
-msgid "Please enter a port in the range 1-65535."
-msgstr "Please enter a port in the range 1-65535."
 
 msgid "Please enter a valid IP address or hostname"
 msgstr "Please enter a valid IP address or hostname"
@@ -293,7 +296,7 @@ msgid "Please enter the port of your database."
 msgstr "Please enter the port of your database."
 
 msgid "Please enter the port that the Libreoffice Server will listen to by default."
-msgstr "Please enter the port that the LibreOffice Server will listen to by default."
+msgstr "Please enter the port that the Libreoffice Server will listen to by default."
 
 msgid "Please enter your database 'postgres' user password."
 msgstr "Please enter your database 'postgres' user password."
@@ -301,8 +304,8 @@ msgstr "Please enter your database 'postgres' user password."
 msgid "Please give a password to use for the Alfresco administrator account."
 msgstr "Please give a password to use for the Alfresco administrator account."
 
-msgid "Please give details of the Quickr server to use."
-msgstr "Please give details of the Quickr server to use."
+msgid "Please select a different installation directory. The installation directory cannot contain symbolic links"
+msgstr "Please select a different installation directory. The installation directory cannot contain symbolic links"
 
 msgid "Please select services startup type"
 msgstr "Please select services startup type"
@@ -319,11 +322,8 @@ msgstr "Please specify the directory where Tomcat is located."
 msgid "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
 msgstr "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
 
-msgid "Please choose a folder to install ${product_fullname}"
-msgstr "Please choose a folder to install ${product_fullname}"
-
-msgid "Please, select the encoding type."
-msgstr "Please, select the encoding type."
+msgid "Please, enter CIFS ports configuration"
+msgstr "Please, enter CIFS ports configuration"
 
 msgid "Port:"
 msgstr "Port:"
@@ -340,29 +340,11 @@ msgstr "PostgreSQL is a powerful, open source object-relational database system.
 msgid "PostgreSQL postgres user password"
 msgstr "PostgreSQL postgres user password"
 
-msgid "PostgreSQL_initdb"
-msgstr "PostgreSQL_initdb"
-
 msgid "Program Files"
 msgstr "Program Files"
 
-msgid "Program Files Linux"
-msgstr "Program Files Linux"
-
-msgid "Program Files Windows"
-msgstr "Program Files Windows"
-
-msgid "Quickr Connector Support"
-msgstr "Quickr Connector Support"
-
-msgid "Quickr Content Services"
-msgstr "Quickr Content Services"
-
-msgid "Quickr Server:"
-msgstr "Quickr Server:"
-
-msgid "Quickr and Lotus Notes support for communication with Alfresco."
-msgstr "Quickr and Lotus Notes support for communication with Alfresco."
+msgid "README"
+msgstr "README"
 
 msgid "README File"
 msgstr "README File"
@@ -370,29 +352,29 @@ msgstr "README File"
 msgid "README Folder Component"
 msgstr "README Folder Component"
 
-msgid "README destination"
-msgstr "README destination"
-
 msgid "Re-enter password"
 msgstr "Re-enter password"
 
-msgid "Records Management"
-msgstr "Records Management"
-
-msgid "Records Management support. This is a separately licensed component and should only be installed if licensed."
-msgstr "Records Management support. This is a separately licensed component and should only be installed if licensed."
-
 msgid "Repeat Password:"
 msgstr "Repeat Password:"
+
+msgid "SMB port"
+msgstr "SMB port"
+
+msgid "SMTP port"
+msgstr "SMTP port"
+
+msgid "SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port."
+msgstr "SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port."
+
+msgid "SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)"
+msgstr "SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)"
 
 msgid "SWFTOOLS Component"
 msgstr "SWFTOOLS Component"
 
 msgid "SWFTOOLS installation directory"
 msgstr "SWFTOOLS installation directory"
-
-msgid "Script for start/stop Services"
-msgstr "Script for start/stop Services"
 
 msgid "Select a folder"
 msgstr "Select a folder"
@@ -402,15 +384,6 @@ msgstr "Service Startup Configuration"
 
 msgid "Service script name"
 msgstr "Service script name"
-
-msgid "Service script name:"
-msgstr "Service script name:"
-
-msgid "Set Installer Variables Java"
-msgstr "Set Installer Variables Java"
-
-msgid "Set Installer Variables Tomcat"
-msgstr "Set Installer Variables Tomcat"
 
 msgid "Set the database name for the database that will be created."
 msgstr "Set the database name for the database that will be created."
@@ -427,14 +400,23 @@ msgstr "Setup will try to install new databases and will overwrite any existing 
 msgid "SharePoint"
 msgstr "SharePoint"
 
-msgid "SharePoint Protocol Support."
-msgstr "SharePoint Protocol Support."
-
 msgid "SharePoint Protocol support."
 msgstr "SharePoint Protocol support."
 
 msgid "Shortcuts Images"
 msgstr "Shortcuts Images"
+
+msgid "Show next steps"
+msgstr "Show next steps"
+
+msgid "Solr1"
+msgstr "Solr1"
+
+msgid "Solr4"
+msgstr "Solr4"
+
+msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+msgstr "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
 
 msgid "Sorry, we only support PostgreSQL as service."
 msgstr "Sorry, we only support PostgreSQL as service."
@@ -442,17 +424,8 @@ msgstr "Sorry, we only support PostgreSQL as service."
 msgid "Sorry, you need to be administrator."
 msgstr "Sorry, you need to be administrator."
 
-msgid "Stack Scripts Directory"
-msgstr "Stack Scripts Directory"
-
 msgid "Start ${product_fullname} service"
 msgstr "Start ${product_fullname} service"
-
-msgid "Start Virtual Server"
-msgstr "Start Virtual Server"
-
-msgid "Start tomcat service"
-msgstr "Start tomcat service"
 
 msgid "Starting LibreOffice..."
 msgstr "Starting LibreOffice..."
@@ -460,20 +433,17 @@ msgstr "Starting LibreOffice..."
 msgid "Starting servers ..."
 msgstr "Starting servers ..."
 
-msgid "Starting servers. Please be patient"
-msgstr "Starting servers. Please be patient"
-
 msgid "Starting servers. Please be patient."
 msgstr "Starting servers. Please be patient."
 
 msgid "Stop ${product_fullname} service"
 msgstr "Stop ${product_fullname} service"
 
-msgid "Stop Virtual Server"
-msgstr "Stop Virtual Server"
-
 msgid "Stopping PostgreSQL..."
 msgstr "Stopping PostgreSQL..."
+
+msgid "Stopping Services"
+msgstr "Stopping Services"
 
 msgid "Stopping servers"
 msgstr "Stopping servers"
@@ -487,11 +457,20 @@ msgstr "The ${product_shortname} service script file exists. Please insert a dif
 msgid "The Alfresco data directory tends to grow in size. Please choose where do you want to store it."
 msgstr "The Alfresco data directory tends to grow in size. Please choose where do you want to store it."
 
+msgid "The current installation directory could not be accessed by non-root users. Please select a different installation directory or change the permissions to 755 for this folder."
+msgstr "The current installation directory could not be accessed by non-root users. Please select a different installation directory or change the permissions to 755 for this folder."
+
 msgid "The directory you selected does not seem to be a valid JDK directory. Please try again."
 msgstr "The directory you selected does not seem to be a valid JDK directory. Please try again."
 
 msgid "The directory you selected does not seem to be a valid Tomcat directory. Please try again."
 msgstr "The directory you selected does not seem to be a valid Tomcat directory. Please try again."
+
+msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
+msgstr "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
+
+msgid "The installation has detected that the current umask is set to permissions of ${base_umask}, the installation is now exiting. You should modify your umask to at least 0022 before launching the installer. After the installation has completed, reset the umask permissions to your original values."
+msgstr "The installation has detected that the current umask is set to permissions of ${base_umask}, the installation is now exiting. You should modify your umask to at least 0022 before launching the installer. After the installation has completed, reset the umask permissions to your original values."
 
 msgid "The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}"
 msgstr "The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}"
@@ -514,26 +493,23 @@ msgstr "The selected folder is not empty. Please select a different folder"
 msgid "The service script file exists. Please insert a different name for the service script."
 msgstr "The service script file exists. Please insert a different name for the service script."
 
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Please install a 64bit version of Java before continuing, or go back and ensure the “Java” component is selected."
+msgstr "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Please install a 64bit version of Java before continuing, or go back and ensure the “Java” component is selected."
+
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 
 msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
 msgstr "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
 
+msgid "This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)"
+msgstr "This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)"
+
 msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
 msgstr "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
 
 msgid "This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again."
 msgstr "This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again."
-
-msgid "This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again."
-msgstr "This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again."
-
-msgid "This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again."
-msgstr "This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again."
-
-msgid "Tomcat 5.5 Component"
-msgstr "Tomcat 5.5 Component"
 
 msgid "Tomcat AJP Port:"
 msgstr "Tomcat AJP Port:"
@@ -565,9 +541,6 @@ msgstr "Tomcat directory:"
 msgid "Tomcat installation:"
 msgstr "Tomcat installation:"
 
-msgid "Tomcat modifications due to java"
-msgstr "Tomcat modifications due to java"
-
 msgid "Unable to bind to the given port number. Please select another FTP Port."
 msgstr "Unable to bind to the given port number. Please select another FTP Port."
 
@@ -577,17 +550,17 @@ msgstr "Unable to bind to the given port number. Please select another RMI Port.
 msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
 msgstr "Unable to bind to the given port number. Please select another Tomcat AJP Port."
 
+msgid "Unable to bind to the given port number. Please select another Tomcat JMX Port."
+msgstr "Unable to bind to the given port number. Please select another Tomcat JMX Port."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
+msgstr "Unable to bind to the given port number. Please select another Tomcat SSL Port."
+
 msgid "Unable to bind to the given port number. Please select another Tomcat Server Port."
 msgstr "Unable to bind to the given port number. Please select another Tomcat Server Port."
 
 msgid "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
 msgstr "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
-
-msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
-msgstr "Unable to bind to the given port number. Please select another Tomcat SSL Port."
-
-msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
-msgstr "Unable to bind to the given port number. Please select another Tomcat AJP Port."
 
 msgid "Unable to bind to the given port number. Please select another port for the SharePoint Protocol."
 msgstr "Unable to bind to the given port number. Please select another port for the SharePoint Protocol."
@@ -597,6 +570,15 @@ msgstr "Unable to bind to the server port. Please make sure that Tomcat is not r
 
 msgid "Unable to connect to database. Please check your configuration."
 msgstr "Unable to connect to database. Please check your configuration."
+
+msgid "Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)"
+msgstr "Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)"
+
+msgid "Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz."
+msgstr "Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz."
+
+msgid "Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed."
+msgstr "Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed."
 
 msgid "Unable to find a server running at given port number. Please select another one."
 msgstr "Unable to find a server running at given port number. Please select another one."
@@ -613,6 +595,9 @@ msgstr "Uninstall ${product_fullname}"
 msgid "Uninstall ${product_fullname} service"
 msgstr "Uninstall ${product_fullname} service"
 
+msgid "Uninstalling service"
+msgstr "Uninstalling service"
+
 msgid "Uninstalling services"
 msgstr "Uninstalling services"
 
@@ -621,6 +606,9 @@ msgstr "Use to configure the destination of the content in commands folder"
 
 msgid "User"
 msgstr "User"
+
+msgid "Username '${username}' is reserved. Please use a different user name."
+msgstr "Username '${username}' is reserved. Please use a different user name."
 
 msgid "Username:"
 msgstr "Username:"
@@ -640,9 +628,6 @@ msgstr "War files"
 msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
 msgstr "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
 
-msgid "Web Project Management (AVM)"
-msgstr "Web Project Management (AVM)"
-
 msgid "Web Quick Start"
 msgstr "Web Quick Start"
 
@@ -652,56 +637,14 @@ msgstr "Web Server"
 msgid "Web Server domain:"
 msgstr "Web Server domain:"
 
+msgid "You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Please download and install Ruby Stack ${rubyVersion} version at bitnami.com site"
+msgstr "You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Please download and install Ruby Stack ${rubyVersion} version at bitnami.com site"
+
 msgid "You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started."
 msgstr "You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started."
 
 msgid "You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat."
 msgstr "You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat."
 
-msgid "applyamps"
-msgstr "applyamps"
-
-msgid "mmtjar"
-msgstr "mmtjar"
-
-msgid "Please provide a password for the service account (postgres). If this account does not exist, the installer will create it."
-msgstr "Please provide a password for the service account (postgres). If this account does not exist, the installer will create it."
-
-msgid "The password specified was incorrect. Please enter the correct password for the postgres Windows user account."
-msgstr "The password specified was incorrect. Please enter the correct password for the postgres Windows user account."
-
-msgid "README"
-msgstr "README"
-
-msgid "Windows 2008 requires that the password meets the following requirements:\n\n- It must be at least six characters long.\n- It must contain uppercase and lowercase characters.\n- It must contain numbers.\n- It must contain at least one of these special characters: @#$%!^&+=\n"
-msgstr "Windows 2008 requires that the password meets the following requirements:\n\n- It must be at least six characters long.\n- It must contain uppercase and lowercase characters.\n- It must contain numbers.\n- It must contain at least one of these special characters: @#$%!^&+=\n"
-
-msgid "Postgres service account password"
-msgstr "Postgres service account password"
-
-msgid "Deploying Alfresco. Please be patient."
-msgstr "Deploying Alfresco. Please be patient."
-
-msgid "Java is not installed in your Stack. This module requires to have Java installed."
-msgstr "Java is not installed in your Stack. This module requires to have Java installed."
-
-msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
-msgstr "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
-
-msgid "Show next steps"
-msgstr "Show next steps"
-
-msgid "Alfresco recommends at least 1024MB of memory.${machine_total_memory}MB detected."
-msgstr "Alfresco recommends at least 1024MB of memory. ${machine_total_memory}MB detected."
-
-msgid "Google Docs Integration"
-msgstr "Google Docs Integration"
-
-msgid "Include Google Docs Integration Features."
-msgstr "Include Google Docs Integration Features."
-
-msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
-msgstr "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
-
-msgid "Password must not contain leading or trailing spaces"
-msgstr "Password must not contain leading or trailing spaces"
+msgid "You need to select at least one of the Solr components"
+msgstr "You need to select at least one of the Solr components"

@@ -1,11 +1,17 @@
+msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB)."
+msgstr "${machine_total_memory} MB RAM is onvoldoende om Alfresco uit te voeren voor test- of productiedoeleinden. Alfresco werkt mogelijk niet correct en, indien het wel werkt, zal het niet goed worden uitgevoerd. Upgrade de server tot minstens ${minimum_ram} MB RAM (bij voorkeur minstens ${recommended_ram} MB)."
+
+msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM"
+msgstr "${machine_total_memory} MB RAM is onvoldoende om Alfresco uit te voeren voor test- of productiedoeleinden. Alfresco zal goed werken voor ontwikkeling, maar deze server mag niet voor andere doeleinden worden gebruikt. Upgrade de server tt minstens ${recommended_ram} MB RAM"
+
 msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOffice-service"
 
 msgid "${product_fullname} Service"
 msgstr "${product_fullname} Service"
 
-msgid "${product_fullname} Virtual Server"
-msgstr "${product_fullname} Virtuele server"
+msgid "${product_shortname} manager tool"
+msgstr "${product_shortname} tool voor beheerders"
 
 msgid "Admin Password"
 msgstr "Beheerderswachtwoord"
@@ -13,17 +19,11 @@ msgstr "Beheerderswachtwoord"
 msgid "Admin Password:"
 msgstr "Beheerderswachtwoord:"
 
-msgid "Advanced - Configures server ports and service properties." 
+msgid "Advanced - Configures server ports and service properties."
 msgstr "Geavanceerd - configureert serverpoorten en service-eigenschappen."
-
-msgid "Also choose optional components to install."
-msgstr "Kies ook optionele onderdelen om te installeren."
 
 msgid "Alfresco"
 msgstr "Alfresco"
-
-msgid "Alfresco AVM Web Project Management for managing web site content."
-msgstr "Alfresco AVM Web Project Management voor het beheren van websitecontent."
 
 msgid "Alfresco Community Edition Stack"
 msgstr "Alfresco Community Edition-stack"
@@ -36,9 +36,6 @@ msgstr "Alfresco Explorer"
 
 msgid "Alfresco FTP Port"
 msgstr "Alfresco FTP-poort"
-
-msgid "Alfresco Licenses"
-msgstr "Alfresco-licenties"
 
 msgid "Alfresco Module Packages"
 msgstr "Alfresco-modulepakketten"
@@ -61,26 +58,41 @@ msgstr "Alfresco-website"
 msgid "Alfresco data directory"
 msgstr "Alfresco-gegevensmap"
 
-msgid "Allow to choose an already installed service name if it contains a call to installdir/ctlscript"
-msgstr "Hiermee kunt u een reeds geÔnstalleerde service selecteren als deze een aanroep naar installdir/ctlscript bevat"
+msgid "Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco."
+msgstr "Alfresco heeft minstens ${minimum_file_descriptors} bestandsbeschrijvingen. Hoewel Alfresco correct zal starten, zult u waarschijnlijk fouten zien bij het indexeren van inhoud in de zoekmotor. Verhoog het aantal beschikbare bestandsbeschrijvingen voor Alfresco."
 
-msgid "Apache Service"
-msgstr "Apache-service"
+msgid "Also choose optional components to install."
+msgstr "Kies ook optionele onderdelen om te installeren."
 
 msgid "Auto - Configure servers to start automatically"
 msgstr "Auto - configureert servers om automatisch te starten."
 
-msgid "Common Component"
-msgstr "Algemeen onderdeel"
+msgid "CIFS protocol ports configuration"
+msgstr "Configuratie CIFS-protocolpoorten"
 
-msgid "Common installation directory"
-msgstr "Algemene installatiemap"
+msgid "CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "CIFS-protocol wordt onbeschikbaar. Kan poorten niet binden: ${portList}. Overweeg om Alfresco opnieuw te configureren om een niet-voorkeurspoort te gebruiken en gebruik vervolgens een port forwarding-tool (zoals iptables) om deze poort te forwarden"
+
+msgid "CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers)."
+msgstr "CIFS-protocol wordt onbeschikbaar. Controleer op lopende processen die de volgende poorten gebruiken: ${portList} (bv. bestaande CIFS-servers)."
+
+msgid "CIFS server port"
+msgstr "CIFS-serverpoort"
+
+msgid "CIFS server port 1"
+msgstr "CIFS-serverpoort 1"
+
+msgid "CIFS server port 2"
+msgstr "CIFS-serverpoort 2"
+
+msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz)."
+msgstr "CPU-kloksnelheid van ${machine_cpu_speed} Mhz is lager dan de aanbevolen snelheid voor test- of productiegebruik (${recommended_cpu_speed} Mhz). Alfresco zal goed werken voor ontwikkeling, maar deze server mag niet voor andere doeleinden worden gebruikt. Upgrade de server naar een server met modernere CPU's (CPU-kloksnelheid van minstens ${recommended_cpu_speed} Mhz)."
+
+msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more)."
+msgstr "CPU-kloksnelheid van ${machine_cpu_speed} Mhz is lager dan de minimumvereisten voor Alfresco (${minimum_cpu_speed} Mhz). Alfresco zal niet goed werken. Upgrade de server naar een server met modernere CPU's (CPU-kloksnelheid van minstens ${minimum_cpu_speed} Mhz) en bij voorkeur ${recommended_cpu_speed} Mhz of meer)."
 
 msgid "Config Files"
 msgstr "Configuratiebestanden"
-
-msgid "Couldn't check Apache Tomcat Version.\nTomcat 5.5 is recommended."
-msgstr "Kan Apache Tomcat-versie.\nTomcat 5.5 wordt aanbevolen."
 
 msgid "Creating user and database"
 msgstr "Gebruiker en database maken"
@@ -103,17 +115,20 @@ msgstr "Databasenaam"
 msgid "Database name:"
 msgstr "Databasenaam:"
 
+msgid "Deploying Alfresco. Please be patient."
+msgstr "Alfresco wordt uitgerold. Een ogenblik geduld."
+
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Wilt u PostgreSQL als Windows-service installeren?"
 
 msgid "Easy - Installs servers with the default configuration"
 msgstr "Gemakkelijk - installeert servers met de standaardconfiguratie"
 
-msgid "Encoding"
-msgstr "Codering"
-
 msgid "Extension Files"
 msgstr "Uitbreidingsbestanden"
+
+msgid "Google Docs Integration"
+msgstr "Google Docs-integratie"
 
 msgid "I wish to use an existing PostgreSQL database"
 msgstr "Ik wil een bestaande PostgreSQL-database gebruiken"
@@ -127,26 +142,23 @@ msgstr "Ik wil de meegeleverde PostgreSQL-database gebruiken"
 msgid "I wish to use the bundled Tomcat"
 msgstr "Ik wil de meegeleverde Tomcat gebruiken"
 
+msgid "IMAP port"
+msgstr "IMAP-poort"
+
+msgid "IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "IMAP-protocol wordt onbeschikbaar (opmerking: standaard niet ingeschakeld). Kan poort niet binden ${imap_port}. Overweeg om Alfresco opnieuw te configureren om een niet-voorkeurspoort te gebruiken en gebruik vervolgens een port forwarding-tool (zoals iptables) om deze poort te forwarden"
+
+msgid "IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
+msgstr "IMAP-protocol wordt onbeschikbaar (opmerking: standaard niet ingeschakeld). Controleer op lopende processen die ${imap_port} (bv. bestaande IMAP-servers) gebruiken, overweeg op niet-Windows besturingssystemen Alfresco opnieuw te configureren om een niet-voorkeurspoort te gebruiken en vervolgens een port forwarding-tool (zoals iptables) te gebruiken om deze poort te forwarden."
+
 msgid "IP / Hostname"
 msgstr "IP / Hostnaam"
-
-msgid "ImageMagick Component"
-msgstr "ImageMagick-onderdeel"
-
-msgid "ImageMagick installation directory"
-msgstr "ImageMagick-installatiemap"
-
-msgid "ImageMagick version"
-msgstr "ImageMagick-versie"
 
 msgid "Include Alfresco Web Quick Start."
 msgstr "Alfresco Web Quick Start opnemen."
 
-msgid "Include system ld library path in environment"
-msgstr "Systeem-id bibliotheekpad opnemen in omgeving"
-
-msgid "Include system path in environment"
-msgstr "Systeempad opnemen in omgeving"
+msgid "Include Google Docs Integration Features."
+msgstr "Inclusief functies voor Google Docs-integratie."
 
 msgid "Initializing database"
 msgstr "Database initialiseren..."
@@ -160,11 +172,11 @@ msgstr "${product_fullname} als service installeren"
 msgid "Install PostgreSQL as service?"
 msgstr "PostgreSQL installeren als service?"
 
-msgid "Install application as a service on Unix systems"
-msgstr "Toepassing als service installeren op Unix-systemen"
-
 msgid "Install as a service"
 msgstr "Installeren als service"
+
+msgid "Installation Folder"
+msgstr "Installatiemap"
 
 msgid "Installation Type"
 msgstr "Installatietype"
@@ -182,13 +194,13 @@ msgid "Installing Alfresco Module Packages (AMPs)"
 msgstr "Alfresco-modulepakketten (AMP's) installeren..."
 
 msgid "Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}"
-msgstr "LibreOffice wordt als Windows-service geÔnstalleerd met de naam ${LibreOfficeUniqueServiceName}"
+msgstr "LibreOffice wordt als Windows-service geÓ≠≥talleerd met de naam ${LibreOfficeUniqueServiceName}"
 
 msgid "Installing PostgreSQL as a Windows service with name ${postgres_unique_service_name}"
-msgstr "PostgreSQL wordt als Windows-service geÔnstalleerd met de naam ${postgres_unique_service_name}"
+msgstr "PostgreSQL wordt als Windows-service geÓ≠≥talleerd met de naam ${postgres_unique_service_name}"
 
 msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
-msgstr "Tomcat wordt als Windows-service geÔnstalleerd met de naam ${tomcat_unique_service_name}"
+msgstr "Tomcat wordt als Windows-service geÓ≠≥talleerd met de naam ${tomcat_unique_service_name}"
 
 msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
 msgstr "Het lijkt erop dat u niet de juiste rechten heeft om met de poort te binden, of de poort wordt al gebruikt door een andere toepassing. Selecteer een andere poort."
@@ -211,20 +223,29 @@ msgstr "Java"
 msgid "Java Component required to run the Alfresco server."
 msgstr "Java-onderdeel vereist om de Alfresco-server uit te voeren."
 
+msgid "Java Home path contains spaces. Alfresco may not function properly, as the JVM itself has bugs when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
+msgstr "Het pad van Java Home bevat spaties. Alfresco werkt mogelijk niet correct, omdat de JVM bugs bevat wanneer het installatiepad spaties bevat. Installeer de JVM in een pad dat geen spaties bevat."
+
+msgid "Java is not installed in your Stack. This module requires to have Java installed."
+msgstr "Java is niet geÓ≠≥talleerd in uw stack. Voor deze module moet Java zijn geÓ≠≥talleerd."
+
 msgid "Launch ${product_fullname} Share"
 msgstr "Share ${product_fullname} starten"
 
-msgid "Libraries Files"
-msgstr "Bibliotheekbestanden"
+msgid "LibreOffice"
+msgstr "LibreOffice"
 
-msgid "License Folder Component"
-msgstr "Licentiemap-onderdeel"
+msgid "LibreOffice Server Port"
+msgstr "LibreOffice-serverpoort"
 
-msgid "Licenses Files"
-msgstr "Licentiebestanden"
+msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
+msgstr "LibreOffice is een multi-platform, open-source kantoorsoftwarepakket voor tekstverwerking, spreadsheets, presentaties, afbeeldingen en databases dat benodigd is voor documentconversies."
 
-msgid "Licenses destination"
-msgstr "Bestemming licenties"
+msgid "Location of bin and lib tomcat folders"
+msgstr "Locatie van bin- en lib tomcat-mappen"
+
+msgid "Manager tool"
+msgstr "Tool voor beheerders"
 
 msgid "Manual - Configure servers to start services manually"
 msgstr "Handmatig - configureert servers om services handmatig te starten"
@@ -238,32 +259,17 @@ msgstr "Nieuwe map"
 msgid "Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended."
 msgstr "Geen PostgreSQL versie 8.1.4 installatie. PostgreSQL 8.1.4 wordt aanbevolen."
 
-msgid "Open SSL Component"
-msgstr "SSL-onderdeel openen"
-
-msgid "LibreOffice"
-msgstr "LibreOffice"
-
-msgid "LibreOffice Server Port"
-msgstr "LibreOffice-serverpoort"
-
-msgid "LibreOffice Server port"
-msgstr "LibreOffice-serverpoort"
-
-msgid "LibreOffice installation directory"
-msgstr "LibreOffice-installatiemap"
-
-msgid "LibreOffice.org is a multiplatform, open-source office software suite for word processing, spreadsheets, presentations, graphics, and databases required for document transformations."
-msgstr "LibreOffice is een multi-platform, open-source kantoorsoftwarepakket voor tekstverwerking, spreadsheets, presentaties, afbeeldingen en databases dat benodigd is voor documentconversies."
-
-msgid "Parameters"
-msgstr "Parameters"
-
 msgid "Password"
 msgstr "Wachtwoord"
 
+msgid "Password must not contain leading or trailing spaces"
+msgstr "Wachtwoord mag geen spaties vooraf en achteraf bevatten"
+
 msgid "Password:"
 msgstr "Wachtwoord:"
+
+msgid "Please choose a folder to install ${product_fullname}"
+msgstr "Selecteer een installatiemap ${product_fullname}"
 
 msgid "Please choose a port number for Alfresco to use to execute remote commands."
 msgstr "Kies een poortnummer dat Alfresco gebruikt om externe opdrachten uit te voeren."
@@ -272,10 +278,7 @@ msgid "Please choose a port number for the SharePoint protocol."
 msgstr "Kies een poortnummer voor het SharePoint-protocol."
 
 msgid "Please choose a port number to use for the integrated Alfresco FTP server."
-msgstr "Kies een poortnummer voor gebruik van de geÔntegreerde Alfresco FTP-server."
-
-msgid "Please enter a port in the range 1-65535."
-msgstr "Voer een poortnummer tussen 1-65535 in."
+msgstr "Kies een poortnummer voor gebruik van de geÓ≠¥egreerde Alfresco FTP-server."
 
 msgid "Please enter a valid IP address or hostname"
 msgstr "Voer een geldig IP-adres of geldige hostnaam in"
@@ -301,8 +304,8 @@ msgstr "Voer het 'postgres'-gebruikerswachtwoord voor uw database in."
 msgid "Please give a password to use for the Alfresco administrator account."
 msgstr "Geef een wachtwoord op voor het Alfresco-beheerdersaccount."
 
-msgid "Please give details of the Quickr server to use."
-msgstr "Voer de gegevens van de te gebruiken Quickr-server in."
+msgid "Please select a different installation directory. The installation directory cannot contain symbolic links"
+msgstr "Selecteer een andere installatiemap. De installatiemap mag geen symbolische links bevatten"
 
 msgid "Please select services startup type"
 msgstr "Selecteer opstarttype voor services"
@@ -319,11 +322,8 @@ msgstr "Geef op in welke map Tomcat zich bevindt."
 msgid "Please specify the directory where the psql, pg_restore and vacuumdb binaries are located"
 msgstr "Geef de map op waarin de programmabestanden psql, pg_restore en vacuumdb zich bevinden"
 
-msgid "Please choose a folder to install ${product_fullname}"
-msgstr "Selecteer een installatiemap ${product_fullname}"
-
-msgid "Please, select the encoding type."
-msgstr "Selecteer het coderingstype."
+msgid "Please, enter CIFS ports configuration"
+msgstr "Voer de configuratie van CIFS-poorten in"
 
 msgid "Port:"
 msgstr "Poort:"
@@ -340,29 +340,11 @@ msgstr "PostgreSQL is een krachtig, open-source object-relationeel databasesyste
 msgid "PostgreSQL postgres user password"
 msgstr "PostgreSQL postgres gebruikerswachtwoord"
 
-msgid "PostgreSQL_initdb"
-msgstr "PostgreSQL_initdb"
-
 msgid "Program Files"
 msgstr "Programmabestanden"
 
-msgid "Program Files Linux"
-msgstr "Programmabestanden Linux"
-
-msgid "Program Files Windows"
-msgstr "Programmabestanden Windows"
-
-msgid "Quickr Connector Support"
-msgstr "Quickr Connector-ondersteuning"
-
-msgid "Quickr Content Services"
-msgstr "Quickr Content-services"
-
-msgid "Quickr Server:"
-msgstr "Quickr-server:"
-
-msgid "Quickr and Lotus Notes support for communication with Alfresco."
-msgstr "Quickr- en Lotus Notes-ondersteuning voor communicatie met Alfresco."
+msgid "README"
+msgstr "README"
 
 msgid "README File"
 msgstr "README-bestand"
@@ -370,29 +352,29 @@ msgstr "README-bestand"
 msgid "README Folder Component"
 msgstr "README-maponderdeel"
 
-msgid "README destination"
-msgstr "README-bestemming"
-
 msgid "Re-enter password"
 msgstr "Voer wachtwoord opnieuw in"
 
-msgid "Records Management"
-msgstr "Records Management"
-
-msgid "Records Management support. This is a separately licensed component and should only be installed if licensed."
-msgstr "Records Management-ondersteuning. Dit is een onderdeel met een aparte licentie, dat alleen dient te worden geÔnstalleerd als u over een licentie beschikt."
-
 msgid "Repeat Password:"
 msgstr "Herhaal wachtwoord:"
+
+msgid "SMB port"
+msgstr "SMB-poort"
+
+msgid "SMTP port"
+msgstr "SMTP-poort"
+
+msgid "SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port."
+msgstr "SMTP-protocol wordt onbeschikbaar (opmerking: standaard niet ingeschakeld). Kan poort niet binden ${smtp_port}. Overweeg om Alfresco opnieuw te configureren om een niet-voorkeurspoort te gebruiken en gebruik vervolgens een port forwarding-tool (zoals iptables) om deze poort te forwarden."
+
+msgid "SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)"
+msgstr "SMTP-protocol wordt onbeschikbaar (opmerking: standaard niet ingeschakeld). Controleer op lopende processen die ${smtp_port} (bv. bestaande SMTP-servers) gebruiken"
 
 msgid "SWFTOOLS Component"
 msgstr "SWFTOOLS-onderdeel"
 
 msgid "SWFTOOLS installation directory"
 msgstr "SWFTOOLS-installatiemap"
-
-msgid "Script for start/stop Services"
-msgstr "Script voor starten/stoppen van services"
 
 msgid "Select a folder"
 msgstr "Selecteer een map"
@@ -402,15 +384,6 @@ msgstr "Opstartconfiguratie van service"
 
 msgid "Service script name"
 msgstr "Servicescriptnaam"
-
-msgid "Service script name:"
-msgstr "Servicescriptnaam:"
-
-msgid "Set Installer Variables Java"
-msgstr "Installatieprogrammavariabelen Java instellen"
-
-msgid "Set Installer Variables Tomcat"
-msgstr "Installatieprogrammavariabelen Tomcat instellen"
 
 msgid "Set the database name for the database that will be created."
 msgstr "Stel de databasenaam in voor de database die wordt gemaakt."
@@ -427,14 +400,23 @@ msgstr "Setup probeert nieuwe databases te installeren en overschrijft eventueel
 msgid "SharePoint"
 msgstr "SharePoint"
 
-msgid "SharePoint Protocol Support."
-msgstr "SharePoint-protocolondersteuning."
-
 msgid "SharePoint Protocol support."
 msgstr "SharePoint-protocolondersteuning."
 
 msgid "Shortcuts Images"
 msgstr "Afbeeldingen van snelkoppelingen"
+
+msgid "Show next steps"
+msgstr "Zie de volgende stappen"
+
+msgid "Solr1"
+msgstr "Solr1"
+
+msgid "Solr4"
+msgstr "Solr4"
+
+msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
+msgstr "Sommige of alle bibliotheken die nodig zijn ter ondersteuning van LibreOffice zijn niet in uw systeem aangetroffen: fontconfig libSM libICE libXrender libXext\nU wordt aangeraden om deze installatie af te breken en ze eerst met behulp van uw package manager te installeren.\nGa voor meer informatie naar http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nWilt u doorgaan met de installatie?"
 
 msgid "Sorry, we only support PostgreSQL as service."
 msgstr "Sorry, alleen PostgreSQL wordt als service ondersteund."
@@ -442,17 +424,8 @@ msgstr "Sorry, alleen PostgreSQL wordt als service ondersteund."
 msgid "Sorry, you need to be administrator."
 msgstr "Sorry, u moet een beheerder zijn."
 
-msgid "Stack Scripts Directory"
-msgstr "Stackscripts-map"
-
 msgid "Start ${product_fullname} service"
 msgstr "Service ${product_fullname} starten"
-
-msgid "Start Virtual Server"
-msgstr "Virtuele server starten"
-
-msgid "Start tomcat service"
-msgstr "Tomcat-service starten"
 
 msgid "Starting LibreOffice..."
 msgstr "LibreOffice starten..."
@@ -460,20 +433,17 @@ msgstr "LibreOffice starten..."
 msgid "Starting servers ..."
 msgstr "Servers starten..."
 
-msgid "Starting servers. Please be patient"
-msgstr "Servers starten. Een ogenblik geduld"
-
 msgid "Starting servers. Please be patient."
 msgstr "Servers starten. Een ogenblik geduld."
 
 msgid "Stop ${product_fullname} service"
 msgstr "Service ${product_fullname} stoppen"
 
-msgid "Stop Virtual Server"
-msgstr "Virtuele server stoppen"
-
 msgid "Stopping PostgreSQL..."
 msgstr "PostgreSQL stoppen..."
+
+msgid "Stopping Services"
+msgstr "Services stoppen"
 
 msgid "Stopping servers"
 msgstr "Servers stoppen"
@@ -487,11 +457,20 @@ msgstr "Het ${product_shortname} servicescriptbestand bestaat al. Gebruik een an
 msgid "The Alfresco data directory tends to grow in size. Please choose where do you want to store it."
 msgstr "De omvang van de Alfresco-gegevensmap neemt toe. Kies waar u deze wilt opslaan."
 
+msgid "The current installation directory could not be accessed by non-root users. Please select a different installation directory or change the permissions to 755 for this folder."
+msgstr "De huidige installatiemap kan niet worden geopend door niet-rootgebruikers. Selecteer een andere installatiemap of wijzig de machtigingen voor deze map naar 755."
+
 msgid "The directory you selected does not seem to be a valid JDK directory. Please try again."
 msgstr "De gekozen map lijkt geen geldige JDK-map te zijn. Probeer het opnieuw."
 
 msgid "The directory you selected does not seem to be a valid Tomcat directory. Please try again."
 msgstr "De gekozen map lijkt geen geldige Tomcat-map te zijn. Probeer het opnieuw."
+
+msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
+msgstr "Het installatiepad mag alleen letters, cijfers en de tekens '/', '.', '-' en '_' bevatten."
+
+msgid "The installation has detected that the current umask is set to permissions of ${base_umask}, the installation is now exiting. You should modify your umask to at least 0022 before launching the installer. After the installation has completed, reset the umask permissions to your original values."
+msgstr "De installatie heeft gedetecteerd dat de huidige ontmaskering is ingesteld op machtigingen van ${base_umask}. De installatie wordt nu afgesloten. U moet uw ontmaskering wijzigen naar minstens 0022 voordat het installatieprogramma wordt gestart. Nadat de installatie is voltooid, stelt u de ontmaskeringsmachtigingen terug in op uw oorspronkelijke waarden."
 
 msgid "The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}"
 msgstr "Het installatieprogramma kan niet vaststellen hoeveel ruimte beschikbaar is op ${installdir}. Controleer of er genoeg beschikbare ruimte is voor de installatie ${product_fullname}"
@@ -514,26 +493,23 @@ msgstr "De geselecteerde map is niet leeg. Selecteer een andere map"
 msgid "The service script file exists. Please insert a different name for the service script."
 msgstr "Het servicescriptbestand bestaat al. Gebruik een andere naam voor het servicescript."
 
+msgid "The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Please install a 64bit version of Java before continuing, or go back and ensure the ‚ÄúJava‚Äù component is selected."
+msgstr "De geselecteerde Java-versie is 32-bits, maar u hebt een 64-bits installatie van Alfresco. Installeer een 64-bits versie van Java voordat u doorgaat of keer terug en zorg ervoor dat de ""Java""-component is geselecteerd."
+
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "Er is niet genoeg beschikbare ruimte op ${installdir}. U hebt ten minste ${base_needed_space} MB nodig voor de installatie ${product_fullname}"
 
 msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
 msgstr "Dit installatieprogramma is voor 64-bits Windows. Download de 32-bits Windows-versie."
 
+msgid "This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)"
+msgstr "Deze machine heeft niet voldoende CPU's (cores) om Alfresco uit te voeren voor andere doeleinden dan ontwikkeling. Alfresco zal goed werken voor ontwikkeling, maar deze server mag niet voor andere doeleinden worden gebruikt. Upgrade de server naar minstens ${minimum_core_count} CPU's (cores)"
+
 msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
 msgstr "Deze versie is verpakt voor uitvoering op J2SE ${java_min_version} of later. Installeer een compatibele Java-versie en probeer het opnieuw."
 
 msgid "This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again."
 msgstr "Deze versie is verpakt voor uitvoering op J2SE ${java_min_version}. Installeer een compatibele Java-versie en probeer het opnieuw."
-
-msgid "This release was packaged to run on J2SE 7.0 or later. Please install a compatible Java version and try again."
-msgstr "Deze versie is verpakt voor uitvoering op J2SE 7.0 of later. Installeer een compatibele Java-versie en probeer het opnieuw."
-
-msgid "This release was packaged to run on J2SE 7.0. Please install a compatible Java version and try again."
-msgstr "Deze versie is verpakt voor uitvoering op J2SE 7.0. Installeer een compatibele Java-versie en probeer het opnieuw."
-
-msgid "Tomcat 5.5 Component"
-msgstr "Tomcat 5.5-onderdeel"
 
 msgid "Tomcat AJP Port:"
 msgstr "Tomcat AJP-poort"
@@ -565,9 +541,6 @@ msgstr "Tomcat-map:"
 msgid "Tomcat installation:"
 msgstr "Tomcat-installatie:"
 
-msgid "Tomcat modifications due to java"
-msgstr "Tomcat-modificaties vanwege java"
-
 msgid "Unable to bind to the given port number. Please select another FTP Port."
 msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere FTP-poort."
 
@@ -577,17 +550,17 @@ msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere RMI-poor
 msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
 msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere Tomcat AJP-poort."
 
+msgid "Unable to bind to the given port number. Please select another Tomcat JMX Port."
+msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere Tomcat JMX-poort."
+
+msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
+msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere Tomcat SSL-poort."
+
 msgid "Unable to bind to the given port number. Please select another Tomcat Server Port."
 msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere Tomcat Server-poort."
 
 msgid "Unable to bind to the given port number. Please select another Tomcat Shutdown Port."
 msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere Tomcat Shutdown-poort."
-
-msgid "Unable to bind to the given port number. Please select another Tomcat SSL Port."
-msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere Tomcat SSL-poort."
-
-msgid "Unable to bind to the given port number. Please select another Tomcat AJP Port."
-msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere Tomcat AJP-poort."
 
 msgid "Unable to bind to the given port number. Please select another port for the SharePoint Protocol."
 msgstr "Kan het opgegeven poortnummer niet binden. Selecteer een andere poort voor het SharePoint-protocol."
@@ -597,6 +570,15 @@ msgstr "Kan niet binden met de serverpoort. Zorg ervoor dat Tomcat niet wordt ui
 
 msgid "Unable to connect to database. Please check your configuration."
 msgstr "Kan geen koppeling maken met database. Controleer uw configuratie."
+
+msgid "Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)"
+msgstr "Kan het aantal CPU's (cores) niet bepalen. Deze machine heeft mogelijk niet voldoende CPU's (cores) om Alfresco uit te voeren voor andere doeleinden dan ontwikkeling. Controleer handmatig of deze machine minstens ${minimum_core_count} CPU's (cores) heeft"
+
+msgid "Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz."
+msgstr "Kan de CPU-kloksnelheid niet bepalen. Deze machine is mogelijk niet snel genoeg om Alfresco ui te voeren voor test- of productiedoeleinden. Controleer handmatig of de CPU-kloksnelheid van deze server minstens ${minimum_cpu_speed} Mhz is."
+
+msgid "Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed."
+msgstr "Kan de grootte van het ge√Ønstalleerde RAM-geheugen niet bepalen. Deze machine heeft mogelijk niet voldoende RAM om Alfresco correct uit te voeren. Controleer handmatig of de server minstens ${minimum_ram} MB heeft (bij voorkeur minstens ${recommended_ram} MB RAM."
 
 msgid "Unable to find a server running at given port number. Please select another one."
 msgstr "Kan geen server vinden die wordt uitgevoerd op het opgegeven poortnummer. Selecteer een andere poort."
@@ -613,6 +595,9 @@ msgstr "Verwijderen ${product_fullname}"
 msgid "Uninstall ${product_fullname} service"
 msgstr "Service ${product_fullname} verwijderen"
 
+msgid "Uninstalling service"
+msgstr "Service verwijderen"
+
 msgid "Uninstalling services"
 msgstr "Services verwijderen..."
 
@@ -621,6 +606,9 @@ msgstr "Wordt gebruikt om de bestemming van de inhoud in de opdrachtenmap in te 
 
 msgid "User"
 msgstr "Gebruiker"
+
+msgid "Username '${username}' is reserved. Please use a different user name."
+msgstr "De gebruikersnaam '${username}' is al in gebruik. Gebruik een andere gebruikersnaam."
 
 msgid "Username:"
 msgstr "Gebruikersnaam:"
@@ -640,9 +628,6 @@ msgstr "WAR-bestanden"
 msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
 msgstr "Er is geen geschikte JDK-installatie op uw computer gevonden. ${product_fullname} vereist JDK ${java_min_version} of later."
 
-msgid "Web Project Management (AVM)"
-msgstr "Web Project Management (AVM)"
-
 msgid "Web Quick Start"
 msgstr "Web Quick Start"
 
@@ -652,56 +637,15 @@ msgstr "Webserver"
 msgid "Web Server domain:"
 msgstr "Webserverdomein:"
 
+msgid "You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Please download and install Ruby Stack ${rubyVersion} version at bitnami.com site"
+msgstr "U probeert een toepassing op basis van Ruby ${rubyVersion} te installeren in een Bitnami-stack die niet wordt ondersteund. Download en install Ruby Stack ${rubyVersion} versie op de website bitnami.com"
+
 msgid "You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started."
 msgstr "U kunt ${product_fullname} optioneel registreren als service. Hierdoor wordt het automatisch gestart telkens wanneer u de computer opstart."
 
 msgid "You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat."
-msgstr "U hebt Tomcat gekozen als de bestaande installatie. Als u nieuw geÔnstalleerde toepassingen wilt gebruiken, moet u Tomcat opnieuw starten."
+msgstr "U hebt Tomcat gekozen als de bestaande installatie. Als u nieuw geÓ≠≥talleerde toepassingen wilt gebruiken, moet u Tomcat opnieuw starten."
 
-msgid "applyamps"
-msgstr "applyamps"
+msgid "You need to select at least one of the Solr components"
+msgstr "U moet minstens √©√©n van de Solr-componenten selecteren"
 
-msgid "mmtjar"
-msgstr "mmtjar"
-
-msgid "Please provide a password for the service account (postgres). If this account does not exist, the installer will create it."
-msgstr "Geef een wachtwoord op voor het serviceaccount (postgres). Als het account nog niet bestaat, wordt deze door het installatieprogramma gemaakt."
-
-msgid "The password specified was incorrect. Please enter the correct password for the postgres Windows user account."
-msgstr "Het opgegeven wachtwoord is onjuist. Voer het juiste wachtwoord in voor het postgres Windows-gebruikersaccount."
-
-msgid "README"
-msgstr "README"
-
-msgid "Windows 2008 requires that the password meets the following requirements:\n\n- It must be at least six characters long.\n- It must contain uppercase and lowercase characters.\n- It must contain numbers.\n- It must contain at least one of these special characters: @#$%!^&+=\n"
-msgstr "In Windows 2008 moet het wachtwoord aan de volgende vereisten voldoen:\n\n- Het moet ten minste zes tekens lang zijn.\n- Het moet hoofdletters en kleine letters bevatten.\n- Het moet cijfers bevatten.\n- Het moet ten minste een van de volgende speciale tekens bevatten: @#$%!^&+=\n"
-
-msgid "Postgres service account password"
-msgstr "Wachtwoord van Postgres-serviceaccount"
-
-msgid "Deploying Alfresco. Please be patient."
-msgstr "Alfresco wordt uitgerold. Een ogenblik geduld."
-
-msgid "Java is not installed in your Stack. This module requires to have Java installed."
-msgstr "Java is niet geÔnstalleerd in uw stack. Voor deze module moet Java zijn geÔnstalleerd."
-
-msgid "The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'."
-msgstr "Het installatiepad mag alleen letters, cijfers en de tekens '/', '.', '-' en '_' bevatten."
-
-msgid "Show next steps"
-msgstr "Zie de volgende stappen"
-
-msgid "Alfresco recommends at least 1024MB of memory.${machine_total_memory}MB detected."
-msgstr "Alfresco beveelt minstens 1024 MB aan geheugen. ${machine_total_memory} MB gedetecteerd."
-
-msgid "Google Docs Integration"
-msgstr "Google Docs-integratie"
-
-msgid "Include Google Docs Integration Features."
-msgstr "Inclusief functies voor Google Docs-integratie."
-
-msgid "Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to abort this installation and install them first using your package manager.\nFor more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nDo you want to continue with the installation?"
-msgstr "Sommige of alle bibliotheken die nodig zijn ter ondersteuning van LibreOffice zijn niet in uw systeem aangetroffen: fontconfig libSM libICE libXrender libXext\nU wordt aangeraden om deze installatie af te breken en ze eerst met behulp van uw package manager te installeren.\nGa voor meer informatie naar http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html\n\nWilt u doorgaan met de installatie?"
-
-msgid "Password must not contain leading or trailing spaces"
-msgstr "Wachtwoord mag geen spaties vooraf en achteraf bevatten"

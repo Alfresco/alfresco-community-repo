@@ -74,7 +74,14 @@ public class FacetQNameUtilsTest
                      FacetQNameUtils.createQName("{http://www.alfresco.org/model/foo/1.0}localName", resolver));
     }
     
-    // Note: it doesn't really make sense to have a short-form qname with no prefix.
+    @Test public void canCreateFromShortFormWithNoPrefix() throws Exception
+    {
+        // The sensibleness of this from an Alfresco perspective is questionable.
+        // But this is what we must do to support 'QName' strings like "Site" or "Tag" in the REST API.
+        assertEquals(QName.createQName(null, "localName"),
+                FacetQNameUtils.createQName("localName", resolver));
+    }
+    
     @Test public void canCreateFromLongFormWithNoPrefix() throws Exception
     {
         assertEquals(QName.createQName(null, "localName"),

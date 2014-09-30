@@ -24,7 +24,8 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * This class provides some simple utility methods for dealing with {@link QName QNames}
- * within the faceted search feature.
+ * within the faceted search feature. The whole thing should be considered a hack to handle 'special cases'.
+ * <p/>
  * These are not intended for general use, or else they'd be in the {@link QName} class.
  * @since 5.0
  */
@@ -57,6 +58,13 @@ public abstract class FacetQNameUtils
         {
             // Assume it's a short-form qname.
             result = QName.createQName(s, resolver);
+        }
+        else if (!s.contains(Character.toString(QName.NAMESPACE_BEGIN)) &&
+                !s.contains(Character.toString(QName.NAMESPACE_END)) &&
+                !s.contains(Character.toString(QName.NAMESPACE_PREFIX)))
+        {
+            // No '{', '}' or ':' means it's a prefixless QName (SITE or TAG, in our case).
+            result = QName.createQName(null, s);
         }
         else
         {

@@ -81,6 +81,9 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     private long lastIndexedTxId;
     
     private SpellCheckResult spellCheckResult;
+    
+    private boolean processedDenies;
+    
     /**
      * Detached result set based on that provided
      * @param resultSet
@@ -104,7 +107,10 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
             {
                 lastIndexedTxId = json.getLong("lastIndexedTx");
             }
-            
+            if (json.has("processedDenies"))
+            {
+                processedDenies = json.getBoolean("processedDenies");
+            }
             JSONArray docs = response.getJSONArray("docs");
             
             int numDocs = docs.length();
@@ -465,5 +471,10 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     public SpellCheckResult getSpellCheckResult()
     {
         return this.spellCheckResult;
+    }
+
+    public boolean getProcessedDenies()
+    {
+        return processedDenies;
     }
 }

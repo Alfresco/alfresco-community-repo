@@ -94,7 +94,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 	private boolean optimisePermissionsCheck;
 	private int optimisePermissionsBulkFetchSize;
     private boolean anyDenyDenies = false;
-
+    private boolean postProcessDenies = false;
     /**
      * Default constructor
      */
@@ -279,7 +279,8 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
             {
                 return decide(authentication, object, config, (ChildAssociationRef) returnedObject);
             }
-            else if (SolrJSONResultSet.class.isAssignableFrom(returnedObject.getClass()) && !anyDenyDenies)
+            else if (SolrJSONResultSet.class.isAssignableFrom(returnedObject.getClass()) &&
+                        (!anyDenyDenies || (!postProcessDenies && ((SolrJSONResultSet)returnedObject).getProcessedDenies())))
             {
                 return returnedObject;
             }
@@ -523,6 +524,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     public void setAnyDenyDenies(boolean anyDenyDenies)
     {
         this.anyDenyDenies = anyDenyDenies;
+    }
+    
+    public void setPostProcessDenies(boolean postProcessDenies)
+    {
+        this.postProcessDenies = postProcessDenies;
     }
     
 	private ResultSet decide(Authentication authentication, Object object, ConfigAttributeDefinition config, ResultSet returnedObject) throws AccessDeniedException

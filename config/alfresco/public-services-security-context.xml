@@ -247,6 +247,9 @@
         <property name="anyDenyDenies">
             <value>${security.anyDenyDenies}</value>
         </property>
+        <property name="postProcessDenies">
+            <value>${security.postProcessDenies}</value>
+        </property>
     </bean>
     
     <bean id="afterAclMarking" class="org.alfresco.repo.security.permissions.impl.acegi.MarkingAfterInvocationProvider" />

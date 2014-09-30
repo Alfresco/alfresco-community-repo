@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -256,23 +256,19 @@ public class ActivitiTimerExecutionTest extends BaseSpringTest
     {
     	String processInstanceId = BPMEngineRegistry.getLocalId(workflowInstanceId);
     	// Job-executor should finish the job, no timers should be available for WF
-		List<Job> timers = activitiProcessEngine.getManagementService().createJobQuery()
-			.timers()
-			.processInstanceId(processInstanceId)
-			.list();
-		
+		List<Job> timers = null;
 		int numberOfRetries = 5;
 		for (int i=0; i< numberOfRetries; i++)
 		{
-			if (timers.size() == 0)
-			{
-				break;
-			}
-			Thread.sleep(1000);
+			Thread.sleep(1500);
 			timers = activitiProcessEngine.getManagementService().createJobQuery()
 			   .timers()
 			   .processInstanceId(processInstanceId)
 			   .list();
+            if (timers.size() == 0)
+            {
+                break;
+            }
 		}
 		
 		if(timers.size() > 0) {

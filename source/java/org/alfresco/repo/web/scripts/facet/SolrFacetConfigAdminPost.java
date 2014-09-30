@@ -80,7 +80,10 @@ public class SolrFacetConfigAdminPost extends AbstractSolrFacetConfigAdminWebScr
             validateFilterID(filterID);
 
             final String facetQNameStr = json.getString(PARAM_FACET_QNAME);
-            final QName facetQName = QName.createQName(facetQNameStr, namespaceService);
+            // Note: we're using this util class here because we need to be able to deal with
+            //       qnames without a URI e.g. "{}SITE" and *not* have them default to the cm: namespace
+            //       which happens with the 'normal' Alfresco QName code.
+            final QName facetQName = FacetQNameUtils.createQName(facetQNameStr, namespaceService);
             final String displayName = json.getString(PARAM_DISPLAY_NAME);
             final String displayControl = json.getString(PARAM_DISPLAY_CONTROL);
             final int maxFilters = json.getInt(PARAM_MAX_FILTERS);

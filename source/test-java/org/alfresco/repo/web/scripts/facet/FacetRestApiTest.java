@@ -35,14 +35,18 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.collections.CollectionUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.springframework.extensions.webscripts.TestWebScriptServer.*;
 
 /**
  * This class tests the ReST API of the {@link SolrFacetService}.
@@ -504,7 +508,35 @@ public class FacetRestApiTest extends BaseWebScriptTest
         }, SEARCH_ADMIN_USER);
 
     }
-
+    
+    /** The REST API should accept both 'cm:name' and '{http://www.alfresco.org/model/content/1.0}name' forms of filter IDs. */
+    public void testCreateFacetWithLongFormQnameFilterId() throws Exception
+    {
+        final JSONObject filter = new JSONObject();
+        final String filterName = "filter" + GUID.generate();
+        filters.add(filterName);
+        filter.put("filterID", filterName);
+        // This is the long-form qname that needs to be acceptable.
+        filter.put("facetQName", "{http://www.alfresco.org/model/content/1.0}testLongQname");
+        filter.put("displayName", "facet-menu.facet.testLongQname");
+        filter.put("displayControl", "alfresco/search/FacetFilters/testLongQname");
+        filter.put("maxFilters", 5);
+        filter.put("hitThreshold", 1);
+        filter.put("minFilterValueLength", 4);
+        filter.put("sortBy", "ALPHABETICALLY");
+        
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                // Post the filter
+                sendRequest(new PostRequest(POST_FACETS_URL, filter.toString(), "application/json"), 200);
+                return null;
+            }
+        }, SEARCH_ADMIN_USER);
+    }
+    
     public void testUpdateSingleValue() throws Exception
     {
         // Build the Filter object

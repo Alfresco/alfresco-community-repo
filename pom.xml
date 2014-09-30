@@ -13,7 +13,7 @@
 
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
-        <bitrock.folder>${binaries.folder}/bitrock/bitrock-9.0.2</bitrock.folder>
+        <bitrock.folder>${binaries.folder}/bitrock/bitrock-9.5.0</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
         <bitrock.arguments>
            --license

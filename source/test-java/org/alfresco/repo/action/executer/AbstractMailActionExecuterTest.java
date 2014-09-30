@@ -555,7 +555,7 @@ public abstract class AbstractMailActionExecuterTest
             }, tenantId);
 
             Assert.assertNotNull(message);
-            Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
+            Assert.assertEquals("Hello 01-Jan-1970", (String) message.getContent());
         }
         finally
         {

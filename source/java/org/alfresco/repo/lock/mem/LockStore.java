@@ -36,6 +36,13 @@ public interface LockStore
     public Set<NodeRef> getNodes();
     
     /**
+     * WARNING: only use in lockService - unlocks node ignoring lockOwner
+     * 
+     * @param nodeRef
+     */
+    void forceUnlock(NodeRef nodeRef);
+    
+    /**
      * WARNING: only use in test code - unsafe method for production use.
      * 
      * TODO: remove this method?

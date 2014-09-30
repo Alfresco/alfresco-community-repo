@@ -34,7 +34,6 @@ import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.SearcherComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -48,7 +47,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -73,8 +71,6 @@ public class LockServiceImplTest extends BaseSpringTest
     private MutableAuthenticationService authenticationService;
     private CheckOutCheckInService cociService;
     
-    private PermissionService permissionService;
-    private LockService securedLockService;
     /**
      * Data used in tests
      */
@@ -98,10 +94,6 @@ public class LockServiceImplTest extends BaseSpringTest
     {
         this.nodeService = (NodeService)applicationContext.getBean("dbNodeService");
         this.lockService = (LockService)applicationContext.getBean("lockService");
-        
-        this.securedLockService = (LockService)applicationContext.getBean("LockService");
-        this.permissionService = (PermissionService)applicationContext.getBean("PermissionService");
-        
         this.authenticationService = (MutableAuthenticationService)applicationContext.getBean("authenticationService");
         this.cociService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
         
@@ -178,11 +170,6 @@ public class LockServiceImplTest extends BaseSpringTest
         // Create the  users
         TestWithUserUtils.createUser(GOOD_USER_NAME, PWD, rootNodeRef, this.nodeService, this.authenticationService);
         TestWithUserUtils.createUser(BAD_USER_NAME, PWD, rootNodeRef, this.nodeService, this.authenticationService);
-        
-        this.permissionService.setPermission(rootNodeRef, GOOD_USER_NAME, PermissionService.ALL_PERMISSIONS, true);
-        this.permissionService.setPermission(rootNodeRef, BAD_USER_NAME, PermissionService.CHECK_OUT, true);
-        this.permissionService.setPermission(rootNodeRef, BAD_USER_NAME, PermissionService.WRITE, true);
-        this.permissionService.setPermission(rootNodeRef, BAD_USER_NAME, PermissionService.READ, true);
         
         // Stash the user node ref's for later use
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
@@ -918,8 +905,7 @@ public class LockServiceImplTest extends BaseSpringTest
         }
     }
     
-    @SuppressWarnings("deprecation")
-	public void testUnlockNodeWithAdminUser()
+    public void testUnlockEphemeralNodeWithAdminUser()
     {
         for (Lifetime lt : new Lifetime[]{Lifetime.EPHEMERAL, Lifetime.PERSISTENT})
         {
@@ -930,30 +916,27 @@ public class LockServiceImplTest extends BaseSpringTest
                 this.nodeService.createNode(parentNode, ContentModel.ASSOC_CONTAINS, QName.createQName("{}testNode"), ContentModel.TYPE_CONTAINER).getChildRef();
         
             // lock it as GOOD user
-            this.securedLockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
+            this.lockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
         
             TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         
             try
             {
                 // try to unlock as bad user
-                this.securedLockService.unlock(testNode);
+                this.lockService.unlock(testNode);
                 fail("BAD user shouldn't be able to unlock " + lt + " lock");
             }
-            catch(AccessDeniedException e)
+            catch(UnableToReleaseLockException e)
             {
-                // expected expetion
+                // it's expected
             }
         
             TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), "admin", rootNodeRef, this.authenticationService);
         
             // try to unlock as ADMIN user
-            this.securedLockService.unlock(testNode);
-            
-            // test that bad use able to lock/unlock node
-            TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
-            this.securedLockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
-            this.securedLockService.unlock(testNode);
+            this.lockService.unlock(testNode);
+        
+            TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         
             this.nodeService.deleteNode(testNode);
         }

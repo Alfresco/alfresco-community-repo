@@ -93,18 +93,11 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
     protected Repository repository;
 
     private SwitchableApplicationContextFactory searchSubsystem;
-    
-    /** Solr facet helper */
-    private SolrFacetHelper solrFacetHelper;
-    
-    private FacetLabelDisplayHandlerRegistry facetLabelDisplayHandlerRegistry;
 
     @Override
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "services", services);
-        PropertyCheck.mandatory(this, "solrFacetHelper", solrFacetHelper);
-        PropertyCheck.mandatory(this, "facetLabelDisplayHandlerRegistry", facetLabelDisplayHandlerRegistry);
     }
     
     /**
@@ -149,20 +142,6 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
     
     // JavaScript API
     
-    /**
-     * @param solrFacetHelper the solrFacetHelper to set
-     */
-    public void setSolrFacetHelper(SolrFacetHelper solrFacetHelper)
-    {
-        this.solrFacetHelper = solrFacetHelper;
-    }
-    /**
-     * @param facetLabelDisplayHandlerRegistry the facetLabelDisplayHandlerRegistry to set
-     */
-    public void setFacetLabelDisplayHandlerRegistry(FacetLabelDisplayHandlerRegistry facetLabelDisplayHandlerRegistry)
-    {
-        this.facetLabelDisplayHandlerRegistry = facetLabelDisplayHandlerRegistry;
-    }
     public String getSearchSubsystem()
     {
         return (searchSubsystem == null) ? "" : searchSubsystem.getCurrentSourceBeanName();
@@ -732,6 +711,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 }
                 if (facets != null)
                 {
+                    SolrFacetHelper solrFacetHelper = services.getSolrFacetHelper();
                     for (String field: facets)
                     {
                         final String modifiedField = "@" + field;
@@ -953,6 +933,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
             meta.put("numberFound", results.getNumberFound());
             meta.put("hasMore", results.hasMore());
             // results facets
+            FacetLabelDisplayHandlerRegistry facetLabelDisplayHandlerRegistry = services.getFacetLabelDisplayHandlerRegistry();
             Map<String, List<ScriptFacetResult>> facetMeta = new HashMap<>();
             for (FieldFacet ff: sp.getFieldFacets())
             {
@@ -979,7 +960,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
             // ACE-1615: Populate the facetMeta map with empty lists. If there is a
             // facet query with >0 hits, the relevant list will be populated
             // with the results, otherwise the list remains empty.
-            for(String bucketedField : solrFacetHelper.getBucketedFieldFacets())
+            for(String bucketedField : services.getSolrFacetHelper().getBucketedFieldFacets())
             {
                 facetMeta.put(bucketedField, new ArrayList<ScriptFacetResult>());
             }
@@ -1068,7 +1049,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
         }
         else
         {
-            String fq = solrFacetHelper.createFacetQueriesFromSearchQuery(field, query);
+            String fq = services.getSolrFacetHelper().createFacetQueriesFromSearchQuery(field, query);
             if (fq != null)
             {
                 sp.addFacetQuery(fq);

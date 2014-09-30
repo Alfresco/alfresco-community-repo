@@ -27,6 +27,8 @@ import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
+import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -428,5 +430,19 @@ public class ServiceDescriptorRegistry
     public WebDavService getWebDavService()
     {
         return (WebDavService)getService(WEBDAV_SERVICE);
+    }
+    
+    @Override
+    public SolrFacetHelper getSolrFacetHelper()
+    {
+        final String beanName = "facet.solrFacetHelper";
+        return (SolrFacetHelper) beanFactory.getBean(beanName);
+    }
+    
+    @Override
+    public FacetLabelDisplayHandlerRegistry getFacetLabelDisplayHandlerRegistry()
+    {
+        final String beanName = "facet.facetLabelDisplayHandlerRegistry";
+        return (FacetLabelDisplayHandlerRegistry) beanFactory.getBean(beanName);
     }
 }

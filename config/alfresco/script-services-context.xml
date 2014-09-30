@@ -113,12 +113,6 @@
         <property name="repositoryHelper">
            <ref bean="repositoryHelper"/>
         </property>
-        <property name="solrFacetHelper">
-           <ref bean="facet.solrFacetHelper"/>
-        </property>
-        <property name="facetLabelDisplayHandlerRegistry">
-           <ref bean="facet.facetLabelDisplayHandlerRegistry"/>
-        </property>
         <property name="storeUrl">
             <value>${spaces.store}</value>
         </property>

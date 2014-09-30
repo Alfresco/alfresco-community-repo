@@ -28,6 +28,8 @@ import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
+import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
@@ -493,5 +495,17 @@ public interface ServiceRegistry
     @NotAuditable
     WebDavService getWebDavService();
     
+    /**
+     * Get the Solr facet helper bean
+     * @return the Solr facet helper bean
+     */
+    @NotAuditable
+    SolrFacetHelper getSolrFacetHelper();
     
+    /**
+     * Get the facet label display handler registry bean
+     * @return the Facet label display handler registry bean
+     */
+    @NotAuditable
+    FacetLabelDisplayHandlerRegistry getFacetLabelDisplayHandlerRegistry();
 }

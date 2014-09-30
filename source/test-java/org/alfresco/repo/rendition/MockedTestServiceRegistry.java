@@ -29,6 +29,8 @@ import org.alfresco.repo.forms.FormService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
+import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
+import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.ActionService;
@@ -457,6 +459,20 @@ public class MockedTestServiceRegistry implements ServiceRegistry
 
     @Override
     public WebDavService getWebDavService()
+    {
+        // A mock response
+        return null;
+    }
+
+    @Override
+    public SolrFacetHelper getSolrFacetHelper()
+    {
+        // A mock response
+        return null;
+    }
+
+    @Override
+    public FacetLabelDisplayHandlerRegistry getFacetLabelDisplayHandlerRegistry()
     {
         // A mock response
         return null;

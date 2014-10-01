@@ -237,10 +237,7 @@ function main()
          }
 
          // Update the working copy content
-         updateNode.properties.content.write(content);
-         // Reset working copy mimetype and encoding
-         updateNode.properties.content.guessMimetype(filename);
-         updateNode.properties.content.guessEncoding();
+         updateNode.properties.content.write(content, false, true);
          // check it in again, with supplied version history note
          
          // Extract the metadata
@@ -288,11 +285,7 @@ function main()
             if (existingFile.hasAspect("cm:versionable") && overwrite)
             {
                // Upload component was configured to overwrite files if name clashes
-               existingFile.properties.content.write(content);
-
-               // Reapply mimetype as upload may have been via Flash - which always sends binary mimetype
-               existingFile.properties.content.guessMimetype(filename);
-               existingFile.properties.content.guessEncoding();
+               existingFile.properties.content.write(content, false, true);
 
                // Extract the metadata
                // (The overwrite policy controls which if any parts of

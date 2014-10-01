@@ -41,6 +41,7 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -352,11 +353,11 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         private long maxId = Long.MAX_VALUE;
         private long workCount = Long.MAX_VALUE;
         private long currentId = 0L;
-        private final long siteTypeQNameId;
+        private final Pair<Long, QName> siteTypeQNameId;
 
         private SiteWorkProvider()
         {
-            this.siteTypeQNameId = qnameDAO.getQName(SiteModel.TYPE_SITE).getFirst();
+            this.siteTypeQNameId = qnameDAO.getQName(SiteModel.TYPE_SITE);
         }
 
         @Override
@@ -390,12 +391,16 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         {
             // Record the site node IDs
             final List<Long> siteNodeIDs = new ArrayList<Long>(SITE_BATCH_MAX_QUERY_RANGE);
-
+            // ACE-2981
+            if (siteTypeQNameId == null)
+            {
+                return siteNodeIDs;
+            }
             // Keep querying until we have enough results to give back
             int minResults = SITE_BATCH_MAX_QUERY_RANGE / 2;
             while (currentId <= maxId && siteNodeIDs.size() < minResults)
             {
-                List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(siteTypeQNameId, currentId, currentId + SITE_BATCH_MAX_QUERY_RANGE);
+                List<Long> nodeIds = patchDAO.getNodesByTypeQNameId(siteTypeQNameId.getFirst(), currentId, currentId + SITE_BATCH_MAX_QUERY_RANGE);
                 siteNodeIDs.addAll(nodeIds);
                 // Increment the minimum ID
                 currentId += SITE_BATCH_MAX_QUERY_RANGE;

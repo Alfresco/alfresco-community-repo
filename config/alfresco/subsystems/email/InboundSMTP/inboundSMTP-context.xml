@@ -53,19 +53,6 @@
         </property>
     </bean>
 
-   
-	<bean class="org.springframework.remoting.rmi.RmiServiceExporter" parent="baseServiceExporter">
-        <property name="service">
-            <ref bean="emailService"/>
-        </property>
-        <property name="serviceInterface">
-            <value>org.alfresco.service.cmr.email.EmailService</value>
-        </property>
-        <property name="serviceName">
-            <value>EmailService</value>
-        </property>
-    </bean>
-
    <alias name="emailService" alias="EmailService"/>
 
 	<bean id="emailService" class="org.alfresco.email.server.EmailServiceImpl"

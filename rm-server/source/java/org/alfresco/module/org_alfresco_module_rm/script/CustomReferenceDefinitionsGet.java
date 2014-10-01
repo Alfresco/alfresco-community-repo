@@ -108,7 +108,7 @@ public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
 
             if (RelationshipType.BIDIRECTIONAL.equals(type))
             {
-                data.put(LABEL, displayName.getLabelText());
+                data.put(LABEL, displayName.getSourceText());
             }
             else if (RelationshipType.PARENTCHILD.equals(type))
             {

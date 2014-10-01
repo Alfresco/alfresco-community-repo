@@ -753,24 +753,27 @@
         </property>
     </bean>
 
-    <!-- Records Management Admin Service -->
+   <bean id="recordsManagementAdminBase" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminBase" abstract="true">
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="contentService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="dictionaryRepositoryBootstrap" ref="dictionaryRepositoryBootstrap"/>
+   </bean>
 
-    <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" init-method="init">
-        <property name="dictionaryService" ref="DictionaryService"/>
-        <property name="namespaceService" ref="NamespaceService"/>
-        <property name="nodeService" ref="NodeService"/>
-        <property name="policyComponent" ref="policyComponent"/>
-        <property name="contentService" ref="contentService"/>
-        <property name="dictionaryRepositoryBootstrap" ref="dictionaryRepositoryBootstrap"/>
-        <property name="customisableTypes">
-           <list>
-               <value>rma:recordCategory</value>
-              <value>rma:recordFolder</value>
-              <value>rma:record</value>
-              <value>rma:nonElectronicDocument</value>
-           </list>
-        </property>
-    </bean>
+   <!-- Records Management Admin Service -->
+
+   <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" parent="recordsManagementAdminBase">
+      <property name="relationshipService" ref="RelationshipService" />
+      <property name="customisableTypes">
+         <list>
+            <value>rma:recordCategory</value>
+            <value>rma:recordFolder</value>
+            <value>rma:record</value>
+            <value>rma:nonElectronicDocument</value>
+         </list>
+      </property>
+   </bean>
 
     <bean id="RecordsManagementAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
@@ -1526,10 +1529,8 @@
 
    <!--  Relationship Service  -->
 
-   <bean id="relationshipService" class="org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipServiceImpl">
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-      <property name="dictionaryService" ref="DictionaryService" />
-      <property name="namespacePrefixResolver" ref="namespaceService"/>
+   <bean id="relationshipService" class="org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipServiceImpl" init-method="init" parent="recordsManagementAdminBase">
+      <property name="policyComponent" ref="policyComponent"/>
    </bean>
 
    <bean id="RelationshipService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1566,7 +1567,7 @@
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipDefinitions=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipDefinition=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.createRelationshipDefinition=RM_ALLOW
-               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.updateReleationshipDefinition=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.updateRelationshipDefinition=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.removeRelationshipDefinition=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.existsRelationshipDefinition=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipsFrom=RM_ALLOW

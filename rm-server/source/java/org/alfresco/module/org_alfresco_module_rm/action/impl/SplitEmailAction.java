@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,6 +28,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -38,10 +41,12 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -75,25 +80,52 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     /** Logger */
     private static Log logger = LogFactory.getLog(SplitEmailAction.class);
 
-    private QName relationshipQName;
+    /** Relationship service */
+    private RelationshipService relationshipService;
+
+    /**
+     * Gets the relationship service instance
+     *
+     * @return The relationship service instance
+     */
+    protected RelationshipService getRelationshipService()
+    {
+        return this.relationshipService;
+    }
+
+    /**
+     * Sets the relationship service instance
+     *
+     * @param relationshipService The relationship service instance
+     */
+    public void setRelationshipService(RelationshipService relationshipService)
+    {
+        this.relationshipService = relationshipService;
+    }
+
+    /** Unique name of the relationship definition */
+    private String relationshipUniqueName;
 
     public void bootstrap()
     {
-        String compoundId = recordsManagementAdminService.getCompoundIdFor(REL_FROM, REL_TO);
-
-        Map<QName, AssociationDefinition> map = recordsManagementAdminService.getCustomReferenceDefinitions();
-        for (Map.Entry<QName, AssociationDefinition> entry : map.entrySet())
+        Set<RelationshipDefinition> relationshipDefinitions = getRelationshipService().getRelationshipDefinitions();
+        for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)
         {
-            if (compoundId.equals(entry.getValue().getTitle(dictionaryService)))
+            RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
+            String sourceText = displayName.getSourceText();
+            String targetText = displayName.getTargetText();
+
+            if (sourceText.equals(REL_FROM) && targetText.equals(REL_TO))
             {
-                relationshipQName = entry.getKey();
-                break;
+                relationshipUniqueName = relationshipDefinition.getUniqueName();
             }
         }
 
-        if (relationshipQName == null)
+        if (isBlank(relationshipUniqueName))
         {
-            relationshipQName = recordsManagementAdminService.addCustomChildAssocDefinition(REL_FROM, REL_TO);
+            RelationshipDisplayName displayName = new RelationshipDisplayName(REL_FROM, REL_TO);
+            RelationshipDefinition relationshipDefinition = getRelationshipService().createRelationshipDefinition(displayName);
+            relationshipUniqueName = relationshipDefinition.getUniqueName();
         }
     }
 
@@ -246,7 +278,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             public Void doWork()
             {
                 // add the relationship
-                recordsManagementAdminService.addCustomReference(parentRef, childRef, relationshipQName);
+                getRelationshipService().addRelationship(relationshipUniqueName, parentRef, childRef);
 
                 // add the IMAP attachment aspect
                 nodeService.createAssociation(

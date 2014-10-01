@@ -420,6 +420,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.ApplyDodCertModelFixesGet"
       parent="webscript">
       <property name="contentService" ref="ContentService" />
+      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
 
    <!-- REST impl for GET applyfixmob1573 -->
@@ -428,6 +429,7 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.ApplyFixMob1573Get"
       parent="webscript">
       <property name="contentService" ref="ContentService" />
+      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
 
    <!--  RM search web script -->

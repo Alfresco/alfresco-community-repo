@@ -42,6 +42,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
@@ -158,6 +159,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected IdentifierService identifierService;
     protected HoldService holdService;
     protected InplaceRecordService inplaceRecordService;
+    protected RelationshipService relationshipService;
 
     /** test data */
     protected String siteId;
@@ -394,6 +396,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         identifierService = (IdentifierService) applicationContext.getBean("recordsManagementIdentifierService");
         holdService = (HoldService) applicationContext.getBean("HoldService");
         inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
+        relationshipService = (RelationshipService) applicationContext.getBean("RelationshipService");
     }
 
     /**

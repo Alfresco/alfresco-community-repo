@@ -21,23 +21,36 @@ package org.alfresco.module.org_alfresco_module_rm.relationship;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeCreateReference;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRemoveReference;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnRemoveReference;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminBase;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.util.PoliciesUtil;
+import org.alfresco.repo.dictionary.M2Aspect;
+import org.alfresco.repo.dictionary.M2ClassAssociation;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.policy.ClassPolicyDelegate;
+import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.GUID;
 
 /**
  * The relationship service implementation
@@ -45,75 +58,47 @@ import org.alfresco.service.namespace.QName;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RelationshipServiceImpl implements RelationshipService
+public class RelationshipServiceImpl extends RecordsManagementAdminBase implements RelationshipService
 {
-    /** Records management admin service */
-    private RecordsManagementAdminService recordsManagementAdminService;
-
-    /** Dictionary service */
-    private DictionaryService dictionaryService;
-
-    /** Namespace prefix resolver */
-    private NamespacePrefixResolver namespacePrefixResolver;
+    /** Policy component */
+    private PolicyComponent policyComponent;
 
     /**
-     * Gets the records management admin service instance
+     * Gets the policy component instance
      *
-     * @return The records management admin service instance
+     * @return The policy component instance
      */
-    protected RecordsManagementAdminService getRecordsManagementAdminService()
+    private PolicyComponent getPolicyComponent()
     {
-        return this.recordsManagementAdminService;
+        return this.policyComponent;
     }
 
     /**
-     * Sets the records management admin service instance
+     * Sets the policy component instance
      *
-     * @param recordsManagementAdminService The records management admin service instance
+     * @param policyComponent The policy component instance
      */
-    public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
+    public void setPolicyComponent(PolicyComponent policyComponent)
     {
-        this.recordsManagementAdminService = recordsManagementAdminService;
+        this.policyComponent = policyComponent;
     }
 
-    /**
-     * Gets the dictionary service instance
-     *
-     * @return The dictionary service instance
-     */
-    protected DictionaryService getDictionaryService()
-    {
-        return this.dictionaryService;
-    }
+    /** Policy delegates */
+    private ClassPolicyDelegate<BeforeCreateReference> beforeCreateReferenceDelegate;
+    private ClassPolicyDelegate<OnCreateReference> onCreateReferenceDelegate;
+    private ClassPolicyDelegate<BeforeRemoveReference> beforeRemoveReferenceDelegate;
+    private ClassPolicyDelegate<OnRemoveReference> onRemoveReferenceDelegate;
 
     /**
-     * Sets the dictionary service instance
-     *
-     * @param dictionaryService The dictionary service instance
+     * Initialisation method
      */
-    public void setDictionaryService(DictionaryService dictionaryService)
+    public void init()
     {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * Gets the namespace prefix resolver instance
-     *
-     * @return The namespace prefix resolver instance
-     */
-    protected NamespacePrefixResolver getNamespacePrefixResolver()
-    {
-        return this.namespacePrefixResolver;
-    }
-
-    /**
-     * Sets the namespace prefix resolver instance
-     *
-     * @param namespacePrefixResolver The namespace prefix resolver instance
-     */
-    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
-    {
-        this.namespacePrefixResolver = namespacePrefixResolver;
+        // Register the various policies
+        beforeCreateReferenceDelegate = getPolicyComponent().registerClassPolicy(BeforeCreateReference.class);
+        onCreateReferenceDelegate = getPolicyComponent().registerClassPolicy(OnCreateReference.class);
+        beforeRemoveReferenceDelegate = getPolicyComponent().registerClassPolicy(BeforeRemoveReference.class);
+        onRemoveReferenceDelegate = getPolicyComponent().registerClassPolicy(OnRemoveReference.class);
     }
 
     /**
@@ -124,10 +109,10 @@ public class RelationshipServiceImpl implements RelationshipService
     {
         Set<RelationshipDefinition> relationshipDefinitions = new HashSet<RelationshipDefinition>();
 
-        Map<QName, AssociationDefinition> customReferenceDefinitions = getRecordsManagementAdminService().getCustomReferenceDefinitions();
-        for (Map.Entry<QName, AssociationDefinition> customReferenceDefinitionEntry : customReferenceDefinitions.entrySet())
+        Set<Entry<QName, AssociationDefinition>> associationsEntrySet = getCustomAssociations().entrySet();
+        for (Map.Entry<QName, AssociationDefinition> associationEntry : associationsEntrySet)
         {
-            AssociationDefinition associationDefinition = customReferenceDefinitionEntry.getValue();
+            AssociationDefinition associationDefinition = associationEntry.getValue();
             RelationshipDefinition relationshipDefinition = createRelationshipDefinition(associationDefinition);
             if (relationshipDefinition != null)
             {
@@ -148,10 +133,9 @@ public class RelationshipServiceImpl implements RelationshipService
 
         RelationshipDefinition relationshipDefinition = null;
 
-        QName associationDefinitionQName = getRecordsManagementAdminService().getQNameForClientId(uniqueName);
-        if (associationDefinitionQName != null)
+        AssociationDefinition associationDefinition = getAssociationDefinition(uniqueName);
+        if (associationDefinition != null)
         {
-            AssociationDefinition associationDefinition = getRecordsManagementAdminService().getCustomReferenceDefinitions().get(associationDefinitionQName);
             relationshipDefinition = createRelationshipDefinition(associationDefinition);
         }
 
@@ -166,23 +150,21 @@ public class RelationshipServiceImpl implements RelationshipService
     {
         mandatory("displayName", displayName);
 
+        String title;
         RelationshipType type = determineRelationshipTypeFromDisplayName(displayName);
-
-        QName relationshipDefinitionQName;
 
         switch (type)
         {
             case BIDIRECTIONAL:
 
-                String labelText = displayName.getLabelText();
-                relationshipDefinitionQName = getRecordsManagementAdminService().addCustomAssocDefinition(labelText);
+                title = displayName.getSourceText();
                 break;
 
             case PARENTCHILD:
 
                 String sourceText = displayName.getSourceText();
                 String targetText = displayName.getTargetText();
-                relationshipDefinitionQName = getRecordsManagementAdminService().addCustomChildAssocDefinition(sourceText, targetText);
+                title = composeAssociationDefinitionTitle(sourceText, targetText);
                 break;
 
             default:
@@ -194,50 +176,117 @@ public class RelationshipServiceImpl implements RelationshipService
                 throw new AlfrescoRuntimeException(sb.toString());
         }
 
-        String uniqueName = relationshipDefinitionQName.getLocalName();
+        // If this title is already taken...
+        if (existsTitle(title))
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Cannot create a relationship definition for the display name: '")
+                .append(displayName.toString())
+                .append("' as there is already a relationship definition with this display name.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
 
-        return new RelationshipDefinitionImpl(uniqueName, type, displayName);
+        // Defaults to RM_CUSTOM_URI
+        NodeRef modelRef = getCustomModelRef("");
+        M2Model deserializedModel = readCustomContentModel(modelRef);
+        String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(getNamespaceService());
+        M2Aspect customAssocsAspect = deserializedModel.getAspect(customAspectName);
+
+        if (customAssocsAspect == null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("The aspect: '")
+                .append(customAspectName)
+                .append("' is undefined.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        QName relationshipDefinitionQName = generateRelationshipDefinitionQNameFor(title);
+        String generatedShortQName = relationshipDefinitionQName.toPrefixString(getNamespaceService());
+
+        M2ClassAssociation customAssoc = customAssocsAspect.getAssociation(generatedShortQName);
+        if (customAssoc != null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("The association: '")
+                .append(customAssoc.getName())
+                .append("' already exists.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        M2ClassAssociation newAssoc;
+
+        switch (type)
+        {
+            case BIDIRECTIONAL:
+
+                newAssoc = customAssocsAspect.createAssociation(generatedShortQName);
+                break;
+
+            case PARENTCHILD:
+
+                newAssoc = customAssocsAspect.createChildAssociation(generatedShortQName);
+                break;
+
+            default:
+
+                StringBuilder sb = new StringBuilder();
+                sb.append("Unsupported relationship type: '")
+                    .append(type.toString())
+                    .append("'.");
+                throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        newAssoc.setSourceMandatory(false);
+        newAssoc.setTargetMandatory(false);
+
+        // MOB-1573
+        newAssoc.setSourceMany(true);
+        newAssoc.setTargetMany(true);
+
+        newAssoc.setTitle(title);
+        newAssoc.setTargetClassName(RecordsManagementModel.ASPECT_RECORD.toPrefixString(getNamespaceService()));
+        writeCustomContentModel(modelRef, deserializedModel);
+
+        return new RelationshipDefinitionImpl(relationshipDefinitionQName.getLocalName(), type, displayName);
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#updateReleationshipDefinition(java.lang.String)
      */
     @Override
-    public RelationshipDefinition updateReleationshipDefinition(String uniqueName, RelationshipDisplayName displayName)
+    public RelationshipDefinition updateRelationshipDefinition(String uniqueName, RelationshipDisplayName displayName)
     {
         mandatoryString("uniqueName", uniqueName);
 
-        QName associationDefinitionQName = getRecordsManagementAdminService().getQNameForClientId(uniqueName);
-        if (associationDefinitionQName == null)
+        RelationshipDefinition relationshipDefinition = getRelationshipDefinition(uniqueName);
+        if (relationshipDefinition == null)
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("The qualified name for '")
+            sb.append("The relationship definition for the unique name '")
                 .append(uniqueName)
                 .append("' was not found.");
             throw new AlfrescoRuntimeException(sb.toString());
         }
 
-        Map<QName, AssociationDefinition> customReferenceDefinitions = getRecordsManagementAdminService().getCustomReferenceDefinitions();
-        AssociationDefinition associationDefinition = customReferenceDefinitions.get(associationDefinitionQName);
-        RelationshipType type = getRelationshipType(associationDefinition);
-        QName updatedAssociationDefinitionQName;
+        String title;
+        RelationshipType type = relationshipDefinition.getType();
 
         switch (type)
         {
             case BIDIRECTIONAL:
 
-                String labelText = displayName.getLabelText();
+                title = displayName.getSourceText();
 
-                if (isBlank(labelText))
+                if (isBlank(title))
                 {
                     StringBuilder sb = new StringBuilder();
                     sb.append("Label text '")
-                        .append(labelText)
+                        .append(title)
                         .append(" cannot be blank.");
                     throw new AlfrescoRuntimeException(sb.toString());
                 }
 
-                updatedAssociationDefinitionQName = getRecordsManagementAdminService().updateCustomAssocDefinition(associationDefinitionQName, labelText);
                 break;
 
             case PARENTCHILD:
@@ -256,7 +305,8 @@ public class RelationshipServiceImpl implements RelationshipService
                     throw new AlfrescoRuntimeException(sb.toString());
                 }
 
-                updatedAssociationDefinitionQName = getRecordsManagementAdminService().updateCustomChildAssocDefinition(associationDefinitionQName, sourceText, targetText);
+                title = composeAssociationDefinitionTitle(sourceText, targetText);
+
                 break;
 
             default:
@@ -268,12 +318,22 @@ public class RelationshipServiceImpl implements RelationshipService
                 throw new AlfrescoRuntimeException(sb.toString());
         }
 
-        customReferenceDefinitions = getRecordsManagementAdminService().getCustomReferenceDefinitions();
-        AssociationDefinition updatedAssociationDefinition = customReferenceDefinitions.get(updatedAssociationDefinitionQName);
-        RelationshipDefinition updatedRelationshipDefinition = createRelationshipDefinition(updatedAssociationDefinition);
+        if (existsTitle(title))
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Cannot update the relationship definition as '")
+                .append(title)
+                .append("' already exists.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        QName associationDefinitionQName = getAssociationDefinitionName(uniqueName);
+        QName updatedAssociationDefinitionQName = persistUpdatedAssocTitle(associationDefinitionQName, title);
+        RelationshipDefinition updatedRelationshipDefinition = getRelationshipDefinition(updatedAssociationDefinitionQName.getLocalName());
+
         if (updatedRelationshipDefinition == null)
         {
-            throw new AlfrescoRuntimeException("The relationship definition was not updated successfully.");
+            throw new AlfrescoRuntimeException("The relationship definition could not be updated successfully.");
         }
 
         return updatedRelationshipDefinition;
@@ -287,8 +347,7 @@ public class RelationshipServiceImpl implements RelationshipService
     {
         mandatoryString("uniqueName", uniqueName);
 
-        // FIXME!!! There is no method on the backend for this. Must be implemented.
-        throw new UnsupportedOperationException("Not implemented yet.");
+        throw new UnsupportedOperationException("It is not possible to remove a relationship.");
     }
 
     /**
@@ -301,11 +360,10 @@ public class RelationshipServiceImpl implements RelationshipService
 
         boolean exists = false;
 
-        QName associationDefinitionQName = getRecordsManagementAdminService().getQNameForClientId(uniqueName);
-        if (associationDefinitionQName != null)
+        RelationshipDefinition relationshipDefinition = getRelationshipDefinition(uniqueName);
+        if (relationshipDefinition != null)
         {
-            Map<QName, AssociationDefinition> customReferenceDefinitions = getRecordsManagementAdminService().getCustomReferenceDefinitions();
-            exists = customReferenceDefinitions.containsKey(associationDefinitionQName);
+            exists = true;
         }
 
         return exists;
@@ -321,10 +379,10 @@ public class RelationshipServiceImpl implements RelationshipService
 
         Set<Relationship> relationships = new HashSet<Relationship>();
 
-        List<AssociationRef> customReferencesFrom = getRecordsManagementAdminService().getCustomReferencesFrom(nodeRef);
+        List<AssociationRef> customReferencesFrom = getNodeService().getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
         relationships.addAll(generateRelationshipFromAssociationRef(customReferencesFrom));
 
-        List<ChildAssociationRef> customChildReferences = getRecordsManagementAdminService().getCustomChildReferences(nodeRef);
+        List<ChildAssociationRef> customChildReferences = getNodeService().getChildAssocs(nodeRef);
         relationships.addAll(generateRelationshipFromParentChildAssociationRef(customChildReferences));
 
         return relationships;
@@ -340,10 +398,10 @@ public class RelationshipServiceImpl implements RelationshipService
 
         Set<Relationship> relationships = new HashSet<Relationship>();
 
-        List<AssociationRef> customReferencesTo = getRecordsManagementAdminService().getCustomReferencesTo(nodeRef);
+        List<AssociationRef> customReferencesTo = getNodeService().getSourceAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
         relationships.addAll(generateRelationshipFromAssociationRef(customReferencesTo));
 
-        List<ChildAssociationRef> customParentReferences = getRecordsManagementAdminService().getCustomParentReferences(nodeRef);
+        List<ChildAssociationRef> customParentReferences = getNodeService().getParentAssocs(nodeRef);
         relationships.addAll(generateRelationshipFromParentChildAssociationRef(customParentReferences));
 
         return relationships;
@@ -359,8 +417,50 @@ public class RelationshipServiceImpl implements RelationshipService
         mandatory("source", source);
         mandatory("target", target);
 
-        QName associationDefinitionQName = getRecordsManagementAdminService().getQNameForClientId(uniqueName);
-        getRecordsManagementAdminService().addCustomReference(source, target, associationDefinitionQName);
+        // Check that the association definition for the given unique name exists.
+        AssociationDefinition associationDefinition = getAssociationDefinition(uniqueName);
+        if (associationDefinition == null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("No association definition found for '").
+                append(uniqueName).
+                append("'.");
+            throw new IllegalArgumentException(sb.toString());
+        }
+
+        // Get the association definition name
+        QName associationDefinitionName = associationDefinition.getName();
+
+        // Check if an instance of this association already exists in the same direction
+        boolean associationAlreadyExists = associationExists(associationDefinition, source, target);
+
+        if (associationAlreadyExists)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Association '").
+                append(associationDefinitionName.getLocalName()).
+                append("' already exists from '").
+                append(source).
+                append("' to '").
+                append(target).
+                append("'.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        // Invoke before create reference policy
+        invokeBeforeCreateReference(source, target, associationDefinitionName);
+
+        if (associationDefinition.isChild())
+        {
+            getNodeService().addChild(source, target, associationDefinitionName, associationDefinitionName);
+        }
+        else
+        {
+            getNodeService().createAssociation(source, target, associationDefinitionName);
+        }
+
+        // Invoke on create reference policy
+        invokeOnCreateReference(source, target, associationDefinitionName);
     }
 
     /**
@@ -373,8 +473,49 @@ public class RelationshipServiceImpl implements RelationshipService
         mandatory("source", source);
         mandatory("target", target);
 
-        QName associationDefinitionQName = getRecordsManagementAdminService().getQNameForClientId(uniqueName);
-        getRecordsManagementAdminService().removeCustomReference(source, target, associationDefinitionQName);
+        // Check that the association definition for the given unique name exists.
+        AssociationDefinition associationDefinition = getAssociationDefinition(uniqueName);
+        if (associationDefinition == null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("No association definition found for '").
+                append(uniqueName).
+                append("'.");
+            throw new IllegalArgumentException(sb.toString());
+        }
+
+        // Get the association definition name
+        final QName associationDefinitionName = associationDefinition.getName();
+        final NodeRef targetNode = target;
+
+        invokeBeforeRemoveReference(source, targetNode, associationDefinitionName);
+
+        if (associationDefinition.isChild())
+        {
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork()
+                {
+                    List<ChildAssociationRef> children = getNodeService().getChildAssocs(targetNode);
+                    for (ChildAssociationRef chRef : children)
+                    {
+                        if (associationDefinitionName.equals(chRef.getTypeQName()) && chRef.getChildRef().equals(targetNode))
+                        {
+                            getNodeService().removeChildAssociation(chRef);
+                        }
+                    }
+
+                    return null;
+                }
+            });
+        }
+        else
+        {
+            getNodeService().removeAssociation(source, targetNode, associationDefinitionName);
+        }
+
+        invokeOnRemoveReference(source, targetNode, associationDefinitionName);
     }
 
     /**
@@ -443,18 +584,18 @@ public class RelationshipServiceImpl implements RelationshipService
     {
         String sourceText = null;
         String targetText = null;
-        String labelText = null;
 
         switch (type)
         {
             case BIDIRECTIONAL:
 
-                labelText = title;
+                sourceText = title;
+                targetText = title;
                 break;
 
             case PARENTCHILD:
 
-                String[] sourceAndTarget = getRecordsManagementAdminService().splitSourceTargetId(title);
+                String[] sourceAndTarget = splitAssociationDefinitionTitle(title);
                 sourceText = sourceAndTarget[0];
                 targetText = sourceAndTarget[1];
                 break;
@@ -468,7 +609,7 @@ public class RelationshipServiceImpl implements RelationshipService
                 throw new AlfrescoRuntimeException(sb.toString());
         }
 
-        return new RelationshipDisplayName(sourceText, targetText, labelText);
+        return new RelationshipDisplayName(sourceText, targetText);
     }
 
     /**
@@ -523,29 +664,255 @@ public class RelationshipServiceImpl implements RelationshipService
     {
         RelationshipType relationshipType;
 
-        String labelText = displayName.getLabelText();
         String sourceText = displayName.getSourceText();
         String targetText = displayName.getTargetText();
 
         String errorMsg = "Relationship type could not be determined from the display name. It is neither biderectional nor parent/child relationship";
 
-        if (isBlank(labelText))
+        if (isBlank(sourceText) || isBlank(targetText))
         {
-            if (isBlank(sourceText) || isBlank(targetText))
-            {
-                throw new AlfrescoRuntimeException(errorMsg);
-            }
-            relationshipType = RelationshipType.PARENTCHILD;
+            throw new AlfrescoRuntimeException(errorMsg);
+        }
+
+        if (sourceText.equals(targetText))
+        {
+            relationshipType = RelationshipType.BIDIRECTIONAL;
         }
         else
         {
-            if (isNotBlank(sourceText) || isNotBlank(targetText))
-            {
-                throw new AlfrescoRuntimeException(errorMsg);
-            }
-            relationshipType = RelationshipType.BIDIRECTIONAL;
+            relationshipType = RelationshipType.PARENTCHILD;
         }
 
         return relationshipType;
+    }
+
+    /**
+     * Invoke before create reference policy
+     *
+     * @param source The source node reference
+     * @param target The target node reference
+     * @param associationDefinitionName The association definition name
+     */
+    private void invokeBeforeCreateReference(NodeRef source, NodeRef target, QName associationDefinitionName)
+    {
+        // Get QNames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), source);
+        // Execute policy for node type and aspects
+        BeforeCreateReference policy = beforeCreateReferenceDelegate.get(qnames);
+        policy.beforeCreateReference(source, target, associationDefinitionName);
+    }
+
+    /**
+     * Invoke on create reference policy
+     *
+     * @param source The source node reference
+     * @param target The target node reference
+     * @param associationDefinitionName The association definition name
+     */
+    private void invokeOnCreateReference(NodeRef source, NodeRef target, QName associationDefinitionName)
+    {
+        // Get QNames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), source);
+        // Execute policy for node type and aspects
+        OnCreateReference policy = onCreateReferenceDelegate.get(qnames);
+        policy.onCreateReference(source, target, associationDefinitionName);
+    }
+
+    /**
+     * Invoke before remove reference policy
+     *
+     * @param source The source node reference
+     * @param target The target node reference
+     * @param associationDefinitionName The association definition name
+     */
+    private void invokeBeforeRemoveReference(NodeRef source, NodeRef target, QName associationDefinitionName)
+    {
+        // Get QNames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), source);
+        // Execute policy for node type and aspects
+        BeforeRemoveReference policy = beforeRemoveReferenceDelegate.get(qnames);
+        policy.beforeRemoveReference(source, target, associationDefinitionName);
+    }
+
+    /**
+     * Invoke on remove reference policy
+     *
+     * @param source The source node reference
+     * @param target The target node reference
+     * @param associationDefinitionName The association definition name
+     */
+    private void invokeOnRemoveReference(NodeRef source, NodeRef target, QName associationDefinitionName)
+    {
+        // Get QNames to invoke against
+        Set<QName> qnames = PoliciesUtil.getTypeAndAspectQNames(getNodeService(), source);
+        // Execute policy for node type and aspects
+        OnRemoveReference policy = onRemoveReferenceDelegate.get(qnames);
+        policy.onRemoveReference(source, target, associationDefinitionName);
+    }
+
+    /**
+     * Check if an instance of the association already exists from the given
+     * source node reference to the given target node reference
+     *
+     * @param associationDefinition The association definition
+     * @param source The source node reference
+     * @param target The target node reference
+     * @return <code>true</code> if an association already exists, <code>false</code> otherwise
+     */
+    private boolean associationExists(AssociationDefinition associationDefinition, NodeRef source, NodeRef target)
+    {
+        boolean associationAlreadyExists = false;
+
+        QName associationDefinitionName = associationDefinition.getName();
+        if (associationDefinition.isChild())
+        {
+            List<ChildAssociationRef> childAssocs = getNodeService().getChildAssocs(source, associationDefinitionName, associationDefinitionName);
+            for (ChildAssociationRef chAssRef : childAssocs)
+            {
+                if (chAssRef.getChildRef().equals(target))
+                {
+                    associationAlreadyExists = true;
+                }
+            }
+        }
+        else
+        {
+            List<AssociationRef> assocs = getNodeService().getTargetAssocs(source, associationDefinitionName);
+            for (AssociationRef assRef : assocs)
+            {
+                if (assRef.getTargetRef().equals(target))
+                {
+                    associationAlreadyExists = true;
+                }
+            }
+        }
+
+        return associationAlreadyExists;
+    }
+
+    /**
+     * Gets the association definition for the given unique name
+     *
+     * @param uniqueName The unique name
+     * @return The association definition for the given unique name if exists, <code>null</code> otherwise
+     */
+    private AssociationDefinition getAssociationDefinition(String uniqueName)
+    {
+        AssociationDefinition associationDefinition = null;
+
+        Set<Entry<QName, AssociationDefinition>> associationsEntrySet = getCustomAssociations().entrySet();
+        for (Map.Entry<QName, AssociationDefinition> associationEntry : associationsEntrySet)
+        {
+            String localName = associationEntry.getKey().getLocalName();
+            if (uniqueName.equals(localName))
+            {
+                associationDefinition = associationEntry.getValue();
+                break;
+            }
+        }
+
+        return associationDefinition;
+    }
+
+    /**
+     * Gets the qualified name of the association definition for the given unique name
+     *
+     * @param uniqueName The unique name
+     * @return The qualified name of the association definition for the given unique name
+     */
+    private QName getAssociationDefinitionName(String uniqueName)
+    {
+        AssociationDefinition associationDefinition = getAssociationDefinition(uniqueName);
+
+        if (associationDefinition == null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("The qualified name for '")
+                .append(uniqueName)
+                .append("' was not found.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        return associationDefinition.getName();
+    }
+
+    /**
+     * This method writes the specified String into the association's title property.
+     * For RM custom properties and references, Title is used to store the identifier.
+     *
+     * NOTE: Currently RMC custom associations only
+     * @param associationDefinitionQName Qualified name for the association definition
+     * @param newTitle The new title
+     * @return Qualified name for the association definition
+     */
+    private QName persistUpdatedAssocTitle(QName associationDefinitionQName, String newTitle)
+    {
+        mandatory("associationDefinitionQName", associationDefinitionQName);
+
+        AssociationDefinition assocDefn = getDictionaryService().getAssociation(associationDefinitionQName);
+        if (assocDefn == null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Cannot find the association definiton for '").
+                append(associationDefinitionQName.getLocalName()).
+                append("'.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        // defaults to RM_CUSTOM_URI
+        NodeRef modelRef = getCustomModelRef("");
+        M2Model deserializedModel = readCustomContentModel(modelRef);
+
+        String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(getNamespaceService());
+        M2Aspect customAssocsAspect = deserializedModel.getAspect(customAspectName);
+
+        for (M2ClassAssociation assoc : customAssocsAspect.getAssociations())
+        {
+            if (associationDefinitionQName.toPrefixString(getNamespaceService()).equals(assoc.getName()) && newTitle != null)
+            {
+                assoc.setTitle(newTitle);
+            }
+        }
+        writeCustomContentModel(modelRef, deserializedModel);
+
+        if (logger.isInfoEnabled())
+        {
+            logger.info("persistUpdatedAssocTitle: " + associationDefinitionQName + "=" + newTitle + " to aspect: " + customAspectName);
+        }
+
+        return associationDefinitionQName;
+    }
+
+    /**
+     * Generates a qualified name for the given relationship definition unique name
+     *
+     * @param uniqueName The unique name of the relationship definition
+     * @return The qualified name of relationship definition
+     */
+    private QName generateRelationshipDefinitionQNameFor(String uniqueName)
+    {
+        mandatoryString("uniqueName", uniqueName);
+
+        QName existingQName = null;
+
+        Set<QName> customAssociationsQNames = getCustomAssociations().keySet();
+        for (QName customAssociationsQName : customAssociationsQNames)
+        {
+            if (uniqueName.equals(customAssociationsQName.getLocalName()))
+            {
+                existingQName = customAssociationsQName;
+            }
+        }
+
+        if (existingQName != null)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Cannot create qualified name for given unique name '").
+                append(uniqueName).
+                append("' as it already exists.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
+
+        return QName.createQName(RM_CUSTOM_PREFIX, GUID.generate(), getNamespaceService());
     }
 }

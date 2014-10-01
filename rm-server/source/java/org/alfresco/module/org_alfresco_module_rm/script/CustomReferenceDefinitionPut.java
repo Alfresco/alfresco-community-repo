@@ -51,7 +51,7 @@ public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
         String uniqueName = getRequestParameterValue(req, REF_ID);
         JSONObject requestContent = getRequestContentAsJsonObject(req);
         RelationshipDisplayName displayName = createDisplayName(requestContent);
-        getRelationshipService().updateReleationshipDefinition(uniqueName, displayName);
+        getRelationshipService().updateRelationshipDefinition(uniqueName, displayName);
 
         Map<String, Object> model = new HashMap<String, Object>();
         String servicePath = req.getServicePath();

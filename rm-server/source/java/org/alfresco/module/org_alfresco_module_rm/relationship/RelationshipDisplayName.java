@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.relationship;
 
+import static org.alfresco.util.ParameterCheck.mandatoryString;
+
 /**
  * POJO representing the relationship display name
  *
@@ -26,55 +28,33 @@ package org.alfresco.module.org_alfresco_module_rm.relationship;
  */
 public class RelationshipDisplayName
 {
-    /** The label text for {@link RelationshipType#BIDIRECTIONAL} */
-    private String labelText;
-
-    /** The source text for {@link RelationshipType#PARENTCHILD} */
+    /** The source text of the relationship */
     private String sourceText;
 
-    /** The target text for {@link RelationshipType#PARENTCHILD} */
+    /** The target text of the relationship */
     private String targetText;
 
     /**
-     * Constructor for creating the relationship display name
+     * Constructor for creating the relationship display name.
+     * In case of a bidirectional relationship the source
+     * text and target text will be the same.
      *
-     * @param sourceText The source text of the relationship definition
-     * @param targetText The target text of the relationship definition
-     * @param labelText The label text of the relationship definition
+     * @param sourceText The source text of the relationship
+     * @param targetText The target text of the relationship
      */
-    public RelationshipDisplayName(String sourceText, String targetText, String labelText)
+    public RelationshipDisplayName(String sourceText, String targetText)
     {
-        // Parameters might be blank. No check required.
+        mandatoryString("sourceText", sourceText);
+        mandatoryString("targetText", targetText);
 
         setSourceText(sourceText);
         setTargetText(targetText);
-        setLabelText(labelText);
     }
 
     /**
-     * Gets the label text of {@link RelationshipType#BIDIRECTIONAL}
+     * Gets the source text of the relationship
      *
-     * @return The label text of {@link RelationshipType#BIDIRECTIONAL}
-     */
-    public String getLabelText()
-    {
-        return this.labelText;
-    }
-
-    /**
-     * Sets the label text of {@link RelationshipType#BIDIRECTIONAL}
-     *
-     * @param labelText The label text of {@link RelationshipType#BIDIRECTIONAL}
-     */
-    private void setLabelText(String labelText)
-    {
-        this.labelText = labelText;
-    }
-
-    /**
-     * Gets the source text of {@link RelationshipType#PARENTCHILD}
-     *
-     * @return The source text of {@link RelationshipType#PARENTCHILD}
+     * @return The source text of the relationship
      */
     public String getSourceText()
     {
@@ -82,9 +62,9 @@ public class RelationshipDisplayName
     }
 
     /**
-     * Sets the source text of {@link RelationshipType#PARENTCHILD}
+     * Sets the source text of the relationship
      *
-     * @param sourceText The source text of {@link RelationshipType#PARENTCHILD}
+     * @param sourceText The source text of the relationship
      */
     private void setSourceText(String sourceText)
     {
@@ -92,9 +72,9 @@ public class RelationshipDisplayName
     }
 
     /**
-     * Gets the target text of {@link RelationshipType#PARENTCHILD}
+     * Gets the target text of the relationship
      *
-     * @return The target text of {@link RelationshipType#PARENTCHILD}
+     * @return The target text of the relationship
      */
     public String getTargetText()
     {
@@ -102,12 +82,26 @@ public class RelationshipDisplayName
     }
 
     /**
-     * Sets the target text of {@link RelationshipType#PARENTCHILD}
+     * Sets the target text of the relationship
      *
-     * @param targetText The target text of {@link RelationshipType#PARENTCHILD}
+     * @param targetText The target text of the relationship
      */
     private void setTargetText(String targetText)
     {
         this.targetText = targetText;
+    }
+
+    /**
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("(")
+          .append("source=").append(sourceText)
+          .append(", target=").append(targetText)
+          .append(")");
+        return sb.toString();
     }
 }

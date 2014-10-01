@@ -678,6 +678,7 @@
    </bean>
 
    <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction">
+      <property name="RelationshipService" ref="RelationshipService"/>
    </bean>
 
    <!--  Create disposition schedule -->

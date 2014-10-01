@@ -143,7 +143,6 @@
       <property name="actionName" value="transferComplete"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="dispositionService" ref="dispositionService"/>
-      <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
       <property name="recordService" ref="recordService" />
       <property name="recordFolderService" ref="RecordFolderService"/>

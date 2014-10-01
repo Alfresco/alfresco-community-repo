@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.script;
 
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
@@ -72,9 +73,22 @@ public class CustomReferenceDefinitionBase extends AbstractRmWebScript
      */
     protected RelationshipDisplayName createDisplayName(JSONObject requestContent)
     {
-        String sourceText = getStringValueFromJSONObject(requestContent, SOURCE, false, false);
-        String targetText = getStringValueFromJSONObject(requestContent, TARGET, false, false);
+        String sourceText;
+        String targetText;
+
         String labelText = getStringValueFromJSONObject(requestContent, LABEL, false, false);
-        return new RelationshipDisplayName(sourceText, targetText, labelText);
+
+        if (isBlank(labelText))
+        {
+            sourceText = getStringValueFromJSONObject(requestContent, SOURCE);
+            targetText = getStringValueFromJSONObject(requestContent, TARGET);
+        }
+        else
+        {
+            sourceText = labelText;
+            targetText = labelText;
+        }
+
+        return new RelationshipDisplayName(sourceText, targetText);
     }
 }

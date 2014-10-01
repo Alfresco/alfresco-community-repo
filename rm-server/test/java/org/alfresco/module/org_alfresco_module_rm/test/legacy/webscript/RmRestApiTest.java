@@ -25,10 +25,9 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceType;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestActionParams;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -65,58 +64,10 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
     protected static final String APPLICATION_JSON = "application/json";
     protected static final String RMA_CUSTOM_PROPS_DEFINITIONS_URL = "/api/rma/admin/custompropertydefinitions";
     protected static final String RMA_CUSTOM_REFS_DEFINITIONS_URL = "/api/rma/admin/customreferencedefinitions";
-//    protected NamespaceService namespaceService;
-//    protected NodeService nodeService;
-//    protected ContentService contentService;
-//    protected DictionaryService dictionaryService;
-//    protected SearchService searchService;
-//    protected ImporterService importService;
-//    protected TransactionService transactionService;
-//    protected ServiceRegistry services;
-//    protected RecordsManagementActionService rmActionService;
-//    protected RecordsManagementAuditService rmAuditService;
-//    protected RecordsManagementAdminService rmAdminService;
-//    protected RetryingTransactionHelper transactionHelper;
-//    protected DispositionService dispositionService;
 
     private static final String BI_DI = "BiDi";
     private static final String CHILD_SRC = "childSrc";
     private static final String CHILD_TGT = "childTgt";
-
-//    @Override
-//    protected void setUp() throws Exception
-//    {
-//        setCustomContext("classpath:test-context.xml");
-//
-//        super.setUp();
-//        this.namespaceService = (NamespaceService) getServer().getApplicationContext().getBean("NamespaceService");
-//        this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
-//        this.contentService = (ContentService)getServer().getApplicationContext().getBean("ContentService");
-//        this.dictionaryService = (DictionaryService)getServer().getApplicationContext().getBean("DictionaryService");
-//        this.searchService = (SearchService)getServer().getApplicationContext().getBean("SearchService");
-//        this.importService = (ImporterService)getServer().getApplicationContext().getBean("ImporterService");
-//        this.transactionService = (TransactionService)getServer().getApplicationContext().getBean("TransactionService");
-//        this.services = (ServiceRegistry)getServer().getApplicationContext().getBean("ServiceRegistry");
-//        this.rmActionService = (RecordsManagementActionService)getServer().getApplicationContext().getBean("RecordsManagementActionService");
-//        this.rmAuditService = (RecordsManagementAuditService)getServer().getApplicationContext().getBean("RecordsManagementAuditService");
-//        this.rmAdminService = (RecordsManagementAdminService)getServer().getApplicationContext().getBean("RecordsManagementAdminService");
-//        transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");
-//        dispositionService = (DispositionService)getServer().getApplicationContext().getBean("DispositionService");
-//
-//        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-//
-//        // Bring the filePlan into the test database.
-//        //
-//        // This is quite a slow call, so if this class grew to have many test methods,
-//        // there would be a real benefit in using something like @BeforeClass for the line below.
-//        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-//        {
-//            public NodeRef execute() throws Throwable
-//            {
-//                return TestUtilities.loadFilePlanData(getServer().getApplicationContext());
-//            }
-//        });
-//    }
 
     /**
      * This test method ensures that a POST of an RM action to a non-existent node
@@ -263,7 +214,7 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
 
 		// 1. Child association.
         String jsonString = new JSONStringer().object()
-            .key("referenceType").value(CustomReferenceType.PARENT_CHILD)
+            .key("referenceType").value(RelationshipType.PARENTCHILD)
             .key("source").value(CHILD_SRC)
             .key("target").value(CHILD_TGT)
         .endObject()
@@ -287,7 +238,7 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
 
         // 2. Non-child or standard association.
         jsonString = new JSONStringer().object()
-            .key("referenceType").value(CustomReferenceType.BIDIRECTIONAL)
+            .key("referenceType").value(RelationshipType.BIDIRECTIONAL)
             .key("label").value(BI_DI)
         .endObject()
         .toString();
@@ -308,8 +259,7 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         result[1] = generatedBidiRefId;
 
         // Now assert that both have appeared in the data dictionary.
-        AspectDefinition customAssocsAspect =
-            dictionaryService.getAspect(QName.createQName(RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS, namespaceService));
+        AspectDefinition customAssocsAspect = dictionaryService.getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
         assertNotNull("Missing customAssocs aspect", customAssocsAspect);
 
         QName newRefQname = adminService.getQNameForClientId(generatedChildRefId);

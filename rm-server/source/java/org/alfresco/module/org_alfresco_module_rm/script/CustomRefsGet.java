@@ -181,7 +181,7 @@ public class CustomRefsGet extends AbstractRmWebScript
 
                 if (RelationshipType.BIDIRECTIONAL.equals(type))
                 {
-                    data.put(LABEL, displayName.getLabelText());
+                    data.put(LABEL, displayName.getSourceText());
                     data.put(SOURCE_REF, source.toString());
                     data.put(TARGET_REF, target.toString());
                 }

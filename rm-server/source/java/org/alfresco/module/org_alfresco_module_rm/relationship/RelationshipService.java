@@ -60,7 +60,7 @@ public interface RelationshipService
      * @param displayName The display name of the relationship definition
      * @return The updated relationship definition
      */
-    RelationshipDefinition updateReleationshipDefinition(String uniqueName, RelationshipDisplayName displayName);
+    RelationshipDefinition updateRelationshipDefinition(String uniqueName, RelationshipDisplayName displayName);
 
     /**
      * Removes a relationship definition

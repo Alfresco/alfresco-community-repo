@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.util.ISO9075;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -46,6 +47,8 @@ public class SiteTitleDisplayHandler extends AbstractFacetLabelDisplayHandler
     @Override
     public FacetLabel getDisplayLabel(String value)
     {
+        // Solr returns the site short name encoded
+        value = ISO9075.decode(value);
         SiteService siteService = serviceRegistry.getSiteService();
         SiteInfo siteInfo = siteService.getSite(value);
         String title = siteInfo != null ? siteInfo.getTitle() : value;

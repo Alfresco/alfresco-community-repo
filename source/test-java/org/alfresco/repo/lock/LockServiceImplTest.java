@@ -919,7 +919,7 @@ public class LockServiceImplTest extends BaseSpringTest
     }
     
     @SuppressWarnings("deprecation")
-	public void testUnlockNodeWithAdminUser()
+    public void testUnlockNodeWithAdminUserAndAllPermissionsUser()
     {
         for (Lifetime lt : new Lifetime[]{Lifetime.EPHEMERAL, Lifetime.PERSISTENT})
         {
@@ -955,6 +955,12 @@ public class LockServiceImplTest extends BaseSpringTest
             this.securedLockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
             this.securedLockService.unlock(testNode);
         
+            this.securedLockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
+            
+            // user who has ALL PERMISSIONS is able to unlock another's user lock
+            TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+            this.securedLockService.unlock(testNode);
+            
             this.nodeService.deleteNode(testNode);
         }
     }

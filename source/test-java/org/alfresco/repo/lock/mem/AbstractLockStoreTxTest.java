@@ -488,7 +488,7 @@ public abstract class AbstractLockStoreTxTest<T extends LockStore>
     
     
     @Test
-    public void testOnlyCurrentLockOwnerCanChangeInfo() throws NotSupportedException, SystemException
+    public void testNotOnlyCurrentLockOwnerCanChangeInfo() throws NotSupportedException, SystemException
     {
         final TransactionService txService = (TransactionService) ctx.getBean("TransactionService");
         UserTransaction txA = txService.getUserTransaction();
@@ -514,20 +514,13 @@ public abstract class AbstractLockStoreTxTest<T extends LockStore>
             // Check update
             assertEquals(lockState2, lockStore.get(nodeRef));
 
-            // Incorrect lock owner - this should fail.
+            // Incorrect lock owner - this shouldn't fail. See ACE-2181
             final LockState lockState3 = LockState.createWithOwner(lockState1, "dsmithers");
-            try
-            {
-                lockStore.set(nodeRef, lockState3);
-                fail("Exception should have been thrown, but was not.");
-            }
-            catch(UnableToAquireLockException e)
-            {
-                // Good
-            }
+
+            lockStore.set(nodeRef, lockState3);
             
-            // Check no update.
-            assertEquals(lockState2, lockStore.get(nodeRef));
+            // Check update.
+            assertEquals(lockState3, lockStore.get(nodeRef));
         }
         finally
         {
@@ -564,23 +557,16 @@ public abstract class AbstractLockStoreTxTest<T extends LockStore>
             // Updated, since lock had expired.
             assertEquals(lockState2, lockStore.get(nodeRef));
             
-            
-            // Incorrect lock owner - this should fail, current lock has not expired
+            // Incorrect lock owner - this shouldn't fail
+            // LockStore does not check for lock owning
             // and is owned by csmith.
             AuthenticationUtil.setFullyAuthenticatedUser("dsmithers");
             final LockState lockState3 = LockState.createWithOwner(lockState2, "dsmithers");
-            try
-            {
-                lockStore.set(nodeRef, lockState3);
-                fail("Exception should have been thrown, but was not.");
-            }
-            catch(UnableToAquireLockException e)
-            {
-                // Good
-            }
             
-            // Check no update.
-            assertEquals(lockState2, lockStore.get(nodeRef));
+            lockStore.set(nodeRef, lockState3);
+            
+            // Check update.
+            assertEquals(lockState3, lockStore.get(nodeRef));
         }
         finally
         {

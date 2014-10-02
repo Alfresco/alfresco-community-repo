@@ -1855,6 +1855,7 @@
     <bean id="webscript.org.alfresco.slingshot.download.get" class="org.alfresco.slingshot.web.scripts.SlingshotContentGet" parent="webscript.org.alfresco.content.content.get">
         <property name="siteService" ref="SiteService" />
         <property name="poster" ref="activitiesPoster" />
+        <property name="transactionHelper" ref="retryingTransactionHelper" />
     </bean>
 
     <!-- Node browser web script -->

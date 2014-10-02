@@ -7,6 +7,6 @@
    <url>/slingshot/node/{store_type}/{store_id}/{id}/content{property}/{filename}?a={attach?}</url>
    <format default="">argument</format>
    <authentication>user</authentication>
-   <transaction>required</transaction>
+   <transaction allow="readonly">required</transaction>
    <lifecycle>internal</lifecycle>
 </webscript>

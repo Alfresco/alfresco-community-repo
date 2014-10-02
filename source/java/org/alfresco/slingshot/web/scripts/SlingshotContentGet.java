@@ -24,6 +24,8 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.content.ContentGet;
 import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -48,6 +50,7 @@ public class SlingshotContentGet extends ContentGet
 {
     protected SiteService siteService;
     private ActivityPoster poster;
+    private RetryingTransactionHelper transactionHelper;
     
     public void setSiteService(SiteService siteService)
     {
@@ -59,9 +62,12 @@ public class SlingshotContentGet extends ContentGet
         this.poster = poster;
     }
     
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.web.scripts.content.ContentGet#execute(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.WebScriptResponse)
-     */
+    public void setTransactionHelper(RetryingTransactionHelper transactionHelper)
+    {
+        this.transactionHelper = transactionHelper;
+    }
+
+
     @Override
     public void execute(final WebScriptRequest req, final WebScriptResponse res) throws IOException
     {
@@ -87,9 +93,17 @@ public class SlingshotContentGet extends ContentGet
                     {
                         filename = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     }
-                    // post an activity - mirror the mechanism as if from the Share application
-                    poster.postFileFolderActivity(ActivityPoster.DOWNLOADED, null, null, 
-                                    site.getShortName(), null, nodeRef, filename, "documentlibrary", Client.asType(ClientType.webclient), null);
+                    final String strFilename = filename;
+                    transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+                        @Override
+                        public Void execute() throws Throwable
+                        {
+                            // post an activity - mirror the mechanism as if from the Share application
+                            poster.postFileFolderActivity(ActivityPoster.DOWNLOADED, null, null, 
+                                    site.getShortName(), null, nodeRef, strFilename, "documentlibrary", Client.asType(ClientType.webclient), null);
+                            return null;
+                        }
+                    }, false, true);
                 }
             }
         }

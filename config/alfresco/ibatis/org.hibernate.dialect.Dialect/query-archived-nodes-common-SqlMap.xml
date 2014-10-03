@@ -33,12 +33,7 @@
             assoc.parent_node_id = #{parentNodeId}
             and assoc.type_qname_id = #{assocTypeQNameId}
             <if test="filter != null">
-            <if test="filterIgnoreCase == true">
             and lower(prop.string_value) like lower(#{filter}) <include refid="alfresco.util.escape"/>
-            </if>
-            <if test="filterIgnoreCase == false">
-            and prop.string_value like #{filter} <include refid="alfresco.util.escape"/>
-            </if>            
             </if>
             <if test="sortOrderAscending == true">order by childNode.id ASC</if>
             <if test="sortOrderAscending == false">order by childNode.id DESC</if>

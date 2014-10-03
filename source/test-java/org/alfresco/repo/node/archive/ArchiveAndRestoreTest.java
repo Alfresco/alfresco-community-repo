@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -953,7 +953,7 @@ public class ArchiveAndRestoreTest extends TestCase
         ScriptPagingDetails paging = new ScriptPagingDetails(2, 0);
         // Create canned query
         ArchivedNodesCannedQueryBuilder queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
-                    this.archiveStoreRootNodeRef, paging).filterIgnoreCase(true).build();
+                    this.archiveStoreRootNodeRef, paging).build();
 
         // Query the DB
         PagingResults<NodeRef> result = runListArchivedNodesAsAdmin(queryBuilder);
@@ -972,7 +972,7 @@ public class ArchiveAndRestoreTest extends TestCase
         // Create canned query
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
                     this.archiveStoreRootNodeRef, paging)
-                    .filterIgnoreCase(true).build();
+                    .build();
 
         result = runListArchivedNodesAsAdmin(queryBuilder);
         assertEquals("USER_A deleted only 1 item.", 1, result.getPage().size());
@@ -984,7 +984,7 @@ public class ArchiveAndRestoreTest extends TestCase
 
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef, paging)
-                    .filterIgnoreCase(true).build();
+                    .build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         // Admin can retrieve all users' deleted nodes
@@ -1028,7 +1028,7 @@ public class ArchiveAndRestoreTest extends TestCase
         ScriptPagingDetails paging = new ScriptPagingDetails(3, 0);
 
         ArchivedNodesCannedQueryBuilder queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
-                    this.archiveStoreRootNodeRef, paging).filterIgnoreCase(true)
+                    this.archiveStoreRootNodeRef, paging)
                     // Sorting by Node_DBID. DESC. (same as sorting by archived date).
                     .sortOrderAscending(false)
                     .build();
@@ -1084,7 +1084,7 @@ public class ArchiveAndRestoreTest extends TestCase
         String filter = "picture*";
 
         ArchivedNodesCannedQueryBuilder queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
-                    this.archiveStoreRootNodeRef, paging).filterIgnoreCase(true).filter(filter)
+                    this.archiveStoreRootNodeRef, paging).filter(filter)
                     .sortOrderAscending(false).build();
 
         // Query the DB
@@ -1101,7 +1101,7 @@ public class ArchiveAndRestoreTest extends TestCase
         // Change the filter
         filter = "pictureT*.jpg";
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef,
-                    paging).filterIgnoreCase(true).filter(filter).sortOrderAscending(false).build();
+                    paging).filter(filter).sortOrderAscending(false).build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("There is only 1 node that matches 'pictureT*.jpg' pattern.", 1, result
@@ -1113,7 +1113,7 @@ public class ArchiveAndRestoreTest extends TestCase
         filter = "*Test.jpg";
 
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef,
-                    paging).filterIgnoreCase(true).filter(filter).sortOrderAscending(false).build();
+                    paging).filter(filter).sortOrderAscending(false).build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
         assertEquals("There are 2 nodes that match '*Test.jpg' pattern.", 2, result.getPage().size());
@@ -1126,9 +1126,9 @@ public class ArchiveAndRestoreTest extends TestCase
         filter = "*test.jpg";
 
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(this.archiveStoreRootNodeRef,
-                    paging).filterIgnoreCase(false).filter(filter).sortOrderAscending(false).build();
+                    paging).filter(filter).sortOrderAscending(false).build();
 
         result = nodeArchiveService.listArchivedNodes(queryBuilder);
-        assertEquals("There is No node that matches '*test.jpg' pattern.", 0, result.getPage().size());
+        assertEquals("There are 2 nodes that matches '*test.jpg' pattern.", 2, result.getPage().size());
     }
 }

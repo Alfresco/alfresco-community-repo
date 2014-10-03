@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -41,7 +41,6 @@ public class ArchivedNodesCannedQueryBuilder
         private final NodeRef archiveRootNodeRef;
         private final PagingRequest pagingRequest;
         private String filter;
-        private boolean filterIgnoreCase;
         private boolean sortOrderAscending;
 
         public Builder(NodeRef archiveRootNodeRef, PagingRequest pagingRequest)
@@ -53,12 +52,6 @@ public class ArchivedNodesCannedQueryBuilder
         public Builder filter(String filter)
         {
             this.filter = filter;
-            return this;
-        }
-
-        public Builder filterIgnoreCase(boolean filterIgnoreCase)
-        {
-            this.filterIgnoreCase = filterIgnoreCase;
             return this;
         }
 
@@ -85,7 +78,6 @@ public class ArchivedNodesCannedQueryBuilder
                     builder.pagingRequest.getQueryExecutionId());
         pr.setRequestTotalCountMax(builder.pagingRequest.getRequestTotalCountMax());
         this.pagingRequest = pr;
-        this.filterIgnoreCase = builder.filterIgnoreCase;
         this.filter = builder.filter;        
         this.sortOrderAscending = builder.sortOrderAscending;
     }

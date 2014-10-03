@@ -49,9 +49,13 @@
                 </setInstallerVariable>
                 <!-- Server Hardware -->
                 <!-- CPU Speed validation -->
-                <mathExpression text="int(ceil(${machine_cpu_speed}/1000))" variable="machine_cpu_speedGHz"/>
-                <mathExpression text="int(ceil(${minimum_cpu_speed}/1000))" variable="minimum_cpu_speedGHz"/>
-                <mathExpression text="int(ceil(${recommended_cpu_speed}/1000))" variable="recommended_cpu_speedGHz"/>
+                <foreach variables="cpu_convertion">
+                    <values>machine_cpu_speed minimum_cpu_speed recommended_cpu_speed</values>
+                    <actionList>
+                        <mathExpression text="double(${${cpu_convertion}})/1000" variable="${cpu_convertion}GHz"/>
+                        <setInstallerVariableFromRegEx name="${cpu_convertion}GHz" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${cpu_convertion}GHz}"/>
+                    </actionList>
+                </foreach>
                 <throwError>
                     <text>CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more).</text>
                     <ruleList>
@@ -87,9 +91,13 @@
                     </ruleList>
                 </setInstallerVariable>
                 <!-- RAM validation -->
-                <mathExpression text="int(ceil(${machine_total_memory}/1024))" variable="machine_total_memoryGB"/>
-                <mathExpression text="int(ceil(${minimum_ram}/1024))" variable="minimum_ramGB"/>
-                <mathExpression text="int(ceil(${recommended_ram}/1024))" variable="recommended_ramGB"/>
+                <foreach variables="memory_convertion">
+                    <values>machine_total_memory minimum_ram recommended_ram</values>
+                    <actionList>
+                        <mathExpression text="double(${${memory_convertion}})/1024" variable="${memory_convertion}GB"/>
+                        <setInstallerVariableFromRegEx name="${memory_convertion}GB" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${memory_convertion}GB}"/>
+                    </actionList>
+                </foreach>
                 <throwError>
                     <text>${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM (preferably at least ${recommended_ramGB} GB).</text>
                     <ruleList>
@@ -128,7 +136,7 @@
                         <!-- Validate CIFS ports -->
                         <setInstallerVariable name="cifsUdpPortList" value=""/>
                         <foreach variables="cifs_udp_port_to_check">
-                            <values>${netbd_port}, ${netbd_port_1}</values>
+                            <values>${netbd_port} ${netbd_port_1}</values>
                             <actionList>
                                 <setInstallerVariable name="cifsUdpPortList" value="${cifsUdpPortList} ${cifs_udp_port_to_check}">
                                     <ruleList>
@@ -145,7 +153,7 @@
                         </setInstallerVariable>
                         <setInstallerVariable name="cifsTcpPortList" value=""/>
                         <foreach variables="cifs_tcp_port_to_check">
-                            <values>${netbd_port}, ${netbd_port_2}, ${smb_port}</values>
+                            <values>${netbd_port} ${netbd_port_2} ${smb_port}</values>
                             <actionList>
                                 <setInstallerVariable name="cifsTcpPortList" value="${cifsTcpPortList} ${cifs_tcp_port_to_check}">
                                     <ruleList>

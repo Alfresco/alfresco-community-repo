@@ -20,6 +20,7 @@ package org.alfresco.repo.content.transform;
 
 import java.util.Properties;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
@@ -227,7 +228,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     @Override
     public TransformerStatistics getStatistics(ContentTransformer transformer, String sourceMimetype, String targetMimetype, boolean createNew)
     {
-        return statistics.getStatistics(transformer, sourceMimetype, targetMimetype, createNew);
+        return statistics.getStatistics(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype), createNew);
     }
     
     /**
@@ -237,7 +238,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     public TransformationOptionLimits getLimits(ContentTransformer transformer, String sourceMimetype,
             String targetMimetype, String use)
     {
-        return limits.getLimits(transformer, sourceMimetype, targetMimetype, use);
+        return limits.getLimits(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype), use);
     }
     
     /**
@@ -247,7 +248,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     public boolean isSupportedTransformation(ContentTransformer transformer, String sourceMimetype,
             String targetMimetype, TransformationOptions options)
     {
-        return supported.isSupportedTransformation(transformer, sourceMimetype, targetMimetype, options);
+        return supported.isSupportedTransformation(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype), options);
     }
 
     /**
@@ -258,7 +259,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     {
         try
         {
-            return priorities.getInt(transformer, sourceMimetype, targetMimetype);
+            return priorities.getInt(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype));
         }
         catch (NumberFormatException e1)
         {
@@ -281,7 +282,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     {
         try
         {
-            return thresholdCounts.getInt(transformer, sourceMimetype, targetMimetype);
+            return thresholdCounts.getInt(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype));
         }
         catch (NumberFormatException e1)
         {
@@ -303,7 +304,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     {
         try
         {
-            return errorTimes.getLong(transformer, sourceMimetype, targetMimetype);
+            return errorTimes.getLong(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype));
         }
         catch (NumberFormatException e1)
         {
@@ -326,7 +327,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     {
         try
         {
-            return initialAverageTimes.getLong(transformer, sourceMimetype, targetMimetype);
+            return initialAverageTimes.getLong(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype));
         }
         catch (NumberFormatException e1)
         {
@@ -349,7 +350,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     {
         try
         {
-            return initialCounts.getInt(transformer, sourceMimetype, targetMimetype);
+            return initialCounts.getInt(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype));
         }
         catch (NumberFormatException e1)
         {
@@ -362,5 +363,11 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
                 return 0;
             }
         }
+    }
+    
+    // Returns the main or standard mimetype. Needed were multiple mimetypes share the same extension or are unknown so binary. 
+    private String stdMimetype(String mimetype)
+    {
+    	return mimetypeService.getMimetype(mimetypeService.getExtension(mimetype));
     }
 }

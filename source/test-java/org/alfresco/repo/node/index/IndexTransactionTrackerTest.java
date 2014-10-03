@@ -75,7 +75,7 @@ public class IndexTransactionTrackerTest extends TestCase
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         searchService = (SearchService) ctx.getBean("searchService");
         nodeService = (NodeService) ctx.getBean("nodeService");
-        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         threadPoolExecutor = (ThreadPoolExecutor) luceneSubSystem.getApplicationContext().getBean("search.indexTrackerThreadPoolExecutor");
         fileFolderService = serviceRegistry.getFileFolderService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");

@@ -57,7 +57,7 @@ public class ALF947Test extends TestCase
     public void setUp() throws Exception
     {
         this.nodeService = (NodeService) ctx.getBean("dbNodeService");
-        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         this.indexerAndSearcher = (LuceneIndexerAndSearcher) luceneSubSystem.getApplicationContext().getBean("search.admLuceneIndexerAndSearcherFactory");
         this.authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         this.transactionService = (TransactionService) ctx.getBean("transactionComponent");

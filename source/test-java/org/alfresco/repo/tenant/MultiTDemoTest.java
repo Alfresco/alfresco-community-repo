@@ -201,7 +201,7 @@ public class MultiTDemoTest extends TestCase
         repositoryHelper = (Repository) ctx.getBean("repositoryHelper");
         siteService = (SiteService) ctx.getBean("SiteService");
         
-        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         indexRecoverer = (FullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.indexRecoveryComponent");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName()); // authenticate as super-admin
         
@@ -320,6 +320,7 @@ public class MultiTDemoTest extends TestCase
         // reindex
         Thread reindexThread = new Thread()
         {
+            @Override
             public void run()
             {
                 indexRecoverer.reindex();
@@ -1458,7 +1459,7 @@ public class MultiTDemoTest extends TestCase
                     NodeRef homeFolderNodeRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
                     assertFalse(homeFolderNodeRef.toString().contains(tenantDomain));
                     
-                    Map<QName, Serializable> props = (Map<QName, Serializable>)nodeService.getProperties(personNodeRef);
+                    Map<QName, Serializable> props = nodeService.getProperties(personNodeRef);
                     assertFalse(props.get(ContentModel.PROP_HOMEFOLDER).toString().contains(tenantDomain));
                     
                     // Test "store-identifier" property

@@ -78,7 +78,7 @@ public class MissingContentReindexComponentTest extends TestCase
         searchService = serviceRegistry.getSearchService();
         nodeService = serviceRegistry.getNodeService();
         
-        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         threadPoolExecutor = (ThreadPoolExecutor) luceneSubSystem.getApplicationContext().getBean("search.indexTrackerThreadPoolExecutor");
         fileFolderService = serviceRegistry.getFileFolderService();
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");

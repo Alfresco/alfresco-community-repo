@@ -60,7 +60,7 @@ public class FullIndexRecoveryComponentTest extends TestCase
     
     public void setUp() throws Exception
     {
-        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         indexRecoverer = (FullIndexRecoveryComponent) luceneSubSystem.getApplicationContext().getBean("search.indexRecoveryComponent");
         nodeService = (NodeService) ctx.getBean("nodeService");
         transactionService = (TransactionService) ctx.getBean("transactionComponent");

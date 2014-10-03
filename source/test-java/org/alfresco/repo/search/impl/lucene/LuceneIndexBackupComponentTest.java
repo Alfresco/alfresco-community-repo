@@ -54,7 +54,7 @@ public class LuceneIndexBackupComponentTest extends TestCase
         TransactionService transactionService = (TransactionService) ctx.getBean("transactionComponent");
         NodeService nodeService = (NodeService) ctx.getBean("NodeService");
         
-        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("lucene");
+        ChildApplicationContextFactory luceneSubSystem = (ChildApplicationContextFactory) ctx.getBean("buildonly");
         LuceneIndexerAndSearcher factory = (LuceneIndexerAndSearcher) luceneSubSystem.getApplicationContext().getBean("search.admLuceneIndexerAndSearcherFactory");
         
         this.authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");

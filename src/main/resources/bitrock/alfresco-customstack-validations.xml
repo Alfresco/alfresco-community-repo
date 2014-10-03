@@ -201,7 +201,7 @@
     </componentSelectionValidationActionList>
     <desktopShortcutList/>
     <parameterList>
-        <stringParameter name="recommended_cpu_speed" value="2500" ask="0"/>
+        <stringParameter name="recommended_cpu_speed" value="2000" ask="0"/>
         <stringParameter name="minimum_cpu_speed" value="1200" ask="0"/>
         <stringParameter name="minimum_core_count" value="2" ask="0"/>
         <stringParameter name="recommended_ram" value="4096" ask="0"/>

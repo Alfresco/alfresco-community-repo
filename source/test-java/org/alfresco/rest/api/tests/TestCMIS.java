@@ -100,10 +100,15 @@ import org.apache.chemistry.opencmis.client.api.Property;
 import org.apache.chemistry.opencmis.client.api.Relationship;
 import org.apache.chemistry.opencmis.client.api.Repository;
 import org.apache.chemistry.opencmis.client.api.SecondaryType;
+import org.apache.chemistry.opencmis.client.api.Session;
+import org.apache.chemistry.opencmis.client.api.SessionFactory;
 import org.apache.chemistry.opencmis.client.api.Tree;
 import org.apache.chemistry.opencmis.client.runtime.OperationContextImpl;
+import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
+import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
+import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
@@ -1919,5 +1924,41 @@ public class TestCMIS extends EnterpriseTestApi
         assertTrue(("'" + PropertyIds.IS_PRIVATE_WORKING_COPY + "' property has not been found!"), isPwcFound);
         assertNotNull(("'" + PropertyIds.IS_PRIVATE_WORKING_COPY + "' property value must not be null!"), isPwcValueTrue);
         assertTrue(("'" + PropertyIds.IS_PRIVATE_WORKING_COPY + "' property value must be equal to 'true'!"), isPwcValueTrue);
+    }
+    
+    @Test
+    public void testCanConnectCMISUsingDefaultTenant() throws Exception
+    {
+        testCanConnectCMISUsingDefaultTenantImpl(Binding.atom, CMIS_VERSION_11);
+        testCanConnectCMISUsingDefaultTenantImpl(Binding.atom, CMIS_VERSION_10);
+        testCanConnectCMISUsingDefaultTenantImpl(Binding.browser, CMIS_VERSION_11);
+    }
+    
+    private void testCanConnectCMISUsingDefaultTenantImpl(Binding binding, String cmisVersion)
+    {
+        String url = httpClient.getPublicApiCmisUrl(TenantUtil.DEFAULT_TENANT, binding, cmisVersion, null);
+        
+        Map<String, String> parameters = new HashMap<String, String>();
+        
+        // user credentials
+        parameters.put(SessionParameter.USER, "admin");
+        parameters.put(SessionParameter.PASSWORD, "admin");
+        
+        parameters.put(SessionParameter.ATOMPUB_URL, url);
+        parameters.put(SessionParameter.BROWSER_URL, url);
+        parameters.put(SessionParameter.BINDING_TYPE, binding.getOpenCmisBinding().value());
+        
+        SessionFactory factory = SessionFactoryImpl.newInstance();
+        // perform request : http://host:port/alfresco/api/-default-/public/cmis/versions/${cmisVersion}/${binding}
+        List<Repository> repositories = factory.getRepositories(parameters);
+        
+        assertTrue(repositories.size() > 0);
+        
+        parameters.put(SessionParameter.REPOSITORY_ID, TenantUtil.DEFAULT_TENANT);
+        Session session = factory.createSession(parameters);
+        // perform request : http://host:port/alfresco/api/-default-/public/cmis/versions/${cmisVersion}/${binding}/type?id=cmis:document
+        ObjectType objectType = session.getTypeDefinition("cmis:document");
+        
+        assertNotNull(objectType);
     }
 }

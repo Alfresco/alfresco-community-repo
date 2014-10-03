@@ -36,7 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
-import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;
 import org.alfresco.service.descriptor.Descriptor;
@@ -77,10 +76,6 @@ public class CMISHttpServletRequest implements HttpServletRequest
 		{
 			TenantWebScriptServletRequest servletReq = (TenantWebScriptServletRequest)baseReq;
 			this.networkId = servletReq.getTenant();
-			if(TenantUtil.DEFAULT_TENANT.equals(this.networkId) || TenantUtil.SYSTEM_TENANT.equals(this.networkId))
-			{
-				this.networkId = TenantService.DEFAULT_DOMAIN;
-			}
 		}
 
 		Match match = req.getServiceMatch();
@@ -438,7 +433,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
         StringBuilder queryString = new StringBuilder();
         String reqQueryString = httpReq.getQueryString();
 
-        if(networkId != null)
+        if(networkId != null && networkId.length() > 0)
         {
             if (reqQueryString == null)
             {
@@ -455,7 +450,7 @@ public class CMISHttpServletRequest implements HttpServletRequest
         }
         else
         {
-            return null;
+            return reqQueryString;
         }
 	}
 

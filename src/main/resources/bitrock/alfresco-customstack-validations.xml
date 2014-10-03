@@ -205,7 +205,7 @@
         <stringParameter name="minimum_cpu_speed" value="1200" ask="0"/>
         <stringParameter name="minimum_core_count" value="2" ask="0"/>
         <stringParameter name="recommended_ram" value="4096" ask="0"/>
-        <stringParameter name="minimum_ram" value="512" ask="0"/>
+        <stringParameter name="minimum_ram" value="2048" ask="0"/>
         <stringParameter name="minimum_file_descriptors" value="4096" ask="0"/>
         <parameterGroup>
             <name>netbd_ports</name>

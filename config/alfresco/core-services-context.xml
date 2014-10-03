@@ -1075,8 +1075,7 @@
         </property>
         <property name="instancePath">
             <list>
-                <value>managed</value>
-                <value>lucene</value>
+                <value>hidden</value>
             </list>
         </property>
     </bean>

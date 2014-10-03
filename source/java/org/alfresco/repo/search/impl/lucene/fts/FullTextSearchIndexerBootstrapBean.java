@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 public class FullTextSearchIndexerBootstrapBean extends AbstractLifecycleBean
 {
@@ -38,6 +39,10 @@ public class FullTextSearchIndexerBootstrapBean extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+        // Internationalizes the message
+        String errorMsg = I18NUtil.getMessage("system.err.lucene_not_supported");
+        log.error(errorMsg);
+
         List<StoreRef> storeRefs = nodeService.getStores();
         for (StoreRef storeRef : storeRefs)
         {

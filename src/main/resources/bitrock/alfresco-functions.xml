@@ -325,6 +325,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                     <compareText text="${jdbcdriver}" value="com.ibm.db2.jcc.DB2Driver"/>
                 </ruleList>
                 </setInstallerVariable>
+                <globalVariables names="alfresco_database_validate_query" />
             </actionList>
         </actionDefinition>
         <actionDefinition name="alfrescoAutodetectJava">

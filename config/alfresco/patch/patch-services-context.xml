@@ -3380,8 +3380,8 @@
         <property name="id"><value>patch.db-V5.0-ContentUrlEncryptionTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>8003</value></property>
-        <property name="targetSchema"><value>8004</value></property>
+        <property name="fixesToSchema"><value>8006</value></property>
+        <property name="targetSchema"><value>8007</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentUrlEncryptionTables.sql</value>
         </property>

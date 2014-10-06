@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.LogTee;
 import org.alfresco.util.TempFileProvider;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ResourceUtils;
@@ -1381,21 +1382,23 @@ public class TransformerDebug
      * @return Returns a test resource loaded from the classpath or <tt>null</tt> if
      *      no resource could be found.
      */
-    private File loadQuickTestFile(String extension)
+    private URL loadQuickTestFile(String extension)
     {
-        try
+        final URL result;
+        
+        URL url = this.getClass().getClassLoader().getResource("quick/quick." + extension);
+        if (url == null)
         {
-            URL url = this.getClass().getClassLoader().getResource("quick/quick." + extension);
-            if (url == null)
-            {
-                return null;
-            }
-            return ResourceUtils.getFile(url);
+            result = null;
         }
-        catch (IOException e)
+        else
         {
-            return null;
+            // Note that this URL may point to a file on the filesystem or to an entry in a jar file.
+            // The handling should be the same either way.
+            result = url;
         }
+        
+        return result;
     }
 
     @AlfrescoPublicApi
@@ -1407,12 +1410,28 @@ public class TransformerDebug
             
             String targetMimetype = getMimetype(targetExtension, false);
             String sourceMimetype = getMimetype(sourceExtension, true);
-            File sourceFile = loadQuickTestFile(sourceExtension);
-            if (sourceFile == null)
+            URL sourceURL = loadQuickTestFile(sourceExtension);
+            if (sourceURL == null)
             {
                 throw new IllegalArgumentException("There is no test file with a "+sourceExtension+" extension.");
             }
-
+            
+            // This URL may point to a file on the filesystem or to an entry in a jar.
+            // To use the transform method below, we need the content to be accessible from a ContentReader.
+            // This is possible for a File but not a (non-file) URL.
+            //
+            // Therefore, we'll always copy the URL content to a temporary local file.
+            final File sourceFile = TempFileProvider.createTempFile(TransformerDebug.class.getSimpleName() + "-tmp-", "");
+            
+            try   { FileUtils.copyURLToFile(sourceURL, sourceFile); }
+            catch (IOException shouldNeverHappen)
+            {
+                // The sourceURL should always be readable as we're reading data that Alfresco is distributing.
+                // But just in case...
+                throw new IllegalArgumentException("Cannot read content of test file with a " +
+                                                   sourceExtension + " extension.", shouldNeverHappen);
+            }
+            
             ContentReader reader = new FileContentReader(sourceFile);
             reader.setMimetype(sourceMimetype);
             File tempFile = TempFileProvider.createTempFile(

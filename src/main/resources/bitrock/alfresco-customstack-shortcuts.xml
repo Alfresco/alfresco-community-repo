@@ -12,12 +12,6 @@
 	    <windowsIcon></windowsIcon>
 	</startMenuLinkShortcut>
         <startMenuLinkShortcut>
-            <comment>Alfresco Explorer</comment>
-            <name>Alfresco Explorer</name>
-            <url>http://${application_server_domain}:${application_server_port}/alfresco</url>
-            <windowsIcon/>
-        </startMenuLinkShortcut>
-        <startMenuLinkShortcut>
             <comment>Alfresco Share</comment>
             <name>Alfresco Share</name>
             <url>http://${application_server_domain}:${application_server_port}/share</url>

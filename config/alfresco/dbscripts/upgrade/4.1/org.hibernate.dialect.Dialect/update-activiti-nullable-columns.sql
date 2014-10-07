@@ -15,28 +15,28 @@
 -- (feed_user_id IS NULL AND '' IS NULL) is Oracle specific part
 
 --FOREACH alf_activity_feed.id system.upgrade.alf_activity_feed.batchsize
-UPDATE alf_activity_feed af
+UPDATE alf_activity_feed
    SET feed_user_id = '@@NULL@@'
    WHERE
-      ((feed_user_id IS NULL AND '' IS NULL) OR feed_user_id = '') AND af.id >= ${LOWERBOUND} AND af.id <= ${UPPERBOUND};
+      ((feed_user_id IS NULL AND '' IS NULL) OR feed_user_id = '') AND id >= ${LOWERBOUND} AND id <= ${UPPERBOUND};
 
 --FOREACH alf_activity_feed.id system.upgrade.alf_activity_feed.batchsize
-UPDATE alf_activity_feed af
+UPDATE alf_activity_feed
    SET site_network = '@@NULL@@'
    WHERE
-      ((site_network IS NULL AND '' IS NULL) OR site_network = '') AND af.id >= ${LOWERBOUND} AND af.id <= ${UPPERBOUND};
+      ((site_network IS NULL AND '' IS NULL) OR site_network = '') AND id >= ${LOWERBOUND} AND id <= ${UPPERBOUND};
 
 --FOREACH alf_activity_feed_control.id system.upgrade.alf_activity_feed_control.batchsize
-UPDATE alf_activity_feed_control afc
+UPDATE alf_activity_feed_control
    SET feed_user_id = '@@NULL@@'
    WHERE
-      ((feed_user_id IS NULL AND '' IS NULL) OR feed_user_id = '') AND afc.id >= ${LOWERBOUND} AND afc.id <= ${UPPERBOUND};
+      ((feed_user_id IS NULL AND '' IS NULL) OR feed_user_id = '') AND id >= ${LOWERBOUND} AND id <= ${UPPERBOUND};
 
 --FOREACH alf_activity_feed_control.id system.upgrade.alf_activity_feed_control.batchsize
-UPDATE alf_activity_feed_control afc
+UPDATE alf_activity_feed_control
    SET site_network = '@@NULL@@'
    WHERE
-      ((site_network IS NULL AND '' IS NULL) OR site_network = '') AND afc.id >= ${LOWERBOUND} AND afc.id <= ${UPPERBOUND};
+      ((site_network IS NULL AND '' IS NULL) OR site_network = '') AND id >= ${LOWERBOUND} AND id <= ${UPPERBOUND};
 
 DELETE FROM alf_applied_patch WHERE id = 'patch.db-V4.1-update-activiti-nullable-columns';
 INSERT INTO alf_applied_patch

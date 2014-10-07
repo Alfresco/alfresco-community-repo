@@ -1845,8 +1845,7 @@ public class TestCMIS extends EnterpriseTestApi
 		{ 
 			System.out.println(mandatoryAspect); 
 		}
-		assertEquals(1, mandatoryAspects.size());
-		assertEquals("P:cm:generalclassifiable", mandatoryAspects.get(0));
+		assertTrue("The aspects should have P:cm:generalclassifiable", mandatoryAspects.contains("P:cm:generalclassifiable"));
     }
 
     @Test

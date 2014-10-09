@@ -119,17 +119,17 @@ public class SolrFacetConfigTest
         assertTrue(Boolean.valueOf(customValue));
 
         // loaded from /facets/extension/facets-config-custom-sample.properties
-        SolrFacetProperties descFP = defaultProps.get("test_filter_description");
-        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}description", descFP.getFacetQName().toString());
-        assertEquals("faceted-search.facet-menu.facet.description", descFP.getDisplayName());
-        assertEquals("alfresco/search/FacetFilters", descFP.getDisplayControl());
-        assertEquals(3, descFP.getMaxFilters());
-        assertEquals(1, descFP.getHitThreshold());
-        assertEquals(2, descFP.getMinFilterValueLength());
-        assertEquals("DESCENDING", descFP.getSortBy());
-        assertEquals("SCOPED_SITES", descFP.getScope());
-        assertEquals(0, descFP.getScopedSites().size());
-        assertEquals(true, descFP.isEnabled());
+        SolrFacetProperties mimeTypeFP = defaultProps.get("test_filter_mimetype");
+        assertEquals("Incorrect QNAME", "{http://www.alfresco.org/model/content/1.0}content.mimetype", mimeTypeFP.getFacetQName().toString());
+        assertEquals("faceted-search.facet-menu.facet.formats", mimeTypeFP.getDisplayName());
+        assertEquals("alfresco/search/FacetFilters", mimeTypeFP.getDisplayControl());
+        assertEquals(5, mimeTypeFP.getMaxFilters());
+        assertEquals(1, mimeTypeFP.getHitThreshold());
+        assertEquals(4, mimeTypeFP.getMinFilterValueLength());
+        assertEquals("DESCENDING", mimeTypeFP.getSortBy());
+        assertEquals("ALL", mimeTypeFP.getScope());
+        assertEquals(0, mimeTypeFP.getScopedSites().size());
+        assertEquals(true, mimeTypeFP.isEnabled());
 
         // See if the overrides worked
         SolrFacetProperties creatorFP = defaultProps.get("test_filter_creator");

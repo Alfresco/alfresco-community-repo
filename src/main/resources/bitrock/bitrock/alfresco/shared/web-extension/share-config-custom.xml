@@ -146,7 +146,6 @@
             <aspect name="emailserver:aliasable" />
             <aspect name="cm:taggable" />
             <aspect name="app:inlineeditable" />
-            <aspect name="gd:googleEditable" />
             <aspect name="cm:geographic" />
             <aspect name="exif:exif" />
             <aspect name="audio:audio" />

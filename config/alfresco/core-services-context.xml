@@ -694,6 +694,7 @@
                 <value>alfresco/model/forumModel.xml</value>
                 <value>alfresco/model/imapModel.xml</value>
                 <value>alfresco/model/transferModel.xml</value>
+                <value>alfresco/model/solrFacetModel.xml</value>
 
                 <!-- Content models -->
                 <value>alfresco/model/applicationModel.xml</value>

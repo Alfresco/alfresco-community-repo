@@ -2,13 +2,6 @@
 <!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
 
 <beans>
-   <bean parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
-      <property name="models">
-         <list>
-            <value>alfresco/model/solrFacetModel.xml</value>
-         </list>
-      </property>
-   </bean>
 
    <bean id="solrFacetRawProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
       <property name="locations">

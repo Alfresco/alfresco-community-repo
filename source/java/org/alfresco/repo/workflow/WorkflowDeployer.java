@@ -452,6 +452,35 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         }
     }
     
+    public int undeploy(List<String> workflowNames)
+    {
+        int undeployed = 0;
+        for(String workflowName : workflowNames)
+        {
+            // Undeploy the workflow definition - all versions in JBPM
+            List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(workflowName);
+            if(defs.size() > 0)
+            {
+                undeployed++;
+            }
+            for (WorkflowDefinition def: defs)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Undeploying workflow '" + workflowName + "' ...");
+                }
+
+                workflowService.undeployDefinition(def.getId());
+
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("... undeployed '" + def.getId() + "' v" + def.getVersion());
+                }
+            }
+        }
+        return undeployed;
+    }
+    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {

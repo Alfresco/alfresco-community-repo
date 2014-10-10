@@ -3386,4 +3386,20 @@
             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentUrlEncryptionTables.sql</value>
         </property>
     </bean>
+    
+    <bean id="patch.eol-wcmwf" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
+        <property name="id"><value>patch.eol-wcmwf</value></property>
+        <property name="description"><value>patch.eol-wcmwf.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>8007</value></property>
+        <property name="targetSchema"><value>8008</value></property>
+        <property name="undeployWorkflowNames">
+            <list>
+                <value>jbpm$wcmwf:submit</value>
+                <value>jbpm$wcmwf:submitdirect</value>
+                <value>jbpm$wcmwf:changerequest</value>
+            </list>
+        </property>
+    </bean>
+
 </beans>

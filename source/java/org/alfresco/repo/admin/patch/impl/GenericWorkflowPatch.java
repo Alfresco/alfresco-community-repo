@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.workflow.WorkflowDeployer;
+import org.alfresco.service.cmr.admin.PatchException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -36,9 +37,12 @@ import org.springframework.context.ApplicationContextAware;
 public class GenericWorkflowPatch extends AbstractPatch implements ApplicationContextAware
 {
     private static final String MSG_DEPLOYED = "patch.genericWorkflow.result.deployed";
+    private static final String MSG_UNDEPLOYED = "patch.genericWorkflow.result.undeployed";
+    private static final String ERR_PROPERTY_REQUIRED = "patch.genericWorkflow.property_required";
     
     private ApplicationContext applicationContext;
     private List<Properties> workflowDefinitions;
+    private List<String> undeployWorkflowNames;
 
     
     /* (non-Javadoc)
@@ -59,11 +63,24 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
     {
         this.workflowDefinitions = workflowDefinitions;
     }
+    
+    /**
+     * Sets the Workflow Names to be undeployed
+     * 
+     * @param workflowDefinitions
+     */
+    public void setUndeployWorkflowNames(List<String> undeployWorkflowNames)
+    {
+        this.undeployWorkflowNames = undeployWorkflowNames;
+    }
 
     @Override
     protected void checkProperties()
     {
-        checkPropertyNotNull(workflowDefinitions, "workflowDefinitions");
+        if ( (workflowDefinitions == null) && (undeployWorkflowNames == null) )
+        {
+            throw new PatchException(ERR_PROPERTY_REQUIRED, "workflowDefinitions", "undeployWorkflowNames", this);
+        }
         super.checkProperties();
     }
     
@@ -72,15 +89,37 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
     {
         WorkflowDeployer deployer = (WorkflowDeployer)applicationContext.getBean("workflowPatchDeployer");
         
-        for (Properties props : workflowDefinitions)
+        if(workflowDefinitions != null)
         {
-            props.put(WorkflowDeployer.REDEPLOY, "true");
+            for (Properties props : workflowDefinitions)
+            {
+                props.put(WorkflowDeployer.REDEPLOY, "true");
+            }
+            deployer.setWorkflowDefinitions(workflowDefinitions);
+            deployer.init();
         }
-        deployer.setWorkflowDefinitions(workflowDefinitions);
-        deployer.init();
+        
+        int undeployed = 0;
+        if(undeployWorkflowNames != null)
+        {
+            undeployed = deployer.undeploy(undeployWorkflowNames);
+        }
         
         // done
-        return I18NUtil.getMessage(MSG_DEPLOYED, workflowDefinitions.size());
+        StringBuilder msg = new StringBuilder();
+        if(workflowDefinitions != null)
+        {
+            msg.append(I18NUtil.getMessage(MSG_DEPLOYED, workflowDefinitions.size()));
+        }
+        if(undeployWorkflowNames != null)
+        {
+            if(msg.length() > 0)
+            {
+                msg.append(' ');
+            }
+            msg.append(I18NUtil.getMessage(MSG_UNDEPLOYED, undeployed));
+        }
+        return msg.toString();
     }
 
 }

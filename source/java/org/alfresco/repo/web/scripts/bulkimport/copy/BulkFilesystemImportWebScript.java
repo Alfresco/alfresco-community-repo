@@ -162,6 +162,17 @@ public class BulkFilesystemImportWebScript extends AbstractBulkFileSystemImportW
 
                 bulkImporter.asyncBulkImport(bulkImportParameters, nodeImporter);
 
+                // ACE-3047 fix, since bulk import is started asynchronously there is a chance that client 
+                // will get into the status page before import is actually started.
+                // In this case wrong information (for previous import) will be displayed.
+                // So lets ensure that import started before redirecting client to status page.
+                int i = 0;
+                while (!bulkImporter.getStatus().inProgress() && i < 10)
+                {
+                	Thread.sleep(100);
+                	i++;
+                }
+                
                 // redirect to the status Web Script
                 status.setCode(Status.STATUS_MOVED_TEMPORARILY);
                 status.setRedirect(true);

@@ -37,6 +37,11 @@
             <arg value="xf" />
             <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-win64.tgz" />
         </exec>
+        <!-- Delete ROOT folder in Tomcat -->
+        <delete dir="${binaries.linux}/apache-tomcat/webapps/ROOT"/>
+        <delete dir="${binaries.osx}/apache-tomcat/webapps/ROOT"/>
+        <delete dir="${binaries.win32}/apache-tomcat/webapps/ROOT"/>
+        <delete dir="${binaries.win64}/apache-tomcat/webapps/ROOT"/>
 
         <!-- PostgreSQL -->
         <echo>Extracting PostgreSQL...</echo>

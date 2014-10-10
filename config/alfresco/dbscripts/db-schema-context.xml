@@ -55,7 +55,6 @@
         </property>
         <property name="postUpdateScriptPatches">
             <list>
-                <ref bean="patch.db-V3.1-Allow-IPv6" />
                 <ref bean="patch.db-V3.3-Remove-VersionCount" />
                 <ref bean="patch.db-V3.3-Fix-Repo-Seqs" />
                 <ref bean="patch.db-V3.3-Node-Prop-Serializable" />
@@ -89,7 +88,6 @@
         <property name="schemaBootstrap" ref="schemaBootstrap" />
         <property name="preUpdateScriptPatches">
             <list>
-                <ref bean="patch.db-V3.0-ActivityTables" />
             </list>
         </property>
         <property name="updateActivitiScriptPatches">

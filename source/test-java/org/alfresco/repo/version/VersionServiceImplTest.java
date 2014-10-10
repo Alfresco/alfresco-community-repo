@@ -426,8 +426,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         versionService.setPolicyComponent(policyComponent);
         versionService.setPolicyBehaviourFilter(policyBehaviourFilter);
         versionService.setPermissionService(permissionService);
-        versionService.setOnlyUseDeprecatedV1(false);
-        versionService.setVersionMigrator(versionMigrator);
         versionService.setVersionComparatorClass(versionComparatorClass);
         versionService.initialise();
         setVersionService(versionService);
@@ -2470,10 +2468,6 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         final AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         
         authenticationComponent.setSystemUserAsCurrentUser();
-        
-        // TEMP - for migration testing - force V1 store (override repository property)  
-        final Version2ServiceImpl version2ServiceImpl = (Version2ServiceImpl)ctx.getBean("versionService");
-        version2ServiceImpl.setOnlyUseDeprecatedV1(true);
         
         System.out.println("Using: " + versionService.getVersionStoreReference());
         

@@ -179,7 +179,6 @@
       <property name="storesToIgnore">
          <list>
             <value>${version.store.version2Store}</value>
-            <!--  <value>${version.store.deprecated.lightWeightVersionStore}</value> -->
          </list>
       </property>
    </bean>

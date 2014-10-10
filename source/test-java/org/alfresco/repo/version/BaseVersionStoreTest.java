@@ -73,7 +73,6 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
     protected NodeService nodeService;
     protected PermissionService permissionService;
     protected CheckOutCheckInService checkOutCheckInService;
-    protected VersionMigrator versionMigrator;
     protected SearchService versionSearchService;
     protected DictionaryService dictionaryService;
     protected PolicyComponent policyComponent;
@@ -174,7 +173,6 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
         this.permissionService = (PermissionService)this.applicationContext.getBean("permissionService");
         this.checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
         this.versionSearchService = (SearchService)this.applicationContext.getBean("versionSearchService");
-        this.versionMigrator = (VersionMigrator)this.applicationContext.getBean("versionMigrator");
         this.dictionaryService = (DictionaryService)this.applicationContext.getBean("dictionaryService");
         this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
         this.policyBehaviourFilter = (BehaviourFilter)this.applicationContext.getBean("policyBehaviourFilter");

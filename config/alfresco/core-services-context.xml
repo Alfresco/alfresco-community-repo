@@ -458,12 +458,6 @@
         <property name="permissionService">
             <ref bean="permissionService" />
         </property>
-        <property name="onlyUseDeprecatedV1">
-            <value>${version.store.onlyUseDeprecatedV1}</value>
-        </property>
-        <property name="versionMigrator">
-            <ref bean="versionMigrator"/>
-        </property>
         <property name="versionComparatorClass">
             <value>${version.store.versionComparatorClass}</value>
         </property>
@@ -511,38 +505,6 @@
         </property>
         <property name="policy">
              <ref bean="serialVersionLabelPolicy" />
-        </property>
-    </bean>
-
-    <!--  -->
-
-    <bean id="versionMigrator" class="org.alfresco.repo.version.VersionMigrator" init-method="init">
-        <property name="dbNodeService">
-            <ref bean="mtAwareNodeService" />
-        </property>
-        <property name="versionNodeService">
-            <ref bean="versionNodeService" />
-        </property>
-        <property name="version2ServiceImpl">
-            <ref bean="versionService" />
-        </property>
-        <property name="policyBehaviourFilter">
-            <ref bean="policyBehaviourFilter" />
-        </property>
-        <property name="dictionaryService">
-            <ref bean="dictionaryService" />
-        </property>
-        <property name="transactionService">
-            <ref bean="transactionService"/>
-        </property>
-        <property name="ruleService">
-            <ref bean="ruleService" />
-        </property>
-        <property name="jobLockService">
-            <ref bean="jobLockService"/>
-        </property>
-        <property name="loggingInterval">
-            <value>500</value>
         </property>
     </bean>
 

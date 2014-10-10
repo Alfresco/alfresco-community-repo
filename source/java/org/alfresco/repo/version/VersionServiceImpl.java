@@ -72,7 +72,8 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * NOTE: deprecated since 3.1 (migrate and use Version2 Service)
  */
-public class VersionServiceImpl extends AbstractVersionServiceImpl implements VersionService, VersionModel
+@SuppressWarnings("deprecation")
+public abstract class VersionServiceImpl extends AbstractVersionServiceImpl implements VersionService, VersionModel
 {
     private static Log logger = LogFactory.getLog(VersionServiceImpl.class);
     
@@ -182,12 +183,6 @@ public class VersionServiceImpl extends AbstractVersionServiceImpl implements Ve
         super.initialise();     
     }
     
-    // TODO - temp
-    protected void initialiseWithoutBind()
-    {
-        super.initialise();
-    }
-
     /**
      * Gets the reference to the version store
      *

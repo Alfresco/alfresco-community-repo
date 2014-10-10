@@ -754,156 +754,74 @@
             <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.db-V3.0-0-CreateActivitiesExtras" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+    <bean id="patch.db-V3.0-0-CreateActivitiesExtras" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.0-0-CreateActivitiesExtras</value></property>
         <property name="description"><value>patch.db-V3.0-0-CreateActivitiesExtras.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>125</value></property>
         <property name="targetSchema"><value>126</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V3.0-ActivityTables" />
-            </list>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.db-V3.0-ActivityTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V3.0-ActivityTables" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.0-ActivityTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>125</value></property>
         <property name="targetSchema"><value>126</value></property>
-        <property name="alternatives" >
-            <list>
-                <ref bean="patch.db-V3.0-0-CreateActivitiesExtras" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ActivityTables.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.createSiteStore" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+    <bean id="patch.createSiteStore" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.createSiteStore</value></property>
         <property name="description"><value>patch.noOpPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>126</value></property>
         <property name="targetSchema"><value>127</value></property>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
+        </property>
     </bean>
-
-    <bean id="patch.sitesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.sitesFolder" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.sitesFolder</value></property>
         <property name="description"><value>patch.sitesFolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>127</value></property>
         <property name="targetSchema"><value>128</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${spaces.company_home.childname}/st:sites</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}</prop>
-                <prop key="location">alfresco/bootstrap/sitesSpace.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.sitePermissionRefactorPatch" class="org.alfresco.repo.admin.patch.impl.SitePermissionRefactorPatch" parent="basePatch">
+    <bean id="patch.sitePermissionRefactorPatch" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.sitePermissionRefactorPatch</value></property>
         <property name="description"><value>patch.sitePermissionRefactorPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>128</value></property>
         <property name="targetSchema"><value>129</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-                <ref bean="patch.zonedAuthorities" />
-            </list>
-        </property>
-        <property name="siteService">
-            <ref bean="siteService" />
-        </property>
-        <property name="permissionService">
-            <ref bean="PermissionService" />
-        </property>
-        <property name="authorityService">
-            <ref bean="AuthorityService" />
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.migrateVersionStore" class="org.alfresco.repo.admin.patch.impl.MigrateVersionStorePatch" parent="basePatch">
+    <bean id="patch.migrateVersionStore" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.migrateVersionStore</value></property>
         <property name="description"><value>patch.migrateVersionStore.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>129</value></property>
         <property name="targetSchema"><value>130</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="versionMigrator">
-            <ref bean="versionMigrator"/>
-        </property>
-        <property name="tenantService">
-            <ref bean="tenantService"/>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="version2Bootstrap"/>
-        </property>
-        <property name="jobLockService">
-            <ref bean="jobLockService"/>
-        </property>
-        <property name="threadCount">
-            <value>${version.store.migrateVersionStore.threadCount}</value>
-        </property>
-        <property name="batchSize">
-            <value>${version.store.migrateVersionStore.batchSize}</value>
-        </property>
-        <property name="runAsScheduledJob">
-           <value>${version.store.migrateVersionStore.runAsScheduledJob}</value>
-        </property>
-        <property name="limitPerJobCycle">
-           <value>${version.store.migrateVersionStore.limitPerJobCycle}</value>
-        </property>
-        <property name="requiresTransaction">
-           <value>false</value>        
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.inviteEmailTemplate" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.inviteEmailTemplate" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.inviteEmailTemplate</value></property>
         <property name="description"><value>patch.inviteEmailTemplate.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>130</value></property>
         <property name="targetSchema"><value>131</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-                <ref bean="patch.emailTemplatesFolder" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-                <property name="checkPath">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
-                <prop key="location">alfresco/bootstrap/invite/invite-email.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
     
@@ -1241,14 +1159,14 @@
         </property>
     </bean>
     
-    <bean id="patch.db-V3.1-Allow-IPv6" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V3.1-Allow-IPv6" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.1-Allow-IPv6</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>3003</value></property>
         <property name="targetSchema"><value>3004</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.1/${db.script.dialect}/IPv6-patch.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
     

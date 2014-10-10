@@ -48,7 +48,6 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.IllegalArgument;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.MissingFacetId;
-import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -588,8 +587,44 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
 
         // Persisted facets
         Map<String, SolrFacetProperties> persistedProperties = getPersistedFacetProperties();
-        // The persisted facets will override the default facets
-        mergedMap.putAll(persistedProperties);
+        for(Entry<String, SolrFacetProperties> entry : persistedProperties.entrySet())
+        {
+            final String facetId = entry.getKey();
+            /*
+             * If the default facet has been removed from the config file and
+             * the facet was persisted as its property was modified, then, the
+             * persisted node needs to be deleted. This should be done to avoid
+             * errors when loading the facets. Also, as all the properties of
+             * the facet may not have been persisted and the default facet
+             * doesn't exist anymore, there is no way of merging the
+             * non-persisted properties.
+             */
+            if(entry.getValue().isDefault() && !defaultFP.containsKey(facetId))
+            {
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            public Void execute() throws Exception
+                            {
+                                deleteFacet(facetId);
+                                
+                                logger.info("Deleted [" + facetId + "] node, as the filter has been removed from the config file!");
+                                return null;
+                            }
+                        }, false);
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+            else
+            {
+                // The persisted facets will override the default facets
+                mergedMap.put(facetId, entry.getValue());
+            }
+        }
 
         List<String> facetOrder = getFacetOrder();
         // Sort the merged maps
@@ -736,13 +771,16 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             final List<SolrFacetProperties> existingFacets = getFacets();
             
             final Map<String, SolrFacetProperties> sortedFacets = new LinkedHashMap<>(); // maintains insertion order
+            final List<String> removedFacetIds = new ArrayList<>();
             for (String facetId : facetIds)
             {
                 SolrFacetProperties facet = getFacet(facetId);
                 
                 if (facet == null)
                 {
-                    throw new UnrecognisedFacetId("Cannot reorder facets as ID not recognised:", facetId);
+                    // ACE-3083
+                    logger.warn("Facet with [" + facetId + "] ID does not exist. Removing it from the facets' ordering list");
+                    removedFacetIds.add(facetId);
                 }
                 else if (sortedFacets.containsKey(facetId))
                 {
@@ -765,6 +803,14 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean implements SolrF
             // The alternative is changing the service API to look like <T extends Serializable & List<String>>
             // which is a bit verbose for an API.
             ArrayList<String> serializableProp = new ArrayList<>(facetIds);
+            if (removedFacetIds.size() > 0)
+            {
+                boolean result = serializableProp.removeAll(removedFacetIds);
+                if (result)
+                {
+                    logger.info("Removed " + removedFacetIds + " from the facets' ordering list.");
+                }
+            }
             nodeService.setProperty(getFacetsRoot(), SolrFacetModel.PROP_FACET_ORDER, serializableProp);
         }
     }

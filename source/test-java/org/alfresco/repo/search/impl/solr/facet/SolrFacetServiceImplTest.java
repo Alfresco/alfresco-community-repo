@@ -163,17 +163,23 @@ public class SolrFacetServiceImplTest
         });
     }
     
-    @Test(expected=UnrecognisedFacetId.class)
+    @Test
     public void reorderUnrecognisedFacetIdsShouldFail() throws Exception
     {
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override public Void execute() throws Throwable
             {
-                final List<String> facetIds = getExistingFacetIds();
+                final List<String> existingFacetIds = getExistingFacetIds();
+
+                final List<String> facetIds = new ArrayList<>(existingFacetIds);
                 facetIds.add("unrecognisedID");
-                
+
                 SOLR_FACET_SERVICE.reorderFacets(facetIds);
+
+                final List<String> newfacetIds = getExistingFacetIds();
+                
+                assertEquals(existingFacetIds, newfacetIds);
                 return null;
             }
             

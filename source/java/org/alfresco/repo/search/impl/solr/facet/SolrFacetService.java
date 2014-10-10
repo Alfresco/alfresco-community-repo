@@ -24,7 +24,6 @@ import java.util.List;
 import org.alfresco.repo.dictionary.Facetable;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.DuplicateFacetId;
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.MissingFacetId;
-import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -99,7 +98,6 @@ public interface SolrFacetService
      * @param filterIds an ordered sequence of filter IDs.
      * @throws NullPointerException if filterIds is {@code null}.
      * @throws MissingFacetId if the list is empty.
-     * @throws UnrecognisedFacetId if any of the provided filter IDs are not recognised.
      * @throws DuplicateFacetId if there is a duplicate filter ID in the list.
      */
     public void reorderFacets(List<String> filterIds);

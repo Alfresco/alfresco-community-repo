@@ -25,6 +25,8 @@
             <actionList>
                 <setInstallerVariable name="reportValue" value=""/>
                 <setInstallerVariable name="msgArchitectureWarning" value="${tr('64bit architecture recommended')}"/>
+                <setInstallerVariable name="msgWindows32" value="${tr('32bit Microsoft Windows® is only supported for evaluation use.')}"/>
+                <setInstallerVariable name="msgMacOSX" value="${tr('Mac OS X® is only supported for evaluation use.')}"/>
                 <setInstallerVariable name="msgCpuSpeed" value="${tr('Insufficient CPU clock speed')}"/>
                 <setInstallerVariable name="msgCpuCores" value="${tr('Insufficient CPUs (cores)')}"/>
                 <setInstallerVariable name="msgRam" value="${tr('Insufficient system RAM')}"/>
@@ -41,6 +43,23 @@
                         <platformTest type="windows-x64" negate="1"/>
                     </ruleList>
                 </throwError>
+                <actionGroup>
+                    <actionList>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgWindows32}&#xA;">
+                            <ruleList>
+                                <platformTest type="windows-x86"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="reportValue" value="${reportValue}${msgMacOSX}&#xA;">
+                            <ruleList>
+                                <platformTest type="osx"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                    </actionList>
+                    <ruleList>
+                        <compareText text="${alfresco_edition}" value="enterprise"/>
+                    </ruleList>
+                </actionGroup>
                 <setInstallerVariable name="reportValue" value="${reportValue}${msgArchitectureWarning}: 32bit&#xA;">
                     <ruleList>
                         <compareText text="${project.installerFilename}" logic="does_not_contain" value="win-x64"/>

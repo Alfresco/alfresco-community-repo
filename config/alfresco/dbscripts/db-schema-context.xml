@@ -41,13 +41,6 @@
         <property name="schemaBootstrap" ref="schemaBootstrap" />
         <property name="preUpdateScriptPatches">
             <list>
-                <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
-                <ref bean="patch.db-V2.2-ACL" />
-                <ref bean="patch.db-V2.2-CleanNodeStatuses" />
-                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
-                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
-                <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
-                <ref bean="patch.db-V2.2-Person-3" />
                 <ref bean="patch.db-V3.2-LockTables" />
                 <ref bean="patch.db-V3.2-ContentTables" />
                 <ref bean="patch.db-V3.2-ContentTables2" />

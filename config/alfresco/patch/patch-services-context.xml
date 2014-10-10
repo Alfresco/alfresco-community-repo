@@ -674,149 +674,84 @@
             <value>3.4.x</value>
         </property>
     </bean>
-   
-    <!--===========================-->
-    <!--====== LIVE PATCHES =======-->
-    <!--===========================-->
-
-   <bean id="patch.db-V2.2-ACL-From-2.1-A" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+   <bean id="patch.db-V2.2-ACL-From-2.1-A" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-ACL-From-2.1-A</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>${V2.1-A.fixes.to.schema}</value></property>
+        <property name="fixesToSchema"><value>119</value></property>
         <property name="targetSchema"><value>120</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.1-NotNullColumns" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-2.1-A--to--2.2-ACL.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-   
-    <bean id="patch.db-V2.2-ACL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V2.2-ACL" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-ACL</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>119</value></property>
         <property name="targetSchema"><value>120</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.1-NotNullColumns" />
-            </list>
-        </property>
-        <property name="alternatives" >
-            <list>
-                <ref bean="patch.db-V2.2-ACL-From-2.1-A" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-2.2-ACL.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.db-V2.2-CleanNodeStatuses" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V2.2-CleanNodeStatuses" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-CleanNodeStatuses</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>89</value></property>
         <property name="targetSchema"><value>90</value></property>
-        <property name="alternatives" >
-            <!-- If either of the alternative scripts has already run, it's now too late to run this one -->
-            <list>
-                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
-                <ref bean="patch.db-V2.2-Upgrade-From-2.2SP1" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-2.2-CleanNodeStatuses.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-0-CreateMissingTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V2.2-0-CreateMissingTables" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-0-CreateMissingTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
         <property name="targetSchema"><value>121</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.2-CleanNodeStatuses" />
-                <ref bean="patch.db-V2.2-ACL" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-0-create-missing-tables.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-2-MoveQNames" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+    <bean id="patch.db-V2.2-2-MoveQNames" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-2-MoveQNames</value></property>
         <property name="description"><value>patch.noOpPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
         <property name="targetSchema"><value>121</value></property>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
+        </property>
     </bean>
-    <bean id="patch.db-V2.2-Upgrade-From-2.1" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V2.2-Upgrade-From-2.1" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-Upgrade-From-2.1</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>120</value></property>
         <property name="targetSchema"><value>135</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.2-CleanNodeStatuses" />
-                <ref bean="patch.db-V2.2-0-CreateMissingTables" />
-            </list>
-        </property>
-        <property name="alternatives" >
-            <list>
-                <ref bean="patch.db-V2.2-2-MoveQNames" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-from-2.1.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.db-V2.2-Upgrade-From-2.2SP1" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V2.2-Upgrade-From-2.2SP1" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-Upgrade-From-2.2SP1</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>134</value></property>
         <property name="targetSchema"><value>135</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V2.2-2-MoveQNames" />
-            </list>
-        </property>
-        <property name="alternatives" >
-            <list>
-                <ref bean="patch.db-V2.2-Upgrade-From-2.1" />
-            </list>
-        </property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/upgrade-from-2.2SP1.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.updateDmPermissions" class="org.alfresco.repo.admin.patch.impl.DmPermissionsPatch" parent="basePatch" >
+    <bean id="patch.updateDmPermissions" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.updateDmPermissions</value></property>
         <property name="description"><value>patch.updateDmPermissions.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>124</value></property>
         <property name="targetSchema"><value>125</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.fixNameCrcValues-2" />
-            </list>
-        </property>
-        <property name="accessControlListDao">
-            <ref bean="admNodeACLDAO"/>
-        </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO"/>
-        </property>
-        <property name="controlDAO">
-            <ref bean="controlDAO"/>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
 
@@ -1025,14 +960,14 @@
         </property>
     </bean>
 
-    <bean id="patch.db-V2.2-Person-3" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V2.2-Person-3" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V2.2-Person-3</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>3002</value></property>
         <property name="targetSchema"><value>3003</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/2.2/${db.script.dialect}/AlfrescoSchemaUpdate-Person.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
     
@@ -1227,6 +1162,35 @@
         <property name="targetSchema"><value>2016</value></property>
         <property name="scriptUrl">
             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-ContentTables.sql</value>
+        </property>
+    </bean>
+    
+    <bean id="patch.db-V3.4-Upgrade-JBPM" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.4-Upgrade-JBPM</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2017</value></property>
+        <property name="targetSchema"><value>6001</value></property>
+        <property name="alternatives">
+            <list>
+                <ref bean="patch.db-V3.2-Upgrade-JBPM" />
+            </list>
+        </property>
+        <property name="scriptUrl">           
+            <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/jbpm-upgrade.sql</value>
+        </property>
+    </bean>
+
+    <bean id="patch.db-V3.2-Upgrade-JBPM" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V3.2-Upgrade-JBPM</value></property>
+        <property name="description"><value>patch.noOpPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>2017</value></property>
+        <property name="targetSchema"><value>2018</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
+            </list>
         </property>
     </bean>
     
@@ -1891,32 +1855,6 @@
         </property>
     </bean>
     
-    <bean id="patch.publishing.root" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.publishing.root</value></property>
-        <property name="description"><value>patch.publishing.root.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>5013</value></property>
-        <property name="targetSchema"><value>5014</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>${publishing.root}</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">${publishing.root.path}</prop>
-                <prop key="location">alfresco/bootstrap/publishingRootFolder.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
-        </property>
-    </bean>
-    
     <bean id="patch.updateMimetypes2" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
         <property name="id"><value>patch.updateMimetypes2</value></property>
         <property name="description"><value>patch.updateMimetypes2.description</value></property>
@@ -1966,6 +1904,19 @@
         </property>
     </bean>
     
+    <!--===========================-->
+    <!--====== LIVE PATCHES =======-->
+    <!--===========================-->
+
+    <!-- Used to bootstrap imapSpacesLocales Prior to share/alfresco split of 3.5  -->
+    <bean id="patch.imapSpacesLocaleTemplates" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+        <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
+        <property name="description"><value>patch.noOpPatch.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>4302</value></property>
+        <property name="targetSchema"><value>4305</value></property>
+    </bean>
+    
     <bean id="patch.mtFixAdminExistingTenants" class="org.alfresco.repo.admin.patch.impl.MultiTFixAdminExistingTenantsPatch" parent="basePatch" >
         <property name="id"><value>patch.mtFixAdminExistingTenants</value></property>
         <property name="description"><value>patch.mtFixAdminExistingTenants.description</value></property>
@@ -2012,19 +1963,6 @@
         </property>
     </bean>
     
-    <bean id="patch.db-V3.2-Upgrade-JBPM" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V3.2-Upgrade-JBPM</value></property>
-        <property name="description"><value>patch.noOpPatch.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>2017</value></property>
-        <property name="targetSchema"><value>2018</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
-            </list>
-        </property>
-    </bean>
-    
     <bean id="patch.activitiesEmailTemplate" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.activitiesEmailTemplate</value></property>
         <property name="description"><value>patch.activitiesEmailTemplate.description</value></property>
@@ -2051,50 +1989,6 @@
         </property>
     </bean>
     
-    <bean id="patch.activitiesEmailTemplateUpdate" class="org.alfresco.repo.admin.patch.impl.ActivitiesTemplatesUpdatePatch" parent="basePatch">
-        <property name="id">
-            <value>patch.activitiesTemplatesUpdate</value>
-        </property>
-        <property name="description">
-            <value>patch.activitiesTemplatesUpdate.description</value>
-        </property>
-            <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="5010" />
-        <property name="targetSchema" value="5011" />
-        <property name="dependsOn">
-            <list>
-                <ref bean="patch.activitiesEmailTemplate" />
-            </list>
-        </property>
-        <property name="contentService" ref="ContentService"/>
-        <property name="fileFolderService" ref="FileFolderService"/>
-        <property name="repository" ref="repositoryHelper"/>
-    </bean>
-
-    <bean id="patch.followingMailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
-        <property name="id"><value>patch.followingMailTemplates</value></property>
-        <property name="description"><value>patch.followingMailTemplates.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>5010</value></property>
-        <property name="targetSchema"><value>5011</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.migrateTenantsFromAttrsToTable" />
-                <ref bean="patch.migrateAttrTenants" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
-                <prop key="location">alfresco/templates/following-email-templates.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
-        </property>
-    </bean>
-
     <bean id="patch.newUserEmailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.newUserEmailTemplates</value></property>
         <property name="description"><value>patch.newUserEmailTemplates.description</value></property>
@@ -2147,15 +2041,6 @@
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
             </props>
         </property>
-    </bean>
-    
-    <!-- Used to bootstrap imapSpacesLocales Prior to share/alfresco split of 3.5  -->
-    <bean id="patch.imapSpacesLocaleTemplates" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
-        <property name="id"><value>patch.imapSpacesLocaleTemplates</value></property>
-        <property name="description"><value>patch.noOpPatch.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>4302</value></property>
-        <property name="targetSchema"><value>4305</value></property>
     </bean>
     
     <!-- For importing whole sites -->
@@ -2339,6 +2224,50 @@
         </property>
     </bean>
     
+    <bean id="patch.activitiesEmailTemplateUpdate" class="org.alfresco.repo.admin.patch.impl.ActivitiesTemplatesUpdatePatch" parent="basePatch">
+        <property name="id">
+            <value>patch.activitiesTemplatesUpdate</value>
+        </property>
+        <property name="description">
+            <value>patch.activitiesTemplatesUpdate.description</value>
+        </property>
+            <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="5010" />
+        <property name="targetSchema" value="5011" />
+        <property name="dependsOn">
+            <list>
+                <ref bean="patch.activitiesEmailTemplate" />
+            </list>
+        </property>
+        <property name="contentService" ref="ContentService"/>
+        <property name="fileFolderService" ref="FileFolderService"/>
+        <property name="repository" ref="repositoryHelper"/>
+    </bean>
+
+    <bean id="patch.followingMailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.followingMailTemplates</value></property>
+        <property name="description"><value>patch.followingMailTemplates.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5010</value></property>
+        <property name="targetSchema"><value>5011</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.migrateTenantsFromAttrsToTable" />
+                <ref bean="patch.migrateAttrTenants" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}</prop>
+                <prop key="location">alfresco/templates/following-email-templates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+
     <bean id="patch.db-V4.0-SubscriptionTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id"><value>patch.db-V4.0-SubscriptionTables</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -2368,6 +2297,32 @@
         <property name="batchThreads" value="2"/>
         <property name="batchSize" value="1000"/>
         <property name="batchMaxQueryRange" value="5000"/>
+    </bean>
+    
+    <bean id="patch.publishing.root" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.publishing.root</value></property>
+        <property name="description"><value>patch.publishing.root.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>5013</value></property>
+        <property name="targetSchema"><value>5014</value></property>
+        <property name="dependsOn" >
+            <list>
+                <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>${publishing.root}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">${publishing.root.path}</prop>
+                <prop key="location">alfresco/bootstrap/publishingRootFolder.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
     </bean>
     
     <!--  TODO .. update to install workflow email folder ... -->
@@ -2606,22 +2561,6 @@
         </property>     
         <property name="policyFilter">
             <ref bean="policyBehaviourFilter" />
-        </property>
-    </bean>
-
-    <bean id="patch.db-V3.4-Upgrade-JBPM" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-V3.4-Upgrade-JBPM</value></property>
-        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>2017</value></property>
-        <property name="targetSchema"><value>6001</value></property>
-        <property name="alternatives">
-            <list>
-                <ref bean="patch.db-V3.2-Upgrade-JBPM" />
-            </list>
-        </property>
-        <property name="scriptUrl">           
-            <value>classpath:alfresco/dbscripts/upgrade/3.2/${db.script.dialect}/jbpm-upgrade.sql</value>
         </property>
     </bean>
 

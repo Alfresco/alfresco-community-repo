@@ -320,7 +320,6 @@
         <property name="tenantAdminService" ref="tenantAdminService"/>
         <property name="patchService" ref="PatchService"/>
         <property name="descriptorService" ref="descriptorComponent"/>
-        <property name="migrateAttrTenantsPatch" ref="patch.migrateAttrTenants"/>
     </bean>
 
     <!-- Bootstrap any extensions -->

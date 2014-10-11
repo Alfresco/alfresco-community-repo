@@ -1127,74 +1127,36 @@
             <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.db-V3.4-authority-unique-idx" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V3.4-authority-unique-idx" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-authority-unique-idx</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4099</value></property>
         <property name="targetSchema"><value>4100</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/authority-unique-idx.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.fixAuthoritiesCrcValues" class="org.alfresco.repo.admin.patch.impl.FixAuthoritiesCrcValuesPatch" parent="basePatch" >
+    <bean id="patch.fixAuthoritiesCrcValues" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.fixAuthoritiesCrcValues</value></property>
         <property name="description"><value>patch.fixAuthoritiesCrcValues.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4100</value></property>
         <property name="targetSchema"><value>4101</value></property>
-        <property name="applyToTenants"><value>false</value></property>
-        <property name="patchDAO">
-            <ref bean="patchDAO" />
-        </property>
-        <property name="aclCrudDAO">
-            <ref bean="aclCrudDAO" />
-        </property>
-        <property name="controlDAO">
-            <ref bean="controlDAO" />
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.updateMimetypes1" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+    <bean id="patch.updateMimetypes1" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.updateMimetypes1</value></property>
         <property name="description"><value>patch.updateMimetypes1.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4101</value></property>
         <property name="targetSchema"><value>4102</value></property>
-        <property name="applyToTenants"><value>false</value></property>
-        <property name="dependsOn">
-            <list>
-                <ref bean="patch.db-V3.2-ContentTables2"/>
-            </list>
-        </property>
-        <property name="mimetypeDAO">
-            <ref bean="mimetypeDAO"/>
-        </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="nodeDAO">
-            <ref bean="nodeDAO"/>
-        </property>
-        <property name="retryingTransactionHelper">
-            <ref bean="retryingTransactionHelper"/>
-        </property>
-        <property name="mimetypeMappings">
-            <map>
-                <entry key="application/vnd.excel" value="application/vnd.ms-excel"></entry>
-                <entry key="application/vnd.powerpoint" value="application/vnd.ms-powerpoint"></entry>
-            </map>
-        </property>
-        <property name="reindex">
-            <value>true</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
     <bean id="patch.db-V3.3-modify-index-permission_id" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.3-modify-index-permission_id</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1225,55 +1187,46 @@
             <value>4.2.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.db-V3.4-property-unique-ctx-value" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V3.4-property-unique-ctx-value" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-property-unique-ctx-value</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4104</value></property>
         <property name="targetSchema"><value>4105</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/property-unique-ctx-value.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.db-V3.4-property-unique-ctx-idx" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V3.4-property-unique-ctx-idx" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-property-unique-ctx-idx</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4104</value></property>
         <property name="targetSchema"><value>4105</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/property-unique-ctx-idx.sql</value>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
-            </list>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.db-V3.4-child-assoc-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V3.4-child-assoc-indexes" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.4-child-assoc-indexes</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4104</value></property>
         <property name="targetSchema"><value>4105</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/3.4/${db.script.dialect}/child-assoc-indexes.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.db-V3.3-JBPM-Extra" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+    <bean id="patch.db-V3.3-JBPM-Extra" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.3-JBPM-Extra</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4105</value></property>
         <property name="targetSchema"><value>4106</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoPostCreate-JBPM-Extra.sql</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
     <bean id="patch.db-V3.3-Node-Prop-Serializable" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.3-Node-Prop-Serializable</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
@@ -1284,222 +1237,96 @@
             <value>4.2.x</value>
         </property>
     </bean>
-    
-    <!--  
-         Note: MT-specific (ALF-4875)
-         
-               This patch will be applied directly (by MultiTenantBootstrap) before any tenants are started
-               and hence before any outstanding patches are applied (ie. prior to patch execution.
-               
-               Hence, fixesToSchema/targetSchema is specified as 0/1 (rather than 4106/4107) to avoid error 
-               that patch has already been applied.
-    -->
-    <bean id="patch.migrateAttrTenants" class="org.alfresco.repo.admin.patch.impl.MigrateAttrTenantsPatch" parent="basePatch">
+    <bean id="patch.migrateAttrTenants" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrTenants</value></property>
         <property name="description"><value>patch.migrateAttrTenants.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>0</value></property>
-        <property name="targetSchema"><value>1</value></property>
-        <property name="applyToTenants"><value>false</value></property>
-        <property name="attributeService">
-            <ref bean="attributeService"/>
-        </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO"/>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
-            </list>
+        <property name="fixesToSchema"><value>4105</value></property>
+        <property name="targetSchema"><value>4106</value></property>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.migrateAttrPropBackedBeans" class="org.alfresco.repo.admin.patch.impl.MigrateAttrPropBackedBeanPatch" parent="basePatch">
+    <bean id="patch.migrateAttrPropBackedBeans" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrPropBackedBeans</value></property>
         <property name="description"><value>patch.migrateAttrPropBackedBeans.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4106</value></property>
         <property name="targetSchema"><value>4107</value></property>
-        <property name="applyToTenants"><value>false</value></property>
-        <property name="attributeService">
-            <ref bean="attributeService"/>
-        </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO"/>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
-            </list>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.migrateAttrChainingURS" class="org.alfresco.repo.admin.patch.impl.MigrateAttrChainingURSPatch" parent="basePatch">
+    <bean id="patch.migrateAttrChainingURS" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrChainingURS</value></property>
         <property name="description"><value>patch.migrateAttrChainingURS.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4106</value></property>
         <property name="targetSchema"><value>4107</value></property>
-        <property name="applyToTenants"><value>false</value></property>
-        <property name="attributeService">
-            <ref bean="attributeService"/>
-        </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO"/>
-        </property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.db-V3.4-property-unique-ctx-value"/>
-            </list>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    <bean id="patch.migrateAttrDelete" class="org.alfresco.repo.admin.patch.impl.NoOpPatch" parent="basePatch">
+    <bean id="patch.migrateAttrDelete" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.migrateAttrDelete</value></property>
         <property name="description"><value>patch.noOpPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4106</value></property>
         <property name="targetSchema"><value>4107</value></property>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
+        </property>
     </bean>
-    <bean id="patch.replication.replication_actions" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.replication.replication_actions" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.replication.replication_actions</value></property>
         <property name="description"><value>patch.replication.replication_actions.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4107</value></property>
         <property name="targetSchema"><value>4108</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.replication.replication_actions.childname}</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
-                <prop key="location">alfresco/bootstrap/replicationActionSpace.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.transfer.targetrulefolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.transfer.targetrulefolder" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.transfer.targetrulefolder</value></property>
         <property name="description"><value>patch.transfer.targetrulefolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4108</value></property>
         <property name="targetSchema"><value>4109</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-                <ref bean="patch.transferServiceFolder" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default/rule:ruleFolder</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default</prop>
-                <prop key="location">alfresco/bootstrap/transferTargetRuleFolder.xml</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.transfer.targetrule" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.transfer.targetrule" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.transfer.targetrule</value></property>
         <property name="description"><value>patch.transfer.targetrule.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4108</value></property>
         <property name="targetSchema"><value>4109</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-                <ref bean="patch.transfer.targetrulefolder" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default/rule:ruleFolder/rule:rules3245de8b-2cfe-42ed-8f8b-44089f99b265</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/app:company_home/app:dictionary/app:transfers/app:transfer_groups/cm:default/rule:ruleFolder</prop>
-                <prop key="location">alfresco/bootstrap/transferTargetRule.xml</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-
-    <bean id="patch.actions.scheduledfolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+    <bean id="patch.actions.scheduledfolder" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.actions.scheduledfolder</value></property>
         <property name="description"><value>patch.actions.scheduledfolder.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4109</value></property>
         <property name="targetSchema"><value>4110</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.updateDmPermissions" />
-            </list>
-        </property>
-        <property name="importerBootstrap">
-            <ref bean="spacesBootstrap" />
-        </property>
-        <property name="checkPath">
-            <value>/app:company_home/app:dictionary/cm:Scheduled_x0020_Actions</value>
-        </property>
-        <property name="bootstrapView">
-            <props>
-                <prop key="path">/app:company_home/app:dictionary</prop>
-                <prop key="location">alfresco/bootstrap/scheduledActionsFolder.xml</prop>
-                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
-            </props>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
-    <bean id="patch.updateMimetypes2" class="org.alfresco.repo.admin.patch.impl.GenericMimetypeRenamePatch" parent="basePatch" >
+    <bean id="patch.updateMimetypes2" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch" >
         <property name="id"><value>patch.updateMimetypes2</value></property>
         <property name="description"><value>patch.updateMimetypes2.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>4110</value></property>
         <property name="targetSchema"><value>4111</value></property>
-        <property name="applyToTenants"><value>false</value></property>
-        <property name="dependsOn">
-            <list>
-                <ref bean="patch.db-V3.2-ContentTables2"/>
-            </list>
-        </property>
-        <property name="mimetypeDAO">
-            <ref bean="mimetypeDAO"/>
-        </property>
-        <property name="patchDAO">
-            <ref bean="patchDAO"/>
-        </property>
-        <property name="nodeService">
-            <ref bean="nodeService" />
-        </property>
-        <property name="nodeDAO">
-            <ref bean="nodeDAO"/>
-        </property>
-        <property name="retryingTransactionHelper">
-            <ref bean="retryingTransactionHelper"/>
-        </property>
-        <property name="mimetypeMappings">
-            <map>
-                <entry key="application/vnd.excel" value="application/vnd.ms-excel"></entry>
-                <entry key="application/vnd.powerpoint" value="application/vnd.ms-powerpoint"></entry>
-            </map>
-        </property>
-        <property name="reindex">
-            <value>true</value>
+        <property name="lastSupportedVersion" >
+            <value>4.2.x</value>
         </property>
     </bean>
-    
     <bean id="patch.db-V3.2-AddFKIndexes-2" class="org.alfresco.repo.admin.patch.impl.NoLongerSupportedPatch" parent="basePatch">
         <property name="id"><value>patch.db-V3.2-AddFKIndexes-2</value></property>
         <property name="description"><value>patch.schemaUpgradeScript.description</value></property>

@@ -46,10 +46,6 @@
         </property>
         <property name="postUpdateScriptPatches">
             <list>
-                <ref bean="patch.db-V3.4-property-unique-ctx-value" />
-                <ref bean="patch.db-V3.4-property-unique-ctx-idx" />
-                <ref bean="patch.db-V3.4-authority-unique-idx" />
-                <ref bean="patch.db-V3.4-child-assoc-indexes" />
                 <ref bean="patch.db-V3.4-VarcharFieldSizesQuadrupleIncreasing" />
                 <ref bean="patch.db-V4.0-AclChangeSet" />
                 <ref bean="patch.db-V4.0-NodeAssoc-Ordering" />
@@ -98,7 +94,6 @@
         <property name="schemaBootstrap" ref="schemaBootstrap" />
         <property name="postUpdateScriptPatches">
             <list>
-                <ref bean="patch.db-V3.3-JBPM-Extra" />
                 <ref bean="patch.db-V3.4-JBPM-FK-indexes" />
                 <ref bean="patch.db-V3.4-alter-jBPM331-CLOB-columns-to-nvarchar" />
                 <ref bean="patch.db-V3.4-JBPM-varinst-indexes" />

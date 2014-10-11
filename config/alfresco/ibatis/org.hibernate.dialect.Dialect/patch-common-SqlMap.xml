@@ -145,64 +145,6 @@
         select max(id) from alf_node
     </select>
     
-    <select id="select_admOldContentProperties" parameterType="Ids" resultMap="result_admOldContentProp">
-        <![CDATA[
-        select
-            node_id,
-            qname_id,
-            list_index,
-            locale_id,
-            string_value
-        from
-            alf_node_properties
-        where
-            node_id >= #{idOne}
-            and node_id < #{idTwo}
-            and actual_type_n = 11
-        order by
-            node_id ASC
-        ]]>
-    </select>
-
-    <select id="select_authoritiesAndCrc" resultMap="result_authoritiesAndCrc">
-        select
-            authority,
-            crc
-        from
-            alf_authority
-    </select>
-
-    <select id="select_allChildAssocsCount" resultType="java.lang.Integer">
-        select count(*) from alf_child_assoc
-    </select>
-
-    <select id="select_maxChildAssocId" resultType="java.lang.Long">
-        select max(id) from alf_child_assoc
-    </select>
-
-    <select id="select_allChildAssocsForCrcs" parameterType="Ids" resultMap="result_childAssocsForCrc">
-        <![CDATA[
-        select
-            ca.id,
-            ca.type_qname_id,
-            ca.qname_ns_id,
-            ca.qname_localname,
-            ca.child_node_name_crc,
-            ca.qname_crc,
-            cn.uuid as child_node_uuid,
-            cnp.string_value as child_node_name
-        from
-            alf_child_assoc ca
-            join alf_node cn on (cn.id = ca.child_node_id)
-            left join alf_node_properties cnp on (cnp.node_id = cn.id and cnp.qname_id = #{idOne})
-        where
-            ca.id >= #{idTwo} and
-            ca.id < #{idThree}
-        order by 
-            ca.id ASC
-        ]]>
-    </select>
-
     <select id="select_nodesByTypeAndNamePattern" parameterMap="parameter_nodeTypeAndNamePattern" resultMap="result_nodeIdAndName">
         select
             s.protocol,
@@ -217,85 +159,6 @@
             n.type_qname_id = #{typeQNameId} and
             np.qname_id = #{propQNameId} and
             np.string_value like #{namePattern} <include refid="alfresco.util.escape"/>
-    </select>
-    
-    <select id="select_oldAttrTenants" resultMap="result_admTenant">
-        select
-            ma.mkey         as tenantDomain,
-            a2.bool_value   as isEnabled,
-            a3.string_value as rootDir
-        from 
-            alf_global_attributes ga
-            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
-            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id and ma2.mkey = 'enabled')
-            join alf_attributes a2 on (a2.id = ma2.attribute_id)
-            join alf_map_attribute_entries ma3 on (ma3.map_id = ma.attribute_id and ma3.mkey = 'rootContentStoreDir')
-            join alf_attributes a3 on (a3.id = ma3.attribute_id)
-        where 
-            ga.name = 'alfresco-tenants'
-    </select>
-    
-    <select id="select_oldAttrPropertyBackedBeans" resultMap="result_PBB">
-         select
-            ma.mkey         as componentName,
-            ma2.mkey        as propName,
-            a2.string_value as propValue
-        from 
-            alf_global_attributes ga
-            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
-            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id)
-            join alf_attributes a2 on (a2.id = ma2.attribute_id)
-        where 
-            ga.name = '.PropertyBackedBeans'
-    </select>
-    
-    <select id="select_oldAttrChainingURS" resultMap="result_ChainingURS">
-         select
-            ma.mkey       as label,
-            ma2.mkey      as zoneId,
-            a2.long_value as lastModified
-        from 
-            alf_global_attributes ga
-            join alf_map_attribute_entries ma on (ma.map_id = ga.attribute)
-            join alf_map_attribute_entries ma2 on (ma2.map_id = ma.attribute_id)
-            join alf_attributes a2 on (a2.id = ma2.attribute_id)
-        where 
-            ga.name = '.ChainingUserRegistrySynchronizer'
-    </select>
-    
-    <select id="select_oldAttrCustomNames" resultType="string">
-        select
-            ga.name as name
-        from
-            alf_global_attributes ga
-        where
-            name not in ('alfresco-tenants', '.href', '.PropertyBackedBeans', '.ChainingUserRegistrySynchronizer')
-    </select>
-    
-    <!-- for patch -->
-    <select id="select_MaxAclId" resultType="long">
-        select
-            max(acl.id)
-        from
-            alf_access_control_list acl
-    </select>
-    
-    <!-- for patch -->
-    <select id="select_DmNodeCount" resultType="long">
-        select
-            count(*)
-        from
-            alf_node
-    </select>
-    
-    <!-- for patch -->
-    <select id="select_DmNodeCountWherePermissionsHaveChanged" parameterMap="parameter_IdMap" resultType="long">
-        select
-            count(*)
-        from
-            alf_node
-        where
-            acl_id > ?
     </select>
     
     <select id="select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
@@ -571,21 +434,6 @@
     <!-- Updates        -->
     <!--                -->
     
-    <update id="update_admOldContentProperty" parameterMap="parameter_admNewContentProp">
-        update
-            alf_node_properties
-        set
-            actual_type_n = 21,
-            persisted_type_n = 3,
-            long_value = ?,
-            string_value = null
-        where
-            node_id = ?
-            and qname_id = ?
-            and list_index = ?
-            and locale_id = ?
-    </update>
-    
     <update id="update_contentMimetypeId" parameterMap="parameter_contentMimetype">
         update
             alf_content_data
@@ -593,48 +441,6 @@
             content_mimetype_id = ?
         where
             content_mimetype_id = ?
-    </update>
-    
-    <update id="update_childAssocCrc" parameterMap="parameter_childAssocCrcs">
-        update
-            alf_child_assoc
-        set
-            child_node_name_crc = ?,
-            qname_crc = ?
-        where
-            id = ?
-    </update>
-    
-    <update id="update_CreateSizeCurrentProperty" parameterType="SizeCurrentParams" >
-        INSERT INTO alf_node_properties
-        (
-           node_id, actual_type_n, persisted_type_n,
-           boolean_value,
-           long_value,
-           double_value,
-           float_value,
-           string_value,
-           serializable_value,
-           qname_id, list_index, locale_id)
-        SELECT
-            n.id, 0, 0,
-            #{false},
-            0,
-            0,
-            0,
-            null,
-            null,
-            #{sizeCurrentQNameId}, -1, #{defaultLocaleId}
-        FROM
-            alf_node n
-        WHERE
-            n.type_qname_id = #{personTypeQNameId}
-            AND NOT EXISTS
-            (
-                SELECT 1 FROM alf_node_properties np
-                WHERE np.node_id = n.id
-                AND np.qname_id = #{sizeCurrentQNameId}
-            )
     </update>
     
     <update id="drop_oldAttrAlfListAttributeEntries">

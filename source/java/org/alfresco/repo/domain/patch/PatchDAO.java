@@ -22,12 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.domain.contentdata.ContentDataDAO;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
-import org.apache.ibatis.session.ResultHandler;
 
 /**
  * Additional DAO services for patches
@@ -43,15 +40,6 @@ public interface PatchDAO
     public long getMaxAdmNodeID();
     
     /**
-     * Migrates DM content properties from the old V3.1 format (String-based {@link ContentData#toString()})
-     * to the new V3.2 format (ID based storage using {@link ContentDataDAO}).
-     * 
-     * @param minNodeId         the inclusive node ID to limit the updates to
-     * @param maxNodeId         the exclusive node ID to limit the updates to
-     */
-    public void updateAdmV31ContentProperties(Long minNodeId, Long maxNodeId);
-    
-    /**
      * Update all <b>alf_content_data</b> mimetype references.
      * 
      * @param oldMimetypeId     the ID to search for
@@ -59,92 +47,6 @@ public interface PatchDAO
      * @return                  the number of rows affected
      */
     public int updateContentMimetypeIds(Long oldMimetypeId, Long newMimetypeId);
-    
-    /**
-     * A callback handler for iterating over the string results
-     */
-    public interface StringHandler
-    {
-        void handle(String string);
-    }
-    
-    /**
-     * Add a <b>cm:sizeCurrent</b> property to person nodes that don't have it.
-     */
-    public int addSizeCurrentProp();
-    
-    // ACL-related
-    
-    /**
-     * Get the max acl id
-     * 
-     * @return - max acl id
-     */
-    public long getMaxAclId();
-    
-    /**
-     * How many DM nodes are there?
-     * 
-     * @return - the count
-     */
-    public long getDmNodeCount();
-    
-    /**
-     * How many DM nodes are three with new ACls (to track patch progress)
-     * 
-     * @param above
-     * @return - the count
-     */
-    public long getDmNodeCountWithNewACLs(Long above);
-    
-    /**
-     * @return      Returns the names of authorities with incorrect CRC values
-     */
-    public List<String> getAuthoritiesWithNonUtf8Crcs();
-    
-    /**
-     * @return                      Returns the number child association rows
-     */
-    public int getChildAssocCount();
-    
-    /**
-     * 
-     * @return                      Returns the maximum child assoc ID or <tt>0</tt> if there are none
-     */
-    Long getMaxChildAssocId();
-    
-    /**
-     * The results map contains:
-     * <pre>
-     * <![CDATA[
-        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="childNodeNameCrc" column="child_node_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="qnameCrc" column="qname_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="childNodeUuid" column="child_node_uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="childNodeName" column="child_node_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
-       ]]>
-     * </pre>
-     * @param minAssocId            the minimum child assoc ID
-     * @param stopAtAssocId         the child assoc ID to stop at i.e. once this ID has been reached,
-     *                              pull back no results
-     * @param rangeMultiplier       the ration of IDs to actual rows (how many IDs to select to get a row)
-     * @param maxIdRange            the largest ID range to use for selects.  Normally, the ID range should be
-     *                              allowed to grow in accordance with the general distribution of rows, but
-     *                              if memory problems are encountered, then the range will need to be set down.
-     * @param maxResults            the number of child associations to fetch
-     * @return                      Returns child associations <b>that need fixing</b>
-     */
-    public List<Map<String, Object>> getChildAssocsForCrcFix(
-            Long minAssocId,
-            Long stopAtAssocId,
-            long rangeMultiplier,
-            long maxIdRange,
-            int maxResults);
-    
-    public int updateChildAssocCrc(Long assocId, Long childNodeNameCrc, Long qnameCrc);
     
     /**
      * Query for a list of nodes that have a given type and share the same name pattern (SQL LIKE syntax)
@@ -156,29 +58,9 @@ public interface PatchDAO
     public List<Pair<NodeRef, String>> getNodesOfTypeWithNamePattern(QName typeQName, String namePattern);
     
     /**
-     * Migrate old Tenant attributes (if any)
-     */
-    public void migrateOldAttrTenants(ResultHandler resultHandler);
-    
-    /**
-     * Migrate old Property-Backed Bean attributes (if any)
-     */
-    public void migrateOldAttrPropertyBackedBeans(ResultHandler resultHandler);
-    
-    /**
-     * Migrate old Chaining User Registry Synchronizer attributes (if any)
-     */
-    public void migrateOldAttrChainingURS(ResultHandler resultHandler);
-    
-    /**
      * Drop old attribute alf_*attribute* tables
      */
     public void migrateOldAttrDropTables();
-    
-    /**
-     * Get custom global attribute names (if any)
-     */
-    public List<String> getOldAttrCustomNames();
     
     /**
      * Get shared acls with inheritance issues
@@ -216,7 +98,7 @@ public interface PatchDAO
      * @param typeQNameId - the id of the type qname
      * @param minNodeId - min node id in the result set - inclusive
      * @param maxNodeId - max node id in the result set - exclusive
-     * @return
+     * @return          IDs of the nodes
      */
     public List<Long> getNodesByTypeQNameId(Long typeQNameId, Long minNodeId, Long maxNodeId);
     
@@ -225,7 +107,7 @@ public interface PatchDAO
      * @param uriId - the id of the type qname uri
      * @param minNodeId - min node id in the result set - inclusive
      * @param maxNodeId - max node id in the result set - exclusive
-     * @return
+     * @return          IDs of the nodes
      */
     public List<Long> getNodesByTypeUriId(Long uriId, Long minNodeId, Long maxNodeId);
     
@@ -234,7 +116,7 @@ public interface PatchDAO
      * @param aspectQNameId - the id of the aspect qname
      * @param minNodeId - min node id in the result set - inclusive
      * @param maxNodeId - max node id in the result set - exclusive
-     * @return
+     * @return          IDs of the nodes
      */
     public List<Long> getNodesByAspectQNameId(Long aspectQNameId, Long minNodeId, Long maxNodeId);
     
@@ -243,7 +125,7 @@ public interface PatchDAO
      * @param mimetypeId - the id of the content data mimetype
      * @param minNodeId - min node id in the result set - inclusive
      * @param maxNodeId - max node id in the result set - exclusive
-     * @return
+     * @return          IDs of the nodes
      */
     public List<Long> getNodesByContentPropertyMimetypeId(Long mimetypeId, Long minNodeId, Long maxNodeId);
     

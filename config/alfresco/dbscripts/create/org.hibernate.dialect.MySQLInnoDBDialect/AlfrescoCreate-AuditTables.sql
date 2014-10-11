@@ -44,15 +44,3 @@ CREATE TABLE alf_audit_entry
    CONSTRAINT fk_alf_aud_ent_pro FOREIGN KEY (audit_values_id) REFERENCES alf_prop_root (id),
    PRIMARY KEY (id)
 ) ENGINE=InnoDB;
-
---
--- Record script finish
---
-DELETE FROM alf_applied_patch WHERE id = 'patch.db-V3.2-AuditTables';
-INSERT INTO alf_applied_patch
-  (id, description, fixes_from_schema, fixes_to_schema, applied_to_schema, target_schema, applied_on_date, applied_to_server, was_executed, succeeded, report)
-  VALUES
-  (
-    'patch.db-V3.2-AuditTables', 'Manually executed script upgrade V3.2: Audit Tables',
-    0, 3001, -1, 3002, null, 'UNKNOWN', ${TRUE}, ${TRUE}, 'Script completed'
-  );

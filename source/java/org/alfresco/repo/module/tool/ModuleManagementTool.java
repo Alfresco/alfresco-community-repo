@@ -231,7 +231,7 @@ public class ModuleManagementTool implements LogOutput
                 throw new ModuleManagementToolException("No module.properties file has been found in the installing .amp file '" + ampFileLocation + "'");
             }
             String installingId = installingModuleDetails.getId();
-            ModuleVersionNumber installingVersion = installingModuleDetails.getVersion();
+            ModuleVersionNumber installingVersion = installingModuleDetails.getModuleVersionNumber();
             
             //A series of checks
             warHelper.checkCompatibleVersion(warFile, installingModuleDetails);
@@ -303,7 +303,7 @@ public class ModuleManagementTool implements LogOutput
         if (installedModuleDetails != null)
         {
             String installedId = installedModuleDetails.getId();
-            ModuleVersionNumber installedVersion = installedModuleDetails.getVersion();
+            ModuleVersionNumber installedVersion = installedModuleDetails.getModuleVersionNumber();
             
             int compareValue = installedVersion.compareTo(installingVersion);
             if (compareValue > 0)
@@ -711,7 +711,7 @@ public class ModuleManagementTool implements LogOutput
                             }
                             outputVerboseMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
                             outputVerboseMessage("   Title:        " + moduleDetails.getTitle(), true);
-                            outputVerboseMessage("   Version:      " + moduleDetails.getVersion(), true);
+                            outputVerboseMessage("   Version:      " + moduleDetails.getModuleVersionNumber(), true);
                             outputVerboseMessage("   Install Date: " + moduleDetails.getInstallDate(), true);                
                             outputVerboseMessage("   Description:   " + moduleDetails.getDescription(), true); 
                         }

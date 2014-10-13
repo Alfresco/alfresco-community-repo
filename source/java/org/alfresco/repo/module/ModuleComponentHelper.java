@@ -529,7 +529,7 @@ public class ModuleComponentHelper
     private void startModule(ModuleDetails module, Set<String> startedModules, Set<ModuleComponent> executedComponents)
     {
         String moduleId = module.getId();
-        ModuleVersionNumber moduleNewVersion = module.getVersion();
+        ModuleVersionNumber moduleNewVersion = module.getModuleVersionNumber();
         
         // Double check whether we have done this module already
         if (startedModules.contains(moduleId))

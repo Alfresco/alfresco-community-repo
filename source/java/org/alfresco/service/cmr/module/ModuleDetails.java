@@ -74,7 +74,15 @@ public interface ModuleDetails extends Serializable
      * 
      * @return  module version number
      */
-    ModuleVersionNumber getVersion();
+    ModuleVersionNumber getModuleVersionNumber();
+    
+    /**
+     * Get the version number of the module
+     * 
+     * @return  module version number
+     * @deprecated use getModuleVersionNumber which knows about maven style version numbers
+     */
+    VersionNumber getVersion();
     
     /**
      * Get the title of the module
@@ -143,6 +151,10 @@ public interface ModuleDetails extends Serializable
      */
     void setInstallState(ModuleInstallState installState);
     
+    /**
+     * 
+     * @return the editions
+     */
     List<String> getEditions();
     
     /**

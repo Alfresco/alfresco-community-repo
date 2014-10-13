@@ -360,7 +360,7 @@ public class ModuleDetailsImpl implements ModuleDetails
         return aliases;
     }
 
-    public ModuleVersionNumber getVersion()
+    public ModuleVersionNumber getModuleVersionNumber()
     {
         return version;
     }
@@ -609,7 +609,7 @@ public class ModuleDetailsImpl implements ModuleDetails
                 return false;
             }
             // Check the version number
-            ModuleVersionNumber checkVersion = moduleDetails.getVersion();
+            ModuleVersionNumber checkVersion = moduleDetails.getModuleVersionNumber();
             boolean matched = false;
             for (Pair<ModuleVersionNumber, ModuleVersionNumber> versionRange : versionRanges)
             {
@@ -631,5 +631,23 @@ public class ModuleDetailsImpl implements ModuleDetails
             }
             return matched;
         }
+    }
+
+    @Override
+    public VersionNumber getVersion()
+    {
+        // lossy translation between maven version and old VersionNumber
+        String mavenVersion = version.toString();
+        StringBuffer b = new StringBuffer();
+        for(int i = 0; i < mavenVersion.length(); i++)
+        {
+            char c = mavenVersion.charAt(i);
+            if(Character.isDigit(c) || c == '.')
+            {
+                b.append(c);
+            }
+        }
+        
+        return new VersionNumber(b.toString());
     }
 }

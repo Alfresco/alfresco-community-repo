@@ -457,25 +457,33 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         int undeployed = 0;
         for(String workflowName : workflowNames)
         {
-            // Undeploy the workflow definition - all versions in JBPM
-            List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(workflowName);
-            if(defs.size() > 0)
+            String engineId = BPMEngineRegistry.getEngineId(workflowName);
+            if (workflowAdminService.isEngineEnabled(engineId))
             {
-                undeployed++;
+                // Undeploy the workflow definition - all versions in JBPM
+                List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(workflowName);
+                if(defs.size() > 0)
+                {
+                    undeployed++;
+                }
+                for (WorkflowDefinition def: defs)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Undeploying workflow '" + workflowName + "' ...");
+                    }
+
+                    workflowService.undeployDefinition(def.getId());
+
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("... undeployed '" + def.getId() + "' v" + def.getVersion());
+                    }
+                }
             }
-            for (WorkflowDefinition def: defs)
+            else
             {
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Undeploying workflow '" + workflowName + "' ...");
-                }
-
-                workflowService.undeployDefinition(def.getId());
-
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("... undeployed '" + def.getId() + "' v" + def.getVersion());
-                }
+                logger.debug("Workflow deployer: Definition '" + workflowName + "' cannot be undeployed as the '" + engineId + "' engine is disabled");
             }
         }
         return undeployed;

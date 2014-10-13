@@ -217,13 +217,17 @@ public class NodesGet extends DeclarativeWebScript
         private final Long txnId;
         private final boolean isDeleted;
         private final String nodeRef;
+        private final String tenant;
+        private final Long aclId; 
 
-        public NodeRecord(Node node, QNameDAO qnameDAO)
+        public NodeRecord(Node node, QNameDAO qnameDAO, TenantService tenantService)
         {
             this.id = node.getId();
             this.txnId = node.getTransaction().getId();
             this.isDeleted = node.getNodeStatus(qnameDAO).isDeleted();
             this.nodeRef = node.getNodeRef().toString();
+            this.tenant = tenantService.getDomain(node.getNodeRef().getStoreRef().getIdentifier());
+            this.aclId = node.getAclId();
         }
 
         public Long getId()
@@ -245,6 +249,18 @@ public class NodesGet extends DeclarativeWebScript
         {
             return nodeRef;
         }
+
+        public String getTenant()
+        {
+            return tenant;
+        }
+
+        public Long getAclId()
+        {
+            return aclId;
+        }
+        
+        
     }
 
     /**
@@ -281,12 +297,12 @@ public class NodesGet extends DeclarativeWebScript
                 StoreRef baseStoreRef = new StoreRef(tenantStoreRef.getProtocol(), tenantService.getBaseName(tenantStoreRef.getIdentifier(), true));
                 if (storeRef.equals(baseStoreRef))
                 {
-                    nodes.add(new NodeRecord(node, qnameDAO));
+                    nodes.add(new NodeRecord(node, qnameDAO, tenantService));
                 }
             }
             else
             {
-                nodes.add(new NodeRecord(node, qnameDAO));
+                nodes.add(new NodeRecord(node, qnameDAO, tenantService));
             }
             
             // continue - get next node

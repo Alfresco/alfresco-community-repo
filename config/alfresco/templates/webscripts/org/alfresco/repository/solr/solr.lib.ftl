@@ -51,7 +51,9 @@
          "id": ${node.id?c},
          "nodeRef": "${node.nodeRef}",
          "txnId": ${node.txnId?c},
-         "status": "<#if node.deleted>d<#else>u</#if>"
+         "status": "<#if node.deleted>d<#else>u</#if>",
+         "aclId": ${node.aclId?c},
+         "tenant": "${node.tenant}"
       }
 </#macro>
 

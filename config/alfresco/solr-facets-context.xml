@@ -69,10 +69,16 @@
    </bean>
 
    <bean id="facet.siteTitleDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.SiteTitleDisplayHandler" parent="baseFacetLabelDisplayHandler" >
-      <constructor-arg>
+      <constructor-arg index="0">
          <set>
             <value>SITE</value>
          </set>
+      </constructor-arg>
+      <constructor-arg index="1">
+         <map>
+            <entry key="_REPOSITORY_" value="location.path.repository" />
+            <entry key="_SHARED_FILES_" value="location.path.shared" />
+         </map>
       </constructor-arg>
    </bean>
 

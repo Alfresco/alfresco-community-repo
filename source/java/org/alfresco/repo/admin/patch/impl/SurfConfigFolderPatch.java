@@ -259,7 +259,10 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
 
         if (surfConfigPair == null)
         {
-            logger.info("WARNING: unable to find surf-config folder for site: [" + siteName + ']');
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unable to find surf-config folder for site: [" + siteName + ']');
+            }
             return;
         }
         NodeRef surfConfigNodeRef = surfConfigPair.getSecond().getChildRef();
@@ -283,14 +286,20 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         }
         else
         {
-            logger.info("WARNING: unable to find surf-config/components folder for site: [" + siteName + ']');
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unable to find surf-config/components folder for site: [" + siteName + ']');
+            }
         }
 
         // cm:surf-config/cm:pages folder
         NodeRef pagesNodeRef = nodeService.getChildByName(surfConfigNodeRef, ContentModel.ASSOC_CONTAINS, PAGES);
         if (pagesNodeRef == null)
         {
-            logger.info("WARNING: unable to find surf-config/pages folder for site: [" + siteName + ']');
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unable to find surf-config/pages folder for site: [" + siteName + ']');
+            }
             return;
         }
         // add aspect to cm:pages
@@ -300,7 +309,10 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
         NodeRef siteNodeRef = nodeService.getChildByName(pagesNodeRef, ContentModel.ASSOC_CONTAINS, SITE);
         if (siteNodeRef == null)
         {
-            logger.info("WARNING: unable to find surf-config/pages/site folder for site: [" + siteName + ']');
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unable to find surf-config/pages/site folder for site: [" + siteName + ']');
+            }
             return;
         }
         // add aspect to cm:pages/cm:site folder
@@ -311,7 +323,10 @@ public class SurfConfigFolderPatch extends AsynchronousPatch
 
         if (siteChildNodeRef == null)
         {
-            logger.info("WARNING: unable to find surf-config/pages/site/" + siteName + " folder for site: [" + siteName + ']');
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Unable to find surf-config/pages/site/" + siteName + " folder for site: [" + siteName + ']');
+            }
             return;
         }
         // add aspect to cm:surf-config/cm:pages/cm:site/{siteName}

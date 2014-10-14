@@ -136,7 +136,8 @@ public class TransformerSelectorImpl implements TransformerSelector
         @Override
         public boolean equals(Object obj)
         {
-            return transformer == ((TransformerSortData) obj).transformer;
+            return obj instanceof TransformerSortData &&
+                   transformer == ((TransformerSortData) obj).transformer;
         }
 
         @Override

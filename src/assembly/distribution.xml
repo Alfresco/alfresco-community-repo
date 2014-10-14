@@ -42,25 +42,7 @@
             </includes>
         </dependencySet>
 
-        <!-- SOLR -->
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>alf_data/solr</outputDirectory>
-            <outputFileNameMapping>apache-solr-1.4.1.war</outputFileNameMapping>
-            <includes>
-                <include>*:alfresco-solr:war</include>
-            </includes>
-        </dependencySet>
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>alf_data/solr</outputDirectory>
-            <unpack>true</unpack>
-            <includes>
-                <include>*:alfresco-solr:zip:config*</include>
-            </includes>
-        </dependencySet>
+        <!-- SOLR4 Config -->
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>

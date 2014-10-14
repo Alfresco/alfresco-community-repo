@@ -32,12 +32,6 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-solr</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solr4</artifactId>
             <version>${project.version}</version>
             <classifier>ssl</classifier>
@@ -50,14 +44,7 @@
             </exclusions>
         </dependency>
 
-        <!-- Solr config -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-solr</artifactId>
-            <version>${project.version}</version>
-            <classifier>config</classifier>
-            <type>zip</type>
-        </dependency>
+        <!-- Solr4 config -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solr4</artifactId>

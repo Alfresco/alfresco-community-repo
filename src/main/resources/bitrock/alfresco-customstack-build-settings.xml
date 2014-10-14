@@ -13,7 +13,7 @@
         <setInstallerVariable name="alfresco_lib_source_directory" value="${distribution_folder.unix}/web-server/lib" />
         <setInstallerVariable name="alfresco_endorsed_source_directory" value="${distribution_folder.unix}/web-server/endorsed" />
         <setInstallerVariable name="alfresco_war_source_directory" value="${distribution_folder.unix}/web-server/webapps" />
-        <setInstallerVariable name="alfresco_licenses_directory" value="${build_project_directory.unix}/licenses" />
+        <setInstallerVariable name="alfresco_licenses_directory" value="${distribution_folder.unix}/licenses" />
         <setInstallerVariable name="alfresco_readme_source_directory" value="${distribution_folder.unix}" />
         <setInstallerVariable name="alfresco_on_install_settings_directory" value="${build_project_directory.unix}/bitrock" />
 

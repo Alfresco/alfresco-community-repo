@@ -188,7 +188,7 @@ public abstract class TransformerPropertyNameExtractor
                 for (String targetExt : targetExtensions)
                 {
                     addTransformerSourceTargetValue(transformerSourceTargetSuffixValues,
-                            (separator == TransformerConfig.MIMETYPES),
+                            (TransformerConfig.MIMETYPES.equals(separator)),
                             transformerName, sourceExt, targetExt, suffix,
                             use, value, mimetypeService);
                 }

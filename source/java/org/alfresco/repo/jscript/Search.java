@@ -583,7 +583,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 String defaultField = (String)def.get("defaultField");
                 String defaultOperator = (String)def.get("defaultOperator");
                 String searchTerm = (String) def.get("searchTerm");
-                Boolean spellCheck = (Boolean) def.get("spellCheck");
+                boolean spellCheck = Boolean.TRUE.equals(def.get("spellCheck"));
                 
                 // extract supplied values
                 
@@ -666,7 +666,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 sp.setLanguage(language != null ? language : SearchService.LANGUAGE_LUCENE);
                 sp.setQuery(query);
                 sp.setSearchTerm(searchTerm);
-                sp.setSpellCheck(spellCheck != null ? spellCheck.booleanValue() : false);
+                sp.setSpellCheck(spellCheck);
                 if (defaultField != null)
                 {
                     sp.setDefaultFieldName(defaultField);

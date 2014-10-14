@@ -19,7 +19,6 @@
 package org.alfresco.repo.domain.patch;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,36 +55,6 @@ public interface PatchDAO
      * @return                      Returns the node ID and node name
      */
     public List<Pair<NodeRef, String>> getNodesOfTypeWithNamePattern(QName typeQName, String namePattern);
-    
-    /**
-     * Drop old attribute alf_*attribute* tables
-     */
-    public void migrateOldAttrDropTables();
-    
-    /**
-     * Get shared acls with inheritance issues
-     */
-    public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent();
-    
-    /**
-     * Get defining acls with inheritance issues
-     */
-    public List<Map<String, Object>> getDefiningAclsThatDoNotInheritCorrectlyFromThePrimaryParent();
-    
-    /**
-     * Get acls that do not inherit from the primary parent.
-     */
-    public List<Map<String, Object>> getAclsThatInheritFromNonPrimaryParent();
-    
-    /**
-     * Get acls that inherit with inheritance unset
-     */
-    public List<Map<String, Object>> getAclsThatInheritWithInheritanceUnset();
-    
-    /**
-     * Get shared acls that do not inherit correctly from the defining acl
-     */
-    public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl();
     
     /**
      * @param qnames                the qnames to search for

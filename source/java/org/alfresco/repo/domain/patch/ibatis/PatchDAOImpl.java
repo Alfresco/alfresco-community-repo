@@ -60,18 +60,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     
     private static final String UPDATE_CONTENT_MIMETYPE_ID = "alfresco.patch.update_contentMimetypeId";
     
-    private static final String DROP_OLD_ATTR_LIST = "alfresco.patch.drop_oldAttrAlfListAttributeEntries";
-    private static final String DROP_OLD_ATTR_MAP = "alfresco.patch.drop_oldAttrAlfMapAttributeEntries";
-    private static final String DROP_OLD_ATTR_GLOBAL = "alfresco.patch.drop_oldAttrAlfGlobalAttributes";
-    private static final String DROP_OLD_ATTR = "alfresco.patch.drop_oldAttrAlfAttributes";
-    private static final String DROP_OLD_ATTR_SEQ = "alfresco.patch.drop_oldAttrAlfAttributes_seq";
-    
-    private static final String SELECT_ACLS_THAT_INHERIT_FROM_NON_PRIMARY_PARENT = "alfresco.patch.select_aclsThatInheritFromNonPrimaryParent";
-    private static final String SELECT_ACLS_THAT_INHERIT_WITH_INHERITANCE_UNSET = "alfresco.patch.select_aclsThatInheritWithInheritanceUnset";
-    private static final String SELECT_DEFINING_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT = "alfresco.patch.select_definingAclsThatDoNotInheritCorrectlyFromThePrimaryParent";
-    private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent";
-    private static final String SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL = "alfresco.patch.select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl";
-   
     private static final String SELECT_COUNT_NODES_WITH_ASPECTS = "alfresco.patch.select_CountNodesWithAspectIds";
     
     private static final String SELECT_NODES_BY_TYPE_QNAME = "alfresco.patch.select_NodesByTypeQName";
@@ -199,60 +187,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         return results;
     }
     
-    @Override
-    public void migrateOldAttrDropTables()
-    {
-        template.update(DROP_OLD_ATTR_LIST);
-        template.update(DROP_OLD_ATTR_MAP);
-        template.update(DROP_OLD_ATTR_GLOBAL);
-        template.update(DROP_OLD_ATTR);
-    }
-    
-    @Override
-    public List<Map<String, Object>> getAclsThatInheritFromNonPrimaryParent()
-    {
-        List<Map<String, Object>> rows = template.selectList(
-                SELECT_ACLS_THAT_INHERIT_FROM_NON_PRIMARY_PARENT,
-                Boolean.TRUE);
-        return rows;
-    }
-
-    @Override
-    public List<Map<String, Object>> getAclsThatInheritWithInheritanceUnset()
-    {
-        List<Map<String, Object>> rows = template.selectList(
-                SELECT_ACLS_THAT_INHERIT_WITH_INHERITANCE_UNSET,
-                Boolean.TRUE);
-        return rows;
-    }
-
-    @Override
-    public List<Map<String, Object>> getDefiningAclsThatDoNotInheritCorrectlyFromThePrimaryParent()
-    {
-        List<Map<String, Object>> rows = template.selectList(
-                SELECT_DEFINING_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT,
-                Boolean.TRUE);
-        return rows;
-    }
-
-    @Override
-    public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent()
-    {
-        List<Map<String, Object>> rows = template.selectList(
-                SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THE_PRIMARY_PARENT,
-                Boolean.TRUE);
-        return rows;
-    }
-
-    @Override
-    public List<Map<String, Object>> getSharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl()
-    {
-        List<Map<String, Object>> rows = template.selectList(
-                SELECT_SHARED_ACLS_THAT_DO_NOT_INHERIT_CORRECTLY_FROM_THEIR_DEFINING_ACL,
-                Boolean.TRUE);
-        return rows;
-    }
-
     @Override
     public long getCountNodesWithAspects(Set<QName> qnames)
     {
@@ -388,12 +322,6 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
      */
     public static class PostgreSQL extends PatchDAOImpl
     {
-        @Override
-        public void migrateOldAttrDropTables()
-        {
-            super.migrateOldAttrDropTables();
-            template.update(DROP_OLD_ATTR_SEQ);
-        }
     }
     
     /**
@@ -404,11 +332,5 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
      */
     public static class Oracle extends PatchDAOImpl
     {
-        @Override
-        public void migrateOldAttrDropTables()
-        {
-            super.migrateOldAttrDropTables();
-            template.update(DROP_OLD_ATTR_SEQ);
-        }
     }
 }

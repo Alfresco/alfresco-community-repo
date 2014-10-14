@@ -8,66 +8,9 @@
     <!-- Result Maps    -->
     <!--                -->
     
-    <resultMap id="result_admOldContentProp" type="java.util.HashMap">
-        <result property="nodeId" column="node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="qnameId" column="qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="listIndex" column="list_index" jdbcType="INTEGER" javaType="java.lang.Integer"/>
-        <result property="localeId" column="locale_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="stringValue" column="string_value" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
-    
-    <resultMap id="result_authoritiesAndCrc" type="java.util.HashMap">
-        <result property="authority" column="authority" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="crc" column="crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </resultMap>
-    
-    <resultMap id="result_childAssocsForCrc" type="java.util.HashMap">
-        <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="typeQNameId" column="type_qname_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="qnameNamespaceId" column="qname_ns_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="qnameLocalName" column="qname_localname" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="childNodeNameCrc" column="child_node_name_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="qnameCrc" column="qname_crc" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="childNodeUuid" column="child_node_uuid" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="childNodeName" column="child_node_name" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
-    
     <resultMap id="result_nodeIdAndName" type="java.util.HashMap">
         <result property="id" column="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <result property="name" column="name" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
-    
-    <resultMap type="java.util.HashMap" id="result_admTenant">
-        <result property="tenantDomain" column="tenantDomain" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="isEnabled" column="isEnabled" jdbcType="BIT" javaType="java.lang.Boolean"/>
-        <result property="rootDir" column="rootDir" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
-    
-    <resultMap type="java.util.HashMap" id="result_PBB">
-        <result property="componentName" column="componentName" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="propName" column="propName" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="propValue" column="propValue" jdbcType="VARCHAR" javaType="java.lang.String"/>
-    </resultMap>
-    
-    <resultMap type="java.util.HashMap" id="result_ChainingURS">
-        <result property="label" column="label" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="zoneId" column="zoneId" jdbcType="VARCHAR" javaType="java.lang.String"/>
-        <result property="lastModified" column="lastModified" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </resultMap>
-    
-    <resultMap id="result_aclIneritanceIssue" type="java.util.HashMap">
-        <result property="childAclId" column="child_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="childAclType" column="child_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="primaryParentAclId" column="primary_parent_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="primaryParentAclType" column="primary_parent_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="childNodeId" column="child_node_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </resultMap>
-    
-    <resultMap id="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" type="java.util.HashMap">
-        <result property="inheritedAclId" column="inherited_acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="inheritedAclType" column="inherited_acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="aclId" column="acl_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <result property="aclType" column="acl_type" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </resultMap>
     
     <resultMap id="result_nodeNameUuidMap" type="java.util.HashMap">
@@ -84,23 +27,9 @@
         <parameter property="id" jdbcType="BIGINT" javaType="long"/>
     </parameterMap>
 
-    <parameterMap id="parameter_admNewContentProp" type="map">
-        <parameter property="longValue" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="nodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="qnameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="listIndex" jdbcType="INTEGER" javaType="java.lang.Integer"/>
-        <parameter property="localeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </parameterMap>
-    
     <parameterMap id="parameter_contentMimetype" type="map">
         <parameter property="newMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="oldMimetypeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
-    </parameterMap>
-    
-    <parameterMap id="parameter_childAssocCrcs" type="map">
-        <parameter property="childNodeNameCrc" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="qnameCrc" jdbcType="BIGINT" javaType="java.lang.Long"/>
-        <parameter property="id" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
     <parameterMap id="parameter_nodeTypeAndNamePattern" type="map">
@@ -159,138 +88,6 @@
             n.type_qname_id = #{typeQNameId} and
             np.qname_id = #{propQNameId} and
             np.string_value like #{namePattern} <include refid="alfresco.util.escape"/>
-    </select>
-    
-    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
-        <![CDATA[
-        select distinct
-       		childAcl.id as child_acl_id,
-        	childAcl.type as child_acl_type,
-        	acl.id      as primary_parent_acl_id, 
-        	acl.type    as primary_parent_acl_type,
-        	child.id    as child_node_id
-        from 
-        	alf_access_control_list acl 
-      		join alf_acl_member mem on mem.acl_id = acl.id
-			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
-			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse} AND childAcl.type = 2
-      	where 	   
-      	(
-      	            acl.id = childAcl.inherits_from
-           	 	AND NOT EXISTS (   
-           		 				select 1 
-           		                from alf_acl_member childMem
-           	    	            where 
-           	                     	  	childMem.acl_id = childAcl.id
-           	                    	and childMem.ace_id = mem.ace_id
-           	                    	and childMem.pos  = mem.pos +1
-                   	           )
-      	)
-        ]]>
-    </select>
-   
-    <select id="select_definingAclsThatDoNotInheritCorrectlyFromThePrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
-        <![CDATA[
-        select distinct
-       		childAcl.id as child_acl_id,
-        	childAcl.type as child_acl_type,
-        	acl.id      as primary_parent_acl_id, 
-        	acl.type    as primary_parent_acl_type,
-        	child.id    as child_node_id
-        from 
-        	alf_access_control_list acl 
-      		join alf_acl_member mem on mem.acl_id = acl.id
-			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
-			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse} AND childAcl.type = 1
-      	where 	   
-      	(
-      	            acl.inherited_acl = childAcl.inherits_from
-            	AND acl.id <> childAcl.inherits_from
-            	AND NOT EXISTS (
-               			    	select 1 from alf_acl_member childMem
-                            	where 
-                              	    	childMem.acl_id = childAcl.id
-                                	and childMem.ace_id = mem.ace_id
-                             		and childMem.pos = mem.pos + 2
-                           	   )
-      	)
-        ]]>
-    </select>
-   
-    <select id="select_aclsThatInheritFromNonPrimaryParent" parameterType="boolean" resultMap="result_aclIneritanceIssue">
-        <![CDATA[
-       select distinct
-       		childAcl.id as child_acl_id,
-        	childAcl.type as child_acl_type,
-        	acl.id      as primary_parent_acl_id, 
-        	acl.type    as primary_parent_acl_type,
-        	child.id    as child_node_id
-        from 
-        	alf_access_control_list acl 
-      		join alf_acl_member mem on mem.acl_id = acl.id
-			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
-			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse}
-      	where 	   
-      	(
-      	            childAcl.id is not null
-        		AND acl.id <> childAcl.id 
-            	AND acl.id <> childAcl.inherits_from 
-            	AND acl.inherited_acl <> childAcl.inherits_from
-      	)
-        ]]>
-    </select>
-    
-    <select id="select_aclsThatInheritWithInheritanceUnset" parameterType="boolean" resultMap="result_aclIneritanceIssue">
-        <![CDATA[
-        select distinct
-       		childAcl.id as child_acl_id,
-        	childAcl.type as child_acl_type,
-        	acl.id      as primary_parent_acl_id, 
-        	acl.type    as primary_parent_acl_type,
-        	child.id    as child_node_id
-        from 
-        	alf_access_control_list acl 
-      		join alf_acl_member mem on mem.acl_id = acl.id
-			join alf_node node on node.acl_id = acl.id
-			join alf_child_assoc priChild on priChild.parent_node_id = node.id and is_primary = #{trueOrFalse}
-			join alf_node child on priChild.child_node_id = child.id
-			join alf_access_control_list childAcl on childAcl.id = child.acl_id AND childAcl.inherits = #{trueOrFalse}
-      	where 	   
-        (
-                    childAcl.id is not null
-            	AND childAcl.inherits_from is null
-            	AND childAcl.id <> acl.id
-        )	
-       ]]>
-    </select>
-    
-    <select id="select_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl" parameterType="boolean" resultMap="result_sharedAclsThatDoNotInheritCorrectlyFromTheirDefiningAcl">
-        <![CDATA[
-        select distinct
-          	inheritedAcl.id as inherited_acl_id,
-        	inheritedAcl.type as inherited_acl_type,
-        	acl.id      as acl_id, 
-          	acl.type    as acl_type
-        from 
-        	alf_access_control_list acl 
-      		join alf_acl_member mem on mem.acl_id = acl.id
-      		join alf_access_control_list inheritedAcl on inheritedAcl.inherits_from = acl.id AND inheritedAcl.inherits = #{trueOrFalse} AND inheritedAcl.type = 1
-      	where 	acl.id = inheritedAcl.inherits_from
-                AND NOT EXISTS (
-                				select 1 
-                               	from alf_acl_member childMem
-                               	where 
-                                      childMem.acl_id = inheritedAcl.id
-                                  and childMem.ace_id = mem.ace_id
-                                  and childMem.pos  = mem.pos +1
-                               )
-       ]]>
     </select>
     
     <select id="select_CountNodesWithAspectIds" parameterType="Ids" resultType="long" >
@@ -441,26 +238,6 @@
             content_mimetype_id = ?
         where
             content_mimetype_id = ?
-    </update>
-    
-    <update id="drop_oldAttrAlfListAttributeEntries">
-        drop table alf_list_attribute_entries
-    </update>
-    
-    <update id="drop_oldAttrAlfMapAttributeEntries">
-        drop table alf_map_attribute_entries
-    </update>
-    
-    <update id="drop_oldAttrAlfGlobalAttributes">
-        drop table alf_global_attributes
-    </update>
-    
-    <update id="drop_oldAttrAlfAttributes">
-        drop table alf_attributes
-    </update>
-    
-    <update id="drop_oldAttrAlfAttributes_seq">
-        drop sequence alf_attributes_seq
     </update>
     
     <!--                -->

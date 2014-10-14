@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2013 Alfresco Software Limited.
+ * Copyright (C) 2013-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,8 +18,6 @@
  */
 package org.alfresco.repo.security.sync;
 
-import org.springframework.context.ApplicationEvent;
-
 /**
  * Synchronize directory 
  * 
@@ -32,7 +30,7 @@ public abstract class SynchronizeDirectoryEvent extends SynchronizeEvent
     public SynchronizeDirectoryEvent(Object source, String zone)
     {
         super(source);
-        zone = zone;
+        this.zone = zone;
     }
     
     public String getZone()

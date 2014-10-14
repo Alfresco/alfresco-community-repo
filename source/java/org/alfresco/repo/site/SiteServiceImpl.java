@@ -2107,7 +2107,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                         {
                             int index = members.indexOf(memberInfo);
                             int priority = roleComparator.compare(members.get(index).getMemberRole(), memberInfo.getMemberRole());
-                            if (priority == 1)
+                            if (priority > 0)
                             {
                                 members.set(index, memberInfo);
                             }

@@ -45,7 +45,7 @@ function getContents(user, type)
    {
       return 'TYPE:"cm:content" ' +
              'AND +@cm:' + userProperty + ':"' + user + '" ' +
-             'AND +@cm:' + type + ':["' + fromQuery + '" TO "' + toQuery + '"]';
+             'AND +@cm:' + type + ':["' + fromQuery + '" TO "' + toQuery + '"] AND -QNAME:comment\\-*';
    };
    
    var sortColumns = [];

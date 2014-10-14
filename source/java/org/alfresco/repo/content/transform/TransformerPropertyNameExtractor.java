@@ -177,10 +177,10 @@ public abstract class TransformerPropertyNameExtractor
         }
         else
         {
-            List<String> sourceExtensions = (separator == TransformerConfig.EXTENSIONS)
+            List<String> sourceExtensions = (TransformerConfig.EXTENSIONS.equals(separator))
                     ? getMatchingExtensionsFromExtensions(firstExpression, mimetypeService)
                     : getMatchingExtensionsFromMimetypes( firstExpression, mimetypeService);
-            List<String> targetExtensions = (separator == TransformerConfig.EXTENSIONS)
+            List<String> targetExtensions = (TransformerConfig.EXTENSIONS.equals(separator))
                     ? getMatchingExtensionsFromExtensions(secondExpression, mimetypeService)
                     : getMatchingExtensionsFromMimetypes( secondExpression, mimetypeService);
             for (String sourceExt : sourceExtensions)

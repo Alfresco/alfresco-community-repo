@@ -135,6 +135,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         for (String user : testUsers)
         {
             filePlanPermissionService.setPermission(rmFolder, user, RMPermissionModel.FILING);
+            filePlanPermissionService.setPermission(rmContainer, user, RMPermissionModel.READ_RECORDS);
             filePlanPermissionService.setPermission(moveToFolder, user, RMPermissionModel.READ_RECORDS);
             filePlanPermissionService.setPermission(moveToCategory, user, RMPermissionModel.READ_RECORDS);
         }

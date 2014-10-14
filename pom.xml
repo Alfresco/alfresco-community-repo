@@ -182,6 +182,14 @@
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                 </artifactItem>
+                                <!-- Solr1 Distribution -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr1-distribution</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/alfresco-community-${project.version}/alf_data/solr</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

@@ -228,7 +228,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                 {
                     if(logger.isDebugEnabled())
                     {
-                        logger.debug("(No DB QL) Using SOLR query: "+dbQueryLanguage.getName()+" for "+searchParameters);
+                        logger.debug("(No DB QL) Using SOLR query: "+"dbQueryLanguage==null"+" for "+searchParameters);
                     }
                     stopWatch.start();
                     ResultSet results = indexQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);

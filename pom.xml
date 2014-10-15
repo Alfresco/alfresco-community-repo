@@ -915,6 +915,27 @@
                </execution>
              </executions>
          </plugin>
+         <!--  See http://jibx.sourceforge.net/maven-jibx-plugin  -->
+         <plugin>
+             <groupId>org.jibx</groupId>
+             <artifactId>maven-jibx-plugin</artifactId>
+             <version>${dependency.jibx.version}</version>
+             <configuration>
+                 <load>true</load>
+                 <schemaBindingDirectory>${project.build.outputDirectory}/org/alfresco/repo/importer/system</schemaBindingDirectory>
+                 <includeSchemaBindings>
+                     <includeSchemaBinding>systeminfo.xml</includeSchemaBinding>
+                 </includeSchemaBindings>
+              </configuration>
+              <executions>
+                 <execution>
+                     <id>bind-sources</id>
+                     <goals>
+                         <goal>bind</goal>
+                     </goals>
+                 </execution>
+             </executions>
+         </plugin>
       </plugins>
     	<pluginManagement>
     		<plugins>
@@ -945,6 +966,26 @@
     									<ignore />
     								</action>
     							</pluginExecution>
+        						<pluginExecution>
+        							<pluginExecutionFilter>
+        								<groupId>org.jibx</groupId>
+        								<artifactId>
+        									maven-jibx-plugin
+        								</artifactId>
+        								<versionRange>
+        									[1.2.5,)
+        								</versionRange>
+        								<goals>
+        									<goal>bind</goal>
+        								</goals>
+        							</pluginExecutionFilter>
+        							<action>
+        								<execute>
+        									<runOnConfiguration>true</runOnConfiguration>
+        									<runOnIncremental>true</runOnIncremental>
+        								</execute>
+        							</action>
+        						</pluginExecution>
     						</pluginExecutions>
     					</lifecycleMappingMetadata>
     				</configuration>

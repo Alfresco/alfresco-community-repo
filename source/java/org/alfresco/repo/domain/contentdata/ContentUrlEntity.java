@@ -36,10 +36,10 @@ import org.alfresco.util.Pair;
 public class ContentUrlEntity implements Serializable
 {
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = -7697859151521433536L;
-	public static final Long CONST_LONG_ZERO = new Long(0L);
+     * 
+     */
+    private static final long serialVersionUID = -7697859151521433536L;
+    public static final Long CONST_LONG_ZERO = new Long(0L);
     public static final String EMPTY_URL = "empty";
     
     private Long id;
@@ -124,29 +124,29 @@ public class ContentUrlEntity implements Serializable
 
     public ContentUrlKeyEntity getContentUrlKey()
     {
-		return contentUrlKey;
-	}
+        return contentUrlKey;
+    }
 
-	public static ContentUrlEntity setContentUrlKey(ContentUrlEntity existing, ContentUrlKeyEntity contentUrlKey)
-	{
-		ContentUrlEntity ret = new ContentUrlEntity();
-		ret.setContentUrl(existing == null ? null : existing.getContentUrl());
-		ret.setContentUrlShort(existing == null ? null : existing.getContentUrlShort());
-		ret.setContentUrlCrc(existing == null ? null : existing.getContentUrlCrc());
-		ret.setContentUrlKey(contentUrlKey);
-		ret.setOrphanTime(existing == null ? null : existing.getOrphanTime());
-		ret.setSize(existing == null ? null : existing.getSize());
-		ret.setId(existing == null ? null : existing.getId());
+    public static ContentUrlEntity setContentUrlKey(ContentUrlEntity existing, ContentUrlKeyEntity contentUrlKey)
+    {
+        ContentUrlEntity ret = new ContentUrlEntity();
+        ret.setContentUrl(existing == null ? null : existing.getContentUrl());
+        ret.setContentUrlShort(existing == null ? null : existing.getContentUrlShort());
+        ret.setContentUrlCrc(existing == null ? null : existing.getContentUrlCrc());
+        ret.setContentUrlKey(contentUrlKey);
+        ret.setOrphanTime(existing == null ? null : existing.getOrphanTime());
+        ret.setSize(existing == null ? null : existing.getSize());
+        ret.setId(existing == null ? null : existing.getId());
         // done
         return ret;
-	}
+    }
 
-	public void setContentUrlKey(ContentUrlKeyEntity contentUrlKey)
-	{
-		this.contentUrlKey = contentUrlKey;
-	}
+    public void setContentUrlKey(ContentUrlKeyEntity contentUrlKey)
+    {
+        this.contentUrlKey = contentUrlKey;
+    }
 
-	public Long getId()
+    public Long getId()
     {
         return id;
     }

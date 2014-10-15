@@ -191,16 +191,16 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             throw new IllegalArgumentException("Cannot look up ContentData by null ID.");
         }
-    	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByValue(contentUrl);
-    	if(pair != null)
-    	{
-    		contentUrlCache.updateValue(pair.getFirst(), contentUrl);
-    	}
-    	else
-    	{
-    		pair = contentUrlCache.getOrCreateByValue(contentUrl);
-    		contentUrlCache.updateValue(pair.getFirst(), contentUrl);
-    	}
+        Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByValue(contentUrl);
+        if(pair != null)
+        {
+            contentUrlCache.updateValue(pair.getFirst(), contentUrl);
+        }
+        else
+        {
+            pair = contentUrlCache.getOrCreateByValue(contentUrl);
+            contentUrlCache.updateValue(pair.getFirst(), contentUrl);
+        }
     }
 
     @Override
@@ -212,8 +212,8 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         }
         ContentUrlEntity entity = new ContentUrlEntity();
         entity.setContentUrl(contentUrl);
-    	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByValue(entity);
-    	return (pair == null ? null : pair.getSecond());
+        Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByValue(entity);
+        return (pair == null ? null : pair.getSecond());
     }
 
     @Override
@@ -223,8 +223,8 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         {
             throw new IllegalArgumentException("Cannot look up ContentData by null ID.");
         }
-    	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByKey(contentUrlId);
-    	return (pair == null ? null : pair.getSecond());
+        Pair<Long, ContentUrlEntity> pair = contentUrlCache.getByKey(contentUrlId);
+        return (pair == null ? null : pair.getSecond());
     }
 
     public void cacheContentDataForNodes(Set<Long> nodeIds)
@@ -334,21 +334,21 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         @Override
         public Pair<Long, ContentUrlEntity> findByValue(ContentUrlEntity entity)
         {
-        	String contentUrl = entity.getContentUrl();
-        	ContentUrlEntity ret = getContentUrlEntity(contentUrl);
-        	return (ret != null ? new Pair<Long, ContentUrlEntity>(ret.getId(), ret) : null);
+            String contentUrl = entity.getContentUrl();
+            ContentUrlEntity ret = getContentUrlEntity(contentUrl);
+            return (ret != null ? new Pair<Long, ContentUrlEntity>(ret.getId(), ret) : null);
         }
 
         public Pair<Long, ContentUrlEntity> createValue(ContentUrlEntity value)
         {
-        	ContentUrlEntity contentUrlEntity = createContentUrlEntity(value.getContentUrl(), value.getSize(), value.getContentUrlKey());
+            ContentUrlEntity contentUrlEntity = createContentUrlEntity(value.getContentUrl(), value.getSize(), value.getContentUrlKey());
             // Done
             return new Pair<Long, ContentUrlEntity>(contentUrlEntity.getId(), contentUrlEntity);
         }
 
         public Pair<Long, ContentUrlEntity> findByKey(Long id)
         {
-        	ContentUrlEntity contentUrlEntity = getContentUrlEntity(id);
+            ContentUrlEntity contentUrlEntity = getContentUrlEntity(id);
             if (contentUrlEntity == null)
             {
                 return null;
@@ -371,7 +371,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         @Override
         public int deleteByKey(Long id)
         {
-        	return deleteContentUrlEntity(id);
+            return deleteContentUrlEntity(id);
         }
     }
 
@@ -381,18 +381,18 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     private ContentData makeContentData(ContentDataEntity contentDataEntity)
     {
         // Decode content URL
-    	Long contentUrlId = contentDataEntity.getContentUrlId();
-    	String contentUrl = null;
-    	if(contentUrlId != null)
-    	{
-	    	Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(contentUrlId);
-	        if (entityPair == null)
-	        {
-	            throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + contentUrlId);
-	        }
-	    	ContentUrlEntity contentUrlEntity = entityPair.getSecond();
-	    	contentUrl = contentUrlEntity.getContentUrl();
-    	}
+        Long contentUrlId = contentDataEntity.getContentUrlId();
+        String contentUrl = null;
+        if(contentUrlId != null)
+        {
+            Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(contentUrlId);
+            if (entityPair == null)
+            {
+                throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + contentUrlId);
+            }
+            ContentUrlEntity contentUrlEntity = entityPair.getSecond();
+            contentUrl = contentUrlEntity.getContentUrl();
+        }
 
         long size = contentDataEntity.getSize() == null ? 0L : contentDataEntity.getSize().longValue();
 
@@ -437,11 +437,11 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         long size = contentData.getSize();
         if (contentUrl != null)
         {
-        	ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
-        	contentUrlEntity.setContentUrl(contentUrl);
-        	contentUrlEntity.setSize(size);
-        	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
-        	contentUrlId = pair.getFirst();
+            ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+            contentUrlEntity.setContentUrl(contentUrl);
+            contentUrlEntity.setSize(size);
+            Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
+            contentUrlId = pair.getFirst();
         }
 
         // Resolve the mimetype
@@ -482,12 +482,12 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         ContentUrlEntity contentUrlEntity = null;
         if(oldContentUrlId != null)
         {
-	        Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(oldContentUrlId);
-	        if (entityPair == null)
-	        {
-	            throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + oldContentUrlId);
-	        }
-	        contentUrlEntity = entityPair.getSecond();
+            Pair<Long, ContentUrlEntity> entityPair = contentUrlCache.getByKey(oldContentUrlId);
+            if (entityPair == null)
+            {
+                throw new DataIntegrityViolationException("No ContentUrl value exists for ID " + oldContentUrlId);
+            }
+            contentUrlEntity = entityPair.getSecond();
         }
 
         String oldContentUrl = (contentUrlEntity != null ? contentUrlEntity.getContentUrl() : null);
@@ -501,15 +501,15 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             }
             if (newContentUrl != null)
             {
-            	if(contentUrlEntity == null)
-            	{
-	            	contentUrlEntity = new ContentUrlEntity();
-	            	contentUrlEntity.setContentUrl(newContentUrl);
-            	}
-            	Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
-            	Long newContentUrlId = pair.getFirst();
-            	contentUrlEntity.setId(newContentUrlId);
-            	contentDataEntity.setContentUrlId(newContentUrlId);
+                if(contentUrlEntity == null)
+                {
+                    contentUrlEntity = new ContentUrlEntity();
+                    contentUrlEntity.setContentUrl(newContentUrl);
+                }
+                Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
+                Long newContentUrlId = pair.getFirst();
+                contentUrlEntity.setId(newContentUrlId);
+                contentDataEntity.setContentUrlId(newContentUrlId);
             }
             else
             {

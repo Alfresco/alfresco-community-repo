@@ -45,7 +45,7 @@ public class ContentDataEntity
     {
     }
 
-	@Override
+    @Override
     public int hashCode()
     {
         return (id == null ? 0 : id.hashCode());
@@ -69,7 +69,7 @@ public class ContentDataEntity
         }
     }
 
-	@Override
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder(512);

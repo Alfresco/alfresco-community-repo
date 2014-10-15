@@ -16,39 +16,39 @@ import java.io.Serializable;
  */
 public class SymmetricKeyCount implements Serializable
 {
-	private static final long serialVersionUID = -7823962733045613866L;
+    private static final long serialVersionUID = -7823962733045613866L;
 
-	private String masterKeyAlias;
-	private int count;
+    private String masterKeyAlias;
+    private int count;
 
-	public SymmetricKeyCount()
-	{
-	}
+    public SymmetricKeyCount()
+    {
+    }
 
-	public String getMasterKeyAlias()
-	{
-		return masterKeyAlias;
-	}
+    public String getMasterKeyAlias()
+    {
+        return masterKeyAlias;
+    }
 
-	public void setMasterKeyAlias(String masterKeyAlias)
-	{
-		this.masterKeyAlias = masterKeyAlias;
-	}
+    public void setMasterKeyAlias(String masterKeyAlias)
+    {
+        this.masterKeyAlias = masterKeyAlias;
+    }
 
-	public int getCount()
-	{
-		return count;
-	}
+    public int getCount()
+    {
+        return count;
+    }
 
-	public void setCount(int count)
-	{
-		this.count = count;
-	}
+    public void setCount(int count)
+    {
+        this.count = count;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "SymmetricKeyCount [masterKeyAlias=" + masterKeyAlias
-				+ ", count=" + count + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "SymmetricKeyCount [masterKeyAlias=" + masterKeyAlias
+                + ", count=" + count + "]";
+    }
 }

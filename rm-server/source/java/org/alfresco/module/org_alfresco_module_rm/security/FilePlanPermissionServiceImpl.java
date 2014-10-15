@@ -21,10 +21,8 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -43,7 +41,6 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -404,11 +401,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    /**
-     *
-     * @param nodeRef
-     */
-    public void setUpPermissions(final NodeRef nodeRef)
+    private void setUpPermissions(final NodeRef nodeRef)
     {
         setUpPermissions(nodeRef, null);
     }
@@ -421,7 +414,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 public Object doWork()
                 {
-                    // break inheritance
+                    // set inheritance
                     permissionService.setInheritParentPermissions(nodeRef, isInheritanceAllowed(nodeRef, isParentNodeFilePlan));
 
                     // set extended reader permissions
@@ -436,7 +429,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)
     {
-        return !(isFilePlan(nodeRef) || isHold(nodeRef) || isTransfer(nodeRef) || (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
+        return !(isFilePlan(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef) || isUnfiledRecordsContainer(nodeRef) || (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
     }
 
     /**
@@ -452,12 +445,16 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             public Boolean doWork() throws Exception
             {
-                if (filePlanService.isFilePlan(nodeRef) ||
-                        filePlanService.isFilePlanContainer(nodeRef) ||
-                        recordsManagementService.isRecordFolder(nodeRef) ||
-                        recordService.isRecord(nodeRef))
+                if (canPerformPermissionAction(nodeRef))
                 {
-                    setPermissionDown(nodeRef, authority, permission);
+                    if (RMPermissionModel.FILING.equals(permission))
+                    {
+                        // Remove record read permission before adding filing permission
+                        permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);
+                    }
+
+                    // Set the permission on the node
+                    permissionService.setPermission(nodeRef, authority, permission, true);
                 }
                 else
                 {
@@ -473,57 +470,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * Helper method to set the permission down the hierarchy
-     *
-     * @param nodeRef       node reference
-     * @param authority     authority
-     * @param permission    permission
-     */
-    private void setPermissionDown(NodeRef nodeRef, String authority, String permission)
-    {
-        // set permissions
-        setPermissionImpl(nodeRef, authority, permission);
-
-        // skip out node's that inherit (for example hold and transfer)
-        if (!permissionService.getInheritParentPermissions(nodeRef) &&
-                (filePlanService.isFilePlanContainer(nodeRef) ||
-                recordsManagementService.isRecordFolder(nodeRef)))
-        {
-            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef assoc : assocs)
-            {
-                NodeRef child = assoc.getChildRef();
-                if (filePlanService.isFilePlanContainer(child) ||
-                    recordsManagementService.isRecordFolder(child) ||
-                    recordService.isRecord(child) ||
-                    instanceOf(child, TYPE_HOLD) ||
-                    instanceOf(child, TYPE_TRANSFER))
-                {
-                    setPermissionDown(child, authority, permission);
-                }
-            }
-        }
-    }
-
-    /**
-     * Set the permission, taking into account that filing is a superset of read
-     *
-     * @param nodeRef
-     * @param authority
-     * @param permission
-     */
-    private void setPermissionImpl(NodeRef nodeRef, String authority, String permission)
-    {
-        if (RMPermissionModel.FILING.equals(permission) == true)
-        {
-            // Remove record read permission before adding filing permission
-            permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);
-        }
-
-        permissionService.setPermission(nodeRef, authority, permission, true);
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#deletePermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
      */
     public void deletePermission(final NodeRef nodeRef, final String authority, final String permission)
@@ -532,31 +478,26 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             public Boolean doWork() throws Exception
             {
-                // Delete permission on this node
-                permissionService.deletePermission(nodeRef, authority, permission);
-
-                // can't delete permissions if inherited (eg hold and transfer containers)
-                if (!permissionService.getInheritParentPermissions(nodeRef) &&
-                        (filePlanService.isFilePlanContainer(nodeRef) ||
-                        recordsManagementService.isRecordFolder(nodeRef)))
+                if (canPerformPermissionAction(nodeRef))
                 {
-                    List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                    for (ChildAssociationRef assoc : assocs)
+                    // Delete permission on this node
+                    permissionService.deletePermission(nodeRef, authority, permission);
+                }
+                else
+                {
+                    if (logger.isWarnEnabled())
                     {
-                        NodeRef child = assoc.getChildRef();
-                        if (filePlanService.isFilePlanContainer(child) ||
-                            recordsManagementService.isRecordFolder(child) ||
-                            recordService.isRecord(child)||
-                            instanceOf(child, TYPE_HOLD) ||
-                            instanceOf(child, TYPE_TRANSFER))
-                        {
-                            deletePermission(child, authority, permission);
-                        }
+                        logger.warn("Deleting permissions for this node is not supported.  (nodeRef=" + nodeRef + ", authority=" + authority + ", permission=" + permission + ")");
                     }
                 }
 
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    private boolean canPerformPermissionAction(NodeRef nodeRef)
+    {
+        return filePlanService.isFilePlanContainer(nodeRef) || recordsManagementService.isRecordFolder(nodeRef) || recordService.isRecord(nodeRef);
     }
 }

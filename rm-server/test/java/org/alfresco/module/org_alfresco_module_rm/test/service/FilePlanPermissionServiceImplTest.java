@@ -124,12 +124,12 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         assertPermissions(userName,
                 AccessStatus.ALLOWED,       // fileplan read
                 AccessStatus.ALLOWED,       // fileplan file
-                AccessStatus.ALLOWED,       // category read
-                AccessStatus.ALLOWED,       // category file
-                AccessStatus.ALLOWED,       // record folder read
-                AccessStatus.ALLOWED,       // record folder file
-                AccessStatus.ALLOWED,       // record read
-                AccessStatus.ALLOWED);      // record file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
 
         deletePermission(filePlan, userName, RMPermissionModel.FILING);
 
@@ -519,6 +519,188 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userName);
+    }
+
+    public void testFilePlanComponentInheritance()
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                // Inheritance is turned off for file plan, transfer, holds, unfiled records and root categories
+                // it is turned on for sub categories, record folders and records
+                assertFalse(permissionService.getInheritParentPermissions(filePlan));
+                assertFalse(permissionService.getInheritParentPermissions(filePlanService.getTransferContainer(filePlan)));
+                assertFalse(permissionService.getInheritParentPermissions(filePlanService.getHoldContainer(filePlan)));
+                assertFalse(permissionService.getInheritParentPermissions(unfiledContainer));
+                assertFalse(permissionService.getInheritParentPermissions(rmContainer));
+                assertTrue(permissionService.getInheritParentPermissions(rmService.createRecordFolder(rmContainer, "subCategory")));
+                assertTrue(permissionService.getInheritParentPermissions(rmFolder));
+                assertTrue(permissionService.getInheritParentPermissions(recordOne));
+
+                return null;
+            }
+        }, rmAdminName);
+    }
+
+    public void testRolesSetByDefault()
+    {
+        final NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
+        final NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
+        final NodeRef subCategory = rmService.createRecordFolder(rmContainer, "subCategory");
+
+        // Admin user has read/filing permissions on file plan, transfer, hold, unfiled records, root categories, sub categories, folders and records
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
+
+                return null;
+            }
+        }, rmAdminName);
+
+        // test user has read permissions on file plan, transfer, hold and unfiled records as the user will be added in the all records management roles
+        // which has read permissions on those nodes by default
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
+
+                return null;
+            }
+        }, createTestUser());
+    }
+
+    public void testAddUserToContainers()
+    {
+        final NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
+        final NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
+        final NodeRef subCategory = rmService.createRecordFolder(rmContainer, "subCategory");
+
+        String user1 = createTestUser();
+        filePlanPermissionService.setPermission(filePlan, user1, RMPermissionModel.FILING);
+
+        // The user1 will just read and filing permissions on the file plan
+        // and read permissions on transfer, hold and unfiled records as the user will be in the all records management users role
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
+
+                return null;
+            }
+        }, user1);
+
+        String user2 = createTestUser();
+        filePlanPermissionService.setPermission(unfiledContainer, user2, RMPermissionModel.FILING);
+
+        // The user2 will just read permissions on file plan, transfer, hold
+        // and read and filing permissions on unfiled records container
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
+
+                return null;
+            }
+        }, user2);
     }
 
 }

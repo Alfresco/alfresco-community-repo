@@ -41,8 +41,31 @@ public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
     @Override
     protected Object handleTaskProperty(Task task, TypeDefinition type, QName key, Serializable value)
     {
-        checkType(key, value, Integer.class);
-        task.setPriority((Integer) value);
+        int priority = -1;
+        // ACE-3121: According to bpmModel.xml, priority should be an int with allowed values {1,2,3}
+        // It could be a String that converts to an int, like when coming from WorkflowInterpreter.java
+        if (value instanceof String)
+        {
+            try
+            {
+                priority = Integer.parseInt((String) value);
+            }
+            catch (NumberFormatException e)
+            {
+                return DO_NOT_ADD;
+            }
+        }
+        else
+        {
+            checkType(key, value, Integer.class);
+            priority = (Integer) value;
+        }
+
+        if (1 <= priority && priority <= 3)
+        {
+            task.setPriority(priority);
+        }
+
         return DO_NOT_ADD;
     }
 

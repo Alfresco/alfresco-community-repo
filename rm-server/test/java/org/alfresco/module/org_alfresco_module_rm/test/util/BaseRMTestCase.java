@@ -151,6 +151,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected DispositionSchedule dispositionSchedule;
     protected NodeRef rmFolder;
     protected NodeRef unfiledContainer;
+    protected NodeRef holdsContainer;
+    protected NodeRef transfersContainer;
 
     /** multi-hierarchy test data
      *
@@ -295,7 +297,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         // Get the application context
         applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
         utils = new CommonRMTestUtils(applicationContext);
-	
+
         // Initialise the service beans
         initServices();
 
@@ -414,19 +416,19 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                     freezeService.relinquish(hold);
                 }
             }
-            
+
             if (nodeService.exists(folder) == true)
             {
                 // Delete the folder
                 nodeService.deleteNode(folder);
             }
-            
+
             if (siteService.getSite(siteId) != null)
             {
                 // Delete the site
                 siteService.deleteSite(siteId);
             }
-    
+
             // delete the collaboration site (if required)
             if (isCollaborationSiteTest() == true && siteService.getSite(COLLABORATION_SITE_ID) != null)
             {
@@ -480,6 +482,14 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                 // unfiled container
                 unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
                 assertNotNull(unfiledContainer);
+
+                // holds container
+                holdsContainer = filePlanService.getHoldContainer(filePlan);
+                assertNotNull(holdsContainer);
+
+                // transfers container
+                transfersContainer = filePlanService.getTransferContainer(filePlan);
+                assertNotNull(transfersContainer);
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -510,7 +520,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
               ContentModel.TYPE_FOLDER,
               containerProps).getChildRef();
         assertNotNull("Could not create base folder", folder);
-        
+
         permissionService.setPermission(folder, "rmadmin", PermissionService.WRITE, true);
         permissionService.setPermission(folder, "rmadmin", PermissionService.ADD_CHILDREN, true);
 

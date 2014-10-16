@@ -103,21 +103,21 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
     }
 
     /**
-     * test set/delete permissions on file plan
+     * Test set/delete permissions on file plan
      */
     public void testSetDeletePermissionFilePlan() throws Exception
     {
         String userName = createTestUser();
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,      // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.DENIED,      // record folder read
-                          AccessStatus.DENIED,      // record folder file
-                          AccessStatus.DENIED,      // record read
-                          AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
 
         setPermission(filePlan, userName, RMPermissionModel.FILING);
 
@@ -134,28 +134,28 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         deletePermission(filePlan, userName, RMPermissionModel.FILING);
 
         assertPermissions(userName,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
 
         //what happens if we try and remove READ for a normal user on the file plan ???
         deletePermission(filePlan, userName, RMPermissionModel.READ_RECORDS);
 
         // nothing .. user still has read on file plan .. only removing the user from all roles will remove read on file plan
         assertPermissions(userName,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
     }
 
     /**
@@ -166,38 +166,38 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         String userName = createTestUser();
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,      // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.DENIED,      // record folder read
-                          AccessStatus.DENIED,      // record folder file
-                          AccessStatus.DENIED,      // record read
-                          AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
 
         setPermission(rmContainer, userName, RMPermissionModel.FILING);
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.ALLOWED,      // category read
-                          AccessStatus.ALLOWED,      // category file
-                          AccessStatus.ALLOWED,      // record folder read
-                          AccessStatus.ALLOWED,      // record folder file
-                          AccessStatus.ALLOWED,      // record read
-                          AccessStatus.ALLOWED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // category read
+                AccessStatus.ALLOWED,       // category file
+                AccessStatus.ALLOWED,       // record folder read
+                AccessStatus.ALLOWED,       // record folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
 
         deletePermission(rmContainer, userName, RMPermissionModel.FILING);
 
         assertPermissions(userName,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
     }
 
     /**
@@ -208,38 +208,38 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         String userName = createTestUser();
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,      // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.DENIED,      // record folder read
-                          AccessStatus.DENIED,      // record folder file
-                          AccessStatus.DENIED,      // record read
-                          AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
 
         setPermission(rmFolder, userName, RMPermissionModel.FILING);
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,      // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.ALLOWED,      // record folder read
-                          AccessStatus.ALLOWED,      // record folder file
-                          AccessStatus.ALLOWED,      // record read
-                          AccessStatus.ALLOWED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.ALLOWED,       // record folder read
+                AccessStatus.ALLOWED,       // record folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
 
         deletePermission(rmFolder, userName, RMPermissionModel.FILING);
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,     // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.DENIED,      // record folder read
-                          AccessStatus.DENIED,      // record folder file
-                          AccessStatus.DENIED,      // record read
-                          AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
     }
 
     /**
@@ -250,38 +250,38 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         String userName = createTestUser();
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,      // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.DENIED,      // record folder read
-                          AccessStatus.DENIED,      // record folder file
-                          AccessStatus.DENIED,      // record read
-                          AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
 
         setPermission(recordOne, userName, RMPermissionModel.FILING);
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,      // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.DENIED,      // record folder read
-                          AccessStatus.DENIED,      // record folder file
-                          AccessStatus.ALLOWED,      // record read
-                          AccessStatus.ALLOWED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
 
         deletePermission(recordOne, userName, RMPermissionModel.FILING);
 
         assertPermissions(userName,
-                          AccessStatus.ALLOWED,     // fileplan read
-                          AccessStatus.DENIED,      // fileplan file
-                          AccessStatus.DENIED,      // category read
-                          AccessStatus.DENIED,      // category file
-                          AccessStatus.DENIED,      // record folder read
-                          AccessStatus.DENIED,      // record folder file
-                          AccessStatus.DENIED,      // record read
-                          AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
     }
 
     public void testMoveRecord() throws Exception
@@ -300,14 +300,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         });
 
         assertPermissions(userOne,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -318,15 +319,17 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userOne);
+
         assertPermissions(userTwo,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -337,15 +340,17 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userTwo);
+
         assertPermissions(userThree,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -362,14 +367,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         setPermission(recordOne, userThree, RMPermissionModel.FILING);
 
         assertPermissions(userOne,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.ALLOWED,      // record folder read
-                AccessStatus.ALLOWED,      // record folder file
-                AccessStatus.ALLOWED,      // record read
-                AccessStatus.ALLOWED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.ALLOWED,       // record folder read
+                AccessStatus.ALLOWED,       // record folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -380,15 +386,17 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userOne);
+
         assertPermissions(userTwo,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -399,15 +407,17 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userTwo);
+
         assertPermissions(userThree,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.ALLOWED,      // record read
-                AccessStatus.ALLOWED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -431,14 +441,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         });
 
         assertPermissions(userOne,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.ALLOWED,      // record folder read
-                AccessStatus.ALLOWED,      // record folder file
-                AccessStatus.DENIED,      // record read
-                AccessStatus.DENIED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.ALLOWED,       // record folder read
+                AccessStatus.ALLOWED,       // record folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -449,15 +460,17 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userOne);
+
         assertPermissions(userTwo,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.ALLOWED,      // record read
-                AccessStatus.ALLOWED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -468,15 +481,17 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, userTwo);
+
         assertPermissions(userThree,
-                AccessStatus.ALLOWED,     // fileplan read
-                AccessStatus.DENIED,      // fileplan file
-                AccessStatus.DENIED,      // category read
-                AccessStatus.DENIED,      // category file
-                AccessStatus.DENIED,      // record folder read
-                AccessStatus.DENIED,      // record folder file
-                AccessStatus.ALLOWED,      // record read
-                AccessStatus.ALLOWED);     // record file
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.DENIED,        // category read
+                AccessStatus.DENIED,        // category file
+                AccessStatus.DENIED,        // record folder read
+                AccessStatus.DENIED,        // record folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
+
         doTestInTransaction(new Test<Void>()
         {
             @Override
@@ -489,7 +504,6 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         }, userThree);
 
     }
-
 
     /**
      * Helper to assert permissions for passed user
@@ -521,6 +535,52 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         }, userName);
     }
 
+    /**
+     * Helper to assert permissions for the passed user
+     */
+    private void assertPermissionsWithInheritance(
+            final String userName,
+            final NodeRef subCategory,
+            final NodeRef folder,
+            final NodeRef record,
+            final AccessStatus ... accessStatus)
+    {
+        assertEquals(16, accessStatus.length);
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(accessStatus[0], permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[1], permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
+
+                assertEquals(accessStatus[2], permissionService.hasPermission(transfersContainer, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[3], permissionService.hasPermission(transfersContainer, RMPermissionModel.FILING));
+
+                assertEquals(accessStatus[4], permissionService.hasPermission(holdsContainer, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[5], permissionService.hasPermission(holdsContainer, RMPermissionModel.FILING));
+
+                assertEquals(accessStatus[6], permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[7], permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
+
+                assertEquals(accessStatus[8], permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[9], permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
+
+                assertEquals(accessStatus[10], permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[11], permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
+
+                assertEquals(accessStatus[12], permissionService.hasPermission(folder, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[13], permissionService.hasPermission(folder, RMPermissionModel.FILING));
+
+                assertEquals(accessStatus[14], permissionService.hasPermission(record, RMPermissionModel.READ_RECORDS));
+                assertEquals(accessStatus[15], permissionService.hasPermission(record, RMPermissionModel.FILING));
+
+                return null;
+            }
+        }, userName);
+    }
+
     public void testFilePlanComponentInheritance()
     {
         doTestInTransaction(new Test<Void>()
@@ -546,161 +606,331 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
 
     public void testRolesSetByDefault()
     {
-        final NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
-        final NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-        final NodeRef subCategory = rmService.createRecordFolder(rmContainer, "subCategory");
+        NodeRef subCategory = filePlanService.createRecordCategory(rmContainer, "subCategory1");
+        NodeRef folder = rmService.createRecordFolder(subCategory, "rmFolder1");
+        NodeRef record = utils.createRecord(folder, "record1.txt");
 
         // Admin user has read/filing permissions on file plan, transfer, hold, unfiled records, root categories, sub categories, folders and records
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+        assertPermissionsWithInheritance(rmAdminName, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.ALLOWED,       // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.ALLOWED,       // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.ALLOWED,       // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.ALLOWED,       // root category read
+                AccessStatus.ALLOWED,       // root category file
+                AccessStatus.ALLOWED,       // sub category read
+                AccessStatus.ALLOWED,       // sub category file
+                AccessStatus.ALLOWED,       // folder read
+                AccessStatus.ALLOWED,       // folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
 
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
-
-                return null;
-            }
-        }, rmAdminName);
-
-        // test user has read permissions on file plan, transfer, hold and unfiled records as the user will be added in the all records management roles
+        // Test user has read permissions on file plan, transfer, hold and unfiled records as the user will be added in the all records management roles
         // which has read permissions on those nodes by default
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
-
-                return null;
-            }
-        }, createTestUser());
+        assertPermissionsWithInheritance(createTestUser(), subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.DENIED,        // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.DENIED,        // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
     }
 
     public void testAddUserToContainers()
     {
-        final NodeRef transferContainer = filePlanService.getTransferContainer(filePlan);
-        final NodeRef holdContainer = filePlanService.getHoldContainer(filePlan);
-        final NodeRef subCategory = rmService.createRecordFolder(rmContainer, "subCategory");
+        NodeRef subCategory = filePlanService.createRecordCategory(rmContainer, "subCategory2");
+        NodeRef folder = rmService.createRecordFolder(subCategory, "rmFolder2");
+        NodeRef record = utils.createRecord(folder, "record2.txt");
+
+        // The user1 will have read permissions on the file plan
+        // and read permissions on transfer, hold and unfiled records as the user will be in the all records management users role
+        String user1 = createTestUser();
+        setPermission(filePlan, user1, RMPermissionModel.READ_RECORDS);
+        assertPermissionsWithInheritance(user1, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.DENIED,        // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.DENIED,        // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
+        // The user2 will have read and filing permissions on the transfer container
+        // and read permissions on file plan, hold and unfiled records as the user will be in the all records management users role
+        String user2 = createTestUser();
+        setPermission(transfersContainer, user2, RMPermissionModel.FILING);
+        assertPermissionsWithInheritance(user2, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.ALLOWED,       // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.DENIED,        // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.DENIED,        // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
+        // The user3 will have read permissions on file plan, transfer, hold and unfiled records
+        String user3 = createTestUser();
+        setPermission(holdsContainer, user3, RMPermissionModel.READ_RECORDS);
+        assertPermissionsWithInheritance(user3, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.DENIED,        // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.DENIED,        // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
+        // The user4 will have read permissions on file plan, transfer, hold
+        // and read and filing permissions on unfiled records container
+        String user4 = createTestUser();
+        setPermission(unfiledContainer, user4, RMPermissionModel.FILING);
+        assertPermissionsWithInheritance(user4, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.DENIED,        // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.DENIED,        // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.DENIED,        // record read
+                AccessStatus.DENIED);       // record file
+
+        // The user5 will read permissions on the root category
+        // as the inheritance is turned on for the sub category the user will have also read permissions on sub category, folder and record
+        // and also read permissions on file plan, transfer, hold and unfiled records
+        String user5 = createTestUser();
+        setPermission(rmContainer, user5, RMPermissionModel.READ_RECORDS);
+        assertPermissionsWithInheritance(user5, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.ALLOWED,       // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.ALLOWED,       // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.ALLOWED,       // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.DENIED);       // record file
+
+        // The user6 will read and filing permissions on the sub category
+        // as the inheritance is turned on the user will have also read and filing permissions on folder and record
+        // and also read permissions on file plan, transfer, hold and unfiled records
+        String user6 = createTestUser();
+        setPermission(subCategory, user6, RMPermissionModel.FILING);
+        assertPermissionsWithInheritance(user6, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.ALLOWED,       // sub category read
+                AccessStatus.ALLOWED,       // sub category file
+                AccessStatus.ALLOWED,       // folder read
+                AccessStatus.ALLOWED,       // folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
+
+        // The user7 will read permissions on the folder
+        // as the inheritance is turned on the user will have also read on record
+        // and also read permissions on file plan, transfer, hold and unfiled records
+        String user7 = createTestUser();
+        setPermission(folder, user7, RMPermissionModel.READ_RECORDS);
+        assertPermissionsWithInheritance(user7, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.DENIED,        // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.ALLOWED,       // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.DENIED);       // record file
+
+        // The user8 will read and filing permissions on the record
+        // and also read permissions on file plan, transfer, hold and unfiled records
+        String user8 = createTestUser();
+        setPermission(record, user8, RMPermissionModel.FILING);
+        assertPermissionsWithInheritance(user8, subCategory, folder, record,
+                AccessStatus.ALLOWED,       // fileplan read
+                AccessStatus.DENIED,        // fileplan file
+                AccessStatus.ALLOWED,       // transfer read
+                AccessStatus.DENIED,        // transfer file
+                AccessStatus.ALLOWED,       // holds read
+                AccessStatus.DENIED,        // holds file
+                AccessStatus.ALLOWED,       // unfiled records file
+                AccessStatus.DENIED,        // unfiled records file
+                AccessStatus.DENIED,        // root category read
+                AccessStatus.DENIED,        // root category file
+                AccessStatus.DENIED,        // sub category read
+                AccessStatus.DENIED,        // sub category file
+                AccessStatus.DENIED,        // folder read
+                AccessStatus.DENIED,        // folder file
+                AccessStatus.ALLOWED,       // record read
+                AccessStatus.ALLOWED);      // record file
+    }
+
+    public void testAccessPermissionOnSingleRecordWithSeveralUsers()
+    {
+        final NodeRef subCategory = filePlanService.createRecordCategory(rmContainer, "subCategory3");
+        final NodeRef folder = rmService.createRecordFolder(subCategory, "rmFolder3");
+        final NodeRef record = utils.createRecord(folder, "record3.txt");
 
         String user1 = createTestUser();
-        filePlanPermissionService.setPermission(filePlan, user1, RMPermissionModel.FILING);
+        String user2 = createTestUser();
 
-        // The user1 will just read and filing permissions on the file plan
-        // and read permissions on transfer, hold and unfiled records as the user will be in the all records management users role
+        setPermission(rmContainer, user1, RMPermissionModel.READ_RECORDS);
+
+        // user1 will have access to file plan, root category and because of inheritance sub category, folder and record
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
             {
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, RMPermissionModel.READ_RECORDS));
 
                 return null;
             }
         }, user1);
 
-        String user2 = createTestUser();
-        filePlanPermissionService.setPermission(unfiledContainer, user2, RMPermissionModel.FILING);
-
-        // The user2 will just read permissions on file plan, transfer, hold
-        // and read and filing permissions on unfiled records container
+        // user2 will have access to file plan
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
             {
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(transferContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transferContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(holdContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(holdContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(unfiledContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rmFolder, RMPermissionModel.READ_RECORDS));
-
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, RMPermissionModel.READ_RECORDS));
 
                 return null;
             }
         }, user2);
     }
 
+    public void testDenyPermissionsOnRecordsWithSeveralUsers()
+    {
+        final NodeRef subCategory = filePlanService.createRecordCategory(rmContainer, "subCategory4");
+        final NodeRef folder = rmService.createRecordFolder(subCategory, "rmFolder4");
+        final NodeRef record4 = utils.createRecord(folder, "record4.txt");
+        final NodeRef record5 = utils.createRecord(folder, "record5.txt");
+
+        String user1 = createTestUser();
+        String user2 = createTestUser();
+
+        setPermission(rmContainer, user1, RMPermissionModel.READ_RECORDS);
+        setPermission(rmContainer, user2, RMPermissionModel.READ_RECORDS);
+
+        permissionService.setInheritParentPermissions(record4, false);
+        permissionService.setInheritParentPermissions(record5, false);
+
+        setPermission(record4, user1, RMPermissionModel.READ_RECORDS);
+        setPermission(record5, user1, RMPermissionModel.READ_RECORDS);
+
+        // user1 will have access to file plan, root category and because of inheritance sub category, folder, record4 and record5
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record4, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record5, RMPermissionModel.READ_RECORDS));
+
+                return null;
+            }
+        }, user1);
+
+        // user2 will have access to file plan, root category and because of inheritance sub category and folder
+        // user2 won't have access to the records as the inheritance is set to false
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(rmContainer, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record4, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record5, RMPermissionModel.READ_RECORDS));
+
+                return null;
+            }
+        }, user2);
+    }
 }

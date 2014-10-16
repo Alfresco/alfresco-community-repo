@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -41,8 +41,8 @@ public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
     @Override
     protected Object handleTaskProperty(Task task, TypeDefinition type, QName key, Serializable value)
     {
-        int priority = -1;
-        // ACE-3121: According to bpmModel.xml, priority should be an int with allowed values {1,2,3}
+        int priority;
+        // ACE-3121: Workflow Admin Console: Cannot change priority for activiti
         // It could be a String that converts to an int, like when coming from WorkflowInterpreter.java
         if (value instanceof String)
         {
@@ -52,7 +52,7 @@ public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
             }
             catch (NumberFormatException e)
             {
-                return DO_NOT_ADD;
+                throw getInvalidPropertyValueException(key, value);
             }
         }
         else
@@ -61,14 +61,8 @@ public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
             priority = (Integer) value;
         }
 
-        if (1 <= priority && priority <= 3)
-        {
-            task.setPriority(priority);
-        }
-        else
-        {
-            throw getInvalidPropertyValueException(key, value);
-        }
+        // Priority value validation not performed to allow for future model changes
+        task.setPriority(priority);
 
         return DO_NOT_ADD;
     }

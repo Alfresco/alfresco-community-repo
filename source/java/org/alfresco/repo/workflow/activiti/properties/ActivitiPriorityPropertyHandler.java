@@ -65,6 +65,10 @@ public class ActivitiPriorityPropertyHandler extends ActivitiTaskPropertyHandler
         {
             task.setPriority(priority);
         }
+        else
+        {
+            throw getInvalidPropertyValueException(key, value);
+        }
 
         return DO_NOT_ADD;
     }

@@ -936,27 +936,27 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
 
     public void testMoveRootCategoryIntoAnotherRootCategory()
     {
-        final NodeRef subCategory5 = filePlanService.createRecordCategory(filePlan, "subCategory5");
-        final NodeRef subCategory6 = filePlanService.createRecordCategory(filePlan, "subCategory6");
+        final NodeRef category5 = filePlanService.createRecordCategory(filePlan, "category5");
+        final NodeRef category6 = filePlanService.createRecordCategory(filePlan, "category6");
 
-        assertFalse(permissionService.getInheritParentPermissions(subCategory5));
-        assertFalse(permissionService.getInheritParentPermissions(subCategory6));
+        assertFalse(permissionService.getInheritParentPermissions(category5));
+        assertFalse(permissionService.getInheritParentPermissions(category6));
 
         final String user1 = createTestUser();
         final String user2 = createTestUser();
 
-        setPermission(subCategory5, user1, RMPermissionModel.READ_RECORDS);
-        setPermission(subCategory6, user2, RMPermissionModel.FILING);
+        setPermission(category5, user1, RMPermissionModel.READ_RECORDS);
+        setPermission(category6, user2, RMPermissionModel.FILING);
 
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
             {
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory5, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory5, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory6, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory6, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category5, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category5, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category6, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category6, RMPermissionModel.FILING));
 
                 return null;
             }
@@ -967,10 +967,10 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory5, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory5, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory6, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory6, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category5, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category5, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.FILING));
 
                 return null;
             }
@@ -981,28 +981,177 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
             @Override
             public NodeRef run() throws Exception
             {
-                return fileFolderService.move(subCategory5, subCategory6, null).getNodeRef();
+                return fileFolderService.move(category5, category6, null).getNodeRef();
             }
 
             @Override
-            public void test(final NodeRef movedSubCategory5) throws Exception
+            public void test(final NodeRef movedCategory5) throws Exception
             {
-                assertTrue(permissionService.getInheritParentPermissions(movedSubCategory5));
-                assertFalse(permissionService.getInheritParentPermissions(subCategory6));
+                assertTrue(permissionService.getInheritParentPermissions(movedCategory5));
+                assertFalse(permissionService.getInheritParentPermissions(category6));
 
                 AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedSubCategory5, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(movedSubCategory5, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory6, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(subCategory6, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(movedCategory5, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category6, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category6, RMPermissionModel.FILING));
 
                 AuthenticationUtil.setFullyAuthenticatedUser(user2);
 
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedSubCategory5, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedSubCategory5, RMPermissionModel.FILING));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory6, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(subCategory6, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.FILING));
+            }
+        });
+    }
+
+    public void testPermissionsForMovedRecord()
+    {
+        final NodeRef category7 = filePlanService.createRecordCategory(filePlan, "category7");
+        final NodeRef folder7 = rmService.createRecordFolder(category7, "rmFolder7");
+        final NodeRef record7 = utils.createRecord(folder7, "record7.txt");
+
+        final NodeRef category8 = filePlanService.createRecordCategory(filePlan, "category8");
+        final NodeRef folder8 = rmService.createRecordFolder(category8, "rmFolder8");
+        final NodeRef record8 = utils.createRecord(folder8, "record8.txt");
+
+        final String user1 = createTestUser();
+        final String user2 = createTestUser();
+        final String user3 = createTestUser();
+
+        setPermission(folder7, user1, RMPermissionModel.FILING);
+        setPermission(record8, user2, RMPermissionModel.READ_RECORDS);
+        setPermission(category7, user3, RMPermissionModel.FILING);
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.FILING));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record8, RMPermissionModel.FILING));
+
+                return null;
+            }
+        }, user1);
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record7, RMPermissionModel.FILING));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record8, RMPermissionModel.FILING));
+
+                return null;
+            }
+        }, user2);
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.FILING));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record8, RMPermissionModel.FILING));
+
+                return null;
+            }
+        }, user3);
+
+        doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                return fileFolderService.move(record8, folder7, null).getNodeRef();
+            }
+
+            @Override
+            public void test(final NodeRef movedRecord8) throws Exception
+            {
+                AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.FILING));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.FILING));
+
+                AuthenticationUtil.setFullyAuthenticatedUser(user2);
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record7, RMPermissionModel.FILING));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(movedRecord8, RMPermissionModel.FILING));
+
+                AuthenticationUtil.setFullyAuthenticatedUser(user3);
+
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record7, RMPermissionModel.FILING));
+
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.FILING));
             }
         });
     }

@@ -192,6 +192,11 @@ function doclist_main()
       nodes = documentNodes;
       totalRecords -= folderNodesCount;
    }
+   else if (parsedArgs.type === "folders")
+   {
+      nodes = folderNodes;
+      totalRecords -= documentNodesCount;
+   }
    else
    {
       // TODO: Sorting with folders at end -- swap order of concat()

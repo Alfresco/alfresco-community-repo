@@ -34,6 +34,7 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -53,7 +54,8 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                            implements FilePlanPermissionService,
-                                                      RecordsManagementModel
+                                                      RecordsManagementModel,
+                                                      NodeServicePolicies.OnMoveNodePolicy
 {
     /** Permission service */
     protected PermissionService permissionService;
@@ -82,6 +84,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 TYPE_RECORD_CATEGORY,
                 new JavaBehaviour(this, "onCreateRMContainer", NotificationFrequency.TRANSACTION_COMMIT));
+        policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnMoveNodePolicy.QNAME,
+                TYPE_RECORD_CATEGORY,
+                new JavaBehaviour(this, "onMoveNode", NotificationFrequency.TRANSACTION_COMMIT));
         policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 TYPE_RECORD_FOLDER,
@@ -310,6 +316,55 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 return null;
             }
         });
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef sourceCategory = oldChildAssocRef.getChildRef();
+                boolean inheritParentPermissions = permissionService.getInheritParentPermissions(sourceCategory);
+                if (!inheritParentPermissions)
+                {
+                    permissionService.setInheritParentPermissions(sourceCategory, true);
+                }
+
+                Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
+                Set<AccessPermission> origionalCategoryPerms= permissionService.getAllSetPermissions(sourceCategory);
+
+                for (AccessPermission categoryPermission : origionalCategoryPerms)
+                {
+                    String permission = categoryPermission.getPermission();
+                    String authority = categoryPermission.getAuthority();
+                    if ((RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
+                            categoryPermission.isSetDirectly() &&
+                            !ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) &&
+                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority))
+                    {
+                        // then we can assume this is a permission we want to preserve
+                        keepPerms.add(categoryPermission);
+                    }
+                }
+
+                // clear all existing permissions and start again
+                permissionService.deletePermissions(sourceCategory);
+
+                // re-add keep'er permissions
+                for (AccessPermission keeper : keepPerms)
+                {
+                    setPermission(sourceCategory, keeper.getAuthority(), keeper.getPermission());
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**

@@ -361,25 +361,22 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             public Void doWork()
             {
                 NodeRef record = sourceAssocRef.getChildRef();
-                if (nodeService.exists(record) == true && nodeService.hasAspect(record, ASPECT_RECORD) == true)
+                if (nodeService.exists(record) && nodeService.hasAspect(record, ASPECT_RECORD))
                 {
                     Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
-
-                    // record any permissions specifically set on the record (ie any filling or record_file permisions not on the parent)
-                    Set<AccessPermission> origionalParentPerms = permissionService.getAllSetPermissions(sourceAssocRef.getParentRef());
                     Set<AccessPermission> origionalRecordPerms= permissionService.getAllSetPermissions(record);
-                    for (AccessPermission perm : origionalRecordPerms)
+
+                    for (AccessPermission recordPermission : origionalRecordPerms)
                     {
-                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                            ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+                        String permission = recordPermission.getPermission();
+                        String authority = recordPermission.getAuthority();
+                        if ((RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
+                                recordPermission.isSetDirectly() &&
+                                !ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) &&
+                                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority))
                         {
-                            if ((perm.getPermission().equals(RMPermissionModel.FILING) == true ||
-                                 perm.getPermission().equals(RMPermissionModel.FILE_RECORDS) == true) &&
-                                origionalParentPerms.contains(perm) == false)
-                            {
-                                // then we can assume this is a permission we want to preserve
-                                keepPerms.add(perm);
-                            }
+                            // then we can assume this is a permission we want to preserve
+                            keepPerms.add(recordPermission);
                         }
                     }
 

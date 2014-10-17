@@ -176,10 +176,29 @@
     <build>
         <finalName>alfresco</finalName>
         <plugins>
-            <!-- CLOUD-1967 Put core log4j config in WEB-INF/classes, so that it's first in classloader -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+                    <!-- Extract version.properties, for convenience -->
+                    <execution>
+                        <id>fetch-version-properties</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>alfresco-repository</artifactId>
+                                    <version>${project.version}</version>
+                                </artifactItem>
+                            </artifactItems>
+                            <includes>alfresco/version.properties</includes>
+                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <!-- CLOUD-1967 Put core log4j config in WEB-INF/classes, so that it's first in classloader -->
                     <execution>
                         <id>fetch-log4j-config</id>
                         <phase>prepare-package</phase>

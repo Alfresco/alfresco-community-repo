@@ -1,8 +1,5 @@
-msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB)."
-msgstr "${machine_total_memory} MB di RAM non sono sufficienti per eseguire Alfresco per scopi di test o produzione. Alfresco potrebbe non funzionare correttamente e se anche lo farà, le prestazioni non saranno buone. Aggiornare il server per avere almeno ${minimum_ram} MB di RAM (preferibilmente almeno ${recommended_ram} MB)."
-
-msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM"
-msgstr "${machine_total_memory} MB di RAM non sono sufficienti per eseguire Alfresco per scopi di test o produzione. Alfresco funzionerà correttamente per scopi di sviluppo ma questo server non deve essere utilizzato per altri scopi. Aggiornare il server per avere almeno ${recommended_ram} MB di RAM"
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM (preferably at least ${recommended_ramGB} GB)."
+msgstr "${machine_total_memoryGB} GB di RAM non sono sufficienti per eseguire Alfresco per scopi di test o produzione. Alfresco potrebbe non funzionare correttamente e se anche lo farà, le prestazioni non saranno ottimali. Aggiornare il server per avere almeno ${minimum_ramGB} GB di RAM (preferibilmente almeno ${recommended_ramGB} GB)."
 
 msgid "${product_fullname} LibreOffice Service"
 msgstr "Servizio LibreOffice ${product_fullname}"
@@ -12,6 +9,12 @@ msgstr "Servizio ${product_fullname}"
 
 msgid "${product_shortname} manager tool"
 msgstr "Strumento di gestione ${product_shortname}"
+
+msgid "32bit Microsoft Windows® is only supported for evaluation use."
+msgstr "Microsoft Windows® a 32 bit è supportato solo per l'utilizzo come versione di prova."
+
+msgid "64bit architecture recommended"
+msgstr "Si consiglia un'architettura a 64 bit"
 
 msgid "Admin Password"
 msgstr "Password ammin."
@@ -31,9 +34,6 @@ msgstr "Stack di Alfresco Community Edition"
 msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management."
 msgstr "Sistema ECM (Enterprise Content Management, Gestione Contenuti Aziendali) di Alfresco che include i componenti Document Management, Collaboration Management e Image Management."
 
-msgid "Alfresco Explorer"
-msgstr "Alfresco Explorer"
-
 msgid "Alfresco FTP Port"
 msgstr "Porta FTP Alfresco"
 
@@ -52,14 +52,14 @@ msgstr "Porta SharePoint Alfresco"
 msgid "Alfresco Shortcuts"
 msgstr "Scorciatoie Alfresco"
 
+msgid "Alfresco Validations"
+msgstr "Validazioni Alfresco"
+
 msgid "Alfresco Website"
 msgstr "Sito web Alfresco"
 
 msgid "Alfresco data directory"
 msgstr "Directory dei dati Alfresco"
-
-msgid "Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco."
-msgstr "Alfresco richiede almeno ${minimum_file_descriptors} descrizioni di file. Quando Alfresco si avvia correttamente, si possono vedere gli errori durante l'indicizzazione del contenuto nel motore di ricerca. Aumentare il numero di descrizioni di file disponibili per Alfresco."
 
 msgid "Also choose optional components to install."
 msgstr "Inoltre, consente di scegliere i componenti opzionali da installare."
@@ -67,14 +67,14 @@ msgstr "Inoltre, consente di scegliere i componenti opzionali da installare."
 msgid "Auto - Configure servers to start automatically"
 msgstr "Auto - Configura l'avvio automatico dei server"
 
+msgid "CIFS TCP ports in use"
+msgstr "Porte TCP CIFS in uso"
+
+msgid "CIFS UDP ports in use"
+msgstr "Porte UDP CIFS in uso"
+
 msgid "CIFS protocol ports configuration"
 msgstr "Configurazione porte protocollo CIFS"
-
-msgid "CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "Il protocollo CIFS non sarà disponibile. Impossibile associare le porte: ${portList}. Considerare la riconfigurazione di Alfresco per utilizzare una porta non privilegiata quindi utilizzare uno strumento di port forwarding (ad esempio iptables) per inoltrare la porta"
-
-msgid "CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers)."
-msgstr "Il protocollo CIFS non sarà disponibile. Verificare la presenza di processi in corso che utilizzano le porte seguenti: ${portList} (ad esempio server CIFS esistenti)."
 
 msgid "CIFS server port"
 msgstr "Porta server CIFS"
@@ -85,11 +85,8 @@ msgstr "Porta server CIFS 1"
 msgid "CIFS server port 2"
 msgstr "Porta server CIFS 2"
 
-msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz)."
-msgstr "La velocità di clock della CPU di ${machine_cpu_speed} Mhz è più lenta di quella raccomandata per l'utilizzo per scopi di test o produzione (${recommended_cpu_speed} Mhz). Alfresco funzionerà correttamente per scopi di sviluppo ma questo server non deve essere utilizzato per altri scopi. Aggiornare il server a una versione con CPU più moderne (velocità di clock della CPU di almeno ${recommended_cpu_speed} Mhz)."
-
-msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more)."
-msgstr "La velocità di clock della CPU di ${machine_cpu_speed} Mhz è inferiore a quella minima richiesta da Alfresco (${minimum_cpu_speed} Mhz). Alfresco non funzionerà correttamente. Aggiornare il server a una versione con CPU più moderne (velocità di clock della CPU di almeno ${minimum_cpu_speed} Mhz, è preferibilmente di ${recommended_cpu_speed} Mhz o maggiore)."
+msgid "CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more)."
+msgstr "La velocità di clock della CPU di ${machine_cpu_speedGHz} GHz è inferiore ai requisiti minimi richiesti da Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco non funzionerà correttamente. Aggiornare il server a una versione con CPU più moderne (velocità di clock della CPU di almeno ${minimum_cpu_speedGHz} GHz, e preferibilmente di ${recommended_cpu_speedGHz} GHz o superiore)."
 
 msgid "Config Files"
 msgstr "File di configurazione"
@@ -142,14 +139,11 @@ msgstr "Desidero utilizzare il database PostgreSQL in bundle"
 msgid "I wish to use the bundled Tomcat"
 msgstr "Desidero utilizzare il Tomcat in bundle"
 
+msgid "IMAP TCP port in use"
+msgstr "Porte TCP IMAP in uso"
+
 msgid "IMAP port"
 msgstr "Porta IMAP"
-
-msgid "IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "Il protocollo IMAP non sarà disponibile (nota: non abilitato per impostazione predefinita). Impossibile associare la porta ${imap_port}. Considerare la riconfigurazione di Alfresco per utilizzare una porta non privilegiata quindi utilizzare uno strumento di port forwarding (ad esempio iptables) per inoltrare la porta"
-
-msgid "IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "Il protocollo IMAP non sarà disponibile (nota: non abilitato per impostazione predefinita). Verificare la presenza di processi che utilizzano ${imap_port} (ad esempio i server IMAP esistenti), su sistemi operativi non Windows considerare la riconfigurazione di Alfresco per utilizzare una porta non privilegiata quindi utilizzare uno strumento di port forwarding (ad esempio iptables) per inoltrare questa porta"
 
 msgid "IP / Hostname"
 msgstr "IP/Nome host"
@@ -202,6 +196,18 @@ msgstr "Installazione di PostgreSQL come servizio Windows con il nome ${postgres
 msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
 msgstr "Installazione di Tomcat come servizio Windows con il nome ${tomcat_unique_service_name}"
 
+msgid "Insufficient file descriptors"
+msgstr "Descrizioni di file insufficienti"
+
+msgid "Insufficient CPU clock speed"
+msgstr "Velocità di clock della CPU insufficiente"
+
+msgid "Insufficient CPUs (cores)"
+msgstr "CPU (core) insufficienti"
+
+msgid "Insufficient system RAM"
+msgstr "RAM di sistema insufficiente"
+
 msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
 msgstr "A quanto risulta, non si dispone di permessi sufficienti per stabilire l'associazione alla porta oppure la porta è già utilizzata da un'altra applicazione. Selezionare un'altra porta."
 
@@ -243,6 +249,9 @@ msgstr "LibreOffice è una suite di software per l'ufficio multipiattaforma e op
 
 msgid "Location of bin and lib tomcat folders"
 msgstr "Posizione delle cartelle Tomcat bin e lib"
+
+msgid "Mac OS X® is only supported for evaluation use."
+msgstr "Mac OS X® è supportato solo per l'utilizzo come versione di prova."
 
 msgid "Manager tool"
 msgstr "Strumento di gestione"
@@ -361,14 +370,11 @@ msgstr "Ripeti password:"
 msgid "SMB port"
 msgstr "Porta SMB"
 
+msgid "SMTP TCP port in use"
+msgstr "Porte TCP SMTP in uso"
+
 msgid "SMTP port"
 msgstr "Porta SMTP"
-
-msgid "SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port."
-msgstr "Il protocollo SMTP non sarà disponibile (nota: non abilitato per impostazione predefinita). Impossibile associare la porta ${smtp_port}. Considerare la riconfigurazione di Alfresco per utilizzare una porta non privilegiata quindi utilizzare uno strumento di port forwarding (ad esempio iptables) per inoltrare la porta."
-
-msgid "SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)"
-msgstr "Il protocollo SMTP non sarà disponibile (nota: non abilitato per impostazione predefinita). Verificare la presenza di processi che utilizzano ${smtp_port} in esecuzione (ad esempio server SMTP esistenti)"
 
 msgid "SWFTOOLS Component"
 msgstr "Componente SWFTOOLS"
@@ -499,11 +505,11 @@ msgstr "La versione di Java selezionata è a 32 bit ma questa è un'installazion
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "Lo spazio disponibile in ${installdir} non è sufficiente. Sono necessari almeno ${base_needed_space} MB per l'installazione di ${product_fullname}."
 
+msgid "This environment is not configured optimally for Alfresco - please carefully review this list before continuing.\n\nWhile these issues will not prevent Alfresco from functioning, some product features may be unavailable, or the system may not perform optimally."
+msgstr "Questo ambiente non è configurato in modo ottimale per Alfresco, rivedere attentamente questo elenco prima di continuare.\n\nAnche se queste problematiche non impediscono il funzionamento di Alfresco, alcune funzionalità del prodotto potrebbero essere non disponibili oppure il sistema potrebbe non funzionare in modo ottimale."
+
 msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
 msgstr "Questo è il programma di installazione per Windows a 64 bit.  Scaricare la versione per Windows a 32 bit."
-
-msgid "This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)"
-msgstr "Questa macchina potrebbe non avere abbastanza CPU (core) per eseguire Alfresco per scopi non di sviluppo. Alfresco funzionerà correttamente per scopi di sviluppo ma questo server non deve essere utilizzato per altri scopi. Aggiornare il server per avere almeno ${minimum_core_count} CPU (core)"
 
 msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
 msgstr "Questa versione fa parte di un pacchetto destinato all'esecuzione in J2SE ${java_min_version} o versione successiva. Installare una versione di Java compatibile e riprovare."
@@ -571,15 +577,6 @@ msgstr "Impossibile stabilire un'associazione alla porta del server. Assicurarsi
 msgid "Unable to connect to database. Please check your configuration."
 msgstr "Impossibile stabilire la connessione al database. Verificare la configurazione in uso."
 
-msgid "Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)"
-msgstr "Impossibile determinare il numero di CPU (core). Questa macchina non ha abbastanza CPU (core) per eseguire Alfresco per scopi non di sviluppo. Validare manualmente che questa macchina ha almeno ${minimum_core_count} CPU (core)"
-
-msgid "Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz."
-msgstr "Impossibile determinare la velocità di clock della CPU. Questa macchina può non essere abbastanza veloce per eseguire Alfresco per scopi di test o di produzione. Validare manualmente che la velocità di clock della CPU di questo server è di almeno ${minimum_cpu_speed} Mhz."
-
-msgid "Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed."
-msgstr "Impossibile determinare la dimensione della RAM installata. Questa macchina non presenta RAM sufficiente per eseguire Alfresco in modo corretto. Validare manualmente che questo server ha almeno ${minimum_ram} MB (preferibilmente almeno ${recommended_ram} MB) di RAM installata."
-
 msgid "Unable to find a server running at given port number. Please select another one."
 msgstr "Impossibile trovare un server in esecuzione sul numero di porta indicato. Selezionare un'altra porta."
 
@@ -624,6 +621,9 @@ msgstr "In attesa di Postmaster"
 
 msgid "War files"
 msgstr "File WAR"
+
+msgid "Warning!"
+msgstr "Avviso!"
 
 msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
 msgstr "Impossibile trovare un'installazione di JDK idonea nel sistema in uso. ${product_fullname} richiede JDK ${java_min_version} o versione successiva."

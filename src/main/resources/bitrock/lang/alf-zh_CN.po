@@ -1,8 +1,5 @@
-msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB)."
-msgstr "${machine_total_memory} MB 的 RAM 不足够运行 Alfresco 用于测试或生产目的。Alfresco 可能无法正常运行，如果可以正常运行，其将不能发挥最佳性能。升级服务器，至少拥有 ${minimum_ram} MB 的 RAM（最好至少拥有 ${recommended_ram} MB）。"
-
-msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM"
-msgstr "${machine_total_memory} MB 的 RAM 不足够运行 Alfresco 用于测试或生产目的。Alfresco 可以正常用于开发目的，但是该服务器不适用于其他目的。升级服务器，至少具备 ${recommended_ram} MB 的 RAM"
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM (preferably at least ${recommended_ramGB} GB)."
+msgstr "${machine_total_memoryGB} GB 的 RAM 不足够运行 Alfresco 用于测试或生产目的。 Alfresco 可能无法正常运行，如果可以正常运行，其将不能发挥最佳性能。 升级服务器，至少拥有 ${minimum_ramGB} GB 的 RAM（最好至少拥有 ${recommended_ramGB} GB）。"
 
 msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOffice 服务"
@@ -12,6 +9,12 @@ msgstr "${product_fullname} 服务"
 
 msgid "${product_shortname} manager tool"
 msgstr "${product_shortname} 管理员工具"
+
+msgid "32bit Microsoft Windows® is only supported for evaluation use."
+msgstr "32 位 Microsoft Windows® 仅支持评估使用。"
+
+msgid "64bit architecture recommended"
+msgstr "建议使用 64 位架构"
 
 msgid "Admin Password"
 msgstr "管理密码"
@@ -31,9 +34,6 @@ msgstr "Alfresco Community Edition Stack"
 msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management."
 msgstr "Alfresco Enterprise Content Management (ECM) 系统具有文档管理、合作管理和图像管理等功能。"
 
-msgid "Alfresco Explorer"
-msgstr "Alfresco Explorer"
-
 msgid "Alfresco FTP Port"
 msgstr "Alfresco FTP 端口"
 
@@ -52,14 +52,14 @@ msgstr "Alfresco SharePoint 端口"
 msgid "Alfresco Shortcuts"
 msgstr "Alfresco 快捷方式"
 
+msgid "Alfresco Validations"
+msgstr "Alfresco 验证"
+
 msgid "Alfresco Website"
 msgstr "Alfresco 网站"
 
 msgid "Alfresco data directory"
 msgstr "Alfresco 数据目录"
-
-msgid "Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco."
-msgstr "Alfresco 需要至少 ${minimum_file_descriptors} 个文件描述符。当 Alfresco 正常启动时，可能会在搜索引擎检索内容时出现错误。增加 Alfresco 的可用文件描述符数量。"
 
 msgid "Also choose optional components to install."
 msgstr "还可以选择要安装的可选组件。"
@@ -67,14 +67,14 @@ msgstr "还可以选择要安装的可选组件。"
 msgid "Auto - Configure servers to start automatically"
 msgstr "自动 - 将服务器配置为自动启动"
 
+msgid "CIFS TCP ports in use"
+msgstr "正在使用的 CIFS TCP 端口"
+
+msgid "CIFS UDP ports in use"
+msgstr "正在使用的 CIFS UDP 端口"
+
 msgid "CIFS protocol ports configuration"
 msgstr "CIFS 协议端口配置"
-
-msgid "CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "CIFS 协议将不可用。无法绑定端口： ${portList}。考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口"
-
-msgid "CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers)."
-msgstr "CIFS 协议将不可用。检查正在使用以下端口运行的进程： ${portList}（例如现有 CIFS 服务器）。"
 
 msgid "CIFS server port"
 msgstr "CIFS 服务器端口"
@@ -85,11 +85,8 @@ msgstr "CIFS 服务器端口 1"
 msgid "CIFS server port 2"
 msgstr "CIFS 服务器端口 2"
 
-msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz)."
-msgstr "CPU 时钟速度 ${machine_cpu_speed} Mhz 低于推荐的用于测试或生产所使用的速度 (${recommended_cpu_speed} Mhz)。Alfresco 可以正常执行开发，但是该服务器不适用于其他目的。升级服务器，使其拥有较新的 CPU（CPU 时钟速度至少为 ${recommended_cpu_speed} Mhz）。"
-
-msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more)."
-msgstr "CPU 时钟速度 ${machine_cpu_speed} Mhz 低于 Alfresco 要求的最低速度 (${minimum_cpu_speed} Mhz)。Alfresco 将无法发挥最佳性能。升级服务器，使其拥有较新的 CPU（CPU 时钟速度至少为 ${minimum_cpu_speed} Mhz，最好为 ${recommended_cpu_speed} Mhz 或更高）。"
+msgid "CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more)."
+msgstr "CPU 时钟速度 ${machine_cpu_speedGHz} 低于 Alfresco 要求的最低速度 (${minimum_cpu_speedGHz} GHz)。 Alfresco 将无法发挥最佳性能。 升级服务器，使其拥有较新的 CPU（CPU 时钟速度至少为 ${minimum_cpu_speedGHz} GHz，最好为 ${recommended_cpu_speedGHz} GHz 或更高）。"
 
 msgid "Config Files"
 msgstr "配置文件"
@@ -142,14 +139,11 @@ msgstr "我希望使用捆绑的 PostgreSQL 数据库"
 msgid "I wish to use the bundled Tomcat"
 msgstr "我希望使用捆绑的 Tomcat"
 
+msgid "IMAP TCP port in use"
+msgstr "正在使用的 IMAP TCP 端口"
+
 msgid "IMAP port"
 msgstr "IMAP 端口"
-
-msgid "IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "IMAP 协议将不可用（注意： 默认为未启用）。无法绑定端口 ${imap_port}。考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口"
-
-msgid "IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "IMAP 协议将不可用（注意： 默认为未启用）。检查正在使用 ${imap_port} 运行的进程（例如现有 IMAP 服务器），在非 Windows 操作系统上，考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口"
 
 msgid "IP / Hostname"
 msgstr "IP/主机名"
@@ -202,6 +196,18 @@ msgstr "将 PostgreSQL 作为名为 ${postgres_unique_service_name} 的 Windows 
 msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
 msgstr "将 Tomcat 作为名为 ${tomcat_unique_service_name} 的 Windows 服务安装"
 
+msgid "Insufficient file descriptors"
+msgstr "文件描述符不足"
+
+msgid "Insufficient CPU clock speed"
+msgstr "CPU 时钟速度不足"
+
+msgid "Insufficient CPUs (cores)"
+msgstr "CPU（核心）不足"
+
+msgid "Insufficient system RAM"
+msgstr "系统 RAM 不足"
+
 msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
 msgstr "您似乎没有足够的权限捆绑到端口，或端口已经被其他应用程序占用。请选择其他端口。"
 
@@ -243,6 +249,9 @@ msgstr "LibreOffice 是多平台、开源办公软件套件，适用于文字处
 
 msgid "Location of bin and lib tomcat folders"
 msgstr "bin 和 lib tomcat 文件夹的位置"
+
+msgid "Mac OS X® is only supported for evaluation use."
+msgstr "Mac OS X® 仅支持评估使用"
 
 msgid "Manager tool"
 msgstr "管理员工具"
@@ -361,14 +370,11 @@ msgstr "确认密码："
 msgid "SMB port"
 msgstr "SMB 端口"
 
+msgid "SMTP TCP port in use"
+msgstr "正在使用的 SMTP TCP 端口"
+
 msgid "SMTP port"
 msgstr "SMTP 端口"
-
-msgid "SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port."
-msgstr "SMTP 协议将不可用（注意： 默认为未启用）。无法绑定端口 ${smtp_port}。考虑重新配置 Alfresco，以使用非特权端口，然后使用端口转发工具（例如 iptables）以转发该端口。"
-
-msgid "SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)"
-msgstr "SMTP 协议将不可用（注意： 默认为未启用）。检查正在使用 ${smtp_port} 运行的进程（例如现有 SMTP 服务器）"
 
 msgid "SWFTOOLS Component"
 msgstr "SWFTOOLS 组件"
@@ -499,11 +505,11 @@ msgstr "您选择的 Java 版本为 32 位，但该 Alfresco 的安装为 64 位
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "${installdir} 上没有足够的可用空间。您需要至少 ${base_needed_space} MB 才可安装 ${product_fullname}"
 
+msgid "This environment is not configured optimally for Alfresco - please carefully review this list before continuing.\n\nWhile these issues will not prevent Alfresco from functioning, some product features may be unavailable, or the system may not perform optimally."
+msgstr "此环境没有为 Alfresco 进行优化配置 - 请仔细阅读此列表后再继续操作。\n\n虽然这些问题不会妨碍 Alfresco 正常运行，但有些功能可能不可用，或者系统可能无法发挥最佳性能。"
+
 msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
 msgstr "此安装程序适用于 Windows 64 位。请下载 Windows 32 位版本。"
-
-msgid "This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)"
-msgstr "该设备没有足够的 CPU（核心）以运行 Alfresco 用于非开发目的。Alfresco 将正常用于开发目的，但是该服务器不适用于任何其他目的。升级服务器，至少拥有 ${minimum_core_count} 个 CPU（核心）"
 
 msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
 msgstr "此版本打包后在 J2SE ${java_min_version} 或更高版本上运行。请安装兼容的 Java 版本并重试。"
@@ -571,15 +577,6 @@ msgstr "无法捆绑到服务器端口。请确保 Tomcat 没有在运行。"
 msgid "Unable to connect to database. Please check your configuration."
 msgstr "无法连接到数据库。请检查配置。"
 
-msgid "Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)"
-msgstr "无法确定 CPU（核心）数量。该设备可能没有足够的 CPU（核心）以运行 Alfresco 用于非开发目的。手动验证该设备是否至少拥有 ${minimum_core_count} 个 CPU（核心）"
-
-msgid "Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz."
-msgstr "无法确定 CPU 时钟速度。该设备的运行速度可能不足以运行 Alfresco 用于测试或生产目的。手动验证该服务器的 CPU 时钟速度是否至少为 ${minimum_cpu_speed} Mhz。"
-
-msgid "Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed."
-msgstr "无法确定已安装的 RAM 大小。该设备可能没有足够的 RAM 以正确运行 Alfresco。手动验证该服务器是否至少已安装有 ${minimum_ram} MB 的 RAM（最好至少拥有 ${recommended_ram} MB）。"
-
 msgid "Unable to find a server running at given port number. Please select another one."
 msgstr "找不到在给定端口号运行的服务器。请选择其他端口。"
 
@@ -625,6 +622,9 @@ msgstr "等待 Postmaster"
 msgid "War files"
 msgstr "War 文件"
 
+msgid "Warning!"
+msgstr "警告！"
+
 msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
 msgstr "在系统中找不到合适的 JDK 安装。${product_fullname} 要求 JDK ${java_min_version} 或更高版本。"
 
@@ -648,4 +648,3 @@ msgstr "您已将 Tomcat 选为现有安装。要使用新安装的应用程序�
 
 msgid "You need to select at least one of the Solr components"
 msgstr "您需要选择至少一个 Solr 组件"
-

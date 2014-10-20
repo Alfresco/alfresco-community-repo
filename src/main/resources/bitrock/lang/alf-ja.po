@@ -1,8 +1,5 @@
-msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ram} MB of RAM (preferably at least ${recommended_ram} MB)."
-msgstr "${machine_total_memory} MB の RAM では、テストまたは本番の目的で Alfresco を実行するには不十分です。Alfresco は、正しく動作しないことがあり、そのような場合はうまく実行できません。サーバーを最低 ${minimum_ram} MB の RAM (最低 ${recommended_ram} MB が望ましい) にアップグレードしてください。"
-
-msgid "${machine_total_memory} MB of RAM is not enough to run Alfresco for test or production purposes. Alfresco will function well for development purposes but this server should not be used for other purposes. Upgrade the server to have at least ${recommended_ram} MB of RAM"
-msgstr "${machine_total_memory} MB の RAM では、テストまたは本番の目的で Alfresco を実行するには不十分です。Alfresco は開発目的では正しく動作しますが、このサーバーは別の目的に使用してはなりません。サーバーを最低 ${recommended_ram} MB の RAM にアップグレードしてください。"
+msgid "${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM (preferably at least ${recommended_ramGB} GB)."
+msgstr "${machine_total_memoryGB} GB の RAM では、テストまたは本番の目的で Alfresco を実行するには不十分です。 Alfresco は、正しく動作しないことがあり、そのような場合はうまく実行できません。 最低 ${minimum_ramGB} GB の RAM (最低 ${recommended_ramGB} GB が望ましい) を持つようにサーバーをアップグレードしてください。"
 
 msgid "${product_fullname} LibreOffice Service"
 msgstr "${product_fullname} LibreOfficeサービス"
@@ -12,6 +9,12 @@ msgstr "${product_fullname}サービス"
 
 msgid "${product_shortname} manager tool"
 msgstr "${product_shortname} 管理者ツール"
+
+msgid "32bit Microsoft Windows® is only supported for evaluation use."
+msgstr "32 ビット Microsoft Windows® は、評価用にのみ対応しています。"
+
+msgid "64bit architecture recommended"
+msgstr "64 ビットのアーキテクチャをお勧めします。"
 
 msgid "Admin Password"
 msgstr "管理者パスワード"
@@ -31,9 +34,6 @@ msgstr "Alfresco Community Editionスタック"
 msgid "Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management."
 msgstr "Alfresco Enterprise Content Management (ECM)は、文書管理、コラボレーション管理、 画像管理に特化したシステムです。"
 
-msgid "Alfresco Explorer"
-msgstr "Alfresco Explorer"
-
 msgid "Alfresco FTP Port"
 msgstr "Alfresco FTPのポート"
 
@@ -52,14 +52,14 @@ msgstr "Alfresco SharePointのポート"
 msgid "Alfresco Shortcuts"
 msgstr "Alfrescoのショートカット"
 
+msgid "Alfresco Validations"
+msgstr "Alfresco の検証"
+
 msgid "Alfresco Website"
 msgstr "Alfresco Webサイト"
 
 msgid "Alfresco data directory"
 msgstr "Alfrescoデータディレクトリ"
-
-msgid "Alfresco requires at least ${minimum_file_descriptors} file descriptors. While Alfresco will start correctly, you will likely see errors during indexing of content into the search engine. Increase the number of file descriptors available to Alfresco."
-msgstr "Alfresco には、最低 ${minimum_file_descriptors} のファイル記述子が必要です。Alfresco が正しくスタートしても、コンテンツの検索エンジンへのインデクシング中にエラーが見られることがあります。Alfresco で使用可能なファイル記述子の数を増やしてください。"
 
 msgid "Also choose optional components to install."
 msgstr "追加でインストールするコンポーネントも選択できます。"
@@ -67,14 +67,14 @@ msgstr "追加でインストールするコンポーネントも選択できま
 msgid "Auto - Configure servers to start automatically"
 msgstr "自動 - サービスが自動的に起動するようにサーバーを設定します。"
 
+msgid "CIFS TCP ports in use"
+msgstr "CIFS TCP ポートは使用中です"
+
+msgid "CIFS UDP ports in use"
+msgstr "CIFS UDP ポートは使用中です"
+
 msgid "CIFS protocol ports configuration"
 msgstr "CIFS プロトコルポートの設定"
-
-msgid "CIFS protocol will be unavailable. Cannot bind ports: ${portList}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "CIFS プロトコルは使用できなくなります。ポート: ${portList} を結合できません。非特権ポートを使用するために Alfresco の再設定を検討し、このポートを転送するためにポート転送ツール (iptables など) を使用します"
-
-msgid "CIFS protocol will be unavailable. Check for running processes that are using the following ports: ${portList} (eg. existing CIFS servers)."
-msgstr "CIFS プロトコルは使用できなくなります。以下のポート: ${portList} (例えば、既存の CIFS サーバー) を使用している実行プロセスを確認してください。"
 
 msgid "CIFS server port"
 msgstr "CIFS サーバーポート"
@@ -85,11 +85,8 @@ msgstr "CIFS サーバーポート 1"
 msgid "CIFS server port 2"
 msgstr "CIFS サーバーポート 2"
 
-msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than that recommended for test or production use (${recommended_cpu_speed} Mhz). Alfresco will perform well for development purposes but this server should not be used for other purposes. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${recommended_cpu_speed} Mhz)."
-msgstr "${machine_cpu_speed} Mhz の CPU クロック速度は、テストまたは本番使用に推奨される速度 (${recommended_cpu_speed} Mhz) よりも遅くなっています。Alfresco は開発目的では正しく動作しますが、このサーバーは別の目的に使用してはなりません。より大容量のモデム CPU を持つサーバー (最低 ${recommended_cpu_speed} Mhzの CPU クロック速度) にアップグレードしてください。"
-
-msgid "CPU clock speed of ${machine_cpu_speed} Mhz is slower than the minimum required by Alfresco (${minimum_cpu_speed} Mhz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speed} Mhz, and preferably ${recommended_cpu_speed} Mhz or more)."
-msgstr "${machine_cpu_speed} Mhz の CPU クロック速度は、Alfresco が推奨する速度 (${minimum_cpu_speed} Mhz) よりも遅くなっています。Alfresco は、正しく動作できません。より大容量のモデム CPU を持つサーバー (最低 ${minimum_cpu_speed} Mhzの CPU クロック速度、できれば ${recommended_cpu_speed} Mhz 以上が望ましい) にアップグレードしてください。"
+msgid "CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more)."
+msgstr "${machine_cpu_speedGHz} GHz の CPU クロック速度は、Alfresco が要求する最低要件 (${minimum_cpu_speedGHz} GHz) よりも遅くなっています。 Alfresco は、正しく動作できません。 より大容量のモデム CPU を持つサーバー (最低 ${minimum_cpu_speedGHz} GHzの CPU クロック速度、できれば ${recommended_cpu_speedGHz} GHz 以上が望ましい) にアップグレードしてください。"
 
 msgid "Config Files"
 msgstr "設定ファイル"
@@ -142,14 +139,11 @@ msgstr "バンドルされたPostgreSQLデータベースを使用する"
 msgid "I wish to use the bundled Tomcat"
 msgstr "バンドルされたTomcatを使用する"
 
+msgid "IMAP TCP port in use"
+msgstr "IMAP TCP ポートは使用中です"
+
 msgid "IMAP port"
 msgstr "IMAP ポート"
-
-msgid "IMAP protocol will be unavailable (note: not enabled by default). Cannot bind port ${imap_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "IMAP プロトコルは使用できなくなります (注：デフォルトで有効にならない)。ポート ${imap_port} を結合できません。非特権ポートを使用するために Alfresco の再設定を検討し、このポートを転送するためにポート転送ツール (iptables など) を使用します"
-
-msgid "IMAP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${imap_port} (eg. existing IMAP servers), on non-Windows OSes consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port"
-msgstr "IMAP プロトコルは使用できなくなります (注：デフォルトで有効にならない)。${imap_port} (例えば、既存の IMAP サーバー) を使用している実行プロセスを確認し、非 Windows OS では、非特権ポートを使用するために Alfresco の再設定を検討し、このポートを転送するためにポート転送ツール (iptables など) を使用します"
 
 msgid "IP / Hostname"
 msgstr "IPまたはホスト名"
@@ -202,6 +196,18 @@ msgstr "PostgreSQLを${postgres_unique_service_name}という名前のWindowsサ
 msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
 msgstr "Tomcatを${tomcat_unique_service_name}という名前のWindowsサービスとしてインストールしています"
 
+msgid "Insufficient file descriptors"
+msgstr "ファイル記述子が不十分です"
+
+msgid "Insufficient CPU clock speed"
+msgstr "CPU クロック速度が不十分です"
+
+msgid "Insufficient CPUs (cores)"
+msgstr "CPU (コア) が不十分です"
+
+msgid "Insufficient system RAM"
+msgstr "システムの RAM が不十分です"
+
 msgid "It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one."
 msgstr "ポートにバインドするための十分な権限がないか、ポートが既に他のアプリケーションで使用されている可能性があります。別のポートを選択してください。"
 
@@ -243,6 +249,9 @@ msgstr "LibreOfficeは、ワープロ、表計算、プレゼンテーション�
 
 msgid "Location of bin and lib tomcat folders"
 msgstr "bin および lib tomcat フォルダの場所"
+
+msgid "Mac OS X® is only supported for evaluation use."
+msgstr "Mac OS X® は、評価用にのみ対応しています。"
 
 msgid "Manager tool"
 msgstr "管理者ツール"
@@ -361,14 +370,11 @@ msgstr "パスワードの再入力："
 msgid "SMB port"
 msgstr "SMB ポート"
 
+msgid "SMTP TCP port in use"
+msgstr "使用中の SMTP TCP ポート"
+
 msgid "SMTP port"
 msgstr "SMTP ポート"
-
-msgid "SMTP protocol will be unavailable (note: not enabled by default). Cannot bind port ${smtp_port}. Consider reconfiguring Alfresco to use a non-privileged port then use a port forwarding tool (such as iptables) to forward this port."
-msgstr "SMTP プロトコルは使用できなくなります (注：デフォルトで有効にならない)。ポート ${smtp_port} を結合できません。非特権ポートを使用するために Alfresco の再設定を検討し、このポートを転送するためにポート転送ツール (iptables など) を使用します。"
-
-msgid "SMTP protocol will be unavailable (note: not enabled by default). Check for running processes that are using ${smtp_port} (eg. existing SMTP servers)"
-msgstr "SMTP プロトコルは使用できなくなります (注：デフォルトで有効にならない)。${smtp_port} (例えば、既存の SMTP サーバー) を使用している実行プロセスを確認してください。"
 
 msgid "SWFTOOLS Component"
 msgstr "SWFTOOLSコンポーネント"
@@ -499,11 +505,11 @@ msgstr "選択された Java のバージョンは 32 ビットですが、こ�
 msgid "There is not enough free space on ${installdir}. You need at least ${base_needed_space} MB in order to install ${product_fullname}"
 msgstr "${installdir} に十分な空き領域がありません。${product_fullname}のインストールには、最低${base_needed_space} MB必要です。"
 
+msgid "This environment is not configured optimally for Alfresco - please carefully review this list before continuing.\n\nWhile these issues will not prevent Alfresco from functioning, some product features may be unavailable, or the system may not perform optimally."
+msgstr "この環境は Alfresco 用に最適に設定されてはいません - このリストを注意深く確認してから続行してください。\n\nAlfresco が機能しないのはこれらの問題が原因ではないため、製品の何らかの機能が使用できないかシステムが最適に実行されていない可能性があります。"
+
 msgid "This installer is for Windows 64 bit.  Please download the Windows 32 bit version."
 msgstr "このインストーラはWindows 64ビット用です。Windows 32ビットバージョンをダウンロードしてください。"
-
-msgid "This machine does not have enough CPUs (cores) to run Alfresco for non-development purposes. Alfresco will function well for development purposes but this server should not be used for any other purpose. Upgrade the server to have at least ${minimum_core_count} CPUs (cores)"
-msgstr "この PC には、Alfresco を非開発目的で実行するための十分な CPU (コア) がありません。Alfresco は開発目的では正しく動作しますが、このサーバーは別の目的に使用してはなりません。サーバーを最低 ${minimum_core_count} CPU (コア) にアップグレードしてください。"
 
 msgid "This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again."
 msgstr "このリリースはJ2SE ${java_min_version}以上で実行するようにパッケージ化されています。互換性のあるJavaバージョンをインストールしてから、操作をやり直してください。"
@@ -571,15 +577,6 @@ msgstr "このサーバー用ポートに割り当てることはできません
 msgid "Unable to connect to database. Please check your configuration."
 msgstr "データベースに接続できません。設定を確認してください。"
 
-msgid "Unable to determine CPU (core) count. This machine may not have enough CPUs (cores) to run Alfresco for non-development purposes. Manually validate that this machine has at least ${minimum_core_count} CPUs (cores)"
-msgstr "CPU (コア) を決定できません。この PC には、Alfresco を非開発目的で実行するための十分な CPU (コア) がない可能性があります。この PC に最低 ${minimum_core_count} CPU (コア) があることを手動で確認してください。"
-
-msgid "Unable to determine CPU clock speed. This machine may not be fast enough to run Alfresco for test or production purposes. Manually validate that the CPU clock speed of this server is at least ${minimum_cpu_speed} Mhz."
-msgstr "CPU のクロック速度を決定できません。この PC では、テストまたは本番目的で Alfresco を実行するのに十分な速度がない可能性があります。このサーバーの CPU クロック速度が最低 ${minimum_cpu_speed} Mhz であることを手動で確認してください。"
-
-msgid "Unable to determine size of installed RAM. This machine may not have sufficient RAM to run Alfresco correctly. Manually validate that this server has at least ${minimum_ram} MB (preferably at least ${recommended_ram} MB) of RAM installed."
-msgstr "インストールされた RAM のサイズを決定できません。この PC には、Alfresco を正しく実行するための十分な RAM がない可能性があります。このサーバーに最低 ${minimum_ram} MB の RAM (最低 ${recommended_ram} MB が望ましい) があることを手動で確認してください。"
-
 msgid "Unable to find a server running at given port number. Please select another one."
 msgstr "指定したポート番号で稼動しているサーバーが見つかりません。他のポートを選択してください。"
 
@@ -625,6 +622,9 @@ msgstr "Postmasterの待機中"
 msgid "War files"
 msgstr "WARファイル"
 
+msgid "Warning!"
+msgstr "警告!"
+
 msgid "We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later."
 msgstr "お使いのシステムで適したJDKを見つけることができませんでした。${product_fullname}を使用するには、JDK ${java_min_version}以上が必要です。"
 
@@ -648,4 +648,3 @@ msgstr "Tomcatを既存のソフトウェアとして選択しました。新た
 
 msgid "You need to select at least one of the Solr components"
 msgstr "Solr コンポーネントの少なくとも 1 つを選択する必要があります"
-

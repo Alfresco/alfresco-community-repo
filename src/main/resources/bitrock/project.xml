@@ -15,6 +15,7 @@
     <windowsExecutableIcon>images/alfresco.ico</windowsExecutableIcon>
     <osxApplicationBundleIcon>images/alfresco.icns</osxApplicationBundleIcon>
     <wmImage>images/alfresco.png</wmImage>
+    <osxApplicationBundleIdentifier>com.alfresco.macinstaller</osxApplicationBundleIdentifier>
     <defaultLanguage>en</defaultLanguage>
     <defaultUnixDirectoryPermissions>755</defaultUnixDirectoryPermissions>
     <defaultUnixFilePermissions>644</defaultUnixFilePermissions>

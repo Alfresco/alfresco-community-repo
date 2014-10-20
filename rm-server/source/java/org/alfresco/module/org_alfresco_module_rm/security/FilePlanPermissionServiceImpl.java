@@ -499,12 +499,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 if (canPerformPermissionAction(nodeRef))
                 {
-                    if (RMPermissionModel.FILING.equals(permission))
-                    {
-                        // Remove record read permission before adding filing permission
-                        permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);
-                    }
-
                     // Set the permission on the node
                     permissionService.setPermission(nodeRef, authority, permission, true);
                 }

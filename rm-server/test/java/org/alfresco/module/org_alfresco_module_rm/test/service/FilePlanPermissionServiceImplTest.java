@@ -976,35 +976,45 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
             }
         }, user2);
 
-        doTestInTransaction(new Test<NodeRef>()
+        final NodeRef movedCategory5 = doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run() throws Exception
             {
                 return fileFolderService.move(category5, category6, null).getNodeRef();
             }
+        });
 
+        assertTrue(permissionService.getInheritParentPermissions(movedCategory5));
+        assertFalse(permissionService.getInheritParentPermissions(category6));
+
+        doTestInTransaction(new Test<Void>()
+        {
             @Override
-            public void test(final NodeRef movedCategory5) throws Exception
+            public Void run()
             {
-                assertTrue(permissionService.getInheritParentPermissions(movedCategory5));
-                assertFalse(permissionService.getInheritParentPermissions(category6));
-
-                AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(movedCategory5, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category6, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category6, RMPermissionModel.FILING));
 
-                AuthenticationUtil.setFullyAuthenticatedUser(user2);
+                return null;
+            }
+        }, user1);
 
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.FILING));
+
+                return null;
             }
-        });
+        }, user2);
     }
 
     public void testPermissionsForMovedRecord()
@@ -1094,19 +1104,20 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
             }
         }, user3);
 
-        doTestInTransaction(new Test<NodeRef>()
+        final NodeRef movedRecord8 = doTestInTransaction(new Test<NodeRef>()
         {
             @Override
             public NodeRef run() throws Exception
             {
                 return fileFolderService.move(record8, folder7, null).getNodeRef();
             }
+        });
 
+        doTestInTransaction(new Test<Void>()
+        {
             @Override
-            public void test(final NodeRef movedRecord8) throws Exception
+            public Void run()
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
@@ -1121,8 +1132,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.FILING));
 
-                AuthenticationUtil.setFullyAuthenticatedUser(user2);
+                return null;
+            }
+        }, user1);
 
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
@@ -1137,8 +1155,15 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(movedRecord8, RMPermissionModel.FILING));
 
-                AuthenticationUtil.setFullyAuthenticatedUser(user3);
+                return null;
+            }
+        }, user2);
 
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category7, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category7, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(folder7, RMPermissionModel.READ_RECORDS));
@@ -1152,7 +1177,9 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(folder8, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedRecord8, RMPermissionModel.FILING));
+
+                return null;
             }
-        });
+        }, user3);
     }
 }

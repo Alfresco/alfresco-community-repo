@@ -1796,7 +1796,7 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     public void beforeDeleteNode(NodeRef nodeRef)
     {
         String userName = (String) this.nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
-        if (this.authorityService.isGuestAuthority(userName))
+        if (this.authorityService.isGuestAuthority(userName) && !this.tenantService.isTenantUser(userName))
         {
             throw new AlfrescoRuntimeException("The " + userName + " user cannot be deleted.");
         }

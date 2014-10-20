@@ -1095,4 +1095,15 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V5.0-upgrade-to-activiti-5.16.4" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-upgrade-to-activiti-5.16.4" />
+        <property name="description" value="patch.db-V5.0-upgrade-to-activiti-5.16.4.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="8008" />
+        <property name="targetSchema" value="8009" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-upgrade-5-16-4.sql</value>
+        </property>
+    </bean>
+
 </beans>

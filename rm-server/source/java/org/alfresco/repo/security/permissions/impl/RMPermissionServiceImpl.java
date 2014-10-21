@@ -18,12 +18,13 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -300,9 +301,9 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     @Override
     public void setInheritParentPermissions(final NodeRef nodeRef, boolean inheritParentPermissions)
     {
-        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+        final String adminRole = getAdminRole(nodeRef);
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) && isNotBlank(adminRole))
         {
-            final String adminRole = getAdminRole(nodeRef);
             if (inheritParentPermissions)
             {
                 Set<AccessPermission> accessPermissions = getAllSetPermissions(nodeRef);
@@ -331,11 +332,12 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 
     private String getAdminRole(NodeRef nodeRef)
     {
+        String adminRole = null;
         NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-        if (filePlan == null)
+        if (filePlan != null)
         {
-            throw new AlfrescoRuntimeException("The file plan could not be found for the node '" + nodeRef + "'.");
+            adminRole = authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
         }
-        return authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
+        return adminRole;
     }
 }

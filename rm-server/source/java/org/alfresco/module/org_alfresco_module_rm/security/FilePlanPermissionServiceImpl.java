@@ -467,11 +467,15 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 public Object doWork()
                 {
                     // set inheritance
-                    permissionService.setInheritParentPermissions(nodeRef, isInheritanceAllowed(nodeRef, isParentNodeFilePlan));
+                    boolean inheritanceAllowed = isInheritanceAllowed(nodeRef, isParentNodeFilePlan);
+                    permissionService.setInheritParentPermissions(nodeRef, inheritanceAllowed);
 
-                    // set extended reader permissions
-                    permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    if (!inheritanceAllowed)
+                    {
+                        // set extended reader permissions
+                        permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                        permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    }
 
                     return null;
                 }

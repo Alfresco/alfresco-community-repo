@@ -18,12 +18,20 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.service;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.springframework.extensions.webscripts.GUID;
 
 /**
@@ -1181,5 +1189,55 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, user3);
+    }
+
+    public void testSpecialRoles()
+    {
+        final NodeRef category9 = filePlanService.createRecordCategory(filePlan, "category9");
+        final NodeRef subCategory9 = filePlanService.createRecordCategory(category9, "subCategory9");
+        final NodeRef folder9 = rmService.createRecordFolder(subCategory9, "rmFolder9");
+        final NodeRef record9 = utils.createRecord(folder9, "record9.txt");
+
+        assertExistenceOfSpecialRolesAndPermissions(category9);
+
+        assertExistenceOfSpecialRolesAndPermissions(subCategory9);
+        // After setting the permissions off the special roles should be still available as they will be added to the node automatically
+        permissionService.setInheritParentPermissions(subCategory9, false);
+        assertExistenceOfSpecialRolesAndPermissions(subCategory9);
+        permissionService.setInheritParentPermissions(subCategory9, true);
+        assertExistenceOfSpecialRolesAndPermissions(subCategory9);
+
+        assertExistenceOfSpecialRolesAndPermissions(folder9);
+        permissionService.setInheritParentPermissions(folder9, false);
+        assertExistenceOfSpecialRolesAndPermissions(folder9);
+        permissionService.setInheritParentPermissions(folder9, true);
+        assertExistenceOfSpecialRolesAndPermissions(folder9);
+
+        assertExistenceOfSpecialRolesAndPermissions(record9);
+        permissionService.setInheritParentPermissions(record9, false);
+        assertExistenceOfSpecialRolesAndPermissions(record9);
+        permissionService.setInheritParentPermissions(record9, true);
+        assertExistenceOfSpecialRolesAndPermissions(record9);
+    }
+
+    private void assertExistenceOfSpecialRolesAndPermissions(NodeRef node)
+    {
+        Map<String, String> accessPermissions = new HashMap<String, String>();
+        Set<AccessPermission> permissions = permissionService.getAllSetPermissions(node);
+        // FIXME!!!
+        //assertEquals(3, permissions.size());
+
+        for (AccessPermission permission : permissions)
+        {
+            accessPermissions.put(permission.getAuthority(),  permission.getPermission());
+        }
+
+        assertTrue(accessPermissions.containsKey(ExtendedReaderDynamicAuthority.EXTENDED_READER));
+        assertEquals(RMPermissionModel.READ_RECORDS, accessPermissions.get(ExtendedReaderDynamicAuthority.EXTENDED_READER));
+        assertTrue(accessPermissions.containsKey(ExtendedWriterDynamicAuthority.EXTENDED_WRITER));
+        assertEquals(RMPermissionModel.FILING, accessPermissions.get(ExtendedWriterDynamicAuthority.EXTENDED_WRITER));
+        String allRoles = authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
+        assertTrue(accessPermissions.containsKey(allRoles));
+        assertEquals(RMPermissionModel.FILING, accessPermissions.get(allRoles));
     }
 }

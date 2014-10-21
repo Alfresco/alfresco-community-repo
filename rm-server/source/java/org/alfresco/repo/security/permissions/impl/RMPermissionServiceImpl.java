@@ -23,13 +23,20 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
@@ -39,7 +46,7 @@ import org.springframework.context.ApplicationEvent;
  * permission.
  * <p>
  * This is required for SOLR support.
- * 
+ *
  * @author Roy Wetherall
  */
 public class RMPermissionServiceImpl extends PermissionServiceImpl
@@ -47,7 +54,30 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 {
 	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
-    
+
+    /** File plan service */
+    private FilePlanService filePlanService;
+
+    /**
+     * Gets the file plan service
+     *
+     * @return the filePlanService
+     */
+    public FilePlanService getFilePlanService()
+    {
+        return this.filePlanService;
+    }
+
+    /**
+     * Sets the file plan service
+     *
+     * @param filePlanService the filePlanService to set
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
+
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setAnyDenyDenies(boolean)
      */
@@ -57,7 +87,7 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         super.setAnyDenyDenies(anyDenyDenies);
         writersCache.clear();
     }
-    
+
     /**
      * @param writersCache the writersCache to set
      */
@@ -65,44 +95,44 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     {
         this.writersCache = writersCache;
     }
-    
+
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#onBootstrap(org.springframework.context.ApplicationEvent)
      */
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        super.onBootstrap(event);        
+        super.onBootstrap(event);
         PropertyCheck.mandatory(this, "writersCache", writersCache);
     }
-    
+
     /**
      * Override to deal with the possibility of hard coded permission checks in core code.
-     * 
+     *
      * Note:  Eventually we need to merge the RM permission model into the core to make this more rebust.
-     * 
+     *
      * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#hasPermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         AccessStatus acs = super.hasPermission(nodeRef, perm);
-        if (AccessStatus.DENIED.equals(acs) == true && 
+        if (AccessStatus.DENIED.equals(acs) == true &&
             PermissionService.READ.equals(perm) == true &&
             nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
         {
             return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
         }
-        else if (AccessStatus.DENIED.equals(acs) == true && 
+        else if (AccessStatus.DENIED.equals(acs) == true &&
                  PermissionService.WRITE.equals(perm) == true &&
                  nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
         {
             return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
         }
-    
+
         return acs;
     }
-    
+
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#canRead(java.lang.Long)
      */
@@ -111,8 +141,8 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     {
         Set<String> authorities = getAuthorisations();
 
-        // test denied 
-        
+        // test denied
+
         if(anyDenyDenies)
         {
 
@@ -125,12 +155,12 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
                     return AccessStatus.DENIED;
                 }
             }
-            
+
         }
 
         // test acl readers
         Set<String> aclReaders = getReaders(aclId);
-        
+
         for(String auth : aclReaders)
         {
             if(authorities.contains(auth))
@@ -141,7 +171,7 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 
         return AccessStatus.DENIED;
     }
-    
+
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#getReaders(java.lang.Long)
      */
@@ -159,7 +189,7 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         {
             return aclReaders;
         }
-        
+
         HashSet<String> assigned = new HashSet<String>();
         HashSet<String> readers = new HashSet<String>();
 
@@ -185,7 +215,7 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 
     /**
      * Override with check for RM read
-     * 
+     *
      * @param aclId
      * @return
      */
@@ -219,12 +249,12 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
                 denied.add(authority);
             }
         }
-        
+
         readersDeniedCache.put((Serializable)acl.getProperties(), denied);
 
         return denied;
     }
-    
+
     /**
      * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#getWriters(java.lang.Long)
      */
@@ -241,7 +271,7 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         {
             return aclWriters;
         }
-        
+
         HashSet<String> assigned = new HashSet<String>();
         HashSet<String> readers = new HashSet<String>();
 
@@ -262,5 +292,50 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         aclWriters = Collections.unmodifiableSet(readers);
         writersCache.put((Serializable)acl.getProperties(), aclWriters);
         return aclWriters;
+    }
+
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public void setInheritParentPermissions(final NodeRef nodeRef, boolean inheritParentPermissions)
+    {
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+        {
+            final String adminRole = getAdminRole(nodeRef);
+            if (inheritParentPermissions)
+            {
+                Set<AccessPermission> accessPermissions = getAllSetPermissions(nodeRef);
+                for (AccessPermission accessPermission : accessPermissions)
+                {
+                    String authority = accessPermission.getAuthority();
+                    String permission = accessPermission.getPermission();
+                    if (accessPermission.isSetDirectly() &&
+                            (RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
+                            (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) || ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority)) || adminRole.equals(authority))
+                    {
+                        // FIXME!!!
+                        //deletePermission(nodeRef, authority, permission);
+                    }
+                }
+            }
+            else
+            {
+                setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
+            }
+        }
+        super.setInheritParentPermissions(nodeRef, inheritParentPermissions);
+    }
+
+    private String getAdminRole(NodeRef nodeRef)
+    {
+        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
+        if (filePlan == null)
+        {
+            throw new AlfrescoRuntimeException("The file plan could not be found for the node '" + nodeRef + "'.");
+        }
+        return authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
     }
 }

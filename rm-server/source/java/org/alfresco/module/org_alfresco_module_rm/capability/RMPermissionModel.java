@@ -19,11 +19,12 @@
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 
 /**
  * Capability constants for the RM Permission Model
- * 
+ *
  * @author andyh
  */
 public interface RMPermissionModel
@@ -32,15 +33,34 @@ public interface RMPermissionModel
     public static final String FILING = "Filing";
     public static final String READ_RECORDS = "ReadRecords";
     public static final String FILE_RECORDS = "FileRecords";
-    
-    // Roles
-    public static final String ROLE_NAME_USER = "User";
-    public static final String ROLE_NAME_POWER_USER = "PowerUser";
-    public static final String ROLE_NAME_SECURITY_OFFICER = "SecurityOfficer";
-    public static final String ROLE_NAME_RECORDS_MANAGER = "RecordsManager";
 
-    public static final String ROLE_NAME_ADMINISTRATOR = "Administrator";
-    public static final String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_ADMINISTRATOR).toString();
+    // Roles
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_USER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_USER = FilePlanRoleService.ROLE_USER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_POWER_USER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_POWER_USER = FilePlanRoleService.ROLE_POWER_USER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_SECURITY_OFFICER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_SECURITY_OFFICER = FilePlanRoleService.ROLE_SECURITY_OFFICER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_RECORDS_MANAGER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_RECORDS_MANAGER = FilePlanRoleService.ROLE_RECORDS_MANAGER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_ADMIN} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_ADMINISTRATOR = FilePlanRoleService.ROLE_ADMIN;
+    public static final String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, FilePlanRoleService.ROLE_ADMIN).toString();
 
     // Capability permissions
 

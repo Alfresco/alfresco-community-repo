@@ -722,6 +722,17 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 }
             }, tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier()));
         }
+        else if (tenantService.isEnabled() && !tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier()).equals(TenantService.DEFAULT_DOMAIN))
+        {
+            return TenantUtil.runAsTenant(new TenantRunAsWork<List<Document>>()
+            {
+                public List<Document> doWork()
+                {
+                    return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,
+                            cascade, pathsToRegenerate, childAssociationsSinceFlush, deltaReader, mainReader);
+                }
+            }, tenantService.getDomain(new NodeRef(stringNodeRef).getStoreRef().getIdentifier()));
+        }
         else
         {
             return createDocumentsImpl(stringNodeRef, ftsStatus, indexAllProperties, includeDirectoryDocuments,

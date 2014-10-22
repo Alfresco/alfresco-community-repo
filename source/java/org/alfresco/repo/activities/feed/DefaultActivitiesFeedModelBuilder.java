@@ -45,7 +45,7 @@ public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBui
     }
 
     @Override
-    public void addAcctivitiyFeedEntry(ActivityFeedEntity feedEntry) throws JSONException
+    public void addActivityFeedEntry(ActivityFeedEntity feedEntry) throws JSONException
     {
         Map<String, Object> map;
         map = feedEntry.getModel();
@@ -56,7 +56,6 @@ public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBui
         {
             maxFeedId = feedId;
         }
-
     }
 
     @Override
@@ -70,5 +69,4 @@ public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBui
     {
         return maxFeedId;
     }
-
 }

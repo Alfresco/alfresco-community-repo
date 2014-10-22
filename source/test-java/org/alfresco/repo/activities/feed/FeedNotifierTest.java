@@ -230,7 +230,7 @@ public class FeedNotifierTest
         userNotifier.setActivityService(activityService);
         userNotifier.setRepoAdminService(repoAdminService);
         userNotifier.setActionService(actionService);
-        userNotifier.setActivitiesFeedModdelBuilderFactory(feedModelBuilderFactory);
+        userNotifier.setActivitiesFeedModelBuilderFactory(feedModelBuilderFactory);
 
         feedNotifier.setUserNotifier(userNotifier);
     }

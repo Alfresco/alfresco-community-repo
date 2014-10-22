@@ -33,7 +33,7 @@ public interface ActivitiesFeedModelBuilder
 
     Map<String, Object> buildModel();
 
-    void addAcctivitiyFeedEntry(ActivityFeedEntity feedEntry) throws JSONException;
+    void addActivityFeedEntry(ActivityFeedEntity feedEntry) throws JSONException;
 
     int activityCount();
 

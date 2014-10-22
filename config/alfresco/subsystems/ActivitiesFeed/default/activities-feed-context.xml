@@ -152,7 +152,7 @@
    <!--  Feed Email Notifier -->
     
    <bean id="emailUserNotifier" class="org.alfresco.repo.activities.feed.EmailUserNotifier">
-      <property name="activitiesFeedModdelBuilderFactory" ref="feedModelBuilderFactory"/>
+      <property name="activitiesFeedModelBuilderFactory" ref="feedModelBuilderFactory"/>
       <property name="activityService" ref="activityService"/>
       <property name="namespaceService" ref="NamespaceService"/>
       <property name="repoAdminService" ref="repoAdminService"/>

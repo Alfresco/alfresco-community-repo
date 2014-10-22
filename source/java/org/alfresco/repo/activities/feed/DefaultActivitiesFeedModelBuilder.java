@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,19 +19,34 @@
 package org.alfresco.repo.activities.feed;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.json.JSONException;
 
+/**
+ * @since 4.0
+ * 
+ * @author Alex Miller
+ */
 public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBuilder
 {
-    private List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+    protected List<Map<String, Object>> activityFeedModels = new ArrayList<Map<String, Object>>();
+    protected Set<String> ignoredActivityTypes = Collections.emptySet();
     
-    private long maxFeedId = -1L;
+    protected long maxFeedId = -1L;
 
+    /**
+     * Set the activity types to ignore.
+     */
+    public void setIgnoredActivityTypes(Set<String> ignoredActivityTypes)
+    {
+        this.ignoredActivityTypes = ignoredActivityTypes;
+    }
 
     @Override
     public Map<String, Object> buildModel()
@@ -47,26 +62,34 @@ public class DefaultActivitiesFeedModelBuilder implements ActivitiesFeedModelBui
     @Override
     public void addActivityFeedEntry(ActivityFeedEntity feedEntry) throws JSONException
     {
-        Map<String, Object> map;
-        map = feedEntry.getModel();
-        activityFeedModels.add(map);
-        
-        long feedId = feedEntry.getId();
-        if (feedId > maxFeedId)
+        if (ignore(feedEntry) == true) 
         {
-            maxFeedId = feedId;
+            return;
+        }
+        
+        this.activityFeedModels.add(feedEntry.getModel());
+        
+        final long feedId = feedEntry.getId();
+        if (feedId > this.maxFeedId)
+        {
+            this.maxFeedId = feedId;
         }
     }
 
     @Override
     public int activityCount()
     {
-        return activityFeedModels.size();
+        return this.activityFeedModels.size();
     }
 
     @Override
     public long getMaxFeedId()
     {
-        return maxFeedId;
+        return this.maxFeedId;
+    }
+    
+    protected boolean ignore(ActivityFeedEntity feedEntry)
+    {
+        return this.ignoredActivityTypes.contains(feedEntry.getActivityType());
     }
 }

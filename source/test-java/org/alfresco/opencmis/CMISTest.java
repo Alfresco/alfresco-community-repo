@@ -75,9 +75,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.version.VersionService;
@@ -86,9 +84,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
-import org.apache.chemistry.opencmis.commons.BasicPermissions;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.data.Ace;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
@@ -99,7 +95,6 @@ import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
-import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.ChangeType;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
@@ -108,9 +103,6 @@ import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlEntryImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlListImpl;
-import org.apache.chemistry.opencmis.commons.impl.dataobjects.AccessControlPrincipalDataImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.CmisExtensionElementImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ExtensionDataImpl;
@@ -2155,126 +2147,6 @@ public class CMISTest
         }
     }
     
-    /**
-     * MNT-10165: Check that all concomitant basic CMIS permissions are deleted
-     * when permission is deleted vai CMIS 1.1 API. For Atom binding it applies
-     * new set of permissions instead of deleting the old ones.
-     */
-    @Test
-    public void testRemoveACL() throws Exception
-    {
-        AuthenticationUtil.pushAuthentication();
-        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        final String groupName = "group" + GUID.generate();
-        final String testGroup = PermissionService.GROUP_PREFIX + groupName;
-        try
-        {
-            // preconditions: create test document
-            if (!authorityService.authorityExists(testGroup))
-            {
-                authorityService.createAuthority(AuthorityType.GROUP, groupName);
-            }
-            
-            final FileInfo document = transactionService.getRetryingTransactionHelper().doInTransaction(
-                    new RetryingTransactionCallback<FileInfo>()
-                    {
-                        @Override
-                        public FileInfo execute() throws Throwable
-                        {
-                            NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-
-                            String folderName = GUID.generate();
-                            FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
-                            nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
-                            assertNotNull(folderInfo);
-
-                            String docName = GUID.generate();
-                            FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
-                            assertNotNull(document);
-                            nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, docName);
-
-                            return document;
-                        }
-                    });
-
-            Set<AccessPermission> permissions = permissionService.getAllSetPermissions(document.getNodeRef());
-            assertEquals(permissions.size(), 1);
-            AccessPermission current = permissions.iterator().next();
-            assertEquals(current.getAuthority(), "GROUP_EVERYONE");
-            assertEquals(current.getPermission(), "Consumer");
-
-            // add group1 with Coordinator permissions
-            permissionService.setPermission(document.getNodeRef(), testGroup, PermissionService.COORDINATOR, true);
-            permissions = permissionService.getAllSetPermissions(document.getNodeRef());
-
-            Map<String , String> docPermissions = new HashMap<String, String>();
-            for (AccessPermission permission : permissions)
-            {
-                docPermissions.put(permission.getAuthority(), permission.getPermission());
-            }
-            assertTrue(docPermissions.keySet().contains(testGroup));
-            assertEquals(docPermissions.get(testGroup), PermissionService.COORDINATOR);
-
-            // update permissions for group1 via CMIS 1.1 API 
-            withCmisService(new CmisServiceCallback<Void>()
-            {
-                @Override
-                public Void execute(CmisService cmisService)
-                {
-                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
-                    assertNotNull(repositories);
-                    assertTrue(repositories.size() > 0);
-                    RepositoryInfo repo = repositories.iterator().next();
-                    String repositoryId = repo.getId();
-                    String docIdStr = document.getNodeRef().toString();
-
-                    // when removing Coordinator ACE from workbench-0.10.0 it sends PUT request
-                    // to apply basic cmis:write, cmis:read, cmis:all for principal
-                    AccessControlListImpl acesToPut = new AccessControlListImpl();
-                    List<Ace> acesList = new ArrayList<Ace>();
-                    acesToPut.setAces(acesList);
-                    AccessControlEntryImpl ace = new AccessControlEntryImpl();
-                    ace.setPrincipal(new AccessControlPrincipalDataImpl(testGroup));
-                    List<String> putPermissions = new ArrayList<String>();
-                    putPermissions.add(BasicPermissions.ALL);
-                    putPermissions.add(BasicPermissions.READ);
-                    putPermissions.add(BasicPermissions.WRITE);
-                    ace.setPermissions(putPermissions);
-                    ace.setDirect(true);
-                    acesList.add(ace);
-                    cmisService.applyAcl(repositoryId, docIdStr, acesToPut, AclPropagation.REPOSITORYDETERMINED);
-
-                    return null;
-                }
-            }, CmisVersion.CMIS_1_1);
-
-            // check that permissions are the same as they were before Coordinator was added
-            permissions = permissionService.getAllSetPermissions(document.getNodeRef());
-            docPermissions = new HashMap<String, String>();
-            for (AccessPermission permission : permissions)
-            {
-                docPermissions.put(permission.getAuthority(), permission.getPermission());
-            }
-            assertFalse(docPermissions.keySet().contains(testGroup));
-            assertEquals(permissions.size(), 1);
-            current = permissions.iterator().next();
-            assertEquals(current.getAuthority(), "GROUP_EVERYONE");
-            assertEquals(current.getPermission(), "Consumer");
-        }
-        catch (CmisConstraintException e)
-        {
-            fail(e.toString());
-        }
-        finally
-        {
-            if (authorityService.authorityExists(testGroup))
-            {
-                authorityService.deleteAuthority(testGroup);
-            }
-            AuthenticationUtil.popAuthentication();
-        }
-    }
-
 	@Test
 	public void dictionaryTest()
 	{

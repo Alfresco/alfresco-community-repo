@@ -1015,8 +1015,8 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.READ_RECORDS));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(movedCategory5, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(movedCategory5, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(movedCategory5, RMPermissionModel.FILING));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(category6, RMPermissionModel.FILING));
 

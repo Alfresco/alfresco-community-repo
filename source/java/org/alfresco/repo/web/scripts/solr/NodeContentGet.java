@@ -124,7 +124,10 @@ public class NodeContentGet extends StreamContent
         Pair<Long, NodeRef> pair = nodeDAO.getNodePair(nodeId);
         if(pair == null)
         {
-            throw new WebScriptException("Node id does not exist");
+            // If the node does not exists we treat it as if it has no content
+            // We could be trying to update the content of a node in the index that has been deleted.
+            res.setStatus(HttpStatus.SC_NO_CONTENT);
+            return;            
         }
         NodeRef nodeRef = pair.getSecond();
 

@@ -6,6 +6,21 @@
     <show>1</show>
     <folderList>
       <folder>
+          <description>//War Files</description>
+          <name>solr4warfile</name>
+          <destination>${installdiralfresco}</destination>
+          <distributionFileList>
+              <distributionFile origin="${alfresco_war_source_directory}/solr4.war" />
+          </distributionFileList>
+      </folder>
+
+      <folder>
+          <description>//alf_data</description>
+          <name>solr4alfdata</name>
+          <destination>${alfresco_data_directory}/solr4</destination>
+      </folder>
+
+      <folder>
           <name>solr4</name>
           <destination>${installdir}/solr4</destination>
           <distributionFileList>
@@ -68,4 +83,7 @@
           </substitutionList>
       </substitute>
     </postInstallationActionList>
+    <postUninstallationActionList>
+        <deleteFile path="${alfresco_data_directory}/solr4" />
+    </postUninstallationActionList>
 </component>

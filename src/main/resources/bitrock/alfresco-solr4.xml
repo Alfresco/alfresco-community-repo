@@ -41,6 +41,7 @@
         </folder>
     </folderList>
     <postInstallationActionList>
+       <alfrescoSetProperty property="index.subsystem.name" value="solr4" />
        <alfrescoConfigure alfrescoFiles="${installdir}/solr4/archive-SpacesStore/conf/solrcore.properties;${installdir}/solr4/workspace-SpacesStore/conf/solrcore.properties;${tomcat_server_directory}/conf/Catalina/localhost/solr4.xml" />
       <substitute>
           <files>${installdir}/solr4/archive-SpacesStore/conf/solrcore.properties;${installdir}/solr4/workspace-SpacesStore/conf/solrcore.properties</files>

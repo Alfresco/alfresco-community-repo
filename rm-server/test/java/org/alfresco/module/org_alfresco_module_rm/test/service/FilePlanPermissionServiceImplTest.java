@@ -994,7 +994,7 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         });
 
         assertTrue(permissionService.getInheritParentPermissions(movedCategory5));
-        assertFalse(permissionService.getInheritParentPermissions(category6));
+        assertTrue(permissionService.getInheritParentPermissions(category6));
 
         doTestInTransaction(new Test<Void>()
         {

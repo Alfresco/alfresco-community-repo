@@ -331,10 +331,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 NodeRef sourceCategory = oldChildAssocRef.getChildRef();
                 boolean inheritParentPermissions = permissionService.getInheritParentPermissions(sourceCategory);
-                if (!inheritParentPermissions)
-                {
-                    permissionService.setInheritParentPermissions(sourceCategory, true);
-                }
 
                 Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
                 Set<AccessPermission> origionalCategoryPerms= permissionService.getAllSetPermissions(sourceCategory);
@@ -361,6 +357,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 {
                     setPermission(sourceCategory, keeper.getAuthority(), keeper.getPermission());
                 }
+
+                permissionService.setInheritParentPermissions(sourceCategory, isFilePlan(newChildAssocRef.getParentRef()) ? false : inheritParentPermissions);
 
                 return null;
             }
@@ -418,6 +416,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 NodeRef record = sourceAssocRef.getChildRef();
                 if (nodeService.exists(record) && nodeService.hasAspect(record, ASPECT_RECORD))
                 {
+                    boolean inheritParentPermissions = permissionService.getInheritParentPermissions(record);
+
                     Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
                     Set<AccessPermission> origionalRecordPerms= permissionService.getAllSetPermissions(record);
 
@@ -446,6 +446,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     {
                         setPermission(record, keeper.getAuthority(), keeper.getPermission());
                     }
+
+                    permissionService.setInheritParentPermissions(record, inheritParentPermissions);
                 }
 
                 return null;

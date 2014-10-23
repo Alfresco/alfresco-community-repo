@@ -949,6 +949,8 @@ public class WorkflowInterpreter extends BaseInterpreter
             {
                 WorkflowTask task = workflowService.endTask(command[2], (command.length == 4) ? command[3] : null);
                 out.println("signal sent - path id: " + task.getPath().getId());
+                // ACE-3137: "show transitions" will fail if we don't set the workflow path first.
+                currentPath = task.getPath();
                 out.print(interpretCommand("show transitions"));
             }
             else if (command[1].equals("workflow"))

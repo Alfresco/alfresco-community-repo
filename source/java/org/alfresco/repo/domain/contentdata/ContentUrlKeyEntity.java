@@ -79,15 +79,34 @@ public class ContentUrlKeyEntity implements Serializable
         return encryptedKeyAsBytes;
     }
 
-    public void updateEncryptedKey(EncryptedKey encryptedKey)
+    public void setEncryptedKey(EncryptedKey encryptedKey)
     {
         byte[] encryptedKeyAsBytes = new byte[encryptedKey.getByteBuffer().remaining()];
         encryptedKey.getByteBuffer().get(encryptedKeyAsBytes);
+
         this.encryptedKeyAsBytes = encryptedKeyAsBytes;
-        setKeySize(encryptedKeyAsBytes.length*8);
-        setAlgorithm(encryptedKey.getAlgorithm());
-        setMasterKeyAlias(encryptedKey.getMasterKeyAlias());
-        setMasterKeystoreId(encryptedKey.getMasterKeystoreId());
+        this.keySize = encryptedKeyAsBytes.length*8;
+        this.algorithm = encryptedKey.getAlgorithm();
+        this.masterKeyAlias = encryptedKey.getMasterKeyAlias();
+        this.masterKeystoreId = encryptedKey.getMasterKeystoreId();
+    }
+
+    public static ContentUrlKeyEntity setEncryptedKey(ContentUrlKeyEntity existing, EncryptedKey encryptedKey)
+    {
+        ContentUrlKeyEntity newContentUrlKeyEntity = new ContentUrlKeyEntity();
+
+        byte[] encryptedKeyAsBytes = new byte[encryptedKey.getByteBuffer().remaining()];
+        encryptedKey.getByteBuffer().get(encryptedKeyAsBytes);
+        newContentUrlKeyEntity.setEncryptedKeyAsBytes(encryptedKeyAsBytes);
+        newContentUrlKeyEntity.setKeySize(encryptedKeyAsBytes.length*8);
+        newContentUrlKeyEntity.setAlgorithm(encryptedKey.getAlgorithm());
+        newContentUrlKeyEntity.setMasterKeyAlias(encryptedKey.getMasterKeyAlias());
+        newContentUrlKeyEntity.setMasterKeystoreId(encryptedKey.getMasterKeystoreId());
+        newContentUrlKeyEntity.setContentUrlId(existing.getContentUrlId());
+        newContentUrlKeyEntity.setUnencryptedFileSize(existing.getUnencryptedFileSize());
+        newContentUrlKeyEntity.setId(existing.getId());
+
+        return newContentUrlKeyEntity;
     }
 
     public Long getId()
@@ -155,6 +174,55 @@ public class ContentUrlKeyEntity implements Serializable
     public void setMasterKeyAlias(String masterKeyAlias) 
     {
         this.masterKeyAlias = masterKeyAlias;
+    }
+
+	@Override
+    public int hashCode()
+	{
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((algorithm == null) ? 0 : algorithm.hashCode());
+        result = prime * result + ((id == null) ? 0 : id.hashCode());
+        result = prime * result
+                + ((masterKeyAlias == null) ? 0 : masterKeyAlias.hashCode());
+        result = prime
+                * result
+                + ((masterKeystoreId == null) ? 0 : masterKeystoreId.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ContentUrlKeyEntity other = (ContentUrlKeyEntity) obj;
+        if (algorithm == null) {
+            if (other.algorithm != null)
+                return false;
+        } else if (!algorithm.equals(other.algorithm))
+            return false;
+        if (id == null) {
+            if (other.id != null)
+                return false;
+        } else if (!id.equals(other.id))
+            return false;
+        if (masterKeyAlias == null) {
+            if (other.masterKeyAlias != null)
+                return false;
+        } else if (!masterKeyAlias.equals(other.masterKeyAlias))
+            return false;
+        if (masterKeystoreId == null) {
+            if (other.masterKeystoreId != null)
+                return false;
+        } else if (!masterKeystoreId.equals(other.masterKeystoreId))
+            return false;
+        return true;
     }
 
     @Override

@@ -614,8 +614,55 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      * @return              Returns the number of rows deleted
      */
     protected abstract int deleteContentDataEntity(Long id);
+
     protected abstract int deleteContentUrlEntity(long id);
     protected abstract int updateContentUrlEntity(ContentUrlEntity existing, ContentUrlEntity entity);
+
+    @Override
+    public boolean updateContentUrlKey(String contentUrl, ContentUrlKeyEntity contentUrlKey)
+    {
+        boolean success = true;
+
+        ContentUrlEntity existing = getContentUrl(contentUrl);
+        if(existing != null)
+        {
+            ContentUrlEntity entity = ContentUrlEntity.setContentUrlKey(existing, contentUrlKey);
+            updateContentUrl(entity);
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No content url, not updating symmetric key");
+            }
+            success = false;
+        }
+
+        return success;
+    }
+
+    @Override
+    public boolean updateContentUrlKey(long contentUrlId, ContentUrlKeyEntity contentUrlKey)
+    {
+        boolean success = true;
+
+        ContentUrlEntity existing = getContentUrl(contentUrlId);
+        if(existing != null)
+        {
+            ContentUrlEntity entity = ContentUrlEntity.setContentUrlKey(existing, contentUrlKey);
+            updateContentUrl(entity);
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No content url, not updating symmetric key");
+            }
+            success = false;
+        }
+
+        return success;
+    }
 
     /**
      * Transactional listener that deletes unreferenced <b>content_url</b> entities.

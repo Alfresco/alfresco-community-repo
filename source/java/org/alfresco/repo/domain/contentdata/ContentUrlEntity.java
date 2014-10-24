@@ -72,7 +72,8 @@ public class ContentUrlEntity implements Serializable
         else if (obj instanceof ContentUrlEntity)
         {
             ContentUrlEntity that = (ContentUrlEntity) obj;
-            return EqualsHelper.nullSafeEquals(this.contentUrl, that.contentUrl);
+            return EqualsHelper.nullSafeEquals(this.contentUrl, that.contentUrl)
+                    && EqualsHelper.nullSafeEquals(contentUrlKey, that.getContentUrlKey());
         }
         else
         {

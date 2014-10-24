@@ -148,6 +148,24 @@ public interface ContentDataDAO
     void updateContentUrl(ContentUrlEntity contentUrlEntity);
 
     /**
+     * Updates the content key for the given content url
+     * 
+     * @since 5.0
+     * @param contentUrl
+     * @param contentUrlKeyEntity
+     */
+    boolean updateContentUrlKey(String contentUrl, ContentUrlKeyEntity contentUrlKeyEntity);
+
+    /**
+     * Updates the content key for the given content url
+     * 
+     * @since 5.0
+     * @param contentUrlId
+     * @param contentUrlKeyEntity
+     */
+    boolean updateContentUrlKey(long contentUrlId, ContentUrlKeyEntity contentUrlKey);
+
+    /**
      * Get symmetric keys entities for symmetric keys that have been encrypted using the given
      * master key, starting from 'fromId' and returning at most 'maxResults' entities.
      * 

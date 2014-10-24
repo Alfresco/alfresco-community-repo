@@ -2495,7 +2495,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             AccessControlEntryImpl directAce = bothAces.get(true);
             if ((directAce != null) && (!directAce.getPermissions().isEmpty()))
             {
-            	List<String> permissions = translatePermmissionsToCMIS(directAce.getPermissions(), onlyBasicPermissions);
+            	List<String> permissions = translatePermissionsToCMIS(directAce.getPermissions(), onlyBasicPermissions);
             	if(permissions != null && !permissions.isEmpty())
             	{
                 	// tck doesn't like empty permissions list
@@ -2508,7 +2508,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             AccessControlEntryImpl indirectAce = bothAces.get(false);
             if ((indirectAce != null) && (!indirectAce.getPermissions().isEmpty()))
             {
-            	List<String> permissions = translatePermmissionsToCMIS(indirectAce.getPermissions(), onlyBasicPermissions);
+            	List<String> permissions = translatePermissionsToCMIS(indirectAce.getPermissions(), onlyBasicPermissions);
                 indirectAce.setPermissions(permissions);
 
                 // remove permissions that are already set in the direct ACE
@@ -2530,7 +2530,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return result;
     }
 
-    private List<String> translatePermmissionsToCMIS(List<String> permissions, boolean onlyBasicPermissions)
+    private List<String> translatePermissionsToCMIS(List<String> permissions, boolean onlyBasicPermissions)
     {
         Set<String> result = new TreeSet<String>();
 
@@ -2538,63 +2538,73 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             PermissionReference permissionReference = permissionModelDao.getPermissionReference(null, permission);
 
-            // check for full permissions
-            if (permissionModelDao.hasFull(permissionReference))
+            if (onlyBasicPermissions)
             {
-                result.add(BasicPermissions.READ);
-                result.add(BasicPermissions.WRITE);
-                result.add(BasicPermissions.ALL);
-            }
 
-            // check short forms
-            Set<PermissionReference> longForms = permissionModelDao.getGranteePermissions(permissionReference);
+                // check for full permissions
+                if (permissionModelDao.hasFull(permissionReference))
+                {
+                    result.add(BasicPermissions.ALL);
+                }
 
-            HashSet<String> shortForms = new HashSet<String>();
-            for (PermissionReference longForm : longForms)
-            {
-                shortForms.add(permissionModelDao.isUnique(longForm) ? longForm.getName() : longForm.toString());
-            }
+                // check short forms
+                Set<PermissionReference> longForms = permissionModelDao.getGranteePermissions(permissionReference);
 
-            for (String perm : shortForms)
-            {
-                if (PermissionService.READ.equals(perm))
+                HashSet<String> shortForms = new HashSet<String>();
+                for (PermissionReference longForm : longForms)
+                {
+                    shortForms.add(permissionModelDao.isUnique(longForm) ? longForm.getName() : longForm.toString());
+                }
+
+                for (String perm : shortForms)
+                {
+                    if (PermissionService.READ.equals(perm))
+                    {
+                        result.add(BasicPermissions.READ);
+                    }
+                    else if (PermissionService.WRITE.equals(perm))
+                    {
+                        result.add(BasicPermissions.WRITE);
+                    }
+                    else if (PermissionService.ALL_PERMISSIONS.equals(perm))
+                    {
+                        result.add(BasicPermissions.ALL);
+                    }
+                }
+
+                // check the permission
+                if (PermissionService.READ.equals(permission))
                 {
                     result.add(BasicPermissions.READ);
                 }
-                else if (PermissionService.WRITE.equals(perm))
+                else if (PermissionService.WRITE.equals(permission))
                 {
                     result.add(BasicPermissions.WRITE);
                 }
-                else if (PermissionService.ALL_PERMISSIONS.equals(perm))
+                else if (PermissionService.ALL_PERMISSIONS.equals(permission))
                 {
-                    result.add(BasicPermissions.READ);
-                    result.add(BasicPermissions.WRITE);
                     result.add(BasicPermissions.ALL);
                 }
             }
-
-            // check the permission
-            if (PermissionService.READ.equals(permission))
+            else
             {
-                result.add(BasicPermissions.READ);
-            }
-            else if (PermissionService.WRITE.equals(permission))
-            {
-                result.add(BasicPermissions.WRITE);
-            }
-            else if (PermissionService.ALL_PERMISSIONS.equals(permission))
-            {
-                result.add(BasicPermissions.READ);
-                result.add(BasicPermissions.WRITE);
-                result.add(BasicPermissions.ALL);
-            }
-
-            // expand native permissions
-            if (!onlyBasicPermissions)
-            {
+                // ACE-2224: only repository specific permissions should be reported
                 if (permission.startsWith("{"))
                 {
                     result.add(permission);
+                }
+                // do revert conversion for basic permissions that have exact matching
+                else if (PermissionService.READ.equals(permission))
+                {
+                    result.add(BasicPermissions.READ);
+                }
+                else if (PermissionService.WRITE.equals(permission))
+                {
+                    result.add(BasicPermissions.WRITE);
+                }
+                else if (PermissionService.ALL_PERMISSIONS.equals(permission))
+                {
+                    result.add(BasicPermissions.ALL);
                 }
                 else
                 {
@@ -2709,7 +2719,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         boolean hasAces = (aces != null) && (aces.getAces() != null) && !aces.getAces().isEmpty();
 
-        if (!hasAces)
+        if (!hasAces && !permissionService.getInheritParentPermissions(nodeRef))
         {
             return;
         }
@@ -2718,8 +2728,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         {
             throw new CmisConstraintException("Object is not ACL controllable!");
         }
-
-        Set<AccessPermission> currentAces = permissionService.getAllSetPermissions(nodeRef);
 
         // remove all permissions
         permissionService.deletePermissions(nodeRef);
@@ -2734,56 +2742,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
 
             List<String> permissions = translatePermissionsFromCMIS(ace.getPermissions());
-            normalisePermissions(currentAces, permissions);
             for (String permission : permissions)
             {
                 permissionService.setPermission(nodeRef, principalId, permission, true);
             }
         }
-    }
-
-    /*
-     * ALF-11868: the cmis client library may incorrectly send READ or WRITE permissions to applyAcl.
-     * This method works around this by "normalising" permissions:
-     * 
-     * <ul>
-     *    <li> the WRITE permission is removed from permissions if the cmis:write permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
-     *    <li> the cmis:write permission is removed from permissions if the WRITE permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
-     *    <li> the READ permission is removed from permissions if the cmis:read permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
-     *    <li> the cmis:read permission is removed from permissions if the READ permission is being removed i.e. is in currentAccessPermissions but not in newPermissions
-     * </ul>
-     */
-    private void normalisePermissions(Set<AccessPermission> currentAccessPermissions, List<String> newPermissions)
-    {
-    	Set<String> currentPermissions = new HashSet<String>(currentAccessPermissions.size());
-    	for(AccessPermission accessPermission : currentAccessPermissions)
-    	{
-    		currentPermissions.add(accessPermission.getPermission());
-    	}
-
-    	if(currentPermissions.contains(PermissionService.WRITE) && !newPermissions.contains(BasicPermissions.WRITE) && newPermissions.contains(PermissionService.WRITE))
-    	{
-    		// cmis:write is being removed, so remove WRITE from permissions
-    		newPermissions.remove(PermissionService.WRITE);
-    	}
-    	
-    	if(currentPermissions.contains(PermissionService.WRITE) && !newPermissions.contains(PermissionService.WRITE) && newPermissions.contains(BasicPermissions.WRITE))
-    	{
-    		// WRITE is being removed, so remove cmis:write from permissions
-    		newPermissions.remove(BasicPermissions.WRITE);
-    	}
-    	
-    	if(currentPermissions.contains(PermissionService.READ) && !newPermissions.contains(BasicPermissions.READ) && newPermissions.contains(PermissionService.READ))
-    	{
-    		// cmis:read is being removed, so remove READ from permissions
-    		newPermissions.remove(PermissionService.READ);
-    	}
-    	
-    	if(currentPermissions.contains(PermissionService.READ) && !newPermissions.contains(PermissionService.READ) && newPermissions.contains(BasicPermissions.READ))
-    	{
-    		// READ is being removed, so remove cmis:read from permissions
-    		newPermissions.remove(BasicPermissions.READ);
-    	}
     }
 
     private List<String> translatePermissionsFromCMIS(List<String> permissions)

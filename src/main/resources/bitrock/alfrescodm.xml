@@ -127,8 +127,8 @@
                 <deleteFile path="${alfresco_library_directory}/mysql-connector-java-*.jar"/>
             </actionList>
             <distributionFileList>
-                <distributionFile origin="${alfresco_war_source_directory}/alfresco.war" />
-                <distributionFile origin="${alfresco_war_source_directory}/share.war" />
+                <distributionFile origin="${alfresco_war_source_directory}/*.war" allowWildcards="1"
+                    excludeFiles="${alfresco_war_source_directory}/solr4.war" />
             </distributionFileList>
         </folder>
         <folder>

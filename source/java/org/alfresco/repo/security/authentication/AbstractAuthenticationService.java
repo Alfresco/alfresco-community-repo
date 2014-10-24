@@ -53,7 +53,7 @@ public abstract class AbstractAuthenticationService implements AuthenticationSer
 
             Integer maxUsers = (Integer) sysAdminParams.getMaxUsers();
 
-            if ((maxUsers != null) && (maxUsers != -1) && (getUsersWithTickets(true).size() >= maxUsers))
+            if ((maxUsers != null) && (maxUsers > -1) && (getUsersWithTickets(true).size() > maxUsers))
             {
                 throw new AuthenticationMaxUsersException("Max users exceeded: " + maxUsers);
             }

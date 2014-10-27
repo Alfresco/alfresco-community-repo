@@ -136,7 +136,6 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         assertFalse(recordService.isFiled(record));
 
         // check that the created record does not have either of the versionable aspects
-        assertFalse(nodeService.hasAspect(record, ContentModel.ASPECT_VERSIONABLE));
         assertFalse(nodeService.hasAspect(record, RecordableVersionModel.ASPECT_VERSIONABLE));
         
         // check the version history

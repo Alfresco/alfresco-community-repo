@@ -34,7 +34,9 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -128,36 +130,40 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     {
                         if (nodeService.exists(nodeRef))
                         {
-                            // Mark the update node as publishing in progress
-                            markPublishInProgress(nodeRef);
-                            try
+                            boolean publishing = (Boolean)nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS);
+                            if (!publishing)
                             {
-                                Date start = new Date();
-                                if (logger.isDebugEnabled())
+                                // Mark the update node as publishing in progress
+                                markPublishInProgress(nodeRef);
+                                try
                                 {
-                                    logger.debug("Starting publish of updates ...");
-                                    logger.debug("   - for " + nodeRef.toString());
-                                    logger.debug("   - at " + start.toString());
+                                    Date start = new Date();
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Starting publish of updates ...");
+                                        logger.debug("   - for " + nodeRef.toString());
+                                        logger.debug("   - at " + start.toString());
+                                    }
+    
+                                    // Publish updates
+                                    publishUpdates(nodeRef);
+    
+    
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        Date end = new Date();
+                                        long duration = end.getTime() - start.getTime();
+                                        logger.debug("Completed publish of updates ...");
+                                        logger.debug("   - for " + nodeRef.toString());
+                                        logger.debug("   - at " + end.toString());
+                                        logger.debug("   - duration " + Long.toString(duration));
+                                    }
                                 }
-
-                                // Publish updates
-                                publishUpdates(nodeRef);
-
-
-                                if (logger.isDebugEnabled())
+                                finally
                                 {
-                                    Date end = new Date();
-                                    long duration = end.getTime() - start.getTime();
-                                    logger.debug("Completed publish of updates ...");
-                                    logger.debug("   - for " + nodeRef.toString());
-                                    logger.debug("   - at " + end.toString());
-                                    logger.debug("   - duration " + Long.toString(duration));
+                                    // Ensure the update node has either completed the publish or is marked as no longer in progress
+                                    unmarkPublishInProgress(nodeRef);
                                 }
-                            }
-                            finally
-                            {
-                                // Ensure the update node has either completed the publish or is marked as no longer in progress
-                                unmarkPublishInProgress(nodeRef);
                             }
                         }
                     }
@@ -205,8 +211,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                 {
                     // Build the query string
                     StringBuilder sb = new StringBuilder();
-                    sb.append("+ASPECT:\"rma:").append(ASPECT_UNPUBLISHED_UPDATE.getLocalName()).append("\" ");
-                    sb.append("@rma\\:").append(PROP_PUBLISH_IN_PROGRESS.getLocalName()).append(":false ");
+                    sb.append("ASPECT:\"rma:").append(ASPECT_UNPUBLISHED_UPDATE.getLocalName()).append("\"");
                     String query = sb.toString();
 
                     if (logger.isDebugEnabled())
@@ -216,17 +221,32 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
                     // Execute query to find updates awaiting publishing
                     List<NodeRef> resultNodes = null;
-                    ResultSet results = searchService.query(
-                                                        StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
-                                                        SearchService.LANGUAGE_LUCENE,
-                                                        query);
+                    
+                    SearchParameters searchParameters = new SearchParameters();
+                    searchParameters.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
+                    searchParameters.setQuery(query);
+                    searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+                    searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+                    
                     try
                     {
-                        resultNodes = results.getNodeRefs();
+                        ResultSet results = searchService.query(searchParameters);
+                        try
+                        {
+                            resultNodes = results.getNodeRefs();
+                        }
+                        finally
+                        {
+                            results.close();
+                        }
                     }
-                    finally
+                    catch (AlfrescoRuntimeException exception)
                     {
-                        results.close();
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Error executing query, " + exception.getMessage());
+                        }
+                        throw exception;
                     }
 
                     if (logger.isDebugEnabled())

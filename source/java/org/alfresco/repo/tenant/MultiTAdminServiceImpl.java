@@ -32,6 +32,7 @@ import javax.transaction.UserTransaction;
 import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.RepoModelDefinition;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.ContentStoreCaps;
@@ -41,6 +42,7 @@ import org.alfresco.repo.domain.tenant.TenantEntity;
 import org.alfresco.repo.domain.tenant.TenantUpdateEntity;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -84,6 +86,7 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     private RepoAdminService repoAdminService;
     private AuthenticationContext authenticationContext;
     private MultiTServiceImpl tenantService;
+    private BehaviourFilter behaviourFilter;
     
     protected TransactionService transactionService;
     protected DictionaryComponent dictionaryComponent;
@@ -164,7 +167,12 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
     {
         this.tenantService = tenantService;
     }
-    
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
     public void setTenantAdminDAO(TenantAdminDAO tenantAdminDAO)
     {
         this.tenantAdminDAO = tenantAdminDAO;
@@ -801,12 +809,20 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
                 }, tenantDomain);
                 
                 // delete tenant-specific stores
-                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_SPACES), tenantDomain, false));
-                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_ARCHIVE, STORE_BASE_ID_SPACES), tenantDomain, false));
-                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION1), tenantDomain, false));
-                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION2), tenantDomain, false));
-                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_SYSTEM, STORE_BASE_ID_SYSTEM), tenantDomain, false));
-                nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_USER, STORE_BASE_ID_USER), tenantDomain, false));
+                behaviourFilter.disableBehaviour(ContentModel.ASPECT_UNDELETABLE);
+                try
+                {
+                    nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_SPACES), tenantDomain, false));
+                    nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_ARCHIVE, STORE_BASE_ID_SPACES), tenantDomain, false));
+                    nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION1), tenantDomain, false));
+                    nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_WORKSPACE, STORE_BASE_ID_VERSION2), tenantDomain, false));
+                    nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_SYSTEM, STORE_BASE_ID_SYSTEM), tenantDomain, false));
+                    nodeService.deleteStore(tenantService.getName(new StoreRef(PROTOCOL_STORE_USER, STORE_BASE_ID_USER), tenantDomain, false));
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_UNDELETABLE);                    
+                }
                 
                 TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
                 {

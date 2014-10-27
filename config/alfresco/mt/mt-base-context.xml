@@ -30,7 +30,7 @@
       <property name="moduleService" ref="moduleService"/>
       <property name="baseAdminUsername" value="${alfresco_user_store.adminusername}"/>
       <property name="thumbnailRegistry" ref="thumbnailRegistry"/>
-      
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <!-- note: if set then tenant are not co-mingled and all content roots will appear below this container (in <tenantdomain> sub-folder) -->
       <property name="contentRootContainerPath" value="${dir.contentstore.tenants}"/>
       

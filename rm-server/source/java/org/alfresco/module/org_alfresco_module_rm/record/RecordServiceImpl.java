@@ -989,6 +989,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
             props.put(PROP_IDENTIFIER, recordId);
             props.put(PROP_ORIGIONAL_NAME, name);
             nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
+            
+            // remove versionable aspect(s)
+            nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
         }
         catch (FileNotFoundException e)
         {

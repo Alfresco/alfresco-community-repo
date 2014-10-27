@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.version;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.policy.PolicyScope;
@@ -46,8 +48,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.version.ReservedVersionNameException;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -66,6 +70,9 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /** key used to indicate a recordable version */
     public static final String KEY_RECORDABLE_VERSION = "recordable-version";
     public static final String KEY_FILE_PLAN = "file-plan";
+    
+    /** version record property */
+    public static final String PROP_VERSION_RECORD = "RecordVersion";
 
     /** file plan service */
     protected FilePlanService filePlanService;
@@ -84,6 +91,9 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
     /** authentication util helper */
     protected AuthenticationUtil authenticationUtil;
+    
+    /** relationship service */
+    protected RelationshipService relationshipService;
 
     /**
      * @param filePlanService   file plan service
@@ -131,6 +141,14 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
         this.authenticationUtil = authenticationUtil;
+    }
+    
+    /**
+     * @param relationshipService   relationship service
+     */
+    public void setRelationshipService(RelationshipService relationshipService)
+    {
+        this.relationshipService = relationshipService;
     }
 
     /**
@@ -265,13 +283,13 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /**
      * Creates a new recorded version
      *
-     * @param sourceTypeRef
-     * @param versionHistoryRef
-     * @param standardVersionProperties
-     * @param versionProperties
-     * @param versionNumber
-     * @param nodeDetails
-     * @return
+     * @param sourceTypeRef                 source type name
+     * @param versionHistoryRef             version history reference
+     * @param standardVersionProperties     standard version properties
+     * @param versionProperties             version properties
+     * @param versionNumber                 version number
+     * @param nodeDetails                   policy scope
+     * @return {@link NodeRef}              record version
      */
     protected NodeRef createNewRecordedVersion(QName sourceTypeRef,
                                                NodeRef versionHistoryRef,
@@ -302,13 +320,51 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             final NodeRef nodeRef = (NodeRef)standardVersionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
 
             // create record
-            NodeRef record = createRecord(nodeRef, filePlan);
+            final NodeRef record = createRecord(nodeRef, filePlan);
+            
+            // apply version record aspect to record
+            PropertyMap versionRecordProps = new PropertyMap(3);
+            versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
+            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, 
+                                   standardVersionProperties.get(
+                                           QName.createQName(Version2Model.NAMESPACE_URI,
+                                                             Version2Model.PROP_VERSION_LABEL)));
+            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, 
+                                   standardVersionProperties.get(
+                                           QName.createQName(Version2Model.NAMESPACE_URI,
+                                                             Version2Model.PROP_VERSION_DESCRIPTION)));
+            nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
+            
+            // wire record up to previous record 
+            VersionHistory versionHistory = getVersionHistory(nodeRef);
+            if (versionHistory != null)
+            {
+                Collection<Version> previousVersions = versionHistory.getAllVersions();
+                for (Version previousVersion : previousVersions)
+                {
+                    // look for the associated record
+                    final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(PROP_VERSION_RECORD);
+                    if (previousRecord != null)
+                    {
+                        authenticationUtil.runAsSystem(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork() throws Exception
+                            {
+                                // indicate that the new record versions the previous record
+                                relationshipService.addRelationship("versions", record, previousRecord);
+                                return null;
+                            }
+                        });                    
+                        break;
+                    }
+                }
+            }
 
             // create version nodeRef
             ChildAssociationRef childAssocRef = dbNodeService.createNode(
                     versionHistoryRef,
                     Version2Model.CHILD_QNAME_VERSIONS,
-                    // TODO - testing - note: all children (of a versioned node) will have the same version number, maybe replace with a version sequence of some sort 001-...00n
                     QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber),
                     sourceTypeRef,
                     null);
@@ -393,7 +449,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
                     // create a copy of the original state and add it to the unfiled record container
                     FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
-                    record = recordInfo.getNodeRef();
+                    record = recordInfo.getNodeRef();                    
 
                     // remove added copy assocs
                     List<AssociationRef> recordAssocs = dbNodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
@@ -465,7 +521,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         NodeRef record = (NodeRef)dbNodeService.getProperty(versionRef, PROP_RECORD_NODE_REF);
         if (record != null)
         {
-            version.getVersionProperties().put("RecordVersion", record);
+            version.getVersionProperties().put(PROP_VERSION_RECORD, record);
         }
 
         return version;

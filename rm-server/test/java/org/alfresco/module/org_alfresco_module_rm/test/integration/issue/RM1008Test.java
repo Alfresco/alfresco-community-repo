@@ -155,7 +155,7 @@ public class RM1008Test extends BaseRMTestCase
                 Capability viewRecords = capabilityService.getCapability("ViewRecords");
                 assertNotNull(viewRecords);
 
-                assertEquals(AccessStatus.DENIED, viewRecords.hasPermission(hold));
+                assertEquals(AccessStatus.ALLOWED, viewRecords.hasPermission(hold));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(hold, RMPermissionModel.FILING));
 
                 return null;
@@ -182,7 +182,8 @@ public class RM1008Test extends BaseRMTestCase
                 assertNotNull(viewRecords);
 
                 assertEquals(AccessStatus.ALLOWED, viewRecords.hasPermission(hold));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(hold, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(hold, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(hold, RMPermissionModel.FILING));
 
                 return null;
             }
@@ -207,7 +208,7 @@ public class RM1008Test extends BaseRMTestCase
                 Capability viewRecords = capabilityService.getCapability("ViewRecords");
                 assertNotNull(viewRecords);
 
-                assertEquals(AccessStatus.DENIED, viewRecords.hasPermission(hold));
+                assertEquals(AccessStatus.ALLOWED, viewRecords.hasPermission(hold));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(hold, RMPermissionModel.FILING));
 
                 return null;
@@ -319,7 +320,8 @@ public class RM1008Test extends BaseRMTestCase
                 assertNotNull(viewRecords);
 
                 assertEquals(AccessStatus.ALLOWED, viewRecords.hasPermission(transfer));
-                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transfer, RMPermissionModel.FILING));
+                assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(transfer, RMPermissionModel.READ_RECORDS));
+                assertEquals(AccessStatus.DENIED, permissionService.hasPermission(transfer, RMPermissionModel.FILING));
 
                 return null;
             }

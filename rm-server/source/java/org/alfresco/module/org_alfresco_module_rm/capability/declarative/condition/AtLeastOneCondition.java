@@ -43,6 +43,11 @@ public class AtLeastOneCondition extends AbstractCapabilityCondition
         this.conditions = conditions;
     }
     
+    /**
+     * Don't use the transaction cache for the composite condition
+     * 
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public boolean evaluate(NodeRef nodeRef)
     {

@@ -377,11 +377,12 @@
 
     <!--  File Plan Service -->
 
-   <bean id="filePlanService"
-         parent="baseService"
+	<bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+
+	<bean id="filePlanService"
+	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
-        <property name="nodeDAO" ref="nodeDAO"/>
-        <property name="filePlanPermissionService" ref="FilePlanPermissionService" />
+        <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">

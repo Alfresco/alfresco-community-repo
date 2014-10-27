@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.hold.DeleteHoldTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -65,7 +66,7 @@ public class RM1424Test extends DeleteHoldTest
                assertEquals(HOLD1_DESC, (String) nodeService.getProperty(hold1, PROP_DESCRIPTION));
 
                // Add the user to the RM Manager role
-               filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_RECORDS_MANAGER, userName);
+               filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
                return null;
            }

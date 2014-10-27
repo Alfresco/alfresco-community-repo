@@ -9,16 +9,16 @@
       <property name="beanName" value="NodeService_security" />
       <property name="extendingBeanName" value="rm.NodeService_security" />
    </bean>
-   
+
    <!-- extended file folder bean definition -->
    <bean id="rm.fileFolderService" abstract="true" class="org.alfresco.repo.model.filefolder.ExtendedFileFolderServiceImpl">
       <property name="recordService" ref="RecordService" />
-   </bean>   
+   </bean>
    <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
       <property name="beanName" value="fileFolderService" />
       <property name="extendingBeanName" value="rm.fileFolderService" />
    </bean>
-   
+
    <!-- extend file folder service security to report capability details on failure -->
    <bean id="rm.FileFolderService_security" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor"/>
    <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
@@ -42,7 +42,6 @@
             </list>
         </property>
     </bean>
-
     <bean id="ExtendedPermissionService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
@@ -133,6 +132,9 @@
             <ref bean="extendedWriterDynamicAuthority" />
             <ref bean="extendedReaderDynamicAuthority" />
          </list>
+      </property>
+      <property name="filePlanService">
+         <ref bean="filePlanService" />
       </property>
    </bean>
 
@@ -229,20 +231,17 @@
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="permissionService" ref="permissionService"/>
-	    <property name="nodeRulesCache" ref="nodeRulesCache"/>
+        <property name="nodeRulesCache" ref="nodeRulesCache"/>
         <property name="rulesDisabled">
             <value>false</value>
         </property>
-
-    	<!--  Since RM 2.1 -->
-    	<property name="filePlanService" ref="FilePlanService" />
-    	<property name="runAsAdmin">
-    		<value>${rm.rule.runasadmin}</value>
-    	</property>
-
+        <!--  Since RM 2.1 -->
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="runAsAdmin">
+            <value>${rm.rule.runasadmin}</value>
+        </property>
         <property name="recordService" ref="RecordService" />
-
-   </bean>
+    </bean>
 
     <bean id="FormService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>

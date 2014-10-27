@@ -18,14 +18,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import java.util.Map;
+
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -33,6 +35,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.Pair;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -201,54 +204,82 @@ public class RMSecurityCommon implements ApplicationContextAware
     }
 
     /**
+     * Core RM read check
      *
-     * @param nodeRef
-     * @return
+     * @param nodeRef	node reference
+     * @return int		see {@link AccessDecisionVoter}
      */
     public int checkRmRead(NodeRef nodeRef)
     {
-        int result = getTransactionCache("checkRmRead", nodeRef);
-        if (result != NOSET_VALUE)
-        {
-            return result;
-        }
+    	int result = AccessDecisionVoter.ACCESS_ABSTAIN;
 
-        if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
-        {
-            // log message
-            RMMethodSecurityInterceptor.addMessage("User does not have read record permission on node, access denied. (nodeRef={0}, user={1})", nodeRef, AuthenticationUtil.getRunAsUser());
+    	Map<Pair<String, NodeRef>, Integer> transactionCache = TransactionalResourceHelper.getMap("rm.security.checkRMRead");
+    	Pair<String, NodeRef> key = new Pair<String, NodeRef>(AuthenticationUtil.getRunAsUser(), nodeRef);
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-            }
+    	if (transactionCache.containsKey(key))
+    	{
+    		result = transactionCache.get(key);
+    	}
+    	else
+    	{
+	        if (permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS) == AccessStatus.DENIED)
+	        {
+	            if (logger.isDebugEnabled())
+	            {
+	                logger.debug("\t\tUser does not have read record permission on node, access denied.  (nodeRef=" + nodeRef.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
+	            }
+	            result = AccessDecisionVoter.ACCESS_DENIED;
+	        }
+	        else
+	        {
+		        // Get the file plan for the node
+		        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
+		        if (hasViewCapability(filePlan) == AccessStatus.DENIED)
+		        {
+		            if (logger.isDebugEnabled())
+		            {
+		                logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
+		            }
+		            result = AccessDecisionVoter.ACCESS_DENIED;
+		        }
+		        else if (!caveatConfigComponent.hasAccess(nodeRef))
+		        {
+		            result = AccessDecisionVoter.ACCESS_DENIED;
+		        }
+		        else
+		        {
+		            result = AccessDecisionVoter.ACCESS_GRANTED;
+		        }
+	        }
 
-            return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED);
-        }
-     
-        // Get the file plan for the node
-        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-        if (permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS) == AccessStatus.DENIED)
-        {
-            // log capability details
-            RMMethodSecurityInterceptor.reportCapabilityStatus(RMPermissionModel.VIEW_RECORDS, AccessDecisionVoter.ACCESS_DENIED);
+	        // cache result
+	        transactionCache.put(key, result);
+    	}
 
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("\t\tUser does not have view records capability permission on node, access denied. (filePlan=" + filePlan.toString() + ", user=" + AuthenticationUtil.getRunAsUser() + ")");
-            }
-            return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED);
-        }
+    	return result;
+    }
 
-        if (caveatConfigComponent.hasAccess(nodeRef))
-        {
-            return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_GRANTED);
-        }
-        else
-        {
-            return setTransactionCache("checkRmRead", nodeRef, AccessDecisionVoter.ACCESS_DENIED);
-        }
+    /**
+     * Helper method to determine whether the current user has view capability on the file plan
+     *
+     * @param  filePlan	file plan
+     * @return {@link AccessStatus}
+     */
+    private AccessStatus hasViewCapability(NodeRef filePlan)
+    {
+    	Map<Pair<String, NodeRef>, AccessStatus> transactionCache = TransactionalResourceHelper.getMap("rm.security.hasViewCapability");
+    	Pair<String, NodeRef> key = new Pair<String, NodeRef>(AuthenticationUtil.getRunAsUser(), filePlan);
 
+    	if (transactionCache.containsKey(key))
+    	{
+    		return transactionCache.get(key);
+    	}
+    	else
+    	{
+    		AccessStatus result = permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS);
+    		transactionCache.put(key, result);
+    		return result;
+    	}
     }
 
     @SuppressWarnings("rawtypes")

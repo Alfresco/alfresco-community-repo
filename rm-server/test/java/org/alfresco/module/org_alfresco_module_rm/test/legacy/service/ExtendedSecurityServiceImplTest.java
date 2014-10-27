@@ -23,9 +23,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 
 /**
@@ -236,5 +242,116 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
         Set<String> readers = extendedSecurityService.getExtendedReaders(nodeRef);
         assertNotNull(readers);
         assertEquals(testMap.size(), readers.size());
+    }
+
+    public void testDifferentUsersDifferentPermissions()
+    {
+    	final String userNone = createTestUser();
+    	final String userRead = createTestUser();
+    	final String userWrite = createTestUser();
+    	final String siteShortName = GUID.generate();
+
+    	doTestInTransaction(new Test<Void>()
+        {
+            public Void run() throws Exception
+            {
+            	siteService.createSite(null, siteShortName, "test", "test", SiteVisibility.PRIVATE);
+            	return null;
+            }
+        });
+
+    	final NodeRef documentLibrary = doTestInTransaction(new Test<NodeRef>()
+        {
+            public NodeRef run() throws Exception
+            {
+            	siteService.setMembership(siteShortName, userRead, SiteModel.SITE_CONSUMER);
+            	siteService.setMembership(siteShortName, userWrite, SiteModel.SITE_COLLABORATOR);
+            	return siteService.createContainer(siteShortName, SiteService.DOCUMENT_LIBRARY, null, null);
+            }
+        });
+
+    	final NodeRef record = doTestInTransaction(new Test<NodeRef>()
+        {
+            public NodeRef run() throws Exception
+            {
+            	NodeRef record = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+            	recordService.createRecord(filePlan, record);
+            	return record;
+            }
+        });
+
+    	doTestInTransaction(new Test<Void>()
+        {
+            public Void run() throws Exception
+            {
+            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	{
+					public Void doWork() throws Exception
+					{
+						// check permissions
+		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, READ_RECORDS));
+		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+						return null;
+					}
+				}, userNone);
+
+            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	{
+					public Void doWork() throws Exception
+					{
+						// check permissions
+		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+						return null;
+					}
+				}, userRead);
+
+            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	{
+					public Void doWork() throws Exception
+					{
+						// check permissions
+		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, FILING));
+						return null;
+					}
+				}, userWrite);
+
+            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	{
+					public Void doWork() throws Exception
+					{
+						// check permissions
+		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, READ_RECORDS));
+		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+						return null;
+					}
+				}, userNone);
+
+            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	{
+					public Void doWork() throws Exception
+					{
+						// check permissions
+		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+		            	assertEquals(AccessStatus.DENIED, permissionService.hasPermission(record, FILING));
+						return null;
+					}
+				}, userRead);
+
+            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	{
+					public Void doWork() throws Exception
+					{
+						// check permissions
+		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, READ_RECORDS));
+		            	assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(record, FILING));
+						return null;
+					}
+				}, userWrite);
+
+            	return null;
+            }
+        });
     }
 }

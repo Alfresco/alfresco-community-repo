@@ -645,6 +645,11 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                filteringResultSet.setIncluded(i, true);
    
                NodeRef nodeRef = returnedObject.getNodeRef(i);
+               
+               if(filteringResultSet.getIncluded(i) && (nodeRef == null))
+               {
+                   filteringResultSet.setIncluded(i, false);
+               }
    
                if (filteringResultSet.getIncluded(i) && permissionService.hasReadPermission(nodeRef) == AccessStatus.DENIED)
                {

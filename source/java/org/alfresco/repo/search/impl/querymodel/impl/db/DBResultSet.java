@@ -194,10 +194,10 @@ public class DBResultSet extends AbstractResultSet
         int bulkFetchSize = getBulkFetchSize();
         if(bulkFetchSize < 1)
         {
-            nodeRefs[n] = tenantService.getBaseName(nodeDao.getNodePair(dbids.get(n)).getSecond());
+            NodeRef nodeRef = nodeDao.getNodePair(dbids.get(n)).getSecond();
+            nodeRefs[n] = nodeRef == null ? null : tenantService.getBaseName(nodeRef);
             return;
         }
-        
         
         List<Long> fetchList = new ArrayList<Long>(bulkFetchSize);
         BitSet done = new BitSet(bulkFetchSize);
@@ -227,7 +227,8 @@ public class DBResultSet extends AbstractResultSet
             nodeDao.cacheNodesById(fetchList);
             for (int i = done.nextSetBit(0); i >= 0; i = done.nextSetBit(i+1)) 
             {
-                nodeRefs[n+i] = tenantService.getBaseName(nodeDao.getNodePair(fetchList.get(i)).getSecond());
+                NodeRef nodeRef = nodeDao.getNodePair(fetchList.get(i)).getSecond();
+                nodeRefs[n+1] = nodeRef == null ? null : tenantService.getBaseName(nodeRef);
             }
         }
     }

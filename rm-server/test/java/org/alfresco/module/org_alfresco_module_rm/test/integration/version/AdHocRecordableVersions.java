@@ -126,7 +126,13 @@ public class AdHocRecordableVersions extends RecordableVersionsBaseTest
             {                
                 // create version
                 versionService.createVersion(dmDocument, versionProperties);
-            }            
+            }           
+            
+            public void then()
+            {
+                // check that the record has been recorded
+                checkRecordedVersion(dmDocument, DESCRIPTION, "0.1");
+            }          
       
         });            
     }
@@ -157,7 +163,7 @@ public class AdHocRecordableVersions extends RecordableVersionsBaseTest
                 Version version = versionService.createVersion(dmDocument, versionProperties);
                 
                 // add custom meta-data to record
-                NodeRef record = (NodeRef)version.getVersionProperties().get("RecordVersion");
+                NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
                 assertNotNull(record);
                 recordService.addRecordType(record, TestModel.ASPECT_RECORD_METADATA);
                 nodeService.setProperty(record, TestModel.PROPERTY_RECORD_METADATA, "Peter Wetherall");

@@ -20,6 +20,7 @@
       <property name="ownableService" ref="OwnableService" />
       <property name="extendedSecurityService" ref="ExtendedSecurityService" />
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
+      <property name="relationshipService" ref="RelationshipService" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />

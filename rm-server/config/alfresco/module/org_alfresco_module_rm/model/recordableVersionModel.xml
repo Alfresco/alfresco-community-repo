@@ -30,6 +30,13 @@
    </namespaces>
    
    <constraints>
+   
+      <!-- recordable version policy list -->
+      <!--  -->
+      <!-- contains the following recordable version policy options: -->
+      <!--   * none - business as usual -->
+      <!--   * major only - only major revisions will be recorded -->
+      <!--   * all - all revisions will be recorded -->
       <constraint name="rmv:recordableVersionPolicyList" type="LIST">
          <title>Recordable Version Policy List</title>
          <parameter name="allowedValues">
@@ -45,13 +52,18 @@
 
    <aspects>
    
+      <!--  versionsable aspsect -->
+      <!--  -->
+      <!--  defines the recordable version policy -->
       <aspect name="rmv:versionable">
          <properties>
+            <!--  destination file plan, defaults if not set -->
             <property name="rmv:filePlan">
                <title>File Plan</title>
                <type>d:noderef</type>
                <index enabled="false"/>
             </property>
+            <!--  recordable version policy -->
             <property name="rmv:recordableVersionPolicy">
                <title>Recordable Version Policy</title>
                <type>d:text</type>
@@ -64,18 +76,46 @@
          </properties>
       </aspect>
       
+      <!--  recorded version aspect -->
+      <!--  -->
+      <!--  applied to version and contains additional information required for a recorded -->
+      <!--  version -->
       <aspect name="rmv:recordedVersion">
          <properties>
+            <!-- reference to record that records frozen state for this version -->
             <property name="rmv:recordNodeRef">
                <title>Record Node Reference</title>
                <type>d:noderef</type>
                <index enabled="false"/>
-            </property><property name="rmv:frozenOwner">
+            </property>
+            <!-- frozen owner details -->
+            <property name="rmv:frozenOwner">
                <title>Frozen Owner</title>
                <type>d:text</type>
                <index enabled="false"/>
             </property>
          </properties>
+      </aspect>
+      
+      <!--  version record aspect -->
+      <!--  -->
+      <!-- applied to records and contains additional version record information -->
+      <aspect name="rmv:versionRecord">
+      	<properties>
+      		<!--  reference to the node that this record is a version of -->
+      		<property name="rmv:versionedNodeRef">
+               <type>d:noderef</type>
+               <index enabled="false"/>
+      		</property>
+      		<!-- version label -->
+      		<property name="rmv:versionLabel">
+      			<type>d:text</type>
+      		</property>
+      		<!-- version description -->
+      		<property name="rmv:versionDescription">
+      			<type>d:text</type>
+      		</property>
+      	</properties>      
       </aspect>
       
    </aspects>

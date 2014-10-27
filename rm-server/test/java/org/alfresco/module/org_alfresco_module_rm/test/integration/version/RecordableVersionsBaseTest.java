@@ -27,6 +27,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -122,12 +123,21 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         checkAspects(frozen, beforeAspects);
         
         // record version node reference is available on version
-        NodeRef record = (NodeRef)version.getVersionProperties().get("RecordVersion");
+        NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
         assertNotNull(record);
+        
+        // check that the version record information has been added
+        assertTrue(nodeService.hasAspect(record, ASPECT_VERSION_RECORD));
+        assertEquals(versionLabel, nodeService.getProperty(record, RecordableVersionModel.PROP_VERSION_LABEL));
+        assertEquals(description, nodeService.getProperty(record, RecordableVersionModel.PROP_VERSION_DESCRIPTION));
         
         // record version is an unfiled record
         assertTrue(recordService.isRecord(record));
         assertFalse(recordService.isFiled(record));
+
+        // check that the created record does not have either of the versionable aspects
+        assertFalse(nodeService.hasAspect(record, ContentModel.ASPECT_VERSIONABLE));
+        assertFalse(nodeService.hasAspect(record, RecordableVersionModel.ASPECT_VERSIONABLE));
         
         // check the version history
         VersionHistory versionHistory = versionService.getVersionHistory(document);
@@ -152,7 +162,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         assertEquals(versionLabel, version.getVersionLabel());
                         
         // record version node reference is available on version
-        NodeRef record = (NodeRef)version.getVersionProperties().get("RecordVersion");
+        NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
         assertNull(record);
         
         // check the version history
@@ -179,7 +189,10 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
                 cloneFrozenProperties.remove(beforePropertyName);               
             }
             else if (!PROP_FILE_PLAN.equals(beforePropertyName) &&
-                     !PROP_RECORDABLE_VERSION_POLICY.equals(beforePropertyName))
+                     !PROP_RECORDABLE_VERSION_POLICY.equals(beforePropertyName) &&
+                     !ContentModel.PROP_AUTO_VERSION_PROPS.equals(beforePropertyName) &&
+                     !ContentModel.PROP_AUTO_VERSION.equals(beforePropertyName) &&
+                     !ContentModel.PROP_INITIAL_VERSION.equals(beforePropertyName))
             {
                 fail("Property missing from frozen state .. " + beforePropertyName);
             }
@@ -200,6 +213,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         Set<QName> frozenAspects = nodeService.getAspects(frozen);
         cloneBeforeAspects.removeAll(frozenAspects);
         cloneBeforeAspects.remove(RecordableVersionModel.ASPECT_VERSIONABLE);
+        cloneBeforeAspects.remove(ContentModel.ASPECT_VERSIONABLE);
         if (!cloneBeforeAspects.isEmpty())
         {
             fail("Aspects not present in frozen state. " + cloneBeforeAspects.toString());

@@ -164,6 +164,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef rmFolder;
     protected NodeRef unfiledContainer;
     protected String collabSiteId;
+    protected NodeRef holdsContainer;
+    protected NodeRef transfersContainer;
 
     /** multi-hierarchy test data
      *
@@ -428,6 +430,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
 
             if (folder != null && nodeService.exists(folder))
+
             {
                 // Delete the folder
                 nodeService.deleteNode(folder);
@@ -494,6 +497,22 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 	                // unfiled container
 	                unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
 	                assertNotNull(unfiledContainer);
+
+	                // holds container
+	                holdsContainer = filePlanService.getHoldContainer(filePlan);
+	                assertNotNull(holdsContainer);
+
+	                // transfers container
+	                transfersContainer = filePlanService.getTransferContainer(filePlan);
+	                assertNotNull(transfersContainer);
+
+	                // holds container
+	                holdsContainer = filePlanService.getHoldContainer(filePlan);
+	                assertNotNull(holdsContainer);
+
+	                // transfers container
+	                transfersContainer = filePlanService.getTransferContainer(filePlan);
+	                assertNotNull(transfersContainer);
             	}
             }
         }, AuthenticationUtil.getSystemUserName());
@@ -818,7 +837,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected abstract class BehaviourDrivenTest
     {
         protected boolean runInTransactionTests = true;
-        
+
         protected Class<?> expectedException;
 
         public BehaviourDrivenTest()
@@ -829,7 +848,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         {
             this.expectedException = expectedException;
         }
-        
+
         public BehaviourDrivenTest(boolean runInTransactionTests)
         {
             this.runInTransactionTests = runInTransactionTests;
@@ -875,7 +894,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                                 when();
                             }
                         });
-    
+
                         doTestInTransaction(new VoidTest()
                         {
                             @Override

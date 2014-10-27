@@ -60,7 +60,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
 
     private NodeRef moveToFolder;
     private NodeRef moveToCategory;
-    
+
     private NodeRef hold;
 
     @Override
@@ -109,9 +109,9 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
                 utils.completeRecord(declaredRecord);
                 utils.completeRecord(frozenRecord);
                 utils.completeRecord(frozenRecord2);
-                
+
                 hold = holdService.createHold(filePlan, GUID.generate(), "reason", "description");
-                
+
                 holdService.addToHold(hold, frozenRecord);
                 holdService.addToHold(hold, frozenRecordFolder);
                 holdService.addToHold(hold, frozenRecord2);
@@ -141,6 +141,7 @@ public class DeclarativeCapabilityTest extends BaseRMTestCase
         for (String user : testUsers)
         {
             filePlanPermissionService.setPermission(rmFolder, user, RMPermissionModel.FILING);
+            filePlanPermissionService.setPermission(rmContainer, user, RMPermissionModel.READ_RECORDS);
             filePlanPermissionService.setPermission(moveToFolder, user, RMPermissionModel.READ_RECORDS);
             filePlanPermissionService.setPermission(moveToCategory, user, RMPermissionModel.READ_RECORDS);
         }

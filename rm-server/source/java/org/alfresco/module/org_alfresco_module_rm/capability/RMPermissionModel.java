@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
 
 /**
@@ -34,13 +35,32 @@ public interface RMPermissionModel
     String FILE_RECORDS = "FileRecords";
 
     // Roles
-    String ROLE_NAME_USER = "User";
-    String ROLE_NAME_POWER_USER = "PowerUser";
-    String ROLE_NAME_SECURITY_OFFICER = "SecurityOfficer";
-    String ROLE_NAME_RECORDS_MANAGER = "RecordsManager";
-
-    String ROLE_NAME_ADMINISTRATOR = "Administrator";
-    String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, ROLE_NAME_ADMINISTRATOR).toString();
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_USER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_USER = FilePlanRoleService.ROLE_USER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_POWER_USER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_POWER_USER = FilePlanRoleService.ROLE_POWER_USER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_SECURITY_OFFICER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_SECURITY_OFFICER = FilePlanRoleService.ROLE_SECURITY_OFFICER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_RECORDS_MANAGER} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_RECORDS_MANAGER = FilePlanRoleService.ROLE_RECORDS_MANAGER;
+    /**
+     * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_ADMIN} instead
+     */
+    @Deprecated
+    public static final String ROLE_NAME_ADMINISTRATOR = FilePlanRoleService.ROLE_ADMIN;
+    public static final String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, FilePlanRoleService.ROLE_ADMIN).toString();
 
     // Capability permissions
 

@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.hold.DeleteHoldTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -43,7 +44,7 @@ public class RM1429Test extends DeleteHoldTest
            public Void run()
            {
                // Add the user to the RM Manager role
-               filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_RECORDS_MANAGER, userName);
+               filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
                // Give the user filing permissions on the hold
                permissionService.setPermission(hold, userName, RMPermissionModel.FILING, true);

@@ -47,8 +47,8 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
     private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
-    private static QName ASPECT_FOR_MY_FILE_PLAN            = generateQName();
-    private static QName ASPECT_FOR_BOTH                    = generateQName();
+    //private static QName ASPECT_FOR_MY_FILE_PLAN            = generateQName();
+    //private static QName ASPECT_FOR_BOTH                    = generateQName();
 
     @InjectMocks private RecordServiceImpl recordService;
 

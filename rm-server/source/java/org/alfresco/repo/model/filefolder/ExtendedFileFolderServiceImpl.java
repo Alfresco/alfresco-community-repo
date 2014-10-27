@@ -23,20 +23,7 @@ public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
     @Override
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName)
     {
-        FileInfo result = null;
-
-        recordService.disablePropertyEditableCheck();
-        try
-        {
-            result = super.create(parentNodeRef, name, typeQName);
-        }
-        finally
-        {
-            recordService.enablePropertyEditableCheck();
-            recordService.disablePropertyEditableCheck(result.getNodeRef());
-        }
-
-        return result;
+        return create(parentNodeRef, name, typeQName, null);
     }
 
     @Override
@@ -52,7 +39,10 @@ public class ExtendedFileFolderServiceImpl extends FileFolderServiceImpl
         finally
         {
             recordService.enablePropertyEditableCheck();
-            recordService.disablePropertyEditableCheck(result.getNodeRef());
+            if (result != null)
+            {
+                recordService.disablePropertyEditableCheck(result.getNodeRef());
+            }
         }
 
         return result;

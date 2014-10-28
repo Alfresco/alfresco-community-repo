@@ -23,7 +23,6 @@ import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriter
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.CLASS;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getSystemUserName;
-import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 import static org.alfresco.service.cmr.security.OwnableService.NO_OWNER;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.apache.commons.lang.BooleanUtils.isTrue;
@@ -43,7 +42,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -247,43 +245,37 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         if (nodeService.exists(nodeRef) && nodeService.exists(parent))
         {
-            // initialise permissions
-            initPermissions(nodeRef, parent);
-
             runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
-                    // setup inherited permissions
-                    Set<AccessPermission> perms = getPermissionService().getAllSetPermissions(parent);
-                    for (AccessPermission perm : perms)
-                    {
-                        // don't copy the extended reader or writer permissions as they have already been set
-                        String authority = perm.getAuthority();
-                        if (!EXTENDED_READER.equals(authority) &&
-                            !EXTENDED_WRITER.equals(authority))
-                        {
-                            // get the access status details
-                            AccessStatus accessStatus = perm.getAccessStatus();
-                            boolean allow = false;
-                            if (ALLOWED.equals(accessStatus))
-                            {
-                                allow = true;
-                            }
+                    // set inheritance
+                    boolean isParentNodeFilePlan = isRecordCategory(nodeRef) && isFilePlan(parent);
+                    boolean inheritanceAllowed = isInheritanceAllowed(nodeRef, isParentNodeFilePlan);
+                    getPermissionService().setInheritParentPermissions(nodeRef, inheritanceAllowed);
 
-                            // set the permission on the target node
-                            getPermissionService().setPermission(
-                                    nodeRef,
-                                    authority,
-                                    perm.getPermission(),
-                                    allow);
-                        }
+                    // clear all existing permissions
+                    getPermissionService().clearPermission(nodeRef, null);
+
+                    if (!inheritanceAllowed)
+                    {
+                        // set extended reader permissions
+                        getPermissionService().setPermission(nodeRef, EXTENDED_READER, READ_RECORDS, true);
+                        getPermissionService().setPermission(nodeRef, EXTENDED_WRITER, FILING, true);
                     }
+
+                    // remove owner
+                    getOwnableService().setOwner(nodeRef, NO_OWNER);
 
                     return null;
                 }
             });
         }
+    }
+
+    private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)
+    {
+        return !(isFilePlan(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef) || isUnfiledRecordsContainer(nodeRef) || (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
     }
 
     /**
@@ -369,53 +361,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 return null;
             }
         }, getSystemUserName());
-    }
-
-    private void initPermissions(final NodeRef nodeRef, final boolean isParentNodeFilePlan)
-    {
-        if (nodeService.exists(nodeRef))
-        {
-            runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
-            {
-                public Object doWork()
-                {
-                 // set inheritance
-                    boolean inheritanceAllowed = isInheritanceAllowed(nodeRef, isParentNodeFilePlan);
-                    getPermissionService().setInheritParentPermissions(nodeRef, inheritanceAllowed);
-
-                    // clear all existing permissions
-                    getPermissionService().clearPermission(nodeRef, null);
-
-                    if (!inheritanceAllowed)
-                    {
-                        // set extended reader permissions
-                        getPermissionService().setPermission(nodeRef, EXTENDED_READER, READ_RECORDS, true);
-                        getPermissionService().setPermission(nodeRef, EXTENDED_WRITER, FILING, true);
-                    }
-
-                    // remove owner
-                    getOwnableService().setOwner(nodeRef, NO_OWNER);
-
-                    return null;
-                }
-            });
-        }
-    }
-
-    /**
-     * Init the permissions for the given node.
-     *
-     * @param nodeRef           node reference
-     * @param includeInPlace    true if in-place
-     */
-    private void initPermissions(final NodeRef nodeRef, final NodeRef parent)
-    {
-        initPermissions(nodeRef, (isRecordCategory(nodeRef) && isFilePlan(parent)));
-    }
-
-    private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)
-    {
-        return !(isFilePlan(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef) || isUnfiledRecordsContainer(nodeRef) || (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
     }
 
     /**

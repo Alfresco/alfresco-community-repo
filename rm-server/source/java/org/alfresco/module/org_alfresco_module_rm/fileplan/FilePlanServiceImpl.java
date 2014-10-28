@@ -82,36 +82,96 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /** root container cache */
     private SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache;
 
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
+
+    /** Permission service */
+    private PermissionService permissionService;
+
+    /** Node DAO */
+    private NodeDAO nodeDAO;
+
+    /** Site service */
+    private SiteService siteService;
+
     /**
-     * @return  file plan role service
+     * Gets the file plan role service
+     *
+     * @return The file plan role service
      */
-    protected FilePlanRoleService getFilePlanRoleService()
+    public FilePlanRoleService getFilePlanRoleService()
     {
-        return (FilePlanRoleService)applicationContext.getBean("FilePlanRoleService");
+        return this.filePlanRoleService;
     }
 
     /**
-     * @return	permission service
+     * Sets the file plan role service
+     *
+     * @param filePlanRoleService The file plan role service
      */
-    protected PermissionService getPermissionService()
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
     {
-        return (PermissionService)applicationContext.getBean("permissionService");
+        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
-     * @return	node DAO
+     * Gets the permission service
+     *
+     * @return The permission service
      */
-    protected NodeDAO getNodeDAO()
+    public PermissionService getPermissionService()
     {
-        return (NodeDAO)applicationContext.getBean("nodeDAO");
+        return this.permissionService;
     }
 
     /**
-     * @return	site service
+     * Sets the permission service
+     *
+     * @param permissionService The permission service
      */
-    protected SiteService getSiteService()
+    public void setPermissionService(PermissionService permissionService)
     {
-        return (SiteService)applicationContext.getBean("siteService");
+        this.permissionService = permissionService;
+    }
+
+    /**
+     * Gets the node DAO
+     *
+     * @return The node DAO
+     */
+    public NodeDAO getNodeDAO()
+    {
+        return this.nodeDAO;
+    }
+
+    /**
+     * Sets the node DAO
+     *
+     * @param nodeDAO The node DAO
+     */
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
+    /**
+     * Gets the site service
+     *
+     * @return The site service
+     */
+    public SiteService getSiteService()
+    {
+        return this.siteService;
+    }
+
+    /**
+     * Sets the site service
+     *
+     * @param siteService The site service
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
     }
 
     /**
@@ -166,12 +226,11 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     public NodeRef getFilePlanBySiteId(String siteId)
     {
         NodeRef filePlan = null;
-        SiteService siteService = getSiteService();
 
-        SiteInfo siteInfo = siteService.getSite(siteId);
-        if (siteInfo != null && siteService.hasContainer(siteId, FILE_PLAN_CONTAINER))
+        SiteInfo siteInfo = getSiteService().getSite(siteId);
+        if (siteInfo != null && getSiteService().hasContainer(siteId, FILE_PLAN_CONTAINER))
         {
-            NodeRef nodeRef = siteService.getContainer(siteId, FILE_PLAN_CONTAINER);
+            NodeRef nodeRef = getSiteService().getContainer(siteId, FILE_PLAN_CONTAINER);
             if (instanceOf(nodeRef, TYPE_FILE_PLAN))
             {
                 filePlan = nodeRef;

@@ -382,6 +382,10 @@
 	<bean id="filePlanService"
 	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
+        <property name="filePlanRoleService" ref="FilePlanRoleService" />
+        <property name="permissionService" ref="permissionService" />
+        <property name="nodeDAO" ref="nodeDAO" />
+        <property name="siteService" ref="SiteService" />
         <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
 

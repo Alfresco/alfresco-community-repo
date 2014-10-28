@@ -505,14 +505,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 	                // transfers container
 	                transfersContainer = filePlanService.getTransferContainer(filePlan);
 	                assertNotNull(transfersContainer);
-
-	                // holds container
-	                holdsContainer = filePlanService.getHoldContainer(filePlan);
-	                assertNotNull(holdsContainer);
-
-	                // transfers container
-	                transfersContainer = filePlanService.getTransferContainer(filePlan);
-	                assertNotNull(transfersContainer);
             	}
             }
         }, AuthenticationUtil.getSystemUserName());

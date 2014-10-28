@@ -936,7 +936,31 @@
                  </execution>
              </executions>
          </plugin>
-      </plugins>
+
+            <!-- ACE-3329 Create _en.properties message files  -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                 <executions>
+                    <execution>
+                        <id>duplicate-english-messages</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <target>
+                        <copy todir="${project.build.outputDirectory}">
+                            <fileset dir="${basedir}/config"
+                                includes="alfresco/messages/**/*.properties,alfresco/workflow/**/*.properties" />
+                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
+                        </copy>
+                    </target>
+                </configuration>
+            </plugin>
+        </plugins>
+
     	<pluginManagement>
     		<plugins>
     			<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->

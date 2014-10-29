@@ -33,9 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearch
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetailsCompatibility;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -44,6 +42,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
@@ -199,20 +198,20 @@ public class RMSearchGet extends DeclarativeWebScript
             }
 
             // Execute search
-            List<NodeRef> results = recordsManagementSearchService.search(siteId, query, searchParameters);
+            List<Pair<NodeRef, NodeRef>> results = recordsManagementSearchService.search(siteId, query, searchParameters);
 
             // Reset person data cache
             personDataCache = new HashMap<String, String>(57);
 
             // Process the result items
             List<Item> items = new ArrayList<Item>(results.size());
-            for (NodeRef nodeRef : results)
+            for (Pair<NodeRef, NodeRef> pair : results)
             {
                 // FIXME: See RM-478
                 // TC 3-3  Create User Groups
                 try
                 {
-                    Item item = new Item(nodeRef);
+                    Item item = new Item(pair.getFirst(), pair.getSecond());
                     items.add(item);
                 }
                 catch(Exception e) {}
@@ -245,7 +244,7 @@ public class RMSearchGet extends DeclarativeWebScript
         private Map<QName, Serializable> nodeProperties;
         private Map<String, Serializable> properties;
 
-        public Item(NodeRef nodeRef)
+        public Item(NodeRef parent, NodeRef nodeRef)
         {
             // Set node ref
             this.nodeRef = nodeRef;
@@ -265,12 +264,12 @@ public class RMSearchGet extends DeclarativeWebScript
             }
 
             // Get parent node reference
-            NodeRef parent = null;
-            ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
-            if (assoc != null)
-            {
-                parent = assoc.getParentRef();
-            }
+//            NodeRef parent = null;
+//            ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+//            if (assoc != null)
+//            {
+//                parent = assoc.getParentRef();
+//            }
 
             if (isContainer)
             {
@@ -334,16 +333,6 @@ public class RMSearchGet extends DeclarativeWebScript
                 if (!NamespaceService.SYSTEM_MODEL_1_0_URI.equals(qName.getNamespaceURI()))
                 {
                     String prefixName = qName.getPrefixString().replace(":", "_");
-                    Serializable value = entry.getValue();
-                    if (value instanceof NodeRef)
-                    {
-                        value = value.toString();
-                    }
-                    else if (value instanceof ContentData)
-                    {
-                        ContentReader contentReader = contentService.getReader(nodeRef, qName);
-                        value = contentReader.getContentString();
-                    }
                     properties.put(prefixName, entry.getValue());
                 }
             }

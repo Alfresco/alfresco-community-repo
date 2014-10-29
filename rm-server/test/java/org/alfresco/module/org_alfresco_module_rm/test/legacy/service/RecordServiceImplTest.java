@@ -272,10 +272,12 @@ public class RecordServiceImplTest extends BaseRMTestCase
         // create record from document
         doTestInTransaction(new Test<Void>()
         {
+            private NodeRef originalLocation;
+
             @Override
             public Void run()
             {
-                NodeRef originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
+                originalLocation = nodeService.getPrimaryParent(dmDocument).getParentRef();
 
                 assertFalse(recordService.isRecord(dmDocument));
                 assertFalse(extendedSecurityService.hasExtendedSecurity(dmDocument));
@@ -297,6 +299,11 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
                 recordService.createRecord(filePlan, dmDocument);
 
+                return null;
+            }
+
+            public void test(Void result)
+            {
                 checkPermissions(READ_RECORDS, AccessStatus.ALLOWED, // file
                                                                      // plan
                         AccessStatus.ALLOWED, // unfiled container
@@ -345,8 +352,6 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
                 Capability updateProperties = capabilityService.getCapability("UpdateProperties");
                 assertEquals(AccessStatus.ALLOWED, updateProperties.hasPermission(dmDocument));
-
-                return null;
             }
         }, dmCollaborator);
 

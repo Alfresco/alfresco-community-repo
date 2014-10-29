@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.site.SiteRole;
@@ -142,7 +143,7 @@ public class RM804Test extends BaseRMTestCase
             @Override
             public Void run()
             {
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_USER, userName);
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_USER, userName);
 
                 return null;
             }
@@ -167,7 +168,7 @@ public class RM804Test extends BaseRMTestCase
             @Override
             public Void run()
             {
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_ADMINISTRATOR, userName);
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_ADMIN, userName);
 
                 return null;
             }

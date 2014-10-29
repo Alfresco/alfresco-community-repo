@@ -18,18 +18,26 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
@@ -47,6 +55,29 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 {
 	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
+
+    /** File plan service */
+    private FilePlanService filePlanService;
+
+    /**
+     * Gets the file plan service
+     *
+     * @return the filePlanService
+     */
+    public FilePlanService getFilePlanService()
+    {
+        return this.filePlanService;
+    }
+
+    /**
+     * Sets the file plan service
+     *
+     * @param filePlanService the filePlanService to set
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
 
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setAnyDenyDenies(boolean)
@@ -87,15 +118,15 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         AccessStatus acs = super.hasPermission(nodeRef, perm);
-        if (AccessStatus.DENIED.equals(acs) &&
-            PermissionService.READ.equals(perm) &&
-            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+        if (AccessStatus.DENIED.equals(acs) == true &&
+            PermissionService.READ.equals(perm) == true &&
+            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
         {
             return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
         }
-        else if (AccessStatus.DENIED.equals(acs) &&
-                 PermissionService.WRITE.equals(perm) &&
-                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+        else if (AccessStatus.DENIED.equals(acs) == true &&
+                 PermissionService.WRITE.equals(perm) == true &&
+                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
         {
             return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
         }
@@ -262,5 +293,51 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         aclWriters = Collections.unmodifiableSet(readers);
         writersCache.put((Serializable)acl.getProperties(), aclWriters);
         return aclWriters;
+    }
+
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setInheritParentPermissions(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     */
+    @Override
+    public void setInheritParentPermissions(final NodeRef nodeRef, boolean inheritParentPermissions)
+    {
+        final String adminRole = getAdminRole(nodeRef);
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) && isNotBlank(adminRole))
+        {
+            if (inheritParentPermissions)
+            {
+                Set<AccessPermission> accessPermissions = getAllSetPermissions(nodeRef);
+                for (AccessPermission accessPermission : accessPermissions)
+                {
+                    String authority = accessPermission.getAuthority();
+                    String permission = accessPermission.getPermission();
+                    if (accessPermission.isSetDirectly() &&
+                            (RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
+                            (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) || ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority)) || adminRole.equals(authority))
+                    {
+                        // FIXME!!!
+                        //deletePermission(nodeRef, authority, permission);
+                    }
+                }
+            }
+            else
+            {
+                setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
+            }
+        }
+        super.setInheritParentPermissions(nodeRef, inheritParentPermissions);
+    }
+
+    private String getAdminRole(NodeRef nodeRef)
+    {
+        String adminRole = null;
+        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
+        if (filePlan != null)
+        {
+            adminRole = authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
+        }
+        return adminRole;
     }
 }

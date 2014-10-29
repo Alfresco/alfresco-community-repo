@@ -30,12 +30,18 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -52,7 +58,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.1
  */
 public class FilePlanServiceImpl extends ServiceBaseImpl
-                                 implements FilePlanService
+                                 implements FilePlanService,
+                                            RecordsManagementModel
 {
 	/** I18N */
     private static final String MSG_DUP_ROOT = "rm.service.dup-root";
@@ -72,34 +79,75 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     /** RM site file plan container */
     private static final String FILE_PLAN_CONTAINER = "documentLibrary";
 
-    /** node DAO */
+    /** root container cache */
+    private SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache;
+
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
+
+    /** Permission service */
+    private PermissionService permissionService;
+
+    /** Node DAO */
     private NodeDAO nodeDAO;
 
-    /** file plan permission service */
-    private FilePlanPermissionService filePlanPermissionService;
+    /** Site service */
+    private SiteService siteService;
 
     /**
-     * @param nodeDAO   node DAO
+     * Gets the file plan role service
+     *
+     * @return The file plan role service
      */
-    public void setNodeDAO(NodeDAO nodeDAO)
+    public FilePlanRoleService getFilePlanRoleService()
     {
-        this.nodeDAO = nodeDAO;
+        if (filePlanRoleService == null)
+        {
+            filePlanRoleService = (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
+        }
+        return filePlanRoleService;
     }
 
     /**
-     * @return  site service
+     * Gets the permission service
+     *
+     * @return The permission service
      */
-    protected SiteService getSiteService()
+    public PermissionService getPermissionService()
     {
-        return (SiteService)applicationContext.getBean("siteService");
+        if (permissionService == null)
+        {
+            permissionService = (PermissionService) applicationContext.getBean("permissionService");
+        }
+        return permissionService;
     }
 
     /**
-     * @param filePlanPermissionService file plan permission service
+     * Gets the node DAO
+     *
+     * @return The node DAO
      */
-    public void setFilePlanPermissionService(FilePlanPermissionService filePlanPermissionService)
+    public NodeDAO getNodeDAO()
     {
-        this.filePlanPermissionService = filePlanPermissionService;
+        if (nodeDAO == null)
+        {
+            nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
+        }
+        return nodeDAO;
+    }
+
+    /**
+     * Gets the site service
+     *
+     * @return The site service
+     */
+    public SiteService getSiteService()
+    {
+        if (siteService == null)
+        {
+            siteService = (SiteService) applicationContext.getBean("SiteService");
+        }
+        return siteService;
     }
 
     /**
@@ -112,6 +160,14 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
+     * @param rootContainerCache	root container cache
+     */
+    public void setRootContainerCache(SimpleCache<Pair<NodeRef, String>, NodeRef> rootContainerCache)
+    {
+		this.rootContainerCache = rootContainerCache;
+	}
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService#getFilePlans(org.alfresco.service.cmr.repository.StoreRef)
      */
     @Override
@@ -122,7 +178,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         final Set<NodeRef> results = new HashSet<NodeRef>();
         Set<QName> aspects = new HashSet<QName>(1);
         aspects.add(ASPECT_RECORDS_MANAGEMENT_ROOT);
-        nodeDAO.getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
+        getNodeDAO().getNodesWithAspects(aspects, Long.MIN_VALUE, Long.MAX_VALUE, new NodeDAO.NodeRefQueryCallback()
         {
             @Override
             public boolean handle(Pair<Long, NodeRef> nodePair)
@@ -146,12 +202,11 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     public NodeRef getFilePlanBySiteId(String siteId)
     {
         NodeRef filePlan = null;
-        SiteService siteService = getSiteService();
 
-        SiteInfo siteInfo = siteService.getSite(siteId);
-        if (siteInfo != null && siteService.hasContainer(siteId, FILE_PLAN_CONTAINER))
+        SiteInfo siteInfo = getSiteService().getSite(siteId);
+        if (siteInfo != null && getSiteService().hasContainer(siteId, FILE_PLAN_CONTAINER))
         {
-            NodeRef nodeRef = siteService.getContainer(siteId, FILE_PLAN_CONTAINER);
+            NodeRef nodeRef = getSiteService().getContainer(siteId, FILE_PLAN_CONTAINER);
             if (instanceOf(nodeRef, TYPE_FILE_PLAN))
             {
                 filePlan = nodeRef;
@@ -198,10 +253,11 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     }
 
     /**
+     * Get the file root container for the given type.
      *
-     * @param filePlan
-     * @param containerName
-     * @return
+     * @param filePlan			file plan
+     * @param containerName		container type
+     * @return {@link NodeRef}	file plan container
      */
     private NodeRef getFilePlanRootContainer(NodeRef filePlan, String containerName)
     {
@@ -212,16 +268,25 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         }
 
         NodeRef result = null;
+        Pair<NodeRef, String> key = new Pair<NodeRef, String>(filePlan, containerName);
 
-        // try and get the unfiled record container
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, containerName));
-        if (assocs.size() > 1)
+        if (!rootContainerCache.contains(key))
         {
-            throw new AlfrescoRuntimeException("Unable to get unfiled conatiner " + containerName  + ".");
+	        // try and get the unfiled record container
+	        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(filePlan, ContentModel.ASSOC_CONTAINS, QName.createQName(RM_URI, containerName));
+	        if (assocs.size() > 1)
+	        {
+	            throw new AlfrescoRuntimeException("Unable to get unfiled conatiner " + containerName  + ".");
+	        }
+	        else if (assocs.size() == 1)
+	        {
+	            result = assocs.get(0).getChildRef();
+	            rootContainerCache.put(key, result);
+	        }
         }
-        else if (assocs.size() == 1)
+        else
         {
-            result = assocs.get(0).getChildRef();
+        	result = rootContainerCache.get(key);
         }
 
         return result;
@@ -269,6 +334,8 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
             throw new AlfrescoRuntimeException("Unable to create file plan root container, because passed node is not a file plan.");
         }
 
+        String allRoles = getFilePlanRoleService().getAllRolesContainerGroup(filePlan);
+
         // create the properties map
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
         properties.put(ContentModel.PROP_NAME, containerName);
@@ -281,8 +348,23 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         containerType,
                         properties).getChildRef();
 
-        // setup the permissions
-        filePlanPermissionService.setupPermissions(filePlan, container);
+   //     if (inheritPermissions == false)
+   //     {
+            // set inheritance to false
+            getPermissionService().setInheritParentPermissions(container, false);
+            getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
+            getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+            getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+
+            // TODO set the admin users to have filing permissions on the unfiled container!!!
+            // TODO we will need to be able to get a list of the admin roles from the service
+  //      }
+   //     else
+   //     {
+            // just inherit eveything
+            // TODO will change this when we are able to set permissions on holds and transfers!
+   //         getPermissionService().setInheritParentPermissions(container, true);
+   //     }
 
         return container;
     }

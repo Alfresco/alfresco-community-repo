@@ -31,38 +31,38 @@ import org.springframework.extensions.webscripts.GUID;
 
 /**
  * reject record tests.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
 public class RejectRecordTest extends BaseRMTestCase
-{    
-    private VersionService versionService;    
-    
+{
+    private VersionService versionService;
+
     private static final String REASON = GUID.generate();
-    
+
     @Override
     protected boolean isUserTest()
     {
         return true;
     }
-    
+
     @Override
     protected boolean isCollaborationSiteTest()
     {
         return true;
     }
-    
+
     @Override
     protected void initServices()
     {
         super.initServices();
-        
+
         versionService = (VersionService)applicationContext.getBean("VersionService");
     }
-    
+
     /**
-     * 
+     *
      */
     public void testRejectedRecordInCorrectState() throws Exception
     {
@@ -71,30 +71,30 @@ public class RejectRecordTest extends BaseRMTestCase
             public void given()
             {
                 assertFalse(recordService.isRecord(dmDocument));
-                ownableService.setOwner(dmDocument, userName);    
-                
+                ownableService.setOwner(dmDocument, userName);
+
                 // document is declared as a record by user
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
                     public Void doWork() throws Exception
                     {
                         // declare record
-                        recordService.createRecord(filePlan, dmDocument);                        
+                        recordService.createRecord(filePlan, dmDocument);
                         return null;
                     }
                  }, userName);
             }
-            
+
             public void when()
             {
                 // sanity checks
                 assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(permissionService.getInheritParentPermissions(dmDocument));
-                
+                assertTrue(permissionService.getInheritParentPermissions(dmDocument));
+
                 // declare record
-                recordService.rejectRecord(dmDocument, REASON);                               
+                recordService.rejectRecord(dmDocument, REASON);
             }
-            
+
             public void then()
             {
                 // document is no longer a record
@@ -105,47 +105,47 @@ public class RejectRecordTest extends BaseRMTestCase
                 assertTrue(permissionService.getInheritParentPermissions(dmDocument));
                 assertFalse(nodeService.hasAspect(dmDocument, ASPECT_FILE_PLAN_COMPONENT));
             }
-        });       
+        });
     }
-    
+
     /**
-     * 
+     *
      */
     public void testRevertAfterReject() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {;
             private NodeRef document;
-            
+
             public void given()
             {
                 NodeRef folder = fileFolderService.create(documentLibrary, GUID.generate(), TYPE_FOLDER).getNodeRef();
                 document = fileFolderService.create(folder, GUID.generate(), TYPE_CONTENT).getNodeRef();
-                                
+
                 assertFalse(recordService.isRecord(document));
-                ownableService.setOwner(document, userName);    
+                ownableService.setOwner(document, userName);
                 versionService.ensureVersioningEnabled(document, null);
-                
+
                 // document is declared as a record by user
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
                     public Void doWork() throws Exception
                     {
                         // declare record
-                        recordService.createRecord(filePlan, document);                        
+                        recordService.createRecord(filePlan, document);
                         return null;
                     }
                  }, userName);
-                
-                assertTrue(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));                               
+
+                assertTrue(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
             }
-            
+
             public void when()
-            {    
+            {
                 // reject the record
-                recordService.rejectRecord(document, REASON);                
+                recordService.rejectRecord(document, REASON);
                 assertFalse(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
-                
+
                 // upload a new version of the document
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
@@ -154,31 +154,31 @@ public class RejectRecordTest extends BaseRMTestCase
                         ContentWriter writer = contentService.getWriter(document, ContentModel.PROP_CONTENT, true);
                         writer.putContent("This is a change to the content and should force a new version");
                         versionService.createVersion(document, null);
-                        
+
                         return null;
                     }
                 }, userName);
-                
+
                 assertFalse(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
-                
+
                 VersionHistory history = versionService.getVersionHistory(document);
                 assertEquals(2, history.getAllVersions().size());
                 final Version initial = history.getRootVersion();
-                
+
                 assertFalse(nodeService.hasAspect(initial.getFrozenStateNodeRef(), ASPECT_FILE_PLAN_COMPONENT));
-                
+
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
                     public Void doWork() throws Exception
-                    {                        
+                    {
                         // revert the document to a previous version
                         versionService.revert(document, initial);
-                        
+
                         return null;
                     }
                  }, userName);
             }
-            
+
             public void then()
             {
                 // document is no longer a record
@@ -187,6 +187,6 @@ public class RejectRecordTest extends BaseRMTestCase
                 // expected owner has be re-set
                 assertEquals(userName, ownableService.getOwner(document));
             }
-        });       
-    }  
+        });
+    }
 }

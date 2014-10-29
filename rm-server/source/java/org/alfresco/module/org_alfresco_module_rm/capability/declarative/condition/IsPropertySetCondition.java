@@ -34,6 +34,7 @@ public class IsPropertySetCondition extends AbstractCapabilityCondition
 {
     /** property name (eg: rma:location) */
     private String propertyName;
+    private QName propertyQName;
     
     /** namespace service */
     private NamespaceService namespaceService;
@@ -59,7 +60,11 @@ public class IsPropertySetCondition extends AbstractCapabilityCondition
      */
     protected QName getPropertyQName()
     {
-        return QName.createQName(propertyName, namespaceService);
+    	if (propertyQName == null)
+    	{
+    		propertyQName = QName.createQName(propertyName, namespaceService);
+    	}
+    	return propertyQName;
     }
     
     /**

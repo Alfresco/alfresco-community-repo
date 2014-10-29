@@ -134,6 +134,9 @@
             <ref bean="extendedReaderDynamicAuthority" />
          </list>
       </property>
+      <property name="filePlanService">
+         <ref bean="filePlanService" />
+      </property>
    </bean>
 
    <bean id="extendedReaderDynamicAuthority" class="org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority" />
@@ -229,20 +232,17 @@
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="permissionService" ref="permissionService"/>
-	    <property name="nodeRulesCache" ref="nodeRulesCache"/>
+        <property name="nodeRulesCache" ref="nodeRulesCache"/>
         <property name="rulesDisabled">
             <value>false</value>
         </property>
-
-    	<!--  Since RM 2.1 -->
-    	<property name="filePlanService" ref="FilePlanService" />
-    	<property name="runAsAdmin">
-    		<value>${rm.rule.runasadmin}</value>
-    	</property>
-
+        <!--  Since RM 2.1 -->
+        <property name="filePlanService" ref="FilePlanService" />
+        <property name="runAsAdmin">
+            <value>${rm.rule.runasadmin}</value>
+        </property>
         <property name="recordService" ref="RecordService" />
-
-   </bean>
+    </bean>
 
     <bean id="FormService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>

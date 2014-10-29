@@ -29,7 +29,6 @@
            alfresco_amps_source_directory=${project.build.directory}/dependency
            alfrescosharepoint_component_enabled=0
         </bitrock.arguments>
-        <alfresco.googledocs.version>2.0.8-22</alfresco.googledocs.version>
     </properties>
 
     <build>

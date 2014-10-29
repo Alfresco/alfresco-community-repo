@@ -36,7 +36,6 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
-import org.alfresco.module.org_alfresco_module_rm.job.PublishUpdatesJobExecuter;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutorRegistry;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -900,9 +899,9 @@ public class DispositionServiceImplTest extends BaseRMTestCase
         });
     }
 
-    private NodeRef testRM386RecordCategory;
-    private DispositionSchedule testRM386DispositionSchedule;
-    private NodeRef testRM386Record;
+//    private NodeRef testRM386RecordCategory;
+//    private DispositionSchedule testRM386DispositionSchedule;
+//    private NodeRef testRM386Record;
 
     /**
      * Test to make sure all the search rollups are correct after schedule is updated

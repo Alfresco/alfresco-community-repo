@@ -18,19 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.job;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-import org.springframework.extensions.webscripts.GUID;
 
 /**
  * Test automatic disposition via scheduled job.

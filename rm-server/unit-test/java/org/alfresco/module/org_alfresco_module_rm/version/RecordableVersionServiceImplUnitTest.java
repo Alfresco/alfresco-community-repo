@@ -70,6 +70,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
     private Map<String, Serializable> versionProperties;
 
     /** mocked services */
+    @SuppressWarnings("unused")
     private @Mock(name="versionMigrator") VersionMigrator mockedVersionMigrator;
     private @Mock(name="dbNodeService")   NodeService mockedDbNodeService;
 

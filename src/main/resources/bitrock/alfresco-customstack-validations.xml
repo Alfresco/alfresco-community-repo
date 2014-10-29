@@ -69,33 +69,18 @@
                 <!-- Server Hardware -->
                 <!-- CPU Speed validation -->
                 <foreach variables="cpu_convertion">
-                    <values>machine_cpu_speed minimum_cpu_speed recommended_cpu_speed</values>
+                    <values>machine_cpu_speed recommended_cpu_speed</values>
                     <actionList>
                         <mathExpression text="double(${${cpu_convertion}})/1000" variable="${cpu_convertion}GHz"/>
                         <setInstallerVariableFromRegEx name="${cpu_convertion}GHz" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${cpu_convertion}GHz}"/>
                     </actionList>
                 </foreach>
-                <throwError>
-                    <text>CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more).</text>
-                    <ruleList>
-                        <compareValues>
-                            <logic>less</logic>
-                            <value1>${machine_cpu_speed}</value1>
-                            <value2>${minimum_cpu_speed}</value2>
-                        </compareValues>
-                    </ruleList>
-                </throwError>
                 <setInstallerVariable name="reportValue" value="${reportValue}${msgCpuSpeed} (${recommended_cpu_speedGHz} GHz+): ${machine_cpu_speedGHz} GHz&#xA;">
                     <ruleList>
                         <compareValues>
                             <logic>less</logic>
                             <value1>${machine_cpu_speed}</value1>
                             <value2>${recommended_cpu_speed}</value2>
-                        </compareValues>
-                        <compareValues>
-                            <logic>greater_or_equal</logic>
-                            <value1>${machine_cpu_speed}</value1>
-                            <value2>${minimum_cpu_speed}</value2>
                         </compareValues>
                     </ruleList>
                 </setInstallerVariable>
@@ -221,7 +206,6 @@
     <desktopShortcutList/>
     <parameterList>
         <stringParameter name="recommended_cpu_speed" value="2000" ask="0"/>
-        <stringParameter name="minimum_cpu_speed" value="1200" ask="0"/>
         <stringParameter name="minimum_core_count" value="2" ask="0"/>
         <stringParameter name="recommended_ram" value="4096" ask="0"/>
         <stringParameter name="minimum_ram" value="2048" ask="0"/>

@@ -85,9 +85,6 @@ msgstr "Порт сервера CIFS 1"
 msgid "CIFS server port 2"
 msgstr "Порт сервера CIFS 2"
 
-msgid "CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more)."
-msgstr "Тактовая частота процессора ${machine_cpu_speedGHz} ГГц меньше минимальной согласно требованиям Alfresco (${minimum_cpu_speedGHz} ГГц). Alfresco не удастся функционировать надлежащим образом. Обновите сервер, чтобы на нем были более современные процессоры (с тактовой частотой как минимум ${minimum_cpu_speedGHz} ГГц, желательно ${recommended_cpu_speedGHz} ГГц или больше)."
-
 msgid "Config Files"
 msgstr "Файлы конфигурации"
 

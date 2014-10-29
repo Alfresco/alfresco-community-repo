@@ -85,9 +85,6 @@ msgstr "CIFS サーバーポート 1"
 msgid "CIFS server port 2"
 msgstr "CIFS サーバーポート 2"
 
-msgid "CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more)."
-msgstr "${machine_cpu_speedGHz} GHz の CPU クロック速度は、Alfresco が要求する最低要件 (${minimum_cpu_speedGHz} GHz) よりも遅くなっています。 Alfresco は、正しく動作できません。 より大容量のモデム CPU を持つサーバー (最低 ${minimum_cpu_speedGHz} GHzの CPU クロック速度、できれば ${recommended_cpu_speedGHz} GHz 以上が望ましい) にアップグレードしてください。"
-
 msgid "Config Files"
 msgstr "設定ファイル"
 

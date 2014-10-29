@@ -85,9 +85,6 @@ msgstr "CIFS 服务器端口 1"
 msgid "CIFS server port 2"
 msgstr "CIFS 服务器端口 2"
 
-msgid "CPU clock speed of ${machine_cpu_speedGHz} GHz is slower than the minimum required by Alfresco (${minimum_cpu_speedGHz} GHz). Alfresco will not perform well. Upgrade the server to one with more modern CPUs (CPU clock speed of at least ${minimum_cpu_speedGHz} GHz, and preferably ${recommended_cpu_speedGHz} GHz or more)."
-msgstr "CPU 时钟速度 ${machine_cpu_speedGHz} 低于 Alfresco 要求的最低速度 (${minimum_cpu_speedGHz} GHz)。 Alfresco 将无法发挥最佳性能。 升级服务器，使其拥有较新的 CPU（CPU 时钟速度至少为 ${minimum_cpu_speedGHz} GHz，最好为 ${recommended_cpu_speedGHz} GHz 或更高）。"
-
 msgid "Config Files"
 msgstr "配置文件"
 

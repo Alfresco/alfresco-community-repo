@@ -448,6 +448,7 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="ownableService" ref="ownableService" />
+        <property name="authorityService" ref="AuthorityService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">

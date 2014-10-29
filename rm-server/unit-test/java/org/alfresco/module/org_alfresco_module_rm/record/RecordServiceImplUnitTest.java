@@ -47,8 +47,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
     private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
-    //private static QName ASPECT_FOR_MY_FILE_PLAN            = generateQName();
-    //private static QName ASPECT_FOR_BOTH                    = generateQName();
 
     @InjectMocks private RecordServiceImpl recordService;
 
@@ -82,40 +80,5 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         assertNotNull(types);
         assertEquals(1, types.size());
         assertTrue(types.contains(TYPE_FILE_PLAN));
-    }
-
-    @Test
-    public void testGetRecordMetadataAspects()
-    {
-//        // register a couple of record meta-data aspects
-//        recordService.registerRecordMetadataAspect(ASPECT_FOR_FILE_PLAN, TYPE_FILE_PLAN);
-//        recordService.registerRecordMetadataAspect(ASPECT_FOR_MY_FILE_PLAN, TYPE_MY_FILE_PLAN);
-//        recordService.registerRecordMetadataAspect(ASPECT_FOR_BOTH, TYPE_FILE_PLAN);
-//        recordService.registerRecordMetadataAspect(ASPECT_FOR_BOTH, TYPE_MY_FILE_PLAN);
-//
-//        Set<QName> set = recordService.getRecordMetadataAspects(filePlanComponent);
-//        assertNotNull(set);
-//        assertEquals(2, set.size());
-//        assertTrue(set.contains(ASPECT_FOR_FILE_PLAN));
-//        assertTrue(set.contains(ASPECT_FOR_BOTH));
-//
-//        set = recordService.getRecordMetadataAspects(nonStandardFilePlanComponent);
-//        assertNotNull(set);
-//        assertEquals(2, set.size());
-//        assertTrue(set.contains(ASPECT_FOR_MY_FILE_PLAN));
-//        assertTrue(set.contains(ASPECT_FOR_BOTH));
-//
-//        set = recordService.getRecordMetadataAspects(TYPE_FILE_PLAN);
-//        assertNotNull(set);
-//        assertEquals(2, set.size());
-//        assertTrue(set.contains(ASPECT_FOR_FILE_PLAN));
-//        assertTrue(set.contains(ASPECT_FOR_BOTH));
-//
-//        set = recordService.getRecordMetadataAspects(TYPE_MY_FILE_PLAN);
-//        assertNotNull(set);
-//        assertEquals(2, set.size());
-//        assertTrue(set.contains(ASPECT_FOR_MY_FILE_PLAN));
-//        assertTrue(set.contains(ASPECT_FOR_BOTH));
-
     }
 }

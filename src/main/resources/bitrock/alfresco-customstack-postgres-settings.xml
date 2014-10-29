@@ -68,6 +68,12 @@
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="component(baseparamdir).parameter(base_allow_spaces).value" value="0" />
+        <setInstallerVariable name="component(baseparamdir).parameter(base_allow_spaces).value" value="1" >
+            <ruleList>
+                <compareText text="${installer_ui}" logic="equals" value="unattended"/>
+            </ruleList>
+        </setInstallerVariable> 
+		
         <!-- 50% in MB-->
         <mathExpression text="int(ceil(${machine_total_memory}/2))" variable="java_xmx_setting"/>
         <setInstallerVariable name="java_xmx_setting" value="2048">

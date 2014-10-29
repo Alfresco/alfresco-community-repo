@@ -53,10 +53,10 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** Application context */
     protected ApplicationContext applicationContext;
-    
+
     /** internal node service */
     private NodeService internalNodeService;
-    
+
     /** authentication helper */
     protected AuthenticationUtil authenticationUtil;
 
@@ -84,7 +84,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.dictionaryService = dictionaryService;
     }
-    
+
     /**
      * @param authenticationUtil    authentication util helper
      */
@@ -92,7 +92,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.authenticationUtil = authenticationUtil;
     }
-    
+
     /**
      * Helper to get internal node service.
      * <p>
@@ -104,10 +104,10 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         {
             internalNodeService = (NodeService)applicationContext.getBean("dbNodeService");
         }
-        
+
         return internalNodeService;
     }
-    
+
     /**
      * Gets the file plan component kind from the given node reference
      *
@@ -127,7 +127,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
             if (isFilePlanComponent(nodeRef))
             {
                 result = FilePlanComponentKind.FILE_PLAN_COMPONENT;
-    
+
                 if (isFilePlan(nodeRef))
                 {
                     result = FilePlanComponentKind.FILE_PLAN;
@@ -173,7 +173,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
                     result = FilePlanComponentKind.UNFILED_RECORD_FOLDER;
                 }
             }
-            
+
             if (result != null)
             {
                 map.put(nodeRef, result);
@@ -319,7 +319,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
         boolean isHold = false;
-        if (getInternalNodeService().exists(nodeRef) && 
+        if (getInternalNodeService().exists(nodeRef) &&
             instanceOf(nodeRef, TYPE_HOLD))
         {
             isHold = true;
@@ -338,10 +338,23 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
         return instanceOf(nodeRef, TYPE_TRANSFER);
     }
-    
+
+    /**
+     * Indicates whether the given node reference is an unfiled records container or not.
+     *
+     * @param nodeRef node reference
+     * @return boolean true if rma:unfiledRecordContainer or sub-type, false otherwise
+     */
+    public boolean isUnfiledRecordsContainer(NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+
+        return instanceOf(nodeRef, TYPE_UNFILED_RECORD_CONTAINER);
+    }
+
     /**
      * Indicates whether a record is complete or not.
-     * 
+     *
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isDeclared(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean isDeclared(NodeRef record)
@@ -361,22 +374,33 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         NodeRef result = null;
         if (nodeRef != null)
-        {       
-            result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
-            if (result == null || !instanceOf(result, TYPE_FILE_PLAN))
+        {
+            Map<NodeRef, NodeRef> transactionCache = TransactionalResourceHelper.getMap("rm.servicebase.getFilePlan");
+            if (transactionCache.containsKey(nodeRef))
             {
-                if (instanceOf(nodeRef, TYPE_FILE_PLAN))
+                result = transactionCache.get(nodeRef);
+            }
+            else
+            {
+                result = (NodeRef)getInternalNodeService().getProperty(nodeRef, PROP_ROOT_NODEREF);
+                if (result == null || !instanceOf(result, TYPE_FILE_PLAN))
                 {
-                    result = nodeRef;
-                }
-                else
-                {
-                    ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
-                    if (parentAssocRef != null)
+                    if (instanceOf(nodeRef, TYPE_FILE_PLAN))
                     {
-                        result = getFilePlan(parentAssocRef.getParentRef());
+                        result = nodeRef;
+                    }
+                    else
+                    {
+                        ChildAssociationRef parentAssocRef = getInternalNodeService().getPrimaryParent(nodeRef);
+                        if (parentAssocRef != null)
+                        {
+                            result = getFilePlan(parentAssocRef.getParentRef());
+                        }
                     }
                 }
+
+                // cache result in transaction
+                transactionCache.put(nodeRef, result);
             }
         }
 
@@ -392,11 +416,11 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     protected boolean instanceOf(NodeRef nodeRef, QName ofClassName)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("ofClassName", ofClassName);        
-        QName className = getInternalNodeService().getType(nodeRef);        
+        ParameterCheck.mandatory("ofClassName", ofClassName);
+        QName className = getInternalNodeService().getType(nodeRef);
         return instanceOf(className, ofClassName);
     }
-    
+
     private static Map<String, Boolean> instanceOfCache = new HashMap<String, Boolean>();
 
     /**
@@ -410,25 +434,25 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         ParameterCheck.mandatory("className", className);
         ParameterCheck.mandatory("ofClassName", ofClassName);
-        
+
         boolean result = false;
-        
+
         String key = className.toString() + "|" + ofClassName.toString();
         if (instanceOfCache.containsKey(key))
         {
             result = instanceOfCache.get(key);
         }
         else
-        {        
+        {
             if (ofClassName.equals(className) ||
                 dictionaryService.isSubClass(className, ofClassName))
             {
                 result = true;
             }
-            
+
             instanceOfCache.put(key, result);
         }
-        
+
         return result;
     }
 

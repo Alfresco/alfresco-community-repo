@@ -68,7 +68,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /** Location of bootstrap role JSON */
     private static final String BOOTSTRAP_ROLE_JSON_LOCATION = "alfresco/module/org_alfresco_module_rm/security/rm-default-roles-bootstrap.json";
-    
+
     /** JSON names */
     private static final String JSON_NAME = "name";
     private static final String JSON_DISPLAY_LABEL = "displayLabel";
@@ -242,7 +242,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
     /**
      * Bootstraps the default roles
-     * 
+     *
      * @param filePlan          file plan
      * @param systemContainers  system containers
      */
@@ -327,7 +327,7 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
 
                         // Add any additional admin permissions
                         if (isAdmin)
-                        { 
+                        {
                             // Admin has filing
                             permissionService.setPermission(filePlan, role.getRoleGroupName(), RMPermissionModel.FILING, true);
                             if (systemContainers != null)

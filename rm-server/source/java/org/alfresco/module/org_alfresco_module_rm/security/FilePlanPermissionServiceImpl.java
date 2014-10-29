@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -42,6 +43,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -68,6 +71,9 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     /** Policy component */
     private PolicyComponent policyComponent;
+
+    /** Authority service */
+    private AuthorityService authorityService;
 
     /** Logger */
     private static final Log LOGGER = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
@@ -139,6 +145,26 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     public void setOwnableService(OwnableService ownableService)
     {
         this.ownableService = ownableService;
+    }
+
+    /**
+     * Gets the authority service
+     *
+     * @return The authority service
+     */
+    public AuthorityService getAuthorityService()
+    {
+        return this.authorityService;
+    }
+
+    /**
+     * Sets the authority service
+     *
+     * @param authorityService The authority service
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
     }
 
     /**
@@ -259,9 +285,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
                     if (!inheritanceAllowed)
                     {
-                        // set extended reader permissions
                         getPermissionService().setPermission(nodeRef, EXTENDED_READER, READ_RECORDS, true);
                         getPermissionService().setPermission(nodeRef, EXTENDED_WRITER, FILING, true);
+                        String adminRole = getAdminRole(nodeRef);
+                        getPermissionService().setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
                     }
 
                     // remove owner
@@ -271,6 +298,16 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 }
             });
         }
+    }
+
+    private String getAdminRole(NodeRef nodeRef)
+    {
+        NodeRef filePlan = getFilePlan(nodeRef);
+        if (filePlan == null)
+        {
+            throw new AlfrescoRuntimeException("The file plan could not be found for the give node: '" + nodeRef + "'.");
+        }
+        return authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
     }
 
     private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)

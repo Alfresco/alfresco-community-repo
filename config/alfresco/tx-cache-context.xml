@@ -89,6 +89,19 @@
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
 
+   <bean name="contentUrlEncryptingMasterKeyCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="contentUrlEncryptingMasterKeySharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.contentUrlEncryptingMasterKeyTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="${cache.contentUrlEncryptingMasterKeySharedCache.tx.maxItems}" />
+      <property name="mutable" value="false" />
+      <property name="allowEqualsChecks" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
+   </bean>
+
    <!-- The transactional cache for immutable entities -->
    
    <bean name="immutableEntityCache" class="org.alfresco.repo.cache.TransactionalCache">

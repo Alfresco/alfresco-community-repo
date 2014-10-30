@@ -1,0 +1,67 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<!-- This file enables a replicating content store. It should be placed in shared/classes/alfresco/extension -->
+
+<beans>
+
+  <bean id="defaultContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>${dir.contentstore}</value>
+      </constructor-arg>
+      
+      <!-- Uncomment the property below to add content filesize limit.
+      <property name="contentLimitProvider" ref="defaultContentLimitProvider"/>
+      -->
+  </bean>
+
+
+  <bean id="tier1ContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>${dir.contentstore1}</value>
+      </constructor-arg>
+      
+      <!-- Uncomment the property below to add content filesize limit.
+      <property name="contentLimitProvider" ref="defaultContentLimitProvider"/>
+      -->
+  </bean>
+
+  <bean id="tier2ContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>${dir.contentstore2}</value>
+      </constructor-arg>
+      
+      <!-- Uncomment the property below to add content filesize limit.
+      <property name="contentLimitProvider" ref="defaultContentLimitProvider"/>
+      -->
+  </bean>
+
+  <bean id="tier3ContentStore" class="org.alfresco.repo.content.filestore.FileContentStore">
+      <constructor-arg>
+         <value>${dir.contentstore3}</value>
+      </constructor-arg>
+      
+      <!-- Uncomment the property below to add content filesize limit.
+      <property name="contentLimitProvider" ref="defaultContentLimitProvider"/>
+      -->
+  </bean>
+
+
+  <!-- this is the replicating content store - the name fileContentStore overrides the alfresco default store -->
+  <bean id="fileContentStore"
+       class="org.alfresco.repo.content.replication.AggregatingContentStore" >
+
+      <property name="primaryStore" ref="defaultContentStore" />
+      
+      <property name="secondaryStores">
+          <list>
+              <ref bean="tier1ContentStore" />
+              <ref bean="tier2ContentStore" />
+              <ref bean="tier3ContentStore" />
+          </list>
+      </property>
+      
+  </bean>
+
+
+</beans>

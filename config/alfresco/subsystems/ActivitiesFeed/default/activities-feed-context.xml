@@ -171,7 +171,14 @@
       <property name="targetBeanName" value="feedModelBuilderPrototype"/>
    </bean>
    
-   <bean id="feedModelBuilderPrototype" class="org.alfresco.repo.activities.feed.DefaultActivitiesFeedModelBuilder" scope="prototype"/>
+   <bean id="feedModelBuilderPrototype" class="org.alfresco.repo.activities.feed.DefaultActivitiesFeedModelBuilder" scope="prototype">
+      <property name="ignoredActivityTypes">
+         <set>
+            <value>org.alfresco.documentlibrary.file-previewed</value>
+            <value>org.alfresco.documentlibrary.file-downloaded</value>
+         </set>
+      </property>
+   </bean>
    
    <bean id="feedEmailTemplateLocation" class="org.alfresco.repo.dictionary.RepositoryLocation">
         <!-- other properties will be defaulted, but can be overridden here -->

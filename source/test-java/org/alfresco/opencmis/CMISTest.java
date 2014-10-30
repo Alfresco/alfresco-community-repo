@@ -44,6 +44,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
+import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
@@ -2658,5 +2659,83 @@ public class CMISTest
             }
             AuthenticationUtil.popAuthentication();
         }
+    }
+    
+    /**
+     * ACE-2904
+     */
+    @Test
+    public void testACE2904()
+    {                                   // Basic CMIS Types                                                               // Additional types from Content Model
+        final String[] types =        { "cmis:document", "cmis:relationship", "cmis:folder", "cmis:policy", "cmis:item", "R:cm:replaces", "P:cm:author", "I:cm:cmobject" };
+        final String[] displayNames = { "Document",      "Relationship",      "Folder",      "Policy",      "Item Type", "Replaces",      "Author",      "Object" };
+        final String[] descriptions = { "Document Type", "Relationship Type", "Folder Type", "Policy Type", "CMIS Item", "Replaces",      "Author",      "I:cm:cmobject" };
+
+        CmisServiceCallback<String> callback = new CmisServiceCallback<String>()
+        {
+            @Override
+            public String execute(CmisService cmisService)
+            {
+                List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                assertTrue(repositories.size() > 0);
+                RepositoryInfo repo = repositories.get(0);
+                String repositoryId = repo.getId();
+
+                for (int i = 0; i < types.length; i++)
+                {
+                    TypeDefinition def = cmisService.getTypeDefinition(repositoryId, types[i], null);
+                    assertNotNull("The " + types[i] + " type is not defined", def);
+                    assertNotNull("The display name is incorrect. Please, refer to ACE-2904.", def.getDisplayName());
+                    assertEquals("The display name is incorrect. Please, refer to ACE-2904.", def.getDisplayName(), displayNames[i]);
+                    assertEquals("The description is incorrect. Please, refer to ACE-2904.", def.getDescription(), descriptions[i]);
+                }
+
+                return "";
+            };
+        };
+
+        // Lets test types for cmis 1.1 and cmis 1.0
+        withCmisService(callback, CmisVersion.CMIS_1_1);
+        withCmisService(callback, CmisVersion.CMIS_1_0);
+    }
+    
+    /**
+     * ACE-3322
+     */
+    @Test
+    public void testACE3322()
+    {
+        final String[] types = { "cmis:document", "cmis:relationship", "cmis:folder", "cmis:item" };
+        
+        CmisServiceCallback<String> callback = new CmisServiceCallback<String>()
+        {
+            @Override
+            public String execute(CmisService cmisService)
+            {
+                for (int i = 0; i < types.length; i++)
+                {
+                    List<TypeDefinitionWrapper> children = cmisDictionaryService.getChildren(types[i]);
+                    assertNotNull(children);
+
+                    // Check that children were updated
+                    for (TypeDefinitionWrapper child : children)
+                    {
+                        System.out.println("type " + child.getClass() + " TypeIdd = " + child.getTypeId());
+                        assertNotNull("Type definition was not updated. Please refer to ACE-3322", child.getTypeDefinition(false).getDisplayName());
+                        assertNotNull("Type definition was not updated. Please refer to ACE-3322", child.getTypeDefinition(false).getDescription());
+
+                        // Check that property's display name and description were updated
+                        for (PropertyDefinitionWrapper property : child.getProperties())
+                        {
+                            assertNotNull("Display name is null", property.getPropertyDefinition().getDisplayName());
+                            assertNotNull("Description is null", property.getPropertyDefinition().getDescription());
+                        }
+                    }
+                }
+                return "";
+            };
+        };
+
+        withCmisService(callback, CmisVersion.CMIS_1_1);
     }
 }

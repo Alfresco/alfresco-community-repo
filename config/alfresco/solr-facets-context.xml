@@ -107,12 +107,18 @@
       </constructor-arg>
    </bean>
 
-   <bean id="facet.dateBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.DateBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
-      <constructor-arg index="0">
+   <bean id="facet.dateFacetFields" class="org.alfresco.repo.search.impl.solr.facet.FacetFieldBean">
+      <constructor-arg>
          <set>
             <value>@{http://www.alfresco.org/model/content/1.0}created</value>
             <value>@{http://www.alfresco.org/model/content/1.0}modified</value>
          </set>
+      </constructor-arg>
+   </bean>
+
+   <bean id="facet.dateBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.DateBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg index="0">
+         <ref bean="facet.dateFacetFields" />
       </constructor-arg>
       <constructor-arg index="1">
          <bean class="org.springframework.beans.factory.config.MapFactoryBean">

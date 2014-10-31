@@ -51,7 +51,7 @@ public class SolrFacetHelper
     /**
      * Constructor
      * 
-     * @param serviceRegistry
+     * @param facetQueryProviders
      */
     public SolrFacetHelper(List<FacetQueryProvider> facetQueryProviders)
     {

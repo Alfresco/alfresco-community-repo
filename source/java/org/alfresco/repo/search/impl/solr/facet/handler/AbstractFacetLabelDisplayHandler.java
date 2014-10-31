@@ -80,7 +80,7 @@ public abstract class AbstractFacetLabelDisplayHandler implements FacetLabelDisp
     /**
      * Set the registry to register with
      * 
-     * @param registry a metadata extracter registry
+     * @param registry a facet label display handler registry
      */
     public void setRegistry(FacetLabelDisplayHandlerRegistry registry)
     {

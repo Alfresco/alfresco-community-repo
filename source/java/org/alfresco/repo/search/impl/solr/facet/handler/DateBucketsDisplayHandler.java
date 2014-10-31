@@ -30,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.repo.search.impl.solr.facet.FacetFieldBean;
 import org.alfresco.repo.search.impl.solr.facet.FacetQueryProvider;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetConfigException;
 import org.springframework.extensions.surf.util.ParameterCheck;
@@ -52,7 +53,7 @@ public class DateBucketsDisplayHandler extends AbstractFacetLabelDisplayHandler 
         ParameterCheck.mandatory("facetQueryFields", facetQueryFields);
         ParameterCheck.mandatory("dateBucketsMap", dateBucketsMap);
 
-        this.supportedFieldFacets = Collections.unmodifiableSet(facetQueryFields);
+        this.supportedFieldFacets = facetQueryFields;
 
         facetLabelMap = new HashMap<>(dateBucketsMap.size());
         Map<String, List<String>> facetQueries = new LinkedHashMap<>(facetQueryFields.size());
@@ -84,6 +85,11 @@ public class DateBucketsDisplayHandler extends AbstractFacetLabelDisplayHandler 
         this.facetQueriesMap = Collections.unmodifiableMap(facetQueries);
     }
 
+    public DateBucketsDisplayHandler(FacetFieldBean dateFacetField, LinkedHashMap<String, String> dateBucketsMap)
+    {
+        this(dateFacetField.getFields(), dateBucketsMap);
+    }
+
     @Override
     public FacetLabel getDisplayLabel(String value)
     {
@@ -96,5 +102,4 @@ public class DateBucketsDisplayHandler extends AbstractFacetLabelDisplayHandler 
     {
         return this.facetQueriesMap;
     }
-
 }

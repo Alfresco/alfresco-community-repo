@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -138,14 +139,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
      };
 
     /** record model URI's */
-    public static final String[] RECORD_MODEL_URIS = new String[]
-    {
-       RM_URI,
-       RM_CUSTOM_URI,
-       ReportModel.RMR_URI,
-       RecordableVersionModel.RMV_URI,
-       DOD5015Model.DOD_URI
-    };
+    public static final List<String> RECORD_MODEL_URIS = Collections.unmodifiableList(
+        Arrays.asList(
+            RM_URI,
+            RM_CUSTOM_URI,
+            ReportModel.RMR_URI,
+            RecordableVersionModel.RMV_URI,
+            DOD5015Model.DOD_URI
+    ));
 
     /** non-record model URI's */
     private static final String[] NON_RECORD_MODEL_URIS = new String[]
@@ -694,15 +695,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         return getRecordMetadataAspectsMap().containsKey(aspect);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataProperty(org.alfresco.service.namespace.QName)
      */
     @Override
     public boolean isRecordMetadataProperty(QName property)
     {
-        boolean result = false;        
-        PropertyDefinition propertyDefinition = dictionaryService.getProperty(property); 
+        boolean result = false;
+        PropertyDefinition propertyDefinition = dictionaryService.getProperty(property);
         if (propertyDefinition != null)
         {
             ClassDefinition classDefinition = propertyDefinition.getContainerClass();
@@ -714,7 +715,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -989,7 +990,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             props.put(PROP_IDENTIFIER, recordId);
             props.put(PROP_ORIGIONAL_NAME, name);
             nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
-            
+
             // remove versionable aspect(s)
             nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
         }
@@ -1363,7 +1364,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // check the URI's
-            result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
+            result = RECORD_MODEL_URIS.contains(property.getNamespaceURI());
 
             // check the custom model
             if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))

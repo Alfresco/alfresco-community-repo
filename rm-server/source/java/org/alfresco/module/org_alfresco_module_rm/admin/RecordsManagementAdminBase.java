@@ -239,7 +239,7 @@ public class RecordsManagementAdminBase implements RecordsManagementCustomModel
                 }
                 catch (DictionaryException de)
                 {
-                    logger.warn("readCustomContentModel: skip model ("+modelRef+") whilst searching for uri ("+uri+"): "+de);
+                    logger.warn("readCustomContentModel: skip model ("+modelRef+") whilst searching for uri ("+uri+"): ", de);
                 }
             }
 

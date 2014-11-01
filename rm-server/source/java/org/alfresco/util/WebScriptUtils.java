@@ -267,7 +267,7 @@ public final class WebScriptUtils
         }
         catch (JSONException error)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not put the key '" + key + "' with the value '" + value + "' to the json object.");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not put the key '" + key + "' with the value '" + value + "' to the json object.", error);
         }
     }
 

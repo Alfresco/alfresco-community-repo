@@ -73,7 +73,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(HoldServiceImpl.class);
-    
+
     /** Audit event keys */
     private static final String AUDIT_ADD_TO_HOLD = "addToHold";
     private static final String AUDIT_REMOVE_FROM_HOLD = "removeFromHold";
@@ -89,7 +89,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
     /** Permission service */
     private PermissionService permissionService;
-    
+
     /** records management audit service */
     private RecordsManagementAuditService recordsManagementAuditService;
 
@@ -142,7 +142,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param recordsManagementAuditService records management audit service
      */
@@ -150,7 +150,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
     }
-    
+
     /**
      * Initialise hold service
      */
@@ -256,7 +256,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             for (ChildAssociationRef holdAssoc : holdsAssocs)
             {
                 NodeRef hold = holdAssoc.getChildRef();
-                if (isHold(hold)) 
+                if (isHold(hold))
                 {
                     // add to list of holds
                     holds.add(hold);
@@ -471,7 +471,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
             }
             catch (AccessDeniedException ade)
             {
-                throw new AlfrescoRuntimeException("Can't delete hold, because you don't have filling permissions on all the items held within the hold.");
+                throw new AlfrescoRuntimeException("Can't delete hold, because you don't have filling permissions on all the items held within the hold.", ade);
             }
         }
 
@@ -586,7 +586,7 @@ public class HoldServiceImpl extends ServiceBaseImpl
 
                         // Link the record to the hold
                         nodeService.addChild(hold, nodeRef, ASSOC_FROZEN_RECORDS, ASSOC_FROZEN_RECORDS);
-                        
+
                         // audit item being added to the hold
                         recordsManagementAuditService.auditEvent(nodeRef, AUDIT_ADD_TO_HOLD);
 
@@ -691,14 +691,14 @@ public class HoldServiceImpl extends ServiceBaseImpl
                         {
                             // remove from hold
                             nodeService.removeChild(hold, nodeRef);
-                            
+
                             // audit that the node has been remove from the hold
                             // TODO add details of the hold that the node was removed from
                             recordsManagementAuditService.auditEvent(nodeRef, AUDIT_REMOVE_FROM_HOLD);
-                            
+
                             return null;
                         }
-                     });                    
+                     });
                 }
             }
 

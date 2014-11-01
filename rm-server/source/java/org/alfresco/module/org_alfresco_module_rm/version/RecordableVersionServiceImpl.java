@@ -70,7 +70,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /** key used to indicate a recordable version */
     public static final String KEY_RECORDABLE_VERSION = "recordable-version";
     public static final String KEY_FILE_PLAN = "file-plan";
-    
+
     /** version record property */
     public static final String PROP_VERSION_RECORD = "RecordVersion";
 
@@ -91,7 +91,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
     /** authentication util helper */
     protected AuthenticationUtil authenticationUtil;
-    
+
     /** relationship service */
     protected RelationshipService relationshipService;
 
@@ -142,7 +142,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.authenticationUtil = authenticationUtil;
     }
-    
+
     /**
      * @param relationshipService   relationship service
      */
@@ -321,21 +321,21 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
             // create record
             final NodeRef record = createRecord(nodeRef, filePlan);
-            
+
             // apply version record aspect to record
             PropertyMap versionRecordProps = new PropertyMap(3);
             versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
-            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, 
+            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL,
                                    standardVersionProperties.get(
                                            QName.createQName(Version2Model.NAMESPACE_URI,
                                                              Version2Model.PROP_VERSION_LABEL)));
-            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, 
+            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION,
                                    standardVersionProperties.get(
                                            QName.createQName(Version2Model.NAMESPACE_URI,
                                                              Version2Model.PROP_VERSION_DESCRIPTION)));
             nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
-            
-            // wire record up to previous record 
+
+            // wire record up to previous record
             VersionHistory versionHistory = getVersionHistory(nodeRef);
             if (versionHistory != null)
             {
@@ -355,7 +355,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                                 relationshipService.addRelationship("versions", record, previousRecord);
                                 return null;
                             }
-                        });                    
+                        });
                         break;
                     }
                 }
@@ -388,7 +388,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
 
         // If the auditable aspect is not there then add it to the 'version' node (after original aspects have been frozen)
-        if (dbNodeService.hasAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE) == false)
+        if (!dbNodeService.hasAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE))
         {
             dbNodeService.addAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE, null);
         }
@@ -449,7 +449,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
                     // create a copy of the original state and add it to the unfiled record container
                     FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
-                    record = recordInfo.getNodeRef();                    
+                    record = recordInfo.getNodeRef();
 
                     // remove added copy assocs
                     List<AssociationRef> recordAssocs = dbNodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);

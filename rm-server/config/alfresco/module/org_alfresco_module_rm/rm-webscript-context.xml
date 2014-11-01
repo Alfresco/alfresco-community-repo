@@ -618,11 +618,13 @@
    <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost"
       parent="rmBaseWebscript">
+      <property name="RecordableVersionConfigService" ref="RecordableVersionConfigService" />
    </bean>
 
    <!-- REST impl for GET recorded version config -->
    <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet"
       parent="rmBaseWebscript">
+      <property name="RecordableVersionConfigService" ref="RecordableVersionConfigService" />
    </bean>
 </beans>

@@ -1581,4 +1581,49 @@
          </value>
       </property>
    </bean>
+
+   <!--  Recordable Verison Config Service  -->
+
+   <bean id="recordableVersionConfigService" class="org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigServiceImpl">
+      <property name="nodeService" ref="NodeService"/>
+   </bean>
+
+   <bean id="RecordableVersionConfigService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService</value>
+      </property>
+      <property name="target">
+         <ref bean="recordableVersionConfigService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="RecordableVersionConfigService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="RecordableVersionConfigService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="RecordableVersionConfigService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="RecordableVersionConfigService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+               org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService.getVersions=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService.setVersion=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
+   </bean>
 </beans>

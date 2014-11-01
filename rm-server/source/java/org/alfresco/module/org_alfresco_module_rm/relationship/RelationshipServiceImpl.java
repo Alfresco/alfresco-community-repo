@@ -557,17 +557,9 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         {
             type = RelationshipType.PARENTCHILD;
         }
-        else if (associationDefinition instanceof AssociationDefinition)
-        {
-            type = RelationshipType.BIDIRECTIONAL;
-        }
         else
         {
-            StringBuilder sb = new StringBuilder();
-            sb.append("Unsupported association definition: '")
-                .append(associationDefinition.getName().getLocalName())
-                .append("'.");
-            throw new AlfrescoRuntimeException(sb.toString());
+            type = RelationshipType.BIDIRECTIONAL;
         }
 
         return type;

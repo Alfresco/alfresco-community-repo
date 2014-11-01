@@ -39,28 +39,28 @@ public interface RMPermissionModel
      * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_USER} instead
      */
     @Deprecated
-    public static final String ROLE_NAME_USER = FilePlanRoleService.ROLE_USER;
+    String ROLE_NAME_USER = FilePlanRoleService.ROLE_USER;
     /**
      * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_POWER_USER} instead
      */
     @Deprecated
-    public static final String ROLE_NAME_POWER_USER = FilePlanRoleService.ROLE_POWER_USER;
+    String ROLE_NAME_POWER_USER = FilePlanRoleService.ROLE_POWER_USER;
     /**
      * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_SECURITY_OFFICER} instead
      */
     @Deprecated
-    public static final String ROLE_NAME_SECURITY_OFFICER = FilePlanRoleService.ROLE_SECURITY_OFFICER;
+    String ROLE_NAME_SECURITY_OFFICER = FilePlanRoleService.ROLE_SECURITY_OFFICER;
     /**
      * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_RECORDS_MANAGER} instead
      */
     @Deprecated
-    public static final String ROLE_NAME_RECORDS_MANAGER = FilePlanRoleService.ROLE_RECORDS_MANAGER;
+    String ROLE_NAME_RECORDS_MANAGER = FilePlanRoleService.ROLE_RECORDS_MANAGER;
     /**
      * @deprecated as of 2.1.0.3, please use {@link FilePlanRoleService.ROLE_ADMIN} instead
      */
     @Deprecated
-    public static final String ROLE_NAME_ADMINISTRATOR = FilePlanRoleService.ROLE_ADMIN;
-    public static final String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, FilePlanRoleService.ROLE_ADMIN).toString();
+    String ROLE_NAME_ADMINISTRATOR = FilePlanRoleService.ROLE_ADMIN;
+    String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, FilePlanRoleService.ROLE_ADMIN).toString();
 
     // Capability permissions
 

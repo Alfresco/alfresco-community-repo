@@ -35,7 +35,6 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -302,30 +301,11 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public void setInheritParentPermissions(final NodeRef nodeRef, boolean inheritParentPermissions)
     {
         final String adminRole = getAdminRole(nodeRef);
-        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) && isNotBlank(adminRole))
+        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) && isNotBlank(adminRole) && !inheritParentPermissions)
         {
-            if (inheritParentPermissions)
-            {
-                Set<AccessPermission> accessPermissions = getAllSetPermissions(nodeRef);
-                for (AccessPermission accessPermission : accessPermissions)
-                {
-                    String authority = accessPermission.getAuthority();
-                    String permission = accessPermission.getPermission();
-                    if (accessPermission.isSetDirectly() &&
-                            (RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
-                            (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) || ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority)) || adminRole.equals(authority))
-                    {
-                        // FIXME!!!
-                        //deletePermission(nodeRef, authority, permission);
-                    }
-                }
-            }
-            else
-            {
-                setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-                setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
-            }
+            setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+            setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+            setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
         }
         super.setInheritParentPermissions(nodeRef, inheritParentPermissions);
     }

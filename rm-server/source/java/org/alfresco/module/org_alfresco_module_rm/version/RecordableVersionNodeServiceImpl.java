@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.version;
 
+import static org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl.RECORD_MODEL_URIS;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,19 +30,17 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
 import org.alfresco.repo.version.Node2ServiceImpl;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.lang.ArrayUtils;
 
 /**
- * Extended version node service implementation that supports the retrieval of 
+ * Extended version node service implementation that supports the retrieval of
  * recorded version state.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3
  */
@@ -49,7 +49,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
 {
     /** record service */
     private RecordService recordService;
-    
+
     /**
      * @param recordService record service
      */
@@ -57,7 +57,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @see org.alfresco.repo.version.Node2ServiceImpl#getProperties(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -65,7 +65,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // TODO only supported for Version2
-        
+
         NodeRef converted = VersionUtil.convertNodeRef(nodeRef);
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
@@ -78,41 +78,41 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
             return super.getProperties(nodeRef);
         }
     }
-    
+
     /**
      * Process properties map before returning as frozen state.
-     * 
+     *
      * @param properties                                        properties map
      * @return {@link Map}<{@link QName}, {@link Serializable}> processed property map
      */
     protected Map<QName, Serializable> processProperties(NodeRef version, Map<QName, Serializable> properties)
     {
         Map<QName, Serializable> cloneProperties = new HashMap<QName, Serializable>(properties);
-        
+
         // revert modified record name
         properties.put(ContentModel.PROP_NAME, properties.get(RecordsManagementModel.PROP_ORIGIONAL_NAME));
-        
+
         // remove all rma, rmc, rmr and rmv properties
         for (QName property : cloneProperties.keySet())
         {
             if (!PROP_RECORDABLE_VERSION_POLICY.equals(property) &&
-                !PROP_FILE_PLAN.equals(property) &&
-                (recordService.isRecordMetadataProperty(property) ||
-                 ArrayUtils.contains(RecordServiceImpl.RECORD_MODEL_URIS, property.getNamespaceURI())))
+                    !PROP_FILE_PLAN.equals(property) &&
+                    (recordService.isRecordMetadataProperty(property) ||
+                            RECORD_MODEL_URIS.contains(property.getNamespaceURI())))
             {
-                properties.remove(property);   
+                properties.remove(property);
             }
         }
-        
+
         // do standard property processing
         processVersionProperties(version, properties);
-        
+
         return properties;
     }
-    
+
     /**
      * Process version properties.
-     * 
+     *
      * @param version                   version node reference
      * @param properties                properties map
      */
@@ -120,12 +120,12 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     {
         // get version properties
         Map<QName, Serializable> versionProperties = dbNodeService.getProperties(version);
-        
+
         if (versionProperties != null)
         {
             String versionLabel = (String)versionProperties.get(Version2Model.PROP_QNAME_VERSION_LABEL);
             properties.put(ContentModel.PROP_VERSION_LABEL, versionLabel);
-            
+
             // Convert frozen sys:referenceable properties
             NodeRef nodeRef = (NodeRef)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
             if (nodeRef != null)
@@ -134,42 +134,42 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
                 properties.put(ContentModel.PROP_STORE_IDENTIFIER, nodeRef.getStoreRef().getIdentifier());
                 properties.put(ContentModel.PROP_NODE_UUID, nodeRef.getId());
             }
-            
+
             Long dbid = (Long)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_DBID);
             properties.put(ContentModel.PROP_NODE_DBID, dbid);
-            
+
             // Convert frozen cm:auditable properties
             String creator = (String)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_CREATOR);
             if (creator != null)
             {
                 properties.put(ContentModel.PROP_CREATOR, creator);
             }
-            
+
             Date created = (Date)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_CREATED);
             if (created != null)
             {
                 properties.put(ContentModel.PROP_CREATED, created);
             }
-            
+
             // TODO - check use-cases for get version, revert, restore ....
             String modifier = (String)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_MODIFIER);
             if (modifier != null)
             {
                 properties.put(ContentModel.PROP_MODIFIER, modifier);
             }
-            
+
             Date modified = (Date)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_MODIFIED);
             if (modified != null)
             {
                 properties.put(ContentModel.PROP_MODIFIED, modified);
             }
-        
+
             Date accessed = (Date)versionProperties.get(Version2Model.PROP_QNAME_FROZEN_ACCESSED);
             if (accessed != null)
             {
                 properties.put(ContentModel.PROP_ACCESSED, accessed);
-            }   
-            
+            }
+
             String owner = (String)versionProperties.get(PROP_FROZEN_OWNER);
             if (owner != null)
             {
@@ -177,7 +177,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
             }
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.version.Node2ServiceImpl#getAspects(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -185,7 +185,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // TODO only supported for Version2
-        
+
         NodeRef converted = VersionUtil.convertNodeRef(nodeRef);
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
@@ -198,34 +198,34 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
             return super.getAspects(nodeRef);
         }
     }
-    
+
     /**
      * Process frozen aspects.
-     * 
+     *
      * @param aspects                       aspect set
      * @return {@link Set}<{@link QName}>   processed aspect set
      */
     protected Set<QName> processAspects(Set<QName> aspects)
     {
         Set<QName> result = new HashSet<QName>(aspects);
-        
+
         // remove version aspects
         result.remove(ASPECT_VERSION);
         result.remove(ASPECT_RECORDED_VERSION);
-        
+
         // remove rm aspects
         for (QName aspect : aspects)
         {
             if (!ASPECT_VERSIONABLE.equals(aspect) &&
-                (recordService.isRecordMetadataAspect(aspect) ||
-                 ArrayUtils.contains(RecordServiceImpl.RECORD_MODEL_URIS, aspect.getNamespaceURI())))
+                    (recordService.isRecordMetadataAspect(aspect) ||
+                            RECORD_MODEL_URIS.contains(aspect.getNamespaceURI())))
             {
-                result.remove(aspect);   
+                result.remove(aspect);
             }
         }
-        
+
         // remove custom record meta-data aspects
-        
+
         return result;
     }
 }

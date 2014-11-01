@@ -118,15 +118,15 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
         AccessStatus acs = super.hasPermission(nodeRef, perm);
-        if (AccessStatus.DENIED.equals(acs) == true &&
-            PermissionService.READ.equals(perm) == true &&
-            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
+        if (AccessStatus.DENIED.equals(acs) &&
+            PermissionService.READ.equals(perm) &&
+            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
             return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
         }
-        else if (AccessStatus.DENIED.equals(acs) == true &&
-                 PermissionService.WRITE.equals(perm) == true &&
-                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) == true)
+        else if (AccessStatus.DENIED.equals(acs) &&
+                 PermissionService.WRITE.equals(perm) &&
+                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
         {
             return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
         }

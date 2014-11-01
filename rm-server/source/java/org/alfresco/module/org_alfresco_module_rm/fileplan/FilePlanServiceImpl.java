@@ -348,7 +348,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         containerType,
                         properties).getChildRef();
 
-   //     if (inheritPermissions == false)
+   //     if (!inheritPermissions)
    //     {
             // set inheritance to false
             getPermissionService().setInheritParentPermissions(container, false);

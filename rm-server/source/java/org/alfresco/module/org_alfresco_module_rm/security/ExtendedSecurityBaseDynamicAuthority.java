@@ -152,7 +152,7 @@ public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAut
         }
         else
         {
-	        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY) == true)
+	        if (getNodeService().hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY))
 	        {
 	            Set<String> authorities = getAuthorites(nodeRef);
 	            if (authorities != null)

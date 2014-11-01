@@ -40,4 +40,12 @@
       <property name="adhocPropertiesAllowed" value="true" />
    </bean>
 
+   <!-- Recordable version config action -->
+   <bean id="recordable-version-config" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.RecordableVersionConfigAction">
+      <property name="nodeService" ref="NodeService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+   </bean>
+
+   <!-- Recordable version config constraint -->
+   <bean id="ac-versions" class="org.alfresco.module.org_alfresco_module_rm.action.constraint.VersionParameterConstraint" parent="action-constraint" />
 </beans>

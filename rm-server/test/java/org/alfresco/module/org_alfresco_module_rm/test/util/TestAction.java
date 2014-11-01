@@ -35,7 +35,7 @@ public class TestAction extends RMActionExecuterAbstractBase
         {
             throw new RuntimeException("Unexpected parameter value.  Expected " + PARAM_VALUE + " actual " + action.getParameterValue(PARAM));
         }
-        this.nodeService.addAspect(actionedUponNodeRef, ASPECT_RECORD, null);
+        this.getNodeService().addAspect(actionedUponNodeRef, ASPECT_RECORD, null);
     }
 
     @Override

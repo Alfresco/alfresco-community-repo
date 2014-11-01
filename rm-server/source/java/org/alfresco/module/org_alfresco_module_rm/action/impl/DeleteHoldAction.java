@@ -41,9 +41,9 @@ public class DeleteHoldAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (holdService.isHold(actionedUponNodeRef))
+        if (getHoldService().isHold(actionedUponNodeRef))
         {
-            holdService.deleteHold(actionedUponNodeRef);
+            getHoldService().deleteHold(actionedUponNodeRef);
         }
         else
         {

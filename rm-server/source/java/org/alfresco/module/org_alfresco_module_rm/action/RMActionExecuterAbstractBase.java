@@ -64,68 +64,84 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
                                                                BeanNameAware
 {
     /** Namespace service */
-    protected NamespaceService namespaceService;
+    private NamespaceService namespaceService;
 
     /** Used to control transactional behaviour including post-commit auditing */
-    protected TransactionService transactionService;
+    private TransactionService transactionService;
 
     /** Node service */
-    protected NodeService nodeService;
+    private NodeService nodeService;
 
     /** Dictionary service */
-    protected DictionaryService dictionaryService;
+    private DictionaryService dictionaryService;
 
     /** Content service */
-    protected ContentService contentService;
+    private ContentService contentService;
 
     /** Action service */
-    protected ActionService actionService;
+    private ActionService actionService;
 
     /** Records management action service */
-    protected RecordsManagementAuditService recordsManagementAuditService;
+    private RecordsManagementAuditService recordsManagementAuditService;
 
     /** Records management action service */
-    protected RecordsManagementActionService recordsManagementActionService;
+    private RecordsManagementActionService recordsManagementActionService;
 
     /** Record service */
-    protected RecordService recordService;
+    private RecordService recordService;
 
     /** Disposition service */
-    protected DispositionService dispositionService;
+    private DispositionService dispositionService;
 
     /** Vital record service */
-    protected VitalRecordService vitalRecordService;
+    private VitalRecordService vitalRecordService;
 
     /** Records management event service */
-    protected RecordsManagementEventService recordsManagementEventService;
+    private RecordsManagementEventService recordsManagementEventService;
 
     /** Records management action service */
-    protected RecordsManagementAdminService recordsManagementAdminService;
+    private RecordsManagementAdminService recordsManagementAdminService;
 
     /** Ownable service **/
-    protected OwnableService ownableService;
+    private OwnableService ownableService;
 
     /** Freeze service */
-    protected FreezeService freezeService;
+    private FreezeService freezeService;
 
     /** Model security service */
-    protected ModelSecurityService modelSecurityService;
+    private ModelSecurityService modelSecurityService;
 
     /** Record folder service */
-    protected RecordFolderService recordFolderService;
+    private RecordFolderService recordFolderService;
 
     /** Hold service */
-    protected HoldService holdService;
+    private HoldService holdService;
 
     /** List of kinds for which this action is applicable */
     protected Set<FilePlanComponentKind> applicableKinds = new HashSet<FilePlanComponentKind>();
 
     /**
-     * Set the namespace service
+     * Get the transaction service
+     */
+    protected TransactionService getTransactionService()
+    {
+        return this.transactionService;
+    }
+
+    /**
+     * Set the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    /**
+     * Gets the namespace service
+     */
+    protected NamespaceService getNamespaceService()
+    {
+        return this.namespaceService;
     }
 
     /**
@@ -137,11 +153,27 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the node service
+     */
+    protected NodeService getNodeService()
+    {
+        return this.nodeService;
+    }
+
+    /**
      * Set node service
      */
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * Gets the dictionary service
+     */
+    protected DictionaryService getDictionaryService()
+    {
+        return this.dictionaryService;
     }
 
     /**
@@ -153,11 +185,27 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the content service
+     */
+    protected ContentService getContentService()
+    {
+        return this.contentService;
+    }
+
+    /**
      * Set the content service
      */
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+
+    /**
+     * Gets the action service
+     */
+    protected ActionService getActionService()
+    {
+        return this.actionService;
     }
 
     /**
@@ -169,11 +217,27 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the records management audit service
+     */
+    protected RecordsManagementAuditService getRecordsManagementAuditService()
+    {
+        return this.recordsManagementAuditService;
+    }
+
+    /**
      * Set the audit service that action details will be sent to
      */
     public void setRecordsManagementAuditService(RecordsManagementAuditService recordsManagementAuditService)
     {
         this.recordsManagementAuditService = recordsManagementAuditService;
+    }
+
+    /**
+     * Gets the records management action service
+     */
+    protected RecordsManagementActionService getRecordsManagementActionService()
+    {
+        return this.recordsManagementActionService;
     }
 
     /**
@@ -185,11 +249,27 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the disposition service
+     */
+    protected DispositionService getDispositionService()
+    {
+        return this.dispositionService;
+    }
+
+    /**
      * Set the disposition service
      */
     public void setDispositionService(DispositionService dispositionService)
     {
         this.dispositionService = dispositionService;
+    }
+
+    /**
+     * Gets the vital record service
+     */
+    protected VitalRecordService getVitalRecordService()
+    {
+        return this.vitalRecordService;
     }
 
     /**
@@ -201,11 +281,27 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the records management event service
+     */
+    protected RecordsManagementEventService getRecordsManagementEventService()
+    {
+        return this.recordsManagementEventService;
+    }
+
+    /**
      * Set records management event service
      */
     public void setRecordsManagementEventService(RecordsManagementEventService recordsManagementEventService)
     {
         this.recordsManagementEventService = recordsManagementEventService;
+    }
+
+    /**
+     * Gets the ownable service
+     */
+    protected OwnableService getOwnableService()
+    {
+        return this.ownableService;
     }
 
     /**
@@ -215,6 +311,14 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     public void setOwnableService(OwnableService ownableService)
     {
         this.ownableService = ownableService;
+    }
+
+    /**
+     * Gets the freeze service
+     */
+    protected FreezeService getFreezeService()
+    {
+        return this.freezeService;
     }
 
     /**
@@ -228,6 +332,14 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the record service
+     */
+    protected RecordService getRecordService()
+    {
+        return this.recordService;
+    }
+
+    /**
      * Set record service
      *
      * @param recordService record service
@@ -235,6 +347,14 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+
+    /**
+     * @return  records management admin service
+     */
+    protected RecordsManagementAdminService getRecordsManagementAdminService()
+    {
+        return recordsManagementAdminService;
     }
 
     /**
@@ -246,11 +366,11 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
-     * @return  records management admin service
+     * Gets the model security service
      */
-    public RecordsManagementAdminService getRecordsManagementAdminService()
+    protected ModelSecurityService getModelSecurityService()
     {
-        return recordsManagementAdminService;
+        return this.modelSecurityService;
     }
 
     /**
@@ -262,11 +382,27 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
     }
 
     /**
+     * Gets the record folder service
+     */
+    protected RecordFolderService getRecordFolderService()
+    {
+        return this.recordFolderService;
+    }
+
+    /**
      * @param recordFolderService record folder service
      */
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
+    }
+
+    /**
+     * Gets the hold service
+     */
+    protected HoldService getHoldService()
+    {
+        return this.holdService;
     }
 
     /**

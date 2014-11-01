@@ -43,11 +43,11 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
-            nodeService.hasAspect(actionedUponNodeRef, ASPECT_CUT_OFF))
+        if (getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE) &&
+                getNodeService().hasAspect(actionedUponNodeRef, ASPECT_CUT_OFF))
         {
             // Get the last disposition action
-            DispositionAction da = dispositionService.getLastCompletedDispostionAction(actionedUponNodeRef);
+            DispositionAction da = getDispositionService().getLastCompletedDispostionAction(actionedUponNodeRef);
 
             // Check that the last disposition action was a cutoff
             if (da == null || !da.getName().equals("cutoff"))
@@ -57,33 +57,33 @@ public class UnCutoffAction extends RMActionExecuterAbstractBase
             }
 
             // Remove the cutoff aspect and add the uncutoff aspect
-            nodeService.removeAspect(actionedUponNodeRef, ASPECT_CUT_OFF);
-            nodeService.addAspect(actionedUponNodeRef, ASPECT_UNCUT_OFF, null);
-            if (recordFolderService.isRecordFolder(actionedUponNodeRef))
+            getNodeService().removeAspect(actionedUponNodeRef, ASPECT_CUT_OFF);
+            getNodeService().addAspect(actionedUponNodeRef, ASPECT_UNCUT_OFF, null);
+            if (getRecordFolderService().isRecordFolder(actionedUponNodeRef))
             {
-                List<NodeRef> records = recordService.getRecords(actionedUponNodeRef);
+                List<NodeRef> records = getRecordService().getRecords(actionedUponNodeRef);
                 for (NodeRef record : records)
                 {
-                    nodeService.removeAspect(record, ASPECT_CUT_OFF);
-                    nodeService.addAspect(record, ASPECT_UNCUT_OFF, null);
+                    getNodeService().removeAspect(record, ASPECT_CUT_OFF);
+                    getNodeService().addAspect(record, ASPECT_UNCUT_OFF, null);
                 }
             }
 
             // Delete the current disposition action
-            DispositionAction currentDa = dispositionService.getNextDispositionAction(actionedUponNodeRef);
+            DispositionAction currentDa = getDispositionService().getNextDispositionAction(actionedUponNodeRef);
             if (currentDa != null)
             {
-                nodeService.deleteNode(currentDa.getNodeRef());
+                getNodeService().deleteNode(currentDa.getNodeRef());
             }
 
             // Move the previous (cutoff) disposition back to be current
-            nodeService.moveNode(da.getNodeRef(), actionedUponNodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
+            getNodeService().moveNode(da.getNodeRef(), actionedUponNodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
 
             // Reset the started and completed property values
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_AT, null);
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_BY, null);
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_AT, null);
-            nodeService.setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_BY, null);
+            getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_AT, null);
+            getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_STARTED_BY, null);
+            getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_AT, null);
+            getNodeService().setProperty(da.getNodeRef(), PROP_DISPOSITION_ACTION_COMPLETED_BY, null);
         }
     }
 }

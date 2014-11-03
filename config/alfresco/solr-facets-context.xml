@@ -82,18 +82,8 @@
       </constructor-arg>
    </bean>
 
-   <bean id="facet.contentSizeBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.ContentSizeBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
-      <constructor-arg index="0">
-         <set>
-            <value>@{http://www.alfresco.org/model/content/1.0}content.size</value>
-         </set>
-      </constructor-arg>
-      <constructor-arg index="1">
-         <bean class="org.springframework.beans.factory.config.MapFactoryBean">
-            <property name="targetMapClass">
-               <value>java.util.LinkedHashMap</value>
-            </property>
-            <property name="sourceMap">
+   <bean id="facet.contentSizeBuckets" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap">
                <map>
                   <entry key="[0 TO 10240]" value="faceted-search.size.0-10KB.label" />
                   <entry key="[10240 TO 102400]" value="faceted-search.size.10-100KB.label" />
@@ -102,30 +92,31 @@
                   <entry key="[16777216 TO 134217728]" value="faceted-search.size.16-128MB.label" />
                   <entry key="[134217728 TO MAX]" value="faceted-search.size.over128.label" />
                </map>
-            </property>
-         </bean>
+      </property>
+   </bean>
+
+   <bean id="facet.contentSizeBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.ContentSizeBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg index="0">
+         <set>
+            <value>@{http://www.alfresco.org/model/content/1.0}content.size</value>
+         </set>
+      </constructor-arg>
+      <constructor-arg index="1">
+         <ref bean="facet.contentSizeBuckets" />
       </constructor-arg>
    </bean>
 
-   <bean id="facet.dateFacetFields" class="org.alfresco.repo.search.impl.solr.facet.FacetFieldBean">
-      <constructor-arg>
+   <bean id="facet.dateFacetFields" class="org.springframework.beans.factory.config.SetFactoryBean">
+      <property name="sourceSet">
          <set>
             <value>@{http://www.alfresco.org/model/content/1.0}created</value>
             <value>@{http://www.alfresco.org/model/content/1.0}modified</value>
          </set>
-      </constructor-arg>
+      </property>   
    </bean>
 
-   <bean id="facet.dateBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.DateBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
-      <constructor-arg index="0">
-         <ref bean="facet.dateFacetFields" />
-      </constructor-arg>
-      <constructor-arg index="1">
-         <bean class="org.springframework.beans.factory.config.MapFactoryBean">
-            <property name="targetMapClass">
-               <value>java.util.LinkedHashMap</value>
-            </property>
-            <property name="sourceMap">
+   <bean id="facet.dateBuckets" class="org.springframework.beans.factory.config.MapFactoryBean">
+      <property name="sourceMap">
                <map>
                   <!-- Bucket => yesterday TO today -->
                   <entry key="[NOW/DAY-1DAY TO NOW/DAY+1DAY]" value="faceted-search.date.one-day.label" />
@@ -138,8 +129,15 @@
                   <!--  Bucket => Last year TO today -->
                   <entry key="[NOW/DAY-1YEAR TO NOW/DAY+1DAY]" value="faceted-search.date.one-year.label" />
                </map>
-            </property>
-         </bean>
+      </property>
+   </bean>
+
+   <bean id="facet.dateBucketsDisplayHandler" class="org.alfresco.repo.search.impl.solr.facet.handler.DateBucketsDisplayHandler" parent="baseFacetLabelDisplayHandler" >
+      <constructor-arg index="0">
+         <ref bean="facet.dateFacetFields" />
+      </constructor-arg>
+      <constructor-arg index="1">
+         <ref bean="facet.dateBuckets" />
       </constructor-arg>
    </bean>
 

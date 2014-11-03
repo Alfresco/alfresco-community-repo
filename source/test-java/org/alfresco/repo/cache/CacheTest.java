@@ -26,6 +26,7 @@ import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.repo.cache.TransactionStats.OpType;
 import org.alfresco.repo.cache.TransactionalCache.ValueHolder;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -56,7 +57,10 @@ public class CacheTest extends TestCase
     private ServiceRegistry serviceRegistry;
     private SimpleCache<String, Object> objectCache;
     private SimpleCache<String, ValueHolder<Object>> backingCache;
+    private SimpleCache<String, ValueHolder<Object>> backingCacheNoStats;
     private TransactionalCache<String, Object> transactionalCache;
+    private TransactionalCache<String, Object> transactionalCacheNoStats;
+    private CacheStatistics cacheStats;
     
     @SuppressWarnings("unchecked")
     @Override
@@ -70,14 +74,20 @@ public class CacheTest extends TestCase
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         objectCache = (SimpleCache<String, Object>) ctx.getBean("objectCache");
         backingCache = (SimpleCache<String, ValueHolder<Object>>) ctx.getBean("backingCache");
+        backingCacheNoStats = (SimpleCache<String, ValueHolder<Object>>) ctx.getBean("backingCacheNoStats");
         transactionalCache = (TransactionalCache<String, Object>) ctx.getBean("transactionalCache");
-        
+        transactionalCacheNoStats = (TransactionalCache<String, Object>) ctx.getBean("transactionalCacheNoStats");
+        cacheStats = (CacheStatistics) ctx.getBean("cacheStatistics");
         // Make sure that the backing cache is empty
         backingCache.clear();
+        backingCacheNoStats.clear();
         
         // Make the cache mutable (default)
         transactionalCache.setMutable(true);
         transactionalCache.setAllowEqualsChecks(false);
+        
+        transactionalCacheNoStats.setMutable(true);
+        transactionalCacheNoStats.setAllowEqualsChecks(false);
     }
     
     @Override
@@ -87,14 +97,18 @@ public class CacheTest extends TestCase
         objectCache = null;
         backingCache = null;
         transactionalCache = null;
+        backingCacheNoStats = null;
+        transactionalCacheNoStats = null;
     }
     
     public void testSetUp() throws Exception
     {
         assertNotNull(serviceRegistry);
         assertNotNull(backingCache);
+        assertNotNull(backingCacheNoStats);
         assertNotNull(objectCache);
         assertNotNull(transactionalCache);
+        assertNotNull(transactionalCacheNoStats);
     }
     
     public void testObjectCache() throws Exception
@@ -122,18 +136,18 @@ public class CacheTest extends TestCase
         // no transaction - do a put
         transactionalCache.put(key, value);
         // check that the value appears in the backing cache, backingCache
-        assertEquals("Backing cache not used for put when no transaction present", value, TransactionalCache.getSharedCacheValue(backingCache, key));
+        assertEquals("Backing cache not used for put when no transaction present", value, TransactionalCache.getSharedCacheValue(backingCache, key, null));
         
         // remove the value from the backing cache and check that it is removed from the transaction cache
         backingCache.remove(key);
         assertNull("Backing cache not used for removed when no transaction present", transactionalCache.get(key));
         
         // add value into backing cache
-        TransactionalCache.putSharedCacheValue(backingCache, key, value);
+        TransactionalCache.putSharedCacheValue(backingCache, key, value, null);
         // remove it from the transactional cache
         transactionalCache.remove(key);
         // check that it is gone from the backing cache
-        assertNull("Non-transactional remove didn't go to backing cache", TransactionalCache.getSharedCacheValue(backingCache, key));
+        assertNull("Non-transactional remove didn't go to backing cache", TransactionalCache.getSharedCacheValue(backingCache, key, null));
     }
     
     private static final String NEW_GLOBAL_ONE = "new_global_one";
@@ -148,7 +162,7 @@ public class CacheTest extends TestCase
         RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
 
         // Add items to the global cache
-        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE, null);
         
         RetryingTransactionCallback<Object> callback = new RetryingTransactionCallback<Object>()
         {
@@ -190,12 +204,13 @@ public class CacheTest extends TestCase
     public void testTransactionalCacheWithSingleTxn() throws Throwable
     {
         // add item to global cache
-        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
-        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
-        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_THREE, NEW_GLOBAL_THREE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE, null);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO, null);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_THREE, NEW_GLOBAL_THREE, null);
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
+
         try
         {
             // begin a transaction
@@ -210,7 +225,7 @@ public class CacheTest extends TestCase
             // read 2 from the cache
             assertEquals("Item not read from backing cache", NEW_GLOBAL_TWO, transactionalCache.get(NEW_GLOBAL_TWO));
             // Change the backing cache
-            TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO + "-updated");
+            TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO + "-updated", null);
             // Ensure read-committed
             assertEquals("Read-committed not preserved", NEW_GLOBAL_TWO, transactionalCache.get(NEW_GLOBAL_TWO));
             
@@ -249,8 +264,8 @@ public class CacheTest extends TestCase
             
             // check that backing cache was updated with the in-transaction changes
             assertFalse("Item was not removed from backing cache", backingCache.contains(NEW_GLOBAL_ONE));
-            assertNull("Item could still be fetched from backing cache", TransactionalCache.getSharedCacheValue(backingCache, NEW_GLOBAL_ONE));
-            assertEquals("Item not updated in backing cache", "XXX", TransactionalCache.getSharedCacheValue(backingCache, UPDATE_TXN_THREE));
+            assertNull("Item could still be fetched from backing cache", TransactionalCache.getSharedCacheValue(backingCache, NEW_GLOBAL_ONE, null));
+            assertEquals("Item not updated in backing cache", "XXX", TransactionalCache.getSharedCacheValue(backingCache, UPDATE_TXN_THREE, null));
             
             // Check that the transactional cache serves get requests
             assertEquals("Transactional cache must serve post-commit get requests", "XXX",
@@ -337,9 +352,9 @@ public class CacheTest extends TestCase
     public void testTransactionalCacheDisableSharedCaches() throws Throwable
     {
         // add item to global cache
-        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE);
-        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO);
-        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_THREE, NEW_GLOBAL_THREE);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_ONE, NEW_GLOBAL_ONE, null);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_TWO, NEW_GLOBAL_TWO, null);
+        TransactionalCache.putSharedCacheValue(backingCache, NEW_GLOBAL_THREE, NEW_GLOBAL_THREE, null);
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -519,7 +534,7 @@ public class CacheTest extends TestCase
 
         txn.begin();
         
-        TransactionalCache.putSharedCacheValue(backingCache, "A", null);
+        TransactionalCache.putSharedCacheValue(backingCache, "A", null, null);
         transactionalCache.put("A", "AAA");
         
         try
@@ -596,7 +611,7 @@ public class CacheTest extends TestCase
         {
             try { txn.rollback(); } catch (Throwable ee) {}
         }
-        Object actualValue = TransactionalCache.getSharedCacheValue(backingCache, key);
+        Object actualValue = TransactionalCache.getSharedCacheValue(backingCache, key, null);
         assertEquals("Backing cache value was not correct", expectedValue, actualValue);
         assertEquals("Backing cache contains(key): ", mustContainKey, backingCache.contains(key));
         
@@ -612,8 +627,8 @@ public class CacheTest extends TestCase
     public void testValueLockingInTxn() throws Exception
     {
         // add item to global cache
-        TransactionalCache.putSharedCacheValue(backingCache, DEFINITIVE_TWO, "initial_two");
-        TransactionalCache.putSharedCacheValue(backingCache, DEFINITIVE_THREE, "initial_three");
+        TransactionalCache.putSharedCacheValue(backingCache, DEFINITIVE_TWO, "initial_two", null);
+        TransactionalCache.putSharedCacheValue(backingCache, DEFINITIVE_THREE, "initial_three", null);
         
         TransactionService transactionService = serviceRegistry.getTransactionService();
         UserTransaction txn = transactionService.getUserTransaction();
@@ -670,9 +685,9 @@ public class CacheTest extends TestCase
             txn.commit();
 
             // Check post-commit values
-            assertEquals("Definitive change not written through.", DEFINITIVE_ONE, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_ONE));
-            assertEquals("Definitive change not written through.", DEFINITIVE_TWO, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_TWO));
-            assertEquals("Definitive change not written through.", null, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_THREE));
+            assertEquals("Definitive change not written through.", DEFINITIVE_ONE, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_ONE, null));
+            assertEquals("Definitive change not written through.", DEFINITIVE_TWO, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_TWO, null));
+            assertEquals("Definitive change not written through.", null, TransactionalCache.getSharedCacheValue(backingCache, DEFINITIVE_THREE, null));
         }
         finally
         {
@@ -698,7 +713,7 @@ public class CacheTest extends TestCase
             public Object execute() throws Throwable
             {
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B, null);
                 return null;
             }
         };
@@ -732,7 +747,7 @@ public class CacheTest extends TestCase
             public Object execute() throws Throwable
             {
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 return null;
             }
         };
@@ -766,7 +781,7 @@ public class CacheTest extends TestCase
             public Object execute() throws Throwable
             {
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null, null);
                 return null;
             }
         };
@@ -834,9 +849,9 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_TWO_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_TWO_A, null);
                 return null;
             }
         };
@@ -870,9 +885,9 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null, null);
                 return null;
             }
         };
@@ -906,9 +921,9 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.put(COMMON_KEY, null);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B, null);
                 return null;
             }
         };
@@ -942,9 +957,9 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.put(COMMON_KEY, null);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, null, null);
                 return null;
             }
         };
@@ -978,7 +993,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
                 backingCache.remove(COMMON_KEY);
                 return null;
@@ -1014,7 +1029,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_B);
                 backingCache.clear();
                 return null;
@@ -1052,7 +1067,7 @@ public class CacheTest extends TestCase
             {
                 backingCache.remove(COMMON_KEY);
                 transactionalCache.remove(COMMON_KEY);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B, null);
                 return null;
             }
         };
@@ -1088,7 +1103,7 @@ public class CacheTest extends TestCase
             {
                 backingCache.remove(COMMON_KEY);
                 transactionalCache.put(COMMON_KEY, VALUE_ONE_A);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B, null);
                 return null;
             }
         };
@@ -1122,9 +1137,9 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.remove(COMMON_KEY);
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_B, null);
                 return null;
             }
         };
@@ -1158,7 +1173,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.remove(COMMON_KEY);
                 backingCache.remove(COMMON_KEY);
                 return null;
@@ -1194,7 +1209,7 @@ public class CacheTest extends TestCase
         {
             public Object execute() throws Throwable
             {
-                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A);
+                TransactionalCache.putSharedCacheValue(backingCache, COMMON_KEY, VALUE_ONE_A, null);
                 transactionalCache.remove(COMMON_KEY);
                 backingCache.clear();
                 return null;
@@ -1215,5 +1230,281 @@ public class CacheTest extends TestCase
         transactionalCache.setMutable(false);
         executeAndCheck(callback, false, COMMON_KEY, null, false);             // Immutable: Nothing to do
         executeAndCheck(callback, true, COMMON_KEY, null, false);              // Immutable: Nothing to do
+    }
+    
+    public void testTransactionalCacheStatsOnCommit() throws Throwable
+    {
+        // add item to global cache
+        TransactionalCache.putSharedCacheValue(backingCache, "stats-test1", "v", null);
+        TransactionalCache.putSharedCacheValue(backingCache, "stats-test2", "v", null);
+        TransactionalCache.putSharedCacheValue(backingCache, "stats-test3", "v", null);
+        
+        
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction txn = transactionService.getUserTransaction();
+        
+        final long hitsAtStart = cacheStats.count("transactionalCache", OpType.GET_HIT);
+        final long missesAtStart = cacheStats.count("transactionalCache", OpType.GET_MISS);
+        final long putsAtStart = cacheStats.count("transactionalCache", OpType.PUT);
+        final long removesAtStart = cacheStats.count("transactionalCache", OpType.REMOVE);
+        final long clearsAtStart = cacheStats.count("transactionalCache", OpType.CLEAR);
+        
+        try
+        {
+            // begin a transaction
+            txn.begin();
+            
+            // Perform some puts
+            transactionalCache.put("stats-test4", "v");
+            transactionalCache.put("stats-test5", "v");
+            transactionalCache.put("stats-test6", "v");
+            transactionalCache.put("stats-test7", "v");
+            transactionalCache.put("stats-test8", "v");
+
+            // Perform some gets...
+            // hits
+            transactionalCache.get("stats-test3");
+            transactionalCache.get("stats-test2");
+            transactionalCache.get("stats-test1");
+            // repeated hits won't touch the shared cache
+            transactionalCache.get("stats-test2");
+            transactionalCache.get("stats-test1");
+            // misses - not yet committed
+            transactionalCache.get("stats-miss1");
+            transactionalCache.get("stats-miss2");
+            transactionalCache.get("stats-miss3");
+            transactionalCache.get("stats-miss4");
+            // repeated misses won't touch the shared cache
+            transactionalCache.get("stats-miss2");
+            transactionalCache.get("stats-miss3");
+
+            // Perform some removals
+            transactionalCache.remove("stats-test1");
+            transactionalCache.remove("stats-test2");
+            transactionalCache.remove("stats-test3");
+            transactionalCache.remove("stats-test9");
+            transactionalCache.remove("stats-test10");
+            transactionalCache.remove("stats-test11");
+            transactionalCache.remove("stats-test12");
+            transactionalCache.remove("stats-test13");
+            
+            // Check nothing has changed yet - changes not written through until commit or rollback
+            assertEquals(hitsAtStart, cacheStats.count("transactionalCache", OpType.GET_HIT));
+            assertEquals(missesAtStart, cacheStats.count("transactionalCache", OpType.GET_MISS));
+            assertEquals(putsAtStart, cacheStats.count("transactionalCache", OpType.PUT));
+            assertEquals(removesAtStart, cacheStats.count("transactionalCache", OpType.REMOVE));
+            assertEquals(clearsAtStart, cacheStats.count("transactionalCache", OpType.CLEAR));
+            
+            // commit the transaction
+            txn.commit();
+
+            // TODO: remove is called twice for each remove (in beforeCommit and afterCommit) - check this is correct.
+            assertEquals(removesAtStart+16, cacheStats.count("transactionalCache", OpType.REMOVE));
+            assertEquals(hitsAtStart+3, cacheStats.count("transactionalCache", OpType.GET_HIT));
+            assertEquals(missesAtStart+4, cacheStats.count("transactionalCache", OpType.GET_MISS));
+            assertEquals(putsAtStart+5, cacheStats.count("transactionalCache", OpType.PUT));
+            // Performing a clear would affect the other stats, so a separate test is required.
+            assertEquals(clearsAtStart+0, cacheStats.count("transactionalCache", OpType.CLEAR));
+        }
+        catch (Throwable e)
+        {
+            if (txn.getStatus() == Status.STATUS_ACTIVE)
+            {
+                txn.rollback();
+            }
+            throw e;
+        }
+    }
+    
+    public void testTransactionalCacheStatsDisabled() throws Throwable
+    {
+        // add item to global cache
+        TransactionalCache.putSharedCacheValue(backingCacheNoStats, "stats-test1", "v", null);
+        TransactionalCache.putSharedCacheValue(backingCacheNoStats, "stats-test2", "v", null);
+        TransactionalCache.putSharedCacheValue(backingCacheNoStats, "stats-test3", "v", null);
+        
+        
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction txn = transactionService.getUserTransaction();
+        
+        for (OpType opType : OpType.values())
+        {
+            try
+            {
+                cacheStats.count("transactionalCacheNoStats", opType);
+                fail("Expected NoStatsForCache error.");
+            }
+            catch(NoStatsForCache e)
+            {
+                // Good
+            }
+        }
+        
+        try
+        {
+            // begin a transaction
+            txn.begin();
+            
+            // Perform some puts
+            transactionalCacheNoStats.put("stats-test4", "v");
+            transactionalCache.put("stats-test5", "v");
+            transactionalCache.put("stats-test6", "v");
+            transactionalCache.put("stats-test7", "v");
+            transactionalCache.put("stats-test8", "v");
+
+            // Perform some gets...
+            // hits
+            transactionalCache.get("stats-test3");
+            transactionalCache.get("stats-test2");
+            transactionalCache.get("stats-test1");
+            // repeated hits won't touch the shared cache
+            transactionalCache.get("stats-test2");
+            transactionalCache.get("stats-test1");
+            // misses - not yet committed
+            transactionalCache.get("stats-miss1");
+            transactionalCache.get("stats-miss2");
+            transactionalCache.get("stats-miss3");
+            transactionalCache.get("stats-miss4");
+            // repeated misses won't touch the shared cache
+            transactionalCache.get("stats-miss2");
+            transactionalCache.get("stats-miss3");
+
+            // Perform some removals
+            transactionalCache.remove("stats-test1");
+            transactionalCache.remove("stats-test2");
+            transactionalCache.remove("stats-test3");
+            transactionalCache.remove("stats-test9");
+            transactionalCache.remove("stats-test10");
+            transactionalCache.remove("stats-test11");
+            transactionalCache.remove("stats-test12");
+            transactionalCache.remove("stats-test13");
+            
+            // Check nothing has changed - changes not written through until commit or rollback
+            for (OpType opType : OpType.values())
+            {
+                try
+                {
+                    cacheStats.count("transactionalCacheNoStats", opType);
+                    fail("Expected NoStatsForCache error.");
+                }
+                catch(NoStatsForCache e)
+                {
+                    // Good
+                }
+            }
+            
+            // commit the transaction
+            txn.commit();
+
+            // Post-commit, nothing should have changed.
+            for (OpType opType : OpType.values())
+            {
+                try
+                {
+                    cacheStats.count("transactionalCacheNoStats", opType);
+                    fail("Expected NoStatsForCache error.");
+                }
+                catch(NoStatsForCache e)
+                {
+                    // Good
+                }
+            }
+        }
+        catch (Throwable e)
+        {
+            if (txn.getStatus() == Status.STATUS_ACTIVE)
+            {
+                txn.rollback();
+            }
+            throw e;
+        }
+    }
+    
+
+    public void testTransactionalCacheStatsForClears() throws Throwable
+    {
+        // add item to global cache
+        TransactionalCache.putSharedCacheValue(backingCache, "stats-test1", "v", null);
+        TransactionalCache.putSharedCacheValue(backingCache, "stats-test2", "v", null);
+        TransactionalCache.putSharedCacheValue(backingCache, "stats-test3", "v", null);
+        
+        
+        TransactionService transactionService = serviceRegistry.getTransactionService();
+        UserTransaction txn = transactionService.getUserTransaction();
+        
+        final long hitsAtStart = cacheStats.count("transactionalCache", OpType.GET_HIT);
+        final long missesAtStart = cacheStats.count("transactionalCache", OpType.GET_MISS);
+        final long putsAtStart = cacheStats.count("transactionalCache", OpType.PUT);
+        final long removesAtStart = cacheStats.count("transactionalCache", OpType.REMOVE);
+        final long clearsAtStart = cacheStats.count("transactionalCache", OpType.CLEAR);
+        
+        try
+        {
+            // begin a transaction
+            txn.begin();
+            
+            // Perform some puts
+            transactionalCache.put("stats-test4", "v");
+            transactionalCache.put("stats-test5", "v");
+            transactionalCache.put("stats-test6", "v");
+            transactionalCache.put("stats-test7", "v");
+            transactionalCache.put("stats-test8", "v");
+
+            // Perform some gets...
+            // hits
+            transactionalCache.get("stats-test3");
+            transactionalCache.get("stats-test2");
+            transactionalCache.get("stats-test1");
+            // repeated hits won't touch the shared cache
+            transactionalCache.get("stats-test2");
+            transactionalCache.get("stats-test1");
+            // misses - not yet committed
+            transactionalCache.get("stats-miss1");
+            transactionalCache.get("stats-miss2");
+            transactionalCache.get("stats-miss3");
+            transactionalCache.get("stats-miss4");
+            // repeated misses won't touch the shared cache
+            transactionalCache.get("stats-miss2");
+            transactionalCache.get("stats-miss3");
+
+            // Perform some removals
+            transactionalCache.remove("stats-test1");
+            transactionalCache.remove("stats-test2");
+            transactionalCache.remove("stats-test3");
+            transactionalCache.remove("stats-test9");
+            transactionalCache.remove("stats-test10");
+            transactionalCache.remove("stats-test11");
+            transactionalCache.remove("stats-test12");
+            transactionalCache.remove("stats-test13");
+            
+            // Perform some clears
+            transactionalCache.clear();
+            transactionalCache.clear();
+            
+            // Check nothing has changed yet - changes not written through until commit or rollback
+            assertEquals(hitsAtStart, cacheStats.count("transactionalCache", OpType.GET_HIT));
+            assertEquals(missesAtStart, cacheStats.count("transactionalCache", OpType.GET_MISS));
+            assertEquals(putsAtStart, cacheStats.count("transactionalCache", OpType.PUT));
+            assertEquals(removesAtStart, cacheStats.count("transactionalCache", OpType.REMOVE));
+            assertEquals(clearsAtStart, cacheStats.count("transactionalCache", OpType.CLEAR));
+            
+            // commit the transaction
+            txn.commit();
+
+            assertEquals(clearsAtStart+2, cacheStats.count("transactionalCache", OpType.CLEAR));
+            // There are no removes or puts propagated to the shared cache, as a result of the clears.
+            assertEquals(removesAtStart+0, cacheStats.count("transactionalCache", OpType.REMOVE));
+            assertEquals(putsAtStart+0, cacheStats.count("transactionalCache", OpType.PUT));
+            assertEquals(hitsAtStart+3, cacheStats.count("transactionalCache", OpType.GET_HIT));
+            assertEquals(missesAtStart+4, cacheStats.count("transactionalCache", OpType.GET_MISS));
+        }
+        catch (Throwable e)
+        {
+            if (txn.getStatus() == Status.STATUS_ACTIVE)
+            {
+                txn.rollback();
+            }
+            throw e;
+        }
     }
 }

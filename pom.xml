@@ -81,6 +81,11 @@
             <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.3</version>
+        </dependency>
+        <dependency>
             <groupId>commons-pool</groupId>
             <artifactId>commons-pool</artifactId>
         </dependency>

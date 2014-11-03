@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.cache.TransactionStats.OpType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
@@ -92,7 +93,10 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     private int maxCacheSize = 500;
     /** a unique string identifying this instance when binding resources */
     private String resourceKeyTxnData;
-    
+    /** A "null" CacheStatistics impl is used by default for backwards compatibility */
+    private CacheStatistics cacheStats = new NoOpCacheStatistics();
+    /** Enable collection of statistics? */
+    private boolean cacheStatsEnabled = false;
     private boolean isTenantAware = true; // true if tenant-aware (default), false if system-wide
     
     /**
@@ -212,6 +216,16 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         this.isTenantAware = isTenantAware;
     }
     
+    public void setCacheStats(CacheStatistics cacheStats)
+    {
+        this.cacheStats = cacheStats;
+    }
+
+    public void setCacheStatsEnabled(boolean cacheStatsEnabled)
+    {
+        this.cacheStatsEnabled = cacheStatsEnabled;
+    }
+
     /**
      * Ensures that all properties have been set
      */
@@ -248,6 +262,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             data.removedItemsCache = new HashSet<Serializable>(13);
             data.lockedItemsCache = new HashSet<Serializable>(13);
             data.isReadOnly = AlfrescoTransactionSupport.getTransactionReadState() == TxnReadState.TXN_READ_ONLY;
+            data.stats = new TransactionStats();
 
             // ensure that we get the transaction callbacks as we have bound the unique
             // transactional caches to a common manager
@@ -406,29 +421,54 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     }
     
     /**
+     * @see #getSharedCacheValue(SimpleCache, Serializable, TransactionStats)
+     */
+    public static <KEY extends Serializable, VAL> VAL getSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key)
+    {
+        return getSharedCacheValue(sharedCache, key);
+    }
+    
+    /**
      * Fetches a value from the shared cache.  If values were wrapped,
      * then they will be unwrapped before being returned.  If code requires
      * direct access to the wrapper object as well, then this call should not
      * be used.
+     * <p>
+     * If a TransactionStats instance is passed in, then cache access stats
+     * are tracked, otherwise - if null is passed in then stats are not tracked.
      * 
      * @param key           the key
      * @return              Returns the value or <tt>null</tt>
      */
     @SuppressWarnings("unchecked")
-    public static <KEY extends Serializable, VAL> VAL getSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key)
+    public static <KEY extends Serializable, VAL> VAL getSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key, TransactionStats stats)
     {
+        final long startNanos = stats != null ? System.nanoTime() : 0;
         Object possibleWrapper = sharedCache.get(key);
+        final long endNanos = stats != null ? System.nanoTime() : 0;
         if (possibleWrapper == null)
         {
+            if (stats != null)
+            {
+                stats.record(startNanos, endNanos, OpType.GET_MISS);
+            }
             return null;
         }
         else if (possibleWrapper instanceof ValueHolder)
         {
+            if (stats != null)
+            {
+                stats.record(startNanos, endNanos, OpType.GET_HIT);
+            }
             ValueHolder<VAL> wrapper = (ValueHolder<VAL>) possibleWrapper;
             return wrapper.getValue();
         }
         else
         {
+            if (stats != null)
+            {
+                stats.record(startNanos, endNanos, OpType.GET_MISS);
+            }
             throw new IllegalStateException("All entries for TransactionalCache must be put using TransactionalCache.putSharedCacheValue.");
         }
     }
@@ -442,10 +482,16 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      * 
      * @since 4.2.3
      */
-    public static <KEY extends Serializable, VAL> void putSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key, VAL value)
+    public static <KEY extends Serializable, VAL> void putSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key, VAL value, TransactionStats stats)
     {
         ValueHolder<VAL> wrapper = new ValueHolder<VAL>(value);
+        final long startNanos = System.nanoTime(); // TODO: enabled?
         sharedCache.put(key, wrapper);
+        final long endNanos = System.nanoTime();
+        if (stats != null)
+        {
+            stats.record(startNanos, endNanos, OpType.PUT);
+        }
     }
     
     /**
@@ -582,7 +628,16 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 {
                     // There is no in-txn entry for the key
                     // Use the value direct from the shared cache
-                    V value = TransactionalCache.getSharedCacheValue(sharedCache, key);
+                    V value = null;
+                    if (cacheStatsEnabled)
+                    {
+                        value = TransactionalCache.getSharedCacheValue(sharedCache, key, txnData.stats);
+                    }
+                    else
+                    {
+                        // No stats tracking, pass in null TransactionStats
+                        value = TransactionalCache.getSharedCacheValue(sharedCache, key, null);
+                    }
                     bucket = new ReadCacheBucket<V>(value);
                     txnData.updatedItemsCache.put(key, bucket);
                     return value;
@@ -592,7 +647,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         // no value found - must we ignore the shared cache?
         if (!ignoreSharedCache)
         {
-            V value = TransactionalCache.getSharedCacheValue(sharedCache, key);
+            V value = TransactionalCache.getSharedCacheValue(sharedCache, key, null);
             // go to the shared cache
             if (isDebugEnabled)
             {
@@ -629,7 +684,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         if (AlfrescoTransactionSupport.getTransactionId() == null)  // not in transaction
         {
             // no transaction
-            TransactionalCache.putSharedCacheValue(sharedCache, key, value);
+            TransactionalCache.putSharedCacheValue(sharedCache, key, value, null);
             // done
             if (isDebugEnabled)
             {
@@ -881,7 +936,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             if (txnData.isClearOn)
             {
                 // clear shared cache
+                final long startNanos = cacheStatsEnabled ? System.nanoTime() : 0;
                 sharedCache.clear();
+                final long endNanos = cacheStatsEnabled ? System.nanoTime() : 0;
+                if (cacheStatsEnabled)
+                {
+                    TransactionStats stats = txnData.stats;
+                    stats.record(startNanos, endNanos, OpType.CLEAR);
+                }
                 if (isDebugEnabled)
                 {
                     logger.debug("Clear notification recieved in commit - clearing shared cache");
@@ -892,7 +954,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 // transfer any removed items
                 for (Serializable key : txnData.removedItemsCache)
                 {
+                    final long startNanos = System.nanoTime();
                     sharedCache.remove(key);
+                    final long endNanos = System.nanoTime();
+                    TransactionStats stats = txnData.stats;
+                    stats.record(startNanos, endNanos, OpType.REMOVE);
                 }
                 if (isDebugEnabled)
                 {
@@ -942,7 +1008,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             if (txnData.isClearOn)
             {
                 // clear shared cache
+                final long startNanos = cacheStatsEnabled ? System.nanoTime() : 0;
                 sharedCache.clear();
+                final long endNanos = cacheStatsEnabled ? System.nanoTime() : 0;
+                if (cacheStatsEnabled)
+                {
+                    TransactionStats stats = txnData.stats;
+                    stats.record(startNanos, endNanos, OpType.CLEAR);
+                }
                 if (isDebugEnabled)
                 {
                     logger.debug("Clear notification recieved in commit - clearing shared cache");
@@ -953,7 +1026,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 // transfer any removed items
                 for (Serializable key : txnData.removedItemsCache)
                 {
+                    final long startNanos = System.nanoTime();
                     sharedCache.remove(key);
+                    final long endNanos = System.nanoTime();
+                    TransactionStats stats = txnData.stats;
+                    stats.record(startNanos, endNanos, OpType.REMOVE);
                 }
                 if (isDebugEnabled)
                 {
@@ -971,7 +1048,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 {
                     bucket.doPostCommit(
                             sharedCache,
-                            key, this.isMutable, this.allowEqualsChecks, txnData.isReadOnly);
+                            key, this.isMutable, this.allowEqualsChecks, txnData.isReadOnly, txnData.stats);
                 }
                 catch (Exception e)
                 {
@@ -1000,6 +1077,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         finally
         {
             removeCaches(txnData);
+            // Aggregate this transaction's stats with centralised cache stats.
+            if (cacheStatsEnabled)
+            {
+                cacheStats.add(name, txnData.stats);
+            }
         }
     }
 
@@ -1016,7 +1098,14 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             if (txnData.isClearOn)
             {
                 // clear shared cache
+                final long startNanos = cacheStatsEnabled ? System.nanoTime() : 0;
                 sharedCache.clear();
+                final long endNanos = cacheStatsEnabled ? System.nanoTime() : 0;
+                if (cacheStatsEnabled)
+                {
+                    TransactionStats stats = txnData.stats;
+                    stats.record(startNanos, endNanos, OpType.CLEAR);
+                }
                 if (isDebugEnabled)
                 {
                     logger.debug("Clear notification recieved in rollback - clearing shared cache");
@@ -1027,7 +1116,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 // transfer any removed items
                 for (Serializable key : txnData.removedItemsCache)
                 {
+                    final long startNanos = System.nanoTime();
                     sharedCache.remove(key);
+                    final long endNanos = System.nanoTime();
+                    TransactionStats stats = txnData.stats;
+                    stats.record(startNanos, endNanos, OpType.REMOVE);
                 }
                 if (isDebugEnabled)
                 {
@@ -1042,6 +1135,11 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         finally
         {
             removeCaches(txnData);
+            // Aggregate this transaction's stats with centralised cache stats.
+            if (cacheStatsEnabled)
+            {
+                cacheStats.add(name, txnData.stats);
+            }
         }
     }
     
@@ -1087,7 +1185,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPostCommit(
                 SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
-                boolean mutable, boolean allowEqualsCheck, boolean readOnly);
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly, TransactionStats stats);
     }
     
     /**
@@ -1117,13 +1215,13 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPostCommit(
                 SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
-                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly, TransactionStats stats)
         {
             ValueHolder<BV> sharedObjValueHolder = sharedCache.get(key);
             if (sharedObjValueHolder == null)
             {
                 // Nothing has changed, write it through
-                TransactionalCache.putSharedCacheValue(sharedCache, key, value);
+                TransactionalCache.putSharedCacheValue(sharedCache, key, value, stats);
             }
             else if (!mutable)
             {
@@ -1174,7 +1272,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPostCommit(
                 SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
-                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly, TransactionStats stats)
         {
             ValueHolder<BV> sharedObjValueHolder = sharedCache.get(key);
             if (sharedObjValueHolder == null)
@@ -1183,7 +1281,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                 if (!mutable)
                 {
                     // We can assume that our value is correct because it's immutable
-                    TransactionalCache.putSharedCacheValue(sharedCache, key, value);
+                    TransactionalCache.putSharedCacheValue(sharedCache, key, value, stats);
                 }
                 else
                 {
@@ -1204,7 +1302,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
             {
                 // The value in the cache did not change from what we observed before.
                 // Update the value.
-                TransactionalCache.putSharedCacheValue(sharedCache, key, value);
+                TransactionalCache.putSharedCacheValue(sharedCache, key, value, stats);
             }
             else
             {
@@ -1241,7 +1339,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         public void doPostCommit(
                 SimpleCache<Serializable, ValueHolder<BV>> sharedCache,
                 Serializable key,
-                boolean mutable, boolean allowEqualsCheck, boolean readOnly)
+                boolean mutable, boolean allowEqualsCheck, boolean readOnly, TransactionStats stats)
         {
         }
     }
@@ -1257,6 +1355,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
         private boolean isClosed;
         private boolean isReadOnly;
         private boolean noSharedCacheRead;
+        private TransactionStats stats;
     }
     
     /**

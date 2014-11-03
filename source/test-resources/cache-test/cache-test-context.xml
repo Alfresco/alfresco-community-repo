@@ -8,10 +8,25 @@
    
    <bean name="backingCache" class="org.alfresco.repo.cache.SerializingSimpleCache" />
    
+   <bean name="cacheStatistics" class="org.alfresco.repo.cache.InMemoryCacheStatistics"/>
+   
    <bean name="transactionalCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache"><ref bean="backingCache" /></property>
       <property name="name"><value>transactionalCache</value></property>
       <property name="maxCacheSize"><value>200000</value></property>
+      <property name="cacheStats" ref="cacheStatistics"/>
+      <property name="cacheStatsEnabled" value="true"/>
+   </bean>
+   
+   
+   <bean name="backingCacheNoStats" class="org.alfresco.repo.cache.SerializingSimpleCache" />
+   
+   <bean name="transactionalCacheNoStats" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache"><ref bean="backingCacheNoStats" /></property>
+      <property name="name"><value>transactionalCacheNoStats</value></property>
+      <property name="maxCacheSize"><value>200000</value></property>
+      <property name="cacheStats" ref="cacheStatistics"/>
+      <property name="cacheStatsEnabled" value="false"/>
    </bean>
    
 </beans>

@@ -18,7 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
+import static org.apache.commons.collections.ListUtils.removeAll;
+
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -54,6 +57,10 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
             // The destination folder in collaboration site
             private NodeRef destinationDmFolder;
 
+            // Extended Readers/Writers
+            private Set<String> extendedReadersBeforeMove;
+            private Set<String> extendedWritersBeforeMove;
+
             public void given()
             {
                 // Create the destination folder
@@ -76,6 +83,9 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
 
                 // Check that the document is a record now
                 assertTrue(recordService.isRecord(dmDocument));
+
+                extendedReadersBeforeMove = extendedSecurityService.getExtendedReaders(dmDocument);
+                extendedWritersBeforeMove = extendedSecurityService.getExtendedWriters(dmDocument);
             }
 
             public void when()
@@ -100,6 +110,16 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
                 List<ChildAssociationRef> destinationFolderChildAssocs = nodeService.getChildAssocs(destinationDmFolder);
                 assertEquals(1, destinationFolderChildAssocs.size());
                 assertEquals(dmDocument, destinationFolderChildAssocs.get(0).getChildRef());
+
+                // Check extended readers/writers
+                Set<String> extendedReadersAfterMove = extendedSecurityService.getExtendedReaders(dmDocument);
+                Set<String> extendedWritersAfterMove = extendedSecurityService.getExtendedWriters(dmDocument);
+
+                assertEquals(extendedReadersBeforeMove.size(), extendedReadersAfterMove.size());
+                assertEquals(extendedWritersBeforeMove.size(), extendedWritersAfterMove.size());
+
+                assertEquals(0, removeAll(extendedReadersBeforeMove, extendedReadersAfterMove).size());
+                assertEquals(0, removeAll(extendedWritersBeforeMove, extendedWritersAfterMove).size());
             }
         });
     }

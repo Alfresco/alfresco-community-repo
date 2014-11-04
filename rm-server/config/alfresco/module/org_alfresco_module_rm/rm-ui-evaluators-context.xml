@@ -3,13 +3,18 @@
 
 <beans>
 
+   <bean id="jsonConversionComponentCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+
    <!-- extending bean definition -->
    <bean id="rm.jsonConversionComponent" class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
-         parent="baseJsonConversionComponent">
+         parent="baseJsonConversionComponent" init-method="init">
       <property name="recordService" ref="RecordService"/>
       <property name="filePlanService" ref="FilePlanService"/>
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="dictionaryService" ref="DictionaryService" />
+      <property name="siteService" ref="SiteService" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="jsonConversionComponentCache" ref="jsonConversionComponentCache" />
    </bean>
 
    <!--  extends core bean with RM extensions -->
@@ -861,7 +866,7 @@
       </property>
       <property name="capability" value ="DeleteHold"/>
    </bean>
-   
+
    <bean id="jsonConversionComponent.editHold"
       parent="jsonConversionComponent.baseAction">
       <property name="name" value="editHold"/>

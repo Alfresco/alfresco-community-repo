@@ -99,6 +99,7 @@ import org.apache.chemistry.opencmis.commons.data.ObjectList;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
+import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
 import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.Action;
@@ -2687,6 +2688,12 @@ public class CMISTest
                     assertNotNull("The display name is incorrect. Please, refer to ACE-2904.", def.getDisplayName());
                     assertEquals("The display name is incorrect. Please, refer to ACE-2904.", def.getDisplayName(), displayNames[i]);
                     assertEquals("The description is incorrect. Please, refer to ACE-2904.", def.getDescription(), descriptions[i]);
+                    
+                    for (PropertyDefinition<?> property : def.getPropertyDefinitions().values())
+                    {
+                        assertNotNull("Property definition dispaly name is incorrect. Please, refer to ACE-2904.", property.getDisplayName());
+                        assertNotNull("Property definition description is incorrect. Please, refer to ACE-2904.", property.getDescription());
+                    }
                 }
 
                 return "";

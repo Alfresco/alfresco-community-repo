@@ -425,7 +425,7 @@ public class TransactionalCache<K extends Serializable, V extends Object>
      */
     public static <KEY extends Serializable, VAL> VAL getSharedCacheValue(SimpleCache<KEY, ValueHolder<VAL>> sharedCache, KEY key)
     {
-        return getSharedCacheValue(sharedCache, key);
+        return getSharedCacheValue(sharedCache, key, null);
     }
     
     /**

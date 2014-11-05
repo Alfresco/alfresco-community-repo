@@ -799,7 +799,50 @@
     </dependencies>
 
     <profiles>
-        <!-- TODO: Should be activated only for testing purposes -->
+        <!-- Profiles to fetch specific Database resources in enterpriseprojects. Only for tests. -->
+        <profile>
+            <id>oracle</id>
+            <build>
+                <resources>
+                    <resource>
+                         <directory>${highest.basedir}/enterpriseprojects/repository/config</directory> 
+                         <includes>
+                             <include>alfresco/ibatis/*Oracle*/**</include>
+                             <include>alfresco/dbscripts/**/*Oracle*/**</include>
+                         </includes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>sqlserver</id>
+            <build>
+                <resources>
+                    <resource>
+                         <directory>${highest.basedir}/enterpriseprojects/repository/config</directory> 
+                         <includes>
+                             <include>alfresco/ibatis/*SQLServer*/**</include>
+                             <include>alfresco/dbscripts/**/*SQLServer*/**</include>
+                         </includes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>db2</id>
+            <build>
+                <resources>
+                    <resource>
+                         <directory>${highest.basedir}/enterpriseprojects/repository/config</directory> 
+                         <includes>
+                             <include>alfresco/ibatis/*DB2*/**</include>
+                             <include>alfresco/dbscripts/**/*DB2*/**</include>
+                         </includes>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+
         <profile>
             <id>integration-tests</id>
             <activation>

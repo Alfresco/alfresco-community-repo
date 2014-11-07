@@ -11,7 +11,7 @@ function tagQuery()
    var node = null;
    if ((rootNode !== null) && (rootNode !== ""))
    {
-      node = resolveVirtualNodeRef(rootNode) || resolveXPath(rootNode) || search.findNode(rootNode);
+      node = resolveVirtualNodeRef(rootNode) || search.findNode(rootNode);
    }
    if (node === null)
    {

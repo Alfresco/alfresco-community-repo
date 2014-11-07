@@ -28,6 +28,10 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
+import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -35,6 +39,9 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
 import org.apache.commons.lang.ArrayUtils;
@@ -46,7 +53,8 @@ import org.json.simple.JSONObject;
  *
  * @author Roy Wetherall
  */
-public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent
+public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent implements NodeServicePolicies.OnDeleteNodePolicy,
+                                                                                                              NodeServicePolicies.OnCreateNodePolicy
 {
     /** Record service */
     private RecordService recordService;
@@ -60,11 +68,23 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     /** dictionary service */
     private DictionaryService dictionaryService;
 
+    /** site service */
+    private SiteService siteService;
+
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
 
     /** Actions */
     private List<BaseEvaluator> actions = new ArrayList<BaseEvaluator>();
+
+    /** The policy component */
+    private PolicyComponent policyComponent;
+
+    /** JSON conversion component cache */
+    private SimpleCache<String, Boolean> jsonConversionComponentCache;
+
+    /** Constant for checking the cache */
+    private static final String RM_SITE_EXISTS = "rmSiteExists";
 
     /**
      * @param recordService record service
@@ -99,6 +119,14 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     }
 
     /**
+     * @param siteService site service
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+
+    /**
      * @param indicator registered indicator
      */
     public void registerIndicator(BaseEvaluator indicator)
@@ -115,6 +143,50 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     }
 
     /**
+     * @param policyComponent policy component
+     */
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    /**
+     * Gets the json conversion component cache
+     *
+     * @return The json conversion component cache
+     */
+    protected SimpleCache<String, Boolean> getJsonConversionComponentCache()
+    {
+        return this.jsonConversionComponentCache;
+    }
+
+    /**
+     * Sets the json conversion component cache
+     *
+     * @param jsonConversionComponentCache The json conversion component cache
+     */
+    public void setJsonConversionComponentCache(SimpleCache<String, Boolean> jsonConversionComponentCache)
+    {
+        this.jsonConversionComponentCache = jsonConversionComponentCache;
+    }
+
+    /**
+     * The initialise method
+     */
+    public void init()
+    {
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteNode"),
+                RecordsManagementModel.TYPE_RM_SITE,
+                new JavaBehaviour(this, "onDeleteNode"));
+
+        policyComponent.bindClassBehaviour(
+                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
+                RecordsManagementModel.TYPE_RM_SITE,
+                new JavaBehaviour(this, "onCreateNode"));
+    }
+
+    /**
      * @see org.alfresco.repo.jscript.app.JSONConversionComponent#setRootValues(org.alfresco.service.cmr.model.FileInfo,
      *      org.json.simple.JSONObject, boolean)
      */
@@ -126,6 +198,8 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         {
             // Set the base root values
             super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
+
+            checkRmSiteExistence(rootJSONObject);
 
             // Get the node reference for convenience
             NodeRef nodeRef = nodeInfo.getNodeRef();
@@ -145,6 +219,29 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
                     addInfo(nodeInfo, rootJSONObject);
                 }
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void checkRmSiteExistence(JSONObject rootJSONObject)
+    {
+        if (!getJsonConversionComponentCache().contains(RM_SITE_EXISTS))
+        {
+            SiteInfo site = siteService.getSite(FilePlanService.DEFAULT_RM_SITE_ID);
+            if (site != null)
+            {
+                getJsonConversionComponentCache().put(RM_SITE_EXISTS, true);
+                rootJSONObject.put("isRmSiteCreated", true);
+            }
+            else
+            {
+                getJsonConversionComponentCache().put(RM_SITE_EXISTS, false);
+                rootJSONObject.put("isRmSiteCreated", false);
+            }
+        }
+        else
+        {
+            rootJSONObject.put("isRmSiteCreated", getJsonConversionComponentCache().get(RM_SITE_EXISTS));
         }
     }
 
@@ -303,20 +400,20 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
             rmNodeValues.put("actions", jsonActions);
         }
     }
-    
+
     /**
      * @see org.alfresco.repo.jscript.app.JSONConversionComponent#permissionsToJSON(org.alfresco.service.cmr.repository.NodeRef)
      */
     protected JSONObject permissionsToJSON(final NodeRef nodeRef)
     {
-        JSONObject permissionsJSON = null;        
+        JSONObject permissionsJSON = null;
         if (!filePlanService.isFilePlanComponent(nodeRef))
         {
             permissionsJSON = super.permissionsToJSON(nodeRef);
         }
         else
         {
-            permissionsJSON = new JSONObject();              
+            permissionsJSON = new JSONObject();
         }
         return permissionsJSON;
     }
@@ -397,5 +494,23 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         }
 
         return result;
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
+     */
+    @Override
+    public void onDeleteNode(ChildAssociationRef childAssocRef, boolean isNodeArchived)
+    {
+        getJsonConversionComponentCache().put(RM_SITE_EXISTS, false);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy#onCreateNode(org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    public void onCreateNode(ChildAssociationRef childAssocRef)
+    {
+        getJsonConversionComponentCache().put(RM_SITE_EXISTS, true);
     }
 }

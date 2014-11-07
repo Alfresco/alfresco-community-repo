@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.version;
 
+import static org.codehaus.plexus.util.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -525,5 +527,21 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
 
         return version;
+    }
+
+    /**
+     * @see org.alfresco.repo.version.Version2ServiceImpl#revert(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.version.Version, boolean)
+     */
+    @Override
+    public void revert(NodeRef nodeRef, Version version, boolean deep)
+    {
+        String versionPolicy = (String) dbNodeService.getProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY);
+
+        super.revert(nodeRef, version, deep);
+
+        if (isNotBlank(versionPolicy))
+        {
+            dbNodeService.setProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY, versionPolicy);
+        }
     }
 }

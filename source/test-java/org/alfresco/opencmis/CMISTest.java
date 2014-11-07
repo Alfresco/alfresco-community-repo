@@ -2720,25 +2720,35 @@ public class CMISTest
             {
                 for (int i = 0; i < types.length; i++)
                 {
+                    
+                    List<TypeDefinitionWrapper> baseTypes = cmisDictionaryService.getBaseTypes();
+                    assertNotNull(baseTypes);
+                    checkDefs(baseTypes);
+                    
                     List<TypeDefinitionWrapper> children = cmisDictionaryService.getChildren(types[i]);
                     assertNotNull(children);
 
                     // Check that children were updated
-                    for (TypeDefinitionWrapper child : children)
-                    {
-                        assertNotNull("Type definition was not updated. Please refer to ACE-3322", child.getTypeDefinition(false).getDisplayName());
-                        assertNotNull("Type definition was not updated. Please refer to ACE-3322", child.getTypeDefinition(false).getDescription());
-
-                        // Check that property's display name and description were updated
-                        for (PropertyDefinitionWrapper property : child.getProperties())
-                        {
-                            assertNotNull("Display name is null", property.getPropertyDefinition().getDisplayName());
-                            assertNotNull("Description is null", property.getPropertyDefinition().getDescription());
-                        }
-                    }
+                    checkDefs(children);
                 }
                 return "";
             };
+            
+            private void checkDefs(List<TypeDefinitionWrapper> defs)
+            {
+                for (TypeDefinitionWrapper def : defs)
+                {
+                    assertNotNull("Type definition was not updated. Please refer to ACE-3322", def.getTypeDefinition(false).getDisplayName());
+                    assertNotNull("Type definition was not updated. Please refer to ACE-3322", def.getTypeDefinition(false).getDescription());
+
+                    // Check that property's display name and description were updated
+                    for (PropertyDefinitionWrapper property : def.getProperties())
+                    {
+                        assertNotNull("Display name is null", property.getPropertyDefinition().getDisplayName());
+                        assertNotNull("Description is null", property.getPropertyDefinition().getDescription());
+                    }
+                }
+            }
         };
 
         withCmisService(callback, CmisVersion.CMIS_1_1);

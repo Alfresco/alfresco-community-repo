@@ -219,12 +219,19 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
      */
     private NodeRef getFilePlan()
     {
-        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        if (filePlan == null)
+        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            throw new AlfrescoRuntimeException("Can't create a recorded version, because there is no file plan.");
-        }
-        return filePlan;
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                if (filePlan == null)
+                {
+                    throw new AlfrescoRuntimeException("Can't create a recorded version, because there is no file plan.");
+                }
+                return filePlan;
+            }
+        });
     }
 
     /**

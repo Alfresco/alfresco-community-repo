@@ -16,6 +16,11 @@
             <directory>${highest.basedir}/installer/bitrock/licenses</directory>
             <outputDirectory>licenses</outputDirectory>
         </fileSet>
+        <!-- keystore -->
+        <fileSet>
+            <directory>target/dependency/alfresco/keystore</directory>
+            <outputDirectory>alf_data/keystore</outputDirectory>
+        </fileSet>
         <!-- Win32NetBIOS*.dll, Win32Utils*.dll -->
         <fileSet>
             <directory>${highest.basedir}/projects/alfresco-jlan/jni</directory>

@@ -18,6 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSIONED_NODEREF;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSION_LABEL;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,6 +87,8 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -108,7 +114,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                          NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
@@ -198,6 +205,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Permission service */
     private PermissionService permissionService;
+
+    /** Version service */
+    private VersionService versionService;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
@@ -318,6 +328,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public void setPermissionService(PermissionService permissionService)
     {
         this.permissionService = permissionService;
+    }
+
+    /**
+     * @param versionService version service
+     */
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
     }
 
     /**
@@ -1475,6 +1493,29 @@ public class RecordServiceImpl extends BaseBehaviourBean
         if(isRecord(nodeRef) && isRecordFolder(folder))
         {
             nodeService.addChild(folder, nodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).toString()));
+        }
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "rma:record"
+    )
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF);
+        if (versionedNodeRef != null)
+        {
+            String versionLabel = (String) nodeService.getProperty(nodeRef, PROP_VERSION_LABEL);
+            if (isNotBlank(versionLabel))
+            {
+                Version version = versionService.getVersionHistory(versionedNodeRef).getVersion(versionLabel);
+                versionService.deleteVersion(versionedNodeRef, version);
+            }
         }
     }
 }

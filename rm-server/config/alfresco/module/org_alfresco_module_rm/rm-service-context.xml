@@ -1046,6 +1046,7 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
+        <property name="versionService" ref="VersionService" />
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">

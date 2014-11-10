@@ -218,4 +218,13 @@
     	</property>
     </bean>
 
+   <bean id="testPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+      <property name="locations">
+         <list>
+            <value>classpath:alfresco-global-test.properties</value>
+         </list>
+      </property>
+      <property name="ignoreUnresolvablePlaceholders" value="true" />
+      <property name="order" value="-1" />
+   </bean>
 </beans>

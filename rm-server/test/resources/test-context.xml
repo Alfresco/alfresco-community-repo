@@ -218,13 +218,20 @@
     	</property>
     </bean>
 
-   <bean id="testPlaceholderConfigurer" class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
-      <property name="locations">
+   <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
+      <property name="autoStart">
+         <value>false</value>
+      </property>
+      <property name="category">
+         <value>Search</value>
+      </property>
+      <property name="sourceBeanName">
+         <value>buildonly</value>
+      </property>
+      <property name="instancePath">
          <list>
-            <value>classpath:alfresco-global-test.properties</value>
+            <value>manager</value>
          </list>
       </property>
-      <property name="ignoreUnresolvablePlaceholders" value="true" />
-      <property name="order" value="-1" />
    </bean>
 </beans>

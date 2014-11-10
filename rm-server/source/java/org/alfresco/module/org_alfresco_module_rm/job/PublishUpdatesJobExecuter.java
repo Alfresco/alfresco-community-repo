@@ -99,12 +99,12 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param dictionaryService	dictionary service
+     * @param dictionaryService dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
-		this.dictionaryService = dictionaryService;
-	}
+        this.dictionaryService = dictionaryService;
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#executeImpl()
@@ -130,36 +130,40 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     {
                         if (nodeService.exists(nodeRef))
                         {
-                            // Mark the update node as publishing in progress
-                            markPublishInProgress(nodeRef);
-                            try
+                            boolean publishing = ((Boolean)nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS)).booleanValue();
+                            if (!publishing)
                             {
-                                Date start = new Date();
-                                if (logger.isDebugEnabled())
+                                // Mark the update node as publishing in progress
+                                markPublishInProgress(nodeRef);
+                                try
                                 {
-                                    logger.debug("Starting publish of updates ...");
-                                    logger.debug("   - for " + nodeRef.toString());
-                                    logger.debug("   - at " + start.toString());
+                                    Date start = new Date();
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Starting publish of updates ...");
+                                        logger.debug("   - for " + nodeRef.toString());
+                                        logger.debug("   - at " + start.toString());
+                                    }
+
+                                    // Publish updates
+                                    publishUpdates(nodeRef);
+
+
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        Date end = new Date();
+                                        long duration = end.getTime() - start.getTime();
+                                        logger.debug("Completed publish of updates ...");
+                                        logger.debug("   - for " + nodeRef.toString());
+                                        logger.debug("   - at " + end.toString());
+                                        logger.debug("   - duration " + Long.toString(duration));
+                                    }
                                 }
-
-                                // Publish updates
-                                publishUpdates(nodeRef);
-
-
-                                if (logger.isDebugEnabled())
+                                finally
                                 {
-                                    Date end = new Date();
-                                    long duration = end.getTime() - start.getTime();
-                                    logger.debug("Completed publish of updates ...");
-                                    logger.debug("   - for " + nodeRef.toString());
-                                    logger.debug("   - at " + end.toString());
-                                    logger.debug("   - duration " + Long.toString(duration));
+                                    // Ensure the update node has either completed the publish or is marked as no longer in progress
+                                    unmarkPublishInProgress(nodeRef);
                                 }
-                            }
-                            finally
-                            {
-                                // Ensure the update node has either completed the publish or is marked as no longer in progress
-                                unmarkPublishInProgress(nodeRef);
                             }
                         }
                     }
@@ -185,7 +189,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
         // ensure that the rm content model has been loaded
         if (dictionaryService != null &&
-        	dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
+            dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
         {
             result = true;
         }
@@ -227,14 +231,14 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     try
                     {
                         ResultSet results = searchService.query(searchParameters);
-                        try
-                        {
-                            resultNodes = results.getNodeRefs();
-                        }
-                        finally
-                        {
-                            results.close();
-                        }
+                    try
+                    {
+                        resultNodes = results.getNodeRefs();
+                    }
+                    finally
+                    {
+                        results.close();
+                    }
                     }
                     catch (AlfrescoRuntimeException exception)
                     {
@@ -290,7 +294,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     return null;
                 }
             };
-        retryingTransactionHelper.doInTransaction(execution, false, true);
+        retryingTransactionHelper.doInTransaction(execution);
     }
 
     /**

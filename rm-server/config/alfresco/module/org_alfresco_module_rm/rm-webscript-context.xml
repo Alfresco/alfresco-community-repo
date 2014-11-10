@@ -466,7 +466,6 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="personService" ref="PersonService" />
-      <property name="contentService" ref="ContentService" />
    </bean>
 
    <bean

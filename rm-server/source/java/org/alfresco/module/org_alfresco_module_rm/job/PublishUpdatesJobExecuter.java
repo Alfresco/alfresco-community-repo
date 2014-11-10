@@ -130,40 +130,36 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     {
                         if (nodeService.exists(nodeRef))
                         {
-                            boolean publishing = (Boolean)nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS);
-                            if (!publishing)
+                            // Mark the update node as publishing in progress
+                            markPublishInProgress(nodeRef);
+                            try
                             {
-                                // Mark the update node as publishing in progress
-                                markPublishInProgress(nodeRef);
-                                try
+                                Date start = new Date();
+                                if (logger.isDebugEnabled())
                                 {
-                                    Date start = new Date();
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        logger.debug("Starting publish of updates ...");
-                                        logger.debug("   - for " + nodeRef.toString());
-                                        logger.debug("   - at " + start.toString());
-                                    }
-    
-                                    // Publish updates
-                                    publishUpdates(nodeRef);
-    
-    
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        Date end = new Date();
-                                        long duration = end.getTime() - start.getTime();
-                                        logger.debug("Completed publish of updates ...");
-                                        logger.debug("   - for " + nodeRef.toString());
-                                        logger.debug("   - at " + end.toString());
-                                        logger.debug("   - duration " + Long.toString(duration));
-                                    }
+                                    logger.debug("Starting publish of updates ...");
+                                    logger.debug("   - for " + nodeRef.toString());
+                                    logger.debug("   - at " + start.toString());
                                 }
-                                finally
+
+                                // Publish updates
+                                publishUpdates(nodeRef);
+
+
+                                if (logger.isDebugEnabled())
                                 {
-                                    // Ensure the update node has either completed the publish or is marked as no longer in progress
-                                    unmarkPublishInProgress(nodeRef);
+                                    Date end = new Date();
+                                    long duration = end.getTime() - start.getTime();
+                                    logger.debug("Completed publish of updates ...");
+                                    logger.debug("   - for " + nodeRef.toString());
+                                    logger.debug("   - at " + end.toString());
+                                    logger.debug("   - duration " + Long.toString(duration));
                                 }
+                            }
+                            finally
+                            {
+                                // Ensure the update node has either completed the publish or is marked as no longer in progress
+                                unmarkPublishInProgress(nodeRef);
                             }
                         }
                     }
@@ -221,13 +217,13 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
                     // Execute query to find updates awaiting publishing
                     List<NodeRef> resultNodes = null;
-                    
+
                     SearchParameters searchParameters = new SearchParameters();
                     searchParameters.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
                     searchParameters.setQuery(query);
                     searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                     searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-                    
+
                     try
                     {
                         ResultSet results = searchService.query(searchParameters);

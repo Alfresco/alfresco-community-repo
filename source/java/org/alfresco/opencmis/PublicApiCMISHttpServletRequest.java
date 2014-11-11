@@ -21,6 +21,7 @@ package org.alfresco.opencmis;
 import java.util.Map;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -31,9 +32,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class PublicApiCMISHttpServletRequest extends CMISHttpServletRequest
 {
 	public PublicApiCMISHttpServletRequest(WebScriptRequest req, String serviceName, BaseUrlGenerator baseUrlGenerator,
-			Binding binding, Descriptor currentDescriptor)
+			Binding binding, Descriptor currentDescriptor, TenantAdminService tenantAdminService)
 	{
-		super(req, serviceName, baseUrlGenerator, binding, currentDescriptor);
+		super(req, serviceName, baseUrlGenerator, binding, currentDescriptor, tenantAdminService);
 	}
 
 	protected void addAttributes()

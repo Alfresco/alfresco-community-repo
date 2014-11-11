@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Endpoint;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
@@ -66,8 +67,14 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
 	protected BaseUrlGenerator baseUrlGenerator;
 	protected String version;
 	protected CmisVersion cmisVersion;
-	
-	public void setDescriptorService(DescriptorService descriptorService)
+	protected TenantAdminService tenantAdminService;
+
+	public void setTenantAdminService(TenantAdminService tenantAdminService)
+	{
+        this.tenantAdminService = tenantAdminService;
+    }
+
+    public void setDescriptorService(DescriptorService descriptorService)
 	{
 		this.descriptorService = descriptorService;
 	}
@@ -164,7 +171,8 @@ public abstract class CMISServletDispatcher implements CMISDispatcher
     protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
 	{
 		String serviceName = getServiceName();
-		CMISHttpServletRequest httpReqWrapper = new CMISHttpServletRequest(req, serviceName, baseUrlGenerator, getBinding(), currentDescriptor);
+		CMISHttpServletRequest httpReqWrapper = new CMISHttpServletRequest(req, serviceName, baseUrlGenerator,
+		        getBinding(), currentDescriptor, tenantAdminService);
     	return httpReqWrapper;
 	}
 

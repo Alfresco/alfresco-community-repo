@@ -36,6 +36,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;
 import org.alfresco.service.descriptor.Descriptor;
@@ -63,7 +66,8 @@ public class CMISHttpServletRequest implements HttpServletRequest
 	protected Binding binding;
 	protected Descriptor currentDescriptor;
 
-	public CMISHttpServletRequest(WebScriptRequest req, String serviceName, BaseUrlGenerator baseUrlGenerator, Binding binding, Descriptor currentDescriptor)
+	public CMISHttpServletRequest(WebScriptRequest req, String serviceName, BaseUrlGenerator baseUrlGenerator, Binding binding, Descriptor currentDescriptor,
+	        TenantAdminService tenantAdminService)
 	{
 		this.req = req;
 		this.serviceName = serviceName;
@@ -75,7 +79,25 @@ public class CMISHttpServletRequest implements HttpServletRequest
 		if(!pathInfo.startsWith("/cmis") && (baseReq instanceof TenantWebScriptServletRequest))
 		{
 			TenantWebScriptServletRequest servletReq = (TenantWebScriptServletRequest)baseReq;
-			this.networkId = servletReq.getTenant();
+
+			String tenant = servletReq.getTenant();
+			if(tenant.equalsIgnoreCase(TenantUtil.DEFAULT_TENANT))
+            {
+			    String user = AuthenticationUtil.getFullyAuthenticatedUser();
+                String domain = tenantAdminService.getUserDomain(user);
+                if(domain == null || domain.equals(TenantService.DEFAULT_DOMAIN))
+                {
+                    this.networkId = tenant;
+                }
+                else
+                {
+                    this.networkId = domain;
+                }
+            }
+			else
+			{
+			    this.networkId = tenant;
+			}
 		}
 
 		Match match = req.getServiceMatch();

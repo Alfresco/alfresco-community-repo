@@ -743,6 +743,7 @@
         <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
         <property name="version"            value="1.0"/>
         <property name="cmisVersion"        value="1.0"/>
+        <property name="tenantAdminService" ref="tenantAdminService"/>
     </bean>
 
     <bean   id="cmisAtomPubDispatcher1.1" class="org.alfresco.opencmis.PublicApiAtomPubCMISDispatcher" init-method="init">
@@ -753,6 +754,7 @@
         <property name="baseUrlGenerator"   ref="baseUrlGenerator" />
         <property name="version"            value="1.1"/>
         <property name="cmisVersion"        value="1.1"/>
+        <property name="tenantAdminService" ref="tenantAdminService"/>
     </bean>
 
     <bean   id="cmisBrowserDispatcher1.1" class="org.alfresco.opencmis.PublicApiBrowserCMISDispatcher" init-method="init">
@@ -763,6 +765,7 @@
         <property name="serviceName"        value="cmis" />
         <property name="version"            value="1.1"/>
         <property name="cmisVersion"        value="1.1"/>
+        <property name="tenantAdminService" ref="tenantAdminService"/>
     </bean>
 
     <bean   id="webscript.org.alfresco.api.opencmis.OpenCMIS.get" 

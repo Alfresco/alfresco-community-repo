@@ -297,8 +297,13 @@ public class RepoService
 	{
 		allPeople.put(person.getId().toLowerCase(), person);
 	}
-	
-	public TestPerson getPerson(String username)
+
+	public NodeService getNodeService()
+	{
+        return nodeService;
+    }
+
+    public TestPerson getPerson(String username)
 	{
 		return allPeople.get(username.toLowerCase());
 	}

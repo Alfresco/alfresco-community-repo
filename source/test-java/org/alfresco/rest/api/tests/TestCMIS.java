@@ -80,6 +80,7 @@ import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -108,7 +109,6 @@ import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
-import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
@@ -1959,5 +1959,66 @@ public class TestCMIS extends EnterpriseTestApi
         ObjectType objectType = session.getTypeDefinition("cmis:document");
         
         assertNotNull(objectType);
+    }
+
+    @Test
+    public void testACE3433() throws Exception
+    {
+        final TestNetwork network = getTestFixture().getRandomNetwork();
+
+        NodeRef rootNodeRef = TenantUtil.runAsSystemTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                NodeRef rootNodeRef = repoService.getNodeService().getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+                List<ChildAssociationRef> childAssocs = repoService.getNodeService().getChildAssocsByPropertyValue(rootNodeRef,
+                        ContentModel.PROP_TITLE, "Company Home");
+                assertEquals(1, childAssocs.size());
+                NodeRef companyHomeNodeRef = childAssocs.get(0).getChildRef();
+                return companyHomeNodeRef;
+            }
+
+        }, network.getId());
+        assertNotNull(rootNodeRef);
+
+        // atom
+        {
+            Binding binding = Binding.atom;
+            String url = httpClient.getPublicApiCmisUrl(TenantUtil.DEFAULT_TENANT, binding, "1.1", null);
+    
+            Map<String, String> parameters = new HashMap<String, String>();
+    
+            // user credentials
+            parameters.put(SessionParameter.USER, "admin@" + network.getId());
+            parameters.put(SessionParameter.PASSWORD, "admin");
+            parameters.put(SessionParameter.ATOMPUB_URL, url);
+            parameters.put(SessionParameter.BINDING_TYPE, binding.getOpenCmisBinding().value());
+    
+            SessionFactory factory = SessionFactoryImpl.newInstance();
+            Repository repository = factory.getRepositories(parameters).get(0);
+            String rootFolderId = repository.getRootFolderId();
+    
+            assertEquals(rootNodeRef.getId(), rootFolderId);
+        }
+
+        {
+            Binding binding = Binding.browser;
+            String url = httpClient.getPublicApiCmisUrl(TenantUtil.DEFAULT_TENANT, binding, "1.1", null);
+    
+            Map<String, String> parameters = new HashMap<String, String>();
+    
+            // user credentials
+            parameters.put(SessionParameter.USER, "admin@" + network.getId());
+            parameters.put(SessionParameter.PASSWORD, "admin");
+            parameters.put(SessionParameter.BROWSER_URL, url);
+            parameters.put(SessionParameter.BINDING_TYPE, binding.getOpenCmisBinding().value());
+    
+            SessionFactory factory = SessionFactoryImpl.newInstance();
+            Repository repository = factory.getRepositories(parameters).get(0);
+            String rootFolderId = repository.getRootFolderId();
+    
+            assertEquals(rootNodeRef.getId(), rootFolderId);
+        }
     }
 }

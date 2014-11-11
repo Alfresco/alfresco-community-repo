@@ -14,7 +14,8 @@ public class PublicApiBrowserCMISDispatcher extends BrowserCMISDispatcher
 	protected CMISHttpServletRequest getHttpRequest(WebScriptRequest req)
 	{
 		String serviceName = getServiceName();
-		CMISHttpServletRequest httpReqWrapper = new PublicApiCMISHttpServletRequest(req, serviceName, baseUrlGenerator, getBinding(), getCurrentDescriptor());
+		CMISHttpServletRequest httpReqWrapper = new PublicApiCMISHttpServletRequest(req, serviceName,
+		        baseUrlGenerator, getBinding(), getCurrentDescriptor(), tenantAdminService);
     	return httpReqWrapper;
 	}
 }

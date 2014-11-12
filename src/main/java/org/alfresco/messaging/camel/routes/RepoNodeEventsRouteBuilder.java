@@ -29,12 +29,6 @@ public class RepoNodeEventsRouteBuilder extends SpringRouteBuilder
     @Value("${messaging.events.repo.node.targetTopic.endpoint}")
     public String targetTopic = "amqp:topic:alfresco.repo.events?jmsMessageType=Text"; //defaults to an invalid notset value
 
-    @Value("${messaging.events.deadletter.endpoint}")
-    public String deadLetter = "seda:error"; //defaults to seda error
-
-    @Value("${messaging.routing.numThreads}")
-    private int numThreads;
-
     @Override
     public void configure() throws Exception
     {
@@ -45,10 +39,7 @@ public class RepoNodeEventsRouteBuilder extends SpringRouteBuilder
             logger.debug("targetTopic is "+targetTopic);
         }
 
-        errorHandler(deadLetterChannel(deadLetter));
-
         from(sourceQueue).routeId("alfresco.events -> topic:alfresco.repo.events")
-        .threads(numThreads)
         .marshal("defaultDataFormat").to(targetTopic)
         .end();
     }

@@ -52,11 +52,13 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -88,12 +90,14 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -125,6 +129,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** I18N */
     private static final String MSG_NODE_HAS_ASPECT = "rm.service.node-has-aspect";
+    private static final String FINAL_VERSION = "rm.service.final-version";
+    private static final String FINAL_DESCRIPTION = "rm.service.final-version-description";
 
     /** Always edit property array */
     private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
@@ -208,6 +214,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Version service */
     private VersionService versionService;
+    
+    /** Relationship service */
+    private RelationshipService relationshipService;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
@@ -336,6 +345,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
     public void setVersionService(VersionService versionService)
     {
         this.versionService = versionService;
+    }
+    
+    /**
+     * @param relationshipService   relationship service
+     */
+    public void setRelationshipService(RelationshipService relationshipService)
+    {
+        this.relationshipService = relationshipService;
     }
 
     /**
@@ -849,9 +866,24 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, owner);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
+                        
+                        // get the latest version record, if there is one
+                        NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
 
                         // make the document a record
                         makeRecord(nodeRef);
+                        
+                        if (latestVersionRecord != null)
+                        {
+                            // indicate that this is the 'final' record version
+                            PropertyMap versionRecordProps = new PropertyMap(2);
+                            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, I18NUtil.getMessage(FINAL_VERSION));
+                            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, I18NUtil.getMessage(FINAL_DESCRIPTION));
+                            nodeService.addAspect(nodeRef, RecordableVersionModel.ASPECT_VERSION_RECORD, versionRecordProps);
+                            
+                            // link to previous version
+                            relationshipService.addRelationship("versions", nodeRef, latestVersionRecord);
+                        }
 
                         if (isLinked)
                         {
@@ -884,6 +916,36 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 return null;
             }
         });
+    }
+    
+    /**
+     * Helper to get the latest version record for a given document (ie non-record)
+     * 
+     * @param nodeRef   node reference
+     * @return NodeRef  latest version record, null otherwise
+     */
+    private NodeRef getLatestVersionRecord(NodeRef nodeRef)
+    {
+        NodeRef versionRecord = null;
+        
+        // wire record up to previous record
+        VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+        if (versionHistory != null)
+        {
+            Collection<Version> previousVersions = versionHistory.getAllVersions();
+            for (Version previousVersion : previousVersions)
+            {
+                // look for the associated record
+                final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+                if (previousRecord != null)
+                {
+                    versionRecord = previousRecord;
+                    break;
+                }
+            }
+        }  
+        
+        return versionRecord;        
     }
 
     /**

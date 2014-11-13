@@ -345,30 +345,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
 
             // wire record up to previous record
-            VersionHistory versionHistory = getVersionHistory(nodeRef);
-            if (versionHistory != null)
-            {
-                Collection<Version> previousVersions = versionHistory.getAllVersions();
-                for (Version previousVersion : previousVersions)
-                {
-                    // look for the associated record
-                    final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(PROP_VERSION_RECORD);
-                    if (previousRecord != null)
-                    {
-                        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-                        {
-                            @Override
-                            public Void doWork() throws Exception
-                            {
-                                // indicate that the new record versions the previous record
-                                relationshipService.addRelationship("versions", record, previousRecord);
-                                return null;
-                            }
-                        });
-                        break;
-                    }
-                }
-            }
+            linkToPreviousVersionRecord(nodeRef, record);
 
             // create version nodeRef
             ChildAssociationRef childAssocRef = dbNodeService.createNode(
@@ -408,6 +385,60 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
 
         return versionNodeRef;
+    }
+    
+    /**
+     * Helper method to link the record to the previous version record
+     * 
+     * @param nodeRef   noderef source node reference
+     * @param record    record  record node reference
+     */
+    private void linkToPreviousVersionRecord(final NodeRef nodeRef, final NodeRef record)
+    {
+        final NodeRef latestRecordVersion = getLatestVersionRecord(nodeRef);
+        if (latestRecordVersion != null)
+        {
+            authenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    // indicate that the new record versions the previous record
+                    relationshipService.addRelationship("versions", record, latestRecordVersion);
+                    return null;
+                }
+            });
+        }        
+    }
+    
+    /**
+     * Helper to get the latest version record for a given document (ie non-record)
+     * 
+     * @param nodeRef   node reference
+     * @return NodeRef  latest version record, null otherwise
+     */
+    private NodeRef getLatestVersionRecord(NodeRef nodeRef)
+    {
+        NodeRef versionRecord = null;
+        
+        // wire record up to previous record
+        VersionHistory versionHistory = getVersionHistory(nodeRef);
+        if (versionHistory != null)
+        {
+            Collection<Version> previousVersions = versionHistory.getAllVersions();
+            for (Version previousVersion : previousVersions)
+            {
+                // look for the associated record
+                final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(PROP_VERSION_RECORD);
+                if (previousRecord != null)
+                {
+                    versionRecord = previousRecord;
+                    break;
+                }
+            }
+        }  
+        
+        return versionRecord;        
     }
 
     /**

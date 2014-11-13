@@ -29,7 +29,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -199,33 +198,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.createVersion(nodeRef, versionProperties);
 
         // then the recorded version is created
-        verifyRecordedVersion(filePlan);
-
-    }
-
-    /**
-     * Helper method that verifies that a recorded version was created.
-     */
-    @SuppressWarnings("unchecked")
-    private void verifyRecordedVersion(NodeRef filePlan) throws Exception
-    {
-        // then unfiled container is retrieved for file plan
-        verify(mockedFilePlanService, times(1)).getUnfiledContainer(filePlan);
-
-        // then the node is copied into the file plan
-        verify(mockedFileFolderService, times(1)).copy(eq(nodeRef),
-                                                       eq(unfiledRecordContainer),
-                                                       anyString());
-
-        // then the version is created
-        verify(mockedDbNodeService, times(1)).createNode(any(NodeRef.class),
-                                                         eq(Version2Model.CHILD_QNAME_VERSIONS),
-                                                         any(QName.class),
-                                                         eq(TYPE_CONTENT),
-                                                         anyMap());
-        verify(mockedNodeService, times(1)).addAspect(eq(version), eq(Version2Model.ASPECT_VERSION), anyMap());
-        verify(mockedNodeService, times(1)).addAspect(eq(version), eq(RecordableVersionModel.ASPECT_RECORDED_VERSION),
-                                                                   eq(Collections.singletonMap(RecordableVersionModel.PROP_RECORD_NODE_REF, (Serializable)record)));
+        verify(mockedRecordService, times(1)).createRecordFromCopy(filePlan, nodeRef);
     }
 
     /**
@@ -267,7 +240,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.createVersion(nodeRef, versionProperties);
 
         // then the recorded version is created
-        verifyRecordedVersion(filePlan);
+        verify(mockedRecordService, times(1)).createRecordFromCopy(filePlan, nodeRef);
 
     }
 
@@ -308,7 +281,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.createVersion(nodeRef, versionProperties);
 
         // then the recorded version is created
-        verifyRecordedVersion(filePlan);
+        verify(mockedRecordService, times(1)).createRecordFromCopy(filePlan, nodeRef);
     }
 
     /**
@@ -355,7 +328,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.createVersion(nodeRef, versionProperties);
 
         // then the recorded version is created
-        verifyRecordedVersion(anotherFilePlan);
+        verify(mockedRecordService, times(0)).createRecordFromCopy(filePlan, nodeRef);
     }
 
     /**
@@ -380,7 +353,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.createVersion(nodeRef, versionProperties);
 
         // then the recorded version is created
-        verifyRecordedVersion(anotherFilePlan);
+        verify(mockedRecordService, times(0)).createRecordFromCopy(filePlan, nodeRef);
     }
 
     @Test
@@ -395,7 +368,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.createVersion(nodeRef, versionProperties);
 
         // then the recorded version is created
-        verifyRecordedVersion(filePlan);
+        verify(mockedRecordService, times(1)).createRecordFromCopy(filePlan, nodeRef);
     }
 
     @Test
@@ -411,6 +384,6 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
         recordableVersionService.createVersion(nodeRef, versionProperties);
 
         // then the recorded version is created
-        verifyRecordedVersion(filePlan);
+        verify(mockedRecordService, times(1)).createRecordFromCopy(filePlan, nodeRef);
     }
 }

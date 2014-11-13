@@ -77,7 +77,9 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -849,6 +851,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // get the documents primary parent assoc
                         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
+                        // get the latest version record, if there is one
+                        NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
+                        
                         behaviourFilter.disableBehaviour();
                         try
                         {
@@ -867,9 +872,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
                         
-                        // get the latest version record, if there is one
-                        NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
-
                         // make the document a record
                         makeRecord(nodeRef);
                         
@@ -914,6 +916,92 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
 
                 return null;
+            }
+        });
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromCopy(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public NodeRef createRecordFromCopy(final NodeRef filePlan, final NodeRef nodeRef)
+    {
+        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {
+                // get the unfiled record folder
+                final NodeRef unfiledRecordFolder = filePlanService.getUnfiledContainer(filePlan);
+
+                // get the documents readers
+                Long aclId = nodeService.getNodeAclId(nodeRef);
+                Set<String> readers = extendedPermissionService.getReaders(aclId);
+                Set<String> writers = extendedPermissionService.getWriters(aclId);
+
+                // add the current owner to the list of extended writers
+                Set<String> modifiedWrtiers = new HashSet<String>(writers);
+                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+                {
+                    String owner = ownableService.getOwner(nodeRef);
+                    if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
+                    {
+                        modifiedWrtiers.add(owner);
+                    }
+                }
+
+                // add the current user as extended writer
+                modifiedWrtiers.add(authenticationUtil.getFullyAuthenticatedUser());
+
+                // copy version state and create record
+                NodeRef record = null;
+                try
+                {
+                    List<AssociationRef> originalAssocs = null;
+                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM))
+                    {
+                        // take a note of any copyFrom information already on the node
+                        originalAssocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
+                    }
+
+                    // create a copy of the original state and add it to the unfiled record container
+                    FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
+                    record = recordInfo.getNodeRef();
+                    
+                    // make record
+                    makeRecord(record);
+
+                    // remove added copy assocs
+                    List<AssociationRef> recordAssocs = nodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
+                    for (AssociationRef recordAssoc : recordAssocs)
+                    {
+                        nodeService.removeAssociation(
+                                recordAssoc.getSourceRef(),
+                                recordAssoc.getTargetRef(),
+                                ContentModel.ASSOC_ORIGINAL);
+                    }
+
+                    // re-add origional assocs or remove aspect
+                    if (originalAssocs == null)
+                    {
+                        nodeService.removeAspect(record, ContentModel.ASPECT_COPIEDFROM);
+                    }
+                    else
+                    {
+                        for (AssociationRef originalAssoc : originalAssocs)
+                        {
+                            nodeService.createAssociation(originalAssoc.getSourceRef(), originalAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
+                        }
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new AlfrescoRuntimeException("Can't create recorded version, because copy fails.", e);
+                }
+
+                // set extended security on record
+                extendedSecurityService.addExtendedSecurity(record, readers, writers);
+
+                return record;
             }
         });
     }

@@ -164,6 +164,14 @@ public interface RecordService
     * @see #createRecord(NodeRef, NodeRef, boolean)
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
+   
+   /**
+    * Creates a record from a copy of the node reference provided.
+    * 
+    * @param filePlan   file plan
+    * @param nodeRef    node reference
+    */
+   NodeRef createRecordFromCopy(NodeRef filePlan, NodeRef nodeRef);
 
    /**
     * Creates a new document in the unfiled records container if the given node reference is a file plan

@@ -15,12 +15,9 @@
    <!-- extended version service bean definition -->
    <bean id="rm.versionService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl">
       <property name="filePlanService" ref="FilePlanService" />
-      <property name="fileFolderService" ref="fileFolderService" />
-      <property name="extendedPermissionService" ref="ExtendedPermissionService" />
-      <property name="ownableService" ref="OwnableService" />
-      <property name="extendedSecurityService" ref="ExtendedSecurityService" />
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
       <property name="relationshipService" ref="RelationshipService" />
+      <property name="recordService" ref="RecordService" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />

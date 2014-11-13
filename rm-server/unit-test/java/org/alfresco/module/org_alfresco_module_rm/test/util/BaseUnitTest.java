@@ -37,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -106,6 +107,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @Mock(name="policyComponent")                protected PolicyComponent              mockedPolicyComponent;
     @Mock(name="copyService")                    protected CopyService                  mockedCopyService;
     @Mock(name="fileFolderService")              protected FileFolderService            mockedFileFolderService;
+    @Mock(name="modelSecurityService")           protected ModelSecurityService         mockedModelSecurityService;
 
     /** rm service mocks */
     @Mock(name="filePlanService")                protected FilePlanService              mockedFilePlanService;

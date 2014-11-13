@@ -29,6 +29,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -78,6 +79,9 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     
     /** record service */
     private RecordService recordService;
+    
+    /** model security service */
+    private ModelSecurityService modelSecurityService;
 
     /**
      * @param filePlanService   file plan service
@@ -109,6 +113,14 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     public void setRecordService(RecordService recordService)
     {
         this.recordService = recordService;
+    }
+    
+    /**
+     * @param modelSecurityService  model security service
+     */
+    public void setModelSecurityService(ModelSecurityService modelSecurityService)
+    {
+        this.modelSecurityService = modelSecurityService;
     }
 
     /**
@@ -273,6 +285,12 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         // disable other behaviours that we don't want to trigger during this process
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
         policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+        
+        // disable model security check
+        modelSecurityService.disable();
+        
+        // disable property editable check
+        recordService.disablePropertyEditableCheck();
 
         try
         {
@@ -325,6 +343,12 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
         finally
         {
+            // enable model security check
+            modelSecurityService.enable();
+            
+            // enable property editable check
+            recordService.enablePropertyEditableCheck();
+            
             // Enable behaviours
             this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
             this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);

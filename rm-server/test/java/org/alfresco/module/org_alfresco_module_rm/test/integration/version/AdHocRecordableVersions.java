@@ -25,6 +25,8 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
@@ -160,13 +162,21 @@ public class AdHocRecordableVersions extends RecordableVersionsBaseTest
             public void when()
             {                
                 // create version
-                Version version = versionService.createVersion(dmDocument, versionProperties);
+                final Version version = versionService.createVersion(dmDocument, versionProperties);
                 
-                // add custom meta-data to record
-                NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
-                assertNotNull(record);
-                recordService.addRecordType(record, TestModel.ASPECT_RECORD_METADATA);
-                nodeService.setProperty(record, TestModel.PROPERTY_RECORD_METADATA, "Peter Wetherall");
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        // add custom meta-data to record
+                        NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+                        assertNotNull(record);
+                        recordService.addRecordType(record, TestModel.ASPECT_RECORD_METADATA);
+                        nodeService.setProperty(record, TestModel.PROPERTY_RECORD_METADATA, "Peter Wetherall");
+                        
+                        return null;
+                    }
+                }, AuthenticationUtil.getAdminUserName());                
             }            
             
             public void then()

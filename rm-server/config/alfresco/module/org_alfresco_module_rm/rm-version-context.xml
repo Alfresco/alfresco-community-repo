@@ -18,6 +18,7 @@
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
       <property name="relationshipService" ref="RelationshipService" />
       <property name="recordService" ref="RecordService" />
+      <property name="modelSecurityService" ref="ModelSecurityService" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />

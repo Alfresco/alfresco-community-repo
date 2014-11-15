@@ -831,7 +831,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private boolean invitationMatches(Invitation invitation, InvitationSearchCriteria criteria)
     {
         String invitee = criteria.getInvitee();
-        if (invitee!= null && false == invitee.equals(invitation.getInviteeUserName()))
+        if (invitation == null || (invitee!= null && false == invitee.equals(invitation.getInviteeUserName())))
         {
             return false;
         }

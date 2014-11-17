@@ -244,6 +244,7 @@ OpenOffice SDK  http://www.openoffice.org/licenses/lgpl_license.html
 Bouncy Castle   http://www.bouncycastle.org/ 
 CodeMirror   http://codemirror.net/
 DateFormatJS   http://blog.stevenlevithan.com/archives/date-time-format
+Enum.js   https://github.com/adrai/enum
 extMouseWheel   http://hasseg.org/blog/post/138/
 FullCalendar    http://arshaw.com/fullcalendar/
 JQuery  http://jquery.com/
@@ -257,6 +258,7 @@ juniversalchardet   http://code.google.com/p/juniversalchardet/
 
 
 === Mozilla Public License 2.0 ===
+CCC2    http://www.webdetails.pt/ctools/ccc/
 rhino-js    http://www.mozilla.org/rhino/
 LibreOffice http://www.libreoffice.org/
 

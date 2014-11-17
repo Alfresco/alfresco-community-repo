@@ -91,11 +91,11 @@ public class AclsReadersGet extends DeclarativeWebScript
                     Status.STATUS_BAD_REQUEST,
                     "Parameter 'aclIds' not provided in request content.");
         }
-        else if (aclIdsJSON.length() == 0 || aclIdsJSON.length() > 512)
+        else if (aclIdsJSON.length() == 0)
         {
             throw new WebScriptException(
                     Status.STATUS_BAD_REQUEST,
-                    "Parameter 'aclIds' must hold from 1 to 512 IDs.");
+                    "Parameter 'aclIds' must hold from 1 or more IDs.");
         }
         aclIds = new ArrayList<Long>(aclIdsJSON.length());
         for (int i = 0; i < aclIdsJSON.length(); i++)

@@ -91,11 +91,11 @@ public class AclsGet extends DeclarativeWebScript
                     Status.STATUS_BAD_REQUEST,
                     "Parameter 'aclChangeSetIds' not provided in request content.");
         }
-        else if (aclChangeSetIdsJSON.length() == 0 || aclChangeSetIdsJSON.length() > 512)
+        else if (aclChangeSetIdsJSON.length() == 0)
         {
             throw new WebScriptException(
                     Status.STATUS_BAD_REQUEST,
-                    "Parameter 'aclChangeSetIds' must hold from 1 to 512 IDs.");
+                    "Parameter 'aclChangeSetIds' must hold from 1 or more IDs.");
         }
         aclChangeSetIds = new ArrayList<Long>(aclChangeSetIdsJSON.length());
         for (int i = 0; i < aclChangeSetIdsJSON.length(); i++)

@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Records Management Relationships</shortname>
+   <description>Gets the list of existing relationships on the specified node.</description>
+   <url>/api/node/{store_type}/{store_id}/{id}/relationships</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

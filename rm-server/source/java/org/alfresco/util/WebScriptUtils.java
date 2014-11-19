@@ -295,4 +295,28 @@ public final class WebScriptUtils
 
         return value;
     }
+
+    /**
+     * Creates a json object from the given {@link String}
+     *
+     * @param json The json object as {@link String}
+     * @return The json object created from the given {@link String}
+     */
+    public static JSONObject createJSONObject(String json)
+    {
+        mandatory("json", json);
+
+        JSONObject jsonObject;
+
+        try
+        {
+            jsonObject = new JSONObject(json);
+        }
+        catch (JSONException error)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Cannot create a json object from the given string '" + json + "'.", error);
+        }
+
+        return jsonObject;
+    }
 }

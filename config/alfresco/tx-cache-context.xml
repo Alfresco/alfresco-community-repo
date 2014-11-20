@@ -102,6 +102,7 @@
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
       <property name="cacheStats" ref="cacheStatistics"/>
       <property name="cacheStatsEnabled" value="${cache.contentUrlMasterKeySharedCache.tx.statsEnabled}"/>
+      <property name="tenantAware"><value>false</value></property>
    </bean>
 
    <bean name="contentUrlEncryptingMasterKeyCache" class="org.alfresco.repo.cache.TransactionalCache">

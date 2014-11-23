@@ -634,4 +634,11 @@
       <property name="relationshipService" ref="RelationshipService" />
       <property name="jsonConversionComponent" ref="jsonConversionComponent" />
    </bean>
+
+   <!-- REST impl for GET Relationship labels -->
+   <bean id="webscript.org.alfresco.rma.relationshiplabels.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipLabelsGet"
+      parent="rmBaseWebscript">
+      <property name="relationshipService" ref="RelationshipService" />
+   </bean>
 </beans>

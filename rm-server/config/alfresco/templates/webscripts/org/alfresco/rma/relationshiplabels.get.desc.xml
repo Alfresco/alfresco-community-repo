@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Records Management Relationship Labels</shortname>
+   <description>Gets the list of existing relationship labels.</description>
+   <url>/api/rma/admin/relationshiplabels</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

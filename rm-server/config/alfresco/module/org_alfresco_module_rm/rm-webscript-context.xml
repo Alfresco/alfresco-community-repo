@@ -641,4 +641,11 @@
       parent="rmBaseWebscript">
       <property name="relationshipService" ref="RelationshipService" />
    </bean>
+
+   <!-- REST impl for DELETE Relationship -->
+   <bean id="webscript.org.alfresco.rma.relationship.delete"
+      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipDelete"
+      parent="rmBaseWebscript">
+      <property name="relationshipService" ref="RelationshipService" />
+   </bean>
 </beans>

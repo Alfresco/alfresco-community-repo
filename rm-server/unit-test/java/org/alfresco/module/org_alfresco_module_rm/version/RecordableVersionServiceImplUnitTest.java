@@ -37,7 +37,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.version.Version2Model;
-import org.alfresco.repo.version.VersionMigrator;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -69,7 +68,6 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
     private Map<String, Serializable> versionProperties;
 
     /** mocked services */
-    private @Mock(name="versionMigrator") VersionMigrator mockedVersionMigrator;
     private @Mock(name="dbNodeService")   NodeService mockedDbNodeService;
 
     /** recordable version service */

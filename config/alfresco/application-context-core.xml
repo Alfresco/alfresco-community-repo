@@ -13,6 +13,8 @@
     <import resource="classpath*:alfresco/extension/mt/mt-context.xml"/>
     <import resource="classpath:alfresco/encryption-context.xml" />
     <import resource="classpath*:alfresco/enterprise/jmx/jmx-context.xml" />
+    <import resource="classpath:alfresco/spring/*-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/spring/*-context.xml" />
     <import resource="classpath:alfresco/core-services-context.xml" />
     <import resource="classpath:alfresco/copy-services-context.xml" />
     <import resource="classpath:alfresco/public-services-context.xml" />

@@ -4,8 +4,6 @@
 <!-- Core and miscellaneous bean definitions -->
 <beans>
 
- 
-
     <!--                    -->
     <!--  PERSISTENCE       -->
     <!--                    -->
@@ -128,6 +126,10 @@
         <!-- Ensure that child application contexts propagate global default values -->
         <property name="propertyDefaults">
             <ref local="global-properties" />
+        </property>
+        
+        <property name="encryptedPropertyDefaults">
+            <ref bean="encrypted-properties" />
         </property>
     </bean>
 

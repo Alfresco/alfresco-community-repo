@@ -86,6 +86,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /** Property defaults provided by the installer or System properties. */
     private Properties propertyDefaults;
+    
+    /** Property defaults provided by the JASYPT decryptor. */
+    private Properties encryptedPropertyDefaults;
 
     /** Resolves placeholders in the property defaults. */
     private DefaultResolver defaultResolver = new DefaultResolver();
@@ -222,6 +225,12 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     {
         this.propertyDefaults = propertyDefaults;
     }
+    
+    public void setEncryptedPropertyDefaults(Properties propertyDefaults)
+    {
+        this.encryptedPropertyDefaults = propertyDefaults;
+        
+    }
 
     /**
      * Gets the property defaults provided by the installer or System properties.
@@ -242,7 +251,25 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
      */
     protected String resolveDefault(String name)
     {
-        String value = this.propertyDefaults.getProperty(name);
+        Properties props = new Properties();
+        
+        if(propertyDefaults != null)
+        {
+            for( Object key : propertyDefaults.keySet())
+            {
+                props.setProperty((String)key, propertyDefaults.getProperty((String)key));
+            }
+        }
+        
+        if(encryptedPropertyDefaults != null)
+        {
+            for( Object key : encryptedPropertyDefaults.keySet())
+            {
+                props.setProperty((String)key, encryptedPropertyDefaults.getProperty((String)key));
+            }
+        }
+        
+        String value = props.getProperty(name);
         if (value != null)
         {
             value = this.defaultResolver.resolveValue(value);
@@ -1094,8 +1121,24 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
          */
         public String resolveValue(String val)
         {
-            return AbstractPropertyBackedBean.this.propertyDefaults == null ? null : replacePlaceholders(
-                    val, AbstractPropertyBackedBean.this.propertyDefaults);
+            Properties props = new Properties();
+            
+            if(propertyDefaults != null)
+            {
+                for( Object key : propertyDefaults.keySet())
+                {
+                    props.setProperty((String)key, propertyDefaults.getProperty((String)key));
+                }
+            }
+            
+            if(encryptedPropertyDefaults != null)
+            {
+                for( Object key : encryptedPropertyDefaults.keySet())
+                {
+                    props.setProperty((String)key, encryptedPropertyDefaults.getProperty((String)key));
+                }
+            }
+            return replacePlaceholders(val, props);
         }
 
     }

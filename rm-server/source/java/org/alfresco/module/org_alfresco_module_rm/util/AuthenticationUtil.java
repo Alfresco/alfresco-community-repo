@@ -69,7 +69,7 @@ public class AuthenticationUtil
     /**
      * Helper method that gets the admin user name.
      * <p>
-     * Usefule when testing using mocks.
+     * Useful when testing using mocks.
      * 
      * @see org.alfresco.repo.security.authentication.AuthenticationUtil#getAdminUserName()
      */
@@ -77,5 +77,14 @@ public class AuthenticationUtil
     {
         return org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName();
     }
-
+    
+    /**
+     * Helper method that gets the system user name.
+     * 
+     * @see org.alfresco.repo.security.authentication.AuthenticationUtil#getSystemUserName()
+     */
+    public String getSystemUserName()
+    {
+        return org.alfresco.repo.security.authentication.AuthenticationUtil.getSystemUserName();
+    }
 }

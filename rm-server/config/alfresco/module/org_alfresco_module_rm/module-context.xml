@@ -16,6 +16,7 @@
       parent="module.baseComponent">
       <property name="nodeService" ref="nodeService" />
       <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
+      <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
       <property name="description" value="Bootstrap records management data"/>
@@ -31,6 +32,13 @@
          </list>
       </property>
    </bean>
+
+	<!-- Record contributors group bootstrap component -->
+	<bean id="recordContributorsGroupBootstrapComponent"
+          class="org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponent">
+       <property name="authorityService" ref="AuthorityService" />
+       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+    </bean>
 
    <!--  Bootstap the message property files -->
    <bean id="org_alfresco_module_rm_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
@@ -49,7 +57,8 @@
          </list>
       </property>
    </bean>
-
+   
+   <!-- Import RM model -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-model-context.xml"/>
 
    <!-- Import RM Audit -->

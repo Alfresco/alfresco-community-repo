@@ -22,6 +22,7 @@ import java.util.Map;
 
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -276,7 +277,7 @@ public class RMSecurityCommon implements ApplicationContextAware
     	}
     	else
     	{
-    		AccessStatus result = permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS);
+    		AccessStatus result = permissionService.hasPermission(filePlan, ViewRecordsCapability.NAME);
     		transactionCache.put(key, result);
     		return result;
     	}

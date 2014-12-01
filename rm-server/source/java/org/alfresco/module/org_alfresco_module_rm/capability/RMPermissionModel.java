@@ -63,123 +63,64 @@ public interface RMPermissionModel
     String ROLE_ADMINISTRATOR = SimplePermissionReference.getPermissionReference(RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT, FilePlanRoleService.ROLE_ADMIN).toString();
 
     // Capability permissions
-
     String DECLARE_RECORDS = "DeclareRecords";
-
-    String VIEW_RECORDS = "ViewRecords";
-
+    String VIEW_RECORDS = "ViewRecords";    
     String CREATE_MODIFY_DESTROY_FOLDERS = "CreateModifyDestroyFolders";
-
     String EDIT_RECORD_METADATA = "EditRecordMetadata";
-
     String EDIT_NON_RECORD_METADATA = "EditNonRecordMetadata";
-
     String ADD_MODIFY_EVENT_DATES = "AddModifyEventDates";
-
     String CLOSE_FOLDERS = "CloseFolders";
-
     String DECLARE_RECORDS_IN_CLOSED_FOLDERS = "DeclareRecordsInClosedFolders";
-
     String RE_OPEN_FOLDERS = "ReOpenFolders";
-
     String CYCLE_VITAL_RECORDS = "CycleVitalRecords";
-
     String PLANNING_REVIEW_CYCLES = "PlanningReviewCycles";
-
     String UPDATE_TRIGGER_DATES = "UpdateTriggerDates";
-
     String CREATE_MODIFY_DESTROY_EVENTS = "CreateModifyDestroyEvents";
-
     String MANAGE_ACCESS_RIGHTS = "ManageAccessRights";
-
     String MOVE_RECORDS = "MoveRecords";
-
     String CHANGE_OR_DELETE_REFERENCES = "ChangeOrDeleteReferences";
-
     String DELETE_LINKS = "DeleteLinks";
-
     String EDIT_DECLARED_RECORD_METADATA = "EditDeclaredRecordMetadata";
-
     String MANUALLY_CHANGE_DISPOSITION_DATES = "ManuallyChangeDispositionDates";
-
     String APPROVE_RECORDS_SCHEDULED_FOR_CUTOFF = "ApproveRecordsScheduledForCutoff";
-
     String CREATE_MODIFY_RECORDS_IN_CUTOFF_FOLDERS = "CreateModifyRecordsInCutoffFolders";
-
     String EXTEND_RETENTION_PERIOD_OR_FREEZE = "ExtendRetentionPeriodOrFreeze";
-
     String UNFREEZE = "Unfreeze";
-
     String VIEW_UPDATE_REASONS_FOR_FREEZE = "ViewUpdateReasonsForFreeze";
-
     String DESTROY_RECORDS_SCHEDULED_FOR_DESTRUCTION = "DestroyRecordsScheduledForDestruction";
-
     String DESTROY_RECORDS = "DestroyRecords";
-
     String UPDATE_VITAL_RECORD_CYCLE_INFORMATION = "UpdateVitalRecordCycleInformation";
-
     String UNDECLARE_RECORDS = "UndeclareRecords";
-
     String DECLARE_AUDIT_AS_RECORD = "DeclareAuditAsRecord";
-
     String DELETE_AUDIT = "DeleteAudit";
-
     String CREATE_MODIFY_DESTROY_TIMEFRAMES = "CreateModifyDestroyTimeframes";
-
     String AUTHORIZE_NOMINATED_TRANSFERS = "AuthorizeNominatedTransfers";
-
     String EDIT_SELECTION_LISTS = "EditSelectionLists";
-
     String AUTHORIZE_ALL_TRANSFERS = "AuthorizeAllTransfers";
-
     String CREATE_MODIFY_DESTROY_FILEPLAN_METADATA = "CreateModifyDestroyFileplanMetadata";
-
     String CREATE_AND_ASSOCIATE_SELECTION_LISTS = "CreateAndAssociateSelectionLists";
-
     String ATTACH_RULES_TO_METADATA_PROPERTIES = "AttachRulesToMetadataProperties";
-
     String CREATE_MODIFY_DESTROY_FILEPLAN_TYPES = "CreateModifyDestroyFileplanTypes";
-
     String CREATE_MODIFY_DESTROY_RECORD_TYPES = "CreateModifyDestroyRecordTypes";
-
     String MAKE_OPTIONAL_PARAMETERS_MANDATORY = "MakeOptionalParametersMandatory";
-
     String MAP_EMAIL_METADATA = "MapEmailMetadata";
-
     String DELETE_RECORDS = "DeleteRecords";
-
     String TRIGGER_AN_EVENT = "TriggerAnEvent";
-
     String CREATE_MODIFY_DESTROY_ROLES = "CreateModifyDestroyRoles";
-
     String CREATE_MODIFY_DESTROY_USERS_AND_GROUPS = "CreateModifyDestroyUsersAndGroups";
-
     String PASSWORD_CONTROL = "PasswordControl";
-
     String ENABLE_DISABLE_AUDIT_BY_TYPES = "EnableDisableAuditByTypes";
-
     String SELECT_AUDIT_METADATA = "SelectAuditMetadata";
-
     String DISPLAY_RIGHTS_REPORT = "DisplayRightsReport";
-
     String ACCESS_AUDIT = "AccessAudit";
-
     String EXPORT_AUDIT = "ExportAudit";
-
     String CREATE_MODIFY_DESTROY_REFERENCE_TYPES = "CreateModifyDestroyReferenceTypes";
-
     String UPDATE_CLASSIFICATION_DATES = "UpdateClassificationDates";
-
     String CREATE_MODIFY_DESTROY_CLASSIFICATION_GUIDES = "CreateModifyDestroyClassificationGuides";
-
     String UPGRADE_DOWNGRADE_AND_DECLASSIFY_RECORDS = "UpgradeDowngradeAndDeclassifyRecords";
-
     String UPDATE_EXEMPTION_CATEGORIES = "UpdateExemptionCategories";
-
     String MAP_CLASSIFICATION_GUIDE_METADATA = "MapClassificationGuideMetadata";
-
     String MANAGE_ACCESS_CONTROLS = "ManageAccessControls";
-
     String CREATE_HOLD = "CreateHold";
     String ADD_TO_HOLD = "AddToHold";
     String REMOVE_FROM_HOLD = "RemoveFromHold";

@@ -19,11 +19,13 @@
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -53,9 +55,23 @@ import org.json.simple.JSONObject;
  *
  * @author Roy Wetherall
  */
-public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONConversionComponent implements NodeServicePolicies.OnDeleteNodePolicy,
-                                                                                                              NodeServicePolicies.OnCreateNodePolicy
+public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent 
+                                     implements NodeServicePolicies.OnDeleteNodePolicy,
+                                                NodeServicePolicies.OnCreateNodePolicy
 {
+    /** JSON values */
+    private static final String IS_RM_NODE = "isRmNode";
+    private static final String RM_NODE = "rmNode";
+    private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
+    private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
+    private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
+    
+    /** true if record contributor group is enabled, false otherwise */
+    private boolean isRecordContributorsGroupEnabled = false;
+    
+    /** record contributors group */
+    private String recordContributorsGroupName = "RECORD_CONTRIBUTORS";
+    
     /** Record service */
     private RecordService recordService;
 
@@ -86,6 +102,22 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     /** Constant for checking the cache */
     private static final String RM_SITE_EXISTS = "rmSiteExists";
 
+    /**
+     * @param enabled   true if enabled, false otherwise
+     */
+    public void setRecordContributorsGroupEnabled(boolean enabled)
+    {
+        isRecordContributorsGroupEnabled = enabled;
+    }
+    
+    /**
+     * @param recordContributorsGroupName   record contributors group name
+     */
+    public void setRecordContributorsGroupName(String recordContributorsGroupName)
+    {
+        this.recordContributorsGroupName = recordContributorsGroupName;
+    }
+    
     /**
      * @param recordService record service
      */
@@ -199,21 +231,25 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
             // Set the base root values
             super.setRootValues(nodeInfo, rootJSONObject, useShortQNames);
 
+            // check the exisitance of the RM site
             checkRmSiteExistence(rootJSONObject);
+            
+            // get the record contributor information
+            rootJSONObject.put(IS_RECORD_CONTRIBUTOR_GROUP_ENABLED, isRecordContributorsGroupEnabled);
+            rootJSONObject.put(RECORD_CONTRIBUTOR_GROUP_NAME, recordContributorsGroupName);
 
             // Get the node reference for convenience
             NodeRef nodeRef = nodeInfo.getNodeRef();
 
-            if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef,
-                    RMPermissionModel.VIEW_RECORDS)))
+            if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, ViewRecordsCapability.NAME)))
             {
                 // Indicate whether the node is a RM object or not
                 boolean isFilePlanComponent = filePlanService.isFilePlanComponent(nodeInfo.getNodeRef());
-                rootJSONObject.put("isRmNode", isFilePlanComponent);
+                rootJSONObject.put(IS_RM_NODE, isFilePlanComponent);
 
                 if (isFilePlanComponent)
                 {
-                    rootJSONObject.put("rmNode", setRmNodeValues(nodeRef, useShortQNames));
+                    rootJSONObject.put(RM_NODE, setRmNodeValues(nodeRef, useShortQNames));
 
                     // FIXME: Is this the right place to add the information?
                     addInfo(nodeInfo, rootJSONObject);
@@ -222,6 +258,11 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         }
     }
 
+    /**
+     * Checks for the existance of the RM site
+     * 
+     * @param rootJSONObject    the root JSON object
+     */
     @SuppressWarnings("unchecked")
     private void checkRmSiteExistence(JSONObject rootJSONObject)
     {
@@ -231,17 +272,17 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
             if (site != null)
             {
                 getJsonConversionComponentCache().put(RM_SITE_EXISTS, true);
-                rootJSONObject.put("isRmSiteCreated", true);
+                rootJSONObject.put(IS_RM_SITE_CREATED, true);
             }
             else
             {
                 getJsonConversionComponentCache().put(RM_SITE_EXISTS, false);
-                rootJSONObject.put("isRmSiteCreated", false);
+                rootJSONObject.put(IS_RM_SITE_CREATED, false);
             }
         }
         else
         {
-            rootJSONObject.put("isRmSiteCreated", getJsonConversionComponentCache().get(RM_SITE_EXISTS));
+            rootJSONObject.put(IS_RM_SITE_CREATED, getJsonConversionComponentCache().get(RM_SITE_EXISTS));
         }
     }
 
@@ -293,6 +334,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
 
         if (originatingLocation != null)
         {
+            // add the originating location (if there is one)
             String pathSeparator = "/";
             String displayPath = getDisplayPath(originatingLocation);
             String[] displayPathElements = displayPath.split(pathSeparator);
@@ -324,12 +366,14 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
     }
 
     /**
-     * @param nodeRef
-     * @param useShortQName
-     * @return
+     * Helper method to set the RM node values
+     * 
+     * @param nodeRef               node reference
+     * @param useShortQName         indicates whether the short QName are used or not
+     * @return {@link JSONObject}   JSON object containing values
      */
     @SuppressWarnings("unchecked")
-    private JSONObject setRmNodeValues(NodeRef nodeRef, boolean useShortQName)
+    private JSONObject setRmNodeValues(final NodeRef nodeRef, final boolean useShortQName)
     {
         JSONObject rmNodeValues = new JSONObject();
 
@@ -339,20 +383,32 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         // Get the 'kind' of the file plan component
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         rmNodeValues.put("kind", kind.toString());
-
-        // File plan node reference
-        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-        rmNodeValues.put("filePlan", filePlan.toString());
-
-        // Unfiled container node reference
-        NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-        if (unfiledRecordContainer != null)
+        
+        Map<String, Object> values = AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, Object>>()
         {
-            rmNodeValues.put("unfiledRecordContainer", unfiledRecordContainer.toString());
-            rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
-            QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
-            rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
-        }
+            public Map<String, Object> doWork() throws Exception
+            {
+                Map<String, Object> result = new HashMap<String, Object>();
+                
+                // File plan node reference
+                NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+                result.put("filePlan", filePlan.toString());
+
+                // Unfiled container node reference
+                NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
+                if (unfiledRecordContainer != null)
+                {
+                    result.put("unfiledRecordContainer", unfiledRecordContainer.toString());
+                    result.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
+                    QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
+                    result.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
+                }
+                
+                return result;
+            }
+         });
+        
+        rmNodeValues.putAll(values);
 
         // Set the indicators array
         setIndicators(rmNodeValues, nodeRef);

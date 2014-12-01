@@ -6,8 +6,12 @@
    <bean id="jsonConversionComponentCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
    <!-- extending bean definition -->
-   <bean id="rm.jsonConversionComponent" class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
-         parent="baseJsonConversionComponent" init-method="init">
+   <bean id="rm.jsonConversionComponent" 
+   		 class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
+         parent="baseJsonConversionComponent" 
+         init-method="init">
+      <property name="recordContributorsGroupEnabled" value="${rm.record.contributors.group.enabled}"/>
+      <property name="recordContributorsGroupName" value="${rm.record.contributors.group.name}"/>
       <property name="recordService" ref="RecordService"/>
       <property name="filePlanService" ref="FilePlanService"/>
       <property name="capabilityService" ref="CapabilityService"/>

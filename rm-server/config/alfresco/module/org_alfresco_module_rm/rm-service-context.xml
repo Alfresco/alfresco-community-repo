@@ -1111,6 +1111,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.addRecordType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.link=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.unlink=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>

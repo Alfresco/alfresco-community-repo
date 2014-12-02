@@ -1635,14 +1635,68 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#link(NodeRef, NodeRef)
      */
     @Override
-    public void link(NodeRef nodeRef, NodeRef folder)
+    public void link(NodeRef record, NodeRef recordFolder)
     {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("folder", folder);
+        ParameterCheck.mandatory("record", record);
+        ParameterCheck.mandatory("recordFolder", recordFolder);
 
-        if(isRecord(nodeRef) && isRecordFolder(folder))
+        // ensure we are linking a record to a record folder
+        if(isRecord(record) && isRecordFolder(recordFolder))
         {
-            nodeService.addChild(folder, nodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).toString()));
+            // ensure that we are not linking a record to an exisiting location
+            List<ChildAssociationRef> parents = nodeService.getParentAssocs(record);
+            for (ChildAssociationRef parent : parents)
+            {
+                if (parent.getParentRef().equals(recordFolder))
+                {
+                    // we can not link a record to the same location more than once
+                    throw new AlfrescoRuntimeException("Can not link a record to the same record folder more than once");
+                }
+            }
+            
+            // get the current name of the record
+            String name = nodeService.getProperty(record, ContentModel.PROP_NAME).toString();
+            
+            // create a secondary link to the record folder
+            nodeService.addChild(
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+        }
+        else 
+        {
+            // can only link a record to a record folder
+            throw new AlfrescoRuntimeException("Can only link a record to a record folder.");
+        }
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#unlink(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void unlink(NodeRef record, NodeRef recordFolder)
+    {
+        ParameterCheck.mandatory("record", record);
+        ParameterCheck.mandatory("recordFolder", recordFolder);
+
+        // ensure we are unlinking a record from a record folder
+        if(isRecord(record) && isRecordFolder(recordFolder))
+        {
+            // check that we are not trying to unlink the primary parent
+            NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
+            if (primaryParent.equals(recordFolder))
+            {
+                throw new AlfrescoRuntimeException("Can't unlink a record from it's owning record folder.");
+            }
+            
+            // remove the link
+            nodeService.removeChild(recordFolder, record);
+        } 
+        else 
+        {
+            // can only unlink a record from a record folder
+            throw new AlfrescoRuntimeException("Can only unlink a record from a record folder.");
         }
     }
 

@@ -817,7 +817,7 @@
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
 
-   <!--  Link To -->
+   <!--  Link Record -->
 
    <bean id="linkTo_proxy" parent="rmProxyAction">
       <property name="target" ref="linkTo"/>
@@ -843,6 +843,31 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
+   </bean>
+   
+   <!--  Unlink Record -->
+   
+   <bean id="unlinkFrom_proxy" parent="rmProxyAction">
+      <property name="target" ref="linkTo"/>
+        <property name="interceptorNames">
+            <list>
+               <idref bean="unlinkFrom_security"/>
+            </list>
+         </property>
+   </bean>
+
+   <bean id="unlinkFrom_security"   parent="actionSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.DeleteLinks
+            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
+            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
+         </value>
+      </property>
+   </bean>
+
+   <bean id="unlinkFrom" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnlinkFromAction" parent="rmAction">
+      <property name="publicAction" value="false"/>
    </bean>
 
     <!-- RequestInfo action -->

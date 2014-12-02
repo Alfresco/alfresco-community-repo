@@ -108,6 +108,11 @@
       parent="declarativeCapability">
       <property name="name" value="LinkToRecords"/>
       <property name="permission" value="LinkToRecords" />
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+         </list>
+      </property>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
@@ -118,6 +123,26 @@
       <property name="targetCapability" ref="rmFilePermissionOnly" />
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="45" />
+   </bean>
+   
+   <bean id="rmDeleteLinksCapability"
+      parent="rmBaseCapability"
+      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.DeleteLinksCapability">
+      <property name="name" value="DeleteLinks"/>
+      <property name="permission" value="DeleteLinks"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozen" value="false"/>
+         </map>
+      </property>
+      <property name="group"><ref bean="recordsGroup"/></property>
+      <property name="index" value="46" />
    </bean>
 
    <bean id="rmFileUnfiledRecordsCapability"

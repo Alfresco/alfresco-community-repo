@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
@@ -221,6 +222,15 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         doReturn("admin").when(mockedAuthenticationUtil).getAdminUserName();
         doReturn("admin").when(mockedAuthenticationUtil).getFullyAuthenticatedUser();
     }
+    
+    /**
+     * Helper to generate random text value suitable for a property 
+     * value or node name
+     */
+    protected String generateText()
+    {
+        return UUID.randomUUID().toString();
+    }
 
     /**
      * Helper method to generate a qname.
@@ -393,9 +403,9 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         for (NodeRef child : children)
         {
             assocs.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parent, generateQName(), child));
+            doReturn(assocs).when(mockedNodeService).getParentAssocs(child);
         }
-
-        doReturn(assocs).when(mockedNodeService).getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+        doReturn(assocs).when(mockedNodeService).getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);        
     }
 
     @SuppressWarnings("unchecked")

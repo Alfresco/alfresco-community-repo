@@ -831,7 +831,8 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         M2Property targetProperty = findProperty(propQName, deserializedModel);
 
         // Need to count backwards to remove constraints
-        for (int i = targetProperty.getConstraints().size() - 1; i >= 0; i--) {
+        for (int i = targetProperty.getConstraints().size() - 1; i >= 0; i--) 
+        {
             String ref = targetProperty.getConstraints().get(i).getRef();
             targetProperty.removeConstraintRef(ref);
         }

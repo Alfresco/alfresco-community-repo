@@ -335,7 +335,8 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     {
         NodeRef child = null;
         List<ChildAssociationRef> children = getNodeService().getChildAssocs(parent);
-        for (ChildAssociationRef childAssoc : children) {
+        for (ChildAssociationRef childAssoc : children) 
+        {
             NodeRef childNodeRef = childAssoc.getChildRef();
             String existingChildName = (String)getNodeService().getProperty(childNodeRef, ContentModel.PROP_NAME);
             if(existingChildName.equals(childName))

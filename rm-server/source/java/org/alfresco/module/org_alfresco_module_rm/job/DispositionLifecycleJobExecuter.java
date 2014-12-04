@@ -157,7 +157,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             if (dispositionActions != null && !dispositionActions.isEmpty())
             {
                 // execute search
-                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, getQuery());
+                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, getQuery());
                 List<NodeRef> resultNodes = results.getNodeRefs();
                 results.close();
 

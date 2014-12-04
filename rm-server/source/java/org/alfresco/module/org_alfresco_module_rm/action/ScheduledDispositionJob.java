@@ -84,7 +84,7 @@ public class ScheduledDispositionJob implements Job
     	String query = "+ASPECT:\"rma:record\" +ASPECT:\"rma:dispositionSchedule\" +@rma\\:dispositionAsOf:" + dateRange;
 
     	SearchService search = (SearchService)context.getJobDetail().getJobDataMap().get("searchService");
-    	ResultSet results = search.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, query);
+    	ResultSet results = search.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, query);
 
     	List<NodeRef> resultNodes = results.getNodeRefs();
     	results.close();

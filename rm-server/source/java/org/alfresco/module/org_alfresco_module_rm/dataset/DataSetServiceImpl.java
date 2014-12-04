@@ -386,7 +386,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                 }
 
                 // Make sure all the containers do not inherit permissions
-                ResultSet rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE,
+                ResultSet rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_FTS_ALFRESCO,
                         "TYPE:\"rma:recordsManagementContainer\"");
                 try
                 {
@@ -412,7 +412,7 @@ public class DataSetServiceImpl implements DataSetService, RecordsManagementMode
                 // fix up the test dataset to fire initial events for
                 // disposition
                 // schedules
-                rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"rma:recordFolder\"");
+                rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_FTS_ALFRESCO, "TYPE:\"rma:recordFolder\"");
                 try
                 {
                     logger.info("Bootstraping " + rs.length() + " record folders ...");

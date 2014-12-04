@@ -426,10 +426,6 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         JSONArray customRefsObj = (JSONArray)dataObj.get("customReferences");
         assertNotNull("JSON 'customReferences' object was null", customRefsObj);
 
-//        for (int i = 0; i < customRefsObj.length(); i++) {
-//            System.out.println(customRefsObj.getString(i));
-//        }
-
         assertTrue("There should be at least two custom references. Found " + customRefsObj, customRefsObj.length() >= 2);
 
         // GET a specific custom reference definition.

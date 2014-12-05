@@ -363,6 +363,17 @@
       <property name="capability" value="LinkToRecords" />
    </bean>
 
+   <bean id="jsonConversionComponent.unlinkFromAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="unlinkFrom"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="DeleteLinks" />
+   </bean>
+
    <bean id="jsonConversionComponent.fileToAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="fileTo"/>

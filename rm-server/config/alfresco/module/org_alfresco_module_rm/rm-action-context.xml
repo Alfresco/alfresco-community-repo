@@ -848,7 +848,7 @@
    <!--  Unlink Record -->
    
    <bean id="unlinkFrom_proxy" parent="rmProxyAction">
-      <property name="target" ref="linkTo"/>
+      <property name="target" ref="unlinkFrom"/>
         <property name="interceptorNames">
             <list>
                <idref bean="unlinkFrom_security"/>
@@ -867,7 +867,6 @@
    </bean>
 
    <bean id="unlinkFrom" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnlinkFromAction" parent="rmAction">
-      <property name="publicAction" value="false"/>
    </bean>
 
     <!-- RequestInfo action -->

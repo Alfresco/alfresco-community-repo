@@ -126,8 +126,7 @@
    </bean>
    
    <bean id="rmDeleteLinksCapability"
-      parent="rmBaseCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.DeleteLinksCapability">
+         parent="declarativeCapability">
       <property name="name" value="DeleteLinks"/>
       <property name="permission" value="DeleteLinks"/>
       <property name="kinds">

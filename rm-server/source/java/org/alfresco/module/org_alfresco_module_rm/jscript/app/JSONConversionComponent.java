@@ -384,6 +384,13 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         rmNodeValues.put("kind", kind.toString());
         
+        // set the primary parent node reference
+        ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
+        if (assoc != null)
+        {
+            rmNodeValues.put("primaryParentNodeRef", assoc.getParentRef().toString());
+        }
+        
         Map<String, Object> values = AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, Object>>()
         {
             public Map<String, Object> doWork() throws Exception

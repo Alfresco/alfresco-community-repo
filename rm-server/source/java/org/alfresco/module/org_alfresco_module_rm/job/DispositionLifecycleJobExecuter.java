@@ -114,8 +114,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("+TYPE:\"rma:dispositionAction\" ");
-            sb.append("+(@rma\\:dispositionAction:(");
+            sb.append("TYPE:\"rma:dispositionAction\" AND");
+            sb.append("(@rma\\:dispositionAction:(");
 
             boolean bFirst = true;
             for (String dispositionAction : dispositionActions)
@@ -133,8 +133,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             }
 
             sb.append("))");
-            sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
-            sb.append("+( ");
+            sb.append(" AND ISNULL:\"rma:dispositionActionCompletedAt\" ");
+            sb.append(" AND ( ");
             sb.append("@rma\\:dispositionEventsEligible:true ");
             sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
             sb.append(") ");

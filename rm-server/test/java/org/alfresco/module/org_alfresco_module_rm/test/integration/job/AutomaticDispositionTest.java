@@ -110,17 +110,18 @@ public class AutomaticDispositionTest extends BaseRMTestCase
                 // record should now be cut off
                 assertTrue(dispositionService.isDisposableItemCutoff(record));
 
-                // TODO uncomment and ensure is working
-
-                //RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
-                //params.setEvent(CutOffAction.NAME);
-                //params.setMaxEntries(1);
-                //List<RecordsManagementAuditEntry> entries = auditService.getAuditTrail(params);
-                //assertNotNull(entries);
-                //assertEquals(1, entries.size());
-
-                //RecordsManagementAuditEntry entry = entries.get(0);
-                //assertEquals(record, entry.getNodeRef());
+                // TODO .. automatic dispoistion does not log entry in audit
+                //      .. the following test checks for this, but is currently commented out
+                //      .. because it doesn't work!
+//                RecordsManagementAuditQueryParameters params = new RecordsManagementAuditQueryParameters();
+//                params.setEvent(CutOffAction.NAME);
+//                params.setMaxEntries(1);
+//                List<RecordsManagementAuditEntry> entries = auditService.getAuditTrail(params);
+//                assertNotNull(entries);
+//                assertEquals(1, entries.size());
+//
+//                RecordsManagementAuditEntry entry = entries.get(0);
+//                assertEquals(record, entry.getNodeRef());
             }
         });
     }

@@ -33,71 +33,89 @@
       </exec>
    </target>
 
-   <target name="fetchSolr">
+   <target name="configureSolr4" description="Configures Tomcat and the Alfresco repository to use Solr4">
       <xmlproperty file="../pom.xml" keepRoot="false"/>
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
          <arg value="-DgroupId=${groupId}" />
-         <arg value="-DartifactId=${solr.artifactId}" />
+         <arg value="-DartifactId=alfresco-solr4" />
          <arg value="-Dversion=${properties.alfresco.base.version}" />
-         <arg value="-Dpackaging=${solr.packaging}" />
-         <arg value="-Ddest=${solr.directory}/${solr.package}" />
+         <arg value="-Dclassifier=config-ssl" />
+         <arg value="-Dpackaging=zip" />
+         <arg value="-Ddest=${ant.build.directory}/solr4-config.zip" />
       </exec>
-      <unzip src="${solr.directory}/${solr.package}" dest="${solr.directory}"/>
-   </target>
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${groupId}" />
+         <arg value="-DartifactId=alfresco-repository" />
+         <arg value="-Dversion=${properties.alfresco.base.version}" />
+         <arg value="-Dpackaging=jar" />
+         <arg value="-Ddest=${ant.build.directory}/alfresco-repository.jar" />
+      </exec>
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${groupId}" />
+         <arg value="-DartifactId=alfresco-solr4" />
+         <arg value="-Dversion=${properties.alfresco.base.version}" />
+         <arg value="-Dclassifier=ssl" />
+         <arg value="-Dpackaging=war" />
+         <arg value="-Ddest=${ant.build.directory}/solr4.war" />
+      </exec>
 
-   <target name="configureSolr" depends="fetchSolr"
-           description="Configures Tomcat and the Alfresco repository to use Solr">
+      <unzip src="${ant.build.directory}/solr4-config.zip" dest="${ant.build.directory}/solr4"/>
+      <unzip src="${ant.build.directory}/alfresco-repository.jar" dest="${ant.build.directory}/alfresco-repository"/>
 
-      <dirname property="temp.dir" file="${ant.file}"/>
-      <pathconvert property="base.dir" targetos="unix">
-         <path location="${temp.dir}"/>
-      </pathconvert>
-
-      <property name="data.root" value="${base.dir}/../../data" />
-      <property name="solr.root" value="${base.dir}/${solr.directory}" />
-
-      <mkdir dir="${data.root}/solr-index"/>
-
-      <!-- copy Solr config files -->
-      <copy file="${solr.directory}/context.xml"
-            tofile="${app.tomcat.folder}/conf/Catalina/localhost/solr.xml" />
-      <replace file="${app.tomcat.folder}/conf/Catalina/localhost/solr.xml" summary="yes">
-         <replacefilter token="@@ALFRESCO_SOLR_DIR@@" value="${solr.root}" />
-      </replace>
-
-      <replace file="${solr.directory}/archive-SpacesStore/conf/solrcore.properties" summary="yes">
-         <replacefilter token="@@ALFRESCO_SOLR_DIR@@" value="${data.root}/solr-index" />
-      </replace>
-
-      <replace file="${solr.directory}/workspace-SpacesStore/conf/solrcore.properties" summary="yes">
-         <replacefilter token="@@ALFRESCO_SOLR_DIR@@" value="${data.root}/solr-index" />
-      </replace>
-
-      <!-- copy keystore files -->
-      <copy todir="${data.root}/keystore">
-         <fileset dir="${solr.directory}/alf_data/keystore" />
+      <copy todir="${ant.build.directory}/solr4/keystore">
+         <fileset dir="${ant.build.directory}/alfresco-repository/alfresco/keystore" />
       </copy>
 
-      <!-- setup Tomcat SSL connector -->
-      <!-- NOTE: indentation of the replacevalue below is intentional, it matches formatting in destination file -->
+      <property name="solr.root.tmp" location="${basedir}/../../data/solr4" />
+
+      <pathconvert property="solr.root" targetos="unix">
+         <path location="${solr.root.tmp}"/>
+      </pathconvert>
+
+      <replace file="${ant.build.directory}/solr4/archive-SpacesStore/conf/solrcore.properties" summary="yes">
+         <replacefilter token="@@ALFRESCO_SOLR4_DATA_DIR@@" value="${solr.root}/index" />
+      </replace>
+      <replace file="${ant.build.directory}/solr4/workspace-SpacesStore/conf/solrcore.properties" summary="yes">
+         <replacefilter token="@@ALFRESCO_SOLR4_DATA_DIR@@" value="${solr.root}/index" />
+      </replace>
+      <replace file="${ant.build.directory}/solr4/context.xml" summary="yes">
+         <replacefilter token="@@ALFRESCO_SOLR4_DIR@@" value="${solr.root}" />
+      </replace>
+      <replace file="${ant.build.directory}/solr4/context.xml" summary="yes">
+         <replacefilter token="@@ALFRESCO_SOLR4_MODEL_DIR@@" value="${solr.root}/model" />
+      </replace>
+      <replace file="${ant.build.directory}/solr4/context.xml" summary="yes">
+         <replacefilter token="@@ALFRESCO_SOLR4_CONTENT_DIR@@" value="${solr.root}/content" />
+      </replace>
       <replace file="${app.tomcat.folder}/conf/server.xml" summary="yes">
          <replacetoken><![CDATA[<!-- Alfresco SSL Connector placeholder -->]]></replacetoken>
          <replacevalue><![CDATA[
             <Connector port="8443" protocol="org.apache.coyote.http11.Http11Protocol" SSLEnabled="true"
-                       maxThreads="150" scheme="https" keystoreFile="../../data/keystore/ssl.keystore"
+                       maxThreads="150" scheme="https" keystoreFile="../../data/solr4/keystore/ssl.keystore"
                        keystorePass="kT9X6oe68t" keystoreType="JCEKS"
                        secure="true" connectionTimeout="240000"
-                       truststoreFile="../../data/keystore/ssl.truststore"
+                       truststoreFile="../../data/solr4/keystore/ssl.truststore"
                        truststorePass="kT9X6oe68t" truststoreType="JCEKS"
                        clientAuth="want" sslProtocol="TLS" allowUnsafeLegacyRenegotiation="true" maxHttpHeaderSize="32768" />]]></replacevalue>
-      </replace>
+         </replace>
 
-      <!-- update project repository.properties file with Solr properties -->
-      <propertyfile file="${data.root}/repository.properties">
-         <entry key="dir.keystore" value="${data.root}/keystore" />
-         <entry key="index.subsystem.name"  value="solr" />
+      <propertyfile file="${solr.root}/../repository.properties">
+         <entry key="dir.keystore" value="${solr.root}/keystore" />
+         <entry key="index.subsystem.name" value="solr4" />
+         <entry key="solr.port.ssl" value="8443" />
       </propertyfile>
+
+      <copy file="${ant.build.directory}/solr4/context.xml"
+            tofile="${app.tomcat.folder}/conf/Catalina/localhost/solr4.xml" />
+      <copy todir="${solr.root}">
+         <fileset dir="${ant.build.directory}/solr4" />
+      </copy>
+      <copy todir="${app.tomcat.webapps}/">
+         <fileset file="${ant.build.directory}/solr4.war" />
+      </copy>
    </target>
 
 </project>

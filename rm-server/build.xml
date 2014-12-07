@@ -10,10 +10,10 @@
    <target name="copyDBDriver">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
-         <arg value="-DgroupId=${db.driver.groupId}" />
-         <arg value="-DartifactId=${db.driver.artifactId}" />
-         <arg value="-Dversion=${db.driver.version}" />
-         <arg value="-Dpackaging=${db.driver.packaging}" />
+         <arg value="-DgroupId=postgresql" />
+         <arg value="-DartifactId=postgresql" />
+         <arg value="-Dversion=9.1-901.jdbc4" />
+         <arg value="-Dpackaging=jar" />
          <arg value="-Ddest=${app.tomcat.folder}/lib" />
       </exec>
    </target>
@@ -24,16 +24,7 @@
       <copy file="${devContextFile}" todir="config/alfresco/extension" failonerror="true" />
    </target>
 
-   <target name="prepareEnv" depends="copyDBDriver, copyDevContextFile" description="" />
-
-   <target name="unitTest">
-      <exec executable="${mvn.exec}" failonerror="true">
-         <arg value="test" />
-         <arg value="-Dtest=AllUnitTestSuite" />
-      </exec>
-   </target>
-
-   <target name="configureSolr4" description="Configures Tomcat and the Alfresco repository to use Solr4">
+   <target name="configureSolr4">
       <xmlproperty file="../pom.xml" keepRoot="false"/>
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
@@ -118,4 +109,12 @@
       </copy>
    </target>
 
+   <target name="prepareEnv" depends="copyDBDriver, copyDevContextFile, configureSolr4" />
+
+   <target name="unitTest">
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="test" />
+         <arg value="-Dtest=AllUnitTestSuite" />
+      </exec>
+   </target>
 </project>

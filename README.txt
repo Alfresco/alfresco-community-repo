@@ -25,8 +25,10 @@ Using Eclipse
 
 Summary of Available Ant Targets
 
+ - configureSolr                : Configures Solr for Alfresco
  - fullBuild                    : Creates the amp file and applies it to the war file
  - incrementalBuild             : Creates the jar file and copies the jar file with other files like css, js, ftl, etc. files
+ - prepareEnv                   : Prepares the development environment (must be run just once)
 
 
 Summary of Available Internal Ant Targets
@@ -34,7 +36,6 @@ Summary of Available Internal Ant Targets
  - alfresco:amp                 : Creates the amp file using alfresco maven plugin
  - alfresco:install             : Installs the amp file to the war file
  - assembleIconPackage          : Assembles an icons package for the module
- - configureSolr                : Configures Solr4 for Alfresco
  - copyDBDriver                 : Copies the DB driver
  - copyDevContextFile           : Copies the dev-context.xml file
  - copyWarFileToTomcat          : Copies the war file (amp applied) to the webapp folder
@@ -45,5 +46,4 @@ Summary of Available Internal Ant Targets
  - fetchWarFile                 : Gets the "original" war file
  - install                      : Executes the "mvn install" command
  - package                      : Executes the "mvn package" command
- - prepareEnv                   : Prepares the development environment (must be run just once)
  - unitTest                     : Runs the unit tests

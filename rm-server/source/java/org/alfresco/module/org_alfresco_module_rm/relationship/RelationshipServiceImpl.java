@@ -487,8 +487,9 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         // Get the association definition name
         final QName associationDefinitionName = associationDefinition.getName();
         final NodeRef targetNode = target;
+        final NodeRef sourceNode = source;
 
-        invokeBeforeRemoveReference(source, targetNode, associationDefinitionName);
+        invokeBeforeRemoveReference(sourceNode, targetNode, associationDefinitionName);
 
         if (associationDefinition.isChild())
         {
@@ -497,7 +498,7 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
                 @Override
                 public Void doWork()
                 {
-                    List<ChildAssociationRef> children = getNodeService().getChildAssocs(targetNode);
+                    List<ChildAssociationRef> children = getNodeService().getChildAssocs(sourceNode);
                     for (ChildAssociationRef chRef : children)
                     {
                         if (associationDefinitionName.equals(chRef.getTypeQName()) && chRef.getChildRef().equals(targetNode))

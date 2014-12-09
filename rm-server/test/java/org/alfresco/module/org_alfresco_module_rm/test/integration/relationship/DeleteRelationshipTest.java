@@ -33,16 +33,15 @@ import org.alfresco.util.GUID;
  */
 public class DeleteRelationshipTest extends BaseRMTestCase
 {    
-    public void testDeleteRelationship() throws Exception
+	public void testDeleteRelationship() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+    	doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             /** test data */
         	NodeRef sourceNode;
         	NodeRef targetNode;
         	String associationName = "obsoletes";
-    
-            
+                
             public void given()
             {
             	
@@ -66,7 +65,8 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             {
                //check if relationship is deleted
             	Set<Relationship> relationships = relationshipService.getRelationshipsFrom(sourceNode);
-            	for(Relationship r : relationships){
+            	for(Relationship r : relationships)
+            	{
             		assertFalse(r.getTarget().equals(targetNode) && r.getUniqueName().equals(associationName));
             	}
             }

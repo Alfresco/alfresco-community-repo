@@ -27,6 +27,11 @@
          "eventDisplayLabel" : "rmevent.superseded"
       },
       {
+         "eventType" : "rmEventType.versioned",
+         "eventName" : "versioned",
+         "eventDisplayLabel" : "rmevent.versioned"
+      },
+      {
          "eventType" : "rmEventType.simple",
          "eventName" : "study_complete",
          "eventDisplayLabel" : "rmevent.study_complete"

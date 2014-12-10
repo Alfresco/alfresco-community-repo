@@ -13,5 +13,14 @@
       <property name="targetSchema" value="1010"/>
 	  <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
    </bean>
+   
+   <bean id="rm.versionsEventPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23VersionsEventPatch">
+      <property name="description" value="Create versions event."/>
+      <property name="fixesToSchema" value="1010"/>
+      <property name="targetSchema" value="1011"/>
+	  <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
+   </bean>
 
 </beans>

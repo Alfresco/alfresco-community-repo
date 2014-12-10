@@ -77,7 +77,7 @@ public class DispositionLifecycleAspect extends BaseBehaviourBean
     @Behaviour
     (
             kind = BehaviourKind.CLASS,
-            notificationFrequency = NotificationFrequency.FIRST_EVENT
+            notificationFrequency = NotificationFrequency.EVERY_EVENT
     )
     public void onAddAspect(final NodeRef nodeRef, final QName aspect)
     {

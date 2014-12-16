@@ -24,6 +24,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -146,6 +147,59 @@ public class CreateRecordTest extends BaseRMTestCase
             {
                 // check the details of the record
                 assertTrue(recordService.isRecord(record));
+            }
+        });           
+    }
+    
+    /**
+     * unit test for RM1649 fix
+     * test if a user with create record permissions and without file record permission is able to create a record within unfiled record container
+     */
+    public void testCreateRecordCapabilityInsideUnfiledRecordsContainer() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            /** test data */
+            String roleName = GUID.generate();
+            String user = GUID.generate();            
+            NodeRef record;
+            
+            public void given()
+            {
+                // create a role with view and create capabilities
+                Set<Capability> capabilities = new HashSet<Capability>(2);
+                capabilities.add(capabilityService.getCapability("ViewRecords"));
+                capabilities.add(capabilityService.getCapability("CreateRecords"));
+                filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
+              
+                
+                // create user and assign to role
+                createPerson(user, true);                
+                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
+                
+                //give read and file permission to user on unfiled records container
+                filePlanPermissionService.setPermission(unfiledContainer , user, RMPermissionModel.FILING);
+            }
+            
+            public void when()
+            {
+                
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        record = recordService.createRecordFromContent(unfiledContainer, GUID.generate(), TYPE_CONTENT, null, null);
+                        
+                        return null;
+                    }
+                }, user);                             
+            }
+            
+            public void then()
+            {
+                // check the details of the record
+                assertTrue(recordService.isRecord(record));
+
             }
         });           
     }

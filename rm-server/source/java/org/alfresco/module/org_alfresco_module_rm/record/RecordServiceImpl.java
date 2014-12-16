@@ -49,6 +49,7 @@ import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordsManagementContainerType;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -219,6 +220,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     
     /** Relationship service */
     private RelationshipService relationshipService;
+    
+    private RecordsManagementContainerType recordsManagementContainerType;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
@@ -356,6 +359,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.relationshipService = relationshipService;
     }
+    
+    public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType) 
+    {
+		this.recordsManagementContainerType = recordsManagementContainerType;
+	}
 
     /**
      * Init method
@@ -963,9 +971,17 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         originalAssocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
                     }
 
-                    // create a copy of the original state and add it to the unfiled record container
-                    FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
-                    record = recordInfo.getNodeRef();
+                    recordsManagementContainerType.disable();
+                    try
+                    {
+	                    // create a copy of the original state and add it to the unfiled record container
+	                    FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
+	                    record = recordInfo.getNodeRef();
+                    }
+                    finally
+                    {
+                    	recordsManagementContainerType.enable();
+                    }
                     
                     // make record
                     makeRecord(record);

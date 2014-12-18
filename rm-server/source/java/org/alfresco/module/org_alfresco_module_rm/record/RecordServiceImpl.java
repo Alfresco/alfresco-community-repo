@@ -221,6 +221,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     /** Relationship service */
     private RelationshipService relationshipService;
     
+    /** records management container type */
     private RecordsManagementContainerType recordsManagementContainerType;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
@@ -1061,7 +1062,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("nodeRef", parent);
         ParameterCheck.mandatory("name", name);
 
-        NodeRef record = null;
+        NodeRef result = null;
         NodeRef destination = parent;
 
         if (isFilePlan(parent))
@@ -1088,7 +1089,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         try
         {
             // create the new record
-            record = fileFolderService.create(destination, name, type).getNodeRef();
+            final NodeRef record = fileFolderService.create(destination, name, type).getNodeRef();
 
             // set the properties
             if (properties != null)
@@ -1104,23 +1105,32 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 writer.setMimetype(reader.getMimetype());
                 writer.putContent(reader);
             }
+            
+            result = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+            {
+    			public NodeRef doWork() throws Exception 
+    			{
+    				// Check if the "record" aspect has been applied already.
+    		        // In case of filing a report the created node will be made
+    		        // a record within the "onCreateChildAssociation" method if
+    		        // a destination for the report has been selected.
+    		        if (!nodeService.hasAspect(record, ASPECT_RECORD))
+    		        {
+    		            // make record
+    		            makeRecord(record);
+    		        }
+    		        
+    				return record;
+    			}
+            	
+            });
         }
         finally
         {
             enablePropertyEditableCheck();
         }
 
-        // Check if the "record" aspect has been applied already.
-        // In case of filing a report the created node will be made
-        // a record within the "onCreateChildAssociation" method if
-        // a destination for the report has been selected.
-        if (!nodeService.hasAspect(record, ASPECT_RECORD))
-        {
-            // make record
-            makeRecord(record);
-        }
-
-        return record;
+        return result;
     }
 
     /**

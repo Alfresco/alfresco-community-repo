@@ -22,5 +22,16 @@
       <property name="targetSchema" value="1011"/>
 	  <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
    </bean>
+   
+   <bean id="rm.endRetenionCapabilityPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v23.RMv23EndRetentionCapabilityPatch">
+      <property name="description" value="Add EndRetenion capability."/>
+      <property name="fixesToSchema" value="1011"/>
+      <property name="targetSchema" value="1012"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
+   </bean>
 
 </beans>

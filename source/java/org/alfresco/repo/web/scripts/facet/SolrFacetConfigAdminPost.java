@@ -20,6 +20,7 @@
 package org.alfresco.repo.web.scripts.facet;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -65,8 +66,7 @@ public class SolrFacetConfigAdminPost extends AbstractSolrFacetConfigAdminWebScr
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not save the facet configuration.", t);
         }
 
-        Map<String, Object> model = new HashMap<String, Object>(1);
-        return model;
+        return new HashMap<>(); // Needs to be mutable.
     }
 
     private SolrFacetProperties parseRequestForFacetProperties(WebScriptRequest req)

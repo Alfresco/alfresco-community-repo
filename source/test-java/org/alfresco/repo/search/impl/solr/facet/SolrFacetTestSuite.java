@@ -40,6 +40,7 @@ public class SolrFacetTestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(SolrFacetQueriesDisplayHandlersTest.class));
         suite.addTest(new JUnit4TestAdapter(SolrFacetServiceImplTest.class));
         suite.addTest(new JUnit4TestAdapter(SolrFacetConfigTest.class));
+        suite.addTest(new JUnit4TestAdapter(SolrFacetComparatorTest.class));
 
         return suite;
     }

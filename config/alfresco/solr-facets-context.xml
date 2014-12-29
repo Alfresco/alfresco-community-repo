@@ -29,11 +29,21 @@
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
       <property name="policyComponent" ref="policyComponent" />
+      <property name="repositoryHelper" ref="repositoryHelper" />
       <property name="facetConfig" ref="solrFacetConfigs" />
       <property name="singletonCache" ref="immutableSingletonCache" />
       <property name="facetNodeRefCache" ref="solrFacetNodeRefCache" />
-      <property name="facetsRootXPath">
-         <value>${solr_facets.root}</value>
+      <property name="facetsRootXPath"     value="${solr_facets.root}" />
+      <property name="facetsRootChildName" value="${spaces.solr_facets.root.childname}" />
+
+      <!-- Properties for bootstrapping the SOLR Facets folder -->
+      <property name="importerBootstrap" ref="spacesBootstrap" />
+      <property name="bootstrapView">
+         <props>
+            <prop key="path">${solr_facets.root.path}</prop>
+            <prop key="location">alfresco/bootstrap/solrFacetsRootFolder.xml</prop>
+            <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+         </props>
       </property>
    </bean>
 

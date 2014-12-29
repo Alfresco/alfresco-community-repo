@@ -108,7 +108,7 @@ public class GenericBootstrapPatch extends AbstractPatch
             }
             else if (results.size() == 1)
             {
-                // nothing to do - it exsists
+                // nothing to do - it exists
                 return I18NUtil.getMessage(MSG_EXISTS, checkPath);
                 
             }

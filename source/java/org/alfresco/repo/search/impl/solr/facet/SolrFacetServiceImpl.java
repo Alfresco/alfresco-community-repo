@@ -423,11 +423,12 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         }
 
         // Get the facet root node reference
-        final NodeRef facetRoot = getFacetsRoot();
+        NodeRef facetRoot = getFacetsRoot();
         if (facetRoot == null)
         {
-            createFacetsRootFolder();
+            facetRoot = createFacetsRootFolder();
         }
+        final NodeRef finalFacetRoot = facetRoot;
 
         return AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
@@ -438,13 +439,13 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                 {
                     public NodeRef execute() throws Exception
                     {
-                        behaviourFilter.disableBehaviour(facetRoot, ContentModel.ASPECT_AUDITABLE);
+                        behaviourFilter.disableBehaviour(finalFacetRoot, ContentModel.ASPECT_AUDITABLE);
                         try
                         {
                             Map<QName, Serializable> properties = createNodeProperties(facetProperties);
                             // We don't want the node to be indexed
                             properties.put(ContentModel.PROP_IS_INDEXED, false);
-                            NodeRef ref = nodeService.createNode(facetRoot, ContentModel.ASSOC_CONTAINS,
+                            NodeRef ref = nodeService.createNode(finalFacetRoot, ContentModel.ASSOC_CONTAINS,
                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, filterID),
                                         SolrFacetModel.TYPE_FACET_FIELD, properties).getChildRef();
                             if (logger.isDebugEnabled())
@@ -455,7 +456,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                         }
                         finally
                         {
-                            behaviourFilter.enableBehaviour(facetRoot, ContentModel.ASPECT_AUDITABLE);
+                            behaviourFilter.enableBehaviour(finalFacetRoot, ContentModel.ASPECT_AUDITABLE);
                         }
                     }
                 }, false);

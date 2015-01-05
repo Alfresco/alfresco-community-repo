@@ -201,7 +201,7 @@
     </bean>
 
     <!-- Bootstrap node parameter processor  -->
-    <bean id="nodeParameterSuggesterBootstrap" class="org.alfresco.repo.action.parameter.NodeParameterSuggesterBootstrap" init-method="init">
+    <bean id="nodeParameterSuggesterBootstrap" class="org.alfresco.repo.action.parameter.NodeParameterSuggesterBootstrap" >
        <property name="namespaceService" ref="namespaceService"/>
        <property name="nodeParameterProcessor" ref="nodeParameterProcessor"/>
        <property name="nodeParameterProcessorAspects">

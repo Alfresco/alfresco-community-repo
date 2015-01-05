@@ -43,6 +43,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.OwnableService;
@@ -293,6 +294,28 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
                     // remove owner
                     getOwnableService().setOwner(nodeRef, NO_OWNER);
+
+                    if (isParentNodeFilePlan)
+                    {
+                        Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
+                        for (AccessPermission perm : perms)
+                        {
+                            if (RMPermissionModel.FILING.equals(perm.getPermission()))
+                            {
+                                AccessStatus accessStatus = perm.getAccessStatus();
+                                boolean allow = false;
+                                if (AccessStatus.ALLOWED.equals(accessStatus))
+                                {
+                                    allow = true;
+                                }
+                                permissionService.setPermission(
+                                        nodeRef,
+                                        perm.getAuthority(),
+                                        perm.getPermission(),
+                                        allow);
+                            }
+                        }
+                    }
 
                     return null;
                 }

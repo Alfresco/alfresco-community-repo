@@ -173,6 +173,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected NodeRef rmFolder;
     protected NodeRef unfiledContainer;
     protected String collabSiteId;
+    protected NodeRef holdsContainer;
+    protected NodeRef transfersContainer;
 
     /** multi-hierarchy test data
      *
@@ -506,6 +508,14 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 	                // unfiled container
 	                unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
 	                assertNotNull(unfiledContainer);
+
+	                // holds container
+	                holdsContainer = filePlanService.getHoldContainer(filePlan);
+	                assertNotNull(holdsContainer);
+
+	                // transfers container
+	                transfersContainer = filePlanService.getTransferContainer(filePlan);
+	                assertNotNull(transfersContainer);
             	}
             }
         }, AuthenticationUtil.getSystemUserName());

@@ -1004,6 +1004,10 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     recordFolderService.closeRecordFolder(nodeRef);
                 }
             }
+            else
+            {
+                throw new AlfrescoRuntimeException("unable to perform cutoff, because node is frozen or has frozen children");
+            }
         }
         else
         {

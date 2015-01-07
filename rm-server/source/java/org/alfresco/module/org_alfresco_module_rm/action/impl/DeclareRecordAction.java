@@ -61,24 +61,24 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) &&
-                recordService.isRecord(actionedUponNodeRef) &&
-                !freezeService.isFrozen(actionedUponNodeRef))
+        if (getNodeService().exists(actionedUponNodeRef) &&
+                getRecordService().isRecord(actionedUponNodeRef) &&
+                !getFreezeService().isFrozen(actionedUponNodeRef))
         {
-            if (!recordService.isDeclared(actionedUponNodeRef))
+            if (!getRecordService().isDeclared(actionedUponNodeRef))
             {
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add
                 if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
                 {
-                    recordService.disablePropertyEditableCheck();
+                    getRecordService().disablePropertyEditableCheck();
                     try
                     {
                         // Add the declared aspect
                         Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
                         declaredProps.put(PROP_DECLARED_AT, new Date());
                         declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-                        this.nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
+                        this.getNodeService().addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
 
                         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                         {
@@ -86,14 +86,14 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                             public Void doWork()
                             {
                                 // remove all owner related rights
-                                ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
+                                getOwnableService().setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
                                 return null;
                             }
                         });
                     }
                     finally
                     {
-                        recordService.enablePropertyEditableCheck();
+                        getRecordService().enablePropertyEditableCheck();
                     }
                 }
                 else
@@ -134,11 +134,11 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     {
         boolean result = true;
 
-        Map<QName, Serializable> nodeRefProps = this.nodeService.getProperties(nodeRef);
+        Map<QName, Serializable> nodeRefProps = this.getNodeService().getProperties(nodeRef);
 
-        QName nodeRefType = this.nodeService.getType(nodeRef);
+        QName nodeRefType = this.getNodeService().getType(nodeRef);
 
-        TypeDefinition typeDef = this.dictionaryService.getType(nodeRefType);
+        TypeDefinition typeDef = this.getDictionaryService().getType(nodeRefType);
         for (PropertyDefinition propDef : typeDef.getProperties().values())
         {
             if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
@@ -152,10 +152,10 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
 
         if (result)
         {
-            Set<QName> aspects = this.nodeService.getAspects(nodeRef);
+            Set<QName> aspects = this.getNodeService().getAspects(nodeRef);
             for (QName aspect : aspects)
             {
-                AspectDefinition aspectDef = this.dictionaryService.getAspect(aspect);
+                AspectDefinition aspectDef = this.getDictionaryService().getAspect(aspect);
                 for (PropertyDefinition propDef : aspectDef.getProperties().values())
                 {
                     if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)

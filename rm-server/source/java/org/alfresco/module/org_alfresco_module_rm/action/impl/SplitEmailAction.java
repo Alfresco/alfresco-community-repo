@@ -137,23 +137,23 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         // get node type
-        nodeService.getType(actionedUponNodeRef);
+        getNodeService().getType(actionedUponNodeRef);
 
         if (logger.isDebugEnabled())
         {
             logger.debug("split email:" + actionedUponNodeRef);
         }
 
-        if (recordService.isRecord(actionedUponNodeRef))
+        if (getRecordService().isRecord(actionedUponNodeRef))
         {
-            if (!recordService.isDeclared(actionedUponNodeRef))
+            if (!getRecordService().isDeclared(actionedUponNodeRef))
             {
-                ChildAssociationRef parent = nodeService.getPrimaryParent(actionedUponNodeRef);
+                ChildAssociationRef parent = getNodeService().getPrimaryParent(actionedUponNodeRef);
 
                 /**
                  * Check whether the email message has already been split - do nothing if it has already been split
                  */
-                List<AssociationRef> refs = nodeService.getTargetAssocs(actionedUponNodeRef, ImapModel.ASSOC_IMAP_ATTACHMENT);
+                List<AssociationRef> refs = getNodeService().getTargetAssocs(actionedUponNodeRef, ImapModel.ASSOC_IMAP_ATTACHMENT);
                 if(refs.size() > 0)
                 {
                     if (logger.isDebugEnabled())
@@ -168,7 +168,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                  */
                 try
                 {
-                    ContentReader reader = contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+                    ContentReader reader = getContentService().getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
                     InputStream is = reader.getContentInputStream();
                     MimeMessage mimeMessage = new MimeMessage(null, is);
                     Object content = mimeMessage.getContent();
@@ -225,7 +225,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             }
         }
 
-        Map<QName, Serializable> messageProperties = nodeService.getProperties(messageNodeRef);
+        Map<QName, Serializable> messageProperties = getNodeService().getProperties(messageNodeRef);
         String messageTitle = (String)messageProperties.get(ContentModel.PROP_NAME);
         if(messageTitle == null)
         {
@@ -245,7 +245,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         /**
          * Create an attachment node in the same folder as the message
          */
-        ChildAssociationRef attachmentRef = nodeService.createNode(parentNodeRef,
+        ChildAssociationRef attachmentRef = getNodeService().createNode(parentNodeRef,
                         ContentModel.ASSOC_CONTAINS,
                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
                         ContentModel.TYPE_CONTENT,
@@ -254,7 +254,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         /**
          * Write the content into the new attachment node
          */
-        ContentWriter writer = contentService.getWriter(attachmentRef.getChildRef(), ContentModel.PROP_CONTENT, true);
+        ContentWriter writer = getContentService().getWriter(attachmentRef.getChildRef(), ContentModel.PROP_CONTENT, true);
         writer.setMimetype(contentType.getBaseType());
         OutputStream os = writer.getContentOutputStream();
         FileCopyUtils.copy(part.getInputStream(), os);
@@ -281,7 +281,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                 getRelationshipService().addRelationship(relationshipUniqueName, parentRef, childRef);
 
                 // add the IMAP attachment aspect
-                nodeService.createAssociation(
+                getNodeService().createAssociation(
                         parentRef,
                         childRef,
                         ImapModel.ASSOC_IMAP_ATTACHMENT);

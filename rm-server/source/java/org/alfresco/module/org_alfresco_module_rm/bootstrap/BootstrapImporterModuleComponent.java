@@ -40,6 +40,9 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 
     /** module patch executer */
     private ModulePatchExecuter modulePatchExecuter;
+    
+    /** record contributors group bootstrap component */
+    private RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent;
 
     /**
      * @param nodeService   node service
@@ -58,6 +61,14 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 	}
 
     /**
+     * @param recordContributorsGroupBootstrapComponent record contributors group bootstrap component
+     */
+    public void setRecordContributorsGroupBootstrapComponent(RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent)
+    {
+        this.recordContributorsGroupBootstrapComponent = recordContributorsGroupBootstrapComponent;
+    }
+    
+    /**
      * Need to check whether this module has already been executed.
      *
      * @see org.alfresco.repo.module.ImporterModuleComponent#executeInternal()
@@ -69,6 +80,9 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
         if (!nodeService.exists(nodeRef))
         {
             super.executeInternal();
+            
+            // bootstrap the record contributors group
+            recordContributorsGroupBootstrapComponent.createRecordContributorsGroup();
 
             // init module schema number
             modulePatchExecuter.initSchemaVersion();

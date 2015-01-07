@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 
+import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost.RECORDED_VERSION;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.testng.Assert.assertEquals;
@@ -63,10 +65,8 @@ public class RecordedVersionConfigPostTest extends BaseRecordedVersionConfigTest
     @Test
     public void setRecordedVersionConfig() throws Exception
     {
-        RecordableVersionPolicy policy = RecordableVersionPolicy.ALL;
-
         // Build the content
-        String content = buildContent(policy);
+        String content = buildContent(ALL);
 
         // Build parameters
         Map<String, String> parameters = buildParameters();
@@ -82,7 +82,7 @@ public class RecordedVersionConfigPostTest extends BaseRecordedVersionConfigTest
         assertEquals(json.length(), 0);
 
         // Test document must have recordable version policy "ALL" set
-        doReturn(policy).when(mockedNodeService).getProperty(testdoc, PROP_RECORDABLE_VERSION_POLICY);
+        doReturn(ALL).when(mockedNodeService).getProperty(testdoc, PROP_RECORDABLE_VERSION_POLICY);
     }
 
     /**
@@ -95,7 +95,7 @@ public class RecordedVersionConfigPostTest extends BaseRecordedVersionConfigTest
     {
         StringBuilder sb = new StringBuilder();
         sb.append("{\"");
-        sb.append(RecordedVersionConfigPost.RECORDED_VERSION);
+        sb.append(RECORDED_VERSION);
         sb.append("\":\"");
         sb.append(policy.toString());
         sb.append("\"}");

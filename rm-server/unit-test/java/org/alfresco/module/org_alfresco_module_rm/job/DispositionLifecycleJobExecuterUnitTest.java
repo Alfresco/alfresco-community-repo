@@ -47,7 +47,7 @@ import org.mockito.Mock;
 
 /**
  * Disposition lifecycle job execution unit test.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
@@ -57,16 +57,16 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     private static final String CUTOFF = "cutoff";
     private static final String RETAIN = "retain";
     private static final String DESTROY = "destroy";
-    
+
     /** test query snipit */
     private static final String QUERY = "\"" + CUTOFF + "\" OR \"" + RETAIN + "\"";
-    
+
     /** mocked result set */
     @Mock ResultSet mockedResultSet;
-    
+
     /** disposition lifecycle job executer */
     @InjectMocks DispositionLifecycleJobExecuter executer;
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
@@ -75,25 +75,25 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     public void before() throws Exception
     {
         super.before();
-        
+
         // setup data
         List<String> dispositionActions = buildList(CUTOFF, RETAIN);
         executer.setDispositionActions(dispositionActions);
-        
+
         // setup interactions
-        doReturn(mockedResultSet).when(mockedSearchService).query(eq(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), eq(SearchService.LANGUAGE_LUCENE), anyString());
+        doReturn(mockedResultSet).when(mockedSearchService).query(eq(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), eq(SearchService.LANGUAGE_FTS_ALFRESCO), anyString());
     }
-    
+
     /**
      * Helper method to verify that the query has been executed and closed
      */
     private void verifyQuery()
     {
-        verify(mockedSearchService, times(1)).query(eq(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), eq(SearchService.LANGUAGE_LUCENE), contains(QUERY));
+        verify(mockedSearchService, times(1)).query(eq(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE), eq(SearchService.LANGUAGE_FTS_ALFRESCO), contains(QUERY));
         verify(mockedResultSet, times(1)).getNodeRefs();
-        verify(mockedResultSet, times(1)).close();        
+        verify(mockedResultSet, times(1)).close();
     }
-    
+
     /**
      * When the are no results in query.
      */
@@ -102,19 +102,19 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
     {
         // given
         doReturn(Collections.EMPTY_LIST).when(mockedResultSet).getNodeRefs();
-        
+
         // when
         executer.executeImpl();
-        
+
         // then
-        
+
         // ensure the query is executed and closed
         verifyQuery();
-        
+
         // ensure nothing else happens becuase we have no results
         verifyZeroInteractions(mockedNodeService, mockedRecordFolderService, mockedRetryingTransactionHelper);
     }
-    
+
     /**
      * When the disposition actions do not match those that can be processed automatically.
      */
@@ -126,34 +126,34 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         NodeRef node1 = generateNodeRef();
         NodeRef node2 = generateNodeRef();
         List<NodeRef> nodeRefs = buildList(node1, node2);
-        
+
         // given
         doReturn(nodeRefs).when(mockedResultSet).getNodeRefs();
         doReturn(DESTROY).when(mockedNodeService).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(DESTROY).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-                
+
         // when
         executer.executeImpl();
-        
+
         // then
-        
+
         // ensure the query is executed and closed
         verifyQuery();
-        
+
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
         verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class));
-        
+
         // ensure each node is process correctly
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         verify(mockedNodeService, times(1)).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
-        
+
         // ensure no more interactions
         verifyNoMoreInteractions(mockedNodeService);
         verifyZeroInteractions(mockedRecordsManagementActionService);
-        
+
     }
-    
+
     /**
      * When a node does not exist
      */
@@ -163,26 +163,26 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         // test data
         NodeRef node1 = generateNodeRef(null, false);
         List<NodeRef> nodeRefs = buildList(node1);
-        
+
         // given
         doReturn(nodeRefs).when(mockedResultSet).getNodeRefs();
-                
+
         // when
         executer.executeImpl();
-        
+
         // then
-        
+
         // ensure the query is executed and closed
         verifyQuery();
-        
+
         // ensure the node exist check is made for the node
         verify(mockedNodeService, times(1)).exists(any(NodeRef.class));
-        
+
         // ensure no more interactions
         verifyNoMoreInteractions(mockedNodeService);
-        verifyZeroInteractions(mockedRecordsManagementActionService, mockedRetryingTransactionHelper); 
+        verifyZeroInteractions(mockedRecordsManagementActionService, mockedRetryingTransactionHelper);
     }
-    
+
     /**
      * When there are disposition actions eligible for processing
      */
@@ -195,26 +195,26 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         NodeRef node2 = generateNodeRef();
         List<NodeRef> nodeRefs = buildList(node1, node2);
         NodeRef parent = generateNodeRef();
-        ChildAssociationRef parentAssoc = new ChildAssociationRef(ASSOC_NEXT_DISPOSITION_ACTION, parent, generateQName(), generateNodeRef()); 
-        
+        ChildAssociationRef parentAssoc = new ChildAssociationRef(ASSOC_NEXT_DISPOSITION_ACTION, parent, generateQName(), generateNodeRef());
+
         // given
         doReturn(nodeRefs).when(mockedResultSet).getNodeRefs();
         doReturn(CUTOFF).when(mockedNodeService).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(RETAIN).when(mockedNodeService).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         doReturn(parentAssoc).when(mockedNodeService).getPrimaryParent(any(NodeRef.class));
-                
+
         // when
         executer.executeImpl();
-        
+
         // then
-        
+
         // ensure the query is executed and closed
         verifyQuery();
-        
+
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
         verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class));
-        
+
         // ensure each node is process correctly
         // node1
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
@@ -224,7 +224,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
         verify(mockedNodeService, times(1)).getProperty(node2, RecordsManagementModel.PROP_DISPOSITION_ACTION);
         verify(mockedNodeService, times(1)).getPrimaryParent(node2);
         verify(mockedRecordsManagementActionService, times(1)).executeRecordsManagementAction(eq(parent), eq(RETAIN), anyMap());
-        
+
         // ensure no more interactions
         verifyNoMoreInteractions(mockedNodeService, mockedRecordsManagementActionService);
     }

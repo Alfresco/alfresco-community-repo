@@ -132,7 +132,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         });
 
         // return the report name
-        String filedReportName = (String) nodeService.getProperty(filedReport, ContentModel.PROP_NAME);
+        String filedReportName = (String) getNodeService().getProperty(filedReport, ContentModel.PROP_NAME);
         action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, filedReportName);
     }
 
@@ -186,6 +186,6 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     private QName getReportType(Action action)
     {
         String reportType = getParameterValue(action, REPORT_TYPE);
-        return QName.createQName(reportType, namespaceService);
+        return QName.createQName(reportType, getNamespaceService());
     }
 }

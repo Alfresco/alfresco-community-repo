@@ -215,8 +215,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Access denied");
-                ade.printStackTrace();
+                logger.debug("Access denied: " + ade.getMessage());
             }
             throw ade;
         }
@@ -224,8 +223,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Access denied by runtime exception");
-                re.printStackTrace();
+                logger.debug("Access denied by runtime exception: " + re.getMessage());
             }
             throw re;
         }

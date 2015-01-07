@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -117,7 +118,7 @@ public class DataLoadSystemTest
                final SiteInfo site = siteService.getSite("test");
                if (site == null)
                {
-                   Assert.fail("The collab site test is not present.");
+                   throw new AlfrescoRuntimeException("The collab site test is not present.");
                }
 
                final NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
@@ -146,7 +147,6 @@ public class DataLoadSystemTest
                // create content and declare as record
                repeatInTransactionBatches(new RunAsWork<Void>()
                {
-                  @SuppressWarnings("null")
                   public Void doWork() throws Exception
                   {
                       // create document

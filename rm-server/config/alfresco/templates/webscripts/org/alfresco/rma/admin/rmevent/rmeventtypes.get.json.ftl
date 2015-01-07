@@ -8,7 +8,7 @@
 		"${eventtype.name}":
 		{
 		  "eventTypeName" : "${eventtype.name}",
-		  "eventTypeDisplayLabel" : "${eventtype.displayLabel}" 
+		  "eventTypeDisplayLabel" : "<#if eventtype.displayLabel??>${eventtype.displayLabel}<#else></#if>" 
 		}<#if eventtype_has_next>,</#if>
 		</#list>
 	}

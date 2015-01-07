@@ -18,16 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -38,68 +35,41 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordedVersionConfigGet extends AbstractRmWebScript implements RecordableVersionModel
+public class RecordedVersionConfigGet extends AbstractRmWebScript
 {
+    /** Recordable version config service */
+    private RecordableVersionConfigService recordableVersionConfigService;
+
+    /**
+     * Gets the recordable version config service
+     *
+     * @return The recordable version config service
+     */
+    protected RecordableVersionConfigService getRecordableVersionConfigService()
+    {
+        return this.recordableVersionConfigService;
+    }
+
+    /**
+     * Sets the recordable version config service
+     *
+     * @param recordableVersionConfigService The recordable version config service
+     */
+    public void setRecordableVersionConfigService(RecordableVersionConfigService recordableVersionConfigService)
+    {
+        this.recordableVersionConfigService = recordableVersionConfigService;
+    }
+
     /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        RecordableVersionPolicy[] recordableVersionPolicies = RecordableVersionPolicy.values();
-        List<Map<String, Object>> recordableVersions = new ArrayList<Map<String,Object>>(recordableVersionPolicies.length);
-        NodeRef documentNodeRef = parseRequestForNodeRef(req);
-
-        for (RecordableVersionPolicy recordableVersionPolicy : recordableVersionPolicies)
-        {
-            recordableVersions.add(buildRecordableVersionData(recordableVersionPolicy, documentNodeRef));
-        }
-
         Map<String, Object> model = new HashMap<String, Object>(1);
+        NodeRef nodeRef = parseRequestForNodeRef(req);
+        List<Version> recordableVersions = getRecordableVersionConfigService().getVersions(nodeRef);
         model.put("recordableVersions", recordableVersions);
         return model;
-    }
-
-    /**
-     * Builds the recordable version data
-     *
-     * @param recordableVersionPolicy The recordable version policy
-     * @param nodeRef Node reference of the document
-     * @return A map containing the information about recordable version policy and if this policy is selected for the document
-     */
-    private Map<String, Object> buildRecordableVersionData(RecordableVersionPolicy recordableVersionPolicy, NodeRef nodeRef)
-    {
-        Map<String, Object> recordableVersionData = new HashMap<String, Object>(2);
-        recordableVersionData.put("policy", recordableVersionPolicy.toString());
-        recordableVersionData.put("selected", isVersionPolicySelected(recordableVersionPolicy, nodeRef));
-        return recordableVersionData;
-    }
-
-    /**
-     * Checks if the specified recordable version policy has been selected for the document
-     *
-     * @param recordableVersionPolicy The recordable version policy
-     * @param nodeRef Node reference of the document
-     * @return <code>true</code> if the specified recordable version policy has been selected for the document, <code>false</code> otherwise
-     */
-    private boolean isVersionPolicySelected(RecordableVersionPolicy recordableVersionPolicy, NodeRef nodeRef)
-    {
-        boolean isVersionPolicySelected = false;
-        String policy = (String) getNodeService().getProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY);
-        if (StringUtils.isNotBlank(policy))
-        {
-            if (RecordableVersionPolicy.valueOf(policy).equals(recordableVersionPolicy))
-            {
-                isVersionPolicySelected = true;
-            }
-        }
-        else
-        {
-            if (recordableVersionPolicy.equals(RecordableVersionPolicy.NONE))
-            {
-                isVersionPolicySelected = true;
-            }
-        }
-        return isVersionPolicySelected;
     }
 }

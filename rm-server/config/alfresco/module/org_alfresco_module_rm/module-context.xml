@@ -16,6 +16,7 @@
       parent="module.baseComponent">
       <property name="nodeService" ref="nodeService" />
       <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
+      <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
       <property name="description" value="Bootstrap records management data"/>
@@ -31,6 +32,13 @@
          </list>
       </property>
    </bean>
+
+	<!-- Record contributors group bootstrap component -->
+	<bean id="recordContributorsGroupBootstrapComponent"
+          class="org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponent">
+       <property name="authorityService" ref="AuthorityService" />
+       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+    </bean>
 
    <!--  Bootstap the message property files -->
    <bean id="org_alfresco_module_rm_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
@@ -49,7 +57,8 @@
          </list>
       </property>
    </bean>
-
+   
+   <!-- Import RM model -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-model-context.xml"/>
 
    <!-- Import RM Audit -->
@@ -90,6 +99,41 @@
 
    <!--  Import the deprecated beans -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-deprecated-context.xml"/>
+   
+   <!-- Event types -->
+   <bean id="rmEventType" init-method="init" abstract="true">
+      <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
+   </bean>
+
+   <bean id="rmEventType.simple" class="org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl" parent="rmEventType"/>
+
+   <bean id="rmEventType.superseded" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
+      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}supersedes"/>
+      <property name="dispositionService" ref="dispositionService"/>
+      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+   </bean>
+
+   <bean id="rmEventType.obsolete" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
+      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}obsoletes"/>
+      <property name="dispositionService" ref="dispositionService"/>
+      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+   </bean>
+   
+   <bean id="rmEventType.versioned" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
+      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}versions"/>
+      <property name="dispositionService" ref="dispositionService"/>
+      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+   </bean>
+
+   <bean id="rmEventType.crossReferencedRecordTransfered" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferencedRecordActionedUpon" parent="rmEventType">
+      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}crossreference"/>
+      <property name="actionName" value="transferComplete"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="dispositionService" ref="dispositionService"/>
+      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
+      <property name="recordService" ref="recordService" />
+      <property name="recordFolderService" ref="RecordFolderService"/>
+   </bean>
 
    <!--  Import the RM module patches -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-context.xml"/>
@@ -118,36 +162,7 @@
       <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
       <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
    </bean>
-
-   <!-- Event types -->
-   <bean id="rmEventType" init-method="init" abstract="true">
-      <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
-   </bean>
-
-   <bean id="rmEventType.simple" class="org.alfresco.module.org_alfresco_module_rm.event.SimpleRecordsManagementEventTypeImpl" parent="rmEventType"/>
-
-   <bean id="rmEventType.superseded" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
-      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}supersedes"/>
-      <property name="dispositionService" ref="dispositionService"/>
-      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-   </bean>
-
-   <bean id="rmEventType.obsolete" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
-      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}obsoletes"/>
-      <property name="dispositionService" ref="dispositionService"/>
-      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-   </bean>
-
-   <bean id="rmEventType.crossReferencedRecordTransfered" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferencedRecordActionedUpon" parent="rmEventType">
-      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}crossreference"/>
-      <property name="actionName" value="transferComplete"/>
-      <property name="nodeService" ref="nodeService"/>
-      <property name="dispositionService" ref="dispositionService"/>
-      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-      <property name="recordService" ref="recordService" />
-      <property name="recordFolderService" ref="RecordFolderService"/>
-   </bean>
-
+   
    <!--  Job context -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-job-context.xml"/>
 
@@ -159,6 +174,7 @@
       <property name="caveatConfigService" ref="caveatConfigService"/>
       <property name="customEmailMappingService" ref="customEmailMappingService"/>
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
+      <property name="suggesterBootstrap" ref="nodeParameterSuggesterBootstrap"/>
    </bean>
 
    <!-- Java script interface for rm caveat config-->

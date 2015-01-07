@@ -466,7 +466,6 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="personService" ref="PersonService" />
-      <property name="contentService" ref="ContentService" />
    </bean>
 
    <bean
@@ -618,11 +617,35 @@
    <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost"
       parent="rmBaseWebscript">
+      <property name="RecordableVersionConfigService" ref="RecordableVersionConfigService" />
    </bean>
 
    <!-- REST impl for GET recorded version config -->
    <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet"
       parent="rmBaseWebscript">
+      <property name="RecordableVersionConfigService" ref="RecordableVersionConfigService" />
+   </bean>
+
+   <!-- REST impl for GET Relationships -->
+   <bean id="webscript.org.alfresco.rma.relationships.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipsGet"
+      parent="rmBaseWebscript">
+      <property name="relationshipService" ref="RelationshipService" />
+      <property name="jsonConversionComponent" ref="jsonConversionComponent" />
+   </bean>
+
+   <!-- REST impl for GET Relationship labels -->
+   <bean id="webscript.org.alfresco.rma.relationshiplabels.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipLabelsGet"
+      parent="rmBaseWebscript">
+      <property name="relationshipService" ref="RelationshipService" />
+   </bean>
+
+   <!-- REST impl for DELETE Relationship -->
+   <bean id="webscript.org.alfresco.rma.relationship.delete"
+      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipDelete"
+      parent="rmBaseWebscript">
+      <property name="relationshipService" ref="RelationshipService" />
    </bean>
 </beans>

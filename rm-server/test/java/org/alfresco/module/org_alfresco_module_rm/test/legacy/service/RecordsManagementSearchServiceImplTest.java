@@ -25,7 +25,7 @@ import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetails;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TestWithUserUtils;
 
 /**
@@ -136,30 +136,29 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
         super.tearDown();
     }
 
-//    FIXME!!!: Commented out. Will be fixed.
-//    public void testSearch()
-//    {
-//        // Full text search
-//        doTestInTransaction(new Test<Void>()
-//        {
-//            @Override
-//            public Void run()
-//            {
-//                String query = "keywords:\"elephant\"";
-//                RecordsManagementSearchParameters params = new RecordsManagementSearchParameters();
-//                params.setIncludeUndeclaredRecords(true);
-//                List<NodeRef> results = rmSearchService.search(siteId, query, params);
-//                assertNotNull(results);
-//                assertEquals(2, results.size());
-//
-//                return null;
-//            }
-//        }, AuthenticationUtil.getSystemUserName());
-//
-//        // Property search
-//
-//        //
-//    }
+    public void testSearch()
+    {
+        // Full text search
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                String query = "keywords:\"elephant\"";
+                RecordsManagementSearchParameters params = new RecordsManagementSearchParameters();
+                params.setIncludeUndeclaredRecords(true);
+                List<Pair<NodeRef, NodeRef>> results = rmSearchService.search(siteId, query, params);
+                assertNotNull(results);
+                assertEquals(2, results.size());
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        // Property search
+
+        //
+    }
 
     public void testSaveSearch()
     {

@@ -67,7 +67,7 @@
             <property name="rmv:recordableVersionPolicy">
                <title>Recordable Version Policy</title>
                <type>d:text</type>
-               <default>disabled</default>
+               <default>NONE</default>
                <index enabled="false"/>
                <constraints>
                   <constraint ref="rmv:recordableVersionPolicyList" />

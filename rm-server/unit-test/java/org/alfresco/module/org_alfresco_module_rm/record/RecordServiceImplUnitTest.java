@@ -21,13 +21,19 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
@@ -36,43 +42,41 @@ import org.mockito.InjectMocks;
 
 /**
  * Unit test for RecordServiceImpl
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
 public class RecordServiceImplUnitTest extends BaseUnitTest
-{   
+{
     private NodeRef nonStandardFilePlanComponent;
     private NodeRef nonStandardFilePlan;
-    
+
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
     private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
-    private static QName ASPECT_FOR_MY_FILE_PLAN            = generateQName();
-    private static QName ASPECT_FOR_BOTH                    = generateQName();
-          
+
     @InjectMocks private RecordServiceImpl recordService;
-    
+
     @SuppressWarnings("unchecked")
     @Before
     @Override
     public void before() throws Exception
     {
         super.before();
-        
+
         nonStandardFilePlanComponent = generateNodeRef(TYPE_RECORD_CATEGORY);
         nonStandardFilePlan = generateNodeRef(TYPE_MY_FILE_PLAN);
-        
-        // set-up node service 
+
+        // set-up node service
         when(mockedNodeService.getProperty(nonStandardFilePlanComponent, PROP_ROOT_NODEREF)).thenReturn(nonStandardFilePlan);
-        
+
         // set-up dictionary service
         when(mockedDictionaryService.getAllAspects()).thenReturn(CollectionUtils.EMPTY_COLLECTION);
     }
-    
-    @Test 
+
+    @Test
     public void testRegisterRecordMetadataAspect()
     {
-        Map<QName, Set<QName>> map = recordService.getRecordMetadataAspectsMap();        
+        Map<QName, Set<QName>> map = recordService.getRecordMetadataAspectsMap();
         assertTrue(map.isEmpty());
         recordService.registerRecordMetadataAspect(ASPECT_FOR_FILE_PLAN, TYPE_FILE_PLAN);
         map = recordService.getRecordMetadataAspectsMap();
@@ -84,38 +88,156 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         assertTrue(types.contains(TYPE_FILE_PLAN));
     }
     
+    /**
+     * Given invalid types
+     * When linking
+     * Then exception thrown
+     */
     @Test
-    public void testGetRecordMetadataAspects()
+    public void linkNonRecord()
     {
-        // register a couple of record meta-data aspects
-        recordService.registerRecordMetadataAspect(ASPECT_FOR_FILE_PLAN, TYPE_FILE_PLAN);
-        recordService.registerRecordMetadataAspect(ASPECT_FOR_MY_FILE_PLAN, TYPE_MY_FILE_PLAN);
-        recordService.registerRecordMetadataAspect(ASPECT_FOR_BOTH, TYPE_FILE_PLAN);
-        recordService.registerRecordMetadataAspect(ASPECT_FOR_BOTH, TYPE_MY_FILE_PLAN);
+        NodeRef nonRecord = generateNodeRef(TYPE_CONTENT);
+        NodeRef recordFolder = generateRecordFolder();
         
-        Set<QName> set = recordService.getRecordMetadataAspects(filePlanComponent);
-        assertNotNull(set);
-        assertEquals(2, set.size());
-        assertTrue(set.contains(ASPECT_FOR_FILE_PLAN));
-        assertTrue(set.contains(ASPECT_FOR_BOTH));
+        // set expected exception
+        exception.expect(AlfrescoRuntimeException.class);
         
-        set = recordService.getRecordMetadataAspects(nonStandardFilePlanComponent);
-        assertNotNull(set);
-        assertEquals(2, set.size());
-        assertTrue(set.contains(ASPECT_FOR_MY_FILE_PLAN));
-        assertTrue(set.contains(ASPECT_FOR_BOTH));
+        // link
+        recordService.link(nonRecord, recordFolder);
+    }    
+    @Test
+    public void linkNonRecordFolder()
+    {
+        NodeRef record = generateRecord();
+        NodeRef nonRecordFolder = generateNodeRef(TYPE_FOLDER);
         
-        set = recordService.getRecordMetadataAspects(TYPE_FILE_PLAN);
-        assertNotNull(set);
-        assertEquals(2, set.size());
-        assertTrue(set.contains(ASPECT_FOR_FILE_PLAN));
-        assertTrue(set.contains(ASPECT_FOR_BOTH));
+        // set expected exception
+        exception.expect(AlfrescoRuntimeException.class);
         
-        set = recordService.getRecordMetadataAspects(TYPE_MY_FILE_PLAN);
-        assertNotNull(set);
-        assertEquals(2, set.size());
-        assertTrue(set.contains(ASPECT_FOR_MY_FILE_PLAN));
-        assertTrue(set.contains(ASPECT_FOR_BOTH));
-        
+        // link
+        recordService.link(record, nonRecordFolder);
     }
+    
+    /**
+     * Given that the record is already a child of the record folder
+     * When I try to link the record to the same record folder
+     * Then an exception is thrown
+     */
+    @Test
+    public void linkRecordToRecordFolderFailsIfAlreadyAChild()
+    {
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        
+        // given that the record is already a child of the record folder
+        makeChildrenOf(recordFolder, record);
+        
+        // set expected exception
+        exception.expect(AlfrescoRuntimeException.class);
+        
+        // link
+        recordService.link(record, recordFolder);
+    }
+    
+    /**
+     * Given a record that is not a child of a record folder
+     * When I link the record to the record folder
+     * Then the record is now linked to the record folder
+     */
+    @Test
+    public void linkRecordToRecordFolder()
+    {
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        
+        // given that the record is already a child of the record folder
+        makeChildrenOf(generateRecordFolder(), record);
+        
+        // set the name of the record
+        String name = generateText(); 
+        doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
+        
+        // link
+        recordService.link(record, recordFolder);
+        
+        // verify link was created
+        verify(mockedNodeService, times(1)).addChild(
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));        
+    }
+    
+    /**
+     * Given invalid types
+     * When unlinking 
+     * Then exception thrown
+     */
+    @Test
+    public void unlinkNonRecord()
+    {
+        NodeRef nonRecord = generateNodeRef(TYPE_CONTENT);
+        NodeRef recordFolder = generateRecordFolder();
+        
+        // set expected exception
+        exception.expect(AlfrescoRuntimeException.class);
+        
+        // unlink
+        recordService.unlink(nonRecord, recordFolder);        
+    }    
+    @Test
+    public void unlinkNonRecordFolder()
+    {
+        NodeRef record = generateRecord();
+        NodeRef nonRecordFolder = generateNodeRef(TYPE_FOLDER);
+        
+        // set expected exception
+        exception.expect(AlfrescoRuntimeException.class);
+        
+        // unlink
+        recordService.unlink(record, nonRecordFolder);
+    }
+    
+    /**
+     * Given a record folder is a records primary parent
+     * When I try and unlink the record from that record folder
+     * Then an exception is thrown
+     */
+    @Test
+    public void unlinkRecordFromPrimaryRecordFolder()
+    {
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        
+        // given that the record is already a child of the record folder        
+        makePrimaryParentOf(record, recordFolder);
+        
+        // set expected exception
+        exception.expect(AlfrescoRuntimeException.class);
+        
+        // link
+        recordService.unlink(record, recordFolder);
+    }
+    
+    /**
+     * Given a record that is linked to a record
+     * And that the record is not the primary parent of the record
+     * When I unlink the record to the record folder
+     * Then the record is no longer linked to the record folder
+     */
+    @Test
+    public void unlinkRecordFromRecordFolder()
+    {
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        
+        // the records primary parent is another record folder
+        makePrimaryParentOf(record, generateRecordFolder());
+        
+        // unlink
+        recordService.unlink(record, recordFolder);
+        
+        // verify link was created
+        verify(mockedNodeService, times(1)).removeChild(recordFolder, record);       
+    }    
 }

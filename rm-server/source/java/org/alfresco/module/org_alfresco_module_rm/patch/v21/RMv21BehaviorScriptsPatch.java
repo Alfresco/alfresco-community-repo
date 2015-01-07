@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
+import static org.apache.commons.logging.LogFactory.getLog;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
 import org.springframework.beans.factory.BeanNameAware;
 
 /**
@@ -44,9 +47,11 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author Craig Tan
  * @since 2.1
  */
-@SuppressWarnings("deprecation")
 public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements BeanNameAware
 {
+    /** Logger */
+    private static final Log LOGGER = getLog(RMv21BehaviorScriptsPatch.class);
+
     /** rm config folder root lookup */
     protected static final NodeRef RM_CONFIG = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
 
@@ -54,7 +59,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
     protected static final NodeRef OLD_BEHAVIOR_SCRIPTS_FOLDER = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_scripts");
 
     /** new behavior scripts folder root lookup */
-    protected static NodeRef newBehaviorScriptsFolder = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_behavior_scripts");
+    private static NodeRef newBehaviorScriptsFolder = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_behavior_scripts");
 
     /** name of example script */
     protected static final String IS_CLOSED_JS = "rma_isClosed.js";
@@ -123,6 +128,7 @@ public class RMv21BehaviorScriptsPatch extends RMv21PatchComponent implements Be
             // run the following code as System
             AuthenticationUtil.runAs(new RunAsWork<Object>()
             {
+                @SuppressWarnings("deprecation")
                 public Object doWork()
                 {
                     RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()

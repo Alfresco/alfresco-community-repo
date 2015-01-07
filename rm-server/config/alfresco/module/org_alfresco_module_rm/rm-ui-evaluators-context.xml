@@ -3,13 +3,22 @@
 
 <beans>
 
+   <bean id="jsonConversionComponentCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+
    <!-- extending bean definition -->
-   <bean id="rm.jsonConversionComponent" class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
-         parent="baseJsonConversionComponent">
+   <bean id="rm.jsonConversionComponent" 
+   		 class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
+         parent="baseJsonConversionComponent" 
+         init-method="init">
+      <property name="recordContributorsGroupEnabled" value="${rm.record.contributors.group.enabled}"/>
+      <property name="recordContributorsGroupName" value="${rm.record.contributors.group.name}"/>
       <property name="recordService" ref="RecordService"/>
       <property name="filePlanService" ref="FilePlanService"/>
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="dictionaryService" ref="DictionaryService" />
+      <property name="siteService" ref="SiteService" />
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="jsonConversionComponentCache" ref="jsonConversionComponentCache" />
    </bean>
 
    <!--  extends core bean with RM extensions -->
@@ -354,6 +363,17 @@
       <property name="capability" value="LinkToRecords" />
    </bean>
 
+   <bean id="jsonConversionComponent.unlinkFromAction"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="unlinkFrom"/>
+      <property name="kinds">
+         <set>
+            <value>RECORD</value>
+         </set>
+      </property>
+      <property name="capability" value="DeleteLinks" />
+   </bean>
+
    <bean id="jsonConversionComponent.fileToAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="fileTo"/>
@@ -399,6 +419,7 @@
       <property name="kinds">
          <set>
             <value>FILE_PLAN</value>
+            <value>RECORD</value>
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>UNFILED_RECORD_CONTAINER</value>

@@ -50,28 +50,28 @@ public class OpenRecordFolderAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) &&
-            !freezeService.isFrozen(actionedUponNodeRef) &&
-            !(dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) && !recordService.isFiled(actionedUponNodeRef)))
+        if (getNodeService().exists(actionedUponNodeRef) &&
+            !getFreezeService().isFrozen(actionedUponNodeRef) &&
+            !(getDictionaryService().isSubClass(getNodeService().getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) && !getRecordService().isFiled(actionedUponNodeRef)))
         {
             // TODO move re-open logic into a service method
             // TODO check that the user in question has the correct permission to re-open a records folder
 
-            if (recordService.isRecord(actionedUponNodeRef))
+            if (getRecordService().isRecord(actionedUponNodeRef))
             {
-                ChildAssociationRef assocRef = nodeService.getPrimaryParent(actionedUponNodeRef);
+                ChildAssociationRef assocRef = getNodeService().getPrimaryParent(actionedUponNodeRef);
                 if (assocRef != null)
                 {
                     actionedUponNodeRef = assocRef.getParentRef();
                 }
             }
 
-            if (recordFolderService.isRecordFolder(actionedUponNodeRef))
+            if (getRecordFolderService().isRecordFolder(actionedUponNodeRef))
             {
-                Boolean isClosed = (Boolean) nodeService.getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
+                Boolean isClosed = (Boolean) getNodeService().getProperty(actionedUponNodeRef, PROP_IS_CLOSED);
                 if (Boolean.TRUE.equals(isClosed))
                 {
-                    nodeService.setProperty(actionedUponNodeRef, PROP_IS_CLOSED, false);
+                    getNodeService().setProperty(actionedUponNodeRef, PROP_IS_CLOSED, false);
                 }
             }
             else

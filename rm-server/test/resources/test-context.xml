@@ -218,4 +218,20 @@
     	</property>
     </bean>
 
+   <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
+      <property name="autoStart">
+         <value>false</value>
+      </property>
+      <property name="category">
+         <value>Search</value>
+      </property>
+      <property name="sourceBeanName">
+         <value>buildonly</value>
+      </property>
+      <property name="instancePath">
+         <list>
+            <value>manager</value>
+         </list>
+      </property>
+   </bean>
 </beans>

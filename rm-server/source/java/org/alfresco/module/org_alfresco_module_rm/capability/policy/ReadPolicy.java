@@ -18,7 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
 
@@ -38,6 +38,6 @@ public class ReadPolicy extends AbstractBasePolicy
             ConfigAttributeDefinition cad)
     {
         NodeRef testNodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return getCapabilityService().getCapability(RMPermissionModel.VIEW_RECORDS).evaluate(testNodeRef);
+        return getCapabilityService().getCapability(ViewRecordsCapability.NAME).evaluate(testNodeRef);
     }
 }

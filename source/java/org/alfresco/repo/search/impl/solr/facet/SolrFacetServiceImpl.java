@@ -474,13 +474,17 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         if (facetNodeRef == null)
         {
             SolrFacetProperties fp = defaultFacetsMap.get(filterID);
-            if (fp == null) {
-                createFacetsRootFolder();
+            if (fp != null)
+            {
+                // As we don't create nodes for the bootstrapped FP on server
+                // startup, we need to create a node here, when a user tries to
+                // update the default properties for the first time.
+                createFacetNodeImpl(facetProperties, false);
             }
-            // As we don't create nodes for the bootstrapped FP on server
-            // startup, we need to create a node here, when a user tries to
-            // update the default properties for the first time.
-            createFacetNodeImpl(facetProperties, false);
+            else
+            {
+                throw new SolrFacetConfigException("Cannot update facet [" + filterID + "] as it does not exist.");
+            }
         }
         else
         {
@@ -896,6 +900,8 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
                     // Now to get the NodeRef we just imported. (Not using SOLR to avoid consistency effects.)
                     result = getSingleChildNodeRef(dataDict, facetsRootAssocQName);
                 }
+
+                if (logger.isDebugEnabled()) { logger.debug("Created Facets Root Folder: " + result); }
 
                 return result;
             }

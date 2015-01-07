@@ -18,34 +18,28 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.version;
 
+import static org.codehaus.plexus.util.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.Version2ServiceImpl;
 import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.version.ReservedVersionNameException;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
@@ -70,30 +64,24 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     /** key used to indicate a recordable version */
     public static final String KEY_RECORDABLE_VERSION = "recordable-version";
     public static final String KEY_FILE_PLAN = "file-plan";
-    
+
     /** version record property */
     public static final String PROP_VERSION_RECORD = "RecordVersion";
 
     /** file plan service */
-    protected FilePlanService filePlanService;
-
-    /** file folder service */
-    protected FileFolderService fileFolderService;
-
-    /** extended permission service */
-    protected ExtendedPermissionService extendedPermissionService;
-
-    /** ownable service */
-    protected OwnableService ownableService;
-
-    /** extended security service */
-    protected ExtendedSecurityService extendedSecurityService;
+    private FilePlanService filePlanService;
 
     /** authentication util helper */
-    protected AuthenticationUtil authenticationUtil;
-    
+    private AuthenticationUtil authenticationUtil;
+
     /** relationship service */
-    protected RelationshipService relationshipService;
+    private RelationshipService relationshipService;
+    
+    /** record service */
+    private RecordService recordService;
+    
+    /** model security service */
+    private ModelSecurityService modelSecurityService;
 
     /**
      * @param filePlanService   file plan service
@@ -104,51 +92,35 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     }
 
     /**
-     * @param fileFolderService file folder service
-     */
-    public void setFileFolderService(FileFolderService fileFolderService)
-    {
-        this.fileFolderService = fileFolderService;
-    }
-
-    /**
-     * @param extendedPermissionService extended permission service
-     */
-    public void setExtendedPermissionService(ExtendedPermissionService extendedPermissionService)
-    {
-        this.extendedPermissionService = extendedPermissionService;
-    }
-
-    /**
-     * @param ownableService    ownable service
-     */
-    public void setOwnableService(OwnableService ownableService)
-    {
-        this.ownableService = ownableService;
-    }
-
-    /**
-     * @param extendedSecurityService   extended security service
-     */
-    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
-    {
-        this.extendedSecurityService = extendedSecurityService;
-    }
-
-    /**
      * @param authenticationUtil    authentication util helper
      */
     public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
     {
         this.authenticationUtil = authenticationUtil;
     }
-    
+
     /**
      * @param relationshipService   relationship service
      */
     public void setRelationshipService(RelationshipService relationshipService)
     {
         this.relationshipService = relationshipService;
+    }
+    
+    /**
+     * @param recordService record service
+     */
+    public void setRecordService(RecordService recordService)
+    {
+        this.recordService = recordService;
+    }
+    
+    /**
+     * @param modelSecurityService  model security service
+     */
+    public void setModelSecurityService(ModelSecurityService modelSecurityService)
+    {
+        this.modelSecurityService = modelSecurityService;
     }
 
     /**
@@ -217,12 +189,19 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
      */
     private NodeRef getFilePlan()
     {
-        NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
-        if (filePlan == null)
+        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            throw new AlfrescoRuntimeException("Can't create a recorded version, because there is no file plan.");
-        }
-        return filePlan;
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                NodeRef filePlan = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+                if (filePlan == null)
+                {
+                    throw new AlfrescoRuntimeException("Can't create a recorded version, because there is no file plan.");
+                }
+                return filePlan;
+            }
+        });
     }
 
     /**
@@ -306,6 +285,12 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         // disable other behaviours that we don't want to trigger during this process
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
         policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
+        
+        // disable model security check
+        modelSecurityService.disable();
+        
+        // disable property editable check
+        recordService.disablePropertyEditableCheck();
 
         try
         {
@@ -320,46 +305,23 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             final NodeRef nodeRef = (NodeRef)standardVersionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
 
             // create record
-            final NodeRef record = createRecord(nodeRef, filePlan);
-            
+            final NodeRef record = recordService.createRecordFromCopy(filePlan, nodeRef);
+
             // apply version record aspect to record
             PropertyMap versionRecordProps = new PropertyMap(3);
             versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
-            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, 
+            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL,
                                    standardVersionProperties.get(
                                            QName.createQName(Version2Model.NAMESPACE_URI,
                                                              Version2Model.PROP_VERSION_LABEL)));
-            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, 
+            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION,
                                    standardVersionProperties.get(
                                            QName.createQName(Version2Model.NAMESPACE_URI,
                                                              Version2Model.PROP_VERSION_DESCRIPTION)));
             nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
-            
-            // wire record up to previous record 
-            VersionHistory versionHistory = getVersionHistory(nodeRef);
-            if (versionHistory != null)
-            {
-                Collection<Version> previousVersions = versionHistory.getAllVersions();
-                for (Version previousVersion : previousVersions)
-                {
-                    // look for the associated record
-                    final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(PROP_VERSION_RECORD);
-                    if (previousRecord != null)
-                    {
-                        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-                        {
-                            @Override
-                            public Void doWork() throws Exception
-                            {
-                                // indicate that the new record versions the previous record
-                                relationshipService.addRelationship("versions", record, previousRecord);
-                                return null;
-                            }
-                        });                    
-                        break;
-                    }
-                }
-            }
+
+            // wire record up to previous record
+            linkToPreviousVersionRecord(nodeRef, record);
 
             // create version nodeRef
             ChildAssociationRef childAssocRef = dbNodeService.createNode(
@@ -381,6 +343,12 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
         finally
         {
+            // enable model security check
+            modelSecurityService.enable();
+            
+            // enable property editable check
+            recordService.enablePropertyEditableCheck();
+            
             // Enable behaviours
             this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
             this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
@@ -388,7 +356,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
 
         // If the auditable aspect is not there then add it to the 'version' node (after original aspects have been frozen)
-        if (dbNodeService.hasAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE) == false)
+        if (!dbNodeService.hasAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE))
         {
             dbNodeService.addAspect(versionNodeRef, ContentModel.ASPECT_AUDITABLE, null);
         }
@@ -400,91 +368,59 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
         return versionNodeRef;
     }
-
+    
     /**
-     * Create record from current version
-     *
-     * @param nodeRef               state to freeze
-     * @param filePlan              destination file plan
-     * @return {@link NodeRef}      versioned record
+     * Helper method to link the record to the previous version record
+     * 
+     * @param nodeRef   noderef source node reference
+     * @param record    record  record node reference
      */
-    private NodeRef createRecord(final NodeRef nodeRef, final NodeRef filePlan)
+    private void linkToPreviousVersionRecord(final NodeRef nodeRef, final NodeRef record)
     {
-        return authenticationUtil.runAs(new RunAsWork<NodeRef>()
+        final NodeRef latestRecordVersion = getLatestVersionRecord(nodeRef);
+        if (latestRecordVersion != null)
         {
-            public NodeRef doWork() throws Exception
+            authenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
-                // get the unfiled record folder
-                final NodeRef unfiledRecordFolder = filePlanService.getUnfiledContainer(filePlan);
-
-                // get the documents readers
-                Long aclId = dbNodeService.getNodeAclId(nodeRef);
-                Set<String> readers = extendedPermissionService.getReaders(aclId);
-                Set<String> writers = extendedPermissionService.getWriters(aclId);
-
-                // add the current owner to the list of extended writers
-                Set<String> modifiedWrtiers = new HashSet<String>(writers);
-                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+                @Override
+                public Void doWork() throws Exception
                 {
-                    String owner = ownableService.getOwner(nodeRef);
-                    if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
-                    {
-                        modifiedWrtiers.add(owner);
-                    }
+                    // indicate that the new record versions the previous record
+                    relationshipService.addRelationship("versions", record, latestRecordVersion);
+                    return null;
                 }
-
-                // add the current user as extended writer
-                modifiedWrtiers.add(authenticationUtil.getFullyAuthenticatedUser());
-
-                // copy version state and create record
-                NodeRef record = null;
-                try
+            });
+        }        
+    }
+    
+    /**
+     * Helper to get the latest version record for a given document (ie non-record)
+     * 
+     * @param nodeRef   node reference
+     * @return NodeRef  latest version record, null otherwise
+     */
+    private NodeRef getLatestVersionRecord(NodeRef nodeRef)
+    {
+        NodeRef versionRecord = null;
+        
+        // wire record up to previous record
+        VersionHistory versionHistory = getVersionHistory(nodeRef);
+        if (versionHistory != null)
+        {
+            Collection<Version> previousVersions = versionHistory.getAllVersions();
+            for (Version previousVersion : previousVersions)
+            {
+                // look for the associated record
+                final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(PROP_VERSION_RECORD);
+                if (previousRecord != null)
                 {
-                    List<AssociationRef> originalAssocs = null;
-                    if (dbNodeService.hasAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM))
-                    {
-                        // take a note of any copyFrom information already on the node
-                        originalAssocs = dbNodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
-                    }
-
-                    // create a copy of the original state and add it to the unfiled record container
-                    FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
-                    record = recordInfo.getNodeRef();                    
-
-                    // remove added copy assocs
-                    List<AssociationRef> recordAssocs = dbNodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
-                    for (AssociationRef recordAssoc : recordAssocs)
-                    {
-                        dbNodeService.removeAssociation(
-                                recordAssoc.getSourceRef(),
-                                recordAssoc.getTargetRef(),
-                                ContentModel.ASSOC_ORIGINAL);
-                    }
-
-                    // re-add origional assocs or remove aspect
-                    if (originalAssocs == null)
-                    {
-                        dbNodeService.removeAspect(record, ContentModel.ASPECT_COPIEDFROM);
-                    }
-                    else
-                    {
-                        for (AssociationRef originalAssoc : originalAssocs)
-                        {
-                            dbNodeService.createAssociation(originalAssoc.getSourceRef(), originalAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
-                        }
-                    }
+                    versionRecord = previousRecord;
+                    break;
                 }
-                catch (FileNotFoundException e)
-                {
-                    throw new AlfrescoRuntimeException("Can't create recorded version, because copy fails.", e);
-                }
-
-                // set extended security on record
-                extendedSecurityService.addExtendedSecurity(record, readers, writers);
-
-                return record;
             }
-        }, authenticationUtil.getAdminUserName());
+        }  
+        
+        return versionRecord;        
     }
 
     /**
@@ -525,5 +461,21 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
 
         return version;
+    }
+
+    /**
+     * @see org.alfresco.repo.version.Version2ServiceImpl#revert(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.version.Version, boolean)
+     */
+    @Override
+    public void revert(NodeRef nodeRef, Version version, boolean deep)
+    {
+        String versionPolicy = (String) dbNodeService.getProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY);
+
+        super.revert(nodeRef, version, deep);
+
+        if (isNotBlank(versionPolicy))
+        {
+            dbNodeService.setProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY, versionPolicy);
+        }
     }
 }

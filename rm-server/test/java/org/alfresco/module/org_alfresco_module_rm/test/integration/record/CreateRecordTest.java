@@ -149,4 +149,56 @@ public class CreateRecordTest extends BaseRMTestCase
             }
         });           
     }
+    
+    /**
+     * unit test for RM1649 fix
+     * test if a user with create record permissions and without file record permission is able to create a record within unfiled record container
+     */
+    public void testCreateRecordCapabilityInsideUnfiledRecordsContainer() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            /** test data */
+            String roleName = GUID.generate();
+            String user = GUID.generate();
+            NodeRef record;
+            
+            public void given()
+            {
+                // create a role with view and create capabilities
+                Set<Capability> capabilities = new HashSet<Capability>(2);
+                capabilities.add(capabilityService.getCapability("ViewRecords"));
+                capabilities.add(capabilityService.getCapability("CreateRecords"));
+                filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
+              
+                
+                // create user and assign to role
+                createPerson(user, true);
+                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
+                
+                //give read and file permission to user on unfiled records container
+                filePlanPermissionService.setPermission(unfiledContainer , user, RMPermissionModel.FILING);
+            }
+            
+            public void when()
+            {
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        record = recordService.createRecordFromContent(unfiledContainer, GUID.generate(), TYPE_CONTENT, null, null);
+                        
+                        return null;
+                    }
+                }, user);
+            }
+            
+            public void then()
+            {
+                // check the details of the record
+                assertTrue(recordService.isRecord(record));
+
+            }
+        });
+    }
 }

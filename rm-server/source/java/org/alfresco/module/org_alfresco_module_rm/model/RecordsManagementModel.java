@@ -262,7 +262,7 @@ public interface RecordsManagementModel extends RecordsManagementCustomModel
     // @since 2.2
     QName ASPECT_HELD_CHILDREN = QName.createQName(RM_URI, "heldChildren");
     QName PROP_HELD_CHILDREN_COUNT = QName.createQName(RM_URI, "heldChildrenCount");
-    
+
     // Countable aspect
     QName ASPECT_COUNTABLE = QName.createQName(RM_URI, "countable");
     QName PROP_COUNT = QName.createQName(RM_URI, "count");

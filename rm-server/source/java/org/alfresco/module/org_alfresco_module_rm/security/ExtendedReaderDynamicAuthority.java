@@ -18,8 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.security;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -40,13 +44,45 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     public String getAuthority()
     {
         return EXTENDED_READER;
+    }    
+
+    /**
+     * @see org.alfresco.repo.security.permissions.DynamicAuthority#requiredFor()
+     */
+    @Override
+    public Set<PermissionReference> requiredFor()
+    {
+    	if (requiredFor == null)
+    	{
+    		requiredFor = Collections.singleton(getModelDAO().getPermissionReference(null, RMPermissionModel.READ_RECORDS));
+    	}
+    	
+    	return requiredFor;
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityBaseDynamicAuthority#getAuthorites(org.alfresco.service.cmr.repository.NodeRef)
      */
-    protected Set<String> getAuthorites(NodeRef nodeRef) 
+    @SuppressWarnings("unchecked")
+	protected Set<String> getAuthorites(NodeRef nodeRef) 
     {
-        return getExtendedSecurityService().getExtendedReaders(nodeRef);
+        Set<String> result = null;
+        
+        Map<String, Integer> readerMap = (Map<String, Integer>)getNodeService().getProperty(nodeRef, PROP_READERS);
+        if (readerMap != null)
+        {
+            result = readerMap.keySet();
+        }
+        
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityBaseDynamicAuthority#getTransactionCacheName()
+     */
+    @Override
+    protected String getTransactionCacheName() 
+    {
+    	return "rm.extendedreaderdynamicauthority";
     }
 }

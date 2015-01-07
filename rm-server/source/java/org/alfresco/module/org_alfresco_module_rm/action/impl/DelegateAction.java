@@ -64,8 +64,8 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (nodeService.exists(actionedUponNodeRef) &&
-            (!checkFrozen || !freezeService.isFrozen(actionedUponNodeRef)))
+        if (getNodeService().exists(actionedUponNodeRef) &&
+            (!checkFrozen || !getFreezeService().isFrozen(actionedUponNodeRef)))
         {
             // do the property subs (if any exist)
             if (isAllowParameterSubstitutions())

@@ -54,6 +54,8 @@ public interface RecordService
 
     /**
      * Disables the property editable check.
+     * 
+     * @since 2.2
      */
     void disablePropertyEditableCheck();
 
@@ -61,6 +63,7 @@ public interface RecordService
      * Disables the property editable check for a given node in this transaction only.
      *
      * @param nodeRef   node reference
+     * 
      * @since 2.2
      */
     void disablePropertyEditableCheck(NodeRef nodeRef);
@@ -164,6 +167,14 @@ public interface RecordService
     * @see #createRecord(NodeRef, NodeRef, boolean)
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
+   
+   /**
+    * Creates a record from a copy of the node reference provided.
+    * 
+    * @param filePlan   file plan
+    * @param nodeRef    node reference
+    */
+   NodeRef createRecordFromCopy(NodeRef filePlan, NodeRef nodeRef);
 
    /**
     * Creates a new document in the unfiled records container if the given node reference is a file plan
@@ -241,10 +252,20 @@ public interface RecordService
    void makeRecord(NodeRef nodeRef);
 
    /**
-    * Creates a link for the specified document in target
+    * Links a record to a record folder
     *
-    * @param nodeRef    The document node reference for which a link will be created
-    * @param folder     The folder in which the link will be created
+    * @param record         the record to link
+    * @param recordFolder   the record folder to link it to
     */
-   void link(NodeRef nodeRef, NodeRef folder);
+   void link(NodeRef record, NodeRef recordFolder);
+   
+   /**
+    * Unlinks a record from a specified record folder.
+    * 
+    * @param record         the record to unlink
+    * @param recordFolder   the record folder to unlink it from
+    * 
+    * @since 2.3
+    */
+   void unlink(NodeRef record, NodeRef recordFolder);
 }

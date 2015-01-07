@@ -121,18 +121,18 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     @Override
     protected void executeRecordFolderLevelDisposition(Action action, NodeRef recordFolder)
     {
-        List<NodeRef> records = recordService.getRecords(recordFolder);
+        List<NodeRef> records = getRecordService().getRecords(recordFolder);
         for (NodeRef record : records)
         {
             executeRecordLevelDisposition(action, record);
         }
         if (isGhostOnDestroySetForAction(action, recordFolder))
         {
-            nodeService.addAspect(recordFolder, ASPECT_GHOSTED, Collections.<QName, Serializable> emptyMap());
+            getNodeService().addAspect(recordFolder, ASPECT_GHOSTED, Collections.<QName, Serializable> emptyMap());
         }
         else
         {
-            nodeService.deleteNode(recordFolder);
+            getNodeService().deleteNode(recordFolder);
         }
     }
 
@@ -151,12 +151,12 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         if (isGhostOnDestroySetForAction(action, record))
         {
             // Add the ghosted aspect
-            nodeService.addAspect(record, ASPECT_GHOSTED, null);
+            getNodeService().addAspect(record, ASPECT_GHOSTED, null);
         }
         else
         {
             // If ghosting is not enabled, delete the node
-            nodeService.deleteNode(record);
+            getNodeService().deleteNode(record);
         }
     }
 
@@ -167,15 +167,15 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
      */
     private void clearAllContent(NodeRef nodeRef)
     {
-        Set<QName> props = this.nodeService.getProperties(nodeRef).keySet();
-        props.retainAll(this.dictionaryService.getAllProperties(DataTypeDefinition.CONTENT));
+        Set<QName> props = this.getNodeService().getProperties(nodeRef).keySet();
+        props.retainAll(this.getDictionaryService().getAllProperties(DataTypeDefinition.CONTENT));
         for (QName prop : props)
         {
             // Clear the content
             clearContent(nodeRef, prop);
 
             // Remove the property
-            this.nodeService.removeProperty(nodeRef, prop);
+            this.getNodeService().removeProperty(nodeRef, prop);
         }
     }
 
@@ -196,19 +196,19 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
       // We want to remove the rn:renditioned aspect, but due to the possibility
       // that there is Alfresco 3.2-era data with the cm:thumbnailed aspect
       // applied, we must consider removing it too.
-      if (nodeService.hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
-          nodeService.hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
+      if (getNodeService().hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
+              getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
       {
           // Add the ghosted aspect to all the renditioned children, so that they will not be archived when the
           // renditioned aspect is removed
-          Set<QName> childAssocTypes = dictionaryService.getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();
-          for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
+          Set<QName> childAssocTypes = getDictionaryService().getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();
+          for (ChildAssociationRef child : getNodeService().getChildAssocs(nodeRef))
           {
               if (childAssocTypes.contains(child.getTypeQName()))
               {
                   // Clear the content and delete the rendition
                   clearAllContent(child.getChildRef());
-                  nodeService.deleteNode(child.getChildRef());
+                  getNodeService().deleteNode(child.getChildRef());
               }
           }
        }
@@ -223,7 +223,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     private void clearContent(NodeRef nodeRef, QName contentProperty)
     {
         // Ensure the content is cleaned at the end of the transaction
-        ContentData contentData = (ContentData)nodeService.getProperty(nodeRef, contentProperty);
+        ContentData contentData = (ContentData)getNodeService().getProperty(nodeRef, contentProperty);
         if (contentData != null && contentData.getContentUrl() != null)
         {
             eagerContentStoreCleaner.registerOrphanedContentUrl(contentData.getContentUrl(), true);
@@ -233,7 +233,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     /**
      * Return true if the ghost on destroy property is set against the
      * definition for the passed action on the specified node
-     * 
+     *
      * @param action
      * @param nodeRef
      * @return
@@ -244,7 +244,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         String actionDefinitionName = action.getActionDefinitionName();
         if (!StringUtils.isEmpty(actionDefinitionName))
         {
-            DispositionSchedule dispositionSchedule = this.dispositionService.getDispositionSchedule(nodeRef);
+            DispositionSchedule dispositionSchedule = this.getDispositionService().getDispositionSchedule(nodeRef);
             if (dispositionSchedule != null)
             {
                 DispositionActionDefinition actionDefinition = dispositionSchedule

@@ -49,7 +49,7 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
                 @Override
                 public Void doWork()
                 {
-                    recordFolderService.closeRecordFolder(actionedUponNodeRef);
+                    getRecordFolderService().closeRecordFolder(actionedUponNodeRef);
 
                     return null;
                 }
@@ -69,9 +69,9 @@ public class CloseRecordFolderAction extends RMActionExecuterAbstractBase
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        if (nodeService.exists(actionedUponNodeRef) &&
-                !freezeService.isFrozen(actionedUponNodeRef) &&
-                !TYPE_UNFILED_RECORD_FOLDER.equals(nodeService.getType(actionedUponNodeRef)))
+        if (getNodeService().exists(actionedUponNodeRef) &&
+                !getFreezeService().isFrozen(actionedUponNodeRef) &&
+                !TYPE_UNFILED_RECORD_FOLDER.equals(getNodeService().getType(actionedUponNodeRef)))
         {
             result = true;
         }

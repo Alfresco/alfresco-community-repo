@@ -18,6 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.MAJOR_ONLY;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.NONE;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 import static org.testng.Assert.assertEquals;
@@ -29,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet;
+import org.alfresco.module.org_alfresco_module_rm.script.slingshot.Version;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -74,7 +78,16 @@ public class RecordedVersionConfigGetTest extends BaseRecordedVersionConfigTest
         // Test document should not have any recordable version policy set
         doReturn(null).when(mockedNodeService).getProperty(testdoc, PROP_RECORDABLE_VERSION_POLICY);
 
-        // execute web script
+        // Setup versions
+        List<Version> versions = Arrays.asList(
+                new Version(NONE.toString(), true),
+                new Version(MAJOR_ONLY.toString(), false),
+                new Version(ALL.toString(), false));
+
+        // Stub getVersions
+        doReturn(versions).when(mockedRecordableVersionConfigService).getVersions(testdoc);
+
+        // Execute web script
         JSONObject json = executeJSONWebScript(parameters);
 
         // Do checks

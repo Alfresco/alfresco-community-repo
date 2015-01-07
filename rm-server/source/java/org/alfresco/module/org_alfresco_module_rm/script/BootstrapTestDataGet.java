@@ -276,7 +276,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                 }
 
                 // Make sure all the containers do not inherit permissions
-                ResultSet rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"rma:recordsManagementContainer\"");
+                ResultSet rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_FTS_ALFRESCO, "TYPE:\"rma:recordsManagementContainer\"");
                 try
                 {
                     logger.info("Bootstraping " + rs.length() + " record containers ...");
@@ -299,7 +299,7 @@ public class BootstrapTestDataGet extends DeclarativeWebScript
                 }
 
                 // fix up the test dataset to fire initial events for disposition schedules
-                rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_LUCENE, "TYPE:\"rma:recordFolder\"");
+                rs = searchService.query(SPACES_STORE, SearchService.LANGUAGE_FTS_ALFRESCO, "TYPE:\"rma:recordFolder\"");
                 try
                 {
                     logger.info("Bootstraping " + rs.length() + " record folders ...");

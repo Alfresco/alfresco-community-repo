@@ -20,26 +20,4 @@
       <property name="index" value="10" />
    </bean>
       
-
-   <!-- TODO .. is this in the right place??  Does link refer to a link to another file plan from a record?  -->
-   <bean id="rmDeleteLinksCapability"
-      parent="rmBaseCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.DeleteLinksCapability">
-      <property name="name" value="DeleteLinks"/>
-      <property name="permission" value="DeleteLinks"/>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.cutoff" value="false"/>
-            <entry key="capabilityCondition.frozen" value="false"/>
-         </map>
-      </property>
-      <property name="group"><ref bean="referencesGroup"/></property>
-      <property name="index" value="20" />
-   </bean>
-
-
-   <!--  Non-Assignable Capabilities -->
-
-
 </beans>

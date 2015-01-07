@@ -163,7 +163,8 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
      * @param fragment
      * @return
      */
-    private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment, boolean unfiled) {
+    private List<String> getSubPathSuggestions(WebScriptRequest req, final String path, final String fragment, boolean unfiled) 
+    {
         List<String> pathSuggestions = new ArrayList<String>();
         if((path != null) && path.startsWith("/") && (fragment != null))
         {
@@ -177,7 +178,8 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
                 {
                     boolean foundThisPathFragment = false;
                     List<ChildAssociationRef> children = nodeService.getChildAssocs(currentNode);
-                    for (ChildAssociationRef childAssoc : children) {
+                    for (ChildAssociationRef childAssoc : children) 
+                    {
                         NodeRef childNodeRef = childAssoc.getChildRef();
                         String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
                         if(fileName.equals(pathFragment) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))
@@ -199,7 +201,8 @@ public class RmSubstitutionSuggestionsGet extends DeclarativeWebScript
             {
                 String lowerCaseFragment = fragment.toLowerCase();
                 List<ChildAssociationRef> children = nodeService.getChildAssocs(currentNode);
-                for (ChildAssociationRef childAssoc : children) {
+                for (ChildAssociationRef childAssoc : children) 
+                {
                     NodeRef childNodeRef = childAssoc.getChildRef();
                     String fileName = (String) nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
                     if((fragment.isEmpty() || fileName.toLowerCase().startsWith(lowerCaseFragment)) && isNodeRefAppropriateForPathSuggestion(childNodeRef, unfiled))

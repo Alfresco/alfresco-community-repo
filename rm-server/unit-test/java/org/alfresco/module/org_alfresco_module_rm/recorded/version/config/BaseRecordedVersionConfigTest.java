@@ -38,7 +38,7 @@ public abstract class BaseRecordedVersionConfigTest extends BaseWebScriptUnitTes
     /** Node ref for test document */
     protected NodeRef testdoc;
 
-    /** setup web script parameters */
+    /** Setup web script parameters */
     protected Map<String, String> buildParameters()
     {
         testdoc = generateCmContent("testdoc.txt");

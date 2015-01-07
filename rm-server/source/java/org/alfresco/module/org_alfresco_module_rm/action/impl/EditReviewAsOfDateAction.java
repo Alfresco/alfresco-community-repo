@@ -47,8 +47,8 @@ public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
 	@Override
 	protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
 	{
-	    if (recordService.isRecord(actionedUponNodeRef) &&
-	        nodeService.hasAspect(actionedUponNodeRef, ASPECT_VITAL_RECORD))
+	    if (getRecordService().isRecord(actionedUponNodeRef) &&
+	            getNodeService().hasAspect(actionedUponNodeRef, ASPECT_VITAL_RECORD))
 	    {
 	        // Get the action parameter
 	        Date reviewAsOf = (Date)action.getParameterValue(PARAM_AS_OF_DATE);
@@ -58,7 +58,7 @@ public class EditReviewAsOfDateAction extends RMActionExecuterAbstractBase
             }
 
 	        // Set the as of date
-	        this.nodeService.setProperty(actionedUponNodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
+	        this.getNodeService().setProperty(actionedUponNodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
 
 	    }
 	    else

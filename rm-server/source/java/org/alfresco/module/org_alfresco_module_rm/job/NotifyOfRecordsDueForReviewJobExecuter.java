@@ -91,7 +91,7 @@ public class NotifyOfRecordsDueForReviewJobExecuter extends RecordsManagementJob
                 queryBuffer.append(") ");
                 String query = queryBuffer.toString();
 
-                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, query);
+                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, query);
                 final List<NodeRef> resultNodes = results.getNodeRefs();
                 results.close();
 

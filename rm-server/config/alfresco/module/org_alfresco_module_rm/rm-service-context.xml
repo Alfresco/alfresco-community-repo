@@ -378,11 +378,12 @@
 
     <!--  File Plan Service -->
 
-   <bean id="filePlanService"
-         parent="baseService"
+	<bean id="rootContainerCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
+
+	<bean id="filePlanService"
+	      parent="baseService"
           class="org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanServiceImpl">
-        <property name="nodeDAO" ref="nodeDAO"/>
-        <property name="filePlanPermissionService" ref="FilePlanPermissionService" />
+        <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -444,6 +445,7 @@
         <property name="permissionService" ref="PermissionService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="ownableService" ref="ownableService" />
+        <property name="authorityService" ref="AuthorityService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1044,6 +1046,9 @@
         <property name="recordFolderService" ref="RecordFolderService" />
         <property name="filePlanRoleService" ref="FilePlanRoleService" />
         <property name="permissionService" ref="permissionService" />
+        <property name="versionService" ref="VersionService" />
+        <property name="relationshipService" ref="RelationshipService" />
+        <property name="recordsManagementContainerType" ref="rma.recordsManagementContainer"/>
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
@@ -1097,7 +1102,8 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromContent=RM.Create.0
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromContent=RM.Create.0                
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromCopy=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.file=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isPropertyEditable=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isMetadataStub=RM.Read.0
@@ -1106,6 +1112,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.addRecordType=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.makeRecord=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.link=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.unlink=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.*=RM_DENY
                 ]]>
             </value>
@@ -1575,6 +1582,51 @@
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.addRelationship=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.removeRelationship=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
+   </bean>
+
+   <!--  Recordable Verison Config Service  -->
+
+   <bean id="recordableVersionConfigService" class="org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigServiceImpl">
+      <property name="nodeService" ref="NodeService"/>
+   </bean>
+
+   <bean id="RecordableVersionConfigService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService</value>
+      </property>
+      <property name="target">
+         <ref bean="recordableVersionConfigService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="RecordableVersionConfigService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="RecordableVersionConfigService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="RecordableVersionConfigService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="RecordableVersionConfigService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+               org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService.getVersions=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService.setVersion=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService.*=RM_DENY
             ]]>
          </value>
       </property>

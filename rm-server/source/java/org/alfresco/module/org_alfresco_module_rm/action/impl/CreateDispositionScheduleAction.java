@@ -55,7 +55,7 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
         if (eligibleForAction(actionedUponNodeRef))
         {
             // Create the disposition schedule
-            dispositionService.createDispositionSchedule(actionedUponNodeRef, null);
+            getDispositionService().createDispositionSchedule(actionedUponNodeRef, null);
         }
         else
         {
@@ -75,7 +75,7 @@ public class CreateDispositionScheduleAction extends RMActionExecuterAbstractBas
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        if (nodeService.exists(actionedUponNodeRef) &&
+        if (getNodeService().exists(actionedUponNodeRef) &&
                 filePlanService.isRecordCategory(actionedUponNodeRef))
         {
             result = true;

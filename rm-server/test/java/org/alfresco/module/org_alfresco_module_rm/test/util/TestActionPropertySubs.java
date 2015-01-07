@@ -71,7 +71,7 @@ public class TestActionPropertySubs extends RMActionExecuterAbstractBase
         String yearShort = new SimpleDateFormat("yy").format(date);
         String yearLong = new SimpleDateFormat("yyyy").format(date);
         String yearWeek = new SimpleDateFormat("ww").format(date);
-        String name = (String) nodeService.getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
+        String name = (String) getNodeService().getProperty(actionedUponNodeRef, ContentModel.PROP_NAME);
         String company = I18NUtil.getMessage("test.company");
 
         assertEquals(dayShort, (String) action.getParameterValue("dayShort"));

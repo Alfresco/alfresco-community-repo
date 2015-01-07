@@ -18,8 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSIONED_NODEREF;
+import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSION_LABEL;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -44,14 +49,17 @@ import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordsManagementContainerType;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
+import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -70,7 +78,9 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -82,11 +92,15 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.version.Version;
+import org.alfresco.service.cmr.version.VersionHistory;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -107,7 +121,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
+                                          NodeServicePolicies.BeforeDeleteNodePolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
@@ -117,6 +132,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** I18N */
     private static final String MSG_NODE_HAS_ASPECT = "rm.service.node-has-aspect";
+    private static final String FINAL_VERSION = "rm.service.final-version";
+    private static final String FINAL_DESCRIPTION = "rm.service.final-version-description";
 
     /** Always edit property array */
     private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
@@ -138,14 +155,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
      };
 
     /** record model URI's */
-    public static final String[] RECORD_MODEL_URIS = new String[]
-    {
-       RM_URI,
-       RM_CUSTOM_URI,
-       ReportModel.RMR_URI,
-       RecordableVersionModel.RMV_URI,
-       DOD5015Model.DOD_URI
-    };
+    public static final List<String> RECORD_MODEL_URIS = Collections.unmodifiableList(
+        Arrays.asList(
+            RM_URI,
+            RM_CUSTOM_URI,
+            ReportModel.RMR_URI,
+            RecordableVersionModel.RMV_URI,
+            DOD5015Model.DOD_URI
+    ));
 
     /** non-record model URI's */
     private static final String[] NON_RECORD_MODEL_URIS = new String[]
@@ -197,6 +214,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Permission service */
     private PermissionService permissionService;
+
+    /** Version service */
+    private VersionService versionService;
+    
+    /** Relationship service */
+    private RelationshipService relationshipService;
+    
+    /** records management container type */
+    private RecordsManagementContainerType recordsManagementContainerType;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
@@ -318,6 +344,27 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.permissionService = permissionService;
     }
+
+    /**
+     * @param versionService version service
+     */
+    public void setVersionService(VersionService versionService)
+    {
+        this.versionService = versionService;
+    }
+    
+    /**
+     * @param relationshipService   relationship service
+     */
+    public void setRelationshipService(RelationshipService relationshipService)
+    {
+        this.relationshipService = relationshipService;
+    }
+    
+    public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType) 
+    {
+		this.recordsManagementContainerType = recordsManagementContainerType;
+	}
 
     /**
      * Init method
@@ -694,15 +741,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         return getRecordMetadataAspectsMap().containsKey(aspect);
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataProperty(org.alfresco.service.namespace.QName)
      */
     @Override
     public boolean isRecordMetadataProperty(QName property)
     {
-        boolean result = false;        
-        PropertyDefinition propertyDefinition = dictionaryService.getProperty(property); 
+        boolean result = false;
+        PropertyDefinition propertyDefinition = dictionaryService.getProperty(property);
         if (propertyDefinition != null)
         {
             ClassDefinition classDefinition = propertyDefinition.getContainerClass();
@@ -714,7 +761,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         }
         return result;
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects(org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -813,6 +860,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // get the documents primary parent assoc
                         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
+                        // get the latest version record, if there is one
+                        NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
+                        
                         behaviourFilter.disableBehaviour();
                         try
                         {
@@ -830,9 +880,21 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, owner);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
-
+                        
                         // make the document a record
                         makeRecord(nodeRef);
+                        
+                        if (latestVersionRecord != null)
+                        {
+                            // indicate that this is the 'final' record version
+                            PropertyMap versionRecordProps = new PropertyMap(2);
+                            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, I18NUtil.getMessage(FINAL_VERSION));
+                            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, I18NUtil.getMessage(FINAL_DESCRIPTION));
+                            nodeService.addAspect(nodeRef, RecordableVersionModel.ASPECT_VERSION_RECORD, versionRecordProps);
+                            
+                            // link to previous version
+                            relationshipService.addRelationship("versions", nodeRef, latestVersionRecord);
+                        }
 
                         if (isLinked)
                         {
@@ -866,6 +928,130 @@ public class RecordServiceImpl extends BaseBehaviourBean
             }
         });
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromCopy(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public NodeRef createRecordFromCopy(final NodeRef filePlan, final NodeRef nodeRef)
+    {
+        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+        {
+            public NodeRef doWork() throws Exception
+            {
+                // get the unfiled record folder
+                final NodeRef unfiledRecordFolder = filePlanService.getUnfiledContainer(filePlan);
+
+                // get the documents readers
+                Long aclId = nodeService.getNodeAclId(nodeRef);
+                Set<String> readers = extendedPermissionService.getReaders(aclId);
+                Set<String> writers = extendedPermissionService.getWriters(aclId);
+
+                // add the current owner to the list of extended writers
+                Set<String> modifiedWrtiers = new HashSet<String>(writers);
+                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+                {
+                    String owner = ownableService.getOwner(nodeRef);
+                    if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
+                    {
+                        modifiedWrtiers.add(owner);
+                    }
+                }
+
+                // add the current user as extended writer
+                modifiedWrtiers.add(authenticationUtil.getFullyAuthenticatedUser());
+
+                // copy version state and create record
+                NodeRef record = null;
+                try
+                {
+                    List<AssociationRef> originalAssocs = null;
+                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM))
+                    {
+                        // take a note of any copyFrom information already on the node
+                        originalAssocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
+                    }
+
+                    recordsManagementContainerType.disable();
+                    try
+                    {
+	                    // create a copy of the original state and add it to the unfiled record container
+	                    FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
+	                    record = recordInfo.getNodeRef();
+                    }
+                    finally
+                    {
+                    	recordsManagementContainerType.enable();
+                    }
+                    
+                    // make record
+                    makeRecord(record);
+
+                    // remove added copy assocs
+                    List<AssociationRef> recordAssocs = nodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
+                    for (AssociationRef recordAssoc : recordAssocs)
+                    {
+                        nodeService.removeAssociation(
+                                recordAssoc.getSourceRef(),
+                                recordAssoc.getTargetRef(),
+                                ContentModel.ASSOC_ORIGINAL);
+                    }
+
+                    // re-add origional assocs or remove aspect
+                    if (originalAssocs == null)
+                    {
+                        nodeService.removeAspect(record, ContentModel.ASPECT_COPIEDFROM);
+                    }
+                    else
+                    {
+                        for (AssociationRef originalAssoc : originalAssocs)
+                        {
+                            nodeService.createAssociation(originalAssoc.getSourceRef(), originalAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
+                        }
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new AlfrescoRuntimeException("Can't create recorded version, because copy fails.", e);
+                }
+
+                // set extended security on record
+                extendedSecurityService.addExtendedSecurity(record, readers, writers);
+
+                return record;
+            }
+        });
+    }
+    
+    /**
+     * Helper to get the latest version record for a given document (ie non-record)
+     * 
+     * @param nodeRef   node reference
+     * @return NodeRef  latest version record, null otherwise
+     */
+    private NodeRef getLatestVersionRecord(NodeRef nodeRef)
+    {
+        NodeRef versionRecord = null;
+        
+        // wire record up to previous record
+        VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
+        if (versionHistory != null)
+        {
+            Collection<Version> previousVersions = versionHistory.getAllVersions();
+            for (Version previousVersion : previousVersions)
+            {
+                // look for the associated record
+                final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+                if (previousRecord != null)
+                {
+                    versionRecord = previousRecord;
+                    break;
+                }
+            }
+        }  
+        
+        return versionRecord;        
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createNewRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
@@ -876,7 +1062,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("nodeRef", parent);
         ParameterCheck.mandatory("name", name);
 
-        NodeRef record = null;
+        NodeRef result = null;
         NodeRef destination = parent;
 
         if (isFilePlan(parent))
@@ -903,7 +1089,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         try
         {
             // create the new record
-            record = fileFolderService.create(destination, name, type).getNodeRef();
+            final NodeRef record = fileFolderService.create(destination, name, type).getNodeRef();
 
             // set the properties
             if (properties != null)
@@ -919,23 +1105,32 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 writer.setMimetype(reader.getMimetype());
                 writer.putContent(reader);
             }
+            
+            result = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+            {
+    			public NodeRef doWork() throws Exception 
+    			{
+    				// Check if the "record" aspect has been applied already.
+    		        // In case of filing a report the created node will be made
+    		        // a record within the "onCreateChildAssociation" method if
+    		        // a destination for the report has been selected.
+    		        if (!nodeService.hasAspect(record, ASPECT_RECORD))
+    		        {
+    		            // make record
+    		            makeRecord(record);
+    		        }
+    		        
+    				return record;
+    			}
+            	
+            });
         }
         finally
         {
             enablePropertyEditableCheck();
         }
 
-        // Check if the "record" aspect has been applied already.
-        // In case of filing a report the created node will be made
-        // a record within the "onCreateChildAssociation" method if
-        // a destination for the report has been selected.
-        if (!nodeService.hasAspect(record, ASPECT_RECORD))
-        {
-            // make record
-            makeRecord(record);
-        }
-
-        return record;
+        return result;
     }
 
     /**
@@ -989,7 +1184,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             props.put(PROP_IDENTIFIER, recordId);
             props.put(PROP_ORIGIONAL_NAME, name);
             nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
-            
+
             // remove versionable aspect(s)
             nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
         }
@@ -1363,7 +1558,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // check the URI's
-            result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
+            result = RECORD_MODEL_URIS.contains(property.getNamespaceURI());
 
             // check the custom model
             if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))
@@ -1466,14 +1661,91 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#link(NodeRef, NodeRef)
      */
     @Override
-    public void link(NodeRef nodeRef, NodeRef folder)
+    public void link(NodeRef record, NodeRef recordFolder)
     {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("folder", folder);
+        ParameterCheck.mandatory("record", record);
+        ParameterCheck.mandatory("recordFolder", recordFolder);
 
-        if(isRecord(nodeRef) && isRecordFolder(folder))
+        // ensure we are linking a record to a record folder
+        if(isRecord(record) && isRecordFolder(recordFolder))
         {
-            nodeService.addChild(folder, nodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).toString()));
+            // ensure that we are not linking a record to an exisiting location
+            List<ChildAssociationRef> parents = nodeService.getParentAssocs(record);
+            for (ChildAssociationRef parent : parents)
+            {
+                if (parent.getParentRef().equals(recordFolder))
+                {
+                    // we can not link a record to the same location more than once
+                    throw new AlfrescoRuntimeException("Can not link a record to the same record folder more than once");
+                }
+            }
+            
+            // get the current name of the record
+            String name = nodeService.getProperty(record, ContentModel.PROP_NAME).toString();
+            
+            // create a secondary link to the record folder
+            nodeService.addChild(
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+        }
+        else 
+        {
+            // can only link a record to a record folder
+            throw new AlfrescoRuntimeException("Can only link a record to a record folder.");
+        }
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#unlink(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void unlink(NodeRef record, NodeRef recordFolder)
+    {
+        ParameterCheck.mandatory("record", record);
+        ParameterCheck.mandatory("recordFolder", recordFolder);
+
+        // ensure we are unlinking a record from a record folder
+        if(isRecord(record) && isRecordFolder(recordFolder))
+        {
+            // check that we are not trying to unlink the primary parent
+            NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
+            if (primaryParent.equals(recordFolder))
+            {
+                throw new AlfrescoRuntimeException("Can't unlink a record from it's owning record folder.");
+            }
+            
+            // remove the link
+            nodeService.removeChild(recordFolder, record);
+        } 
+        else 
+        {
+            // can only unlink a record from a record folder
+            throw new AlfrescoRuntimeException("Can only unlink a record from a record folder.");
+        }
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS,
+            type = "rma:record"
+    )
+    public void beforeDeleteNode(NodeRef nodeRef)
+    {
+        NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF);
+        if (versionedNodeRef != null)
+        {
+            String versionLabel = (String) nodeService.getProperty(nodeRef, PROP_VERSION_LABEL);
+            if (isNotBlank(versionLabel))
+            {
+                Version version = versionService.getVersionHistory(versionedNodeRef).getVersion(versionLabel);
+                versionService.deleteVersion(versionedNodeRef, version);
+            }
         }
     }
 }

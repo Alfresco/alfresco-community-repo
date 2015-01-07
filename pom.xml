@@ -66,7 +66,7 @@
    </modules>
 
    <properties>
-      <alfresco.base.version>5.0.b</alfresco.base.version>
+      <alfresco.base.version>5.0.c</alfresco.base.version>
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>
@@ -79,9 +79,7 @@
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.7</maven.build.sourceVersion>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-      <!-- Sonar specific properties -->
-      <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
+      <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
    </properties>
 
    <build>
@@ -198,7 +196,6 @@
                   <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
                   <redirectTestOutputToFile>true</redirectTestOutputToFile>
                   <runOrder>alphabetical</runOrder>
-                  <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
                   <systemPropertyVariables>
                      <!-- Database related properties -->
                      <db.url>${db.url}</db.url>

@@ -99,12 +99,12 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param dictionaryService	dictionary service
+     * @param dictionaryService dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
-		this.dictionaryService = dictionaryService;
-	}
+        this.dictionaryService = dictionaryService;
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#executeImpl()
@@ -130,7 +130,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     {
                         if (nodeService.exists(nodeRef))
                         {
-                            boolean publishing = (Boolean)nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS);
+                            boolean publishing = ((Boolean)nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS)).booleanValue();
                             if (!publishing)
                             {
                                 // Mark the update node as publishing in progress
@@ -144,11 +144,11 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                                         logger.debug("   - for " + nodeRef.toString());
                                         logger.debug("   - at " + start.toString());
                                     }
-    
+
                                     // Publish updates
                                     publishUpdates(nodeRef);
-    
-    
+
+
                                     if (logger.isDebugEnabled())
                                     {
                                         Date end = new Date();
@@ -189,7 +189,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
         // ensure that the rm content model has been loaded
         if (dictionaryService != null &&
-        	dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
+            dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
         {
             result = true;
         }
@@ -221,24 +221,24 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
                     // Execute query to find updates awaiting publishing
                     List<NodeRef> resultNodes = null;
-                    
+
                     SearchParameters searchParameters = new SearchParameters();
                     searchParameters.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
                     searchParameters.setQuery(query);
                     searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
                     searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-                    
+
                     try
                     {
                         ResultSet results = searchService.query(searchParameters);
-                        try
-                        {
-                            resultNodes = results.getNodeRefs();
-                        }
-                        finally
-                        {
-                            results.close();
-                        }
+                    try
+                    {
+                        resultNodes = results.getNodeRefs();
+                    }
+                    finally
+                    {
+                        results.close();
+                    }
                     }
                     catch (AlfrescoRuntimeException exception)
                     {
@@ -294,7 +294,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     return null;
                 }
             };
-        retryingTransactionHelper.doInTransaction(execution, false, true);
+        retryingTransactionHelper.doInTransaction(execution);
     }
 
     /**

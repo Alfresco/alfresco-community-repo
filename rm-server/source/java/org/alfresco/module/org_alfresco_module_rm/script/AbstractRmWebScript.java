@@ -47,6 +47,7 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
     protected static final String STORE_ID = "store_id";
     protected static final String ID = "id";
     protected static final String SUCCESS = "success";
+    protected static final String INVERT = "__invert";
 
     /** Disposition service */
     private DispositionService dispositionService;

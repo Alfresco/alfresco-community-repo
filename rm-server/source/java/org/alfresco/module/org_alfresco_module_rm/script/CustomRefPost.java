@@ -126,7 +126,15 @@ public class CustomRefPost extends AbstractRmWebScript
         NodeRef target = getTargetNode(json);
         NodeRef source = parseRequestForNodeRef(req);
 
-        getRelationshipService().addRelationship(uniqueName, source, target);
+        if (uniqueName.endsWith(INVERT))
+        {
+            String uniqueNameStem = uniqueName.split(INVERT)[0];
+            getRelationshipService().addRelationship(uniqueNameStem, target, source);
+        }
+        else
+        {
+            getRelationshipService().addRelationship(uniqueName, source, target);
+        }
     }
 
     /**

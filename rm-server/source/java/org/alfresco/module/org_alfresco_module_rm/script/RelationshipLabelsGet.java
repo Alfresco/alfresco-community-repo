@@ -104,7 +104,7 @@ public class RelationshipLabelsGet extends AbstractRmWebScript
 
             if (RelationshipType.PARENTCHILD.equals(type))
             {
-                relationshipLabels.add(new RelationshipLabel(sourceText, uniqueName));
+                relationshipLabels.add(new RelationshipLabel(sourceText, uniqueName + INVERT));
                 relationshipLabels.add(new RelationshipLabel(targetText, uniqueName));
             }
             else if (RelationshipType.BIDIRECTIONAL.equals(type))

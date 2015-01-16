@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.relationship;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_FROZEN;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -29,6 +30,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeCreateReference;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRemoveReference;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;
@@ -416,6 +418,15 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         mandatoryString("uniqueName", uniqueName);
         mandatory("source", source);
         mandatory("target", target);
+
+        if (getNodeService().hasAspect(target, ASPECT_FROZEN))
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Relationship cannot be created as the target '").
+                append(getNodeService().getProperty(target, ContentModel.PROP_NAME)).
+                append("' is in a hold.");
+            throw new AlfrescoRuntimeException(sb.toString());
+        }
 
         // Check that the association definition for the given unique name exists.
         AssociationDefinition associationDefinition = getAssociationDefinition(uniqueName);

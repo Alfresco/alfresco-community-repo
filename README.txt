@@ -19,6 +19,8 @@ Using Eclipse
  - Import projects as Maven projects ("Import > Maven > Existing Maven Projects")
  - Browse to the code directory of your project and select "rm-server/pom.xml" and "rm-share/pom.xml". DO NOT select the parent "/pom.xml"
  - Open the Ant view and add the build files for both modules ("build.xml")
+ - If you are not working on a Windows machine you need to change the value of a property called "mvn.exec".
+   To do this create a file called "build.local.properties" under the code directory and change the value in that new file.
  - Run the "prepareEnv" target for rm-server which will prepare the development environment. This target must be run just once.
  - Now "fullBuild" target can be run which will create the amp file, apply it to the war file and copy the war file to webapps folder.
 

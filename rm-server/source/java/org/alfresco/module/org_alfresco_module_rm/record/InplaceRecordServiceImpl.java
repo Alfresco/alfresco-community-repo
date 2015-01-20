@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import static org.alfresco.model.ContentModel.ASPECT_PENDING_DELETE;
+
 import java.util.List;
 import java.util.Set;
 
@@ -96,7 +98,9 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
                 List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef childAssociationRef : parentAssocs)
                 {
-                    if (!childAssociationRef.isPrimary() && childAssociationRef.getParentRef().equals(originatingLocation))
+                    if (!childAssociationRef.isPrimary() &&
+                            childAssociationRef.getParentRef().equals(originatingLocation) &&
+                            !nodeService.hasAspect(childAssociationRef.getChildRef(), ASPECT_PENDING_DELETE))
                     {
                         nodeService.removeChildAssociation(childAssociationRef);
                         break;

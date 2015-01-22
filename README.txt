@@ -12,9 +12,9 @@ Initial Setup
  - Create a normal project using "create-project"
  - Check out RM code into the "code" directory (eg "checkout https://svn.alfresco.com/repos/alfresco-enterprise/modules/recordsmanagement/HEAD")
  - Create the tomcat instances using "use-tomcat7" and "use-app-tomcat7"
+ - If you've got SOLR config in your $DEV_HOME/projects/repository.properties file, then you'll need to remove it or fix it in the RM project level properties file.
 
-
-Using Eclipse
+Using Eclipse (or IntelliJ)
 
  - Import projects as Maven projects ("Import > Maven > Existing Maven Projects")
  - Browse to the code directory of your project and select "rm-server/pom.xml" and "rm-share/pom.xml". DO NOT select the parent "/pom.xml"

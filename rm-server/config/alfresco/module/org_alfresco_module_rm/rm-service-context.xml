@@ -446,6 +446,8 @@
         <property name="policyComponent" ref="policyComponent"/>
         <property name="ownableService" ref="ownableService" />
         <property name="authorityService" ref="AuthorityService" />
+        <property name="filePlanRoleService" ref="FilePlanRoleService" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
     <bean id="FilePlanPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -1102,7 +1104,7 @@
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isFiled=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecord=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromContent=RM.Create.0                
+                org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromContent=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.createRecordFromCopy=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.file=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.record.RecordService.isPropertyEditable=RM.Read.0

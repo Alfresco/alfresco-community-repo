@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -75,6 +76,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     /** Authority service */
     private AuthorityService authorityService;
+
+    /** File plan role service */
+    private FilePlanRoleService filePlanRoleService;
+
+    /** File plan service */
+    private FilePlanService filePlanService;
 
     /** Logger */
     private static final Log LOGGER = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
@@ -169,6 +176,46 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
+     * Gets the file plan role service
+     *
+     * @return The file plan role service
+     */
+    public FilePlanRoleService getFilePlanRoleService()
+    {
+        return this.filePlanRoleService;
+    }
+
+    /**
+     * Sets the file plan role service
+     *
+     * @param filePlanRoleService The file plan role service to set
+     */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
+    {
+        this.filePlanRoleService = filePlanRoleService;
+    }
+
+    /**
+     * Gets the file plan service
+     *
+     * @return The file plan service
+     */
+    public FilePlanService getFilePlanService()
+    {
+        return this.filePlanService;
+    }
+
+    /**
+     * Sets the file plan service
+     *
+     * @param filePlanService The file plan service to set
+     */
+    public void setFilePlanService(FilePlanService filePlanService)
+    {
+        this.filePlanService = filePlanService;
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService#setupRecordCategoryPermissions(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -256,7 +303,13 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     public void onCreateTransfer(final ChildAssociationRef childAssocRef)
     {
         mandatory("childAssocRef", childAssocRef);
-        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+        NodeRef childRef = childAssocRef.getChildRef();
+        setupPermissions(childAssocRef.getParentRef(), childRef);
+        // Give read permissions for all RM roles for the transfer folders (see RM-1800).
+        // This behaviour will be changed once the add manage permission option is added in the UI for the transfers containers.
+        NodeRef filePlan = getFilePlanService().getFilePlan(childRef);
+        String allRoles = getFilePlanRoleService().getAllRolesContainerGroup(filePlan);
+        getPermissionService().setPermission(childRef, allRoles, READ_RECORDS, true);
     }
 
     /**

@@ -22,13 +22,9 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.BaseEvaluator;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Evaluates whether the node in question is transferring is either a transfer or accession.
@@ -37,9 +33,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class TransferEvaluator extends BaseEvaluator
 {
-    /** Logger */
-    private static Log logger = LogFactory.getLog(TransferEvaluator.class);
-
     /** indicates whether we are looking for accessions or transfers */
     private boolean transferAccessionIndicator = false;
 
@@ -62,18 +55,8 @@ public class TransferEvaluator extends BaseEvaluator
         NodeRef transfer = getTransferNodeRef(nodeRef);
         if (transfer != null)
         {
-            try
-            {
-                boolean actual = ((Boolean)nodeService.getProperty(transfer, RecordsManagementModel.PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
-                result = (actual == transferAccessionIndicator);
-            }
-            catch (AccessDeniedException ade)
-            {
-                logger.info("The user '"
-                        + AuthenticationUtil.getFullyAuthenticatedUser()
-                        + "' does not have permissions on the node '"
-                        + transfer + "'.");
-            }
+            boolean actual = ((Boolean)nodeService.getProperty(transfer, RecordsManagementModel.PROP_TRANSFER_ACCESSION_INDICATOR)).booleanValue();
+            result = (actual == transferAccessionIndicator);
         }
 
         return result;

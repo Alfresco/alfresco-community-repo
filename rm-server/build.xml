@@ -53,10 +53,10 @@
          <arg value="-Ddest=${ant.build.directory}/solr4.war" />
       </exec>
 
-      <unzip src="${ant.build.directory}/solr4-config.zip" dest="${ant.build.directory}/solr4"/>
+      <unzip src="${ant.build.directory}/solr4-config.zip" dest="${ant.build.directory}/solr4config"/>
       <unzip src="${ant.build.directory}/alfresco-repository.jar" dest="${ant.build.directory}/alfresco-repository"/>
 
-      <copy todir="${ant.build.directory}/solr4/keystore">
+      <copy todir="${ant.build.directory}/solr4config/keystore">
          <fileset dir="${ant.build.directory}/alfresco-repository/alfresco/keystore" />
       </copy>
 
@@ -66,43 +66,43 @@
          <path location="${solr.root.tmp}"/>
       </pathconvert>
 
-      <replace file="${ant.build.directory}/solr4/archive-SpacesStore/conf/solrcore.properties" summary="yes">
+      <replace file="${ant.build.directory}/solr4config/archive-SpacesStore/conf/solrcore.properties" summary="yes">
          <replacefilter token="@@ALFRESCO_SOLR4_DATA_DIR@@" value="${solr.root}/index" />
       </replace>
-      <replace file="${ant.build.directory}/solr4/workspace-SpacesStore/conf/solrcore.properties" summary="yes">
+      <replace file="${ant.build.directory}/solr4config/workspace-SpacesStore/conf/solrcore.properties" summary="yes">
          <replacefilter token="@@ALFRESCO_SOLR4_DATA_DIR@@" value="${solr.root}/index" />
       </replace>
-      <replace file="${ant.build.directory}/solr4/context.xml" summary="yes">
-         <replacefilter token="@@ALFRESCO_SOLR4_DIR@@" value="${solr.root}" />
+      <replace file="${ant.build.directory}/solr4config/context.xml" summary="yes">
+         <replacefilter token="@@ALFRESCO_SOLR4_DIR@@" value="${solr.root}config" />
       </replace>
-      <replace file="${ant.build.directory}/solr4/context.xml" summary="yes">
+      <replace file="${ant.build.directory}/solr4config/context.xml" summary="yes">
          <replacefilter token="@@ALFRESCO_SOLR4_MODEL_DIR@@" value="${solr.root}/model" />
       </replace>
-      <replace file="${ant.build.directory}/solr4/context.xml" summary="yes">
+      <replace file="${ant.build.directory}/solr4config/context.xml" summary="yes">
          <replacefilter token="@@ALFRESCO_SOLR4_CONTENT_DIR@@" value="${solr.root}/content" />
       </replace>
       <replace file="${app.tomcat.folder}/conf/server.xml" summary="yes">
          <replacetoken><![CDATA[<!-- Alfresco SSL Connector placeholder -->]]></replacetoken>
          <replacevalue><![CDATA[
             <Connector port="8443" protocol="org.apache.coyote.http11.Http11Protocol" SSLEnabled="true"
-                       maxThreads="150" scheme="https" keystoreFile="../../data/solr4/keystore/ssl.keystore"
+                       maxThreads="150" scheme="https" keystoreFile="../../data/solr4config/keystore/ssl.keystore"
                        keystorePass="kT9X6oe68t" keystoreType="JCEKS"
                        secure="true" connectionTimeout="240000"
-                       truststoreFile="../../data/solr4/keystore/ssl.truststore"
+                       truststoreFile="../../data/solr4config/keystore/ssl.truststore"
                        truststorePass="kT9X6oe68t" truststoreType="JCEKS"
                        clientAuth="want" sslProtocol="TLS" allowUnsafeLegacyRenegotiation="true" maxHttpHeaderSize="32768" />]]></replacevalue>
          </replace>
 
       <propertyfile file="${solr.root}/../repository.properties">
-         <entry key="dir.keystore" value="${solr.root}/keystore" />
+         <entry key="dir.keystore" value="${solr.root}config/keystore" />
          <entry key="index.subsystem.name" value="solr4" />
          <entry key="solr.port.ssl" value="8443" />
       </propertyfile>
 
-      <copy file="${ant.build.directory}/solr4/context.xml"
+      <copy file="${ant.build.directory}/solr4config/context.xml"
             tofile="${app.tomcat.folder}/conf/Catalina/localhost/solr4.xml" />
-      <copy todir="${solr.root}">
-         <fileset dir="${ant.build.directory}/solr4" />
+      <copy todir="${solr.root}config">
+         <fileset dir="${ant.build.directory}/solr4config" />
       </copy>
       <copy todir="${app.tomcat.webapps}/">
          <fileset file="${ant.build.directory}/solr4.war" />

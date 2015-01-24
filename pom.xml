@@ -111,7 +111,7 @@
             <configuration>
                <backup>true</backup>
                <ampLocation>${project.build.directory}/${project.build.finalName}-amp.amp</ampLocation>
-               <warLocation>${project.build.directory}/${webapp.id}.war</warLocation>
+               <warLocation>${project.build.directory}/${webapp.id.name}.war</warLocation>
                <classifier>amp</classifier>
             </configuration>
          </plugin>

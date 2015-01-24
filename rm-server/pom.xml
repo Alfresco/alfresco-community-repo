@@ -11,7 +11,8 @@
    <artifactId>alfresco-rm-server</artifactId>
    <name>Alfresco RM Server</name>
    <properties>
-      <webapp.id>alfresco</webapp.id>
+      <webapp.id.name>alfresco</webapp.id.name>
+      <webapp.id>${webapp.id.name}</webapp.id>
    </properties>
    <build>
       <sourceDirectory>source/java</sourceDirectory>

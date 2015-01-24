@@ -29,6 +29,18 @@
       </exec>
    </target>
 
+   <target name="fetchEntpriseWarFile">
+      <xmlproperty file="../pom.xml" keepRoot="false"/>
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${groupId}" />
+         <arg value="-DartifactId=${app.war.artifactId}-enterprise" />
+         <arg value="-Dversion=${properties.alfresco.base.version}" />
+         <arg value="-Dpackaging=${app.war.packaging}" />
+         <arg value="-Ddest=${ant.build.directory}/${app.war.artifactId}.${app.war.packaging}" />
+      </exec>
+   </target>
+
    <target name="deleteWarFile">
       <delete file="${app.package.path}" failonerror="true" />
    </target>
@@ -49,11 +61,20 @@
       </exec>
    </target>
 
+   <target name="alfresco:installEnterprise" depends="deleteWarFile, deleteExplodedWar, alfresco:amp, fetchEntpriseWarFile">
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="alfresco:install" />
+         <arg value="-Penterprise" />
+      </exec>
+   </target>
+
    <target name="copyWarFileToTomcat">
       <copy file="${ant.build.directory}/${app.package}" todir="${app.tomcat.webapps}" failonerror="true" />
    </target>
 
-   <target name="fullBuild" depends="alfresco:install, copyWarFileToTomcat" description=""/>
+   <target name="fullBuildCommunity" depends="alfresco:install, copyWarFileToTomcat" description=""/>
+
+   <target name="fullBuildEnterprise" depends="alfresco:installEnterprise, copyWarFileToTomcat" description=""/>
 
    <target name="copyWebDirectory" if="${web.directory.exists}">
       <copy todir="${app.folder}" failonerror="true">

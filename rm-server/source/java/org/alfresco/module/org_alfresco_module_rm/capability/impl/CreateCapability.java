@@ -80,6 +80,10 @@ public class CreateCapability extends DeclarativeCapability
      */
     public int evaluate(NodeRef destination, NodeRef linkee, QName assocType)
     {
+        //if the user doesn't have Create Record capability deny access 
+        if(capabilityService.getCapabilityAccessState(destination, RMPermissionModel.CREATE_RECORDS) == AccessStatus.DENIED)
+            return AccessDecisionVoter.ACCESS_DENIED;
+        
         if (linkee != null)
         {
             int state = checkRead(linkee, true);

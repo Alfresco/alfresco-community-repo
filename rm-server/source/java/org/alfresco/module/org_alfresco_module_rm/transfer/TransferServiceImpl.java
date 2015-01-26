@@ -242,7 +242,7 @@ public class TransferServiceImpl extends ServiceBaseImpl
         {
             if (freezeService.hasFrozenChildren(assoc.getChildRef()))
             {
-                throw new AlfrescoRuntimeException("Cound not complete a transfer that contain ");
+                throw new AlfrescoRuntimeException("Could not complete a transfer that contain frozen children.");
             }
             markComplete(assoc.getChildRef(), accessionIndicator, transferLocation);
         }

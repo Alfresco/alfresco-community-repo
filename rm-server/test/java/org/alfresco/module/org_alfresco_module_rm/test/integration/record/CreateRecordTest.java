@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
@@ -198,6 +199,51 @@ public class CreateRecordTest extends BaseRMTestCase
                 // check the details of the record
                 assertTrue(recordService.isRecord(record));
 
+            }
+        });
+    }
+
+    public void testCreateRecordWithoutCreateRecordCapability() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
+        {
+            /** test data */
+            String roleName = GUID.generate();
+            String user = GUID.generate();
+            NodeRef recordFolder;
+
+            public void given()
+            {
+                // create role
+                Set<Capability> capabilities = new HashSet<Capability>(2);
+                capabilities.add(capabilityService.getCapability("ViewRecords"));
+                filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
+
+                // create user and assign to role
+                createPerson(user, true);
+                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
+
+                // create file plan structure
+                NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());
+            }
+
+            public void when()
+            {
+                // give read and file permissions to user
+                filePlanPermissionService.setPermission(recordFolder, user,
+                            RMPermissionModel.FILING);
+
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        recordService.createRecordFromContent(recordFolder, GUID.generate(),
+                                    TYPE_CONTENT, null, null);
+
+                        return null;
+                    }
+                }, user);
             }
         });
     }

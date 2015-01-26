@@ -64,7 +64,8 @@ public interface RMPermissionModel
 
     // Capability permissions
     String DECLARE_RECORDS = "DeclareRecords";
-    String VIEW_RECORDS = "ViewRecords";    
+    String VIEW_RECORDS = "ViewRecords";
+    String CREATE_RECORDS = "CreateRecords";
     String CREATE_MODIFY_DESTROY_FOLDERS = "CreateModifyDestroyFolders";
     String EDIT_RECORD_METADATA = "EditRecordMetadata";
     String EDIT_NON_RECORD_METADATA = "EditNonRecordMetadata";

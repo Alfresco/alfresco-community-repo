@@ -18,12 +18,19 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAs;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -42,6 +49,7 @@ import org.alfresco.util.GUID;
 public class RM978Test extends BaseRMTestCase
 {
     private NodeRef documentLibrary2;
+    private String user;
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
@@ -71,11 +79,18 @@ public class RM978Test extends BaseRMTestCase
                 taggingService);
 
         assertNotNull("Collaboration site document library component was not successfully created.", documentLibrary2);
+
+        user = GUID.generate();
+        createPerson(user);
+        siteService.setMembership(collabSiteId, user, SiteModel.SITE_CONTRIBUTOR);
+        siteService.setMembership(collabSiteId2, user, SiteModel.SITE_CONTRIBUTOR);
+        siteService.setMembership(siteId, user, SiteModel.SITE_CONSUMER);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_POWER_USER, user);
     }
 
     public void testMoveDocumentToFolderInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
         {
             private NodeRef folder1;
             private NodeRef folder2;
@@ -111,22 +126,21 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentToDocumentLibraryInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
         {
             private NodeRef folder1;
-            private String folder1Name = GUID.generate();
             private NodeRef document1;
             private String document1Name = GUID.generate();
 
             public void given()
             {
-                folder1 = fileFolderService.create(documentLibrary, folder1Name, ContentModel.TYPE_FOLDER).getNodeRef();
-                document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
             }
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                fileFolderService.move(document1, documentLibrary, document1Name);
+                fileFolderService.move(document1, documentLibrary, null);
             }
 
             public void then()
@@ -145,14 +159,13 @@ public class RM978Test extends BaseRMTestCase
                 }
 
                 assertTrue(childNames.contains(document1Name));
-                assertTrue(childNames.contains(folder1Name));
             }
         });
     }
 
     public void testMoveFolderToFolderInCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
         {
             private NodeRef folder1;
             private NodeRef folder2;
@@ -160,13 +173,13 @@ public class RM978Test extends BaseRMTestCase
 
             public void given()
             {
-                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                folder1 = fileFolderService.create(documentLibrary, folder1Name, ContentModel.TYPE_FOLDER).getNodeRef();
                 folder2 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
             }
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                fileFolderService.move(folder1, folder2, folder1Name);
+                fileFolderService.move(folder1, folder2, null);
             }
 
             public void then()
@@ -182,7 +195,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentToFolderInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
         {
             private NodeRef folder1;
             private NodeRef folder2;
@@ -192,13 +205,13 @@ public class RM978Test extends BaseRMTestCase
             public void given()
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
-                document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
                 folder2 = fileFolderService.create(documentLibrary2, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
             }
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                fileFolderService.move(document1, folder2, document1Name);
+                fileFolderService.move(document1, folder2, null);
             }
 
             public void then()
@@ -218,7 +231,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentToDocumentLibraryInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
         {
             private NodeRef folder1;
             private NodeRef document1;
@@ -227,12 +240,12 @@ public class RM978Test extends BaseRMTestCase
             public void given()
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
-                document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
             }
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                fileFolderService.move(document1, documentLibrary2, document1Name);
+                fileFolderService.move(document1, documentLibrary2, null);
             }
 
             public void then()
@@ -257,7 +270,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderToFolderInDifferentCollabSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
         {
             private NodeRef folder1;
             private NodeRef folder2;
@@ -265,13 +278,13 @@ public class RM978Test extends BaseRMTestCase
 
             public void given()
             {
-                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                folder1 = fileFolderService.create(documentLibrary, folder1Name, ContentModel.TYPE_FOLDER).getNodeRef();
                 folder2 = fileFolderService.create(documentLibrary2, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
             }
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                fileFolderService.move(folder1, folder2, folder1Name);
+                fileFolderService.move(folder1, folder2, null);
             }
 
             public void then()
@@ -287,7 +300,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentInFilePlanInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
         {
             private NodeRef folder1;
             private NodeRef document1;
@@ -307,7 +320,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentInCategoryInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
         {
             private NodeRef folder1;
             private NodeRef document1;
@@ -317,7 +330,16 @@ public class RM978Test extends BaseRMTestCase
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
                 document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
             }
 
             public void when() throws FileExistsException, FileNotFoundException
@@ -329,12 +351,11 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveDocumentInFolderInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
         {
             private NodeRef folder1;
             private NodeRef document1;
             private String document1Name = GUID.generate();
-            private String movedDocument1Name = GUID.generate();
             private NodeRef rmCategory;
             private NodeRef rmFolder;
 
@@ -342,13 +363,32 @@ public class RM978Test extends BaseRMTestCase
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
                 document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
-                rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                rmFolder = recordFolderService.createRecordFolder(rmCategory, GUID.generate());
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                        rmFolder = recordFolderService.createRecordFolder(rmCategory, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
             }
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                fileFolderService.move(document1, rmFolder, movedDocument1Name);
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        filePlanPermissionService.setPermission(rmFolder, user, RMPermissionModel.FILING);
+
+                        return null;
+                    }
+                }, getAdminUserName());
+
+                fileFolderService.move(document1, rmFolder, null);
             }
 
             public void then()
@@ -360,14 +400,14 @@ public class RM978Test extends BaseRMTestCase
                 assertEquals(1, rmFolderChildAssocs.size());
                 NodeRef movedDocument = rmFolderChildAssocs.iterator().next().getChildRef();
                 String movedDocumentName = (String) nodeService.getProperty(movedDocument, ContentModel.PROP_NAME);
-                assertEquals(movedDocument1Name, movedDocumentName);
+                assertEquals(document1Name, movedDocumentName);
             }
         });
     }
 
     public void testMoveFolderInFilePlanInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
         {
             private NodeRef folder1;
 
@@ -385,7 +425,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderInCategoryInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
         {
             private NodeRef folder1;
             private NodeRef rmCategory;
@@ -393,7 +433,16 @@ public class RM978Test extends BaseRMTestCase
             public void given()
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
-                rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
             }
 
             public void when() throws FileExistsException, FileNotFoundException
@@ -405,7 +454,7 @@ public class RM978Test extends BaseRMTestCase
 
     public void testMoveFolderInFolderInRmSite()
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
         {
             private NodeRef folder1;
             private NodeRef rmCategory;
@@ -414,8 +463,17 @@ public class RM978Test extends BaseRMTestCase
             public void given()
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
-                rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                rmFolder = recordFolderService.createRecordFolder(rmCategory, GUID.generate());
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                        rmFolder = recordFolderService.createRecordFolder(rmCategory, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
             }
 
             public void when() throws FileExistsException, FileNotFoundException

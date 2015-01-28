@@ -56,20 +56,33 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
         mandatory("oldChildAssocRef", oldChildAssocRef);
         mandatory("newChildAssocRef", newChildAssocRef);
 
+        NodeRef sourceParent = oldChildAssocRef.getParentRef();
+        boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParent);
+
+        NodeRef targetParent = newChildAssocRef.getParentRef();
+        boolean isTargetParentFilePlanComponent = isFilePlanComponent(targetParent);
+
+        // If we are doing the move operation within the RM site then we can stop here
+        // The method should just check move operations from outside of RM into the RM site
+        if (isSourceParentFilePlanComponent && isTargetParentFilePlanComponent)
+        {
+            return;
+        }
+
         NodeRef object = oldChildAssocRef.getChildRef();
         QName objectType = nodeService.getType(object);
 
-        NodeRef target = newChildAssocRef.getParentRef();
-        boolean isTargetFilePlanComponent = isFilePlanComponent(target);
-
-        if (!objectType.equals(ContentModel.TYPE_CONTENT) && isTargetFilePlanComponent)
+        // Only documents can be moved into the RM site
+        if (!objectType.equals(ContentModel.TYPE_CONTENT) && isTargetParentFilePlanComponent)
         {
             throw new AlfrescoRuntimeException("Only documents can be moved from a collaboration site into a RM site.");
         }
 
-        if (isTargetFilePlanComponent && !isRecordFolder(target))
+        // Documents can be moved only into a RM folder
+        NodeRef target = newChildAssocRef.getChildRef();
+        if (isTargetParentFilePlanComponent && !isRecordFolder(target))
         {
-            throw new AlfrescoRuntimeException("A document can only be copied into a folder in RM site.");
+            throw new AlfrescoRuntimeException("A document can only be moved into a folder in RM site.");
         }
     }
 
@@ -87,10 +100,18 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
 //        mandatory("targetNodeRef", targetNodeRef);
 //
 //        NodeRef sourceParentNodeRef = nodeService.getPrimaryParent(sourceNodeRef).getParentRef();
-//        boolean isSourceParentNodeFilePlanComponent = isFilePlanComponent(sourceParentNodeRef);
+//        boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParentNodeRef);
 //        boolean isTargetNodeFilePlanComponent = isFilePlanComponent(targetNodeRef);
 //
-//        if (!isSourceParentNodeFilePlanComponent && isTargetNodeFilePlanComponent)
+//        // If we are doing the copy operation within the RM site then we can stop here
+//        // The method should just check copy operations from outside of RM into the RM site
+//        if (isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
+//        {
+//            return;
+//        }
+//
+//        // Do not allow to copy anything outside of RM site into the RM site
+//        if (!isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
 //        {
 //            throw new AlfrescoRuntimeException("Nothing can be copied from a collaboration site into a RM site.");
 //        }

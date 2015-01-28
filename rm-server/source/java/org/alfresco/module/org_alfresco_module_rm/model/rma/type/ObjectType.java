@@ -79,8 +79,7 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
         }
 
         // Documents can be moved only into a RM folder
-        NodeRef target = newChildAssocRef.getChildRef();
-        if (isTargetParentFilePlanComponent && !isRecordFolder(target))
+        if (isTargetParentFilePlanComponent && !isRecordFolder(targetParent))
         {
             throw new AlfrescoRuntimeException("A document can only be moved into a folder in RM site.");
         }

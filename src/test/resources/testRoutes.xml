@@ -1,0 +1,41 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+
+    <routeContext id="deadLetterRoutes" xmlns="http://camel.apache.org/schema/spring">
+        <route>
+            <from uri="direct-vm:alfresco.default" />
+            <to uri="mock:dlq" />
+        </route>
+    </routeContext>
+    <routeContext id="customRoutes" xmlns="http://camel.apache.org/schema/spring">
+        <route>
+            <from uri="direct-vm:alfresco.test.1" />
+            <to uri="mock:result1" />
+        </route>
+        <route>
+            <from uri="direct-vm:alfresco.test.transacted" />
+            <to uri="amqp:queue:alfresco.test.transacted" />
+        </route>
+        <route>
+            <from uri="amqp:queue:alfresco.test.transacted" />
+            <onException>
+                <exception>java.lang.IllegalArgumentException</exception>
+                <!-- Camel considers exceptions sent to processors as handled 
+                    so we'll use bean method http://camel.apache.org/exception-clause.html -->
+                <setBody><simple>${exception}</simple></setBody>
+                <bean ref="messagingExceptionProcessor" method="onReceive" />
+             </onException>
+             <transacted />
+            <loadBalance>        
+                <roundRobin/>
+                <to uri="bean:mockExceptionThrowingConsumer"/>
+                <to uri="bean:mockConsumer"/>
+            </loadBalance>
+        </route>
+    </routeContext>
+
+</beans>

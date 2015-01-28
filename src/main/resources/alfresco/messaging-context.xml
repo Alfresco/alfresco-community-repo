@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+    <bean id="messagingProperties"
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="ignoreUnresolvablePlaceholders">
+            <value>true</value>
+        </property>
+        <property name="locations">
+            <list>
+                <value>classpath:alfresco/extension/messaging-subsystem.properties</value>
+            </list>
+        </property>
+        <property name="searchSystemEnvironment">
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="Messaging" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="autoStart">
+            <value>${messaging.subsystem.autoStart}</value>
+        </property>
+    </bean>
+    
+    <!-- Import the Camel context from the subsystem -->
+    <bean id="alfrescoCamelContext"
+        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="Messaging" />
+        </property>
+        <property name="sourceBeanName">
+            <value>alfrescoCamelContext</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.apache.camel.CamelContext</value>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- Import the Camel producer template from the subsystem -->
+    <bean id="camelProducerTemplate"
+        class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
+        <property name="sourceApplicationContextFactory">
+            <ref bean="Messaging" />
+        </property>
+        <property name="sourceBeanName">
+            <value>camelProducerTemplate</value>
+        </property>
+        <property name="interfaces">
+            <list>
+                <value>org.apache.camel.ProducerTemplate</value>
+            </list>
+        </property>
+    </bean>
+</beans>

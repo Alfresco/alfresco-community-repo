@@ -1,0 +1,28 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="test-messaging.properties" />
+    </bean>
+
+    <import resource="classpath:/alfresco/subsystems/Messaging/default/messaging-context.xml" />
+    
+    <bean id="messagingExceptionProcessor" 
+        class="org.alfresco.messaging.camel.MockExceptionProcessor" />
+        
+    <bean id="mockConsumer" 
+        class="org.alfresco.messaging.camel.MockConsumer" />
+    
+    <bean id="mockExceptionThrowingConsumer" 
+        class="org.alfresco.messaging.camel.MockExceptionThrowingConsumer" />
+    
+    <import resource="testRoutes.xml" />
+    <bean id="testNewRouteLoader" class="org.alfresco.messaging.camel.SpringContextRouteLoader">
+        <property name="camelContextId" value="alfrescoCamelContext" />
+        <property name="routeContextId" value="customRoutes" />
+    </bean>
+
+</beans>

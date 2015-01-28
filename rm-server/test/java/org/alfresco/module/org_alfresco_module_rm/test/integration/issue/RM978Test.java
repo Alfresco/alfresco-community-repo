@@ -100,13 +100,13 @@ public class RM978Test extends BaseRMTestCase
             public void given()
             {
                 folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
-                document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
                 folder2 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
             }
 
             public void when() throws FileExistsException, FileNotFoundException
             {
-                fileFolderService.move(document1, folder2, document1Name);
+                fileFolderService.move(document1, folder2, null);
             }
 
             public void then()
@@ -479,6 +479,389 @@ public class RM978Test extends BaseRMTestCase
             public void when() throws FileExistsException, FileNotFoundException
             {
                 fileFolderService.move(folder1, rmFolder, GUID.generate());
+            }
+        });
+    }
+
+    public void testCopyDocumentToFolderInCollabSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
+        {
+            private NodeRef folder1;
+            private NodeRef folder2;
+            private NodeRef document1;
+            private String document1Name = GUID.generate();
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
+                folder2 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(document1, folder2, null);
+            }
+
+            public void then()
+            {
+                List<ChildAssociationRef> folder1ChildAssocs = nodeService.getChildAssocs(folder1);
+                assertEquals(1, folder1ChildAssocs.size());
+
+                List<ChildAssociationRef> folder2ChildAssocs = nodeService.getChildAssocs(folder2);
+                assertNotNull(folder2ChildAssocs);
+                assertEquals(1, folder2ChildAssocs.size());
+                NodeRef movedDocument = folder2ChildAssocs.iterator().next().getChildRef();
+                String movedDocumentName = (String) nodeService.getProperty(movedDocument, ContentModel.PROP_NAME);
+                assertEquals(document1Name, movedDocumentName);
+            }
+        });
+    }
+
+    public void testCopyDocumentToDocumentLibraryInCollabSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
+        {
+            private NodeRef folder1;
+            private NodeRef document1;
+            private String document1Name = GUID.generate();
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(document1, documentLibrary, null);
+            }
+
+            public void then()
+            {
+                List<ChildAssociationRef> folder1ChildAssocs = nodeService.getChildAssocs(folder1);
+                assertEquals(1, folder1ChildAssocs.size());
+
+                List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(documentLibrary);
+                assertNotNull(childAssocs);
+
+                List<String> childNames = new ArrayList<String>();
+                for (ChildAssociationRef childAssociationRef : childAssocs)
+                {
+                    NodeRef childRef = childAssociationRef.getChildRef();
+                    childNames.add((String) nodeService.getProperty(childRef, ContentModel.PROP_NAME));
+                }
+
+                assertTrue(childNames.contains(document1Name));
+            }
+        });
+    }
+
+    public void testCopyFolderToFolderInCollabSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
+        {
+            private NodeRef folder1;
+            private NodeRef folder2;
+            private String folder1Name = GUID.generate();
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, folder1Name, ContentModel.TYPE_FOLDER).getNodeRef();
+                folder2 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(folder1, folder2, null);
+            }
+
+            public void then()
+            {
+                List<ChildAssociationRef> folder2ChildAssocs = nodeService.getChildAssocs(folder2);
+                assertEquals(1, folder2ChildAssocs.size());
+                NodeRef movedFolder = folder2ChildAssocs.iterator().next().getChildRef();
+                String movedDocumentName = (String) nodeService.getProperty(movedFolder, ContentModel.PROP_NAME);
+                assertEquals(folder1Name, movedDocumentName);
+            }
+        });
+    }
+
+    public void testCopyDocumentToFolderInDifferentCollabSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
+        {
+            private NodeRef folder1;
+            private NodeRef folder2;
+            private NodeRef document1;
+            private String document1Name = GUID.generate();
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
+                folder2 = fileFolderService.create(documentLibrary2, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(document1, folder2, null);
+            }
+
+            public void then()
+            {
+                List<ChildAssociationRef> folder1ChildAssocs = nodeService.getChildAssocs(folder1);
+                assertEquals(1, folder1ChildAssocs.size());
+
+                List<ChildAssociationRef> folder2ChildAssocs = nodeService.getChildAssocs(folder2);
+                assertNotNull(folder2ChildAssocs);
+                assertEquals(1, folder2ChildAssocs.size());
+                NodeRef movedDocument = folder2ChildAssocs.iterator().next().getChildRef();
+                String movedDocumentName = (String) nodeService.getProperty(movedDocument, ContentModel.PROP_NAME);
+                assertEquals(document1Name, movedDocumentName);
+            }
+        });
+    }
+
+    public void testCopyDocumentToDocumentLibraryInDifferentCollabSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
+        {
+            private NodeRef folder1;
+            private NodeRef document1;
+            private String document1Name = GUID.generate();
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(document1, documentLibrary2, null);
+            }
+
+            public void then()
+            {
+                List<ChildAssociationRef> folder1ChildAssocs = nodeService.getChildAssocs(folder1);
+                assertEquals(1, folder1ChildAssocs.size());
+
+                List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(documentLibrary2);
+                assertNotNull(childAssocs);
+
+                List<String> childNames = new ArrayList<String>();
+                for (ChildAssociationRef childAssociationRef : childAssocs)
+                {
+                    NodeRef childRef = childAssociationRef.getChildRef();
+                    childNames.add((String) nodeService.getProperty(childRef, ContentModel.PROP_NAME));
+                }
+
+                assertTrue(childNames.contains(document1Name));
+            }
+        });
+    }
+
+    public void testCopyFolderToFolderInDifferentCollabSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(user)
+        {
+            private NodeRef folder1;
+            private NodeRef folder2;
+            private String folder1Name = GUID.generate();
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, folder1Name, ContentModel.TYPE_FOLDER).getNodeRef();
+                folder2 = fileFolderService.create(documentLibrary2, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(folder1, folder2, null);
+            }
+
+            public void then()
+            {
+                List<ChildAssociationRef> folder2ChildAssocs = nodeService.getChildAssocs(folder2);
+                assertEquals(1, folder2ChildAssocs.size());
+                NodeRef movedFolder = folder2ChildAssocs.iterator().next().getChildRef();
+                String movedDocumentName = (String) nodeService.getProperty(movedFolder, ContentModel.PROP_NAME);
+                assertEquals(folder1Name, movedDocumentName);
+            }
+        });
+    }
+
+    public void testCopyDocumentInFilePlanInRmSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
+        {
+            private NodeRef folder1;
+            private NodeRef document1;
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(document1, filePlan, GUID.generate());
+            }
+        });
+    }
+
+    public void testCopyDocumentInCategoryInRmSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
+        {
+            private NodeRef folder1;
+            private NodeRef document1;
+            private NodeRef rmCategory;
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(document1, rmCategory, GUID.generate());
+            }
+        });
+    }
+
+    public void testCopyDocumentInFolderInRmSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
+        {
+            private NodeRef folder1;
+            private NodeRef document1;
+            private String document1Name = GUID.generate();
+            private NodeRef rmCategory;
+            private NodeRef rmFolder;
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+                document1 = fileFolderService.create(folder1, document1Name, ContentModel.TYPE_CONTENT).getNodeRef();
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                        rmFolder = recordFolderService.createRecordFolder(rmCategory, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        filePlanPermissionService.setPermission(rmFolder, user, RMPermissionModel.FILING);
+
+                        return null;
+                    }
+                }, getAdminUserName());
+
+                fileFolderService.copy(document1, rmFolder, null);
+            }
+        });
+    }
+
+    public void testCopyFolderInFilePlanInRmSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
+        {
+            private NodeRef folder1;
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(folder1, filePlan, GUID.generate());
+            }
+        });
+    }
+
+    public void testCopyFolderInCategoryInRmSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
+        {
+            private NodeRef folder1;
+            private NodeRef rmCategory;
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(folder1, rmCategory, GUID.generate());
+            }
+        });
+    }
+
+    public void testCopyFolderInFolderInRmSite()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AlfrescoRuntimeException.class, user)
+        {
+            private NodeRef folder1;
+            private NodeRef rmCategory;
+            private NodeRef rmFolder;
+
+            public void given()
+            {
+                folder1 = fileFolderService.create(documentLibrary, GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+
+                runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        rmCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                        rmFolder = recordFolderService.createRecordFolder(rmCategory, GUID.generate());
+
+                        return null;
+                    }
+                }, getAdminUserName());
+            }
+
+            public void when() throws FileExistsException, FileNotFoundException
+            {
+                fileFolderService.copy(folder1, rmFolder, GUID.generate());
             }
         });
     }

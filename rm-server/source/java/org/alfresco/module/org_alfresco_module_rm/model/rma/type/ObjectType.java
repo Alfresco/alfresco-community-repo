@@ -23,6 +23,7 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
@@ -41,7 +42,7 @@ import org.alfresco.service.namespace.QName;
 (
    defaultType = "cm:cmobject"
 )
-public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies.OnMoveNodePolicy//, CopyServicePolicies.BeforeCopyPolicy
+public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies.OnMoveNodePolicy, CopyServicePolicies.BeforeCopyPolicy
 {
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
@@ -85,34 +86,34 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
         }
     }
 
-//    /**
-//     * @see org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy#beforeCopy(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
-//     */
-//    @Override
-//    @Behaviour
-//    (
-//       kind = BehaviourKind.CLASS
-//    )
-//    public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
-//    {
-//        mandatory("sourceNodeRef", sourceNodeRef);
-//        mandatory("targetNodeRef", targetNodeRef);
-//
-//        NodeRef sourceParentNodeRef = nodeService.getPrimaryParent(sourceNodeRef).getParentRef();
-//        boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParentNodeRef);
-//        boolean isTargetNodeFilePlanComponent = isFilePlanComponent(targetNodeRef);
-//
-//        // If we are doing the copy operation within the RM site then we can stop here
-//        // The method should just check copy operations from outside of RM into the RM site
-//        if (isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
-//        {
-//            return;
-//        }
-//
-//        // Do not allow to copy anything outside of RM site into the RM site
-//        if (!isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
-//        {
-//            throw new AlfrescoRuntimeException("Nothing can be copied from a collaboration site into a RM site.");
-//        }
-//    }
+    /**
+     * @see org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy#beforeCopy(org.alfresco.service.namespace.QName, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS
+    )
+    public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
+    {
+        mandatory("sourceNodeRef", sourceNodeRef);
+        mandatory("targetNodeRef", targetNodeRef);
+
+        NodeRef sourceParentNodeRef = nodeService.getPrimaryParent(sourceNodeRef).getParentRef();
+        boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParentNodeRef);
+        boolean isTargetNodeFilePlanComponent = isFilePlanComponent(targetNodeRef);
+
+        // If we are doing the copy operation within the RM site then we can stop here
+        // The method should just check copy operations from outside of RM into the RM site
+        if (isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
+        {
+            return;
+        }
+
+        // Do not allow to copy anything outside of RM site into the RM site
+        if (!isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
+        {
+            throw new AlfrescoRuntimeException("Nothing can be copied from a collaboration site into a RM site.");
+        }
+    }
 }

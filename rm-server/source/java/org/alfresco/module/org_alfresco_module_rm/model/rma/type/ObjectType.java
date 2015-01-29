@@ -101,17 +101,19 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
 
         NodeRef sourceParentNodeRef = nodeService.getPrimaryParent(sourceNodeRef).getParentRef();
         boolean isSourceParentFilePlanComponent = isFilePlanComponent(sourceParentNodeRef);
-        boolean isTargetNodeFilePlanComponent = isFilePlanComponent(targetNodeRef);
+
+        NodeRef targetParentNodeRef = nodeService.getPrimaryParent(targetNodeRef).getParentRef();
+        boolean isTargetNodeParentFilePlanComponent = isFilePlanComponent(targetParentNodeRef);
 
         // If we are doing the copy operation within the RM site then we can stop here
         // The method should just check copy operations from outside of RM into the RM site
-        if (isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
+        if (isSourceParentFilePlanComponent && isTargetNodeParentFilePlanComponent)
         {
             return;
         }
 
         // Do not allow to copy anything outside of RM site into the RM site
-        if (!isSourceParentFilePlanComponent && isTargetNodeFilePlanComponent)
+        if (!isSourceParentFilePlanComponent && isTargetNodeParentFilePlanComponent)
         {
             throw new AlfrescoRuntimeException("Nothing can be copied from a collaboration site into a RM site.");
         }

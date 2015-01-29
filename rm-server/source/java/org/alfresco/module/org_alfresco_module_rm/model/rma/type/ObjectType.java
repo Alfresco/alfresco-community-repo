@@ -96,6 +96,7 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
     )
     public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
+        /*
         mandatory("sourceNodeRef", sourceNodeRef);
         mandatory("targetNodeRef", targetNodeRef);
 
@@ -117,5 +118,6 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
         {
             throw new AlfrescoRuntimeException("Nothing can be copied from a collaboration site into a RM site.");
         }
+        */
     }
 }

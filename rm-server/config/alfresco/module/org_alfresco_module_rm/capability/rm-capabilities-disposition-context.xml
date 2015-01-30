@@ -157,7 +157,7 @@
       <property name="index" value="120" />
    </bean>
 
-	
+
    <!--  End Rentention -->
    <bean id="rmEndRetentionCapability"
       parent="declarativeCapability">
@@ -179,8 +179,8 @@
       <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
       <property name="index" value="70" />
    </bean>
-   
-   
+
+
    <!--  Non-assignable Capabilities -->
 
    <bean id="rmInitiateAllTransfersCapability"
@@ -209,6 +209,7 @@
       <property name="kinds" value="TRANSFER"/>
       <property name="conditions">
          <map>
+            <entry key="capabilityCondition.fillingOnChildren" value="true"/>
             <entry key="capabilityCondition.isTransferAccession" value="false"/>
          </map>
       </property>

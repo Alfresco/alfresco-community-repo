@@ -52,6 +52,16 @@
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FillingCapabilityCondition">
     </bean>
 
+    <bean id="capabilityCondition.fillingOnChildren"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FillingOnChildrenCapabilityCondition">
+    </bean>
+
+    <bean id="capabilityCondition.readOnChildren"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.ReadOnChildrenCapabilityCondition">
+    </bean>
+
     <bean id="capabilityCondition.transferred"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.TransferredCapabilityCondition">
@@ -208,7 +218,7 @@
       <property name="includedInHold" value="false"/>
       <property name="holdService" ref="HoldService" />
    </bean>
-   
+
    <bean id="capabilityCondition.hasFillingOnHeld"
          parent="capabilityCondition.base"
          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HoldCapabilityCondition">

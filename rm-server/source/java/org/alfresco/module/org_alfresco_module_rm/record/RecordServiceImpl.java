@@ -1212,10 +1212,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         if (isRecord(nodeRef))
         {
-            if (childAssocRef != null)
-            {
-                result = (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
-            }
+            result = (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
         }
 
         return result;

@@ -1212,14 +1212,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         if (isRecord(nodeRef))
         {
-            ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(nodeRef);
             if (childAssocRef != null)
             {
-                NodeRef parent = childAssocRef.getParentRef();
-                if (parent != null && recordFolderService.isRecordFolder(parent))
-                {
-                    result = true;
-                }
+                result = (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
             }
         }
 

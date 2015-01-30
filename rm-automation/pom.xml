@@ -10,7 +10,6 @@
     <properties>
         <selenium.version>2.43.1</selenium.version>
         <spring.version>4.0.5.RELEASE</spring.version>
-        <enterprise.installer.path>/data/bamboo/artifacts/${enterprise.build.plan}/ALL/alfresco-enterprise-*-installer-linux-x64.???</enterprise.installer.path>
     </properties>
     <build>
         <plugins>

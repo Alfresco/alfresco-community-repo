@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -50,6 +51,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** Dictionary service */
     protected DictionaryService dictionaryService;
+
+    /** Rendition service */
+    protected RenditionService renditionService;
 
     /** Application context */
     protected ApplicationContext applicationContext;
@@ -75,6 +79,14 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
+    }
+
+    /**
+     * @param service   service
+     */
+    public void setRenditionService(RenditionService service)
+    {
+        this.renditionService = service;
     }
 
     /**

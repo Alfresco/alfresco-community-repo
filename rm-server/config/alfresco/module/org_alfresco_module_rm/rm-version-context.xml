@@ -19,6 +19,7 @@
       <property name="relationshipService" ref="RelationshipService" />
       <property name="recordService" ref="RecordService" />
       <property name="modelSecurityService" ref="ModelSecurityService" />
+      <property name="cmObjectType" ref="cm.object" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />
@@ -33,7 +34,7 @@
       <property name="beanName" value="versionNodeService" />
       <property name="extendingBeanName" value="rm.versionNodeService" />
    </bean>
-   
+
    <!--  rmv:versionable aspect behaviour bean -->
    <bean id="rm.versionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.model.VersionableAspect" parent="rm.baseBehaviour">
    </bean>

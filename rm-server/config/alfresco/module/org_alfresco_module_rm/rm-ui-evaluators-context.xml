@@ -6,9 +6,9 @@
    <bean id="jsonConversionComponentCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
    <!-- extending bean definition -->
-   <bean id="rm.jsonConversionComponent" 
+   <bean id="rm.jsonConversionComponent"
    		 class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
-         parent="baseJsonConversionComponent" 
+         parent="baseJsonConversionComponent"
          init-method="init">
       <property name="recordContributorsGroupEnabled" value="${rm.record.contributors.group.enabled}"/>
       <property name="recordContributorsGroupName" value="${rm.record.contributors.group.name}"/>
@@ -660,6 +660,7 @@
    <bean id="jsonConversionComponent.downloadZip"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="downloadZip"/>
+      <property name="capability" value="DownloadZip"/>
    </bean>
 
    <bean id="jsonConversionComponent.transferComplete"

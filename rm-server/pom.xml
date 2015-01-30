@@ -157,7 +157,6 @@
                         <configuration>
                            <tasks>
                               <delete file="${project.build.outputDirectory}/alfresco/extension/dev-context.xml"/>
-                              <delete file="${project.build.outputDirectory}/alfresco/module/org_alfresco_module_rm/audit/rm-audit.xml"/>
                               <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                                  <fileset dir="${project.build.outputDirectory}/alfresco"/>
                               </move>

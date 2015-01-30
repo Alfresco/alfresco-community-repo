@@ -57,7 +57,7 @@
    </bean>
 
    <!-- dm model type -->
-   <bean id="dm.object" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.ObjectType" parent="rm.baseBehaviour"/>
+   <bean id="cm.object" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.CmObjectType" parent="rm.baseBehaviour"/>
 
    <!--  rma model types -->
 

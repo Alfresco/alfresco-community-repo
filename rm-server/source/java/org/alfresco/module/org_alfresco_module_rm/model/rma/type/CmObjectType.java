@@ -42,15 +42,58 @@ import org.alfresco.service.namespace.QName;
 (
    defaultType = "cm:cmobject"
 )
-public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies.OnMoveNodePolicy, CopyServicePolicies.BeforeCopyPolicy
+public class CmObjectType extends BaseBehaviourBean implements NodeServicePolicies.OnMoveNodePolicy, CopyServicePolicies.BeforeCopyPolicy
 {
+    /** Move behaviour name */
+    private static final String MOVE_BEHAVIOUR_NAME = "onMoveCmObjectType";
+
+    /** Copy behaviour name */
+    private static final String COPY_BEHAVIOUR_NAME = "onCopyCmObjectType";
+
+    /**
+     * Disable the move behaviour for this transaction
+     *
+     */
+    public void disableMove()
+    {
+        getBehaviour(MOVE_BEHAVIOUR_NAME).disable();
+    }
+
+    /**
+     * Enable the move behaviour for this transaction
+     *
+     */
+    public void enableMove()
+    {
+        getBehaviour(MOVE_BEHAVIOUR_NAME).enable();
+    }
+
+    /**
+     * Disable the copy behaviour for this transaction
+     *
+     */
+    public void disableCopy()
+    {
+        getBehaviour(COPY_BEHAVIOUR_NAME).disable();
+    }
+
+    /**
+     * Enable the copy behaviour for this transaction
+     *
+     */
+    public void enableCopy()
+    {
+        getBehaviour(COPY_BEHAVIOUR_NAME).enable();
+    }
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
      */
     @Override
     @Behaviour
     (
-       kind = BehaviourKind.CLASS
+       kind = BehaviourKind.CLASS,
+       name = MOVE_BEHAVIOUR_NAME
     )
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
@@ -92,11 +135,11 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
     @Override
     @Behaviour
     (
-       kind = BehaviourKind.CLASS
+       kind = BehaviourKind.CLASS,
+       name = COPY_BEHAVIOUR_NAME
     )
     public void beforeCopy(QName classRef, NodeRef sourceNodeRef, NodeRef targetNodeRef)
     {
-        /*
         mandatory("sourceNodeRef", sourceNodeRef);
         mandatory("targetNodeRef", targetNodeRef);
 
@@ -118,6 +161,5 @@ public class ObjectType extends BaseBehaviourBean implements NodeServicePolicies
         {
             throw new AlfrescoRuntimeException("Nothing can be copied from a collaboration site into a RM site.");
         }
-        */
     }
 }

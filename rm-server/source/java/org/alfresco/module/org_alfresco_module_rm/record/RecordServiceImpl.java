@@ -625,7 +625,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 	afterCal.set(Calendar.MILLISECOND, 0);
                 	propertyUnchanged = (beforeCal.compareTo(afterCal) == 0);
                 }
-                else if ((afterValue instanceof Boolean) && (beforeValue == null) && (afterValue == Boolean.FALSE))
+                else if ((afterValue instanceof Boolean) && (beforeValue == null) && (afterValue.equals(Boolean.FALSE)))
                 {
             		propertyUnchanged = true;
                 }
@@ -1281,17 +1281,17 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 try
                 {
                     // get record property values
-                    Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                    String recordId = (String)properties.get(PROP_IDENTIFIER);
-                    String documentOwner = (String)properties.get(PROP_RECORD_ORIGINATING_USER_ID);
-                    String origionalName = (String)properties.get(PROP_ORIGIONAL_NAME);
-                    NodeRef originatingLocation = (NodeRef)properties.get(PROP_RECORD_ORIGINATING_LOCATION);
+                    final Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+                    final String recordId = (String)properties.get(PROP_IDENTIFIER);
+                    final String documentOwner = (String)properties.get(PROP_RECORD_ORIGINATING_USER_ID);
+                    final String originalName = (String)properties.get(PROP_ORIGIONAL_NAME);
+                    final NodeRef originatingLocation = (NodeRef)properties.get(PROP_RECORD_ORIGINATING_LOCATION);
 
                     // we can only reject if the originating location is present
                     if (originatingLocation != null)
                     {
                         // first remove the secondary link association
-                        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                        final List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                         for (ChildAssociationRef childAssociationRef : parentAssocs)
                         {
                             if (!childAssociationRef.isPrimary() && childAssociationRef.getParentRef().equals(originatingLocation))
@@ -1301,37 +1301,28 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             }
                         }
 
-                        // remove all RM related aspects from the node
-                        Set<QName> aspects = nodeService.getAspects(nodeRef);
-                        for (QName aspect : aspects)
-                        {
-                            if (RM_URI.equals(aspect.getNamespaceURI()))
-                            {
-                                // remove the aspect
-                                nodeService.removeAspect(nodeRef, aspect);
-                            }
-                        }
+                        removeRmAspectsFrom(nodeRef);
 
                         // get the records primary parent association
-                        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+                        final ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
                         // move the record into the collaboration site
                         nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
-                        // rename to the origional name
-                        if (origionalName != null)
+                        // rename to the original name
+                        if (originalName != null)
                         {
-                            fileFolderService.rename(nodeRef, origionalName);
+                            fileFolderService.rename(nodeRef, originalName);
 
                             if (logger.isDebugEnabled())
                             {
                                 String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                                logger.debug("Rename " + name + " to " + origionalName);
+                                logger.debug("Rename " + name + " to " + originalName);
                             }
                         }
 
                         // save the information about the rejection details
-                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
+                        final Map<QName, Serializable> aspectProperties = new HashMap<>(3);
                         aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
                         aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
                         aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
@@ -1360,6 +1351,34 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
 
                 return null;
+            }
+
+            /** Removes all RM related aspects from the specified node and any rendition children. */
+            private void removeRmAspectsFrom(NodeRef nodeRef)
+            {
+                // Note that when folder records are supported, we will need to recursively
+                // remove aspects from their descendants.
+                final Set<QName> aspects = nodeService.getAspects(nodeRef);
+                for (QName aspect : aspects)
+                {
+                    if (RM_URI.equals(aspect.getNamespaceURI()))
+                    {
+                        nodeService.removeAspect(nodeRef, aspect);
+                    }
+                }
+                for (ChildAssociationRef renditionAssoc : renditionService.getRenditions(nodeRef))
+                {
+                    final NodeRef renditionNode = renditionAssoc.getChildRef();
+
+                    // Do not attempt to clean up rendition nodes which are not children of their source node.
+                    final boolean renditionRequiresCleaning = nodeService.exists(renditionNode) &&
+                                                              renditionAssoc.isPrimary();
+
+                    if (renditionRequiresCleaning)
+                    {
+                        removeRmAspectsFrom(renditionNode);
+                    }
+                }
             }
         });
     }

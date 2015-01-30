@@ -29,6 +29,7 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.CmObjectType;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
@@ -76,12 +77,15 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
     /** relationship service */
     private RelationshipService relationshipService;
-    
+
     /** record service */
     private RecordService recordService;
-    
+
     /** model security service */
     private ModelSecurityService modelSecurityService;
+
+    /** cm object type */
+    private CmObjectType cmObjectType;
 
     /**
      * @param filePlanService   file plan service
@@ -106,7 +110,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.relationshipService = relationshipService;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -114,13 +118,21 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         this.recordService = recordService;
     }
-    
+
     /**
      * @param modelSecurityService  model security service
      */
     public void setModelSecurityService(ModelSecurityService modelSecurityService)
     {
         this.modelSecurityService = modelSecurityService;
+    }
+
+    /**
+     * @param cmObjectType the cmObjectType to set
+     */
+    public void setCmObjectType(CmObjectType cmObjectType)
+    {
+        this.cmObjectType = cmObjectType;
     }
 
     /**
@@ -285,10 +297,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         // disable other behaviours that we don't want to trigger during this process
         policyBehaviourFilter.disableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
         policyBehaviourFilter.disableBehaviour(ContentModel.TYPE_MULTILINGUAL_CONTAINER);
-        
+
         // disable model security check
         modelSecurityService.disable();
-        
+
         // disable property editable check
         recordService.disablePropertyEditableCheck();
 
@@ -304,51 +316,59 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             // create a copy of the source node and place in the file plan
             final NodeRef nodeRef = (NodeRef)standardVersionProperties.get(Version2Model.PROP_QNAME_FROZEN_NODE_REF);
 
-            // create record
-            final NodeRef record = recordService.createRecordFromCopy(filePlan, nodeRef);
+            cmObjectType.disableCopy();
+            try
+            {
+                // create record
+                final NodeRef record = recordService.createRecordFromCopy(filePlan, nodeRef);
 
-            // apply version record aspect to record
-            PropertyMap versionRecordProps = new PropertyMap(3);
-            versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
-            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL,
-                                   standardVersionProperties.get(
-                                           QName.createQName(Version2Model.NAMESPACE_URI,
-                                                             Version2Model.PROP_VERSION_LABEL)));
-            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION,
-                                   standardVersionProperties.get(
-                                           QName.createQName(Version2Model.NAMESPACE_URI,
-                                                             Version2Model.PROP_VERSION_DESCRIPTION)));
-            nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
+                // apply version record aspect to record
+                PropertyMap versionRecordProps = new PropertyMap(3);
+                versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
+                versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL,
+                        standardVersionProperties.get(
+                                QName.createQName(Version2Model.NAMESPACE_URI,
+                                        Version2Model.PROP_VERSION_LABEL)));
+                versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION,
+                        standardVersionProperties.get(
+                                QName.createQName(Version2Model.NAMESPACE_URI,
+                                        Version2Model.PROP_VERSION_DESCRIPTION)));
+                nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
 
-            // wire record up to previous record
-            linkToPreviousVersionRecord(nodeRef, record);
+                // wire record up to previous record
+                linkToPreviousVersionRecord(nodeRef, record);
 
-            // create version nodeRef
-            ChildAssociationRef childAssocRef = dbNodeService.createNode(
-                    versionHistoryRef,
-                    Version2Model.CHILD_QNAME_VERSIONS,
-                    QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber),
-                    sourceTypeRef,
-                    null);
-            versionNodeRef = childAssocRef.getChildRef();
+                // create version nodeRef
+                ChildAssociationRef childAssocRef = dbNodeService.createNode(
+                        versionHistoryRef,
+                        Version2Model.CHILD_QNAME_VERSIONS,
+                        QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber),
+                        sourceTypeRef,
+                        null);
+                versionNodeRef = childAssocRef.getChildRef();
 
-            // add aspect with the standard version properties to the 'version' node
-            nodeService.addAspect(versionNodeRef, Version2Model.ASPECT_VERSION, standardVersionProperties);
+                // add aspect with the standard version properties to the 'version' node
+                nodeService.addAspect(versionNodeRef, Version2Model.ASPECT_VERSION, standardVersionProperties);
 
-            // add the recordedVersion aspect with link to record
-            nodeService.addAspect(versionNodeRef, ASPECT_RECORDED_VERSION, Collections.singletonMap(PROP_RECORD_NODE_REF, (Serializable)record));
+                // add the recordedVersion aspect with link to record
+                nodeService.addAspect(versionNodeRef, ASPECT_RECORDED_VERSION, Collections.singletonMap(PROP_RECORD_NODE_REF, (Serializable)record));
 
-            // freeze auditable aspect information
-            freezeAuditableAspect(nodeRef, versionNodeRef);
+                // freeze auditable aspect information
+                freezeAuditableAspect(nodeRef, versionNodeRef);
+            }
+            finally
+            {
+                cmObjectType.enableCopy();
+            }
         }
         finally
         {
             // enable model security check
             modelSecurityService.enable();
-            
+
             // enable property editable check
             recordService.enablePropertyEditableCheck();
-            
+
             // Enable behaviours
             this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
             this.policyBehaviourFilter.enableBehaviour(ContentModel.ASPECT_MULTILINGUAL_DOCUMENT);
@@ -368,10 +388,10 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
         return versionNodeRef;
     }
-    
+
     /**
      * Helper method to link the record to the previous version record
-     * 
+     *
      * @param nodeRef   noderef source node reference
      * @param record    record  record node reference
      */
@@ -390,19 +410,19 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                     return null;
                 }
             });
-        }        
+        }
     }
-    
+
     /**
      * Helper to get the latest version record for a given document (ie non-record)
-     * 
+     *
      * @param nodeRef   node reference
      * @return NodeRef  latest version record, null otherwise
      */
     private NodeRef getLatestVersionRecord(NodeRef nodeRef)
     {
         NodeRef versionRecord = null;
-        
+
         // wire record up to previous record
         VersionHistory versionHistory = getVersionHistory(nodeRef);
         if (versionHistory != null)
@@ -418,9 +438,9 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                     break;
                 }
             }
-        }  
-        
-        return versionRecord;        
+        }
+
+        return versionRecord;
     }
 
     /**

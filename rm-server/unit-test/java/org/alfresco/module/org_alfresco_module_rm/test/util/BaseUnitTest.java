@@ -38,6 +38,7 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.model.rma.type.CmObjectType;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordableversion.RecordableVersionConfigService;
@@ -124,6 +125,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @Mock(name="extendedPermissionService")      protected ExtendedPermissionService    mockedExtendedPermissionService;
     @Mock(name="extendedSecurityService")        protected ExtendedSecurityService      mockedExtendedSecurityService;
     @Mock(name="recordableVersionConfigService") protected RecordableVersionConfigService mockedRecordableVersionConfigService;
+    @Mock(name="cmObjectType")                   protected CmObjectType                 cmObjectType;
 
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;
@@ -222,9 +224,9 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         doReturn("admin").when(mockedAuthenticationUtil).getAdminUserName();
         doReturn("admin").when(mockedAuthenticationUtil).getFullyAuthenticatedUser();
     }
-    
+
     /**
-     * Helper to generate random text value suitable for a property 
+     * Helper to generate random text value suitable for a property
      * value or node name
      */
     protected String generateText()
@@ -405,7 +407,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
             assocs.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parent, generateQName(), child));
             doReturn(assocs).when(mockedNodeService).getParentAssocs(child);
         }
-        doReturn(assocs).when(mockedNodeService).getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);        
+        doReturn(assocs).when(mockedNodeService).getChildAssocs(parent, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
     }
 
     @SuppressWarnings("unchecked")

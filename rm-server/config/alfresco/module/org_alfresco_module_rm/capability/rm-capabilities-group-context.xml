@@ -242,4 +242,15 @@
          </list>
       </property>
    </bean>
+
+   <bean id="rmDownloadZipCapability"
+      parent="declarativeCapability">
+      <property name="name" value="DownloadZip"/>
+      <property name="private" value="true"/>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.readOnChildren" value="true"/>
+         </map>
+      </property>
+   </bean>
 </beans>

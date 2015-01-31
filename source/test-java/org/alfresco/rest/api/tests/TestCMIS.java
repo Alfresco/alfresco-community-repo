@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -116,6 +116,7 @@ import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
+import org.apache.chemistry.opencmis.commons.exceptions.CmisInvalidArgumentException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisObjectNotFoundException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictException;
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
@@ -2265,6 +2266,71 @@ public class TestCMIS extends EnterpriseTestApi
             String rootFolderId = repository.getRootFolderId();
     
             assertEquals(rootNodeRef.getId(), rootFolderId);
+        }
+    }
+
+    @Test
+    public void testMNT12956QueryingCMIS11UsesDictionary11() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+        
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
+        TestPerson person = network1.createUser(personInfo);
+        String personId = person.getId();
+
+        final List<NodeRef> documents = new ArrayList<NodeRef>();
+        final String filename = GUID.generate();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                String siteName = "site" + System.currentTimeMillis();
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+                NodeRef docNodeRef = repoService.createDocument(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), filename, "test content");
+                documents.add(docNodeRef);
+
+                return null;
+            }
+        }, personId, network1.getId());
+
+        NodeRef docNodeRef = documents.get(0);
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+        CmisSession atomCmisSession10 = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
+        CmisSession atomCmisSession11 = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
+
+        // query
+        {
+            // searching by NodeRef, expect result objectIds to be objectId
+            Set<String> expectedObjectIds = new HashSet<String>();
+            expectedObjectIds.add(docNodeRef.getId());
+            int numMatchingDocs = 0;
+
+            // NodeRef input
+            List<CMISNode> results = atomCmisSession11.query("SELECT cmis:objectId,cmis:name,cmis:secondaryObjectTypeIds FROM cmis:document WHERE cmis:name LIKE '" + filename + "'", false, 0, Integer.MAX_VALUE);
+            assertEquals(expectedObjectIds.size(), results.size());
+            for(CMISNode node : results)
+            {
+                String objectId = stripCMISSuffix((String)node.getProperties().get(PropertyIds.OBJECT_ID));
+                if(expectedObjectIds.contains(objectId))
+                {
+                    numMatchingDocs++;
+                }
+            }
+            assertEquals(expectedObjectIds.size(), numMatchingDocs);
+
+            try
+            {
+                results = atomCmisSession10.query("SELECT cmis:objectId,cmis:name,cmis:secondaryObjectTypeIds FROM cmis:document WHERE cmis:name LIKE '" + filename + "'", false, 0, Integer.MAX_VALUE);
+                fail("OpenCMIS 1.0 knows nothing about cmis:secondaryObjectTypeIds");
+            }
+            catch (CmisInvalidArgumentException expectedException)
+            {
+                // ok
+            }
         }
     }
 }

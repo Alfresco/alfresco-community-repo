@@ -184,7 +184,9 @@ public class IncompleteNodeTaggerTest extends TestCase
     public void testCreateWithoutAssoc() throws Exception
     {
         NodeRef nodeRef = createNode("abc", IntegrityTest.TEST_TYPE_WITH_NON_ENFORCED_CHILD_ASSOCS, properties);
-        checkTagging(nodeRef, true);
+        // The node should not be tagged as by default it has enforced=true
+        // see IncompleteNodeTagger.checkProperties(Collection<PropertyDefinition>, Map<QName, Serializable>)
+        checkTagging(nodeRef, false);
     }
 
     public void testCreateWithAssoc() throws Exception

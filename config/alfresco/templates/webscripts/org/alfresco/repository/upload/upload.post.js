@@ -359,6 +359,7 @@ function main()
          // maintained - as upload may have been via Flash - which always sends binary mimetype and would overwrite it.
          // Also perform the encoding guess step in the write() method to save an additional Writer operation.
          newFile.properties.content.write(content, false, true);
+         newFile.save();
          
          // TODO (THOR-175) - review
          // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)

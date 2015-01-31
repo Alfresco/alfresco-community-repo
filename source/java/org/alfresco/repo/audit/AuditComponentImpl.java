@@ -19,6 +19,7 @@
 package org.alfresco.repo.audit;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -490,6 +491,78 @@ public class AuditComponentImpl implements AuditComponent
         return recordAuditValuesWithUserFilter(rootPath, values, true);
     }
     
+    private void trimStringsIfNecessary(Object values)
+    {
+        if (values instanceof Map<?, ?>)
+        {
+            // trim string audited value
+            Map<String, Serializable> map = ((Map<String, Serializable>) values);
+            for (Map.Entry<String, Serializable> entry : map.entrySet())
+            {
+                Serializable auditValue = entry.getValue();
+                // Trim strings
+                if (auditValue == null)
+                {
+                    // nothing to do
+                }
+                else if (auditValue instanceof String)
+                {
+                    entry.setValue(SchemaBootstrap.trimStringForTextFields((String) auditValue));
+                }
+                else if (auditValue instanceof MLText)
+                {
+                    MLText mltext = (MLText) auditValue;
+                    Set<Locale> locales = mltext.getLocales();
+                    for (Locale locale : locales)
+                    {
+                        mltext.put(locale, SchemaBootstrap.trimStringForTextFields(mltext.getValue(locale)));
+                    }
+                    entry.setValue(mltext);
+                }
+                else if ((auditValue instanceof Map<?, ?>) || (auditValue instanceof Collection<?>))
+                {
+                    trimStringsIfNecessary(auditValue);
+                }
+            }
+        }
+        else if (values instanceof Collection<?>)
+        {
+            Collection<Object> collection = (Collection<Object>) values;
+            Iterator<Object> iterator = collection.iterator();
+            while (iterator.hasNext())
+            {
+                Object auditValue = iterator.next();
+                // Trim strings
+                if (auditValue == null)
+                {
+                    // nothing to do
+                }
+                else if (auditValue instanceof String)
+                {
+                    String trimmed = SchemaBootstrap.trimStringForTextFields((String) auditValue);
+                    if (!trimmed.equals(auditValue))
+                    {
+                        collection.remove(auditValue);
+                        collection.add(trimmed);
+                    }
+                }
+                else if (auditValue instanceof MLText)
+                {
+                    MLText mltext = (MLText) auditValue;
+                    Set<Locale> locales = mltext.getLocales();
+                    for (Locale locale : locales)
+                    {
+                        mltext.put(locale, SchemaBootstrap.trimStringForTextFields(mltext.getValue(locale)));
+                    }
+                }
+                else if ((auditValue instanceof Map<?, ?>) || (auditValue instanceof Collection<?>))
+                {
+                    trimStringsIfNecessary(auditValue);
+                }
+            }
+        }
+    }
+    
     @Override
     public Map<String, Serializable> recordAuditValuesWithUserFilter(String rootPath, Map<String, Serializable> values, boolean useUserFilter)
     {
@@ -503,26 +576,8 @@ public class AuditComponentImpl implements AuditComponent
             return Collections.emptyMap();
         }
         
-        // trim string audited value
-        for (Map.Entry<String, Serializable> entry : values.entrySet())
-        {
-            Serializable auditValue = entry.getValue();
-            // Trim strings
-            if (auditValue instanceof String)
-            {
-                entry.setValue(SchemaBootstrap.trimStringForTextFields((String) auditValue));
-            }
-            else if (auditValue instanceof MLText)
-            {
-                MLText mltext = (MLText) auditValue;
-                Set<Locale> locales = mltext.getLocales();
-                for (Locale locale : locales)
-                {
-                    mltext.put(locale, SchemaBootstrap.trimStringForTextFields(mltext.getValue(locale)));
-                }
-                entry.setValue(mltext);
-            }
-        }
+        // MNT-12196
+        trimStringsIfNecessary(values);
         
         // Log inbound values
         if (loggerInbound.isDebugEnabled())

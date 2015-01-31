@@ -987,10 +987,24 @@ public class AuditComponentTest extends TestCase
 
                 MLText mlTextValue = new MLText();
                 mlTextValue.put(Locale.ENGLISH, sb.toString());
+                
+                HashMap<String, Serializable> map = new HashMap<String, Serializable>();
+                map.put("String", sb.toString());
+                MLText mlTextValue1 = new MLText();
+                mlTextValue1.put(Locale.ENGLISH, sb.toString());
+                map.put("MLText", mlTextValue1);
 
+                ArrayList<Serializable> list = new ArrayList<Serializable>();
+                list.add(sb.toString());
+                MLText mlTextValue2 = new MLText();
+                mlTextValue2.put(Locale.ENGLISH, sb.toString());
+                list.add(mlTextValue2);
+                
                 Map<String, Serializable> values = new HashMap<String, Serializable>(13);
                 values.put("/3.1/4.1", sb.toString());
                 values.put("/3.1/4.2", mlTextValue);
+                values.put("map", map);
+                values.put("collection", list);
 
                 auditComponent.recordAuditValues("/test/one.one/two.one", values);
 

@@ -618,7 +618,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         try
         {
             invitationService.approve(invitationId, "Have I not rejected this?");
-            assertTrue("rejected invitation not working", false);
+            fail("rejected invitation not working");
         }
         catch (Exception e)
         {
@@ -947,7 +947,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         try
         {
             invitationService.approve(invitationId, "No Way Hosea!");
-            assertTrue("excetion not thrown", false);
+            fail("excetion not thrown");
 
         }
         catch (Exception e)
@@ -976,7 +976,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         try
         {
             invitationService.approve(invitationId, "Have I not already done this?");
-            assertTrue("duplicate approve excetion not thrown", false);
+            fail("duplicate approve excetion not thrown");
         }
         catch (Exception e)
         {
@@ -1016,7 +1016,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         try
         {
             invitationService.reject(invitationId, "No Way Hosea!");
-            assertTrue("excetion not thrown", false);
+            fail("excetion not thrown");
 
         }
         catch (Exception e)
@@ -1038,7 +1038,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         try
         {
             invitationService.approve(invitationId, "Have I not rejected this?");
-            assertTrue("rejected invitation not working", false);
+            fail("rejected invitation not working");
         }
         catch (Exception e)
         {

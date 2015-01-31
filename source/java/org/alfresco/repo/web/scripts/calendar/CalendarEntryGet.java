@@ -221,7 +221,7 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
             {
             	text.append("Occurs the ");
             	text.append(weeks.get((Integer.parseInt(params.get("BYSETPOS")))) + " ");
-                text.append(days.get(params.get("BYDAY")));
+                buildParams(params, text, days);
             }
             text.append(" of every " + interval + " month(s) ");
          }
@@ -236,7 +236,7 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
             {
               text.append("Occurs the ");
               text.append(weeks.get((Integer.parseInt(params.get("BYSETPOS")))) + " ");
-              text.append(days.get(params.get("BYDAY")) + " ");
+              buildParams(params, text, days);
               text.append(" of " +  params.get("BYMONTH") + " month ");
             }
          }
@@ -276,6 +276,24 @@ public class CalendarEntryGet extends AbstractCalendarWebScript
       
       // All done
       return text.toString();
+   }
+   
+   private static StringBuffer buildParams(Map<String, String> params,  StringBuffer text, Map<String, String> days)
+   {
+       int day = params.get("BYDAY").split(",").length;
+       if(day == 7){
+           text.append(CalendarRecurrenceHelper.DAY);
+       }
+       if(day == 5){
+   	   text.append(CalendarRecurrenceHelper.WEEKDAYS);
+       }
+       if(day == 2){
+   	   text.append(CalendarRecurrenceHelper.WEEKENDS);
+       }
+       if(day != 7 && day != 5 && day != 2){
+   	   text.append(days.get(params.get("BYDAY")));
+       }
+       return text;
    }
    
    public void setPermissionService(PermissionService permissionService)

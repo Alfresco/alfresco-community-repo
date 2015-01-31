@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -220,7 +221,7 @@ public class TransformerDebug
     }
     
     @AlfrescoPublicApi
-    private class UnavailableTransformer
+    private class UnavailableTransformer implements Comparable<UnavailableTransformer>
     {
         private final String name;
         private final String priority;
@@ -261,6 +262,12 @@ public class TransformerDebug
             {
                 return false;
             }
+        }
+
+        @Override
+        public int compareTo(UnavailableTransformer o)
+        {
+            return name.compareTo(o.name);
         }
     }
     
@@ -385,7 +392,7 @@ public class TransformerDebug
                 boolean debug = (maxSourceSizeKBytes != 0);
                 if (frame.unavailableTransformers == null)
                 {
-                    frame.unavailableTransformers = new HashSet<UnavailableTransformer>();
+                    frame.unavailableTransformers = new TreeSet<UnavailableTransformer>();
                 }
                 String priority = gePriority(transformer, sourceMimetype, targetMimetype);
                 frame.unavailableTransformers.add(new UnavailableTransformer(name, priority, maxSourceSizeKBytes, debug));

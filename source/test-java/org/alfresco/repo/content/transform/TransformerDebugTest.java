@@ -18,29 +18,17 @@
  */
 package org.alfresco.repo.content.transform;
 
-import static org.junit.Assert.*;
+import static org.alfresco.repo.content.transform.TransformerDebugLogTest.assertDebugEntriesEquals;
+import static org.alfresco.repo.content.transform.TransformerLogTest.assertLogEntriesEquals;
+import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockMimetypes;
+import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.commons.logging.Log;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockMimetypes;
-import static org.alfresco.repo.content.transform.TransformerLogTest.assertLogEntriesEquals;
-import static org.alfresco.repo.content.transform.TransformerDebugLogTest.assertDebugEntriesEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-
-import org.alfresco.service.cmr.repository.MimetypeService;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -146,16 +134,16 @@ public class TransformerDebugTest
         // Prior to the fix the following we returned:
         //   "0             pdf  txt  1.5 MB ContentService.transform(...) NO transformers\n"+
         //   "0             --b) [---] transformer1<<Component>> > 50 KB\n"+
-        //   "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
-        //   "0             --d) [---] transformer3<<Component>> > 50 KB\n"+
+        //   "0             --c) [---] transformer3<<Component>> > 50 KB\n"+
+        //   "0             --d) [---] transformer4<<Component>> > 50 KB\n"+
         //   "0             Finished in NN ms Transformer NOT called\n"
         //   
         //   "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 0 bytes"
         assertDebugEntriesEquals(new String[] {
         "0             pdf  txt  1.5 MB ContentService.transform(...) NO transformers\n"+
         "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
-        "0             --b) [---] transformer4<<Component>> > 50 KB\n"+
-        "0             --c) [---] transformer3<<Component>> > 50 KB\n"+
+        "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
+        "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
         "0             Finished in NN ms Transformer NOT called\n"}, untimed(debug.getEntries(10)));
         assertLogEntriesEquals(new String[] {
         "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 50 KB"}, untimed(log.getEntries(10)));

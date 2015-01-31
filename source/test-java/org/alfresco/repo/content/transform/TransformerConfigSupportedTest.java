@@ -66,6 +66,9 @@ public class TransformerConfigSupportedTest
         extractor = new TransformerConfigSupported(transformerProperties, mimetypeService);
         boolean supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
         assertEquals("supported", true, supported);
+        
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "image/png", "text/xml", options);
+        assertEquals("xyz supported", false, supported);
     }
     
     @Test
@@ -76,6 +79,9 @@ public class TransformerConfigSupportedTest
         extractor = new TransformerConfigSupported(transformerProperties, mimetypeService);
         boolean supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
         assertEquals("supported", false, supported);
+        
+        supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "image/png", "text/xml", options);
+        assertEquals("xyz supported", true, supported);
     }
     
     @Test
@@ -191,7 +197,7 @@ public class TransformerConfigSupportedTest
         supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "application/pdf", "image/png", options);
         assertEquals("def supported", false, supported);
         supported = extractor.isSupportedTransformation((ContentTransformer) new DummyContentTransformer("transformer.abc"), "image/png", "text/xml", options);
-        assertEquals("xyz supported", true, supported);
+        assertEquals("xyz supported", false, supported);
     }
     
     @Test

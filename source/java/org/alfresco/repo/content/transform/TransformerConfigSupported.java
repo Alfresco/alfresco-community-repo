@@ -113,12 +113,12 @@ public class TransformerConfigSupported extends TransformerPropertyNameExtractor
             if (supportedTransformations == null)
             {
                 supportedTransformations = new DoubleMap<String, String, Boolean>(ANY, ANY);
-                if (supported)
-                {
-                    supportedSet = true;
-                }
             }
             supportedTransformations.put(sourceMimetype, targetMimetype, supported);
+            if (supported)
+            {
+                supportedSet = true;
+            }
         }
 
         boolean isSupported(String sourceMimetype, String targetMimetype)

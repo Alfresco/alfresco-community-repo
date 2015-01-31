@@ -101,6 +101,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( FacetRestApiTest.class );
         suite.addTestSuite( CommentsApiTest.class );		
         suite.addTestSuite( FolderTemplateTest.class );
+        suite.addTestSuite( DeclarativeSpreadsheetWebScriptTest.class );
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

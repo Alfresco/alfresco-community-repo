@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -63,6 +63,9 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
 {
     public static final String MODEL_CSV = "csv";
     public static final String MODEL_EXCEL = "excel";
+    public static final String PARAM_REQ_DELIMITER = "delimiter";
+    
+    private CSVStrategy csvStrategy;
     
     protected DictionaryService dictionaryService;
     protected String filenameBase;
@@ -107,6 +110,33 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
      */
     protected abstract void populateBody(Object resource, CSVPrinter csv, List<QName> properties)
     		throws IOException;
+    
+    /**
+     * Set the CSVStrategy
+     * 
+     * @param strategy
+     */
+    public void setCsvStrategy(CSVStrategy csvStrategy)
+    {
+        this.csvStrategy = csvStrategy;
+    }
+    
+    /**
+     * Get the CSVStrategy. Returns {@link CSVStrategy#EXCEL_STRATEGY} if none was set.
+     * 
+     * @return CSVStrategy
+     */
+    public CSVStrategy getCsvStrategy()
+    {
+        if (csvStrategy == null)
+        {
+            return CSVStrategy.EXCEL_STRATEGY;
+        }
+        else
+        {
+            return csvStrategy;
+        }
+    }
     
     /**
      * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status)
@@ -158,7 +188,12 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
     		Status status, Map<String, Object> model) throws IOException
     {
         Pattern qnameMunger = Pattern.compile("([A-Z][a-z]+)([A-Z].*)");
-        
+        String delimiterParam = req.getParameter(PARAM_REQ_DELIMITER);
+        CSVStrategy reqCSVstrategy = null;
+        if (delimiterParam != null && !delimiterParam.isEmpty())
+        {
+            reqCSVstrategy = new CSVStrategy(delimiterParam.charAt(0), '"', CSVStrategy.COMMENTS_DISABLED);
+        }
         // Build up the details of the header
         List<Pair<QName, Boolean>> propertyDetails = buildPropertiesForHeader(resource, format, req);
         String[] headings = new String[propertyDetails.size()];
@@ -222,7 +257,7 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
         if("csv".equals(format))
         {
             StringWriter sw = new StringWriter();
-            CSVPrinter csv = new CSVPrinter(sw, CSVStrategy.EXCEL_STRATEGY);
+            CSVPrinter csv = new CSVPrinter(sw, reqCSVstrategy != null ? reqCSVstrategy : getCsvStrategy());
             csv.println(headings);
             
             populateBody(resource, csv, properties);

@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Declarative Spreadsheet Webscript Test</shortname>
+   <description>Declarative Spreadsheet Webscript Test</description>
+   <url>/api/test/getcsv</url>
+   <format default="csv">argument</format>
+   <authentication>admin</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

@@ -537,7 +537,7 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
       {
          // Decode the Site ID from the qname path using the util method - as we may not have displayPath
          // the displayPath will look something like this: ["", "Company Home", "Sites", "MySite", "documentLibrary", "MyFolder"]
-         var siteQName = Packages.org.alfresco.util.ISO9075.decode(qpathUnderSitesFolder.substring(positionContainer));
+         var siteQName = Packages.org.alfresco.util.ISO9075.decode(qpathUnderSitesFolder.substring(0, positionContainer));
          siteId = siteQName.substring(siteQName.indexOf(":") + 1);
          var qpathContainer = qpathUnderSitesFolder.substring(positionContainer + 1);
          var positionUnderContainer = qpathContainer.indexOf("/");

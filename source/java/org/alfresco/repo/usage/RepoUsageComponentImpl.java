@@ -462,7 +462,8 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         if (usersCurrent > usersMax)
         {
             errors.add(I18NUtil.getMessage("system.usage.err.limit_users_exceeded", usersMax, usersCurrent));
-            level = RepoUsageLevel.LOCKED_DOWN;
+            // MNT-12712 changed this from LOCKED DOWN
+            level = RepoUsageLevel.WARN_ALL;
         }
         else if (usersCurrent == usersMax)
         {

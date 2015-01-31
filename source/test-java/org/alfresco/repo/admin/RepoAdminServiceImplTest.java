@@ -625,38 +625,43 @@ public class RepoAdminServiceImplTest extends TestCase
     
     public void testConcurrentDynamicModelDelete() throws Exception
     {
-        final int n = 2;
-        
-        undeployModels(n);
-        
-        int deployedModelCount = repoAdminService.getModels().size();
-        logger.info("Existing deployed custom model count: "+deployedModelCount);
-        
-        int dictModelCount = getModelCount();
-        logger.info("Existing dictionary model count: "+dictModelCount);
-        
-        deployModels(n);
-        
-        assertEquals("assert A: deployed model count not equal to the repoAdminService", deployedModelCount+n, repoAdminService.getModels().size());
-        
-        for (int i = 1; i <= n; i++)
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (!(dialect instanceof SQLServerDialect))
         {
-            assertTrue(isModelDeployed(modelPrefix+i));
+            final int n = 2;
+
+            undeployModels(n);
+
+            int deployedModelCount = repoAdminService.getModels().size();
+            logger.info("Existing deployed custom model count: "+deployedModelCount);
+
+            int dictModelCount = getModelCount();
+            logger.info("Existing dictionary model count: "+dictModelCount);
+
+            deployModels(n);
+
+            assertEquals("assert A: deployed model count not equal to the repoAdminService", deployedModelCount+n, repoAdminService.getModels().size());
+
+            for (int i = 1; i <= n; i++)
+            {
+                assertTrue(isModelDeployed(modelPrefix+i));
+            }
+
+            assertEquals(dictModelCount+n, getModelCount());
+
+            // concurrently undeploy N models
+            runConcurrentOps(n, 2);
+
+            assertEquals("assert after concurrent undeploy", deployedModelCount, repoAdminService.getModels().size());
+
+            for (int i = 1; i <= n; i++)
+            {
+                assertFalse(isModelDeployed(modelPrefix+i));
+            }
+
+            assertEquals(dictModelCount, getModelCount());
         }
-        
-        assertEquals(dictModelCount+n, getModelCount());
-        
-        // concurrently undeploy N models
-        runConcurrentOps(n, 2);
-        
-        assertEquals("assert after concurrent undeploy", deployedModelCount, repoAdminService.getModels().size());
-        
-        for (int i = 1; i <= n; i++)
-        {
-            assertFalse(isModelDeployed(modelPrefix+i));
-        }
-        
-        assertEquals(dictModelCount, getModelCount());
     }
     
     private int getModelCount()

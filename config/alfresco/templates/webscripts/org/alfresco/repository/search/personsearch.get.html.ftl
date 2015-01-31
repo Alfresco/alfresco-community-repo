@@ -17,7 +17,7 @@
     <br>
     <table>
       <tr>
-        <td>Results <b>${search.startIndex}</b> - <b><#if search.startIndex == 0>0<#else>${search.startIndex + search.totalPageItems - 1}</#if></b> of <b>${search.totalResults}</b> for <b>${search.searchTerms}</b> visible to user <b><#if person??>${person.properties.userName}<#else>unknown</#if>.</b></td>
+        <td>Results <b>${search.startIndex}</b> - <b><#if search.startIndex == 0>0<#else>${search.startIndex + search.totalPageItems - 1}</#if></b> of <b>${search.totalResults}</b> for <b>${search.searchTerms?html}</b> visible to user <b><#if person??>${person.properties.userName}<#else>unknown</#if>.</b></td>
      </tr>
     </table>
     <br>

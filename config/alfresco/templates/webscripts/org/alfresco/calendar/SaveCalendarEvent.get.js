@@ -61,7 +61,7 @@ if (nodeWhereToCreate != null)
 }
 else
 {
-	response = "SPACE not found with Ref " + spaceRef;
+	response = "SPACE not found";
 }
 
 model.result = response;

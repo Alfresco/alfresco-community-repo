@@ -12,6 +12,15 @@
          <constructor-arg name="alfrescoUrl" value="http://localhost:8081/alfresco/" />
          <constructor-arg name="maxNumberOfConnections" value="2" />
     </bean>
+    
+    <!-- Registration of test models -->	
+    <bean id="testRemoteApiModelDictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+        <property name="models">
+            <list>
+                <value>models/custom-model.xml</value>
+            </list>
+        </property>
+    </bean>
 <!-- 
     <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">

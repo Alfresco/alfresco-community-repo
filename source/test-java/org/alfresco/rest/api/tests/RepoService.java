@@ -1067,6 +1067,15 @@ public class RepoService
         return nodeRef;
     }
     
+    public NodeRef createObjectOfCustomType(final NodeRef parentNodeRef, final String name, final String typeName)
+    {
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(name));
+        QName typeQName = QName.createQName(typeName);
+        NodeRef nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, typeQName).getChildRef();
+
+        return nodeRef;
+    }
+    
     public Visibility getVisibility(Client client, NodeRef nodeRef)
     {
     	return hiddenAspect.getVisibility(client, nodeRef);

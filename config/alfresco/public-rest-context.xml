@@ -360,6 +360,27 @@
        </property>
     </bean>
     
+    <bean id="nodeTypeConstraint" class="org.alfresco.util.TypeConstraint" init-method="init">
+       <property name="nodeService" ref="NodeService" />
+       <property name="dictionaryService" ref="dictionaryService" />
+       <property name="expectedTypes">
+          <list>
+             <value>{http://www.alfresco.org/model/content/1.0}folder</value>
+             <value>{http://www.alfresco.org/model/content/1.0}content</value>
+             <value>{http://www.alfresco.org/model/cmis/custom}*</value>
+          </list>
+       </property>
+       <property name="excludedTypes">
+          <list>
+             <value>{http://www.alfresco.org/model/forum/1.0}forums</value>
+             <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
+             <value>{http://www.alfresco.org/model/forum/1.0}topic</value>
+             <value>{http://www.alfresco.org/model/forum/1.0}post</value>
+             <value>{http://www.alfresco.org/model/content/1.0}category</value>
+          </list>
+       </property>
+   </bean>
+    
     <bean id="comments" class="org.alfresco.rest.api.impl.CommentsImpl">
         <property name="nodes" ref="nodes" />
         <property name="nodeService" ref="NodeService" />
@@ -367,27 +388,7 @@
         <property name="contentService" ref="ContentService" />
         <property name="permissionService" ref="PermissionService" />
         <property name="lockService" ref="LockService" />
-        <property name="typeConstraint">
-          <bean class="org.alfresco.util.TypeConstraint" init-method="init">
-              <property name="nodeService" ref="NodeService" />
-              <property name="expectedTypes">
-                 <list>
-                    <value>{http://www.alfresco.org/model/content/1.0}folder</value>
-                    <value>{http://www.alfresco.org/model/content/1.0}content</value>
-                    <value>{http://www.alfresco.org/model/cmis/custom}*</value>
-                 </list>
-              </property>
-              <property name="excludedTypes">
-                 <list>
-                    <value>{http://www.alfresco.org/model/forum/1.0}forums</value>
-                    <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
-                    <value>{http://www.alfresco.org/model/forum/1.0}topic</value>
-                    <value>{http://www.alfresco.org/model/forum/1.0}post</value>
-                    <value>{http://www.alfresco.org/model/content/1.0}category</value>
-                 </list>
-              </property>
-          </bean>
-        </property>
+        <property name="typeConstraint" ref="nodeTypeConstraint" />
     </bean>
 
     <bean id="Comments" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -408,27 +409,7 @@
         <property name="nodes" ref="nodes" />
         <property name="ratingService" ref="RatingService" />
         <property name="nodeRatingSchemeRegistry" ref="nodeRatingSchemeRegistry" />
-        <property name="typeConstraint">
-          <bean class="org.alfresco.util.TypeConstraint" init-method="init">
-              <property name="nodeService" ref="NodeService" />
-              <property name="expectedTypes">
-                 <list>
-                    <value>{http://www.alfresco.org/model/content/1.0}folder</value>
-                    <value>{http://www.alfresco.org/model/content/1.0}content</value>
-                    <value>{http://www.alfresco.org/model/cmis/custom}*</value>
-                 </list>
-              </property>
-              <property name="excludedTypes">
-                 <list>
-                     <value>{http://www.alfresco.org/model/forum/1.0}forums</value>
-                     <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
-                     <value>{http://www.alfresco.org/model/forum/1.0}topic</value>
-                     <value>{http://www.alfresco.org/model/forum/1.0}post</value>
-                     <value>{http://www.alfresco.org/model/content/1.0}category</value>
-                 </list>
-              </property>
-          </bean>
-        </property>
+        <property name="typeConstraint" ref="nodeTypeConstraint" />
     </bean>
 
     <bean id="NodeRatings" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -582,27 +563,7 @@
     <bean id="tags" class="org.alfresco.rest.api.impl.TagsImpl">
         <property name="nodes" ref="nodes" />
         <property name="taggingService" ref="TaggingService" />
-        <property name="typeConstraint">
-          <bean class="org.alfresco.util.TypeConstraint" init-method="init">
-              <property name="nodeService" ref="NodeService" />
-              <property name="expectedTypes">
-                 <list>
-                    <value>{http://www.alfresco.org/model/content/1.0}folder</value>
-                    <value>{http://www.alfresco.org/model/content/1.0}content</value>
-                    <value>{http://www.alfresco.org/model/cmis/custom}*</value>
-                 </list>
-              </property>
-              <property name="excludedTypes">
-                 <list>
-                     <value>{http://www.alfresco.org/model/forum/1.0}forums</value>
-                     <value>{http://www.alfresco.org/model/forum/1.0}forum</value>
-                     <value>{http://www.alfresco.org/model/forum/1.0}topic</value>
-                     <value>{http://www.alfresco.org/model/forum/1.0}post</value>
-                     <value>{http://www.alfresco.org/model/content/1.0}category</value>
-                 </list>
-              </property>
-          </bean>
-        </property>
+        <property name="typeConstraint" ref="nodeTypeConstraint" />
     </bean>
 
     <bean id="Tags" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -57,6 +57,7 @@ public class TestNodeComments extends EnterpriseTestApi
 	private NodeRef nodeRef3;
 	private NodeRef nodeRef4;
 	private NodeRef cmObjectNodeRef;
+	private NodeRef customTypeObject;
 	
 	@Before
 	public void setup() throws Exception
@@ -132,6 +133,8 @@ public class TestNodeComments extends EnterpriseTestApi
 				nodes.add(nodeRef);
 				nodeRef = repoService.createCmObject(site1.getContainerNodeRef("documentLibrary"), "CM Object");
 				nodes.add(nodeRef);
+				nodeRef = repoService.createObjectOfCustomType(site1.getContainerNodeRef("documentLibrary"), "Custom type object", "{custom.model}sop");
+				nodes.add(nodeRef);
 
 				return null;
 			}
@@ -143,6 +146,7 @@ public class TestNodeComments extends EnterpriseTestApi
 		this.nodeRef3 = nodes.get(3);
 		this.nodeRef4 = nodes.get(4);
 		this.cmObjectNodeRef = nodes.get(5);
+		this.customTypeObject = nodes.get(6);
 	}
 
 	@Test
@@ -198,6 +202,20 @@ public class TestNodeComments extends EnterpriseTestApi
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 				Comment ret = commentsProxy.createNodeComment(nodeRef2.getId(), comment);
 				createdComments.put(ret.getId(), ret);
+			}
+			
+			// test that it is possible to add comment to custom type node
+			commentsProxy.createNodeComment(customTypeObject.getId(), new Comment("Custom type node comment", "The Comment"));
+			
+			try
+			{
+				// test that it is not possible to add comment to cm:object node
+				commentsProxy.createNodeComment(cmObjectNodeRef.getId(),  new Comment("CM Object node comment", "The Comment"));
+				fail();
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
 			}
 			
 			// get comments of the non-folder/non-document nodeRef

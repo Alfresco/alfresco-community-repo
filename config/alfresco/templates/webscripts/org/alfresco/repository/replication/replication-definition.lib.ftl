@@ -43,7 +43,7 @@
                 "iso8601": "${replicationDefinition.scheduleStart}"
             },
             "intervalPeriod": <#if replicationDefinition.scheduleIntervalPeriod??>"${replicationDefinition.scheduleIntervalPeriod}"<#else>null</#if>,
-            "intervalCount": <#if replicationDefinition.scheduleIntervalCount??>${replicationDefinition.scheduleIntervalCount}<#else>null</#if>
+            "intervalCount": <#if replicationDefinition.scheduleIntervalCount??>${replicationDefinition.scheduleIntervalCount?c}<#else>null</#if>
           }<#else>null</#if>
    }
 </#escape>

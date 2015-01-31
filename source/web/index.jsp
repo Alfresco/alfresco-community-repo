@@ -99,7 +99,7 @@ TransactionService transactionService = (TransactionService)context.getBean("tra
       <div class="push"></div>
    </div>
    <div class="footer">
-      Alfresco Software, Inc. &copy; 2005-2014 All rights reserved.
+      Alfresco Software, Inc. &copy; 2005-2015 All rights reserved.
    </div>
 </body>
 </html>

@@ -877,15 +877,17 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected List<ChildAssocEntity> selectChildNodeIds(
             Long nodeId,
             Boolean isPrimary,
-            Long minAssocIdInclusive,
+            Long minChildNodeIdInclusive,
             int maxResults)
     {
         ChildAssocEntity assoc = new ChildAssocEntity();
         NodeEntity parentNode = new NodeEntity();
         parentNode.setId(nodeId);
+        NodeEntity childNode = new NodeEntity();
+        childNode.setId(minChildNodeIdInclusive);
         assoc.setParentNode(parentNode);
         assoc.setPrimary(isPrimary);
-        assoc.setId(minAssocIdInclusive);
+        assoc.setChildNode(childNode);
         
         RowBounds rowBounds = new RowBounds(0, maxResults);
         return template.selectList(SELECT_CHILD_NODE_IDS, assoc, rowBounds);

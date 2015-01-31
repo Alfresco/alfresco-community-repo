@@ -519,29 +519,28 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         int count = 0;
         List<Long> childNodeIds = new ArrayList<Long>(256);
-        Long minAssocIdInclusive = Long.MIN_VALUE;
-        while (minAssocIdInclusive != null)
+        Long minChildNodeIdInclusive = Long.MIN_VALUE;
+        while (minChildNodeIdInclusive != null)
         {
             childNodeIds.clear();
             List<ChildAssocEntity> childAssocs = selectChildNodeIds(
                     parentNodeId,
                     Boolean.valueOf(primary),
-                    minAssocIdInclusive,
+                    minChildNodeIdInclusive,
                     256);
             // Remove the cache entries as we go
             for (ChildAssocEntity childAssoc : childAssocs)
             {
-                Long childAssocId = childAssoc.getId();
-                if (childAssocId.compareTo(minAssocIdInclusive) < 0)
+                Long childNodeId = childAssoc.getChildNode().getId();
+                if (childNodeId.compareTo(minChildNodeIdInclusive) < 0)
                 {
-                    throw new RuntimeException("Query results did not increase for assoc ID");
+                    throw new RuntimeException("Query results did not increase for child node id ID");
                 }
                 else
                 {
-                    minAssocIdInclusive = new Long(childAssocId.longValue() + 1L);
+                    minChildNodeIdInclusive = new Long(childNodeId.longValue() + 1L);
                 }
                 // Invalidate the node cache
-                Long childNodeId = childAssoc.getChildNode().getId();
                 childNodeIds.add(childNodeId);
                 invalidateNodeCaches(childNodeId);
                 count++;

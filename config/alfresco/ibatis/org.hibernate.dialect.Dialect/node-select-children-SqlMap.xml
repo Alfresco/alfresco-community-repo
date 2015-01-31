@@ -5,26 +5,14 @@
 <mapper namespace="alfresco.node.select.children">
 
     <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssoc">
-        <include refid="alfresco.node.select_ChildAssocsOfParent_Query"/>
+        <include refid="alfresco.node.select_ChildAssocsOfParent_Snippet"/>
         <if test="ordered == true">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
         </if>
     </select>
 
     <select id="select_ChildNodeIds_Limited" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssocIds">
-        <![CDATA[
-        select
-            ca.id               as id,
-            ca.child_node_id    as child_node_id
-        from
-            alf_child_assoc ca
-        where
-            ca.parent_node_id = #{parentNode.id} and
-            ca.is_primary = #{isPrimary} and
-            ca.id >= #{id}
-        order by
-            ca.id
-        ]]>
+        <include refid="alfresco.node.select_ChildNodeIds_Limited_Snippet"/>
     </select>
 
 </mapper>

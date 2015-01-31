@@ -8,7 +8,7 @@
     <!-- '1=1': Makes the SQL string unique WRT the prepared statement cache -->
 
     <select id="select_ChildAssocsOfParent_Limited" parameterType="ChildAssoc" resultMap="alfresco.node.result_ChildAssoc" fetchSize="-2147483648">
-        <include refid="alfresco.node.select_ChildAssocsOfParent_Query"/>
+        <include refid="alfresco.node.select_ChildAssocsOfParent_Snippet"/>
         and 1=1
         <if test="ordered == true">
             <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
@@ -16,20 +16,7 @@
     </select>
 
     <select id="select_ChildNodeIds_Limited" parameterType="Ids" resultMap="alfresco.node.result_ChildAssocIds" fetchSize="-2147483648">
-        <![CDATA[
-        select
-            ca.id               as id,
-            ca.child_node_id    as child_node_id
-        from
-            alf_child_assoc ca
-        where
-            ca.parent_node_id = #{parentNode.id} and
-            ca.is_primary = #{isPrimary} and
-            ca.id >= #{id}
-            and 1=1
-        order by
-            ca.id
-        ]]>
+        <include refid="alfresco.node.select_ChildNodeIds_Limited_Snippet"/>
     </select>
 
 </mapper>

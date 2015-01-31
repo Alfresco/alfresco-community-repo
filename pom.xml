@@ -822,6 +822,14 @@
                          </includes>
                     </resource>
                 </resources>
+                <testResources>
+                    <testResource>
+                         <directory>${highest.basedir}/enterpriseprojects/repository/source/test-resources</directory> 
+                         <includes>
+                             <include>scriptexec/*Oracle*/**</include>
+                         </includes>
+                    </testResource>
+                </testResources>
             </build>
         </profile>
         <profile>
@@ -836,6 +844,14 @@
                          </includes>
                     </resource>
                 </resources>
+                <testResources>
+                    <testResource>
+                         <directory>${highest.basedir}/enterpriseprojects/repository/source/test-resources</directory> 
+                         <includes>
+                             <include>scriptexec/*SQLServer*/**</include>
+                         </includes>
+                    </testResource>
+                </testResources>
             </build>
         </profile>
         <profile>
@@ -850,6 +866,14 @@
                          </includes>
                     </resource>
                 </resources>
+                <testResources>
+                    <testResource>
+                         <directory>${highest.basedir}/enterpriseprojects/repository/source/test-resources</directory> 
+                         <includes>
+                             <include>scriptexec/*DB2*/**</include>
+                         </includes>
+                    </testResource>
+                </testResources>
             </build>
         </profile>
 
@@ -957,8 +981,13 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-      <plugins>
+        <testResources>
+            <testResource>
+                 <directory>source/test-resources</directory> 
+            </testResource>
+        </testResources>
 
+      <plugins>
          <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <executions>

@@ -188,6 +188,16 @@ public class ConnectionPoolOverloadTest
                 interrupt();
                 fail("Thread should fail with ConnectionPoolException.");
             }
+            
+            try
+            {
+                sleep(dbPoolWaitMax*2);
+            }
+            catch (InterruptedException e)
+            {
+               interrupt();
+            }
+            interrupt();
         }
 
         @Override

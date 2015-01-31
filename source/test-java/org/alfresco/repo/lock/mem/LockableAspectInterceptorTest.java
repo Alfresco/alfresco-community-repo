@@ -210,6 +210,7 @@ public class LockableAspectInterceptorTest
         lockProps.put(ContentModel.PROP_LOCK_OWNER, "jbloggs");
         lockProps.put(ContentModel.PROP_LOCK_TYPE, LockType.READ_ONLY_LOCK.toString());
         lockProps.put(ContentModel.PROP_EXPIRY_DATE, now);
+        lockProps.put(ContentModel.PROP_LOCK_ADDITIONAL_INFO, "{ \"fieldName\": \"extra lock info\" }");
         nodeService.addAspect(nodeRef, ContentModel.ASPECT_LOCKABLE, lockProps);
         
         Map<QName, Serializable> readProps = nodeService.getProperties(nodeRef);
@@ -221,6 +222,7 @@ public class LockableAspectInterceptorTest
         assertEquals(Lifetime.PERSISTENT.toString(), readProps.get(ContentModel.PROP_LOCK_LIFETIME));
         // Double check - not really present
         ensurePropertyNotPresent(nodeRef, ContentModel.PROP_LOCK_LIFETIME);
+        assertEquals("{ \"fieldName\": \"extra lock info\" }", readProps.get(ContentModel.PROP_LOCK_ADDITIONAL_INFO));
     }
     
     /**

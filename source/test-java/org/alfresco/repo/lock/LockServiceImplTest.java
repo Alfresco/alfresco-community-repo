@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.lock;
 
+import static org.junit.Assert.assertNotEquals;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -257,17 +259,12 @@ public class LockServiceImplTest extends BaseSpringTest
         this.lockService.lock(this.noAspectNode, LockType.WRITE_LOCK);        
     }
     
-    public void testPersistentLockDisallowsAdditionalInfo()
+    public void testPersistentLockMayStoreAdditionalInfo()
     {
-        try
-        {
-            lockService.lock(noAspectNode, LockType.NODE_LOCK, 0, Lifetime.PERSISTENT, "additional info");
-            fail("additionalInfo must be null for persistent lock, expected IllegalArgumentException.");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Good, exception was thrown.
-        }
+        lockService.lock(noAspectNode, LockType.NODE_LOCK, 0, Lifetime.PERSISTENT, "additional info");
+
+        LockState lockState = lockService.getLockState(noAspectNode);
+        assertEquals("additional info", lockState.getAdditionalInfo());
     }
     
     public void testEphemeralLock()
@@ -816,6 +813,59 @@ public class LockServiceImplTest extends BaseSpringTest
         
         TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
         assertEquals(LockStatus.LOCK_EXPIRED, this.lockService.getLockStatus(this.parentNode));
+    }
+    
+    public void testEphemeralExpiryThreshold()
+    {
+        TestWithUserUtils.authenticateUser(GOOD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+        final int origThresh = ((LockServiceImpl)lockService).getEphemeralExpiryThreshold();
+        // Check the default situation is that the threshold does not apply.
+        assertEquals(LockServiceImpl.MAX_EPHEMERAL_LOCK_SECONDS, origThresh);
+        try
+        {
+            // Set the ephemeral expiry threshold to a much smaller value than the default
+            // so that it takes effect.
+            lockService.setEphemeralExpiryThreshold(300);
+            
+            // Check for an expiry time that should be unaffected by the threshold.
+            checkLifetimeForExpiry(Lifetime.EPHEMERAL, 0, Lifetime.EPHEMERAL);
+            checkLifetimeForExpiry(Lifetime.EPHEMERAL, 150, Lifetime.EPHEMERAL);
+            
+            // Check the largest allowed ephemeral expiry time.
+            checkLifetimeForExpiry(Lifetime.EPHEMERAL, 300, Lifetime.EPHEMERAL);
+            
+            // When the expiry is greater than the threshold, then the lock should be
+            // applied as a persistent lock.
+            checkLifetimeForExpiry(Lifetime.PERSISTENT, 301, Lifetime.EPHEMERAL);
+            
+            // Switch off ephemeral locks entirely
+            lockService.setEphemeralExpiryThreshold(-1);
+            // Always persistent...
+            checkLifetimeForExpiry(Lifetime.PERSISTENT, 0, Lifetime.EPHEMERAL);
+            checkLifetimeForExpiry(Lifetime.PERSISTENT, 150, Lifetime.EPHEMERAL);
+            checkLifetimeForExpiry(Lifetime.PERSISTENT, 300, Lifetime.EPHEMERAL);
+            checkLifetimeForExpiry(Lifetime.PERSISTENT, 301, Lifetime.EPHEMERAL);
+        }
+        finally
+        {
+            lockService.setEphemeralExpiryThreshold(origThresh);
+        }
+    }
+    
+    private void checkLifetimeForExpiry(Lifetime expectedLifetime, int expirySecs, Lifetime requestedLifetime)
+    {
+        lockService.unlock(parentNode);
+        assertNotEquals(LockStatus.LOCKED ,lockService.getLockStatus(parentNode));
+        lockService.lock(parentNode, LockType.WRITE_LOCK, expirySecs, requestedLifetime);
+        LockState lock = lockService.getLockState(parentNode);
+        assertEquals(expectedLifetime, lock.getLifetime());
+        
+        // Check that for any timeouts we test, a request for a persistent lock always yields a persistent lock.
+        lockService.unlock(parentNode);
+        assertNotEquals(LockStatus.LOCKED ,lockService.getLockStatus(parentNode));
+        lockService.lock(parentNode, LockType.WRITE_LOCK, expirySecs, Lifetime.PERSISTENT);
+        lock = lockService.getLockState(parentNode);
+        assertEquals(Lifetime.PERSISTENT, lock.getLifetime());
     }
     
     /**

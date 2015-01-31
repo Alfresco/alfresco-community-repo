@@ -104,6 +104,8 @@ public class LockServiceImpl implements LockService,
 
     private NodeIndexer nodeIndexer;
     
+    private int ephemeralExpiryThreshold;
+    
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -299,15 +301,16 @@ public class LockServiceImpl implements LockService,
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, String additionalInfo)
     {
         invokeBeforeLock(nodeRef, lockType);
-        if (additionalInfo != null && !lifetime.equals(Lifetime.EPHEMERAL))
-        {
-            throw new IllegalArgumentException("additionalInfo may only be provided for ephemeral locks.");
-        }
         if (lifetime.equals(Lifetime.EPHEMERAL) && (timeToExpire > MAX_EPHEMERAL_LOCK_SECONDS))
         {
             throw new IllegalArgumentException("Attempt to create ephemeral lock for " +
                     timeToExpire + " seconds - exceeds maximum allowed time.");
         }
+        if (lifetime.equals(Lifetime.EPHEMERAL) && (timeToExpire > ephemeralExpiryThreshold))
+        {
+            lifetime = Lifetime.PERSISTENT;
+        }
+         
         
         nodeRef = tenantService.getName(nodeRef);
         
@@ -344,7 +347,7 @@ public class LockServiceImpl implements LockService,
                 {
                     // Add lock aspect if not already present
                     ensureLockAspect(nodeRef);
-                    persistLockProps(nodeRef, lockType, lifetime, userName, expiryDate);
+                    persistLockProps(nodeRef, lockType, lifetime, userName, expiryDate, additionalInfo);
                 }
                 finally
                 {
@@ -372,7 +375,7 @@ public class LockServiceImpl implements LockService,
         }
     }
     
-    private void persistLockProps(NodeRef nodeRef, LockType lockType, Lifetime lifetime, String userName, Date expiryDate)
+    private void persistLockProps(NodeRef nodeRef, LockType lockType, Lifetime lifetime, String userName, Date expiryDate, String additionalInfo)
     {  
         addToIgnoreSet(nodeRef);
         try
@@ -382,6 +385,7 @@ public class LockServiceImpl implements LockService,
             this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_TYPE, lockType.toString());
             this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME, lifetime.toString());
             this.nodeService.setProperty(nodeRef, ContentModel.PROP_EXPIRY_DATE, expiryDate);
+            this.nodeService.setProperty(nodeRef, ContentModel.PROP_LOCK_ADDITIONAL_INFO, additionalInfo);
         } 
         finally
         {
@@ -845,6 +849,7 @@ public class LockServiceImpl implements LockService,
                 LockType lockType = lockTypeStr != null ? LockType.valueOf(lockTypeStr) : null;
                 String lifetimeStr = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_LIFETIME);
                 Lifetime lifetime = lifetimeStr != null ? Lifetime.valueOf(lifetimeStr) : null;
+                String additionalInfo = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_LOCK_ADDITIONAL_INFO);
                 
                 // Mark lockstate as PERSISTENT as it was in the persistent storage!
                 lockState = LockState.createLock(
@@ -853,7 +858,7 @@ public class LockServiceImpl implements LockService,
                             lockOwner,
                             expiryDate,
                             lifetime,
-                            null);
+                            additionalInfo);
             }
             else
             {
@@ -911,5 +916,16 @@ public class LockServiceImpl implements LockService,
         {
             lockStore.set(lockInfo.getNodeRef(), lockInfo);
         }
+    }
+
+    @Override
+    public void setEphemeralExpiryThreshold(int threshSecs)
+    {
+        ephemeralExpiryThreshold = threshSecs;
+    }
+    
+    public int getEphemeralExpiryThreshold()
+    {
+        return ephemeralExpiryThreshold;
     }
 }

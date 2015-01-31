@@ -19,14 +19,12 @@
 package org.alfresco.service.cmr.lock;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 
 
 /**
@@ -363,4 +361,13 @@ public interface LockService
     * @return LockState
     */
    public LockState getLockState(NodeRef nodeRef);
+   
+   /**
+    * Specifies the maximum expiry time for which a request for an ephemeral lock
+    * will be honoured. Requests for ephemeral locks with expiry times greater than
+    * this value will be automatically converted to a request for a persistent lock.
+    *  
+    * @param threshSecs
+    */
+   public void setEphemeralExpiryThreshold(int threshSecs);
 }

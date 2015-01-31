@@ -1076,6 +1076,10 @@
                <type>d:boolean</type>
                <protected>true</protected>
             </property>
+            <property name="cm:lockAdditionalInfo">
+               <type>d:text</type>
+               <protected>true</protected>
+            </property>
          </properties>
       </aspect>
       

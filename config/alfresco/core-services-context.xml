@@ -431,6 +431,7 @@
         <property name="searchService" ref="admSearchService" />
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="nodeIndexer" ref="nodeIndexer"/>
+        <property name="ephemeralExpiryThreshold" value="${alfresco.ephemeralLock.expiryThresh}"/>
     </bean>
 
     <!--                               -->

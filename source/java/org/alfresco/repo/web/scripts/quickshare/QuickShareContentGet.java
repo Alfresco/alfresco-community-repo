@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.web.scripts.content.ContentGet;
 import org.alfresco.repo.web.scripts.content.StreamContent;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
@@ -55,7 +56,7 @@ import org.springframework.web.context.ServletContextAware;
  * @author janv
  * @since Cloud/4.2
  */
-public class QuickShareContentGet extends StreamContent implements ServletContextAware
+public class QuickShareContentGet extends ContentGet implements ServletContextAware
 {
     private static final Log logger = LogFactory.getLog(QuickShareContentGet.class);
     
@@ -174,6 +175,6 @@ public class QuickShareContentGet extends StreamContent implements ServletContex
         boolean attach = Boolean.valueOf(req.getParameter("a"));
         
         // Stream the content
-        streamContent(req, res, nodeRef, propertyQName, attach, null, model);
+        streamContentLocal(req, res, nodeRef, attach, propertyQName, model);
 	}
 }

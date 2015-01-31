@@ -136,10 +136,10 @@ public class ContentGet extends StreamContent implements ServletContextAware
         }
 
         // Stream the content
-        streamContentLocal(req, res, nodeRef, attach, propertyQName);
+        streamContentLocal(req, res, nodeRef, attach, propertyQName, null);
     }
 
-    private void streamContentLocal(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, boolean attach, QName propertyQName) throws IOException
+    protected void streamContentLocal(WebScriptRequest req, WebScriptResponse res, NodeRef nodeRef, boolean attach, QName propertyQName, Map<String, Object> model) throws IOException
     {
         String userAgent = req.getHeader("User-Agent");
         userAgent = userAgent != null ? userAgent.toLowerCase() : "";
@@ -160,11 +160,11 @@ public class ContentGet extends StreamContent implements ServletContextAware
                 }
             }
             
-            streamContent(req, res, nodeRef, propertyQName, attach, name, null);
+            streamContent(req, res, nodeRef, propertyQName, attach, name, model);
         }
         else
         {
-            streamContent(req, res, nodeRef, propertyQName, attach, null, null);
+            streamContent(req, res, nodeRef, propertyQName, attach, null, model);
         }
     }
 }

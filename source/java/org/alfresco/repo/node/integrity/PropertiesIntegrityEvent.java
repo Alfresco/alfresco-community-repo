@@ -153,9 +153,11 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
             // check that enforced, mandatoryproperties are set
             if (propertyDef.isMandatory() && propertyDef.isMandatoryEnforced() && !nodeProperties.containsKey(propertyQName))
             {
+                String nameProp = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 IntegrityRecord result = new IntegrityRecord(
                         "Mandatory property not set: \n" +
                         "   Node: " + nodeRef + "\n" +
+                        (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
                         "   Type: " + typeQName + "\n" +
                         "   Property: " + propertyQName);
                 eventResults.add(result);
@@ -168,9 +170,11 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
             {
                 if (propertyValue != null && !(propertyValue instanceof SealedObject))
                 {
+                    String nameProp = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     IntegrityRecord result = new IntegrityRecord(
                             "Property must be encrypted: \n" +
                             "   Node: " + nodeRef + "\n" +
+                            (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
                             "   Type: " + typeQName + "\n" +
                             "   Property: " + propertyQName);
                     eventResults.add(result);
@@ -188,9 +192,11 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
                 }
                 catch (ConstraintException e)
                 {
+                    String nameProp = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     IntegrityRecord result = new IntegrityRecord(
                             "Invalid property value: \n" +
                             "   Node: " + nodeRef + "\n" +
+                            (nameProp != null ? "   Name: " + nameProp + "\n" : "") +
                             "   Type: " + typeQName + "\n" +
                             "   Property: " + propertyQName + "\n" +
                             "   Constraint: " + e.getMessage());

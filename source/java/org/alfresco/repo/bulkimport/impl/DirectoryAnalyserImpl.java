@@ -27,13 +27,16 @@ package org.alfresco.repo.bulkimport.impl;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.bulkimport.AnalysedDirectory;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.ImportFilter;
@@ -41,7 +44,12 @@ import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.ImportableItem.FileType;
 import org.alfresco.repo.bulkimport.MetadataLoader;
 import org.alfresco.repo.dictionary.constraint.NameChecker;
+import org.alfresco.service.cmr.dictionary.Constraint;
+import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO8601DateFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -64,6 +72,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     private BulkImportStatusImpl importStatus;
     private List<ImportFilter> importFilters;
     private NameChecker nameChecker;
+    private DictionaryService dictionaryService;
 
     
     public DirectoryAnalyserImpl(MetadataLoader metadataLoader, BulkImportStatusImpl importStatus, List<ImportFilter> importFilters,
@@ -77,6 +86,11 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     
     public DirectoryAnalyserImpl()
     {
+    }
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
     
     public void setNameChecker(NameChecker nameChecker)
@@ -230,7 +244,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         {
             ImportableItem importableItem = iter.next();
 
-            if (!importableItem.isValid())
+            if (!importableItem.isValid() || !isMetadataValid(importableItem))
             {
                 iter.remove();
             }
@@ -253,6 +267,51 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         }
 
         return result;
+    }
+
+    private boolean isMetadataValid(ImportableItem importableItem)
+    {
+        if (!importableItem.getHeadRevision().metadataFileExists())
+        {
+            return true;
+        }
+        
+        if (metadataLoader != null)
+        {
+            MetadataLoader.Metadata result = new MetadataLoader.Metadata();
+            metadataLoader.loadMetadata(importableItem.getHeadRevision(), result);
+            
+            Map<QName, Serializable> metadataProperties = result.getProperties();
+            for (QName propertyName : metadataProperties.keySet())
+            {
+                PropertyDefinition propDef = dictionaryService.getProperty(propertyName);
+                if (propDef != null)
+                {
+                    for (ConstraintDefinition constraintDef : propDef.getConstraints())
+                    {
+                        Constraint constraint = constraintDef.getConstraint();
+                        if (constraint != null)
+                        {
+                            try
+                            {
+                                constraint.evaluate(metadataProperties.get(propertyName));
+                            }
+                            catch (ConstraintException e)
+                            {
+                                if (log.isWarnEnabled())
+                                {
+                                    log.warn("Skipping file '" + FileUtils.getFileName(importableItem.getHeadRevision().getContentFile())
+                                       +"' with invalid metadata: '" + FileUtils.getFileName(importableItem.getHeadRevision().getMetadataFile()) + "'.", e);
+                                }
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return true;
     }
 
     private boolean isVersionFile(File file)

@@ -37,6 +37,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -773,12 +774,13 @@ public class BatchProcessor<T> implements BatchMonitor
                 if (this.splitTxns)
                 {
                     this.txnLastError = t;
-                    this.txnLastErrorEntryId = this.txnEntryId;
+                    this.txnLastErrorEntryId = (t instanceof IntegrityException) ? "unknown" : this.txnEntryId;
                     this.txnErrors++;
                     if (BatchProcessor.this.logger.isWarnEnabled())
                     {
-                        BatchProcessor.this.logger.warn(getProcessName() + ": Failed to process entry \""
-                                + BatchProcessor.this.currentEntryId + "\".", t);
+                        String message = (t instanceof IntegrityException) ? ": Failed on batch commit." : ": Failed to process entry \""
+                                + this.txnEntryId + "\".";
+                        BatchProcessor.this.logger.warn(getProcessName() + message, t);
                     }
                 }
                 // Otherwise, we have a retryable exception that we should propagate

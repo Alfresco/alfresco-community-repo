@@ -53,6 +53,7 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.dialect.*;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -75,7 +76,8 @@ public class RepoAdminServiceImplTest extends TestCase
     private ContentService contentService;
     private SearchService searchService;
     private NamespaceService namespaceService;
-    
+    private Dialect dialect;
+
     final String modelPrefix = "model-";
     final static String MKR = "{MKR}";
     
@@ -117,7 +119,7 @@ public class RepoAdminServiceImplTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+        dialect = (Dialect) ctx.getBean("dialect");
         repoAdminService = (RepoAdminService) ctx.getBean("RepoAdminService");
         dictionaryService = (DictionaryService) ctx.getBean("DictionaryService");
         transactionService = (TransactionService) ctx.getBean("TransactionService");
@@ -579,41 +581,46 @@ public class RepoAdminServiceImplTest extends TestCase
     
     public void testConcurrentDynamicModelCreate() throws Exception
     {
-        final int n = 2;
-        
-        undeployModels(n);
-        
-        int deployedModelCount = repoAdminService.getModels().size();
-        logger.info("Before deploy: deployed custom model count: "+deployedModelCount);
-        
-        int dictModelCount = getModelCount();
-        logger.info("Before deploy: dictionary model count: "+dictModelCount);
-        
-        // concurrently deploy N models
-        runConcurrentOps(n, 1); 
-        
-        int newDeployedModelCount = repoAdminService.getModels().size();
-        logger.info("After deploy: deployed custom model count: "+newDeployedModelCount);
-        assertEquals(deployedModelCount+n, newDeployedModelCount);
-        
-        for (int i = 1; i <= n; i++)
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (!(dialect instanceof SQLServerDialect))
         {
-            assertTrue(isModelDeployed(modelPrefix+i));
+            final int n = 2;
+
+            undeployModels(n);
+
+            int deployedModelCount = repoAdminService.getModels().size();
+            logger.info("Before deploy: deployed custom model count: "+deployedModelCount);
+
+            int dictModelCount = getModelCount();
+            logger.info("Before deploy: dictionary model count: "+dictModelCount);
+
+            // concurrently deploy N models
+            runConcurrentOps(n, 1);
+
+            int newDeployedModelCount = repoAdminService.getModels().size();
+            logger.info("After deploy: deployed custom model count: "+newDeployedModelCount);
+            assertEquals(deployedModelCount+n, newDeployedModelCount);
+
+            for (int i = 1; i <= n; i++)
+            {
+                assertTrue(isModelDeployed(modelPrefix+i));
+            }
+
+            int newDictModelCount = getModelCount();
+            logger.info("After deploy: dictionary model count: "+newDictModelCount);
+            assertEquals(dictModelCount+n, newDictModelCount);
+
+            undeployModels(n);
+
+            newDeployedModelCount = repoAdminService.getModels().size();
+            logger.info("After undeploy: deployed custom model count: "+newDeployedModelCount);
+            assertEquals(deployedModelCount, newDeployedModelCount);
+
+            newDictModelCount = getModelCount();
+            logger.info("After undeploy: dictionary model count: "+newDictModelCount);
+            assertEquals(dictModelCount, newDictModelCount);
         }
-        
-        int newDictModelCount = getModelCount();
-        logger.info("After deploy: dictionary model count: "+newDictModelCount);
-        assertEquals(dictModelCount+n, newDictModelCount);
-        
-        undeployModels(n);
-        
-        newDeployedModelCount = repoAdminService.getModels().size();
-        logger.info("After undeploy: deployed custom model count: "+newDeployedModelCount);
-        assertEquals(deployedModelCount, newDeployedModelCount);
-        
-        newDictModelCount = getModelCount();
-        logger.info("After undeploy: dictionary model count: "+newDictModelCount);
-        assertEquals(dictModelCount, newDictModelCount);
     }
     
     public void testConcurrentDynamicModelDelete() throws Exception

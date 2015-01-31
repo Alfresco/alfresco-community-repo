@@ -496,10 +496,10 @@ public class AuditComponentImpl implements AuditComponent
         if (values instanceof Map<?, ?>)
         {
             // trim string audited value
-            Map<String, Serializable> map = ((Map<String, Serializable>) values);
-            for (Map.Entry<String, Serializable> entry : map.entrySet())
+            Map<String, Object> map = ((Map<String, Object>) values);
+            for (Map.Entry<String, Object> entry : map.entrySet())
             {
-                Serializable auditValue = entry.getValue();
+                Object auditValue = entry.getValue();
                 // Trim strings
                 if (auditValue == null)
                 {

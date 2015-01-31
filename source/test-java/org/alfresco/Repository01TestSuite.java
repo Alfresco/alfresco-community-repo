@@ -86,6 +86,7 @@ public class Repository01TestSuite extends TestSuite
     {
         suite.addTestSuite(org.alfresco.repo.activities.ActivityServiceImplTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.activities.feed.FeedNotifierTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.activities.feed.FeedNotifierJobTest.class));
         suite.addTestSuite(org.alfresco.repo.admin.RepoAdminServiceImplTest.class);
         suite.addTestSuite(org.alfresco.repo.admin.patch.PatchTest.class);
         suite.addTestSuite(org.alfresco.repo.admin.registry.RegistryServiceImplTest.class);

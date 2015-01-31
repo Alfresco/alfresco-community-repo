@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -331,7 +331,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 
         try
         {
-            final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            final String currentUser = AuthenticationUtil.getRunAsUser();
             final String tenantDomain = TenantUtil.getCurrentDomain();
 
             // process the feeds using the batch processor {@link BatchProcessor}
@@ -346,11 +346,12 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 
 	            public void beforeProcess() throws Throwable
 	            {
-	                AuthenticationUtil.setRunAsUser(currentUser);
+	                AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
 	            }
 
 	            public void afterProcess() throws Throwable
 	            {
+	                AuthenticationUtil.clearCurrentSecurityContext();
 	            }
 
 	            public void process(final PersonInfo person) throws Throwable

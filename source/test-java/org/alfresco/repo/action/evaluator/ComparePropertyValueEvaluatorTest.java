@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -61,6 +61,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
     private static final QName PROP_INT = QName.createQName(TEST_TYPE_NAMESPACE, "propInt");
     private static final QName PROP_DATETIME = QName.createQName(TEST_TYPE_NAMESPACE, "propDatetime");
     private static final QName PROP_NODEREF = QName.createQName(TEST_TYPE_NAMESPACE, "propNodeRef");
+    private static final QName PROP_MULTI_VALUE = QName.createQName(TEST_TYPE_NAMESPACE, "propMultiValue");
     
     private static final String TEXT_VALUE = "myDocument.doc";
     private static final int INT_VALUE = 100;
@@ -122,6 +123,7 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         props.put(PROP_INT, INT_VALUE);
         props.put(PROP_DATETIME, this.dateValue);
         props.put(PROP_NODEREF, this.nodeValue);
+        props.put(PROP_MULTI_VALUE, TEXT_VALUE);
         
         // Create the node used for tests
         this.nodeRef = this.nodeService.createNode(
@@ -493,6 +495,21 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         
         
     }
+
+    public void testMultiValuedPropertyComparisons()
+    {
+        ActionConditionImpl condition = new ActionConditionImpl(GUID.generate(), ComparePropertyValueEvaluator.NAME);
+        condition.setParameterValue(ComparePropertyValueEvaluator.PARAM_PROPERTY, PROP_MULTI_VALUE);
+
+        condition.setParameterValue(ComparePropertyValueEvaluator.PARAM_OPERATION, ComparePropertyValueOperation.CONTAINS.toString());
+
+        condition.setParameterValue(ComparePropertyValueEvaluator.PARAM_VALUE, "Document");
+        assertTrue(this.evaluator.evaluate(condition, this.nodeRef));
+
+        condition.setParameterValue(ComparePropertyValueEvaluator.PARAM_VALUE, "bobbins");
+        assertFalse(this.evaluator.evaluate(condition, this.nodeRef));
+
+    }
     
     private void createTestModel()
     {
@@ -524,7 +541,12 @@ public class ComparePropertyValueEvaluatorTest extends BaseSpringTest
         prop4.setMandatory(false);
         prop4.setType("d:" + DataTypeDefinition.NODE_REF.getLocalName());
         prop4.setMultiValued(false);
-        
+
+        M2Property prop5 = testType.createProperty("test:" + PROP_MULTI_VALUE.getLocalName());
+        prop5.setMandatory(false);
+        prop5.setType("d:" + DataTypeDefinition.TEXT.getLocalName());
+        prop5.setMultiValued(true);
+
         dictionaryDAO.putModel(model);
     }
 }

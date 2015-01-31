@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,6 +19,7 @@
 package org.alfresco.repo.action.evaluator;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -258,8 +259,25 @@ public class ComparePropertyValueEvaluator extends ActionConditionEvaluatorAbstr
                 PropertyValueComparator comparator = this.comparators.get(propertyTypeQName);
                 if (comparator != null)
                 {
-                    // Call the comparator for the property type
-                    result = comparator.compare(propertyValue, compareValue, operation);
+                    // Figure out if property is multivalued, compare all of the entries till finding a match
+                    PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+                    if (propertyDef.isMultiValued())
+                    {
+                        for(Serializable value : ((ArrayList<Serializable>) propertyValue))
+                        {
+                            boolean success = comparator.compare(value, compareValue, operation);
+                            if (success)
+                            {
+                                result = true;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Call the comparator for the property type
+                        result = comparator.compare(propertyValue, compareValue, operation);
+                    }
                 }
                 else
                 {

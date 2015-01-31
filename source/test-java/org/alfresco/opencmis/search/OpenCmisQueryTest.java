@@ -75,7 +75,9 @@ import org.alfresco.repo.search.impl.querymodel.Order;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.search.impl.querymodel.QueryOptions.Connective;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
@@ -99,6 +101,7 @@ import org.apache.chemistry.opencmis.commons.enums.PropertyType;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisBaseException;
 import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.GUID;
 
 /**
  * @author andyh
@@ -5722,6 +5725,53 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:relationship ", 0, false, "cmis:name", new String(), true);
         testQuery("SELECT * FROM cm:ownable ", 0, false, "cmis:name", new String(), true);
         testExtendedQuery("SELECT * FROM cm:ownable ", 1, false, "cmis:name", new String(), false);
+    }
+    
+    public void testNotKeyword() throws Exception
+    {
+    	final String folderName = "testfolder" + GUID.generate();
+        final String docName = "testdoc." + GUID.generate();
+        final FileInfo fileInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
+        {
+            @Override
+            public FileInfo execute() throws Throwable
+            {
+                FileInfo folderInfo = fileFolderService.create(base, folderName, ContentModel.TYPE_FOLDER);
+                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
+               
+                FileInfo fileInfo = fileFolderService.create(folderInfo.getNodeRef(), docName, ContentModel.TYPE_CONTENT);
+                nodeService.setProperty(fileInfo.getNodeRef(), ContentModel.PROP_NAME, docName);
+                nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_VERSIONABLE, null);
+
+                return fileInfo;
+            }
+        });
+        
+        String query = "SELECT * FROM cmis:document WHERE NOT cmis:name = '" + docName + "'";
+        CMISQueryOptions options = new CMISQueryOptions(query, rootNodeRef.getStoreRef());
+        
+        CMISResultSet rs = cmisQueryService.query(options);
+        
+        assertEquals(doc_count, rs.length());
+        for (CMISResultSetRow row : rs)
+        {
+            Serializable sValue = row.getValue("cmis:name");
+            assertFalse(sValue.equals(docName));
+        }
+        
+        query = "SELECT cmis:name FROM cmis:document WHERE cmis:name = '" + docName + "'";
+        options = new CMISQueryOptions(query, rootNodeRef.getStoreRef());
+        
+        rs = cmisQueryService.query(options);
+        
+        assertEquals(1, rs.length());
+        CMISResultSetRow row = rs.iterator().next();
+        
+        Serializable sValue = row.getValue("cmis:name");
+        assertTrue(sValue.equals(docName));
+        
+        fileFolderService.delete(fileInfo.getNodeRef());
+        
     }
     
     private void testOrderableProperty(String propertyQueryName)

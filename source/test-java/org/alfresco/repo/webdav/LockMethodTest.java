@@ -85,6 +85,9 @@ public class LockMethodTest
      */
     private static final String CONTENT_1 = "This is some content";
     private static final String TEST_FILE_NAME = "file" + GUID.generate();
+    private static final String TEST_NEW_FILE_NAME = "new_file" + GUID.generate();
+    private static final String TEST_FOLDER_NAME = "folder" + GUID.generate();
+    private static final String TEST_NEW_FOLDER_NAME = "new_folder" + GUID.generate();
 
     /**
      * Data used by the tests
@@ -130,7 +133,7 @@ public class LockMethodTest
 
                 // create test file in test folder
                 folderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("test"), ContentModel.TYPE_FOLDER,
-                        Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, "folder")).getChildRef();
+                        Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, TEST_FOLDER_NAME)).getChildRef();
                 fileNodeRef = nodeService.createNode(folderNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName("test"), ContentModel.TYPE_CONTENT,
                         Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, TEST_FILE_NAME)).getChildRef();
                 ContentWriter contentWriter = contentService.getWriter(fileNodeRef, ContentModel.PROP_CONTENT, true);
@@ -371,6 +374,43 @@ public class LockMethodTest
         };
         
         // try to refresh lock for non-locked node        
+        this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
+    }
+    
+    @Test
+    public void testMNT_12425() throws Exception
+    {
+        MockHttpServletRequest lockRequest = new MockHttpServletRequest();
+        MockHttpServletResponse lockResponse = new MockHttpServletResponse();
+        
+        // refresh lock set to 1 hour
+        lockRequest.addHeader(WebDAV.HEADER_TIMEOUT, WebDAV.SECOND + 3600);
+        lockRequest.addHeader(WebDAV.HEADER_IF, "(<" + WebDAV.makeLockToken(fileNodeRef, userName) + ">)");
+        // specify path to non-existing file
+        lockRequest.setRequestURI("/" + TEST_NEW_FOLDER_NAME + "/" + TEST_NEW_FILE_NAME);
+        
+        lockMethod.setDetails(lockRequest, lockResponse, davHelper, folderNodeRef);
+        lockMethod.parseRequestHeaders();
+        
+        RetryingTransactionCallback<Void> lockExecuteImplCallBack = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                try
+                {
+                    lockMethod.executeImpl();
+                    fail("Refresh lock for non-exisitent resource should fail.");
+                }
+                catch (WebDAVServerException e)
+                {
+                    assertEquals(HttpServletResponse.SC_FORBIDDEN, e.getHttpStatusCode());
+                }
+                return null;
+            }
+        };
+        
+        // try to lock non-existent file        
         this.transactionService.getRetryingTransactionHelper().doInTransaction(lockExecuteImplCallBack);
     }
 }

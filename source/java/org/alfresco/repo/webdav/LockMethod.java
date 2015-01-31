@@ -261,6 +261,26 @@ public class LockMethod extends WebDAVMethod
         }
         catch (FileNotFoundException e)
         {
+            if (m_conditions != null)
+            {
+                // MNT-12303 fix, check whether this is a refresh lock request
+                for (Condition condition : m_conditions)
+                {
+                    List<String> lockTolensMatch = condition.getLockTokensMatch();
+                    List<String> etagsMatch = condition.getETagsMatch();
+                    
+                    if (m_request.getContentLength() == -1 && 
+                        (lockTolensMatch != null && !lockTolensMatch.isEmpty()) ||
+                            (etagsMatch != null && !etagsMatch.isEmpty()))
+                    {
+                        // LOCK method with If header and without body was sent, according to RFC 2518 section 7.8
+                        // this form of LOCK MUST only be used to "refresh" a lock. However resource doesn't exist ->
+                        // so there is nothing to refresh. Return 403 Forbidden as original SharePoint Server.
+                        throw new WebDAVServerException(HttpServletResponse.SC_FORBIDDEN);
+                    }
+                }
+            }
+            
             // need to create it
             String[] splitPath = getDAVHelper().splitPath(path);
             // check

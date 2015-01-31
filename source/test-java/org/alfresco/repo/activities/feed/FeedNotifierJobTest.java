@@ -147,7 +147,7 @@ public class FeedNotifierJobTest
         userNotifier.setActivityService(activityService);
         userNotifier.setRepoAdminService(repoAdminService);
         userNotifier.setActionService(actionService);
-        userNotifier.setActivitiesFeedModdelBuilderFactory(feedModelBuilderFactory);
+        userNotifier.setActivitiesFeedModelBuilderFactory(feedModelBuilderFactory);
         userNotifier.setAuthenticationContext(authenticationContext);
         userNotifier.setExcludedEmailSuffixes(emailUserNotifier.getExcludedEmailSuffixes());
         

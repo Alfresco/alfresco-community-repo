@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.cache;
 
+import java.util.Map;
+
 import org.alfresco.repo.cache.TransactionStats.OpType;
 
 /**
@@ -63,5 +65,25 @@ public interface CacheStatistics
      * @param cacheName  The cache name.
      * @return ratio (double)
      */
-    double hitMissRatio(String cacheName); 
+    double hitMissRatio(String cacheName);
+    
+    /**
+     * Retrieve the total number of get operations invoked on the
+     * cache (i.e. sum of hits and misses).
+     * 
+     * @param cacheName  The cache name. 
+     * @return Count of get operations.
+     */
+    long numGets(String cacheName);
+    
+    /**
+     * Retrieve a map containing a snapshot of all of the raw stats
+     * (e.g. counts, mean operation times etc.). Since this is a snapshot
+     * it is unaffected by future modifications to the statistics - by
+     * using {@link CacheStatistics#add(String, TransactionStats)} for example.
+     * 
+     * @param cacheName  The cache name.
+     * @return Map of OpType to OperationStats
+     */
+    Map<OpType, OperationStats> allStats(String cacheName);
 }

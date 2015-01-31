@@ -2,6 +2,8 @@ package org.alfresco.repo.cache;
 
 import static org.junit.Assert.*;
 
+import java.util.Map;
+
 import org.alfresco.repo.cache.TransactionStats.OpType;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,6 +56,24 @@ public class InMemoryCacheStatisticsTest
         try
         {
             cacheStats.meanTime("cache1", OpType.GET_HIT);
+            fail("NoStatsForCache should have been thrown.");
+        }
+        catch(NoStatsForCache e)
+        {
+            // Good.
+        }
+        try
+        {
+            cacheStats.numGets("cache1");
+            fail("NoStatsForCache should have been thrown.");
+        }
+        catch(NoStatsForCache e)
+        {
+            // Good.
+        }
+        try
+        {
+            cacheStats.allStats("cache1");
             fail("NoStatsForCache should have been thrown.");
         }
         catch(NoStatsForCache e)
@@ -141,5 +161,47 @@ public class InMemoryCacheStatisticsTest
         assertEquals(5, cacheStats.count("cache1", OpType.GET_HIT));
         assertEquals(1, cacheStats.count("cache1", OpType.GET_MISS));
         assertEquals(0.83, cacheStats.hitMissRatio("cache1"), 0.01d);
+        
+        // Check hit+miss count
+        assertEquals(6, cacheStats.numGets("cache1"));
+        
+        // Stats snapshot map
+        Map<OpType, OperationStats> snapshot = cacheStats.allStats("cache1");
+        assertEquals(5, snapshot.get(OpType.GET_HIT).getCount());
+        assertEquals(1, snapshot.get(OpType.GET_MISS).getCount());
+    }
+    
+    @Test
+    public void canRetrieveSnapshotOfAllStats()
+    {
+        TransactionStats txStats = new TransactionStats();
+        txStats.record(0, 1000, OpType.GET_HIT);
+        
+        // Add first statistical datapoint.
+        cacheStats.add("cache1", txStats);
+        
+        // Cache stats should be visible
+        Map<OpType, OperationStats> snapshot1 = cacheStats.allStats("cache1");
+        assertEquals(1, snapshot1.get(OpType.GET_HIT).getCount());
+        assertEquals(1000, snapshot1.get(OpType.GET_HIT).getTotalTime(), 0.0d);
+        // Map is fully populated
+        assertEquals(0, snapshot1.get(OpType.CLEAR).getCount());
+        assertEquals(0, snapshot1.get(OpType.PUT).getCount());
+        assertEquals(0, snapshot1.get(OpType.REMOVE).getCount());
+        assertEquals(0, snapshot1.get(OpType.GET_MISS).getCount());
+        
+        // Record further data
+        txStats = new TransactionStats();
+        txStats.record(0, 2000, OpType.GET_HIT);
+        cacheStats.add("cache1", txStats);
+        
+        // Check new snapshot reflects update
+        Map<OpType, OperationStats> snapshot2 = cacheStats.allStats("cache1");
+        assertEquals(2, snapshot2.get(OpType.GET_HIT).getCount());
+        assertEquals(3000, snapshot2.get(OpType.GET_HIT).getTotalTime(), 0.0d);
+        
+        // Check old snapshot is not affected
+        assertEquals(1, snapshot1.get(OpType.GET_HIT).getCount());
+        assertEquals(1000, snapshot1.get(OpType.GET_HIT).getTotalTime(), 0.0d);
     }
 }

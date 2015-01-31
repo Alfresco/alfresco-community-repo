@@ -60,7 +60,7 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
                 throw new NoStatsForCache(cacheName);
             }
             OperationStats opStats = cacheStats.get(opType);
-            return opStats.count;
+            return opStats.getCount();
         }
         finally
         {
@@ -150,8 +150,8 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
             {
                 throw new NoStatsForCache(cacheName);
             }
-            long hits = cacheStats.get(OpType.GET_HIT).count;
-            long misses = cacheStats.get(OpType.GET_MISS).count;
+            long hits = cacheStats.get(OpType.GET_HIT).getCount();
+            long misses = cacheStats.get(OpType.GET_MISS).getCount();
             return (double)hits / (hits+misses);
         }
         finally
@@ -159,40 +159,46 @@ public class InMemoryCacheStatistics implements CacheStatistics, ApplicationCont
             readLock.unlock();
         }
     }
-
-    /**
-     * Represents a single cache operation type's statistics.
-     */
-    private static final class OperationStats
+    
+    @Override
+    public long numGets(String cacheName)
     {
-        /** Total time spent in operations of this type */
-        private final double totalTime;
-        /** Count of how many instances of this operation occurred. */
-        private final long count;
-        
-        public OperationStats(double totalTime, long count)
+        ReadLock readLock = getReadLock(cacheName);
+        readLock.lock();
+        try
         {
-            this.totalTime = totalTime;
-            this.count = count;
-        }
-        
-        public OperationStats(OperationStats source, double totalTime, long count)
-        {
-            if (Double.compare(source.totalTime, Double.NaN) == 0)
+            Map<OpType, OperationStats> cacheStats = cacheToStatsMap.get(cacheName);
+            if (cacheStats == null)
             {
-                // No previous time to add new time to.
-                this.totalTime = totalTime;
+                throw new NoStatsForCache(cacheName);
             }
-            else
-            {
-                this.totalTime = source.totalTime + totalTime;
-            }
-            this.count = source.count + count;
+            long hits = cacheStats.get(OpType.GET_HIT).getCount();
+            long misses = cacheStats.get(OpType.GET_MISS).getCount();
+            return hits+misses;
         }
-        
-        public double meanTime()
+        finally
         {
-            return totalTime / count;
+            readLock.unlock();
+        }
+    }
+    
+    @Override
+    public Map<OpType, OperationStats> allStats(String cacheName)
+    {
+        ReadLock readLock = getReadLock(cacheName);
+        readLock.lock();
+        try
+        {
+            Map<OpType, OperationStats> cacheStats = cacheToStatsMap.get(cacheName);
+            if (cacheStats == null)
+            {
+                throw new NoStatsForCache(cacheName);
+            }
+            return new HashMap<>(cacheStats);
+        }
+        finally
+        {
+            readLock.unlock();
         }
     }
 

@@ -18,6 +18,9 @@
  */
 package org.alfresco.repo.cache;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.alfresco.repo.cache.TransactionStats.OpType;
 
 /**
@@ -52,5 +55,17 @@ public class NoOpCacheStatistics implements CacheStatistics
     public double hitMissRatio(String cacheName)
     {
         return Double.NaN;
+    }
+
+    @Override
+    public long numGets(String cacheName)
+    {
+        return 0;
+    }
+
+    @Override
+    public Map<OpType, OperationStats> allStats(String cacheName)
+    {
+        return new HashMap<>();
     }
 }

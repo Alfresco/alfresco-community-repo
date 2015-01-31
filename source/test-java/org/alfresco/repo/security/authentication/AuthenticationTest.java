@@ -1730,13 +1730,8 @@ public class AuthenticationTest extends TestCase
         // authenticationService.deleteAuthentication("andy");
     }
 
-    public void testLoginNotExistingTenant() throws Exception
+    public void testLoginNotExistingTenant()
     {
-        // split the transactions to pass on SQL Server
-        // see MNT-13089
-        userTransaction.commit();
-        userTransaction = transactionService.getUserTransaction();
-        userTransaction.begin();
         boolean wasEnabled = AuthenticationUtil.isMtEnabled();
         
         try

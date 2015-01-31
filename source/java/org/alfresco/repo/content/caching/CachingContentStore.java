@@ -273,9 +273,16 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
                     bsWriter.setLocale(cacheWriter.getLocale());
                     bsWriter.setMimetype(cacheWriter.getMimetype());
                     bsWriter.putContent(cacheWriter.getReader());
+                    boolean contentUrlChanged = !url.equals(bsWriter.getContentUrl());
                     
-                    if (!quota.afterWritingCacheFile(cacheWriter.getSize()))
+                    // MNT-11758 fix, re-cache files for which content url has changed after write to backing store (e.g. XAM, Centera)
+                    if (!quota.afterWritingCacheFile(cacheWriter.getSize()) || contentUrlChanged)
                     {
+                        if (contentUrlChanged)
+                        {
+                            // MNT-11758 fix, cache file with new and correct contentUrl after write operation to backing store completed
+                            cache.put(bsWriter.getContentUrl(), cacheWriter.getReader());
+                        }
                         // Quota manager has requested that the new cache file is not kept.
                         cache.deleteFile(url);
                         cache.remove(url);

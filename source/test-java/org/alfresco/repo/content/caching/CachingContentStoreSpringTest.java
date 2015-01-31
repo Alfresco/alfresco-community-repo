@@ -34,6 +34,7 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.filestore.FileContentStore;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
@@ -54,6 +55,7 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
 {
     private CachingContentStore store;
     private FileContentStore backingStore;
+    private TestCenteraLikeContentStore centeraLikeBackingStore;
     private ContentCacheImpl cache;
     
     
@@ -192,6 +194,46 @@ public class CachingContentStoreSpringTest extends AbstractWritableContentStoreT
         // so that listeners could be executed correctly
         assertEquals("Cache writer should still return actual size", overLimitSize, writer.getSize());
         assertEquals("Cache writer should still return actual size", overLimitSize, writer.getContentData().getSize());
+    }
+    
+    /*
+     * MNT-11758 case test
+     */
+    public void testBackingStoreBehavesLikeCenteraContentStore()
+    {
+        String content1 = "test content 1";
+        String content2 = "test content 2";
+        
+        // create backing store that behaves like centera content store, i.e. contentUrl is known only after content is written
+        centeraLikeBackingStore = new TestCenteraLikeContentStore(ctx,
+                TempFileProvider.getTempDir().getAbsolutePath() +
+                File.separatorChar +
+                getName() + "_centera");
+        
+        // create caching content store with centera like backing store
+        store = new CachingContentStore(centeraLikeBackingStore, cache, true);
+        
+        ContentWriter writer1 = store.getWriter(new ContentContext(null, null));
+        // for centera like backing content store all writers have the same content url before content was written
+        assertEquals(TestCenteraLikeContentWriter.UNKNOWN_ID, writer1.getContentData().getContentUrl());
+        writer1.putContent(content1);
+        // after content was written into the backing store, content url should change
+        assertNotSame(TestCenteraLikeContentWriter.UNKNOWN_ID, writer1.getContentData().getContentUrl());
+        
+        // get another writer
+        ContentWriter writer2 = store.getWriter(new ContentContext(null, null));
+        // for centera like backing content store all writers have the same content url before content was written
+        assertEquals(TestCenteraLikeContentWriter.UNKNOWN_ID, writer2.getContentData().getContentUrl());
+        writer2.putContent(content2);
+        // after content was written into the backing store, content url should change
+        assertNotSame(TestCenteraLikeContentWriter.UNKNOWN_ID, writer2.getContentData().getContentUrl());
+        
+        // writers should have different content urls
+        assertNotSame(writer1.getContentData().getContentUrl(), writer2.getContentData().getContentUrl());
+        
+        ContentReader reader = store.getReader(writer1.getContentData().getContentUrl());
+        
+        assertEquals(content1, reader.getContentString());
     }
     
     /*

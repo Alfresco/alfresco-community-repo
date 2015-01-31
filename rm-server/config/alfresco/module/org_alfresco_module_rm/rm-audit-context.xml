@@ -85,4 +85,9 @@
       <property name="label" value="rm.audit.fileTo"/>
    </bean>
 
+   <bean id="audit-event.recordableVersionConfig" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.RecordableVersionPolicyAuditEvent">
+      <property name="name" value="recordableVersionConfig"/>
+      <property name="label" value="recordable-version-config"/>
+   </bean>
+
 </beans>

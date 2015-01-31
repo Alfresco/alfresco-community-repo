@@ -27,9 +27,9 @@ import static org.apache.commons.logging.LogFactory.getLog;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -46,7 +46,7 @@ import org.apache.commons.logging.Log;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordableVersionConfigAction extends AuditableActionExecuterAbstractBase
+public class RecordableVersionConfigAction extends ActionExecuterAbstractBase
 {
     /** Logger */
     private static Log LOGGER = getLog(RecordableVersionConfigAction.class);

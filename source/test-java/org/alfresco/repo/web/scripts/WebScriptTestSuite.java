@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2012 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -104,6 +104,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( FolderTemplateTest.class );
         suite.addTestSuite( DeclarativeSpreadsheetWebScriptTest.class );
         suite.addTestSuite( SlingshotContentGetTest.class);
+        suite.addTestSuite( XssVulnerabilityTest.class );
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

@@ -93,7 +93,7 @@ help() {
 	    echo "       $0 (start|stop|restart|status) subversion"
 	fi
 	if test -x $LIBREOFFICE_SCRIPT; then	
-	    echo "       $0 (start|stop|restart|status) libreoffice"
+	    echo "       $0 (start|stop|restart) libreoffice"
 	fi
         #RUBY_APPLICATION_HELP
 	if test -x $LUCENE_SCRIPT; then	
@@ -1052,10 +1052,6 @@ elif [ "x$1" = "xstatus" ]; then
             $MYSQL_SCRIPT status
             sleep 2
         fi        
-    elif [ "x$2" = "xlibreoffice" ]; then
-        if test -x $LIBREOFFICE_SCRIPT; then
-            $LIBREOFFICE_SCRIPT status
-        fi
     elif [ "x$2" = "xmongodb" ]; then
         if test -x $MONGODB_SCRIPT; then
             $MONGODB_SCRIPT status
@@ -1225,9 +1221,6 @@ elif [ "x$1" = "xstatus" ]; then
             sleep 3
         fi
 
-        if test -x $LIBREOFFICE_SCRIPT; then
-            $LIBREOFFICE_SCRIPT status
-        fi
         if test -x $MYSQL_SCRIPT; then
             $MYSQL_SCRIPT status
         fi

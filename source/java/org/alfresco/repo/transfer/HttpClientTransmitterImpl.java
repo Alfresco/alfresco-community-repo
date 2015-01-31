@@ -195,7 +195,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
             }
             else
             {
-                throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, error);
+                throw new TransferException(MSG_UNSUCCESSFUL_RESPONSE, new Object[] {methodName, response});
             }
         }
     }

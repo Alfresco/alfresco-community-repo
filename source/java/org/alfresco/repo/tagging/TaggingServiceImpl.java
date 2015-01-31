@@ -42,6 +42,7 @@ import org.alfresco.query.EmptyPagingResults;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.coci.CheckOutCheckInServicePolicies;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.CopyServicePolicies.BeforeCopyPolicy;
 import org.alfresco.repo.copy.CopyServicePolicies.OnCopyCompletePolicy;
@@ -238,6 +239,11 @@ public class TaggingServiceImpl implements TaggingService,
               OnCopyCompletePolicy.QNAME,
               ContentModel.ASPECT_TAGGABLE, 
               new JavaBehaviour(this, "onCopyComplete", NotificationFrequency.EVERY_EVENT));
+        
+        this.policyComponent.bindClassBehaviour(
+              CheckOutCheckInServicePolicies.OnCheckOut.QNAME,
+              ContentModel.ASPECT_TAGGABLE, 
+              new JavaBehaviour(this, "afterCheckOut", NotificationFrequency.EVERY_EVENT));
     }
     
     /**
@@ -298,7 +304,7 @@ public class TaggingServiceImpl implements TaggingService,
     public void beforeDeleteNode(NodeRef nodeRef)
     {
        if (this.nodeService.exists(nodeRef) == true &&          
-           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true)
+           this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TAGGABLE) == true && !this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
        {
            updateAllScopeTags(nodeRef, Boolean.FALSE);
        }
@@ -1506,6 +1512,15 @@ public class TaggingServiceImpl implements TaggingService,
      */
     public void flush()
     {
+    }
+    
+    public void afterCheckOut(NodeRef workingCopy)
+    {
+        if (this.nodeService.exists(workingCopy) == true && this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_TAGGABLE) == true
+                && this.nodeService.hasAspect(workingCopy, ContentModel.ASPECT_WORKING_COPY))
+        {
+            updateAllScopeTags(workingCopy, Boolean.FALSE);
+        }
     }
 
 }

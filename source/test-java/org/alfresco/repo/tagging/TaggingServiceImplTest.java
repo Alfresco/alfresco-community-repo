@@ -1175,8 +1175,8 @@ public class TaggingServiceImplTest extends TestCase
                 assertEquals(3, taggingService.findTagScope(testData.container1).getTags().size());
                 assertEquals(0, taggingService.findTagScope(testData.container2).getTags().size());
                 
-                assertEquals(3, taggingService.findTagScope(testData.container1).getTag("foo1").getCount());
-                assertEquals(2, taggingService.findTagScope(testData.container1).getTag("foo2").getCount());
+                assertEquals(2, taggingService.findTagScope(testData.container1).getTag("foo1").getCount());
+                assertEquals(1, taggingService.findTagScope(testData.container1).getTag("foo2").getCount());
                 assertEquals(1, taggingService.findTagScope(testData.container1).getTag("foo3").getCount());
                 
                 assertEquals(1, nodeService.getChildAssocs(testData.container1).size());

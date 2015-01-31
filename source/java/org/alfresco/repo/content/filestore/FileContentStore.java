@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.Deleter;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.BeansException;
@@ -72,7 +73,6 @@ public class FileContentStore
     
     private File rootDirectory;
     private String rootAbsolutePath;
-    private String rootCanonicalPath;
     private boolean allowRandomAccess;
     private boolean readOnly;
     private ApplicationContext applicationContext;
@@ -109,15 +109,6 @@ public class FileContentStore
         rootAbsolutePath = rootDirectory.getAbsolutePath();
         allowRandomAccess = true;
         readOnly = false;
-        
-        try
-        {
-            rootCanonicalPath = rootDirectory.getCanonicalPath();
-        }
-        catch (IOException e)
-        {
-            throw new ContentIOException("Failed to get store root canonical path: " + rootDirectory, e);
-        }
     }
     
     /**
@@ -696,17 +687,12 @@ public class FileContentStore
      */
     private void ensureFileInContentStore(File file)
     {
-        try
+        String fileNormalizedAbsoultePath = FilenameUtils.normalize(file.getAbsolutePath());
+        String rootNormalizedAbsolutePath = FilenameUtils.normalize(rootAbsolutePath);
+        
+        if (!fileNormalizedAbsoultePath.startsWith(rootNormalizedAbsolutePath))
         {
-            String fileCanonicalPath = file.getCanonicalPath();
-            if (!fileCanonicalPath.startsWith(rootCanonicalPath))
-            {
-                throw new ContentIOException("Access to files outside of content store root is not allowed: " + file);
-            }
-        }
-        catch (IOException e)
-        {
-            throw new ContentIOException("Failed to get file canonical path: " + file, e);
+            throw new ContentIOException("Access to files outside of content store root is not allowed: " + file);
         }
     }
 }

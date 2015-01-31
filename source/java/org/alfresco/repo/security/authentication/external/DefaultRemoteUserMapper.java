@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.authentication.external;
 
+import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +30,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.Base64;
 /**
  * A default {@link RemoteUserMapper} implementation. Extracts a user ID using
  * {@link HttpServletRequest#getRemoteUser()} and optionally from a configured request header. If there is no configured
@@ -219,6 +221,13 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
         {
             return null;
         }
+        
+        // MNT-11041 Share SSOAuthenticationFilter and non-ascii username strings
+        if (!Charset.forName("US-ASCII").newEncoder().canEncode(userId))
+        {
+            userId = new String(Base64.decode(userId.getBytes()));
+        }
+       
         if (this.userIdPattern == null)
         {
             userId = userId.trim();

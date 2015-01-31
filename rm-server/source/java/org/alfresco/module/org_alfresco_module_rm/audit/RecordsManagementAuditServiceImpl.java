@@ -1410,11 +1410,12 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
                 json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
 
-                if (entry.getEvent().equals("createPerson") && entry.getNodeRef() != null)
+                if (entry.getEvent().equals("Create Person") && entry.getNodeRef() != null)
                 {
                     NodeRef nodeRef = entry.getNodeRef();
                     String userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
                     json.put("nodeName", userName == null ? "": userName);
+                    json.put("createPerson", true);
                 }
                 else
                 {

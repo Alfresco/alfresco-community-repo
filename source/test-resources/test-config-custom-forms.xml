@@ -1,0 +1,83 @@
+<alfresco-config>
+
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="forms" class="org.alfresco.web.config.forms.FormsElementReader"/>
+      </element-readers>
+      <evaluators>
+         <evaluator id="node-type" class="org.alfresco.web.scripts.forms.FormUIGetRestApiTest$NodeTypeEvaluatorExtend" />
+      </evaluators>
+   </plug-ins>
+   
+	<!-- cm:folder type (existing nodes) -->
+   <config evaluator="node-type" condition="cm:folder" replace="true">
+      <forms>
+         <!-- Default form configuration for the cm:folder type -->
+         <form>
+            <field-visibility>
+               <show id="cm:name" />
+               <show id="cm:title" force="true" />
+               <show id="cm:description" force="true" />
+
+               <!-- cm:dublincore aspect -->
+               <show id="cm:publisher"/>
+               <show id="cm:contributor"/>
+               <show id="cm:type"/>
+               <show id="cm:identifier"/>
+               <show id="cm:dcsource"/>
+               <show id="cm:coverage"/>
+               <show id="cm:rights"/>
+               <show id="cm:subject"/>
+               
+               <!-- tags and categories -->
+               <show id="cm:taggable" for-mode="edit" force="true" />
+               <show id="cm:categories" />
+
+               <!-- emailserver:aliasable aspect -->
+               <show id="emailserver:alias" />
+            </field-visibility>
+            <appearance>
+               <field id="cm:name">
+                 <control>
+                    <control-param name="maxLength">255</control-param>
+                 </control>
+               </field>
+               <field id="cm:title">
+                  <control template="/org/alfresco/components/form/controls/textfield.ftl" />
+               </field>
+               <field id="cm:description">
+                  <control>
+                     <control-param name="activateLinks">true</control-param>
+                  </control>
+               </field>
+               <field id="cm:taggable">
+                  <control>
+                     <control-param name="compactMode">true</control-param>
+                     <control-param name="params">aspect=cm:taggable</control-param>
+                     <control-param name="createNewItemUri">/api/tag/workspace/SpacesStore</control-param>
+                     <control-param name="createNewItemIcon">tag</control-param>
+                  </control>
+               </field>
+               <field id="cm:categories">
+                  <control>
+                     <control-param name="compactMode">true</control-param>
+                  </control>
+               </field>
+
+               <set id="mySet" appearance="title" label="My Set" />
+               <field id="cm:subject" set="mySet">
+                   <control template="/org/alfresco/components/form/controls/textarea.ftl">
+                       <control-param name="rows">10</control-param>                        
+                   </control>
+               </field>
+               <field id="cm:publisher" set="mySet">
+                   <control>
+                       <control-param name="maxLength">255</control-param>
+                   </control>
+               </field>             
+                
+            </appearance>
+          </form>
+      </forms>
+   </config>
+</alfresco-config>

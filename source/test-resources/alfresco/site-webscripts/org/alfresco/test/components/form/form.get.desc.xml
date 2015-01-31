@@ -1,0 +1,5 @@
+<webscript>
+  <shortname>Form Component</shortname>
+  <description>Component that renders a form based on a repository form model</description>
+  <url>/test/components/form</url>
+</webscript>

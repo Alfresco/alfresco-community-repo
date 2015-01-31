@@ -152,6 +152,20 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-remote-api</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.extensions.surf</groupId>
+            <artifactId>spring-webscripts</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>${dependency.spring.version}</version>
@@ -428,9 +442,9 @@
                            </goals>
                            <configuration>
                              <includes>
-                               <include>**/org/alfresco/web/app/servlet/DefaultRemoteUserMapperTest.java</include>
-                               <include>**/org/alfresco/web/app/servlet/KerberosRemoteUserMapperTest.java</include>
-                               <include>**/org/alfresco/web/forms/FormsTest.java</include>
+                             <!--
+                               <include>**/FormUIGetRestApiIT.java</include>
+                               -->
                              </includes>
                            </configuration>
                         </execution>

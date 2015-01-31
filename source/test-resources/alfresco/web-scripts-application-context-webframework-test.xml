@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--              -->   
+   <!--  API Testing -->
+   <!--              -->   
+   
+   <bean id="webframework.store.classpath.abstract" class="org.springframework.extensions.webscripts.ClassPathStore" abstract="true" init-method="init" />
+
+   <bean id="webscripts.store.client.extension" parent="webframework.store.classpath.abstract">
+      <property name="mustExist"><value>true</value></property>
+      <property name="classPath"><value>alfresco/site-webscripts</value></property>
+   </bean>
+   
+   <bean id="webscripts.web.framework.test" class="org.springframework.extensions.webscripts.TestWebScriptServer">
+      <property name="container" ref="webscripts.container" />
+      <property name="configService" ref="web.config" />
+   </bean>
+   
+   <bean id="webscript.org.alfresco.test.components.form.form.get" class="org.alfresco.web.scripts.forms.FormUIGetRestApiTest.FormUIGetExtend" parent="webscript">
+      <property name="configService" ref="web.config" />
+   </bean>
+   
+</beans>

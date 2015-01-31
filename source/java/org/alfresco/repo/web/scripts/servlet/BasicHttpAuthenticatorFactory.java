@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -149,7 +149,9 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
                 logger.debug("HTTP Authorization provided: " + (authorization != null && authorization.length() > 0));
                 logger.debug("URL ticket provided: " + (ticket != null && ticket.length() > 0));
             }
-            
+
+            boolean doNotReportUrlTicketAuthenticationFailed = true;
+
             // If they requested explicit guest authentication,
             //  Authenticate as guest (if allowed)
             if (isGuest && RequiredAuthentication.guest == required)
@@ -171,23 +173,16 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
             }
             
             // authenticate as specified by explicit ticket on url
-            else if (ticket != null && ticket.length() > 0)
+            else if ((null != ticket) && (ticket.length() > 0) && (doNotReportUrlTicketAuthenticationFailed = isTicketValid()))
             {
-                try
+                if (logger.isDebugEnabled())
                 {
-                    if (logger.isDebugEnabled())
-                        logger.debug("Authenticating (URL argument) ticket " + ticket);
-        
-                    // assume a ticket has been passed
-                    authenticationService.validate(ticket);
-                    listener.userAuthenticated(new TicketCredentials(ticket));
-                    authorized = true;
+                    logger.debug("Authenticating (URL argument) ticket " + ticket);
                 }
-                catch(AuthenticationException e)
-                {
-                    // failed authentication
-                    listener.authenticationFailed(new TicketCredentials(ticket));
-                }
+
+                // assume a ticket has been passed
+                listener.userAuthenticated(new TicketCredentials(ticket));
+                authorized = true;
             }
             
             // authenticate as specified by HTTP Basic Authentication
@@ -238,6 +233,11 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
             
             if (!authorized)
             {
+                if(!doNotReportUrlTicketAuthenticationFailed)
+                {
+                    listener.authenticationFailed(new TicketCredentials(ticket));
+                }
+
                 if (logger.isDebugEnabled())
                     logger.debug("Requesting authorization credentials");
                 
@@ -246,7 +246,33 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
             }
             return authorized;
         }
-        
+
+        /**
+         * Checks if a user ticket is still valid
+         * 
+         * @return {@link Boolean} value: <code>true</code> if the ticket is still valid, <code>false</code> if the ticket is not valid any more
+         */
+        private boolean isTicketValid()
+        {
+            try
+            {
+                authenticationService.validate(ticket);
+                return true;
+            }
+            catch (AuthenticationException e)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("User ticket is not valid. Passing to the Basic authentication handling. Reqeust information:\n"
+                            + "    ticket: " + ticket + "\n"
+                            + "    request: " + servletReq.getQueryString() + "\n"
+                            + "    error: " + e, e);
+                }
+
+                return false;
+            }
+        }
+
         /* (non-Javadoc)
          * @see org.alfresco.web.scripts.Authenticator#emptyCredentials()
          */

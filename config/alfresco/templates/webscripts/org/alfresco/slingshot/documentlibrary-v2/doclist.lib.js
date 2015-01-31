@@ -255,6 +255,7 @@ function doclist_main()
                    container: parsedArgs.location.container,
                    containerType: parsedArgs.location.containerType,
                    path: parsedArgs.location.path,
+                   repoPath: parsedArgs.location.repoPath,
                    file: "<Broken Link>"
                 };
             }
@@ -280,6 +281,7 @@ function doclist_main()
                container: parsedArgs.location.container,
                containerType: parsedArgs.location.containerType,
                path: parsedArgs.location.path,
+               repoPath: parsedArgs.location.repoPath,
                file: node.name
             };
          }

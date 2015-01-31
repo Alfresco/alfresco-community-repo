@@ -33,6 +33,7 @@
       },
    </#if>
       "path": "${(item.location.path)!""}",
+      "repoPath": "${(item.location.repoPath)!""}",
       "file": "${(item.location.file)!""}",
       "parent":
       {

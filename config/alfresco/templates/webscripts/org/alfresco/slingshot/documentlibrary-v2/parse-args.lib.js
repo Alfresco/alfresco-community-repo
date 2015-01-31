@@ -161,6 +161,8 @@ var Common =
                file: node.name
             };
          }
+         // add repository path to response
+         location.repoPath = "/" + displayPaths.slice(2, displayPaths.length).join("/");
          
          return location;
       }
@@ -298,6 +300,10 @@ var ParseArgs =
       if (path !== "")
       {
          location.path = ParseArgs.combinePaths(location.path, location.file);
+      }
+      if (location.repoPath)
+      {
+          location.repoPath = ParseArgs.combinePaths(location.repoPath, location.file);
       }
       if (args.filter !== "node" && !pathNode.isContainer)
       {

@@ -267,12 +267,25 @@ function main()
           */
          if (uploadDirectory !== null && uploadDirectory.length > 0)
          {
-            destNode = destNode.childByNamePath(uploadDirectory);
-            if (destNode === null)
+            var child = destNode.childByNamePath(uploadDirectory);
+            if (child === null)
             {
                exitUpload(404, "Cannot upload file since upload directory '" + uploadDirectory + "' does not exist.");
                return;
             }
+
+            // MNT-12565
+            while (child.isDocument)
+            {
+               if (child.parent === null)
+               {
+                  exitUpload(404, "Cannot upload file. You do not have permissions to access the parent folder for the document.");
+                  return;
+               }
+               child = child.parent;
+            }
+
+            destNode = child;
          }
 
          /**

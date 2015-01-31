@@ -199,6 +199,7 @@ Inbound settings from iBatis
         <mapper resource="alfresco/ibatis/#resource.dialect#/locks-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/locks-insert-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/content-common-SqlMap.xml"/>
+        <mapper resource="alfresco/ibatis/#resource.dialect#/content-select-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/content-insert-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/node-common-SqlMap.xml"/>
         <mapper resource="alfresco/ibatis/#resource.dialect#/node-select-children-SqlMap.xml"/>

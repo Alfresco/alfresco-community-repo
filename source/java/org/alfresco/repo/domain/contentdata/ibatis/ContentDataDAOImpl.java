@@ -56,7 +56,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String SELECT_CONTENT_URL_BY_ID = "alfresco.content.select_ContentUrlById";
     private static final String SELECT_CONTENT_URL_BY_KEY = "alfresco.content.select_ContentUrlByKey";
     private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
-    private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select_ContentUrlsOrphaned";
+    private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select.select_ContentUrlsOrphaned";
     private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
     private static final String SELECT_CONTENT_DATA_BY_NODE_IDS = "alfresco.content.select_ContentDataByNodeIds";

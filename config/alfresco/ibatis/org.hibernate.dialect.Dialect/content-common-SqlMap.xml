@@ -271,22 +271,6 @@
             cd.id is null
     </select>
     
-    <!-- Get content URL entities that were orphaned before a give time -->
-    <select id="select_ContentUrlsOrphaned" parameterType="ContentUrlOrphanQuery" resultMap="result_ContentUrl">
-        <![CDATA[
-        select
-            cu.*
-        from
-            alf_content_url cu
-            left outer join alf_content_data cd on (cd.content_url_id = cu.id)
-        where
-            cd.id is null and
-            cu.orphan_time > 0 and
-            cu.orphan_time < #{maxOrphanTimeExclusive} and
-            cu.orphan_time is not null
-        ]]>
-    </select>
-    
     <!-- Update a specific mimetype -->
     <update id="update_Mimetype" parameterType="Mimetype">
         update

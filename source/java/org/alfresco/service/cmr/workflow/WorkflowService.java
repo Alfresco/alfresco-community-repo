@@ -300,7 +300,8 @@ public interface WorkflowService
     public WorkflowInstance getWorkflowById(String workflowId);
     
     /**
-     * Gets all Paths for the specified Workflow instance
+     * Gets all Paths for the specified Workflow instance.
+     * NOTE: It only returns information for an active Workflow instance.
      * 
      * @param workflowId  workflow instance id
      * @return  the list of workflow paths

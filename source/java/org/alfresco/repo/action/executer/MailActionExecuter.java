@@ -884,8 +884,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     
                     // set subject line
                     String subject = (String)ruleAction.getParameterValue(PARAM_SUBJECT);
-                    Object[] subjectParams = (Object[])ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
-                    String localizedSubject = getLocalizedSubject(subject, subjectParams, locale);
+                    List<Object> subjectParams = (List<Object>)ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
+                    String localizedSubject = getLocalizedSubject(subject, subjectParams.toArray(), locale);
                     if (locale == null)
                     {
                         // process the template against the model
@@ -954,7 +954,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
         } catch (Exception e)
         {
             // We're forced to catch java.lang.Exception here. Urgh.
-            if (logger.isInfoEnabled())
+            if (logger.isWarnEnabled())
             {
                 logger.warn("Unable to prepare mail message. Skipping.", e);
             }

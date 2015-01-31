@@ -82,7 +82,9 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.tagging.TaggingService;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -2752,5 +2754,250 @@ public class CMISTest
         };
 
         withCmisService(callback, CmisVersion.CMIS_1_1);
+    }
+
+    /**
+     * Test to ensure auto version behavior for update properties, set and delete content using both Alfresco and CMIS perspectives.
+     * Testing different combinations of <b>cm:initialVersion</b>, <b>cm:autoVersion</b> and <b>cm:autoVersionOnUpdateProps</b> properties 
+     * <br>
+     * OnUpdateProperties MINOR version should be created if <b>cm:initialVersion</b> and <b>cm:autoVersionOnUpdateProps</b> are both TRUE
+     * <br>
+     * OnContentUpdate MINOR version should be created if <b>cm:initialVersion</b> and <b>cm:autoVersion</b> are both TRUE
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testUpdatePropertiesSetDeleteContentVersioning() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final String FOLDER = "testUpdatePropertiesSetDeleteContentVersioning-" + GUID.generate();
+        final String DOC1 = "documentProperties1-" + GUID.generate();
+        final String DOC2 = "documentProperties2-" + GUID.generate();
+        final String DOC3 = "documentProperties3-" + GUID.generate();
+        final String DOC4 = "documentProperties4-" + GUID.generate();
+        
+        try
+        {
+            final List<FileInfo> docs = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<FileInfo>>()
+            {
+                @Override
+                public List<FileInfo> execute() throws Throwable
+                {
+                    // create folder
+                    FileInfo folderInfo = fileFolderService.create(repositoryHelper.getCompanyHome(), FOLDER, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, FOLDER);
+                    assertNotNull(folderInfo);
+
+                    FileInfo document;
+                    List<FileInfo> docs = new ArrayList<FileInfo>();
+                    // create documents
+                    document = fileFolderService.create(folderInfo.getNodeRef(), DOC1, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOC1);
+                    docs.add(document);
+                    document = fileFolderService.create(folderInfo.getNodeRef(), DOC2, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOC2);
+                    docs.add(document);
+                    document = fileFolderService.create(folderInfo.getNodeRef(), DOC3, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOC3);
+                    docs.add(document);
+                    document = fileFolderService.create(folderInfo.getNodeRef(), DOC4, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOC4);
+                    docs.add(document);
+                    
+                    Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                    props.put(ContentModel.PROP_TITLE, "Initial Title");
+                    props.put(ContentModel.PROP_DESCRIPTION, "Initial Description");
+                    
+                    for (FileInfo fileInfo : docs)
+                    {
+                        nodeService.addAspect(fileInfo.getNodeRef(), ContentModel.ASPECT_TITLED, props);
+                    }
+                    
+                    // apply versionable aspect with properties
+                    props = new HashMap<QName, Serializable>();
+                    // ContentModel.PROP_INITIAL_VERSION always true
+                    props.put(ContentModel.PROP_INITIAL_VERSION, true);
+                    
+                    props.put(ContentModel.PROP_AUTO_VERSION, false);
+                    props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+                    versionService.ensureVersioningEnabled(docs.get(0).getNodeRef(), props);
+                    
+                    props.put(ContentModel.PROP_AUTO_VERSION, false);
+                    props.put(ContentModel.PROP_AUTO_VERSION_PROPS, true);
+                    versionService.ensureVersioningEnabled(docs.get(1).getNodeRef(), props);
+                    
+                    props.put(ContentModel.PROP_AUTO_VERSION, true);
+                    props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+                    versionService.ensureVersioningEnabled(docs.get(2).getNodeRef(), props);
+                    
+                    props.put(ContentModel.PROP_AUTO_VERSION, true);
+                    props.put(ContentModel.PROP_AUTO_VERSION_PROPS, true);
+                    versionService.ensureVersioningEnabled(docs.get(3).getNodeRef(), props);
+
+                    return docs;
+                }
+            });
+            
+            assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(1).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(2).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(3).getNodeRef(), "1.0", VersionType.MAJOR);
+            
+            // update node properties using Alfresco
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
+            {
+                @Override
+                public List<Void> execute() throws Throwable
+                {
+                    for (FileInfo fileInfo : docs)
+                    {
+                        Map<QName, Serializable> props = nodeService.getProperties(fileInfo.getNodeRef());
+                        
+                        props.put(ContentModel.PROP_DESCRIPTION, "description-" + GUID.generate());
+                        props.put(ContentModel.PROP_TITLE, "title-" + GUID.generate());
+                        
+                        nodeService.setProperties(fileInfo.getNodeRef(), props);
+                    }
+                    return null;
+                }
+            });
+            
+            assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(1).getNodeRef(), "1.1", VersionType.MINOR);
+            assertVersions(docs.get(2).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(3).getNodeRef(), "1.1", VersionType.MINOR);
+            
+            // update properties using CMIS perspective 
+            final String repositoryId = withCmisService(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+                    
+                    for (FileInfo fileInfo : docs)
+                    {
+                        PropertiesImpl properties = new PropertiesImpl();
+                        properties.addProperty(new PropertyStringImpl(PropertyIds.DESCRIPTION, "description-" + GUID.generate()));
+                        
+                        cmisService.updateProperties(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), null, properties, null);
+                    }
+                    
+                    return repositoryId;
+                }
+            }, CmisVersion.CMIS_1_1);
+            
+            assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
+            assertVersions(docs.get(2).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(3).getNodeRef(), "1.2", VersionType.MINOR);
+            
+            // CMIS setContentStream
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    for (FileInfo fileInfo : docs)
+                    {
+                        ContentStreamImpl contentStream = new ContentStreamImpl(null, MimetypeMap.MIMETYPE_TEXT_PLAIN, "Content " + GUID.generate());
+                        
+                        cmisService.setContentStream(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), true, null, contentStream, null);
+                    }
+                    return null;
+                }
+            }, CmisVersion.CMIS_1_1);
+            
+            assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
+            assertVersions(docs.get(2).getNodeRef(), "1.1", VersionType.MINOR);
+            assertVersions(docs.get(3).getNodeRef(), "1.3", VersionType.MINOR);
+            
+            // update content using Alfresco
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
+            {
+                @Override
+                public List<Void> execute() throws Throwable
+                {
+                    for (FileInfo fileInfo : docs)
+                    {
+                        ContentWriter writer = contentService.getWriter(fileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                        writer.putContent("Content " + GUID.generate());
+                    }
+                    return null;
+                }
+            });
+            
+            assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
+            assertVersions(docs.get(2).getNodeRef(), "1.2", VersionType.MINOR);
+            assertVersions(docs.get(3).getNodeRef(), "1.4", VersionType.MINOR);
+            
+            // CMIS deleteContentStream
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    for (FileInfo fileInfo : docs)
+                    {
+                        cmisService.deleteContentStream(repositoryId, new Holder<String>(fileInfo.getNodeRef().toString()), null, null);
+                    }
+                    return null;
+                }
+            }, CmisVersion.CMIS_1_1);
+            
+            assertVersions(docs.get(0).getNodeRef(), "1.0", VersionType.MAJOR);
+            assertVersions(docs.get(1).getNodeRef(), "1.2", VersionType.MINOR);
+            assertVersions(docs.get(2).getNodeRef(), "1.3", VersionType.MINOR);
+            assertVersions(docs.get(3).getNodeRef(), "1.5", VersionType.MINOR);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    private void assertVersions(final NodeRef nodeRef, final String expectedVersionLabel, final VersionType expectedVersionType)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
+        {
+            @Override
+            public List<Void> execute() throws Throwable
+            {
+                assertTrue("Node should be versionable", nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE));
+                
+                Version version = versionService.getCurrentVersion(nodeRef);
+                
+                assertNotNull(version);
+                assertEquals(expectedVersionLabel, version.getVersionLabel());
+                assertEquals(expectedVersionType, version.getVersionType());
+                
+                return null;
+            }
+        });
+        
+        withCmisService(new CmisServiceCallback<Void>()
+        {
+            @Override
+            public Void execute(CmisService cmisService)
+            {
+                String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+                
+                ObjectData data = 
+                    cmisService.getObjectOfLatestVersion(repositoryId, nodeRef.toString(), null, Boolean.FALSE, null, null, null, null, null, null, null);
+                
+                assertNotNull(data);
+                
+                PropertyData<?> prop = data.getProperties().getProperties().get(PropertyIds.VERSION_LABEL);
+                Object versionLabelCmisValue = prop.getValues().get(0);
+                
+                assertEquals(expectedVersionLabel, versionLabelCmisValue);
+                
+                return null;
+            }
+        }, CmisVersion.CMIS_1_1);
     }
 }

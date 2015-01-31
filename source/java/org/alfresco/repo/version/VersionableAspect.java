@@ -432,6 +432,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                     // Create the auto-version
                     Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(1);
                     versionProperties.put(Version.PROP_DESCRIPTION, I18NUtil.getMessage(MSG_AUTO_VERSION));
+                    versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                     
                     createVersionImpl(nodeRef, versionProperties);
                 }
@@ -463,24 +464,15 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
                 Map<NodeRef, NodeRef> versionedNodeRefs = (Map)AlfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
                 if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)
                 {
-                    // Determine whether the node is auto versionable (for property only updates) or not
-                    boolean autoVersion = false;
-                    Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION);
-                    if (value != null)
-                    {
-                        // If the value is not null then 
-                        autoVersion = value.booleanValue();
-                    }
-                    
                     boolean autoVersionProps = false;
-                    value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION_PROPS);
+                    Boolean value = (Boolean)this.nodeService.getProperty(nodeRef, ContentModel.PROP_AUTO_VERSION_PROPS);
                     if (value != null)
                     {
                         // If the value is not null then 
                         autoVersionProps = value.booleanValue();
                     }
                     
-                    if ((autoVersion == true) && (autoVersionProps == true))
+                    if (autoVersionProps == true)
                     {
                         // Check for explicitly excluded props - if one or more excluded props changes then do not auto-version on this event (even if other props changed)
                         if (excludedOnUpdatePropQNames.size() > 0)

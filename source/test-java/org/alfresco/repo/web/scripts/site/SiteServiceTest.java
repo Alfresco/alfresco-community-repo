@@ -415,16 +415,22 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // Check the everyone has the correct membership
         // (The webscript returns the users in order to make testing easier)
-        membership = result3.getJSONObject(0);
-        assertEquals(SiteModel.SITE_MANAGER, membership.get("role"));
+        Map<String, JSONObject> membershipMap = new HashMap<String, JSONObject>();
+        for (int i = 0 ; i < membership.length(); i++)
+        {
+            membershipMap.put(result3.getJSONObject(i).getString("role"), result3.getJSONObject(i));
+        }
+
+        membership = membershipMap.get(SiteModel.SITE_MANAGER);
+        assertNotNull("The response did not contain " + SiteModel.SITE_MANAGER, membership);
         assertEquals(USER_ONE, membership.getJSONObject("authority").get("userName"));
         
-        membership = result3.getJSONObject(1);
-        assertEquals(SiteModel.SITE_CONSUMER, membership.get("role"));
+        membership = membershipMap.get(SiteModel.SITE_CONSUMER);
+        assertNotNull("The response did not contain " + SiteModel.SITE_CONSUMER, membership);
         assertEquals(USER_TWO, membership.getJSONObject("authority").get("userName"));
         
-        membership = result3.getJSONObject(2);
-        assertEquals(SiteModel.SITE_CONTRIBUTOR, membership.get("role"));
+        membership = membershipMap.get(SiteModel.SITE_CONTRIBUTOR);
+        assertNotNull("The response did not contain " + SiteModel.SITE_CONTRIBUTOR, membership);
         assertEquals(USER_NUMERIC, membership.getJSONObject("authority").get("userName"));
     }
     

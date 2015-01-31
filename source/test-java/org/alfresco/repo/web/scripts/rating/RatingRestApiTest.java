@@ -19,6 +19,8 @@
 package org.alfresco.repo.web.scripts.rating;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.model.Repository;
@@ -145,15 +147,22 @@ public class RatingRestApiTest extends BaseWebScriptTest
         JSONArray ratingSchemesArray = (JSONArray)dataObj.get(RATING_SCHEMES);
         assertNotNull("JSON 'ratingSchemesArray' object was null", ratingSchemesArray);
         assertEquals(2, ratingSchemesArray.length());
-        
-        JSONObject scheme1 = ratingSchemesArray.getJSONObject(0);
-        JSONObject scheme2 = ratingSchemesArray.getJSONObject(1);
-        
-        assertEquals(LIKES_RATING_SCHEME, scheme1.getString(NAME));
+
+        // The array's objects may be in different order
+        Map<String, JSONObject> ratingsMap = new HashMap<String, JSONObject>();
+        for (int i = 0 ; i < ratingSchemesArray.length(); i++)
+        {
+            ratingsMap.put(ratingSchemesArray.getJSONObject(i).getString(NAME), ratingSchemesArray.getJSONObject(i));
+        }
+
+        JSONObject scheme1 = ratingsMap.get(LIKES_RATING_SCHEME);
+        JSONObject scheme2 = ratingsMap.get(FIVE_STAR_RATING_SCHEME);
+
+        assertNotNull("The response did not contain " + LIKES_RATING_SCHEME, scheme1);
         assertEquals(1.0, scheme1.getDouble(MIN_RATING));
         assertEquals(1.0, scheme1.getDouble(MAX_RATING));
         assertTrue(scheme1.getBoolean("selfRatingAllowed"));
-        assertEquals(FIVE_STAR_RATING_SCHEME, scheme2.getString(NAME));
+        assertNotNull("The response did not contain " + FIVE_STAR_RATING_SCHEME, scheme2);
         assertEquals(1.0, scheme2.getDouble(MIN_RATING));
         assertEquals(5.0, scheme2.getDouble(MAX_RATING));
         assertFalse(scheme2.getBoolean("selfRatingAllowed"));

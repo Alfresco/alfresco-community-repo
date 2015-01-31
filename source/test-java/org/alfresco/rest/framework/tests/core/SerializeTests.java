@@ -1,5 +1,6 @@
 package org.alfresco.rest.framework.tests.core;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -57,6 +58,9 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.schema.JsonSchema;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -397,7 +401,7 @@ public class SerializeTests
     }
     
     @Test
-    public void testFilter() throws IOException
+    public void testFilter() throws IOException, JSONException
     {
         assertNotNull(helper);
         BeanPropertiesFilter theFilter  = ResourceWebScriptHelper.getFilter("age");
@@ -408,14 +412,24 @@ public class SerializeTests
         theFilter = ResourceWebScriptHelper.getFilter("age,name");
         res = new ExecutionResult(new Sheep("bob"),theFilter);  
         out = writeResponse(res);
-        assertTrue("Filter must return the age and name.", StringUtils.contains(out, "{\"age\":3,\"name\":\"Dolly\"}"));
+        JSONObject jsonRsp = new JSONObject(new JSONTokener(out));
+        JSONObject entry = jsonRsp.getJSONObject("entry");
+        assertEquals("The name should be 'Dolly'", "Dolly", entry.getString("name"));
+        assertTrue("The age should be 3", entry.getInt("age") == 3);
         
         Api v3 = Api.valueOf(api.getName(), api.getScope().toString(), "3");
         Map<String, BeanPropertiesFilter> relFiler = ResourceWebScriptHelper.getRelationFilter("herd");
         res = helper.postProcessResponse(v3,"goat",ParamsExtender.valueOf(relFiler, "notUsed"),new SlimGoat()); 
         out = writeResponse(res);
-        assertTrue("Must return a full herd.", StringUtils.contains(out, "{\"name\":\"bigun\",\"quantity\":56}"));
-        
+        jsonRsp = new JSONObject(new JSONTokener(out));
+        entry = jsonRsp.getJSONObject("relations")
+                .getJSONObject("herd")
+                .getJSONObject("list")
+                .getJSONArray("entries").getJSONObject(0)
+                .getJSONObject("entry");
+        assertEquals("The name should be 'bigun'", "bigun", entry.getString("name"));
+        assertTrue("The quantity should be 56", entry.getInt("quantity") == 56);
+
         relFiler = ResourceWebScriptHelper.getRelationFilter("herd(name)");
         res = helper.postProcessResponse(v3,"goat",ParamsExtender.valueOf(relFiler, "notUsed"),new SlimGoat()); 
         out = writeResponse(res);

@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.rule.ruletrigger;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -43,8 +45,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
 {
     /** the types (hardcoded) to ignore generally */
     private static final Set<QName> IGNORE_TYPES;
-    /** the aspects (hardcoded) to ignore generally */
-    private static final Set<QName> IGNORE_ASPECTS;
+    
     static
     {
         IGNORE_TYPES = new HashSet<QName>(13);
@@ -54,15 +55,13 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
         // Workaround to prevent rules running on cm:rating nodes (which happened for 'liked' folders ALF-8308 & ALF-8382)
         IGNORE_TYPES.add(ContentModel.TYPE_RATING);
         IGNORE_TYPES.add(ContentModel.TYPE_SYSTEM_FOLDER);
-
-        IGNORE_ASPECTS = new HashSet<QName>(13);
-        IGNORE_ASPECTS.add(ContentModel.ASPECT_TEMPORARY);
     }
     
     /**
      * A list of the rule types that are interested in this trigger
      */
     private Set<RuleType> ruleTypes = new HashSet<RuleType>();
+    private Set<QName> ignoredAspects = Collections.emptySet();
 
     protected PolicyComponent policyComponent;
     protected NodeService nodeService;
@@ -183,7 +182,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
      * @param actionedUponNodeRef	  actioned upon node reference
      * @return boolean				  true if the trigger should be ignored, false otherwise
      */
-    private boolean ignoreTrigger(NodeRef actionedUponNodeRef)
+    protected boolean ignoreTrigger(NodeRef actionedUponNodeRef)
     {
     	boolean result = false;    	
     	QName typeQName = nodeService.getType(actionedUponNodeRef);
@@ -191,7 +190,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     	{
     		result = true;
     	}
-    	for (QName aspectToIgnore : IGNORE_ASPECTS)
+        for (QName aspectToIgnore : getIgnoredAspects())
         {
             if (nodeService.hasAspect(actionedUponNodeRef, aspectToIgnore))
             {
@@ -199,5 +198,29 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
             }
         }
     	return result;
+    }
+    
+    public Set<QName> getIgnoredAspects()
+    {
+        return ignoredAspects;
+    }
+    
+    /**
+     * Converting String Aspects from Spring context to QNames
+     *
+     * @param ignoredAspects List of ignoredAspects
+     */
+    public void setIgnoredAspectsStr(List<String> ignoredAspects)
+    {
+        this.ignoredAspects = new HashSet<>(13);
+        
+        // MNT-9885 fix.
+        // Converts String Aspects to QNames and adds it to ignoredAspects.
+        // If afterDictionaryInit#DictionaryListener is used for setting up ignored Aspects from Spring context the
+        // registerRuleTrigger#CreateNodeRuleTrigger is initialized before afterDictionaryInit#DictionaryListener
+        for (String ignoredAspectStr : ignoredAspects)
+        {
+            this.ignoredAspects.add(QName.createQName(ignoredAspectStr));
+        }
     }
 }

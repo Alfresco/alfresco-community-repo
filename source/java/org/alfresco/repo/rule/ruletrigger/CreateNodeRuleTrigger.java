@@ -96,16 +96,19 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
 					new JavaBehaviour(this, POLICY));
 		}	
 		
-		// Register interest in the addition and removal of the sys:noContent aspect
-		this.policyComponent.bindClassBehaviour(
-		        NodeServicePolicies.OnAddAspectPolicy.QNAME, 
-		        ContentModel.ASPECT_NO_CONTENT, 
-		        new JavaBehaviour(this, "onAddAspect", NotificationFrequency.EVERY_EVENT));
-		this.policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
-                ContentModel.ASPECT_NO_CONTENT, 
-                new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
-	}
+        for (QName ignoreAspect : getIgnoredAspects())
+        {
+            // Register interest in the addition and removal of the sys:noContent aspect
+            this.policyComponent.bindClassBehaviour(
+                    NodeServicePolicies.OnAddAspectPolicy.QNAME, 
+                    ignoreAspect, 
+                    new JavaBehaviour(this, "onAddAspect", NotificationFrequency.EVERY_EVENT));
+            this.policyComponent.bindClassBehaviour(
+                    NodeServicePolicies.OnRemoveAspectPolicy.QNAME, 
+                    ignoreAspect, 
+                    new JavaBehaviour(this, "onRemoveAspect", NotificationFrequency.EVERY_EVENT));
+        }
+    }
     
     /**
      * {@inheritDoc}
@@ -186,6 +189,10 @@ public class CreateNodeRuleTrigger extends RuleTriggerAbstractBase
                     " (this was triggered on removal of the noContent aspect)");
         }
         
-        triggerRules(parentNodeRef, nodeRef);
+        // Do not trigger rules for rule and action type nodes
+        if (ignoreTrigger(nodeRef) == false)
+        {
+            triggerRules(parentNodeRef, nodeRef);
+        }
     }
 }

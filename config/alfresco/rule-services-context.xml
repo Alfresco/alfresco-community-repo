@@ -98,6 +98,12 @@
       <property name="authenticationComponent" ref="authenticationComponent"/>
       <property name="dictionaryService" ref="dictionaryService"/>
       <property name="ruleService" ref="ruleService"/>
+      <property name="ignoredAspectsStr">
+         <list>
+            <value>{http://www.alfresco.org/model/system/1.0}noContent</value>
+            <value>{http://www.alfresco.org/model/system/1.0}temporary</value>
+         </list>
+      </property>
    </bean>
    
    <bean id="on-create-node-trigger" class="org.alfresco.repo.rule.ruletrigger.CreateNodeRuleTrigger" parent="rule-trigger-base">

@@ -1340,4 +1340,78 @@ public class RuleServiceImplTest extends BaseRuleTest
         assertFalse("The folder should be deleted.", nodeService.exists(parentFolderNodeRef));
         txn.commit();
     }
+    
+    /**
+     * MNT-9885. Testing rule trigger after removing Temporary Aspect from the node.
+     * 
+     * @throws Exception
+     */
+    public void testRuleTriggerWithTemporaryFiles() throws Exception
+    {
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        NodeRef parentNodeRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER).getChildRef();
+
+        QName actionedQName = QName.createQName("actioneduponnode" + GUID.generate());
+        // New child node
+        NodeRef actionedUponNodeRef = this.nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CHILDREN,
+                actionedQName, ContentModel.TYPE_CONTENT).getChildRef();
+
+        // Add Temporary Aspect to the child Node
+        this.nodeService.addAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+
+        // Write some content to the child node
+        ContentWriter writer = this.contentService.getWriter(actionedUponNodeRef, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype("text/plain");
+        writer.putContent("TestContent");
+
+        // Create rule for Versionable Aspect
+        Rule testRule = new Rule();
+        testRule.setRuleTypes(Collections.singletonList(RuleType.INBOUND));
+        testRule.setTitle("RuleServiceTest" + GUID.generate());
+        testRule.setDescription(DESCRIPTION);
+        testRule.applyToChildren(true);
+
+        Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        action.setParameterValue(AddFeaturesActionExecuter.PARAM_ASPECT_NAME, ContentModel.ASPECT_VERSIONABLE);
+        testRule.setAction(action);
+
+        this.ruleService.saveRule(parentNodeRef, testRule);
+        assertNotNull("Rule was not saved", testRule.getNodeRef());
+
+        // Search rules
+        List<Rule> rules = this.ruleService.getRules(parentNodeRef, true, testRule.getRuleTypes().get(0));
+        assertNotNull("No rules found", rules);
+        assertTrue("Created rule is not found", new HashSet<>(rules).contains(testRule));
+
+        txn.commit();
+
+        // Remove Temporary Aspect from child node
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        assertTrue("Node has Temporary aspect: ", this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY));
+        assertFalse("Node with Temporary aspect has versionable aspect: ", this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+        // Removing Tempporary aspect
+        this.nodeService.removeAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY);
+
+        txn.commit();
+
+        // Add rule for parent Node
+        ((RuntimeRuleService) ruleService).addRulePendingExecution(parentNodeRef, actionedUponNodeRef, testRule);
+        ((RuntimeRuleService) ruleService).executePendingRules();
+
+        assertTrue("Pending rule was not executed",
+                this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE));
+        assertFalse("Node has temporary aspect",
+                this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_TEMPORARY));
+        assertTrue("Node has versionable aspect",
+                this.nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+        this.nodeService.deleteNode(actionedUponNodeRef);
+        this.nodeService.deleteNode(parentNodeRef);
+    }
 }

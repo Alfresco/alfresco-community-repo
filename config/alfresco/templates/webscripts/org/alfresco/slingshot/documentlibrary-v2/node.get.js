@@ -30,13 +30,14 @@ function getDoclist()
    {
       site: parsedArgs.location.site,
       siteTitle: parsedArgs.location.siteTitle,
+      sitePreset: parsedArgs.location.sitePreset,
       container: parsedArgs.location.container,
       containerType: parsedArgs.location.containerType,
       path: parsedArgs.location.path,
       file: node.name
    };
 
-   item.parent = {};
+   item.parent = null;
    if (node.parent != null && node.parent.isContainer && node.parent.hasPermission("Read"))
    {
       item.parent = Evaluator.run(node.parent, true);

@@ -29,7 +29,7 @@ public class IndexRecoveryBootstrapBean extends AbstractLifecycleBean
     protected final static Log log = LogFactory.getLog(IndexRecoveryBootstrapBean.class);
 
     IndexRecovery indexRecoveryComponent;
-
+    
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -37,7 +37,7 @@ public class IndexRecoveryBootstrapBean extends AbstractLifecycleBean
 
         log.info("Checking/Recovering indexes ...");
         indexRecoveryComponent.reindex();
-        
+
     }
 
     @Override

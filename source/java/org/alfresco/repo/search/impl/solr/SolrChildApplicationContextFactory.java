@@ -137,11 +137,11 @@ public class SolrChildApplicationContextFactory extends ChildApplicationContextF
 
                 if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_ACTIVE))
                 {
-                	if(alfrescoActive == null || alfrescoActive.isEmpty())
-                	{
-                		// Admin Console is expecting a true/false value, not blank 
-                		return "false";
-                	}
+                    if (alfrescoActive == null || alfrescoActive.isEmpty())
+                    {
+                        // Admin Console is expecting a true/false value, not blank
+                        return "false";
+                    }
                     return alfrescoActive;
                 }
                 else if (name.equals(SolrChildApplicationContextFactory.ALFRESCO_LAG))

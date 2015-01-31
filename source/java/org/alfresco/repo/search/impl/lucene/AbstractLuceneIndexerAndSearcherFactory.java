@@ -771,7 +771,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
             {
                 for (LuceneIndexer indexer : indexers.values())
                 {
-                    if(destroyed && Thread.currentThread().isDaemon())
+                    if (destroyed && Thread.currentThread().isDaemon())
                     {
                         rollback();
                         throw new IndexerException("Destroyed ..");

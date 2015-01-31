@@ -57,6 +57,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -853,10 +854,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                 
                 if (! headVersion)
                 {
-                    if (logger.isDebugEnabled())
-                    {
-                        logger.debug("Unexpected: current version does not appear to be 1st version in the list  ["+versionHistoryRef+", "+nodeRef+"]");
-                    }
+                    throw new ConcurrencyFailureException("Unexpected: current version does not appear to be 1st version in the list  ["+versionHistoryRef+", "+nodeRef+"]");
                 }
                 
                 result = new Pair<Boolean, Version>(headVersion, getVersion(versionAssoc.getChildRef()));

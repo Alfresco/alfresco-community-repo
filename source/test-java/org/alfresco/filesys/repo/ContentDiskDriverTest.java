@@ -3227,6 +3227,250 @@ public class ContentDiskDriverTest extends TestCase
     }
 
     /**
+     * Excel 2013 With Versionable file  (MNT-13078)
+     *
+     * CreateFile Cherries.xlsx
+     * CreateFile ~herries.tmp
+     * CreateFile Cherries.xlsx~RF172f241.TMP
+     * DeleteFile Cherries.xlsx~RF172f241.TMP
+     * RenameFile oldName: Cherries.xls,
+     *            newName: Cherries.xlsx~RF172f241.TMP
+     * Delete On Close for Cherries.xlsx~RF172f241.TMP
+     * RenameFile oldName: ~herries.tmp,
+     *            newName: Cherries.xlsx
+     *
+     */
+    public void testExcel2013SaveShuffle() throws Exception
+    {
+        logger.debug("testScenarioExcel2013SaveShuffle");
+        final String FILE_NAME = "Cherries.xlsx";
+        final String FILE_ORIGINAL_TITLE = "Original";
+        final String FILE_UNUSED_TEMP = "Cherries.xlsx~RF172f241.TMP";
+        final String FILE_USED_TEMP = "~herries.tmp";
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testScenarioMSExcel2013SaveShuffle";
+
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            NodeRef testNodeRef;   // node ref of test.doc
+        };
+
+        final TestContext testContext = new TestContext();
+
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+
+        /**
+         * Delete a file in the test directory
+         */
+
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+
+        /**
+         * Create a file in the test directory
+         */
+        RetryingTransactionCallback<Void> createOriginalFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable {
+
+               /**
+                * Create the test directory we are going to use
+                */
+               FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+               FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+               driver.createDirectory(testSession, testConnection, createRootDirParams);
+               driver.createDirectory(testSession, testConnection, createDirParams);
+
+               /**
+                * Create the file we are going to use
+                */
+               FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+               testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+               assertNotNull(testContext.firstFileHandle);
+               String testContent = "MS Word 2013 shuffle test. This is first file content";
+               byte[] testContentBytes = testContent.getBytes();
+               testContext.firstFileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+               testContext.firstFileHandle.close();
+
+               // now load up the node with lots of other stuff that we will test to see if it gets preserved during the
+               // shuffle.
+               testContext.testNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+
+               nodeService.addAspect(testContext.testNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+               // need to remove. Otherwise file will be deleted (not placed into archive spaces store)
+               nodeService.removeAspect(testContext.testNodeRef, ContentModel.ASPECT_NO_CONTENT);
+               // test non CM namespace property
+               nodeService.setProperty(testContext.testNodeRef, TransferModel.PROP_ENABLED, true);
+
+               nodeService.setProperty(testContext.testNodeRef, ContentModel.PROP_TITLE, FILE_ORIGINAL_TITLE);
+
+               return null;
+            }
+        };
+        tran.doInTransaction(createOriginalFileCB, false, true);
+
+        /**
+         * Create a file in the test directory
+         */
+        RetryingTransactionCallback<Void> createUsedTempFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+
+                /**
+                 * Create the file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_USED_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                NetworkFile fileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(fileHandle);
+                String testContent = "MS Word 2013 shuffle test. This is used file content";
+                byte[] testContentBytes = testContent.getBytes();
+                fileHandle.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+                fileHandle.close();
+
+                NodeRef usedRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_USED_TEMP);
+
+                nodeService.addAspect(usedRef, ContentModel.ASPECT_VERSIONABLE, null);
+                nodeService.removeAspect(usedRef, ContentModel.ASPECT_NO_CONTENT);
+                nodeService.setProperty(usedRef, ContentModel.PROP_TITLE, "Used");
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createUsedTempFileCB, false, true);
+
+        /**
+         * Create a file in the test directory
+         */
+        RetryingTransactionCallback<Void> createUnusedTempFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+
+                /**
+                 * Create the file we are going to use
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_UNUSED_TEMP, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                NetworkFile unusedFile = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(unusedFile);
+
+                NodeRef unusedNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_UNUSED_TEMP);
+                nodeService.addAspect(unusedNodeRef, ContentModel.ASPECT_VERSIONABLE, null);
+                nodeService.setProperty(unusedNodeRef, TransferModel.PROP_ENABLED, true);
+                nodeService.setProperty(unusedNodeRef, ContentModel.PROP_TITLE, "Unused");
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createUnusedTempFileCB, false, true);
+
+        /**
+         * Delete unused temporary file
+         */
+        RetryingTransactionCallback<Void> deleteUnusedFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                try
+                {
+                    driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_UNUSED_TEMP);
+                }
+                catch (IOException e)
+                {
+                    // expect to go here since previous step renamed the file.
+                }
+
+                return null;
+            }
+        };
+        tran.doInTransaction(deleteUnusedFileCB, false, true);
+
+        /**
+         * Rename the original file to unused file
+         */
+        RetryingTransactionCallback<Void> renameToUnusedFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME, TEST_DIR + "\\" + FILE_UNUSED_TEMP);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameToUnusedFileCB, false, true);
+
+        /**
+         * Delete unused temporary file
+         */
+        tran.doInTransaction(deleteUnusedFileCB, false, true);
+
+        /**
+         * Rename the used temporary file to original file
+         */
+        RetryingTransactionCallback<Void> renameToUsedFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.renameFile(testSession, testConnection, TEST_DIR + "\\" + FILE_USED_TEMP, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        tran.doInTransaction(renameToUsedFileCB, false, true);
+
+
+
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+
+                Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+
+                // Check trx:enabled has been shuffled.
+                assertTrue("node does not contain shuffled ENABLED property", props.containsKey(TransferModel.PROP_ENABLED));
+                assertTrue("node doesn't contain property 'TITLE'", props.containsKey(ContentModel.PROP_TITLE));
+                assertEquals("propety 'TITLE' isn't correct", FILE_ORIGINAL_TITLE, props.get(ContentModel.PROP_TITLE));
+                assertEquals("name wrong", FILE_NAME, nodeService.getProperty(shuffledNodeRef, ContentModel.PROP_NAME));
+
+                return null;
+            }
+        };
+
+        tran.doInTransaction(validateCB, true, true);
+    }
+
+    /**
      * Excel 2003 CSV file with Versionable file 
      * 
      * CreateFile csv.csv and 5EE27101 

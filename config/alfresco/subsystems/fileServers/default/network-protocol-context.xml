@@ -223,6 +223,12 @@
                     <property name="timeout"><value>60000</value></property>
                     <property name="ranking"><value>HIGH</value></property>
                 </bean>
+                <!--  MS Excel 2013 -->
+                <bean id="multipleRenameShuffleExcel2013" class="org.alfresco.filesys.repo.rules.ScenarioMultipleRenameShuffle">
+                    <property name="pattern"><value>.*\.xlsx~RF.*\.TMP</value></property>
+                    <property name="timeout"><value>30000</value></property>
+                    <property name="ranking"><value>HIGH</value></property>
+                </bean>
                 <!--  Word Mac 2011 -->
                 <bean id="createShuffleMac2011" class="org.alfresco.filesys.repo.rules.ScenarioCreateShuffle">
                     <property name="pattern"><value>.*D_[0-9]*.TMP$</value></property>

@@ -1254,6 +1254,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             StringBuilder sb = new StringBuilder(1024);
             String fetchVarName = null;
             String fetchColumnName = null;
+            Object defaultFetchValue = null;
             boolean doBatch = false;
             int batchUpperLimit = 0;
             int batchSize = 1;
@@ -1314,13 +1315,18 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         throw AlfrescoRuntimeException.create(ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL, (line - 1), scriptUrl);
                     }
                     String assignStr = sql.substring(9, sql.length());
-                    String[] assigns = assignStr.split("=");
+                    String[] fetchMapping = assignStr.split("!");
+                    String[] assigns = fetchMapping[0].split("=");
                     if (assigns.length != 2 || assigns[0].length() == 0 || assigns[1].length() == 0)
                     {
                         throw AlfrescoRuntimeException.create(ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT, (line - 1), scriptUrl);
                     }
                     fetchVarName = assigns[0];
                     fetchColumnName = assigns[1];
+                    if (fetchMapping.length > 1 && fetchMapping[1].length() > 0)
+                    {
+                        defaultFetchValue = fetchMapping[1];
+                    }
                     continue;
                 }
 				// Handle looping control
@@ -1474,12 +1480,20 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
                         if (fetchVarName != null && fetchColumnName != null)
                         {
-                            varAssignments.put(fetchVarName, fetchedVal);
+                            if (fetchedVal != null)
+                            {
+                                varAssignments.put(fetchVarName, fetchedVal);
+                            }                        
+                            else
+                            {
+                                varAssignments.put(fetchVarName, defaultFetchValue);
+                            }
                         }                        
                     }                        
                     sb.setLength(0);
                     fetchVarName = null;
                     fetchColumnName = null;
+                    defaultFetchValue = null;
                     doBatch = false;
                     batchUpperLimit = 0;
                     batchSize = 1;                    

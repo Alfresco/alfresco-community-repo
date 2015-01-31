@@ -16,7 +16,7 @@ CREATE TABLE tmp_locale_upgrade
 CREATE INDEX idx_tmp_loc_n_id ON tmp_locale_upgrade (node_id);
 CREATE INDEX idx_tmp_loc_str_v ON tmp_locale_upgrade (string_value);
 
---ASSIGN:locale_qname_id=id
+--ASSIGN:locale_qname_id=id!-1
 SELECT alf_qname.id AS id FROM alf_qname 
 JOIN alf_namespace ON (alf_namespace.id = alf_qname.ns_id)
 WHERE 

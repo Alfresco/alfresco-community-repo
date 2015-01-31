@@ -53,7 +53,11 @@
         </ruleList>
         </actionGroup>
 
-
+        <setInstallerVariable name="component(alfresco).parameter(alfresco_rmi_port).ask" value="0">
+            <ruleList>
+                <compareText text="${alfresco_edition}" value="community"/>
+            </ruleList>
+        </setInstallerVariable>
 
     </preBuildActionList>
 

@@ -95,19 +95,13 @@
             <artifactId>chemistry-opencmis-client-impl</artifactId>
             <version>${dependency.opencmis.version}</version>
         </dependency>
-        <!-- ALF-19407 chemistry-tck-atompub and junit are dependencies of CMISTestRunnerWebScript, which is not a test -->
-        <dependency>
-            <groupId>org.apache.chemistry</groupId>
-            <artifactId>chemistry-tck-atompub</artifactId>
-            <version>0.1-incubating-unreleased</version>
-        </dependency>
+
+        <!-- Test dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>provided</scope>
+            <scope>test</scope>
         </dependency>
-
-        <!-- Test dependencies -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>

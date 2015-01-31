@@ -38,6 +38,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.webdav.auth.AuthenticationDriver;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -72,7 +73,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public final class AuthenticationHelper
 {
    /** session variables */
-   public static final String AUTHENTICATION_USER = "_alfAuthTicket";
+   public static final String AUTHENTICATION_USER = AuthenticationDriver.AUTHENTICATION_USER;
    public static final String SESSION_USERNAME = "_alfLastUser";
    public static final String SESSION_INVALIDATED = "_alfSessionInvalid";
    

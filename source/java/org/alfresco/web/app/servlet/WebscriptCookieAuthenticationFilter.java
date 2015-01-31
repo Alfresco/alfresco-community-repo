@@ -22,14 +22,13 @@ import org.apache.commons.logging.LogFactory;
 /**
  * WebScript aware Authentication Filter. Directly handles login script calls, allowing Surf to establish a cookie
  * for a manual login, rather than the usual stateless ticket based logins.
- * 
+ * <p>
  * This functionality has been extracted from the WebScriptSSOAuthenticationFilter so that they can work independently.
  * 
  * @author Gethin James
  */
 public class WebscriptCookieAuthenticationFilter extends BaseAuthenticationFilter implements DependencyInjectedFilter
 {
-
     private static final Log logger = LogFactory.getLog(WebscriptCookieAuthenticationFilter.class);
     private static final String API_LOGIN = "/api/login";
     
@@ -42,7 +41,6 @@ public class WebscriptCookieAuthenticationFilter extends BaseAuthenticationFilte
     @Override
     public void doFilter(ServletContext context, ServletRequest sreq, ServletResponse sresp, FilterChain chain) throws IOException, ServletException
     {
-        
         // Get the HTTP request/response
         HttpServletRequest req = (HttpServletRequest)sreq;
         HttpServletResponse res = (HttpServletResponse)sresp;

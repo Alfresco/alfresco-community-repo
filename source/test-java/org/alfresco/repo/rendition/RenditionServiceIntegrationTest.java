@@ -83,6 +83,8 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.Pair;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.SQLServerDialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -108,7 +110,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     private NodeRef nodeWithImageContent;
     private NodeRef nodeWithFreeMarkerContent;
     private NodeRef testTargetFolder;
-
+    private Dialect dialect;
     private NodeRef renditionNode = null;
 
     private NamespaceService namespaceService;
@@ -127,6 +129,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         this.scriptService = (ScriptService) this.applicationContext.getBean("scriptService");
         this.transactionHelper = (RetryingTransactionHelper) this.applicationContext
                     .getBean("retryingTransactionHelper");
+        dialect = (Dialect) this.applicationContext.getBean("dialect");
 
         // Set the current security context as admin
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
@@ -720,6 +723,13 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
     public void testCompositeReformatAndResizeRendition() throws Exception
     {
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (dialect instanceof SQLServerDialect)
+        {
+            return;
+        }
+
         this.setComplete();
         this.endTransaction();
 
@@ -1991,6 +2001,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     public void testALF3733() throws Exception
     {
+        setComplete();
+        endTransaction();
+
     	// ALF-3733 was caused by ${cwd} evaluating to the empty string and a path "//sourceNodeName"
     	// being passed to the FileFolderService for creation. This then splits the string using '/' as
     	// a delimiter which leads to the attempted creation of nodes with the empty string as a name,
@@ -2452,6 +2465,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     public void testJavascriptAPI() throws Exception
     {
+        setComplete();
+        endTransaction();
+
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("testSourceNode", this.nodeWithImageContent);
         model.put("testDocNode", this.nodeWithDocContent);
@@ -2475,6 +2491,9 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         final NodeRef newNodeForRotate = createNode(companyHome, "rotateImageNode", ContentModel.TYPE_CONTENT);
         setImageContentOnNode(newNodeForRotate, MimetypeMap.MIMETYPE_IMAGE_JPEG, imageFile);
 
+        setComplete();
+        endTransaction();
+
         //Test auto rotates
         final Map<String, Serializable> parameterValues = new HashMap<String, Serializable>();        
         resizeImageAndCheckOrientation(newNodeForRotate, parameterValues, BLACK, WHITE);     
@@ -2485,7 +2504,14 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         resizeImageAndCheckOrientation(newNodeForRotate, parameterValues, WHITE, BLACK);     
         
         //Clean up
-        nodeService.deleteNode(newNodeForRotate);
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                nodeService.deleteNode(newNodeForRotate);
+                return null;
+            }
+        });
     }
 
     private void resizeImageAndCheckOrientation(final NodeRef nodeToResize, final Map<String, Serializable> parameterValues, final String topLeft, final String bottomRight)

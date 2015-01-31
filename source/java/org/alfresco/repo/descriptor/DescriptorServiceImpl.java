@@ -389,19 +389,19 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             {
                 if (currentRepoDescriptor == null)
                 {
-                	final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-                	
-                	RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
-                	{
-						@Override
-						public Void execute() 
-						{
-		                    currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
-		                    return null;
-						}
-                	};
-                	            
-                 	txnHelper.doInTransaction(nopLoadLicense, false, false);
+                    final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+
+                    RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
+                    {
+                        @Override
+                        public Void execute()
+                        {
+                            currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                            return null;
+                        }
+                    };
+
+                    txnHelper.doInTransaction(nopLoadLicense, false, false);
                 }
             }
         }
@@ -750,17 +750,17 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             // Make sure that the repo descriptor is updated the first time
             if (currentRepoDescriptor == null)
             {
-               	final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-            	RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
+                final RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+                RetryingTransactionCallback<Void> nopLoadLicense = new RetryingTransactionCallback<Void>()
                 {
-            		@Override
-            		public Void execute() 
-            		{
-                         currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
-                         return null;
-            		}
+                    @Override
+                    public Void execute()
+                    {
+                        currentRepoDescriptor = currentRepoDescriptorDAO.updateDescriptor(serverDescriptor, LicenseMode.UNKNOWN);
+                        return null;
+                    }
                 };
-                txnHelper.setForceWritable(true);        
+                txnHelper.setForceWritable(true);
                 txnHelper.doInTransaction(nopLoadLicense, false, false);
 
             }

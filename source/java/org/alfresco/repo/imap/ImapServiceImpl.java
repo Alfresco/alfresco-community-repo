@@ -165,6 +165,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     private final static Map<QName, Flags.Flag> qNameToFlag;
     private final static Map<Flags.Flag, QName> flagToQname;
 
+    private long imapServerShuffleMoveDeleteDelay = 5000L;
     private static final Timer deleteDelayTimer = new Timer();
 
     private boolean imapServerEnabled = false;
@@ -351,6 +352,11 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     public void setMessageHeadersToPersist(List<String> headers)
     {
         this.messageHeadersToPersist  = headers;
+    }
+
+    public void setImapServerShuffleMoveDeleteDelay(long imapServerShuffleMoveDeleteDelay)
+    {
+        this.imapServerShuffleMoveDeleteDelay = imapServerShuffleMoveDeleteDelay;
     }
     
     public boolean getImapServerEnabled()
@@ -605,6 +611,11 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                                     // This is the transaction-aware service
                                     fileFolderService.delete(nodeRef);
 
+                                    if (logger.isDebugEnabled())
+                                    {
+                                        logger.debug("Node has been async deleted " + nodeRef);
+                                    }
+
                                     return null;
                                 }
                             });
@@ -623,7 +634,11 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 }
             };
             // Schedule a real delete 5 seconds after the current time
-            deleteDelayTimer.schedule(deleteDelayTask, 5000L);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Delete timer is scheduled for " + nodeRef);
+            }
+            deleteDelayTimer.schedule(deleteDelayTask, imapServerShuffleMoveDeleteDelay);
         }
     }
     

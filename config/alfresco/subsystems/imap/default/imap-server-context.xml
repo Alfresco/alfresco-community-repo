@@ -189,6 +189,9 @@
                 <value>Message-Id</value>
             </list>
         </property>
+        <property name="imapServerShuffleMoveDeleteDelay">
+            <value>${imap.server.shuffle.move.delete.delay}</value>
+        </property>
     </bean>
     
     <!-- Public Imap Service -->

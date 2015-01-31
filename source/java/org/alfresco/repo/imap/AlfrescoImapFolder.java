@@ -75,8 +75,6 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
 {
     private static final long serialVersionUID = -7223111284066976111L;
 
-    private static Log logger = LogFactory.getLog(AlfrescoImapFolder.class);
-
     /**
      * Reference to the {@link FileInfo} object representing the folder.
      */

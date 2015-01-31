@@ -30,6 +30,8 @@ import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import com.icegreen.greenmail.foedus.util.MsgRangeFilter;
 import com.icegreen.greenmail.mail.MovingMessage;
@@ -47,6 +49,8 @@ import com.icegreen.greenmail.store.SimpleStoredMessage;
 public abstract class AbstractImapFolder implements MailFolder
 {
     private List<FolderListener> listeners = new LinkedList<FolderListener>();
+
+    protected Log logger = LogFactory.getLog(getClass());
 
     protected ServiceRegistry serviceRegistry;
     protected static int MAX_RETRIES = 20;
@@ -453,6 +457,12 @@ public abstract class AbstractImapFolder implements MailFolder
             catch (Exception e)
             {
                 Throwable cause = e.getCause();
+                
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Exception is thrown : " + e + "\nCause : " + cause);
+                }
+                
                 String message;
                 if (cause != null)
                 {

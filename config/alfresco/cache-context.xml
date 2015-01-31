@@ -94,7 +94,7 @@
       <constructor-arg value="cache.contentUrlMasterKeySharedCache"/>
    </bean>
 
-   <bean name="contentUrlEncryptingMasterKeyCache" factory-bean="cacheFactory" factory-method="createCache">
+   <bean name="contentUrlEncryptingMasterKeySharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.contentUrlEncryptingMasterKeySharedCache"/>
    </bean>
 

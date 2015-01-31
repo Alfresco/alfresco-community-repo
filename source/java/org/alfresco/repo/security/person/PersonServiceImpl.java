@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -534,8 +535,18 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         boolean addToCache = false;
         if (allRefs == null)
         {
+            NodeRef peopleContainer = null;
+            try
+            {
+                peopleContainer = getPeopleContainer();
+            }
+            catch(InvalidStoreRefException isre)
+            {
+                return null;
+            }
+            
             List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(
-                    getPeopleContainer(),
+                    peopleContainer,
                     ContentModel.ASSOC_CHILDREN,
                     getChildNameLower(searchUserName),
                     false);

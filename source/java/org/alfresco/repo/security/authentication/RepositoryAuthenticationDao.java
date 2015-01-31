@@ -42,6 +42,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.InvalidStoreRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -193,6 +194,18 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
      * @return                                      the user's data
      */
     private CacheEntry getUserEntryOrNull(final String caseSensitiveSearchUserName)
+    {
+        try
+        {
+            return getUserEntryOrNullImpl(caseSensitiveSearchUserName);
+        }
+        catch (InvalidStoreRefException e)
+        {
+            return null;
+        }
+    }
+    
+    private CacheEntry getUserEntryOrNullImpl(final String caseSensitiveSearchUserName)
     {
         if (caseSensitiveSearchUserName == null || caseSensitiveSearchUserName.length() == 0)
         {

@@ -51,6 +51,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.ExpiryMode;
 import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Ticket;
 import org.alfresco.repo.security.authentication.RepositoryAuthenticationDao.CacheEntry;
+import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
@@ -73,6 +74,7 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.GUID;
 
 @SuppressWarnings("unchecked")
 @Category(OwnJVMTestsCategory.class)
@@ -83,6 +85,7 @@ public class AuthenticationTest extends TestCase
     private NodeService nodeService;
     private AuthorityService authorityService;
     private TenantService tenantService;
+    private TenantAdminService tenantAdminService;
     private MD4PasswordEncoder passwordEncoder;
     private PasswordEncoder sha256PasswordEncoder;
     private MutableAuthenticationDao dao;
@@ -136,6 +139,7 @@ public class AuthenticationTest extends TestCase
         nodeService = (NodeService) ctx.getBean("nodeService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         tenantService = (TenantService) ctx.getBean("tenantService");
+        tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         passwordEncoder = (MD4PasswordEncoder) ctx.getBean("passwordEncoder");
         sha256PasswordEncoder = (PasswordEncoder) ctx.getBean("sha256PasswordEncoder");
         ticketComponent = (TicketComponent) ctx.getBean("ticketComponent");
@@ -1726,6 +1730,35 @@ public class AuthenticationTest extends TestCase
         // authenticationService.deleteAuthentication("andy");
     }
 
+    public void testLoginNotExistingTenant()
+    {
+        boolean wasEnabled = AuthenticationUtil.isMtEnabled();
+        
+        try
+        {
+            tenantAdminService.createTenant(GUID.generate() + "test1.test", "admin".toCharArray());
+            
+            String notExistingTenant = GUID.generate() + "tenant.test";
+            String userName = "user@" + notExistingTenant;
+            
+            assertFalse(tenantAdminService.existsTenant(notExistingTenant));
+            
+            try
+            {
+                pubAuthenticationService.authenticate(userName, GUID.generate().toCharArray());
+                fail();
+            }
+            catch (AuthenticationException e)
+            {
+                // it is expected exception
+            }
+        }
+        finally
+        {
+            AuthenticationUtil.setMtEnabled(wasEnabled);
+        }
+    }
+    
     private String getUserName(Authentication authentication)
     {
         String username = authentication.getPrincipal().toString();

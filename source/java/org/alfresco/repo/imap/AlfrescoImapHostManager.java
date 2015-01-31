@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.imap.exception.AlfrescoImapFolderException;
+import org.alfresco.repo.imap.exception.AlfrescoImapRuntimeException;
 import org.alfresco.util.Utf7;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -246,7 +247,22 @@ public class AlfrescoImapHostManager implements ImapHostManager
     public MailFolder getFolder(final GreenMailUser user, final String mailboxName, boolean mustExist)
             throws FolderException
     {
-        return getFolder(user, mailboxName);
+        try
+        {
+            return getFolder(user, mailboxName);
+        }
+        catch (AlfrescoImapRuntimeException e)
+        {
+            if (!mustExist)
+            {
+                return null;
+            }
+            else if (e.getCause() instanceof FolderException)
+            {
+                throw (FolderException) e.getCause();
+            }
+            throw e;
+        }
     }
 
     /**

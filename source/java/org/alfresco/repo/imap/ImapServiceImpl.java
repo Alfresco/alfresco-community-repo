@@ -53,6 +53,7 @@ import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.repo.imap.config.ImapConfigMountPointsBean;
+import org.alfresco.repo.imap.exception.AlfrescoImapRuntimeException;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy;
@@ -105,6 +106,7 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.store.SimpleStoredMessage;
 
 /**
@@ -607,6 +609,9 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         }
     }
     
+    /**
+     * @throws AlfrescoImapRuntimeException
+     */
     public AlfrescoImapFolder getOrCreateMailbox(AlfrescoImapUser user, String mailboxName, boolean mayExist, boolean mayCreate)
     {
         if (mailboxName == null)
@@ -659,13 +664,13 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         }
         catch (FileNotFoundException e)
         {
-            throw new AlfrescoRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName });
+            throw new AlfrescoImapRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName }, new FolderException(FolderException.NOT_LOCAL));
         }
         if (mailFolder == null)
         {
             if (!mayCreate)
             {
-                throw new AlfrescoRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName });
+                throw new AlfrescoImapRuntimeException(ERROR_CANNOT_GET_A_FOLDER, new String[] { mailboxName }, new FolderException(FolderException.NOT_LOCAL));
             }
             if (logger.isDebugEnabled())
             {
@@ -677,7 +682,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         {
             if (!mayExist)
             {
-                throw new AlfrescoRuntimeException(ERROR_FOLDER_ALREADY_EXISTS);
+                throw new AlfrescoImapRuntimeException(ERROR_FOLDER_ALREADY_EXISTS, new FolderException(FolderException.ALREADY_EXISTS_LOCALLY));
             }
         }
         String path = (null != pathElements) ? (pathElements.get(pathElements.size() - 1)) : (rootPath);

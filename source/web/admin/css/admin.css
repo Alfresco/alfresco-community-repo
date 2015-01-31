@@ -1,0 +1,555 @@
+input, textarea, select
+{
+   font: 13px/1.231 Open Sans, Arial, sans-serif;
+   border: 1px solid #ccc;
+}
+
+input[type="button"],
+input[type="submit"]
+{
+   background-color: #6e9e2d;
+   color: #fff;
+   border: 1px solid #777;
+   padding: 4px 8px;
+   cursor: pointer;
+   border-radius: 4px;
+}
+
+input[type="button"].cancel
+{
+   background: none !important;
+   color: #333 !important;
+   margin-left: 8px;
+}
+
+input[type="button"].inline
+{
+   background-color: #0078be !important;
+   color: #fff !important;
+}
+
+input[type="button"]:disabled
+{
+   color: #aaa !important;
+}
+
+button::-moz-focus-inner,
+input[type="button"]::-moz-focus-inner,
+input[type="submit"]::-moz-focus-inner,
+input[type="file"] > input[type="button"]::-moz-focus-inner
+{
+    border: none;
+}
+button:focus {outline:none;}
+
+input:focus, textarea:focus, select:focus
+{
+   border: 1px solid #007ec3;
+   box-shadow: 0 0 2px rgba(0,126,195,0.85);
+   outline: none;
+}
+
+/* Main layout - navigation and title */
+
+.navigation-wrapper
+{
+   margin: 0 2em;
+}
+
+.header
+{
+   background-color: #333;
+   color: #fff;
+   padding: 4px 2em;
+}
+
+.header a,
+.header a:visited,
+.header a:hover
+{
+   color: #fff;
+}
+
+.navigation
+{
+   float: left;
+   margin-top: 6em; /* related to the total title div height */
+   margin-right: 1em;
+   max-width: 16em;
+   border: 1px solid #ccc;
+   padding: 8px;
+}
+
+.navigation li
+{
+   border-bottom: 1px solid #ccc;
+   padding: 4px 4px 4px 12px;
+}
+
+.navigation li.selected
+{
+   background-color: #333;
+}
+
+.navigation li.selected > a
+{
+   color: #fff;
+}
+
+.main
+{
+   float: left;
+   min-width: 56em;
+   line-height: 1.333em;
+}
+
+.main-wrapper
+{
+   margin-left: 19em;
+}
+
+.main a,
+.main a:visited,
+.main a:hover
+{
+   color: #0000ee;
+}
+
+.section
+{
+   margin-bottom: 0.5em;
+}
+
+.toggle
+{
+   margin-top: 0.5em;
+}
+
+a.action,
+a.action:visited,
+a.action:hover
+{
+   color: #333 !important;
+   text-decoration: none;
+}
+
+a.toggler
+{
+   font-size: 115%;
+}
+
+.hidden
+{
+   display: none;
+}
+
+.message
+{
+   background-color: #6E9E2D;
+   border: 1px solid rgba(110,158,45, 0.85);
+   box-shadow: 0 0 2px rgba(110,158,45, 0.85);
+   color: #fff;
+   font-family: Open Sans Bold,Arial,sans-serif;
+   font-size: 108%;
+   margin: 1em 0 0.666em;
+   padding: 7px 8px 8px;
+}
+
+.message > a
+{
+   color: #fff;
+   float: right;
+   text-decoration: none;
+}
+
+.error
+{
+   background-color: #EC7F7F;
+   border: 1px solid rgba(236,127,127, 0.85);
+   box-shadow: 0 0 2px rgba(236,127,127, 0.85);
+}
+
+p.intro
+{
+   padding-top: 1em;
+   margin-bottom: 0.666em;
+}
+
+p.intro-tall
+{
+   padding-top: 1em;
+   margin-bottom: 1.666em;
+}
+
+p.info
+{
+   padding-top: 0.5em;
+}
+
+p.info-important
+{
+   background-color: #eee;
+   border: 1px solid #ccc;
+   padding: 0.5em;
+}
+
+pre.wrap
+{
+   white-space: pre-wrap;
+}
+
+/* Simple 2 column layout styles */
+
+div.column-left
+{
+   float: left;
+   width: 50%;
+}
+
+div.column-right
+{
+   margin-left: 50%;
+   padding-left: 2%;
+}
+
+div.column-full
+{
+   clear: both;
+}
+
+.meta
+{
+   padding-left: 32px;
+}
+
+/* Submit button area */
+
+.submission
+{
+   clear: both;
+   padding: 16px 0 48px;
+}
+
+/* Form control styles */
+
+.control
+{
+   padding-bottom: 12px;
+}
+
+.label
+{
+   display: block;
+   font-family: Open Sans Bold, Arial, sans-serif;
+}
+
+.value
+{
+   display: block;
+   padding-top: 2px;
+}
+
+.description
+{
+   color: #555;
+   font-size: 93%;
+   display: block;
+   padding-top: 2px;
+}
+
+.light
+{
+   color: #555;
+   font-size: 93%;
+}
+
+.field .label,
+.checkbox .label,
+.status .label
+{
+   display: inline;
+}
+
+.field .value,
+.checkbox .value,
+.status .value
+{
+   display: inline;
+   padding-left: 4px;
+}
+
+.status .value
+{
+   vertical-align: middle;
+}
+
+.status .value > span
+{
+   vertical-align: top;
+   font-size: 87%;
+}
+
+.text .value input
+{
+   padding: 4px;
+   width: 26em;
+}
+
+.password input[type="button"]
+{
+   margin-top: 4px;
+}
+
+.textarea .value textarea
+{
+   height: 4em;
+   padding: 4px;
+   width: 26em;
+}
+
+.options select
+{
+   padding: 4px;
+}
+
+.options option
+{
+   margin: 2px;
+}
+
+.radiovalue
+{
+   margin: 4px;
+}
+
+.radiolabel
+{
+   padding-left: 4px;
+}
+
+.list ol
+{
+   list-style: decimal inside;
+}
+
+.list ul
+{
+   list-style: disc inside;
+}
+
+table.data
+{
+	border-collapse: collapse;
+	margin-bottom: 4px;
+}
+
+table.data th
+{
+   font-family: Open Sans Bold, Arial, sans-serif;
+   border-bottom: 1px solid #666;
+}
+
+table.data td,
+table.data th
+{
+	padding: 4px 6px;
+	vertical-align: top;
+}
+
+table.results
+{
+	border-collapse: collapse;
+}
+
+table.results tr
+{
+   border-bottom: 1px solid #ccc;
+}
+
+table.results td
+{
+   vertical-align: top;
+	padding: 4px 0;
+}
+
+table.validation
+{
+   text-align:center;
+   border-collapse:collapse;
+}
+
+table.validation td
+{
+   padding: 4px 6px;
+}
+
+table.validation td.key
+{
+   background-color:lightgray;
+}
+
+table.validation tr.even
+{
+   background-color:#ddf;
+}
+
+table.node
+{
+	border-collapse: collapse;
+	margin-bottom: 4px;
+	border: 1px solid #aaa;
+}
+
+table.node th
+{
+   font-family: Open Sans Bold, Arial, sans-serif;
+   background-color: #6e9e2d;
+   color: #fff;
+}
+
+table.node td,
+table.node th
+{
+	padding: 3px 4px;
+	vertical-align: top;
+}
+
+table.node.grid tr:nth-child(even)
+{
+   background-color: #f8f8f8;
+}
+
+.node-info
+{
+   text-align:right;
+   font-family: Open Sans Bold, Arial, sans-serif;
+}
+
+.success
+{
+   font-family: Open Sans Bold, Arial, sans-serif;
+   color: green;
+}
+
+.failure
+{
+   font-family: Open Sans Bold, Arial, sans-serif;
+   color: red;
+}
+
+.active
+{
+   font-family: Open Sans, Arial, sans-serif;
+}
+
+.not-active
+{
+   font-family: Open Sans Bold, Arial, sans-serif;
+   color: red;
+}
+
+.vertical
+{
+   transform:rotate(-90deg);
+   -webkit-transform:rotate(-90deg);
+}
+
+/* Dialog */
+.dialog-body
+{
+   height: 95%;
+}
+
+.dialog-body .main
+{
+   padding-bottom: 24px;
+}
+
+.dialog-body .buttons
+{
+   clear: both;
+   padding: 16px 0 8px;
+}
+
+/* IFrame based dialog pop-up. Calculates centre position in CSS calc(). */
+.dialog
+{
+   background-color: #fff;
+   border: 1px solid #666;
+   border-radius: 12px;
+   box-shadow: 0 3px 12px #666;
+   position: absolute;
+   left: -webkit-calc((100% - 66em) / 2);
+   left: calc((100% - 66em) / 2);
+   width: 66em;
+   top: 5%;
+   height: 90%;
+   z-index: 100;
+}
+
+.dialog.compact
+{
+   left: -webkit-calc((100% - 66em) / 2);
+   left: calc((100% - 66em) / 2);
+   width: 66em;
+   top: -webkit-calc((100% - 30em) / 2);
+   top: calc((100% - 30em) / 2);
+   height: 30em;
+}
+
+.shield
+{
+   position: absolute;
+   left: 0;
+   top: 0;
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
+   z-index: 99;
+   background-color: #404040;
+   opacity: .5;
+}
+
+/* Sync status table */
+table.sync-status td
+{
+	padding: 4px 12px 0 0;
+}
+
+/* Upload Browse overlay styles */
+div.file-upload-wrapper
+{
+   position: relative;
+   height: 2em;
+}
+
+input.file-upload-hidden
+{
+   position: relative;
+   height: 28px;
+   filter: alpha(opacity: 0);
+   opacity: 0;
+   z-index: 2;
+   width: 280px;
+}
+
+div.file-upload-visible
+{
+   position: absolute;
+   top: 0px;
+   left: 0px;
+   z-index: 1;
+   background: url(../images/upload.png) 100% 0px no-repeat;
+   height: 28px;
+   width: 276px;
+}
+
+input.file-upload-text
+{
+   border: 1px solid #333;
+   font-size: 14px;
+   height: 26px;
+   margin-right: 85px;
+   width: 210px;
+   padding-left: 4px;
+}

@@ -54,7 +54,6 @@ import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.rendition.RenderCallback;
-import org.alfresco.service.cmr.rendition.RenditionCancelledException;
 import org.alfresco.service.cmr.rendition.RenditionDefinition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.rendition.RenditionServiceException;
@@ -391,7 +390,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             {
                 logger.debug("Rendition has not been created, because the node no longer exists.  (sourceNode=" + sourceNode + ")");
             }
-            notifyCallbackOfException(renditionDef, new RenditionCancelledException("Rendition was cancelled, because the node no longer exists."));
+            notifyCallbackOfException(renditionDef, new UnimportantTransformException("Rendition was cancelled, because the node no longer exists."));
             return;
         }
         else if (nodeService.getProperty(sourceNode, ContentModel.PROP_CONTENT) == null)
@@ -400,7 +399,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             {
                 logger.debug("Rendition has not been created, because the node has no content to render.  (sourceNode=" + sourceNode + ")");
             }
-            notifyCallbackOfException(renditionDef, new RenditionCancelledException("Rendition was cancelled, because the node has no content to render."));
+            notifyCallbackOfException(renditionDef, new UnimportantTransformException("Rendition was cancelled, because the node has no content to render."));
             return;
         }
 

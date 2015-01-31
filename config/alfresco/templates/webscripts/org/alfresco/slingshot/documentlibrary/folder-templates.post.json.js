@@ -26,7 +26,7 @@ function main()
       status.setCode(status.STATUS_NOT_FOUND, "Source or destination node is missing for copy operation.");
    }
    var copy = sourceNode.copy(parentNode, true);
-   copy.properties["cm:name"] = json.get("prop_cm_name").toString();
+   copy.setName(json.get("prop_cm_name").toString());
    copy.properties["cm:description"] = json.get("prop_cm_description").toString();
    copy.properties["cm:title"] = json.get("prop_cm_title").toString();
    copy.save();

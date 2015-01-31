@@ -52,6 +52,7 @@ import org.alfresco.repo.web.scripts.transfer.TransferWebScriptTest;
 import org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.JBPMWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest;
+import org.alfresco.slingshot.documentlibrary.FolderTemplateTest;
 
 /**
  * Web Scripts test suite
@@ -99,6 +100,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( SubscriptionServiceRestApiTest.class );
         suite.addTestSuite( FacetRestApiTest.class );
         suite.addTestSuite( CommentsApiTest.class );		
+        suite.addTestSuite( FolderTemplateTest.class );
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

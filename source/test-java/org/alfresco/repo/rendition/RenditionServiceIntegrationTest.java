@@ -2001,9 +2001,12 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     public void testALF3733() throws Exception
     {
-        setComplete();
-        endTransaction();
-
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (dialect instanceof SQLServerDialect)
+        {
+            return;
+        }
     	// ALF-3733 was caused by ${cwd} evaluating to the empty string and a path "//sourceNodeName"
     	// being passed to the FileFolderService for creation. This then splits the string using '/' as
     	// a delimiter which leads to the attempted creation of nodes with the empty string as a name,
@@ -2465,8 +2468,12 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
     
     public void testJavascriptAPI() throws Exception
     {
-        setComplete();
-        endTransaction();
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (dialect instanceof SQLServerDialect)
+        {
+            return;
+        }
 
         Map<String, Object> model = new HashMap<String, Object>();
         model.put("testSourceNode", this.nodeWithImageContent);

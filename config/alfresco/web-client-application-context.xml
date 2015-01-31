@@ -7,7 +7,7 @@
    <!-- Web Script Beans                      -->
    <!-- ===================================== -->
 
-   <!--  Alfresco Web Client Authenticator (Servlet based) -->
+   <!--  Alfresco Web Client Authenticator (Servlet based - Session) -->
    <bean id="webscripts.authenticator.webclient" class="org.alfresco.repo.web.scripts.servlet.WebClientAuthenticatorFactory" />
    
    <bean id="webscripts.authenticator.jsr168.webclient" class="org.alfresco.repo.web.scripts.portlet.WebClientPortletAuthenticatorFactory" lazy-init="true"/>

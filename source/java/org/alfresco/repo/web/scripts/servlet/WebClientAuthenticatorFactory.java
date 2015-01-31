@@ -41,6 +41,10 @@ import org.springframework.web.context.ServletContextAware;
 /**
  * Alfresco Web Client Authentication
  * 
+ * NOTE: 5.0 - Explorer client has been removed - as have the JSF bean definitions. This effectively mean this is now just
+ *       a web Session based authenticator - ticket and user wrapper is stored in a Session and the JSESSIONID cookie is returned.
+ *       No user prefs for language etc. are set due to the removal of Explorer beans. 
+ * 
  * @author davidc
  */
 public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactory, ServletContextAware
@@ -178,6 +182,12 @@ public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactor
         public boolean emptyCredentials()
         {
             return (ticket == null || ticket.length() == 0);
+        }
+        
+        @Override
+        public String toString()
+        {
+            return servletReq.toString() + " [ticket=" + ticket + "]";
         }
     }
 

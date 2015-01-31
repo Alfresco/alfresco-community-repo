@@ -312,4 +312,10 @@ public final class User implements SessionUser
       
       return nameAndId.toString();
    }
+   
+   @Override
+   public String toString()
+   {
+       return this.userName;
+   }
 }

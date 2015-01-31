@@ -587,7 +587,7 @@ public final class AuthenticationHelper
             if (sessionUser instanceof User)
             {
                user = (User)sessionUser;
-               setExternalAuth(session, userId != null);                  
+               setExternalAuth(session, userId != null);
             }
             else
             {
@@ -654,7 +654,7 @@ public final class AuthenticationHelper
                       logger.debug("Invalidating the session.");
                   session.invalidate();
                }
-            }            
+            }
          }
       }
       return user;

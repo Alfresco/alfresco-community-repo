@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,30 +19,18 @@
 
 package org.alfresco.repo.forms.processor.workflow;
 
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_ADDED_SUFFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_PREFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.ASSOC_DATA_REMOVED_SUFFIX;
-import static org.alfresco.repo.forms.processor.node.FormFieldConstants.PROP_DATA_PREFIX;
 import static org.alfresco.repo.workflow.WorkflowModel.ASPECT_WORKFLOW_PACKAGE;
-import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_ASSIGNEE;
 import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_PACKAGE;
-import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_PACKAGE_CONTAINS;
-import static org.alfresco.repo.workflow.WorkflowModel.ASSOC_POOLED_ACTORS;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_DESCRIPTION;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ACTION_GROUP;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_PACKAGE_ITEM_ACTION_GROUP;
 import static org.alfresco.repo.workflow.WorkflowModel.PROP_WORKFLOW_PRIORITY;
-import static org.alfresco.repo.workflow.WorkflowModel.PROP_STATUS;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,9 +38,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
-import org.alfresco.repo.forms.FieldDefinition;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.FormNotFoundException;
@@ -61,15 +46,12 @@ import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.DefaultFieldProcessor;
 import org.alfresco.repo.forms.processor.node.MockClassAttributeDefinition;
 import org.alfresco.repo.forms.processor.node.MockFieldProcessorRegistry;
-import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
@@ -81,7 +63,6 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.NamespaceServiceMemoryImpl;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -91,27 +72,11 @@ import org.mockito.stubbing.Answer;
  * @author Nick Smith
  *
  */
-public class WorkflowFormProcessorTest extends TestCase
+public class WorkflowFormProcessorTest extends FormProcessorTest
 {
-    private static final String TASK_DEF_NAME = "TaskDef";
     private static final String WF_DEF_NAME = "foo$wf:bar";
     private static final QName PRIORITY_NAME = PROP_WORKFLOW_PRIORITY;
-    private static final QName DESC_NAME = PROP_DESCRIPTION;
-    private static final QName STATUS_NAME = PROP_STATUS;
-    private static final QName PROP_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_prop");
-    private static final QName ACTORS_NAME = ASSOC_POOLED_ACTORS;
-    private static final QName ASSIGNEE_NAME = ASSOC_ASSIGNEE;
-    private static final QName ASSOC_WITH_ = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "some_assoc");
-    private static final NodeRef FAKE_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode");
-    private static final NodeRef FAKE_NODE2 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode2");
-    private static final NodeRef FAKE_NODE3 = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakeNode3");
-    private static final NodeRef PCKG_NODE = new NodeRef(NamespaceService.BPM_MODEL_1_0_URI + "/FakePackage");
-    private static final Item item = new Item("workflow", WF_DEF_NAME);
 
-    private NamespaceService namespaceService;
-    private NodeService nodeService;
-    private WorkflowService workflowService;
-    private WorkflowFormProcessor processor;
     private WorkflowInstance newInstance;
     private WorkflowDefinition definition;
     private Map<QName, Serializable> actualProperties = null;
@@ -138,14 +103,19 @@ public class WorkflowFormProcessorTest extends TestCase
             // Do nothing!
         }
 
-        WorkflowDefinition result = processor.getTypedItem(item);
+        WorkflowDefinition result = ((WorkflowFormProcessor) processor).getTypedItem(item);
         assertNotNull(result);
         assertEquals(WF_DEF_NAME, result.getName());
     }
 
+    public void testPersistPropertyComment() throws Exception
+    {
+        super.testPersistPropertyComment(item.getId());
+    }
+    
     public void testGenerateSetsItemAndUrl() throws Exception
     {
-        Form form = processor.generate(item, null, null, null);
+        Form form = ((WorkflowFormProcessor) processor).generate(item, null, null, null);
         Item formItem = form.getItem();
         assertEquals(item.getId(), formItem.getId());
         assertEquals(item.getKind(), formItem.getKind());
@@ -324,36 +294,6 @@ public class WorkflowFormProcessorTest extends TestCase
         checkRemovedPackageItem(FAKE_NODE3, false);
     }
 
-    private void mockPackageItems(NodeRef... children)
-    {
-        ArrayList<ChildAssociationRef> results = new ArrayList<ChildAssociationRef>(children.length);
-        for (NodeRef nodeRef : children)
-        {
-            ChildAssociationRef child = new ChildAssociationRef(ASSOC_PACKAGE_CONTAINS, PCKG_NODE, null, nodeRef);
-            results.add(child);
-        }
-        when(nodeService.getChildAssocs(eq(PCKG_NODE), (QNamePattern)any(), (QNamePattern)any()))
-        .thenReturn(results);
-        
-    }
-
-    private void checkRemovedPackageItem(NodeRef child, boolean wasCalled)
-    {
-        int times = wasCalled ? 1 : 0;
-        verify(nodeService, times(times))
-            .removeChild(PCKG_NODE, child);
-    }
-
-    private void checkAddPackageItem(NodeRef child, boolean wasCalled)
-    {
-        int times = wasCalled ? 1 : 0;
-        verify(nodeService, times(times))
-            .addChild(eq(PCKG_NODE),
-                        eq(child),
-                        eq(ASSOC_PACKAGE_CONTAINS),
-                        (QName)any());
-    }
-
     private void processPersist(String dataKey, String value)
     {
         FormData data = new FormData();
@@ -369,7 +309,7 @@ public class WorkflowFormProcessorTest extends TestCase
     
     private Form processForm(List<String> fields)
     {
-        return processor.generate(item, fields, null, null);
+        return ((WorkflowFormProcessor) processor).generate(item, fields, null, null);
     }
 
     private void checkPackageActionGroups(FormData formData)
@@ -381,50 +321,7 @@ public class WorkflowFormProcessorTest extends TestCase
         assertNotNull(pckgItemActionData);
         assertEquals("start_package_item_actions", pckgItemActionData.getValue());
     }
-
-    private void checkSingleProperty(Form form, String fieldName, Serializable fieldData)
-    {
-        String expDataKey = makeDataKeyName(fieldName);
-        checkSingleField(form, fieldName, fieldData, expDataKey);
-
-    }
-
-    private void checkSingleAssociation(Form form, String fieldName, Serializable fieldData)
-    {
-        String expDataKey = makeAssociationDataKey(fieldName);
-        checkSingleField(form, fieldName, fieldData, expDataKey);
-    }
-
-    private void checkSingleField(Form form, String fieldName, Serializable fieldData, String expDataKey)
-    {
-        List<FieldDefinition> fieldDefs = form.getFieldDefinitions();
-        assertEquals(1, fieldDefs.size());
-        FieldDefinition fieldDef = fieldDefs.get(0);
-        assertEquals(fieldName, fieldDef.getName());
-        String dataKey = fieldDef.getDataKeyName();
-        assertEquals(expDataKey, dataKey);
-        FieldData data = form.getFormData().getFieldData(dataKey);
-        assertEquals(fieldData, data.getValue());
-    }
-
-
-    private String makeDataKeyName(String fieldName)
-    {
-        return PROP_DATA_PREFIX + fieldName.replace(":", "_");
-    }
-
-    private String makeDataKeyName(String fieldName, boolean added)
-    {
-        String assocDataKey = makeAssociationDataKey(fieldName);
-        String suffix = added ? ASSOC_DATA_ADDED_SUFFIX : ASSOC_DATA_REMOVED_SUFFIX;
-        return assocDataKey + suffix;
-    }
-    
-    private String makeAssociationDataKey(String fieldName)
-    {
-        return ASSOC_DATA_PREFIX + fieldName.replace(":", "_");
-    }
-
+   
     /*
      * @see junit.framework.TestCase#setUp()
      */
@@ -432,37 +329,25 @@ public class WorkflowFormProcessorTest extends TestCase
     protected void setUp() throws Exception
     {
         super.setUp();
+        super.item = new Item("workflow", WF_DEF_NAME);
         definition = makeWorkflowDefinition();
-        workflowService = makeWorkflowService();
-        nodeService = makeNodeService();
+        super.workflowService = makeWorkflowService();
+        super.nodeService = makeNodeService();
         DictionaryService dictionaryService = makeDictionaryService();
-        namespaceService = makeNamespaceService();
+        super.namespaceService = makeNamespaceService();
         MockFieldProcessorRegistry fieldProcessorRegistry = new MockFieldProcessorRegistry(namespaceService,
                     dictionaryService);
-        DefaultFieldProcessor defaultProcessor = makeDefaultFieldProcessor(dictionaryService);
-        processor = makeWorkflowFormProcessor(dictionaryService, fieldProcessorRegistry, defaultProcessor);
+        DefaultFieldProcessor defaultProcessor = super.makeDefaultFieldProcessor(dictionaryService);
+        super.processor = makeWorkflowFormProcessor(dictionaryService, fieldProcessorRegistry, defaultProcessor);
     }
 
     private WorkflowFormProcessor makeWorkflowFormProcessor(DictionaryService dictionaryService,
                 MockFieldProcessorRegistry fieldProcessorRegistry, DefaultFieldProcessor defaultProcessor)
     {
         WorkflowFormProcessor processor1 = new WorkflowFormProcessor();
-        processor1.setWorkflowService(workflowService);
-        processor1.setNodeService(nodeService);
-        processor1.setNamespaceService(namespaceService);
-        processor1.setDictionaryService(dictionaryService);
-        processor1.setFieldProcessorRegistry(fieldProcessorRegistry);
-        processor1.setBehaviourFilter(mock(BehaviourFilter.class));
+        processor1 =(WorkflowFormProcessor) super.makeTaskFormProcessor(processor1, dictionaryService,
+                fieldProcessorRegistry, defaultProcessor);
         return processor1;
-    }
-
-    private DefaultFieldProcessor makeDefaultFieldProcessor(DictionaryService dictionaryService) throws Exception
-    {
-        DefaultFieldProcessor defaultProcessor = new DefaultFieldProcessor();
-        defaultProcessor.setDictionaryService(dictionaryService);
-        defaultProcessor.setNamespaceService(namespaceService);
-        defaultProcessor.afterPropertiesSet();
-        return defaultProcessor;
     }
 
     private WorkflowDefinition makeWorkflowDefinition()
@@ -537,29 +422,6 @@ public class WorkflowFormProcessorTest extends TestCase
         return properties;
     }
 
-    private Map<QName, AssociationDefinition> makeTaskAssociationDefs()
-    {
-        Map<QName, AssociationDefinition> associations = new HashMap<QName, AssociationDefinition>();
-        QName actorName = QName.createQName(NamespaceService.BPM_MODEL_1_0_URI, "Actor");
-
-        // Add Assigneee association
-        MockClassAttributeDefinition assigneeDef = MockClassAttributeDefinition.mockAssociationDefinition(
-                    ASSIGNEE_NAME, actorName);
-        associations.put(ASSIGNEE_NAME, assigneeDef);
-
-        // Add Assigneee association
-        MockClassAttributeDefinition actorsDef = MockClassAttributeDefinition.mockAssociationDefinition(ACTORS_NAME,
-                    actorName);
-        associations.put(ACTORS_NAME, actorsDef);
-
-        // Add association with _
-        MockClassAttributeDefinition with_ = MockClassAttributeDefinition.mockAssociationDefinition(ASSOC_WITH_,
-                    actorName);
-        associations.put(ASSOC_WITH_, with_);
-
-        return associations;
-    }
-    
     private NamespaceService makeNamespaceService()
     {
         NamespaceServiceMemoryImpl nsService = new NamespaceServiceMemoryImpl();

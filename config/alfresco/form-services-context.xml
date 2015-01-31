@@ -109,6 +109,22 @@
         ref="nodeFilterRegistry" /> </bean>
     -->
 
+    <bean id="taskFormFilter" class="org.alfresco.repo.forms.processor.workflow.WorkflowFormFilter"
+        parent="baseFormFilter">
+	   <property name="filterRegistry" ref="taskFilterRegistry" />
+	   <property name="maxLengthBpmCommentProperty">
+            <value>${system.workflow.jbpm.comment.property.max.length}</value>
+       </property>
+    </bean>
+	
+    <bean id="workflowFormFilter" class="org.alfresco.repo.forms.processor.workflow.WorkflowFormFilter"
+        parent="baseFormFilter">
+       <property name="filterRegistry" ref="workflowFilterRegistry" />
+	   <property name="maxLengthBpmCommentProperty">
+            <value>${system.workflow.jbpm.comment.property.max.length}</value>
+       </property>
+    </bean>
+
     <bean id="formServiceScript" parent="baseJavaScriptExtension"
         class="org.alfresco.repo.forms.script.ScriptFormService">
         <property name="extensionName">

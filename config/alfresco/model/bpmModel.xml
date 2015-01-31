@@ -64,6 +64,15 @@
              </parameter>
         </constraint>
         
+	<constraint name="bpm:commentLength" type="LENGTH">
+             <parameter name="minLength">
+                 <value>0</value>
+             </parameter>
+             <parameter name="maxLength">
+                 <value>4000</value>
+             </parameter>
+        </constraint>
+        
     </constraints>
 
     <types>
@@ -169,6 +178,9 @@
                 <!--             -->
                 <property name="bpm:comment">
                     <type>d:text</type>
+                    <constraints>
+                        <constraint ref="bpm:commentLength" />
+                    </constraints>
                 </property>
 
             </properties>

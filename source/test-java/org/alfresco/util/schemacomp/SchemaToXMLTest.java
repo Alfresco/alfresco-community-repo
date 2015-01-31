@@ -27,6 +27,7 @@ import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.pk;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.table;
 import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.sequence;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -79,12 +80,13 @@ public class SchemaToXMLTest
         // Check the first couple of lines, details tests of the actual content
         // are performed by DbObjectXMLTransformerTest
         BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", reader.readLine());
+        String firstLine = reader.readLine();
+        assertTrue(firstLine.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"));
         String xsd =
             "xmlns=\"http://www.alfresco.org/repo/db-schema\" " + 
             "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
             "xsi:schemaLocation=\"http://www.alfresco.org/repo/db-schema db-schema.xsd\"";
-        assertEquals("<schema " + xsd + " name=\"alfresco\" dbprefix=\"my-prefix\" version=\"501\" tablecolumnorder=\"true\">", reader.readLine());        
+        assertTrue(firstLine.endsWith("<schema " + xsd + " name=\"alfresco\" dbprefix=\"my-prefix\" version=\"501\" tablecolumnorder=\"true\">"));        
         assertEquals("  <validators>", reader.readLine());
     }
 }

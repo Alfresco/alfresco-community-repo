@@ -31,7 +31,7 @@
             <ref bean="dictionaryService" />
         </property>
         <property name="solrQueryLanguage">
-            <ref bean="search.cmis.alfresco.switching" />
+            <ref bean="search.cmis.alfresco.switching1.1" />
         </property>
     </bean>
 

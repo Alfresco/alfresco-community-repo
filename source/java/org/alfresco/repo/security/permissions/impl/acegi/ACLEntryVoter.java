@@ -409,13 +409,16 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
                     testNodeRef = getArgument(invocation, cad.parameter[0]);
                     if (log.isDebugEnabled())
                     {
-                        if (nodeService.exists(testNodeRef))
+                        if (testNodeRef != null)
                         {
-                            log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                        }
-                        else
-                        {
-                            log.debug("\tPermission test on non-existing node " +testNodeRef);
+                            if (nodeService.exists(testNodeRef))
+                            {
+                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                            }
+                            else
+                            {
+                                log.debug("\tPermission test on non-existing node " +testNodeRef);
+                            } 
                         }
                     }
                 }
@@ -463,13 +466,16 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
                             if (log.isDebugEnabled())
                             {
-                                if (nodeService.exists(testNodeRef))
+                                if (testNodeRef != null)
                                 {
-                                    log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                                }
-                                else
-                                {
-                                    log.debug("\tPermission test on non-existing node " + testNodeRef);
+                                    if (nodeService.exists(testNodeRef))
+                                    {
+                                        log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                                    }
+                                    else
+                                    {
+                                        log.debug("\tPermission test on non-existing node " + testNodeRef);
+                                    } 
                                 }
                             }
                         }
@@ -496,13 +502,16 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
                         if (log.isDebugEnabled())
                         {
-                            if (nodeService.exists(testNodeRef))
+                            if (testNodeRef != null)
                             {
-                                log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
-                            }
-                            else
-                            {
-                                log.debug("\tPermission test on non-existing node " + testNodeRef);
+                                if (nodeService.exists(testNodeRef))
+                                {
+                                    log.debug("\tPermission test on node " + nodeService.getPath(testNodeRef));
+                                }
+                                else
+                                {
+                                    log.debug("\tPermission test on non-existing node " + testNodeRef);
+                                } 
                             }
                         }
                     }

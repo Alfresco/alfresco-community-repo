@@ -885,6 +885,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     // set subject line
                     String subject = (String)ruleAction.getParameterValue(PARAM_SUBJECT);
                     List<Object> subjectParams = (List<Object>)ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
+                    subjectParams = subjectParams == null ? new ArrayList<Object>() : subjectParams;
                     String localizedSubject = getLocalizedSubject(subject, subjectParams.toArray(), locale);
                     if (locale == null)
                     {

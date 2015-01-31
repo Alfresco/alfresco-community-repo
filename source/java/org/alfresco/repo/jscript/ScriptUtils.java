@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -120,20 +120,20 @@ public class ScriptUtils extends BaseScopableProcessorExtension
     }
     
     /**
-     * Use the Node Locator Service to find the given root node from a number of possible locator types.
+     * Use the Node Locator Service to find the a node reference from a number of possible locator types.
      * This method is responsible for determining the locator type and then calling the Service as the
      * Service does not know how to guess which locator to use.
      * <p>
      * This service supports 'virtual' nodes including the following:
      * <p>
-     * alfresco://company/home      The Company Home root node
-     * alfresco://user/home         The User Home node under Company Home
-     * alfresco://company/shared    The Shared node under Company Home 
-     * alfresco://sites/home        The Sites home node under Company Home
-     * workspace://.../...          Any standard NodeRef
-     * /app:company_home/cm:...     XPath QName style node reference
+     * alfresco://company/home      The Company Home root node<br>
+     * alfresco://user/home         The User Home node under Company Home<br>
+     * alfresco://company/shared    The Shared node under Company Home<br>
+     * alfresco://sites/home        The Sites home node under Company Home<br>
+     * workspace://.../...          Any standard NodeRef<br>
+     * /app:company_home/cm:...     XPath QName style node reference<br>
      * 
-     * @param rootNode
+     * @param reference     The node reference - See above for list of possible node references supported.
      * 
      * @return ScriptNode representing the node or null if not found
      */
@@ -292,6 +292,13 @@ public class ScriptUtils extends BaseScopableProcessorExtension
      * Builds a paging object, from the supplied Args object.
      * Requires that the parameters have their standard names,
      *  i.e. "maxItems" and "skipCount"
+     *  
+     * @param args  Mandatory hash of paging arguments<p>
+     *              Possible arguments include:<p>
+     *              maxItems - max count of items to return, default -1 (all)<br>
+     *              skipCount - number of items to skip, default -1 (none)<br>
+     *              queryId<br>
+     *              queryExecutionId
      */
     public ScriptPagingDetails createPaging(Map<String, String> args)
     {
@@ -299,7 +306,7 @@ public class ScriptUtils extends BaseScopableProcessorExtension
         int skipCount = -1;
         String queryId = null;
         
-        if(args.containsKey("maxItems"))
+        if (args.containsKey("maxItems"))
         {
             try
             {
@@ -308,7 +315,7 @@ public class ScriptUtils extends BaseScopableProcessorExtension
             catch(NumberFormatException e)
             {}
         }
-        if(args.containsKey("skipCount"))
+        if (args.containsKey("skipCount"))
         {
             try
             {
@@ -318,7 +325,7 @@ public class ScriptUtils extends BaseScopableProcessorExtension
             {}
         }
         
-        if(args.containsKey("queryId"))
+        if (args.containsKey("queryId"))
         {
             queryId = args.get("queryId");
         }

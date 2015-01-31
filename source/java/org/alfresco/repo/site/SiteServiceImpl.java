@@ -1212,21 +1212,24 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         final Set<String> siteNames = new TreeSet<String>();
         
         // MNT-13198 - use the bridge table
-        Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, userName, false);
-        for(String authority : containingAuthorities)
+        String actualUserName = personService.getUserIdentifier(userName);
+        if(actualUserName != null)
         {
-            if (siteNames.size() < maxResults)
+            Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, actualUserName, false);
+            for(String authority : containingAuthorities)
             {
-                String siteName = resolveSite(authority);
-                // MNT-10836 fix, after MNT-10109 we should also check site existence
-                // A simple exists check would be better than getting the site properties etc - profiling suggests x2 faster
-                if ((siteName != null) && (getSite(siteName) != null))
+                if (siteNames.size() < maxResults)
                 {
-                    siteNames.add(siteName);
+                    String siteName = resolveSite(authority);
+                    // MNT-10836 fix, after MNT-10109 we should also check site existence
+                    // A simple exists check would be better than getting the site properties etc - profiling suggests x2 faster
+                    if ((siteName != null) && hasSite(siteName))
+                    {
+                        siteNames.add(siteName);
+                    }
                 }
             }
         }
-        
         if (siteNames.isEmpty())
         {
             return Collections.emptyList();

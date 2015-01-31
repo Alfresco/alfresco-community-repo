@@ -408,6 +408,20 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     @Override
     protected PropertyValueEntity createPropertyValue(Serializable value)
     {
+        try
+        {
+            return createPropertyValueInternal(value);
+        }
+        catch (DuplicateKeyException e )
+        {
+            //In very rare situation, it can fail. Just try one more time.
+            //See MNT-12770 for details
+            return createPropertyValueInternal(value);
+        }
+    }
+    
+    private PropertyValueEntity createPropertyValueInternal(Serializable value)
+    {
         // Get the actual type ID
         Class<?> clazz = (value == null ? Object.class : value.getClass());
         Pair<Long, Class<?>> clazzPair = getOrCreatePropertyClass(clazz);

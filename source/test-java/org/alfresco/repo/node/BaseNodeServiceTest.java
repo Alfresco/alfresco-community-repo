@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -140,6 +141,10 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     public static final QName ASSOC_TYPE_QNAME_TEST_CONTAINS = ContentModel.ASSOC_CONTAINS;
     public static final QName ASSOC_TYPE_QNAME_TEST_NEXT = QName.createQName(NAMESPACE, "next");
 
+    public static final QName ASPECT_RESIDUAL = QName.createQName(NAMESPACE, "residual");
+    public static final QName PROP_QNAME_RESIDUAL_STRING = QName.createQName(NAMESPACE, "residualString");
+    public static final QName PROP_QNAME_RESIDUAL_LONG = QName.createQName(NAMESPACE, "residualLong");
+    
     public static final QName ASPECT_WITH_ASSOCIATIONS = QName.createQName(NAMESPACE, "withAssociations");
     public static final QName ASSOC_ASPECT_CHILD_ASSOC = QName.createQName(NAMESPACE, "aspect-child-assoc");
     public static final QName ASSOC_ASPECT_NORMAL_ASSOC = QName.createQName(NAMESPACE, "aspect-normal-assoc");
@@ -2388,6 +2393,30 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         nodeService.setProperty(rootNodeRef, ContentModel.PROP_NODE_DBID, new Long(-1));
         Serializable nodeDbIdCheck = nodeService.getProperty(rootNodeRef, ContentModel.PROP_NODE_DBID);
         assertEquals("Cannot set Node DB ID", nodeDbId, nodeDbIdCheck);
+    }
+    
+    public void testResidual() throws Exception
+    {
+        // Add the residual aspect
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(5);
+        props.put(PROP_QNAME_RESIDUAL_STRING, "ABC");
+        props.put(PROP_QNAME_RESIDUAL_LONG, Long.valueOf(123));
+        try
+        {
+            nodeService.addAspect(rootNodeRef, ASPECT_RESIDUAL, props);
+        }
+        catch (InvalidAspectException e)
+        {
+            // Expected
+        }
+//        
+//        // Get the values back
+//        Map<QName, Serializable> propsCheck = nodeService.getProperties(rootNodeRef);
+//        assertEquals("Residual properties not present and equal. ", props, propsCheck);
+//        assertTrue("Expect residual aspect to be present.", nodeService.hasAspect(rootNodeRef, ASPECT_RESIDUAL));
+//        
+//        setComplete();
+//        endTransaction();
     }
     
     public void testGetParentAssocs() throws Exception

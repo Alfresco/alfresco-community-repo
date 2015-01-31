@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1340,6 +1340,18 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
             Object objs[] = { inviteeUserName, inviteeEmail, siteShortName };
             throw new InvitationExceptionUserError("invitation.invite.already_member", objs);
+        }   
+
+        /**
+         * throw exception if person is disabled
+         */
+        if (!personService.isEnabled(inviteeUserName))
+        {
+            if (logger.isDebugEnabled())
+                logger.debug("Failed - invitee user is disabled.");
+            
+            Object objs[] = { inviteeUserName, inviteeEmail, siteShortName };
+            throw new InvitationExceptionUserError("invitation.invite.user_disabled", objs);
         }
 
         //

@@ -32,6 +32,7 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -1319,6 +1320,86 @@ public class TestCMIS extends EnterpriseTestApi
         catch(CmisObjectNotFoundException e)
         {
             // ok
+        }
+    }
+
+    /**
+     * MNT-12680 
+     * The creation date of version should be the same as creation date of the original node
+     * @throws Exception
+     */
+    @Test
+    public void testCreationDate() throws Exception
+    {
+        // create a site
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+
+        final String siteName = "site" + System.currentTimeMillis();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+                final TestSite site = network1.createSite(siteInfo);
+                final NodeRef resNode = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "testdoc.txt", "Test Doc1 Title", "Test Doc1 Description",
+                        "Test Content");
+                return resNode;
+            }
+        }, person1Id, network1.getId());
+
+        // create a document
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
+        AlfrescoFolder docLibrary = (AlfrescoFolder) cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
+        Map<String, String> properties = new HashMap<String, String>();
+        {
+            properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
+            properties.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
+        }
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("some content");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+
+        Document autoVersionedDoc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        String objectId = autoVersionedDoc.getId();
+        String bareObjectId = getBareObjectId(objectId);
+        // create versions
+        for (int i = 0; i < 3; i++)
+        {
+            Document doc1 = (Document) cmisSession.getObject(bareObjectId);
+
+            ObjectId pwcId = doc1.checkOut();
+            Document pwc = (Document) cmisSession.getObject(pwcId.getId());
+
+            ContentStreamImpl contentStream = new ContentStreamImpl();
+            {
+                ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+                writer.putContent(GUID.generate());
+                ContentReader reader = writer.getReader();
+                contentStream.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                contentStream.setStream(reader.getContentInputStream());
+            }
+            pwc.checkIn(true, Collections.EMPTY_MAP, contentStream, "checkin " + i);
+        }
+        
+        GregorianCalendar cDateFirst = cmisSession.getAllVersions(bareObjectId).get(0).getCreationDate();
+        GregorianCalendar cDateSecond = cmisSession.getAllVersions(bareObjectId).get(2).getCreationDate();
+        
+        if (cDateFirst.before(cDateSecond) || cDateFirst.after(cDateSecond))
+        {
+            fail("The creation date of version should be the same as creation date of the original node");
         }
     }
 

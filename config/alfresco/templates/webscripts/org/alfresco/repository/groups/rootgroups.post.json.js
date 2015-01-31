@@ -11,7 +11,7 @@ function main()
    if (group != null)
    {
       // Group already exists
-      status.setCode(status.STATUS_BAD_REQUEST, "The root group :" + shortName + ", already exixts.");
+      status.setCode(status.STATUS_BAD_REQUEST, "The root group :" + shortName + ", already exists.");
       return;
    }
    

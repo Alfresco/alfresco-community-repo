@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1435,8 +1435,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 if (isImapFavourite != null && isImapFavourite)
                 {
                     String siteName = key.substring(AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES.length() + 1); // count the dot
-                    boolean isMember = serviceRegistry.getSiteService().isMember(siteName, userName);
-                    if (isMember)
+                    boolean siteExists = serviceRegistry.getSiteService().getSite(siteName) != null;
+                    if (siteExists && serviceRegistry.getSiteService().isMember(siteName, userName))
                     {
                         SiteInfo siteInfo = serviceRegistry.getSiteService().getSite(siteName);
                         if (siteInfo != null)

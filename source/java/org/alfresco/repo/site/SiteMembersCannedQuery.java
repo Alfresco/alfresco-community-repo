@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteService.SiteMembersCallback;
 import org.alfresco.util.Pair;
@@ -113,7 +112,7 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
 				lastName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME);
 			}
 
-			SiteMembership siteMember = new SiteMembership(siteInfo, authority, firstName, lastName, SiteRole.valueOf(permission));
+			SiteMembership siteMember = new SiteMembership(siteInfo, authority, firstName, lastName, permission);
     		siteMembers.add(siteMember);
 		}
 
@@ -229,8 +228,8 @@ public class SiteMembersCannedQuery extends AbstractCannedQuery<SiteMembership>
     		String firstName2 = o2.getFirstName();
     		String lastName1 = o1.getLastName();
     		String lastName2 = o2.getLastName();
-    		SiteRole siteRole1 = o1.getRole();
-    		SiteRole siteRole2 = o2.getRole();
+    		String siteRole1 = o1.getRole();
+    		String siteRole2 = o2.getRole();
 
     		int personId = safeCompare(personId1, personId2);
     		int firstName = safeCompare(firstName1, firstName2);

@@ -33,9 +33,9 @@ public class SiteMembership
 	private String personId;
 	private String firstName;
 	private String lastName;
-	private SiteRole role;
+	private String role;
 
-	public SiteMembership(SiteInfo siteInfo, String personId, String firstName, String lastName, SiteRole role)
+	public SiteMembership(SiteInfo siteInfo, String personId, String firstName, String lastName, String role)
 	{
 		super();
 		if(siteInfo == null)
@@ -65,7 +65,7 @@ public class SiteMembership
 		this.role = role;
 	}
 
-	public SiteMembership(SiteInfo siteInfo, String personId, SiteRole role)
+	public SiteMembership(SiteInfo siteInfo, String personId, String role)
 	{
 		super();
 		if(siteInfo == null)
@@ -106,7 +106,7 @@ public class SiteMembership
 		return lastName;
 	}
 
-	public SiteRole getRole()
+	public String getRole()
 	{
 		return role;
 	}

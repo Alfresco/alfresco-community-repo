@@ -108,7 +108,7 @@ public class SitesCannedQuery extends AbstractCannedQuery<SiteMembership>
 	        		String role = siteService.getMembersRole(siteName, userName);
 	        		if (role != null)
 	        		{
-	        			siteMembers.add(new SiteMembership(siteInfo, authority, SiteRole.valueOf(role)));
+	        			siteMembers.add(new SiteMembership(siteInfo, authority, role));
 	        		}
             	}
             }
@@ -219,8 +219,8 @@ public class SitesCannedQuery extends AbstractCannedQuery<SiteMembership>
     		String firstName2 = o2.getFirstName();
     		String lastName1 = o1.getLastName();
     		String lastName2 = o2.getLastName();
-    		SiteRole siteRole1 = o1.getRole();
-    		SiteRole siteRole2 = o2.getRole();
+    		String siteRole1 = o1.getRole();
+    		String siteRole2 = o2.getRole();
     		String siteTitle1 = siteInfo1.getTitle();
     		String siteTitle2 = siteInfo2.getTitle();
 

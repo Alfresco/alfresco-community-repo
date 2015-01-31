@@ -41,6 +41,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.security.permissions.impl.PermissionServiceImpl;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -53,7 +54,6 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
@@ -179,10 +179,10 @@ public class CommentsTest
                     authenticationComponent.setCurrentUser(USER_ONE_NAME);
 
                     // invite user to a site with 'Collaborator' role
-                    siteService.setMembership(testSite.getShortName(), userTwo, SiteRole.SiteCollaborator.toString());
+                    siteService.setMembership(testSite.getShortName(), userTwo, SiteModel.SITE_COLLABORATOR);
 
-                    assertEquals(SiteRole.SiteManager.toString(), siteService.getMembersRole(testSite.getShortName(), USER_ONE_NAME));
-                    assertEquals(SiteRole.SiteCollaborator.toString(), siteService.getMembersRole(testSite.getShortName(), userTwo));
+                    assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(testSite.getShortName(), USER_ONE_NAME));
+                    assertEquals(SiteModel.SITE_COLLABORATOR, siteService.getMembersRole(testSite.getShortName(), userTwo));
 
                     // get container of site
                     NodeRef doclib = siteService.getContainer(testSite.getShortName(), SiteService.DOCUMENT_LIBRARY);

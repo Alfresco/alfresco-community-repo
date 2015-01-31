@@ -773,6 +773,11 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 
     public void removeAuthority(String parentName, String childName)
     {
+        removeAuthority(parentName, childName, true);
+    }
+
+    public void removeAuthority(String parentName, String childName, boolean cacheRefresh)
+    {
         NodeRef parentRef = getAuthorityOrNull(parentName);
         if (parentRef == null)
         {
@@ -792,7 +797,10 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         else
         {
             userAuthorityCache.clear();
-            authorityBridgeTableCache.refresh();
+            if (cacheRefresh)
+            {
+                authorityBridgeTableCache.refresh();
+            }
         }
     }
 

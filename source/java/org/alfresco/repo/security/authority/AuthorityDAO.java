@@ -74,6 +74,11 @@ public interface AuthorityDAO
     void removeAuthority(String parentName, String childName);
 
     /**
+     * Remove an authority without authorityBridgeTableCache refresh.
+     */
+    void removeAuthority(String parentName, String childName, boolean cacheRefresh);
+
+    /**
      * Get the authorities that contain the one given.
      */
     Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);

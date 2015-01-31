@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,8 +18,14 @@
  */
 package org.alfresco.repo.security.authority;
 
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.cache.AbstractMTAsynchronouslyRefreshedCache;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -28,6 +34,8 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.BridgeTable;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
@@ -39,6 +47,18 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractM
     private AuthorityBridgeDAO authorityBridgeDAO;
     private RetryingTransactionHelper retryingTransactionHelper;
     private TenantAdminService tenantAdminService;
+    private AuthorityDAO authorityDAO;
+
+    private Log logger = LogFactory.getLog(getClass());
+
+    /**
+     * @param authorityDAO
+     *            the authorityDAO to set
+     */
+    public void setAuthorityDAO(AuthorityDAO authorityDAO)
+    {
+        this.authorityDAO = authorityDAO;
+    }
 
     /**
      * @param authorityBridgeDAO
@@ -87,11 +107,126 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractM
     {
         List<AuthorityBridgeLink> links = authorityBridgeDAO.getAuthorityBridgeLinks();
         BridgeTable<String> bridgeTable = new BridgeTable<String>();
-        for (AuthorityBridgeLink link : links)
+        try
         {
-            bridgeTable.addLink(link.getParentName(), link.getChildName());
+            for (AuthorityBridgeLink link : links)
+            {
+                bridgeTable.addLink(link.getParentName(), link.getChildName());
+            }
+        }
+        catch (ConcurrentModificationException e)
+        {
+            // Explain exception
+            checkCyclic(links);
+            // If cyclic groups is not the cause then rethrow
+            throw e;
         }
         return bridgeTable;
+    }
+
+    private void checkCyclic(List<AuthorityBridgeLink> links)
+    {
+        Map<String, Set<String>> parentsToChildren = new HashMap<String, Set<String>>();
+        for (AuthorityBridgeLink link : links)
+        {
+            addToMap(parentsToChildren, link.getParentName(), link.getChildName());
+        }
+        
+        Map<String, Set<String>> removed = new HashMap<String, Set<String>>();
+        for (String parent : parentsToChildren.keySet())
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Start checking from '" + parent + "'");
+            }
+            Set<String> authorities = new HashSet<String>();
+            authorities.add(parent);
+            doCheck(parent, parentsToChildren, authorities, removed);
+        }
+        if (!removed.isEmpty())
+        {
+            fixCyclic(removed);
+            throw new AlfrescoRuntimeException("Cyclic links were detected and removed.");
+        }
+    }
+
+    private void doCheck(String parent, Map<String, Set<String>> parentsToChildren, Set<String> authorities,
+            Map<String, Set<String>> removed)
+    {
+        Set<String> children = parentsToChildren.get(parent);
+        if (children != null)
+        {
+            for (String child : children)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Check link from '" + parent + "' to '" + child + "'");
+                }
+                if (isRemoved(removed, parent, child))
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Link from '" + parent + "' to '" + child + "' has been already removed");
+                    }
+                    continue;
+                }
+                if (!authorities.add(child))
+                {
+                    addToMap(removed, parent, child);
+                    continue;
+                }
+                doCheck(child, parentsToChildren, authorities, removed);
+                authorities.remove(child);
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Children of '" + parent + "' were processed");
+            }
+        }
+    }
+
+    private boolean isRemoved(Map<String, Set<String>> removed, String parent, String child)
+    {
+        Set<String> remChildren = removed.get(parent);
+        return (remChildren != null && remChildren.contains(child));
+    }
+
+    private void addToMap(Map<String, Set<String>> map, String parent, String child)
+    {
+        Set<String> children = map.get(parent);
+        if (children == null)
+        {
+            children = new HashSet<String>();
+            children.add(child);
+            map.put(parent, children);
+        }
+        else
+        {
+            children.add(child);
+        }
+    }
+
+    private void fixCyclic(final Map<String, Set<String>> removed)
+    {
+        // delete cyclic links in new transaction because
+        // current cache refresh will be interrupted with AlfrescoRuntimeException
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                for (String parentName : removed.keySet())
+                {
+                    for (String childName : removed.get(parentName))
+                    {
+                        // do not refresh authorityBridgeTableCache
+                        authorityDAO.removeAuthority(parentName, childName, false);
+                        logger.error("Link from '" + parentName + "' to '" + childName +"' was removed to break cycle.");
+                    }
+                }
+                return null;
+            }
+        }, false, true);
     }
 
     @Override
@@ -99,6 +234,7 @@ public class AuthorityBridgeTableAsynchronouslyRefreshedCache extends  AbstractM
     {
         PropertyCheck.mandatory(this, "authorityBridgeDAO", authorityBridgeDAO);
         PropertyCheck.mandatory(this, "retryingTransactionHelper", retryingTransactionHelper);
+        PropertyCheck.mandatory(this, "authorityDAO", authorityDAO);
         super.afterPropertiesSet();
     }
 }

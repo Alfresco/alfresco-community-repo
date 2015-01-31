@@ -43,6 +43,7 @@
       <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
       <property name="tenantAdminService" ref="tenantAdminService" />
+      <property name="authorityDAO" ref="authorityDAO" />
    </bean>
    
    <!-- ===================================== -->

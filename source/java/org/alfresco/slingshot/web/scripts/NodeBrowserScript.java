@@ -386,6 +386,8 @@ public class NodeBrowserScript extends DeclarativeWebScript implements Serializa
         catch (UnsupportedOperationException err)
         {
            // some stores do not support associations
+           // but we doesn't want NPE in code below
+           refs = new ArrayList<AssociationRef>(); 
         }
         List<PeerAssociation> assocs = new ArrayList<PeerAssociation>(refs.size());
     	for (AssociationRef ref : refs)

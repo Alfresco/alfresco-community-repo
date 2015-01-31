@@ -30,6 +30,7 @@ import org.alfresco.repo.wiki.WikiServiceImpl;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.wiki.WikiPageInfo;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.json.simple.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -91,7 +92,7 @@ public class WikiPageGet extends AbstractWikiWebScript
             {
                links.add(link);
                // build the list of available pages
-               WikiPageInfo wikiPage = wikiService.getWikiPage(site.getShortName(), link);
+               WikiPageInfo wikiPage = wikiService.getWikiPage(site.getShortName(), StringEscapeUtils.unescapeHtml(link));
                if (wikiPage != null)
                {
                    pageTitles.add(wikiPage.getTitle());

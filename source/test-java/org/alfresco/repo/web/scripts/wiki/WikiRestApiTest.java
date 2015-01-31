@@ -19,6 +19,8 @@
 package org.alfresco.repo.web.scripts.wiki;
 
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.transaction.UserTransaction;
 
@@ -41,6 +43,7 @@ import org.alfresco.service.cmr.wiki.WikiPageInfo;
 import org.alfresco.service.cmr.wiki.WikiService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -975,5 +978,30 @@ public class WikiRestApiTest extends BaseWebScriptTest
                 this.authenticationService.deleteAuthentication(user);
             }
         }
+    }
+    
+    public void testXSSInjection() throws Exception
+    { 
+    	WikiPageInfo wikiPage = null;
+    	WikiPageInfo wikiPageNew = null;
+    	try{
+    		wikiPage = this.wikiService.createWikiPage(SITE_SHORT_NAME_WIKI, "test_wiki", "[[Test]]");
+    		wikiPageNew = this.wikiService.createWikiPage(SITE_SHORT_NAME_WIKI, "Test", "test_content");
+    		Pattern LINK_PATTERN_MATCH = Pattern.compile("\\[\\[([^\\|\\]]+)");
+    		Matcher m = LINK_PATTERN_MATCH.matcher(wikiPage.getContents());
+    		while (m.find())
+    		{
+    			String link = m.group(1); 
+    			link += "?title=<script>alert('xss');</script>";
+    			WikiPageInfo wikiPage2 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, link);
+    			WikiPageInfo wikiPage1 = this.wikiService.getWikiPage(SITE_SHORT_NAME_WIKI, StringEscapeUtils.unescapeHtml(link));
+    			assertEquals(wikiPage2, wikiPage1);
+    		}
+      
+    	}
+    	finally{
+    		 this.wikiService.deleteWikiPage(wikiPage); 
+    		 this.wikiService.deleteWikiPage(wikiPageNew); 
+    	}
     }
 }

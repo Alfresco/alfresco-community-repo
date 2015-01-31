@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.admin.PatchException;
  */
 public class NoLongerSupportedPatch extends AbstractPatch
 {
-    private static final String ERR_USE_INCREMENTAL_UPGRADE = "patch.NoLongerSupportedPatch.err.use_incremental_upgrade";
+    private static final String ERR_USE_INCREMENTAL_UPGRADE = "patch.noLongerSupportedPatch.err.use_incremental_upgrade";
     
     private String lastSupportedVersion;
     

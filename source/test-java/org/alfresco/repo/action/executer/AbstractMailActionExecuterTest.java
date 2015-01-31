@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.mail.Address;
@@ -54,6 +55,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
@@ -382,6 +384,35 @@ public abstract class AbstractMailActionExecuterTest
             PERSON_SERVICE.deletePerson(USER1);
             PERSON_SERVICE.deletePerson(USER2);
     	}
+    }
+
+    @Test
+    public void testPrepareEmailSubjectParams()
+    {
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.bodyelse@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Test Subject Params");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, getModel());
+        Pair<String, Locale> recipient = new Pair<String, Locale>("test", Locale.ENGLISH);
+        
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {"Test", "Subject", "Params", "Object", "Array"});
+        Assert.assertNotNull("We should support Object[] value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
+        
+        ArrayList<Object> params = new ArrayList<Object>();
+        params.add("Test");
+        params.add("Subject");
+        params.add("Params");
+        params.add("ArrayList");
+        
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, params);
+        Assert.assertNotNull("We should support List<Object> value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
+        
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, "Test Subject Params Single String");
+        Assert.assertNotNull("We should support String value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
+        
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, null);
+        Assert.assertNotNull("We should support null value for PARAM_SUBJECT_PARAMS", ACTION_EXECUTER.prepareEmail(mailAction, null, recipient, null));
     }
 
     /**

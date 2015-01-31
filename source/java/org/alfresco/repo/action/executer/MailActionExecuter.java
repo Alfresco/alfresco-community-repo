@@ -933,9 +933,25 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     
                     // set subject line
                     String subject = (String)ruleAction.getParameterValue(PARAM_SUBJECT);
-                    List<Object> subjectParams = (List<Object>)ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
-                    subjectParams = subjectParams == null ? new ArrayList<Object>() : subjectParams;
-                    String localizedSubject = getLocalizedSubject(subject, subjectParams.toArray(), locale);
+                    Object subjectParamsObject = ruleAction.getParameterValue(PARAM_SUBJECT_PARAMS);
+                    Object[] subjectParams = null;
+                    //Javasctipt pass SubjectParams as ArrayList. see MNT-12534 
+                    if (subjectParamsObject instanceof List)
+                    {
+                        subjectParams = ((List<Object>)subjectParamsObject).toArray();
+                    }
+                    else if (subjectParamsObject instanceof Object[])
+                    {
+                        subjectParams = (Object[])subjectParamsObject;
+                    }
+                    else
+                    {
+                        if (subjectParamsObject != null)
+                        {
+                            subjectParams = new Object[]{subjectParamsObject.toString()};
+                        }
+                    }
+                    String localizedSubject = getLocalizedSubject(subject, subjectParams, locale);
                     if (locale == null)
                     {
                         // process the template against the model

@@ -9,7 +9,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>alfresco-platform-distribution</artifactId>
-  <name>Alfresco Community ${project.version} Platform Distribution descriptor</name>
+  <name>Alfresco Community Platform Distribution descriptor</name>
   <description>This POM describes the Alfresco artifacts usable in the Maven SDK, in terms of artifacts groupId, artifactId, version</description>
   <packaging>pom</packaging>
   
@@ -110,11 +110,11 @@
         <version>${project.version}</version>
         <type>war</type>
       </dependency>
-      <!-- Share -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-share</artifactId>
+        <artifactId>share</artifactId>
         <version>${project.version}</version>
+        <classifier>classes</classifier>
         <scope>provided</scope>
       </dependency>
       <!-- == Solr JARs/WAR -->
@@ -126,18 +126,45 @@
       </dependency>
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-solr-integration</artifactId>
+        <artifactId>alfresco-solr</artifactId>
         <version>${project.version}</version>
+        <classifier>classes</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-solr4</artifactId>
+        <version>${project.version}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-solr4</artifactId>
+        <version>${project.version}</version>
+        <classifier>classes</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <!-- Web Quick Start -->
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-wcmqs-client-api</artifactId>
+        <version>${project.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-wcmqs</artifactId>
+        <version>${project.version}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-wcmqs</artifactId>
+        <version>${project.version}</version>
+        <classifier>classes</classifier>
         <scope>provided</scope>
       </dependency>
       <!-- == Extra platform JARs/WARs -->
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-wcm-quickstart</artifactId>
-        <version>${project.version}</version>
-        <type>war</type>
-        <scope>provided</scope>
-      </dependency>
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-web-service-client</artifactId>
@@ -147,12 +174,6 @@
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-webeditor</artifactId>
-        <version>${project.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-webeditor-taglib</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
       </dependency>
@@ -190,21 +211,4 @@
         </snapshots>
     </repository>
   </repositories>
-  
-  <build>
-    <extensions>
-        <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-webdav-jackrabbit</artifactId>
-                <version>2.2</version>
-        </extension>
-    </extensions>
-  </build>
-  
-  <distributionManagement>
-    <site>
-        <id>alfresco-internal</id>
-        <url>dav:https://artifacts.alfresco.com/nexus/content/repositories/alfresco-docs/alfresco-platform-distribution/latest</url>
-    </site>
-  </distributionManagement>
 </project>

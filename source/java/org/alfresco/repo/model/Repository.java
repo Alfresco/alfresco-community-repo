@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -64,10 +64,12 @@ public class Repository implements ApplicationContextAware
     // company home
     private StoreRef companyHomeStore; // ie. workspace://SpaceStore
     private String companyHomePath;    // ie. /app:company_home
+    private String sharedHomePath;     // ie. /app:shared
     
     // note: cache is tenant-aware (if using EhCacheAdapter shared cache)
     private SimpleCache<String, NodeRef> singletonCache; // eg. for companyHomeNodeRef
     private final String KEY_COMPANYHOME_NODEREF = "key.companyhome.noderef";
+    private final String KEY_SHAREDHOME_NODEREF = "key.sharedhome.noderef";
     
     
     /**
@@ -90,6 +92,16 @@ public class Repository implements ApplicationContextAware
         this.companyHomePath = companyHomePath;
     }
     
+    /**
+     * Sets the Shared Home Path
+     * 
+     * @param sharedHomePath
+     */
+    public void setSharedHomePath(String sharedHomePath)
+    {
+        this.sharedHomePath = sharedHomePath;
+    }
+
     public void setSingletonCache(SimpleCache<String, NodeRef> singletonCache)
     {
         this.singletonCache = singletonCache;
@@ -212,16 +224,50 @@ public class Repository implements ApplicationContextAware
                             if (refs.size() != 1)
                             {
                                 throw new IllegalStateException("Invalid company home path: " + companyHomePath + " - found: " + refs.size());
-                                }
-                                return refs.get(0);
                             }
-                        }, true);
-                    }
-                }, AuthenticationUtil.getSystemUserName());
+                            return refs.get(0);
+                        }
+                    }, true);
+                }
+            }, AuthenticationUtil.getSystemUserName());
             
             singletonCache.put(KEY_COMPANYHOME_NODEREF, companyHomeRef);
         }
         return companyHomeRef;
+    }
+    
+    /**
+     * Gets the Shared Home. Note this is tenant-aware if the correct Cache is supplied.
+     *  
+     * @return  shared home node ref
+     */
+    public NodeRef getSharedHome()
+    {
+        NodeRef sharedHomeRef = singletonCache.get(KEY_SHAREDHOME_NODEREF);
+        if (sharedHomeRef == null)
+        {
+            sharedHomeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                public NodeRef doWork() throws Exception
+                {
+                    return retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
+                    {
+                        public NodeRef execute() throws Exception
+                        {
+                            List<NodeRef> refs = searchService.selectNodes(nodeService.getRootNode(companyHomeStore), sharedHomePath, null, namespaceService, false);
+                            if (refs.size() != 1)
+                            {
+                                throw new IllegalStateException("Invalid shared home path: " + sharedHomePath + " - found: " + refs.size());
+                            }
+                            return refs.get(0);
+                        }
+                    }, true);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+            
+            singletonCache.put(KEY_SHAREDHOME_NODEREF, sharedHomeRef);
+        }
+        return sharedHomeRef;
     }
 
     /**

@@ -16,7 +16,7 @@
       <property name="RepositoryHelper" ref="repositoryHelper" />
    </bean>
    
-   <!--  User Home Node Locator Implementation -->
+   <!-- User Home Node Locator Implementation -->
    <bean id="userHomeNodeLocator" class="org.alfresco.repo.nodelocator.UserHomeNodeLocator" parent="baseNodeLocator">
       <property name="RepositoryHelper" ref="repositoryHelper" />
    </bean>
@@ -24,6 +24,11 @@
    <!-- Sites Home Node Locator Implementation -->
    <bean id="sitesHomeNodeLocator" class="org.alfresco.repo.nodelocator.SitesHomeNodeLocator" parent="baseNodeLocator">
       <property name="SiteService" ref="SiteService" />
+   </bean>
+   
+   <!-- Shared Home Node Locator Implementation -->
+   <bean id="sharedHomeNodeLocator" class="org.alfresco.repo.nodelocator.SharedHomeNodeLocator" parent="baseNodeLocator">
+      <property name="RepositoryHelper" ref="repositoryHelper" />
    </bean>
    
    <!--  Ancestor Node Locator Implementation -->

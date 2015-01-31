@@ -36,6 +36,7 @@ import javax.mail.internet.MimeMessage;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -48,6 +49,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -90,6 +92,7 @@ public abstract class AbstractMailActionExecuterTest
     protected static PersonService PERSON_SERVICE;
     protected static AuthorityService AUTHORITY_SERVICE;
     protected static NodeService NODE_SERVICE;
+    protected static PermissionService PERMISSION_SERVICE;
 
     protected static boolean WAS_IN_TEST_MODE;
 
@@ -102,6 +105,7 @@ public abstract class AbstractMailActionExecuterTest
         PERSON_SERVICE = appCtx.getBean("PersonService", PersonService.class);
         NODE_SERVICE = appCtx.getBean("NodeService", NodeService.class);
         AUTHORITY_SERVICE = appCtx.getBean("AuthorityService", AuthorityService.class);
+        PERMISSION_SERVICE = appCtx.getBean("PermissionService", PermissionService.class);
 
         WAS_IN_TEST_MODE = ACTION_EXECUTER.isTestMode();
         ACTION_EXECUTER.setTestMode(true);
@@ -529,6 +533,129 @@ public abstract class AbstractMailActionExecuterTest
     }
 
     /**
+     * Test for MNT-12464
+     * @throws Exception
+     */
+    @Test
+    public void testMultipleIdenticalEmailsToUser() throws Exception
+    {
+        final String USER_1 = "user12464_1";
+        final String USER_2 = "user12464_2";
+        final String USER_3 = "user12464_3";
+        final String USER_6 = "user12464_6";
+
+        final String USER_4_USERNAME = "user12464_4@mnt12464mail.com";
+        final String USER_5_USERNAME = "user12464_5@mnt12464mail.com";
+
+        String[] users = new String[] { USER_1, USER_2, USER_3, USER_4_USERNAME, USER_5_USERNAME };
+
+        final String GROUP_1_SHORT_NAME = "mnt12464group1";
+        final String GROUP_1 = "GROUP_" + GROUP_1_SHORT_NAME;
+        final String GROUP_2_SHORT_NAME = "mnt12464group2";
+        final String GROUP_2 = "GROUP_" + GROUP_2_SHORT_NAME;
+
+        try
+        {
+            createUser(USER_1, null);
+            createUser(USER_2, null);
+            createUser(USER_3, null);
+            AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, GROUP_1_SHORT_NAME);
+            AUTHORITY_SERVICE.createAuthority(AuthorityType.GROUP, GROUP_2_SHORT_NAME);
+            AUTHORITY_SERVICE.addAuthority(GROUP_1, USER_1);
+            AUTHORITY_SERVICE.addAuthority(GROUP_1, USER_2);
+            AUTHORITY_SERVICE.addAuthority(GROUP_2, USER_1);
+            AUTHORITY_SERVICE.addAuthority(GROUP_2, USER_2);
+            AUTHORITY_SERVICE.addAuthority(GROUP_2, USER_3);
+
+            // these persons should be without emails
+            PropertyMap personProps = new PropertyMap();
+            personProps.put(ContentModel.PROP_USERNAME, USER_4_USERNAME);
+            personProps.put(ContentModel.PROP_FIRSTNAME, USER_4_USERNAME);
+            personProps.put(ContentModel.PROP_LASTNAME, USER_4_USERNAME);
+            PERSON_SERVICE.createPerson(personProps);
+            AUTHORITY_SERVICE.addAuthority(GROUP_1, USER_4_USERNAME);
+            AUTHORITY_SERVICE.addAuthority(GROUP_2, USER_4_USERNAME);
+
+            personProps = new PropertyMap();
+            personProps.put(ContentModel.PROP_USERNAME, USER_5_USERNAME);
+            personProps.put(ContentModel.PROP_FIRSTNAME, USER_5_USERNAME);
+            personProps.put(ContentModel.PROP_LASTNAME, USER_5_USERNAME);
+            PERSON_SERVICE.createPerson(personProps);
+
+            Action mailAction1 = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+            mailAction1.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+            ArrayList<String> toMany1 = new ArrayList<String>();
+            toMany1.add(USER_1);
+            toMany1.add(GROUP_1);
+            toMany1.add(USER_2);
+            toMany1.add(GROUP_2);
+            toMany1.add(USER_3);
+            toMany1.add(USER_4_USERNAME);
+            toMany1.add(USER_5_USERNAME);
+            mailAction1.setParameterValue(MailActionExecuter.PARAM_TO_MANY, toMany1);
+            mailAction1.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing MNT-12464");
+            mailAction1.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
+            mailAction1.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+
+            ACTION_EXECUTER.resetTestSentCount();
+            ACTION_SERVICE.executeAction(mailAction1, null);
+
+            Assert.assertEquals("Must be received one letter on each recipient", users.length, ACTION_EXECUTER.getTestSentCount());
+
+            // testing for GROUP_EVERYONE
+            
+            ACTION_EXECUTER.resetTestSentCount();
+            everyoneSending();
+            int before = ACTION_EXECUTER.getTestSentCount();
+            // create one additional user
+            NodeRef user6 = createUser(USER_6, null);
+            PERMISSION_SERVICE.setInheritParentPermissions(user6, false);
+            PERMISSION_SERVICE.deletePermissions(user6);
+
+            // USER_6 not exist for USER_1, but he will be added to recipients
+            int after = AuthenticationUtil.runAs(new RunAsWork<Integer>()
+            {
+                @Override
+                public Integer doWork() throws Exception
+                {
+                    ACTION_EXECUTER.resetTestSentCount();
+                    everyoneSending();
+                    return ACTION_EXECUTER.getTestSentCount();
+                }
+            }, USER_1);
+
+            Assert.assertEquals("One additional user was created, quantity of recipients GROUP_EVERYONE must be +1 user", 1, after - before);
+        }
+        finally
+        {
+            PERSON_SERVICE.deletePerson(USER_1);
+            PERSON_SERVICE.deletePerson(USER_2);
+            PERSON_SERVICE.deletePerson(USER_3);
+            PERSON_SERVICE.deletePerson(USER_4_USERNAME);
+            PERSON_SERVICE.deletePerson(USER_5_USERNAME);
+            PERSON_SERVICE.deletePerson(USER_6);
+            AUTHORITY_SERVICE.deleteAuthority(GROUP_1);
+            AUTHORITY_SERVICE.deleteAuthority(GROUP_2);
+        }
+    }
+
+    private void everyoneSending()
+    {
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+        ArrayList<String> toMany = new ArrayList<String>();
+        toMany.add(PERMISSION_SERVICE.getAllAuthorities());
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO_MANY, toMany);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing MNT-12464");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+
+        ACTION_EXECUTER.resetTestSentCount();
+
+        ACTION_SERVICE.executeAction(mailAction, null);
+    }
+
+    /**
      * ACE-2564
      */
     @Test
@@ -537,14 +664,25 @@ public abstract class AbstractMailActionExecuterTest
         final Serializable recipients = (Serializable) Arrays.asList(BRITISH_USER.getUsername());
         final String subject = "";
         final String template = "alfresco/templates/mail/test.txt.ftl";
-        
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(EXTERNAL_USER.getUsername());
-        
         MimeMessage message = null;
+
+
         try
         {
+
+            // these persons should be without emails
+
+
+
+
+
+            // testing for GROUP_EVERYONE
+            
             final String tenantId = getUsersHomeTenant(BRITISH_USER.getUsername());
+
+            // USER_6 not exist for USER_1, but he will be added to recipients
             message = TenantUtil.runAsTenant(new TenantRunAsWork<MimeMessage>()
             {
                 @Override
@@ -562,5 +700,7 @@ public abstract class AbstractMailActionExecuterTest
             AuthenticationUtil.popAuthentication();
         }
     }
+
+
 
 }

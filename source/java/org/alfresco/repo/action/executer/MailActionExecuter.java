@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -555,7 +555,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             return messages;
         }
         
-        List<Pair<String, Locale>> recipients = getRecipients(ruleAction);
+        Collection<Pair<String, Locale>> recipients = getRecipients(ruleAction);
         
         Pair<InternetAddress, Locale> from = getFrom(ruleAction);
         
@@ -1141,10 +1141,9 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     }
     
     @SuppressWarnings("unchecked")
-    private List<Pair<String, Locale>> getRecipients(Action ruleAction) 
+    private Collection<Pair<String, Locale>> getRecipients(Action ruleAction) 
     {
-        
-        List<Pair<String, Locale>> recipients = new LinkedList<Pair<String,Locale>>();
+        Map<String, Pair<String, Locale>> recipients = new HashMap<String, Pair<String,Locale>>();
         
         // set recipient
         String to = (String)ruleAction.getParameterValue(PARAM_TO);
@@ -1155,7 +1154,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             {
                 locale = getLocaleForUser(to);
             }
-            recipients.add(new Pair<String, Locale>(to, locale));
+            recipients.put(to, new Pair<String, Locale>(to, locale));
         }
         else
         {
@@ -1186,7 +1185,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         // Check the user name to be a valid email and we don't need to log an error in this case
                         // ALF-19231
                         // Validate the email, allowing for local email addresses
-                        if (authority != null && authority.length() != 0)
+                        if ((authority != null) && (authority.length() != 0) && (!recipients.containsKey(authority)))
                         {
                             if (personExists(authority))
                             {
@@ -1194,7 +1193,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                 if (address != null && address.length() != 0 && validateAddress(address))
                                 {
                                     Locale locale = getLocaleForUser(authority);
-                                    recipients.add(new Pair<String, Locale>(address, locale));
+                                    recipients.put(authority, new Pair<String, Locale>(address, locale));
                                 }
                                 else
                                 {
@@ -1202,13 +1201,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                     if (validateAddresses && emailValidator.isValid(authority))
                                     {
                                         Locale locale = getLocaleForUser(authority);
-                                        recipients.add(new Pair<String, Locale>(authority, locale));
+                                        recipients.put(authority, new Pair<String, Locale>(authority, locale));
                                     }
                                 }
                             }
                             else
                             {
-                                recipients.add(new Pair<String, Locale>(authority, null));
+                                recipients.put(authority, new Pair<String, Locale>(authority, null));
                             }
                         }
                     }
@@ -1227,6 +1226,10 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                         
                         for (String userAuth : users)
                         {
+                            if (recipients.containsKey(userAuth))
+                            {
+                                continue;
+                            }
                             if (personExists(userAuth))
                             {
                                 // Check the user name to be a valid email and we don't need to log an error in this case
@@ -1236,7 +1239,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                 if (address != null && address.length() != 0 && validateAddress(address))
                                 {
                                     Locale locale = getLocaleForUser(userAuth);
-                                    recipients.add(new Pair<String, Locale>(address, locale));
+                                    recipients.put(userAuth, new Pair<String, Locale>(address, locale));
                                 }
                                 else
                                 {
@@ -1246,14 +1249,14 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                                         if (userAuth != null && userAuth.length() != 0)
                                         {
                                             Locale locale = getLocaleForUser(userAuth);
-                                            recipients.add(new Pair<String, Locale>(userAuth, locale));
+                                            recipients.put(userAuth, new Pair<String, Locale>(userAuth, locale));
                                         }
                                     }
                                 }
                             }
                             else
                             {
-                                recipients.add(new Pair<String, Locale>(authority, null));
+                                recipients.put(userAuth, new Pair<String, Locale>(authority, null));
                             }
                         }
                     }
@@ -1274,7 +1277,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                 );
             }
         }
-        return recipients;
+        return recipients.values();
     }
     
     public boolean personExists(final String user)

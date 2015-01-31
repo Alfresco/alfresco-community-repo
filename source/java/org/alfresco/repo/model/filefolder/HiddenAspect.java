@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,7 @@ import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -129,11 +130,17 @@ public class HiddenAspect
     private FileFolderService fileFolderService;
     private SearchService searchService;
     private PolicyComponent policyComponent;
+    private BehaviourFilter behaviourFilter;
 
     public HiddenAspect()
     {
     }
     
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
 		this.policyComponent = policyComponent;
@@ -409,7 +416,15 @@ public class HiddenAspect
             // already has the hidden aspect applied (it may have been applied for a different pattern).
             for(FileInfo file : files)
             {
-                applyHidden(file, filter);
+                behaviourFilter.disableBehaviour(file.getNodeRef(), ContentModel.ASPECT_LOCKABLE);
+                try
+                {
+                    applyHidden(file, filter);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(file.getNodeRef(), ContentModel.ASPECT_LOCKABLE);
+                }
             }
         }
     }
@@ -445,7 +460,15 @@ public class HiddenAspect
             // already has the hidden aspect applied (it may have been applied for a different pattern).
             for(FileInfo file : files)
             {
-                applyHidden(file, filter);
+                behaviourFilter.disableBehaviour(file.getNodeRef(), ContentModel.ASPECT_LOCKABLE);
+                try
+                {
+                    applyHidden(file, filter);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(file.getNodeRef(), ContentModel.ASPECT_LOCKABLE);
+                }
             }
         }
     }
@@ -466,8 +489,22 @@ public class HiddenAspect
 	            // remove hidden aspect only if it doesn't match a hidden pattern
 	            if(isHidden(name) == null)
 	            {
-	                removeHiddenAspect(file.getNodeRef());
-	                removeIndexControlAspect(file.getNodeRef());
+                        behaviourFilter.disableBehaviour(file.getNodeRef(), ContentModel.ASPECT_LOCKABLE);
+                        try
+                        {
+                            if (hasHiddenAspect(file.getNodeRef()))
+                            {
+                                removeHiddenAspect(file.getNodeRef());
+                            }
+                            if (hasIndexControlAspect(file.getNodeRef()))
+                            {
+                                removeIndexControlAspect(file.getNodeRef());
+                            }
+                        }
+                        finally
+                        {
+                            behaviourFilter.enableBehaviour(file.getNodeRef(), ContentModel.ASPECT_LOCKABLE);
+                        }
 	
 	                if(file.isFolder())
 	                {

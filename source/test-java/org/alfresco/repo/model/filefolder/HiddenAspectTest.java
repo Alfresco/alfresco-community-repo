@@ -2,6 +2,7 @@ package org.alfresco.repo.model.filefolder;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -30,13 +31,14 @@ import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParser;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
-import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -76,6 +78,7 @@ public class HiddenAspectTest
     private FileFolderService fileFolderService;
     private MutableAuthenticationService authenticationService;
     private PermissionService permissionService;
+    private CheckOutCheckInService cociService;
     private UserTransaction txn;
 
     private SearchService searchService;
@@ -106,6 +109,7 @@ public class HiddenAspectTest
         hiddenAspect = (HiddenAspect) ctx.getBean("hiddenAspect");
         interceptor = (FilenameFilteringInterceptor) ctx.getBean("filenameFilteringInterceptor");
         namespacePrefixResolver = (DictionaryNamespaceComponent) ctx.getBean("namespaceService");
+        cociService = (CheckOutCheckInService) ctx.getBean("checkOutCheckInService");
         imapService = serviceRegistry.getImapService();
         personService = serviceRegistry.getPersonService();
         searchService = serviceRegistry.getSearchService();
@@ -570,6 +574,58 @@ public class HiddenAspectTest
         }
         finally
         {
+            FileFilterMode.clearClient();
+        }
+    }
+    
+    @Test
+    public void testFolderRename()
+    {
+        FileFilterMode.setClient(Client.cmis);
+        NodeRef workingCopyNodeRef = null;
+
+        try
+        {
+            String guid  = GUID.generate();
+            String nodeName = "MyFolder" + guid;
+            String newName = "AnotherFolder" + guid;
+            NodeRef node = fileFolderService.create(topNodeRef, nodeName, ContentModel.TYPE_FOLDER).getNodeRef();
+            NodeRef checkedOutNode = fileFolderService.create(node, guid + ".lockedchild",  ContentModel.TYPE_CONTENT).getNodeRef();
+
+            ResultSet results = searchForName(nodeName);
+            assertEquals("", 1, results.length());
+            
+            workingCopyNodeRef = cociService.checkout(checkedOutNode);
+            assertNotNull(workingCopyNodeRef);
+            assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_CHECKED_OUT));
+            assertTrue(nodeService.hasAspect(checkedOutNode, ContentModel.ASPECT_LOCKABLE));
+    
+            try
+            {
+                fileFolderService.rename(node, newName);
+            }
+            catch (NodeLockedException e)
+            {
+                fail("It should be possible to rename folder with locked items");
+            }
+            catch (FileExistsException e)
+            {
+                fail();
+            }
+            catch (FileNotFoundException e)
+            {
+                fail();
+            }
+            
+            results = searchForName(nodeName);
+            assertEquals("File with old name should not be found", 0, results.length());
+    
+            results = searchForName(newName);
+            assertEquals("File with new name should be found", 1, results.length());
+        }
+        finally
+        {
+            cociService.cancelCheckout(workingCopyNodeRef);
             FileFilterMode.clearClient();
         }
     }

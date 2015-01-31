@@ -15,6 +15,7 @@
       <property name="fileFolderService" ref="fileFolderService"/>
       <property name="searchService" ref="searchService"/>
       <property name="policyComponent" ref="policyComponent"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
 
       <property name="patterns">
          <list>

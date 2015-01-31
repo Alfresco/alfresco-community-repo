@@ -442,9 +442,7 @@
                            </goals>
                            <configuration>
                              <includes>
-                             <!--
                                <include>**/FormUIGetRestApiIT.java</include>
-                               -->
                              </includes>
                            </configuration>
                         </execution>

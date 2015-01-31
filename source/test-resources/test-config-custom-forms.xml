@@ -5,7 +5,7 @@
          <element-reader element-name="forms" class="org.alfresco.web.config.forms.FormsElementReader"/>
       </element-readers>
       <evaluators>
-         <evaluator id="node-type" class="org.alfresco.web.scripts.forms.FormUIGetRestApiTest$NodeTypeEvaluatorExtend" />
+         <evaluator id="node-type" class="org.alfresco.web.scripts.forms.FormUIGetRestApiIT$NodeTypeEvaluatorExtend" />
       </evaluators>
    </plug-ins>
    

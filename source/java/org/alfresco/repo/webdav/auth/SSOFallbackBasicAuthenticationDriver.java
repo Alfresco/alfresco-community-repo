@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -115,7 +116,15 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
                     if (logger.isDebugEnabled())
                         logger.debug("Authenticating user '" + username + "'");
     
-                    authenticationService.authenticate(username, password.toCharArray());
+                    Authorization auth = new Authorization(username, password);
+                    if (auth.isTicket())
+                    {
+                        authenticationService.validate(auth.getTicket());
+                    }
+                    else
+                    {
+                        authenticationService.authenticate(username, password.toCharArray());
+                    }
 
                     final RetryingTransactionCallback<SessionUser> callback = new RetryingTransactionCallback<SessionUser>()
                     {

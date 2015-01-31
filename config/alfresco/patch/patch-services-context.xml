@@ -1096,4 +1096,27 @@
         </property>
     </bean>
 
+   <bean id="patch.fixWebscriptTemplate" class="org.alfresco.repo.admin.patch.impl.FixTemplatePatch"
+      parent="basePatch">
+      <property name="id" value="patch.fixWebscriptTemplate" />
+      <property name="description" value="patch.fixWebscriptTemplate.description" />
+      <property name="fixesFromSchema">
+         <value>0</value>
+      </property>
+      <property name="fixesToSchema">
+         <value>9000</value>
+      </property>
+      <property name="targetSchema">
+         <value>9001</value>
+      </property>
+      <property name="contentService" ref="ContentService"/>
+      <property name="repository" ref="repositoryHelper"/>
+      <property name="target">
+          <value>/app:company_home/app:dictionary/cm:webscripts/cm:org/cm:alfresco/cm:sample/cm:blogsearch.get.html.ftl</value>
+      </property>
+      <property name="source">
+          <value>alfresco/bootstrap/webscripts/blogsearch.get.html.ftl</value>
+      </property>
+   </bean>
+
 </beans>

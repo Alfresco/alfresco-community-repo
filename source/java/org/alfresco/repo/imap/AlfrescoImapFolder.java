@@ -415,11 +415,14 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
             //check X-Alfresco-NodeRef-ID header
             try
             {
-                uuid = message.getHeader(AlfrescoImapConst.X_ALF_NODEREF_ID)[0];
-                result = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore", uuid);
-                if (nodeService.exists(result) == false)
+                if (message.getHeader(AlfrescoImapConst.X_ALF_NODEREF_ID) != null)
                 {
-                    result = null;
+                    uuid = message.getHeader(AlfrescoImapConst.X_ALF_NODEREF_ID)[0];
+                    result = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore", uuid);
+                    if (nodeService.exists(result) == false)
+                    {
+                        result = null;
+                    }
                 }
             }
             catch (MessagingException e)

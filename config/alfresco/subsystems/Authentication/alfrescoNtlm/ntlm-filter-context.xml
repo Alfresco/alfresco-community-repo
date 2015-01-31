@@ -8,6 +8,21 @@
       </property>
    </bean>
 
+   <bean id="ntlm_SSOFallbackBasicAuthenticationDriver" class="org.alfresco.repo.webdav.auth.SSOFallbackBasicAuthenticationDriver">
+      <property name="authenticationService">
+         <ref bean="AuthenticationService" />
+      </property>
+      <property name="personService">
+         <ref bean="personService" />
+      </property>
+      <property name="nodeService">
+         <ref bean="nodeService"/>
+      </property>
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+   </bean>
+
    <bean id="globalAuthenticationFilter" class="org.alfresco.web.app.servlet.NTLMAuthenticationFilter">
       <property name="active">
          <value>${ntlm.authentication.sso.enabled}</value>
@@ -101,6 +116,9 @@
       </property>
       <property name="remoteUserMapper">
          <ref bean="RemoteUserMapper" />
+      </property>
+      <property name="fallback">
+         <ref bean="ntlm_SSOFallbackBasicAuthenticationDriver"/>
       </property>
    </bean>
 

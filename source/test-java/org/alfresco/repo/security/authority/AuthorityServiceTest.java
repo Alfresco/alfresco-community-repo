@@ -19,10 +19,12 @@
 package org.alfresco.repo.security.authority;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,13 +33,14 @@ import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
-
 import net.sf.acegisecurity.AuthenticationCredentialsNotFoundException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -46,8 +49,11 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
+import org.alfresco.repo.site.SiteMembership;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
@@ -60,13 +66,18 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyMap;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -81,6 +92,8 @@ public class AuthorityServiceTest extends TestCase
     private AuthorityService authorityService;
     private AuthorityService pubAuthorityService;
     private PersonService personService;
+    private AuthorityDAOImpl authorityDAO;
+    private SiteService siteService;
     private UserTransaction tx;
     private AclDAO aclDaoComponent;
     private NodeService nodeService;
@@ -88,7 +101,9 @@ public class AuthorityServiceTest extends TestCase
     private NodeArchiveService nodeArchiveService;
     private PolicyComponent policyComponent;
     private TransactionService transactionService;
-    
+
+    private SimpleCache<Pair<String, String>, List<ChildAssociationRef>> zoneToAuthorityCache;
+
     public AuthorityServiceTest()
     {
         super();
@@ -103,6 +118,7 @@ public class AuthorityServiceTest extends TestCase
     private int GRP_CNT = 0;
     private int ROOT_GRP_CNT = 0;
     
+    @SuppressWarnings("unchecked")
     public void setUp() throws Exception
     {
         if (AlfrescoTransactionSupport.getTransactionReadState() != TxnReadState.TXN_NONE)
@@ -117,14 +133,17 @@ public class AuthorityServiceTest extends TestCase
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         pubAuthorityService = (AuthorityService) ctx.getBean("AuthorityService");
         personService = (PersonService) ctx.getBean("personService");
+        siteService = (SiteService) ctx.getBean("siteService");
         authenticationDAO = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
+        authorityDAO = (AuthorityDAOImpl) ctx.getBean("authorityDAO");
         aclDaoComponent = (AclDAO) ctx.getBean("aclDAO");
         nodeService = (NodeService) ctx.getBean("nodeService");
         authorityBridgeTableCache = (AuthorityBridgeTableAsynchronouslyRefreshedCache) ctx.getBean("authorityBridgeTableCache");
         nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         policyComponent = (PolicyComponent) ctx.getBean("policyComponent");
         transactionService = (TransactionService) ctx.getBean(ServiceRegistry.TRANSACTION_SERVICE.getLocalName());
-        
+        zoneToAuthorityCache = (SimpleCache<Pair<String, String>, List<ChildAssociationRef>>) ctx.getBean("zoneToAuthorityCache");
+
         String defaultAdminUser = AuthenticationUtil.getAdminUserName();
         AuthenticationUtil.setFullyAuthenticatedUser(defaultAdminUser);
         
@@ -134,6 +153,7 @@ public class AuthorityServiceTest extends TestCase
         // note: currently depends on any existing (and/or bootstrap) group data - eg. default site "swsdp" (Sample Web Site Design Project)
         SiteService siteService = (SiteService) ctx.getBean("SiteService");
         SITE_CNT = siteService.listSites(defaultAdminUser).size();
+
         GRP_CNT = DEFAULT_GRP_CNT + (DEFAULT_SITE_GRP_CNT * SITE_CNT);
         ROOT_GRP_CNT = DEFAULT_GRP_CNT + (DEFAULT_SITE_ROOT_GRP_CNT * SITE_CNT);
         
@@ -1504,4 +1524,121 @@ public class AuthorityServiceTest extends TestCase
     {
         return pubAuthorityService.getAuthorities(type, null, null, false, true, new PagingRequest(0, Integer.MAX_VALUE, null)).getPage();
     }
+    
+    protected void createUser(String userName, String password)
+    {
+        if (authenticationService.authenticationExists(userName) == false)
+        {
+            authenticationService.createAuthentication(userName, password.toCharArray());
+            
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            personService.createPerson(ppOne);
+        }
+    }
+
+	public void testMNT12849()
+	{
+		AuthenticationUtil.pushAuthentication();
+		AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+		// intentionally low zone authority sample size
+		int saveZoneAuthoritySampleSize = authorityDAO.getZoneAuthoritySampleSize();
+		authorityDAO.setZoneAuthoritySampleSize(2);
+
+		try
+		{
+    		// create user
+    		final String userName = GUID.generate();
+    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+    		{
+    			@Override
+                public Void execute() throws Throwable
+                {
+    				createUser(userName, "password");
+    	            return null;
+                }
+    		}, false, true);
+    
+    		final Set<String> zones = new HashSet<String>();
+    		zones.add(AuthorityService.ZONE_APP_SHARE);
+    
+    		final List<SiteInfo> siteInfos = new LinkedList<>();
+    
+    		// create some sites with the user as member
+    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+    		{
+    			@Override
+                public Void execute() throws Throwable
+                {
+    				for(int i = 0; i < 5; i++)
+    				{
+    					String siteName = GUID.generate();
+    					SiteInfo siteInfo = siteService.createSite("", siteName, siteName, siteName, SiteVisibility.PUBLIC);
+    					siteInfos.add(siteInfo);
+    
+    					siteService.setMembership(siteName, userName, SiteModel.SITE_COLLABORATOR);
+    				}
+    
+    	            return null;
+                }
+    		}, false, true);
+    
+    		AuthenticationUtil.popAuthentication();
+    		AuthenticationUtil.pushAuthentication();
+    		AuthenticationUtil.setFullyAuthenticatedUser(userName);
+    
+    		final String authority = AuthenticationUtil.getFullyAuthenticatedUser();
+    		final int maxResults = 1; // intentionally less than the authority.zoneAuthoritySampleSize
+
+    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+    		{
+    			@Override
+                public Void execute() throws Throwable
+                {
+    			    // get sites - size is intentionally less than the authority.zoneAuthoritySampleSize
+    			    // this is used by the legacy sites REST api
+    		        siteService.listSites(userName, 2);
+    		        return null;
+                }
+    		}, false, true);
+    
+    		transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+    		{
+    			@Override
+                public Void execute() throws Throwable
+                {
+    			    int numSiteMemberships = 5;
+    
+    		        final List<Pair<SiteService.SortFields, Boolean>> sort = new ArrayList<Pair<SiteService.SortFields, Boolean>>();
+    		        sort.add(new Pair<SiteService.SortFields, Boolean>(SiteService.SortFields.SiteTitle, Boolean.TRUE));
+    		        sort.add(new Pair<SiteService.SortFields, Boolean>(SiteService.SortFields.Role, Boolean.TRUE));
+    
+    		    	PagingRequest pagingRequest = new PagingRequest(0, numSiteMemberships);
+    		    	pagingRequest.setRequestTotalCountMax(CannedQueryPageDetails.DEFAULT_PAGE_SIZE);
+
+                    // this is used by the public api sites REST api
+    		        PagingResults<SiteMembership> results = siteService.listSitesPaged(authority, sort, pagingRequest);
+    		        List<SiteMembership> siteMemberships = results.getPage();
+
+    		        assertEquals("Unexpected number of site memberships", numSiteMemberships, siteMemberships.size());
+
+    				return null;
+                }
+    		}, false, true);
+
+    		AuthenticationUtil.popAuthentication();
+		}
+		finally
+		{
+    		Pair<String, String> cacheKey = new Pair<String, String>("", AuthorityService.ZONE_APP_SHARE);
+    		zoneToAuthorityCache.remove(cacheKey);
+    		authorityDAO.setZoneAuthoritySampleSize(saveZoneAuthoritySampleSize);
+		}
+	}
 }

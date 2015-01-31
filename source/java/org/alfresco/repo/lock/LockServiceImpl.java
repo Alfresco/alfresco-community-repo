@@ -805,12 +805,14 @@ public class LockServiceImpl implements LockService,
     public void suspendLocks()
     {
        getBehaviourFilter().disableBehaviour(ContentModel.ASPECT_LOCKABLE);
+       lockableAspectInterceptor.disableForThread();
     }
     
     @Override
     public void enableLocks()
     {
        getBehaviourFilter().enableBehaviour(ContentModel.ASPECT_LOCKABLE);
+       lockableAspectInterceptor.enableForThread();
     }
 
     @Override

@@ -164,6 +164,12 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
         // only visible files are returned, relative to the client type.
         try
         {
+            if (!nodeService.exists(nodeRef))
+            {
+                // Node has disappeared
+                return ret;
+            }
+            
             final Client client = FileFilterMode.getClient();
             boolean notHidden = hiddenAspect.getVisibility(client, nodeRef) != Visibility.NotVisible;
             

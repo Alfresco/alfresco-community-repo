@@ -76,14 +76,14 @@ import org.springframework.context.ApplicationContextAware;
 public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 {
     protected static Log logger = LogFactory.getLog(FeedNotifier.class);
-    
+
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "ActivityFeedNotifier");
     private static final long LOCK_TTL = 30000L;
-    
+
     private static VmShutdownListener vmShutdownListener = new VmShutdownListener(FeedNotifierImpl.class.getName());
-    
+
     private static final String MSG_EMAIL_SUBJECT = "activities.feed.notifier.email.subject";
-    
+
     private NamespaceService namespaceService;
     private FileFolderService fileFolderService;
     private SearchService searchService;
@@ -94,49 +94,49 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
     private SysAdminParams sysAdminParams;
     private RepoAdminService repoAdminService;
     private UserNotifier userNotifier;
-    
+
     private ApplicationContext applicationContext;
-    
+
     private RepositoryLocation feedEmailTemplateLocation;
-    
+
     private int numThreads = 4;
     private int batchSize = 200;
-    
+
     public void setNumThreads(int numThreads)
     {
-    	this.numThreads = numThreads;
+        this.numThreads = numThreads;
     }
-    
+
     public void setBatchSize(int batchSize)
     {
-    	this.batchSize = batchSize;
+        this.batchSize = batchSize;
     }
-    
-	public void setUserNotifier(UserNotifier userNotifier)
+
+    public void setUserNotifier(UserNotifier userNotifier)
     {
-		this.userNotifier = userNotifier;
-	}
-    
+        this.userNotifier = userNotifier;
+    }
+
     public void setFileFolderService(FileFolderService fileFolderService)
     {
-		this.fileFolderService = fileFolderService;
-	}
+        this.fileFolderService = fileFolderService;
+    }
 
-	public void setSearchService(SearchService searchService)
-	{
-		this.searchService = searchService;
-	}
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
 
-	public void setNamespaceService(NamespaceService namespaceService)
-	{
-		this.namespaceService = namespaceService;
-	}
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
 
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
     }
-    
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -146,22 +146,22 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
     {
         this.jobLockService = jobLockService;
     }
-    
+
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
     }
-    
+
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
         this.sysAdminParams = sysAdminParams;
     }
-    
+
     public void setRepoAdminService(RepoAdminService repoAdminService)
     {
         this.repoAdminService = repoAdminService;
     }
-    
+
     /**
      * Perform basic checks to ensure that the necessary dependencies were injected.
      */
@@ -173,11 +173,11 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         PropertyCheck.mandatory(this, "transactionService", transactionService);
         PropertyCheck.mandatory(this, "sysAdminParams", sysAdminParams);
     }
-    
+
     public void execute(int repeatIntervalMins)
     {
         checkProperties();
-        
+
         // Bypass if the system is in read-only mode
         if (transactionService.isReadOnly())
         {
@@ -200,7 +200,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                 logger.info("Can't get lock. Assume multiple feed notifiers...");
                 return;
             }
-            
+
             if (logger.isTraceEnabled())
             {
                 logger.trace("Activities email notification started");
@@ -222,7 +222,7 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
             });
 
             executeInternal(repeatIntervalMins);
-            
+
             // Done
             if (logger.isTraceEnabled())
             {
@@ -260,38 +260,38 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
     {
         this.feedEmailTemplateLocation = feedEmailTemplateLocation;
     }
-    
+
     protected String getEmailTemplateRef()
     {
         String locationType = feedEmailTemplateLocation.getQueryLanguage();
-        
+
         if (locationType.equals(SearchService.LANGUAGE_XPATH))
         {
             StoreRef store = feedEmailTemplateLocation.getStoreRef();
             String xpath = feedEmailTemplateLocation.getPath();
-            
+
             try
             {
-                if (! feedEmailTemplateLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
+                if (!feedEmailTemplateLocation.getQueryLanguage().equals(SearchService.LANGUAGE_XPATH))
                 {
-                    logger.error("Cannot find the activities email template - repository location query language is not 'xpath': "+feedEmailTemplateLocation.getQueryLanguage());
+                    logger.error("Cannot find the activities email template - repository location query language is not 'xpath': " + feedEmailTemplateLocation.getQueryLanguage());
                     return null;
                 }
-                
+
                 List<NodeRef> nodeRefs = searchService.selectNodes(nodeService.getRootNode(store), xpath, null, namespaceService, false);
                 if (nodeRefs.size() != 1)
                 {
-                    logger.error("Cannot find the activities email template: "+xpath);
+                    logger.error("Cannot find the activities email template: " + xpath);
                     return null;
                 }
-                
+
                 return fileFolderService.getLocalizedSibling(nodeRefs.get(0)).toString();
-            } 
+            }
             catch (SearcherException e)
             {
                 logger.error("Cannot find the email template!", e);
             }
-            
+
             return null;
         }
         else if (locationType.equals(RepositoryLocation.LANGUAGE_CLASSPATH))
@@ -300,21 +300,21 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         }
         else
         {
-            logger.error("Unsupported location type: "+locationType);
+            logger.error("Unsupported location type: " + locationType);
             return null;
         }
     }
-    
+
     private void executeInternal(final int repeatIntervalMins)
     {
         final String emailTemplateRef = getEmailTemplateRef();
-        
+
         if (emailTemplateRef == null)
         {
             return;
         }
 
-        final String shareUrl = UrlUtil.getShareUrl(sysAdminParams); 
+        final String shareUrl = UrlUtil.getShareUrl(sysAdminParams);
 
         if (logger.isDebugEnabled())
         {
@@ -335,28 +335,28 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
             final String tenantDomain = TenantUtil.getCurrentDomain();
 
             // process the feeds using the batch processor {@link BatchProcessor}
-	        BatchProcessor.BatchProcessWorker<PersonInfo> worker = new BatchProcessor.BatchProcessWorker<PersonInfo>()
-	        {
-	            public String getIdentifier(final PersonInfo person)
-	            {
-	            	StringBuilder sb = new StringBuilder("Person ");
-	                sb.append(person.getUserName());
-	                return sb.toString();
-	            }
+            BatchProcessor.BatchProcessWorker<PersonInfo> worker = new BatchProcessor.BatchProcessWorker<PersonInfo>()
+            {
+                public String getIdentifier(final PersonInfo person)
+                {
+                    StringBuilder sb = new StringBuilder("Person ");
+                    sb.append(person.getUserName());
+                    return sb.toString();
+                }
 
-	            public void beforeProcess() throws Throwable
-	            {
-	                AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
-	            }
+                public void beforeProcess() throws Throwable
+                {
+                    AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
+                }
 
-	            public void afterProcess() throws Throwable
-	            {
-	                AuthenticationUtil.clearCurrentSecurityContext();
-	            }
+                public void afterProcess() throws Throwable
+                {
+                    AuthenticationUtil.clearCurrentSecurityContext();
+                }
 
-	            public void process(final PersonInfo person) throws Throwable
-	            {
-	            	final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
+                public void process(final PersonInfo person) throws Throwable
+                {
+                    final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
                     txHelper.setMaxRetries(0);
 
                     TenantUtil.runAsTenant(new TenantRunAsWork<Void>()
@@ -375,8 +375,8 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                             return null;
                         }
                     }, tenantDomain);
-	            }
-	            
+                }
+
                 private void processInternal(final PersonInfo person) throws Exception
                 {
                     final NodeRef personNodeRef = person.getNodeRef();
@@ -388,38 +388,38 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                             int entryCnt = result.getFirst();
                             final long maxFeedId = result.getSecond();
 
-	                        Long currentMaxFeedId = (Long)nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL_FEED_ID);
-	                        if ((currentMaxFeedId == null) || (currentMaxFeedId < maxFeedId))
-	                        {
-	                        	nodeService.setProperty(personNodeRef, ContentModel.PROP_EMAIL_FEED_ID, maxFeedId);
-	                        }
+                            Long currentMaxFeedId = (Long) nodeService.getProperty(personNodeRef, ContentModel.PROP_EMAIL_FEED_ID);
+                            if ((currentMaxFeedId == null) || (currentMaxFeedId < maxFeedId))
+                            {
+                                nodeService.setProperty(personNodeRef, ContentModel.PROP_EMAIL_FEED_ID, maxFeedId);
+                            }
 
-	                        userCnt.incrementAndGet();
-	                        feedEntryCnt.addAndGet(entryCnt);
-	                    }
-	                }
-	                catch (InvalidNodeRefException inre)
-	                {
-	                    // skip this person - eg. no longer exists ?
-	                    logger.warn("Skip feed notification for user ("+personNodeRef+"): " + inre.getMessage());
-	                }
-		        }
-	        };
+                            userCnt.incrementAndGet();
+                            feedEntryCnt.addAndGet(entryCnt);
+                        }
+                    }
+                    catch (InvalidNodeRefException inre)
+                    {
+                        // skip this person - eg. no longer exists ?
+                        logger.warn("Skip feed notification for user (" + personNodeRef + "): " + inre.getMessage());
+                    }
+                }
+            };
 
-	        // grab people for the batch processor in chunks of size batchSize
-	        BatchProcessWorkProvider<PersonInfo> provider = new BatchProcessWorkProvider<PersonInfo>()
-			{
-	        	private int skip = 0;
-	        	private int maxItems = batchSize;
+            // grab people for the batch processor in chunks of size batchSize
+            BatchProcessWorkProvider<PersonInfo> provider = new BatchProcessWorkProvider<PersonInfo>()
+            {
+                private int skip = 0;
+                private int maxItems = batchSize;
                 private boolean hasMore = true;
 
-				@Override
-				public int getTotalEstimatedWorkSize()
-				{
-					return personService.countPeople();
-				}
+                @Override
+                public int getTotalEstimatedWorkSize()
+                {
+                    return personService.countPeople();
+                }
 
-				@Override
+                @Override
                 public Collection<PersonInfo> getNextWork()
                 {
                     if (!hasMore)
@@ -432,18 +432,18 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
                     hasMore = people.hasMoreItems();
                     return page;
                 }
-	    };
+        };
 
             final RetryingTransactionHelper txHelper = transactionService.getRetryingTransactionHelper();
             txHelper.setMaxRetries(0);
 
-	        new BatchProcessor<PersonInfo>(
-	                "FeedNotifier",
-	                txHelper,
-	                provider,
-	                numThreads, batchSize,
-	                applicationContext,
-	                logger, 100).process(worker, true);
+            new BatchProcessor<PersonInfo>(
+                    "FeedNotifier",
+                    txHelper,
+                    provider,
+                    numThreads, batchSize,
+                    applicationContext,
+                    logger, 100).process(worker, true);
         }
         catch (Throwable e)
         {
@@ -459,8 +459,8 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         }
         finally
         {
-        	int count = userCnt.get();
-        	int entryCount = feedEntryCnt.get();
+            int count = userCnt.get();
+            int entryCount = feedEntryCnt.get();
 
             // assume sends are synchronous - hence bump up to last max feed id
             if (count > 0)
@@ -485,9 +485,9 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
         }
     }
     
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-	{
-		this.applicationContext = applicationContext;
-	}
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
+    }
 }

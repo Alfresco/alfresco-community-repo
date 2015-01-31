@@ -18,9 +18,15 @@
  */
 package org.alfresco.repo.web.scripts;
 
+import static org.mockito.Matchers.any;
+import static org.springframework.extensions.webscripts.Status.STATUS_OK;
+
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,6 +36,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.CronTriggerBean;
@@ -37,17 +44,13 @@ import org.alfresco.util.PropertyMap;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
-import org.springframework.extensions.webscripts.Authenticator;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
-
-import static org.springframework.extensions.webscripts.Status.*;
-
-import static org.mockito.Matchers.any;
 
 /**
  * Unit test to test runas function
@@ -56,6 +59,8 @@ import static org.mockito.Matchers.any;
  */
 public class RepositoryContainerTest extends BaseWebScriptTest
 {
+    private static final Pattern HIDDEN_EXCEPTION_PATTERN = Pattern.compile("Server error \\(\\d{8}\\)\\.  Details can be found in the server logs\\.");
+
     private MutableAuthenticationService authenticationService;
     private PersonService personService;
     private AuthenticationComponent authenticationComponent;
@@ -162,106 +167,273 @@ public class RepositoryContainerTest extends BaseWebScriptTest
         assertEquals(SUCCESS, response.getContentAsString());
     }
 
-
     public void testHideExceptions() throws Exception
     {
-        final Pattern patternHiddenException = Pattern.compile("Server error \\(\\d{8}\\)\\.  Details can be found in the server logs\\.");
         final String messageFormException = "Failed to persist field 'prop_cm_name'";
         final String messageAuthenticationException = "Authentication failed for Web Script";
-        
+
         RepositoryContainer repoContainer = (RepositoryContainer) getServer().getApplicationContext().getBean("webscripts.container");
         RepositoryContainer repoContainerMock = Mockito.spy(repoContainer);
 
-        // case: AlfrescoRuntimeException with SQLException cause
-        Mockito.doAnswer(new Answer<Object>()
-        {
-            public Object answer(InvocationOnMock invocation)
-            {
-                throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
-            }
-        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
-        try
-        {
-            repoContainerMock.executeScript(null, null, null);
-        }
-        catch (Exception e)
-        {
-            assertNull("SQLException cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { SQLException.class }));
-            assertTrue("Details should be in the server logs.", patternHiddenException.matcher(e.getMessage()).matches());
-        }
+        Class<?>[] defaultConfiguration = repoContainerMock.getNotPublicExceptions();
 
-        // case: AlfrescoRuntimeException with NOT SQLException cause
-        Mockito.doAnswer(new Answer<Object>()
-        {
-            public Object answer(InvocationOnMock invocation)
-            {
-                throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException());
-            }
-        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
         try
         {
-            repoContainerMock.executeScript(null, null, null);
-        }
-        catch (Exception e)
-        {
-            assertNotNull("NullPointerException cause should be visible for client", ExceptionStackUtil.getCause(e, new Class[] { NullPointerException.class }));
-            assertFalse("Details should be available for client", patternHiddenException.matcher(e.getMessage()).matches());
-        }
+            List<Class<?>> testExceptoins = new LinkedList<Class<?>>();
+            testExceptoins.add(SQLException.class);
+            repoContainerMock.setNotPublicExceptions(testExceptoins);
 
-        // case: RuntimeException with SQLException cause
-        Mockito.doAnswer(new Answer<Object>()
-        {
-            public Object answer(InvocationOnMock invocation)
+            // case: AlfrescoRuntimeException with SQLException cause
+            Mockito.doAnswer(new Answer<Object>()
             {
-                throw new RuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
             }
-        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
-        try
-        {
-            repoContainerMock.executeScript(null, null, null);
-        }
-        catch (Exception e)
-        {
-            assertNull("SQLException cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { SQLException.class }));
-            assertTrue("Details should be in the server logs.", patternHiddenException.matcher(e.getMessage()).matches());
-        }
+            catch (Exception e)
+            {
+                assertNull("SQLException cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { SQLException.class }));
+                assertTrue("Details should be in the server logs.", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
 
-        // case: FormException
-        Mockito.doAnswer(new Answer<Object>()
-        {
-            public Object answer(InvocationOnMock invocation)
+            // case: AlfrescoRuntimeException with NOT SQLException cause
+            Mockito.doAnswer(new Answer<Object>()
             {
-                throw new FormException(messageFormException);
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException());
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
             }
-        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
-        try
-        {
-            repoContainerMock.executeScript(null, null, null);
-        }
-        catch (Exception e)
-        {
-            assertTrue("FormException should be visible for client", e instanceof FormException);
-            assertFalse("Details should be available for client", patternHiddenException.matcher(e.getMessage()).matches());
-            assertTrue("Actual message should be available for client", e.getMessage().contains(messageFormException));
-        }
+            catch (Exception e)
+            {
+                assertNotNull("NullPointerException cause should be visible for client", ExceptionStackUtil.getCause(e, new Class[] { NullPointerException.class }));
+                assertFalse("Details should be available for client", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
 
-        // case: WebScriptException
-        Mockito.doAnswer(new Answer<Object>()
-        {
-            public Object answer(InvocationOnMock invocation)
+            // case: RuntimeException with SQLException cause
+            Mockito.doAnswer(new Answer<Object>()
             {
-                throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, messageAuthenticationException);
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new RuntimeException("AlfrescoRuntimeException", new SQLException("SQLException"));
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
             }
-        }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            catch (Exception e)
+            {
+                assertNull("SQLException cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { SQLException.class }));
+                assertTrue("Details should be in the server logs.", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
+
+            // case: FormException
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new FormException(messageFormException);
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertTrue("FormException should be visible for client", e instanceof FormException);
+                assertFalse("Details should be available for client", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+                assertTrue("Actual message should be available for client", e.getMessage().contains(messageFormException));
+            }
+
+            // case: WebScriptException
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, messageAuthenticationException);
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertTrue("WebScriptException should be visible for client", e instanceof WebScriptException);
+                assertFalse("Details should be available for client", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+                assertTrue("Actual message should be available for client", e.getMessage().contains(messageAuthenticationException));
+            }
+        }
+        finally
+        {
+            repoContainerMock.setNotPublicExceptions(Arrays.asList(defaultConfiguration));
+        }
+    }
+
+    public void testHideExceptionsConfiguration() throws Exception
+    {
+        final StringBuilder commandExecutionResult = new StringBuilder(128);
+        commandExecutionResult.append("Execution result: \n").append("   os:         ").append(System.getProperty("os.name")).append("\n").append("   command:    <TEST_COMMAND>")
+                .append("   succeeded:  ").append(false).append("\n").append("   exit code:  ").append(1).append("\n").append("   out:        ").append("<EMPTY>").append("\n")
+                .append("   err:        ").append("ERROR");
+
+        RepositoryContainer repoContainer = (RepositoryContainer) getServer().getApplicationContext().getBean("webscripts.container");
+        RepositoryContainer repoContainerMock = Mockito.spy(repoContainer);
+
+        Class<?>[] notPublicExceptions = repoContainerMock.getNotPublicExceptions();
+        List<Class<?>> defaultConfiguration = Arrays.asList(notPublicExceptions);
+
+        List<Class<?>> testExceptions = new LinkedList<Class<?>>();
+        testExceptions.add(SQLException.class);
+        testExceptions.add(ContentIOException.class);
+        repoContainerMock.setNotPublicExceptions(testExceptions);
+
         try
         {
-            repoContainerMock.executeScript(null, null, null);
+            // Case: MNT-12794 - test default configuration
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new ContentIOException(commandExecutionResult.toString());
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertNull("'ContentIOException' cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { ContentIOException.class }));
+                assertTrue("Details should be in the server logs.", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
+
+            // Case: MNT-12794 - ContentIOException in AlfrescoRuntimeException and default configuration
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+
+                    throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new ContentIOException(commandExecutionResult.toString()));
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertNull("'ContentIOException' cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { ContentIOException.class }));
+                assertTrue("Details should be in the server logs.", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
+
+            // case: AlfrescoRuntimeException without ContentIOException
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException("NullPointerException"));
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertNotNull("'NullPointerException' cause should be visible for client", ExceptionStackUtil.getCause(e, new Class[] { NullPointerException.class }));
+                assertFalse("Details should be available for client", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
+
+            // case: RuntimeException with several different exceptions which should be shown
+            List<Class<?>> updatedNotPublicExceptions = new LinkedList<Class<?>>(defaultConfiguration);
+            updatedNotPublicExceptions.add(NullPointerException.class);
+            repoContainerMock.setNotPublicExceptions(updatedNotPublicExceptions);
+
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new NullPointerException("NullPointerException"));
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertNull("'NullPointerException' cause should be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { NullPointerException.class }));
+                assertTrue("Details should be in the server logs.", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
+
+            // case: all exceptions must be shown
+            repoContainerMock.setNotPublicExceptions(null);
+
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new ContentIOException(commandExecutionResult.toString(), new NullPointerException(
+                            "NullPointerException")));
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertTrue("'AlfrescoRuntimeException' cause should not be hidden for client. Exception class: " + e.getClass().getName(), e instanceof AlfrescoRuntimeException);
+                assertNotNull("'ContentIOException' cause should not be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { ContentIOException.class }));
+                assertNotNull("'NullPointerException' cause should not be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { NullPointerException.class }));
+                assertFalse("Details should be available for client", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
+
+            // case: all exceptions must be shown
+            repoContainerMock.setNotPublicExceptions(defaultConfiguration);
+            repoContainerMock.setNotPublicExceptions(new LinkedList<Class<?>>());
+
+            Mockito.doAnswer(new Answer<Object>()
+            {
+                public Object answer(InvocationOnMock invocation)
+                {
+                    throw new AlfrescoRuntimeException("AlfrescoRuntimeException", new ContentIOException(commandExecutionResult.toString(), new NullPointerException(
+                            "NullPointerException")));
+                }
+            }).when(repoContainerMock).executeScriptInternal(any(WebScriptRequest.class), any(WebScriptResponse.class), any(Authenticator.class));
+
+            try
+            {
+                repoContainerMock.executeScript(null, null, null);
+            }
+            catch (Exception e)
+            {
+                assertTrue("'AlfrescoRuntimeException' cause should not be hidden for client. Exception class: " + e.getClass().getName(), e instanceof AlfrescoRuntimeException);
+                assertNotNull("'ContentIOException' cause should not be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { ContentIOException.class }));
+                assertNotNull("'NullPointerException' cause should not be hidden for client", ExceptionStackUtil.getCause(e, new Class[] { NullPointerException.class }));
+                assertFalse("Details should be available for client", HIDDEN_EXCEPTION_PATTERN.matcher(e.getMessage()).matches());
+            }
         }
-        catch (Exception e)
+        finally
         {
-            assertTrue("WebScriptException should be visible for client", e instanceof WebScriptException);
-            assertFalse("Details should be available for client", patternHiddenException.matcher(e.getMessage()).matches());
-            assertTrue("Actual message should be available for client", e.getMessage().contains(messageAuthenticationException));
+            repoContainerMock.setNotPublicExceptions(defaultConfiguration);
         }
     }
 }

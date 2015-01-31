@@ -134,7 +134,16 @@
       <property name="extension"><value>js</value></property>
    </bean>
 
-   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.TenantRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
+   <bean id="baseAlfrescoRepositoryContainer" parent="webscripts.abstractcontainer" abstract="true">
+      <property name="notPublicExceptions">
+         <list>
+            <value>java.sql.SQLException</value>
+            <value>org.alfresco.service.cmr.repository.ContentIOException</value>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.TenantRepositoryContainer" parent="baseAlfrescoRepositoryContainer" init-method="setup">
       <property name="configService" ref="webscripts.config" />
       <property name="name"><value>Repository</value></property>
       <property name="scriptObjects">

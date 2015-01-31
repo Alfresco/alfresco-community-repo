@@ -21,8 +21,8 @@ package org.alfresco.repo.web.scripts;
 import java.io.File;
 import java.io.IOException;
 import java.net.SocketException;
-import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -90,7 +90,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private long maxContentSize = (long) 4 * 1024 * 1024 * 1024; // 4gb
     private ThresholdOutputStreamFactory streamFactory = null;
 
-    private final static Class<?>[] HIDE_EXCEPTIONS = new Class[] { SQLException.class };
+    private Class<?>[] notPublicExceptions = new Class<?>[] {};
 
     /*
      * Shame init is already used (by TenantRepositoryContainer).
@@ -178,6 +178,25 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         this.authorityService = authorityService;
     }
 
+    /**
+     * Exceptions which may contain information that cannot be displayed in UI 
+     * 
+     * @param notPublicExceptions - {@link Class}&lt;?&gt;[] instance which contains list of not public exceptions
+     */
+    public void setNotPublicExceptions(List<Class<?>> notPublicExceptions)
+    {
+        this.notPublicExceptions = new Class<?>[] {};
+        if((null != notPublicExceptions) && !notPublicExceptions.isEmpty())
+        {
+            this.notPublicExceptions = notPublicExceptions.toArray(this.notPublicExceptions);
+        }
+    }
+
+    public Class<?>[] getNotPublicExceptions()
+    {
+        return notPublicExceptions;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.Container#getDescription()
      */
@@ -262,7 +281,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         }
         catch (RuntimeException e)
         {
-            Throwable hideCause = ExceptionStackUtil.getCause(e, HIDE_EXCEPTIONS);
+            Throwable hideCause = ExceptionStackUtil.getCause(e, notPublicExceptions);
             if (hideCause != null)
             {
                 AlfrescoRuntimeException alf = null;

@@ -44,7 +44,7 @@
       <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
-   <bean id="publicapi.container" class="org.alfresco.rest.api.PublicApiRepositoryContainer" parent="webscripts.abstractcontainer" init-method="setup">
+   <bean id="publicapi.container" class="org.alfresco.rest.api.PublicApiRepositoryContainer" parent="baseAlfrescoRepositoryContainer" init-method="setup">
       <property name="name"><value>Public Api</value></property>
 	  <property name="webScriptsRegistryCache" ref="publicapi.webScriptsRegistryCache" />
       <!-- Use the time-limited transaction helper to keep request times to an acceptable duration -->

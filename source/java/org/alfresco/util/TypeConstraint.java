@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -53,7 +54,8 @@ public class TypeConstraint
     private List<String> excludedTypes;
 
     private NodeService nodeService;
-
+    private DictionaryService dictionaryService;
+    
     public void setExpectedTypes(List<String> expectedTypes)
     {
 //        if(expectedTypes != null && expectedTypes.size() > 0)
@@ -72,6 +74,11 @@ public class TypeConstraint
 	public void setNodeService(NodeService nodeService)
     {
 		this.nodeService = nodeService;
+	}
+	
+	public void setDictionaryService(DictionaryService dictionaryService)
+	{
+		this.dictionaryService = dictionaryService;
 	}
 
     public void setExcludedTypes(List<String> excludedTypes)
@@ -139,7 +146,7 @@ public class TypeConstraint
             }
             else
             {
-            	qNames.add(typeDef); // valid so add it to the list
+            	qNames.add(typeDef);
             }
         }
 
@@ -154,14 +161,19 @@ public class TypeConstraint
     
     private boolean matchesExpected(QName typeQName)
     {
-    	boolean ret = false;
-
     	if(expectedQNames == null || expectedQNames.contains(typeQName) || expectedModels == null || expectedModels.contains(typeQName.getNamespaceURI()))
     	{
-    		ret = true;
+            return true;
     	}
 
-        return ret;
+        for (QName expectedQName : expectedQNames)
+        {
+            if (dictionaryService.isSubClass(typeQName, expectedQName))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

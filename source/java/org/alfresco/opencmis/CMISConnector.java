@@ -2118,7 +2118,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             return df.newXMLGregorianCalendar((GregorianCalendar) value).toXMLFormat();
         }
 
-        return value.toString();
+        // MNT-12496
+        // Encode for AtomPub only. Browser/json binding already encodes.
+        if (AlfrescoCmisServiceCall.get() != null && CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()))
+        {
+        	return escapeControlCharacters(value.toString());
+        }
+        else
+        {
+        	return value.toString();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -2213,7 +2222,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
             else
             {
-                ((PropertyStringImpl) result).setValue((String) value);
+               // MNT-12496
+               // Encode for AtomPub only. Browser/json binding already encodes.
+            	if (AlfrescoCmisServiceCall.get() != null && CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()))
+            	{
+            		((PropertyStringImpl) result).setValue(escapeControlCharacters((String) value));
+            	}
+            	else
+            	{
+            		((PropertyStringImpl) result).setValue((String) value);
+            	}
             }
             break;
         case URI:
@@ -2240,6 +2258,47 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         }
 
         return result;
+    }
+    
+    private String escapeControlCharacters(String origValue)
+    {
+        if (origValue == null)
+        {
+            return origValue;
+        }
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < origValue.length(); i++)
+        {
+            char ch = origValue.charAt(i);
+            switch (ch)
+            {
+            case '\b':
+            case '\f':
+            case '\n':
+            case '\r':
+            case '\t':
+                sb.append(ch);
+                break;
+            default:
+                // Reference: http://www.unicode.org/versions/Unicode5.1.0/
+                if ((ch >= '\u0000' && ch <= '\u001F') || (ch >= '\u007F' && ch <= '\u009F') || (ch >= '\u2000' && ch <= '\u20FF'))
+                {
+                    String ss = Integer.toHexString(ch);
+                    sb.append("\\u");
+                    for (int k = 0; k < 4 - ss.length(); k++)
+                    {
+                        sb.append('0');
+                    }
+                    sb.append(ss.toUpperCase());
+                }
+                else
+                {
+                    sb.append(ch);
+                }
+            }
+        }
+        return sb.toString();
     }
 
     private Set<String> splitFilter(String filter)

@@ -21,6 +21,7 @@ package org.alfresco.repo.management.subsystems;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.alfresco.repo.content.ContentStoreCaps;
 import org.alfresco.repo.tenant.TenantDeployer;
 import org.alfresco.repo.tenant.TenantRoutingContentStore;
 import org.aopalliance.intercept.MethodInterceptor;
@@ -66,6 +67,17 @@ public class CryptodocSubsystemProxyFactory extends SubsystemProxyFactory
                 {
                     return (TenantDeployer) bean;
                 }
+                else
+                {
+                    if (bean instanceof ContentStoreCaps)
+                    {
+                        Object ten = ((ContentStoreCaps)bean).getTenantDeployer();
+                        if (ten instanceof TenantDeployer)
+                        {
+                            return (TenantDeployer) ten;
+                        }
+                    }
+                }
                 return null;
             }
 
@@ -75,6 +87,17 @@ public class CryptodocSubsystemProxyFactory extends SubsystemProxyFactory
                 if (bean instanceof TenantRoutingContentStore)
                 {
                     return (TenantRoutingContentStore) bean;
+                }
+                else
+                {
+                    if (bean instanceof ContentStoreCaps)
+                    {
+                        Object ten = ((ContentStoreCaps)bean).getTenantRoutingContentStore();
+                        if (ten instanceof TenantRoutingContentStore)
+                        {
+                            return (TenantRoutingContentStore) ten;
+                        }
+                    }
                 }
                 return null;
             }

@@ -996,14 +996,13 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
             }
             
             // always log the failure
-            logger.error("Failed to send email to " + to, e);
+            logger.error("Failed to send email to " + to + " : " + e);
             
             // optionally ignore the throwing of the exception
             Boolean ignoreError = (Boolean)ruleAction.getParameterValue(PARAM_IGNORE_SEND_FAILURE);
             if (ignoreError == null || ignoreError.booleanValue() == false)
             {
-                Object[] args = {to, e.toString()};
-                throw new AlfrescoRuntimeException("email.outbound.err.send.failed", args, e);
+                throw new AlfrescoRuntimeException("Failed to send email to:" + to);
             }   
         }
     }

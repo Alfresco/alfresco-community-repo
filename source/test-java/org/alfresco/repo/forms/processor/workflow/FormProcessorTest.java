@@ -56,7 +56,7 @@ import org.alfresco.service.namespace.QNamePattern;
 
 import junit.framework.TestCase;
 
-public class FormProcessorTest extends TestCase
+public abstract class FormProcessorTest extends TestCase
 {
     protected static final String TASK_DEF_NAME = "TaskDef";
     protected static final QName DESC_NAME = PROP_DESCRIPTION;

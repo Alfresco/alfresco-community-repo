@@ -1005,6 +1005,7 @@ public class AuditComponentTest extends TestCase
                 values.put("/3.1/4.2", mlTextValue);
                 values.put("map", map);
                 values.put("collection", list);
+                values.put("unmodifiableCollection", (Serializable) Collections.unmodifiableCollection(list));
 
                 auditComponent.recordAuditValues("/test/one.one/two.one", values);
 

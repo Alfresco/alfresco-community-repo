@@ -561,7 +561,15 @@ public class AuditComponentImpl implements AuditComponent
                     trimStringsIfNecessary(auditValue);
                 }
             }
-            collection.addAll(strings);
+            
+            try
+            {
+                collection.addAll(strings);
+            }
+            catch (UnsupportedOperationException e)
+            {
+                // nothing to do in the case of unmodifiable collection
+            }
         }
     }
     

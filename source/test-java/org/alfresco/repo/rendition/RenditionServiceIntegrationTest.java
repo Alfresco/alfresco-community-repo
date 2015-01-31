@@ -648,7 +648,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         }
         
         // Give a moment for roll back of rendition and commit of node modification to occur
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         
         // Note that the node modification is retried on failure by RetryingTransactionHelper
         // and will always succeed after the rendition is complete, but due to the 

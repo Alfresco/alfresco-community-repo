@@ -743,11 +743,6 @@ public class DiscussionServiceImpl implements DiscussionService
       sp.setLanguage(SearchService.LANGUAGE_LUCENE);
       sp.setQuery(luceneQuery.toString());
       sp.addSort(sortOn, sortAscending);
-      if (paging.getMaxItems() > 0)
-      {
-          sp.setLimit(paging.getMaxItems());
-          sp.setLimitBy(LimitBy.FINAL_SIZE);
-      }
       if (paging.getSkipCount() > 0)
       {
           sp.setSkipCount(paging.getSkipCount());
@@ -761,7 +756,7 @@ public class DiscussionServiceImpl implements DiscussionService
       try 
       {
          results = searchService.query(sp);
-         pagedResults = wrap(results, nodeRef);
+         pagedResults = wrap(results, nodeRef, paging);
       }
       finally
       {
@@ -938,14 +933,20 @@ public class DiscussionServiceImpl implements DiscussionService
    /**
     * Our class to wrap up search results as {@link TopicInfo} instances
     */
-   private PagingResults<TopicInfo> wrap(final ResultSet finalLuceneResults, final NodeRef container)
+   private PagingResults<TopicInfo> wrap(final ResultSet finalLuceneResults, final NodeRef container, final PagingRequest paging)
    {
       final List<TopicInfo> topics = new ArrayList<TopicInfo>();
+      int cnt = 1;
       for (ResultSetRow row : finalLuceneResults)
       {
          TopicInfo topic = buildTopic(
                row.getNodeRef(), container, row.getQName().getLocalName());
          topics.add(topic);
+         cnt++;
+         if (paging.getMaxItems()>0 && cnt>paging.getMaxItems())
+         {
+             break;
+         }
       }
       
       // Wrap
@@ -974,7 +975,9 @@ public class DiscussionServiceImpl implements DiscussionService
             {
                skipCount = finalLuceneResults.getStart();
             }
-            catch(UnsupportedOperationException e) {}
+            catch(UnsupportedOperationException e) {
+               skipCount = paging.getSkipCount();
+            }
             try
             {
                itemsRemainingAfterThisPage = finalLuceneResults.length();

@@ -32,6 +32,7 @@ import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
@@ -508,7 +509,7 @@ public abstract class AbstractMailActionExecuterTest
         mailAction.setParameterValue(MailActionExecuter.PARAM_CC, "some.carbon@example.com");
 
 
-        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing CARBON COPY");
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
 
         mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
@@ -517,8 +518,11 @@ public abstract class AbstractMailActionExecuterTest
 
         MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
         Assert.assertNotNull(message);
-        Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
-        Assert.assertEquals("recipents too short", (message.getAllRecipients()).length, 3);
+        Address[] all = message.getAllRecipients();
+        Address[] ccs = message.getRecipients(RecipientType.CC);
+        Assert.assertEquals("recipents too short", 2, all.length);
+        Assert.assertEquals("cc too short", 1, ccs.length);
+        Assert.assertTrue(ccs[0].toString().contains("some.carbon"));
     }
 
 

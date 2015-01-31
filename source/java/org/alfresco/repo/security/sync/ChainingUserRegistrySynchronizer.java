@@ -1730,7 +1730,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
             {
                 // Make a mutable copy of the person properties, since they get written back to by person service
                 HashMap<QName, Serializable> personProperties = new HashMap<QName, Serializable>(person.getProperties());
-                String personName = (String) personProperties.get(ContentModel.PROP_USERNAME);
+                String personName = personProperties.get(ContentModel.PROP_USERNAME).toString().trim();
+                personProperties.put(ContentModel.PROP_USERNAME, personName);
                 // for invalid names will throw ConstraintException that will be catched by BatchProcessor$TxnCallback
                 nameChecker.evaluate(personName);
                 Set<String> zones = ChainingUserRegistrySynchronizer.this.authorityService

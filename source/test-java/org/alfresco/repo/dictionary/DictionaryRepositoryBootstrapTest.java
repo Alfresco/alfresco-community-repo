@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,20 +27,27 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.BaseSpringTest;
 import org.junit.experimental.categories.Category;
 
+import javax.transaction.UserTransaction;
+
 @Category(BaseSpringTestsCategory.class)
-public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
+public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
 {
     public static final String TEMPLATE_MODEL_XML = 
         "<model name={0} xmlns=\"http://www.alfresco.org/model/dictionary/1.0\">" +
@@ -97,27 +104,48 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
     private MessageService messageService;
     
     private PolicyComponent policyComponent;
-    
-    /**
-     * @see org.springframework.test.AbstractTransactionalSpringContextTests#onSetUpInTransaction()
-     */
+    private ContentService contentService;
+    private NodeService nodeService;
+    private MutableAuthenticationService authenticationService;
+    protected AuthenticationComponent authenticationComponent;
+
+    private UserTransaction txn;
+    private StoreRef storeRef;
+    private NodeRef rootNodeRef;
+
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    protected void onSetUp() throws Exception
     {
-        super.onSetUpInTransaction();
-        
-        // Get the behaviour filter and turn the behaviour off for the model type
+        // Get the behaviour filter
         this.behaviourFilter = (BehaviourFilter)this.applicationContext.getBean("policyBehaviourFilter");
-        this.behaviourFilter.disableBehaviour(ContentModel.TYPE_DICTIONARY_MODEL);
-        
+
+        this.authenticationService = (MutableAuthenticationService)this.applicationContext.getBean("authenticationService");
+        this.nodeService = (NodeService)this.applicationContext.getBean("nodeService");
+        this.contentService = (ContentService)this.applicationContext.getBean("contentService");
         this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
         this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
         this.tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
         this.messageService = (MessageService)this.applicationContext.getBean("messageService");
         this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
-        
-        
+
+        this.authenticationComponent = (AuthenticationComponent) this.applicationContext
+                .getBean("authenticationComponent");
+        this.authenticationComponent.setSystemUserAsCurrentUser();
+
+        txn = transactionService.getUserTransaction();
+        // Create the store in a separate transaction to run successfully on MS SQL Server
+        txn.begin();
+
+        // Create the store and get the root node
+        this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
+
+        txn.commit();
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
         this.bootstrap = new DictionaryRepositoryBootstrap();
         this.bootstrap.setContentService(this.contentService);
         this.bootstrap.setDictionaryDAO(this.dictionaryDAO);
@@ -141,13 +169,24 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         
         // register with dictionary service
         this.bootstrap.register();
+        txn.commit();
+    }
+
+    @Override
+    protected void onTearDown() throws Exception
+    {
+        authenticationService.clearCurrentSecurityContext();
     }
     
     /**
      * Test bootstrap
      */
-    public void testBootstrap()
+    public void testBootstrap() throws Exception
     {
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        // turn the behaviour off for the model type
+        this.behaviourFilter.disableBehaviour(ContentModel.TYPE_DICTIONARY_MODEL);
         createModelNode(
                 "http://www.alfresco.org/model/test2DictionaryBootstrapFromRepo/1.0",
                 "test2",
@@ -198,6 +237,8 @@ public class DictionaryRepositoryBootstrapTest extends BaseAlfrescoSpringTest
         ModelDefinition modelDefinition3 = this.dictionaryDAO.getModel(
                 QName.createQName("http://www.alfresco.org/model/test3DictionaryBootstrapFromRepo/1.0", "testModel3"));
         assertNotNull(modelDefinition3);
+
+        txn.commit();
     }
 
     /**

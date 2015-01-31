@@ -33,6 +33,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public interface AuthenticationDriver
 {
+    public static final String AUTHENTICATION_USER = "_alfAuthTicket";
+    
     /**
      * Authenticate user based on information in http request such as Authorization header or cached session
      * information.

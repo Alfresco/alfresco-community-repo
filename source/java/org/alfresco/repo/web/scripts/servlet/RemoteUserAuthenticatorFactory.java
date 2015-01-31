@@ -18,11 +18,17 @@
  */
 package org.alfresco.repo.web.scripts.servlet;
 
+import javax.servlet.http.HttpSession;
+
+import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TicketCredentials;
+import org.alfresco.repo.web.auth.WebCredentials;
+import org.alfresco.repo.webdav.auth.AuthenticationDriver;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Authenticator;
@@ -80,18 +86,54 @@ public class RemoteUserAuthenticatorFactory extends BasicHttpAuthenticatorFactor
         @Override
         public boolean authenticate(RequiredAuthentication required, boolean isGuest)
         {
+            boolean authenticated = false;
+            
             // retrieve the remote user if configured and available - authenticate that user directly
             final String userId = getRemoteUser();
             if (userId != null)
             {
                 authenticationComponent.setCurrentUser(userId);
                 listener.userAuthenticated(new TicketCredentials(authenticationService.getCurrentTicket()));
-                return true;
+                authenticated = true;
             }
             else
             {
-                return super.authenticate(required, isGuest);
+                // is there a Session which might contain a valid user ticket?
+                HttpSession session = servletReq.getHttpServletRequest().getSession(false);
+                if (session != null)
+                {
+                    try
+                    {
+                        SessionUser user = (SessionUser)session.getAttribute(AuthenticationDriver.AUTHENTICATION_USER);
+                        if (user != null)
+                        {
+                            // Validate the ticket for the current SessionUser
+                            authenticationService.validate(user.getTicket());
+                            if (logger.isDebugEnabled())
+                                logger.debug("Ticket is valid; retaining cached user in session.");
+                            listener.userAuthenticated(new TicketCredentials(user.getTicket()));
+                            authenticated = true;
+                        }
+                        else
+                        {
+                            authenticated = super.authenticate(required, isGuest);
+                        }
+                    }
+                    catch (AuthenticationException authErr)
+                    {
+                        if (logger.isDebugEnabled())
+                            logger.debug("An Authentication error occur, removing User session: ", authErr);
+                        session.removeAttribute(AuthenticationDriver.AUTHENTICATION_USER);
+                        session.invalidate();
+                        listener.authenticationFailed(new WebCredentials() {});
+                    }
+                }
+                else
+                {
+                    authenticated = super.authenticate(required, isGuest);
+                }
             }
+            return authenticated;
         }
         
         /**

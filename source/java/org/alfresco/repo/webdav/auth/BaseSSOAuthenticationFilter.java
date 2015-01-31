@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -85,7 +85,6 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         this.serverConfiguration = serverConfiguration;
     }
     
-
     /**
      * Activates or deactivates the bean
      * 
@@ -166,8 +165,6 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     {
     }
     
-    
-    
     /**
      * Callback executed on successful ticket validation during Type3 Message processing.
      * 
@@ -211,7 +208,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     protected boolean onLoginComplete(ServletContext sc, HttpServletRequest req, HttpServletResponse res, boolean userInit)
         throws IOException
     {
-    	return true;
+        return true;
     }
     
     /**
@@ -223,7 +220,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     protected final String mapClientAddressToDomain(String clientIP)
     {
         // Check if there are any domain mappings
-    	SecurityConfigSection securityConfigSection = getSecurityConfigSection();
+        SecurityConfigSection securityConfigSection = getSecurityConfigSection();
         if (securityConfigSection != null && securityConfigSection.hasDomainMappings() == false)
         {
             return null;
@@ -232,7 +229,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
         if (securityConfigSection != null)
         {
             // Convert the client IP address to an integer value
-        	
+            
             int clientAddr = IPAddress.parseNumericAddress(clientIP);
             for (DomainMapping domainMap : securityConfigSection.getDomainMappings())
             {
@@ -267,75 +264,75 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      */
     protected boolean checkForTicketParameter(ServletContext servletContext, HttpServletRequest req, HttpServletResponse resp)
     {
-    	// Check if the request includes an authentication ticket
+        // Check if the request includes an authentication ticket
 
-    	boolean ticketValid = false;
-    	String ticket = req.getParameter(ARG_TICKET);
-    	
-    	if (ticket != null && ticket.length() != 0)
-    	{
-         if (getLogger().isDebugEnabled())
-            getLogger().debug(
+        boolean ticketValid = false;
+        String ticket = req.getParameter(ARG_TICKET);
+        
+        if (ticket != null && ticket.length() != 0)
+        {
+            if (getLogger().isDebugEnabled())
+                getLogger().debug(
                   "Logon via ticket from " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ":"
                         + req.getRemotePort() + ")" + " ticket=" + ticket);
-
-         UserTransaction tx = null;
-         try
-         {
-            // Get a cached user with a valid ticket
-            SessionUser user = getSessionUser(servletContext, req, resp, true);
-
-            // If this isn't the same ticket, invalidate the session
-            if (user != null && !ticket.equals(user.getTicket()))
+            
+            UserTransaction tx = null;
+            try
             {
-               if (getLogger().isDebugEnabled())
-                   getLogger().debug("The ticket doesn't match, invalidate the session.");
-               invalidateSession(req);
-               user = null;
+                // Get a cached user with a valid ticket
+                SessionUser user = getSessionUser(servletContext, req, resp, true);
+                
+                // If this isn't the same ticket, invalidate the session
+                if (user != null && !ticket.equals(user.getTicket()))
+                {
+                   if (getLogger().isDebugEnabled())
+                       getLogger().debug("The ticket doesn't match, invalidate the session.");
+                   invalidateSession(req);
+                   user = null;
+                }
+                
+                // If we don't yet have a valid cached user, validate the ticket and create one
+                if (user == null)
+                {
+                   if (getLogger().isDebugEnabled())
+                       getLogger().debug("There is no valid cached user, validate the ticket and create one.");
+                   authenticationService.validate(ticket);
+                   user = createUserEnvironment(req.getSession(), authenticationService.getCurrentUserName(),
+                         authenticationService.getCurrentTicket(), true);
+                }
+                
+                // Indicate the ticket parameter was specified, and valid
+                
+                ticketValid = true;
             }
-
-            // If we don't yet have a valid cached user, validate the ticket and create one
-            if (user == null)
+            catch (AuthenticationException authErr)
             {
-               if (getLogger().isDebugEnabled())
-                   getLogger().debug("There is no valid cached user, validate the ticket and create one.");
-               authenticationService.validate(ticket);
-               user = createUserEnvironment(req.getSession(), authenticationService.getCurrentUserName(),
-                     authenticationService.getCurrentTicket(), true);
+                if (getLogger().isDebugEnabled())
+                    getLogger().debug("Failed to authenticate user ticket: " + authErr.getMessage(), authErr);
             }
-
-            // Indicate the ticket parameter was specified, and valid
-
-            ticketValid = true;
-         }
-    		catch (AuthenticationException authErr)
-        	{
-        		if (getLogger().isDebugEnabled())
-        		    getLogger().debug("Failed to authenticate user ticket: " + authErr.getMessage(), authErr);
-        	}
-        	catch (Throwable e)
-        	{
-        		if (getLogger().isDebugEnabled())
+            catch (Throwable e)
+            {
+                if (getLogger().isDebugEnabled())
                     getLogger().debug("Error during ticket validation and user creation: " + e.getMessage(), e);
-        	}
-        	finally
-        	{
-        		try
-        	    {
-        			if (tx != null)
-        	        {
-        				tx.rollback();
-       	        	}
-        	    }
-        	    catch (Exception tex)
-        	    {
-        	    }
-        	}
-    	}
-    	
-    	// Return the ticket parameter status
-    	
-    	return ticketValid;
+            }
+            finally
+            {
+                try
+                {
+                    if (tx != null)
+                    {
+                        tx.rollback();
+                    }
+                }
+                catch (Exception tex)
+                {
+                }
+            }
+        }
+        
+        // Return the ticket parameter status
+        
+        return ticketValid;
     }
     
     /**
@@ -346,12 +343,12 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      * @exception IOException
      */
     protected void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res)
-    	throws IOException
+        throws IOException
     {
         if (getLogger().isDebugEnabled())
             getLogger().debug("redirectToLoginPage...");
-    	if (hasLoginPage())
-    		res.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
+        if (hasLoginPage())
+            res.sendRedirect(req.getContextPath() + "/faces" + getLoginPage());
     }
     
     /**
@@ -361,7 +358,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      */
     protected final boolean hasLoginPage()
     {
-    	return m_loginPage != null ? true : false;
+        return m_loginPage != null ? true : false;
     }
     
     /**
@@ -371,7 +368,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      */
     protected final String getLoginPage()
     {
-    	return m_loginPage;
+        return m_loginPage;
     }
     
     /**
@@ -381,7 +378,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      */
     protected final void setLoginPage( String loginPage)
     {
-    	m_loginPage = loginPage;
+        m_loginPage = loginPage;
     }
     
     /**
@@ -391,7 +388,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      */
     protected final boolean allowsTicketLogons()
     {
-    	return m_ticketLogons;
+        return m_ticketLogons;
     }
     
     /**
@@ -401,7 +398,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      */
     public final void setTicketLogons( boolean ticketsAllowed)
     {
-    	m_ticketLogons = ticketsAllowed;
+        m_ticketLogons = ticketsAllowed;
     }
 
     /**
@@ -413,23 +410,23 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      */
     protected final boolean isNTLMSSPBlob( byte[] byts, int offset)
     {
-	    // Check if the blob has the NTLMSSP signature
+        // Check if the blob has the NTLMSSP signature
 
-    	boolean isNTLMSSP = false;
-    	
-	    if (( byts.length - offset) >= NTLM.Signature.length) {
-	      
-	      // Check for the NTLMSSP signature
-	      
-	      int idx = 0;
-	      while ( idx < NTLM.Signature.length && byts[offset + idx] == NTLM.Signature[ idx])
-	        idx++;
-	      
-	      if ( idx == NTLM.Signature.length)
-	        isNTLMSSP = true;
-	    }
-	    
-	    return isNTLMSSP;
+        boolean isNTLMSSP = false;
+        
+        if (( byts.length - offset) >= NTLM.Signature.length) {
+          
+          // Check for the NTLMSSP signature
+          
+          int idx = 0;
+          while ( idx < NTLM.Signature.length && byts[offset + idx] == NTLM.Signature[ idx])
+            idx++;
+          
+          if ( idx == NTLM.Signature.length)
+            isNTLMSSP = true;
+        }
+        
+        return isNTLMSSP;
     }
 
     /**

@@ -362,7 +362,7 @@ public abstract class BaseAuthenticationFilter
         });
 
         // Store the user on the session
-        session.setAttribute(getUserAttributeName(), user);        
+        session.setAttribute(getUserAttributeName(), user);
         setExternalAuth(session, externalAuth);
         return user;
     }

@@ -49,8 +49,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDriver
 {
-    public static final String AUTHENTICATION_USER = "_alfAuthTicket";
-    
     private Log logger = LogFactory.getLog(SSOFallbackBasicAuthenticationDriver.class);
     
     private AuthenticationService authenticationService;
@@ -58,7 +56,7 @@ public class SSOFallbackBasicAuthenticationDriver implements AuthenticationDrive
     private NodeService nodeService;
     private TransactionService transactionService;
     
-    private String userAttributeName = AUTHENTICATION_USER;
+    private String userAttributeName = AuthenticationDriver.AUTHENTICATION_USER;
 
     public void setAuthenticationService(AuthenticationService authenticationService)
     {

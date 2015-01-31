@@ -493,6 +493,34 @@ public abstract class AbstractMailActionExecuterTest
             PERSON_SERVICE.deletePerson(USER_2);
         }
     }
+    
+    /**
+     * Test for CC / BCC 
+     * @throws Exception 
+     */
+    @Test
+    public void testSendingToCarbonCopy() throws IOException, MessagingException
+    {
+        // PARAM_TO variant
+        Action mailAction = ACTION_SERVICE.createAction(MailActionExecuter.NAME);
+        mailAction.setParameterValue(MailActionExecuter.PARAM_FROM, "some.body@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TO, "some.bodyelse@example.com");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_CC, "some.carbon@example.com");
+
+
+        mailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Testing");
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, "alfresco/templates/mail/test.txt.ftl");
+
+        mailAction.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, (Serializable) getModel());
+
+        ACTION_SERVICE.executeAction(mailAction, null);
+
+        MimeMessage message = ACTION_EXECUTER.retrieveLastTestMessage();
+        Assert.assertNotNull(message);
+        Assert.assertEquals("Hello Jan 1, 1970", (String) message.getContent());
+        Assert.assertEquals("recipents too short", (message.getAllRecipients()).length, 3);
+    }
+
 
     /**
      * Test for MNT-11079

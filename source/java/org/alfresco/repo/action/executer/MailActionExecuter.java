@@ -124,6 +124,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "mail";
     public static final String PARAM_LOCALE = "locale";
     public static final String PARAM_TO = "to";
+    public static final String PARAM_CC = "cc";
+    public static final String PARAM_BCC = "bcc";
     public static final String PARAM_TO_MANY = "to_many";
     public static final String PARAM_SUBJECT = "subject";
     public static final String PARAM_SUBJECT_PARAMS = "subjectParams";
@@ -612,6 +614,53 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
                     
                     // Note: there is no validation on the username to check that it actually is an email address.
                     // TODO Fix this.
+
+                    Serializable ccValue = (String)ruleAction.getParameterValue(PARAM_CC);
+                    if(ccValue != null)
+                    {
+                        if (ccValue instanceof String)
+                        {
+                        	String cc = (String)ccValue;
+                        	if(cc.length() > 0)
+                        	{
+                        		messageRef[0].setCc(cc);
+                        	}
+
+                        }
+                        else if (ccValue instanceof List<?>)
+                        {
+                        	List<String>s = (List<String>)ccValue;
+                        	messageRef[0].setCc((String[])s.toArray());
+                        }
+                        else if (ccValue.getClass().isArray())
+                        {
+                        	messageRef[0].setCc((String[])ccValue);
+                        }
+                    	
+                    }
+                    Serializable bccValue = (String)ruleAction.getParameterValue(PARAM_BCC);
+                    if(bccValue != null)
+                    {
+                        if (bccValue instanceof String)
+                        {
+                        	String bcc = (String)bccValue;
+                        	if(bcc.length() > 0)
+                        	{
+                        		messageRef[0].setBcc(bcc);
+                        	}
+
+                        }
+                        else if (bccValue instanceof List<?>)
+                        {
+                        	List<String>s = (List<String>)bccValue;
+                        	messageRef[0].setBcc((String[])s.toArray());
+                        }
+                        else if (bccValue.getClass().isArray())
+                        {
+                        	messageRef[0].setCc((String[])bccValue);
+                        }
+                    }
+                    
                 }
                 else
                 {
@@ -1491,6 +1540,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     protected void addParameterDefinitions(List<ParameterDefinition> paramList) 
     {
         paramList.add(new ParameterDefinitionImpl(PARAM_TO, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TO)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_CC, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_CC)));
+        paramList.add(new ParameterDefinitionImpl(PARAM_BCC, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_BCC)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TO_MANY, DataTypeDefinition.ANY, false, getParamDisplayLabel(PARAM_TO_MANY), true));
         paramList.add(new ParameterDefinitionImpl(PARAM_SUBJECT, DataTypeDefinition.TEXT, true, getParamDisplayLabel(PARAM_SUBJECT)));
         paramList.add(new ParameterDefinitionImpl(PARAM_TEXT, DataTypeDefinition.TEXT, false, getParamDisplayLabel(PARAM_TEXT)));

@@ -57,6 +57,10 @@ public class CalendarRecurrenceHelper
    public static final Map<String,Integer> DAY_NAMES_TO_CALENDAR_DAYS =
       Collections.unmodifiableMap(d2cd);
    
+   public final static String DAY = "day";
+   public final static String WEEKDAYS = "weekday";
+   public final static String WEEKENDS = "weekend day";
+   
    /**
     * Returns a lookup from recurrence rule days of the week, to
     *  the proper days of the week in the specified locale

@@ -194,6 +194,12 @@ public class MultiTServiceImplTest
     @Test
     public void testGetName()
     {
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (dialect instanceof SQLServerDialect)
+        {
+            return;
+        }
         NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         assertNotNull("The user was not created.", userNodeRef);
         TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()

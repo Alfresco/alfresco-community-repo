@@ -544,7 +544,14 @@ public class AuditComponentImpl implements AuditComponent
                     if (!trimmed.equals(auditValue))
                     {
                         strings.add(trimmed);
-                        iterator.remove();
+                        try
+                        {
+                            iterator.remove();
+                        }
+                        catch (UnsupportedOperationException e)
+                        {
+                            // nothing to do in the case of unmodifiable collection
+                        }
                     }
                 }
                 else if (auditValue instanceof MLText)

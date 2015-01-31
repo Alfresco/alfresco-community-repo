@@ -72,7 +72,6 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
-import org.hibernate.dialect.SQLServerDialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.GUID;
@@ -1733,12 +1732,11 @@ public class AuthenticationTest extends TestCase
 
     public void testLoginNotExistingTenant() throws Exception
     {
-        // disable in case of SQL Server
+        // split the transactions to pass on SQL Server
         // see MNT-13089
-        if (dialect instanceof SQLServerDialect)
-        {
-            return;
-        }
+        userTransaction.commit();
+        userTransaction = transactionService.getUserTransaction();
+        userTransaction.begin();
         boolean wasEnabled = AuthenticationUtil.isMtEnabled();
         
         try

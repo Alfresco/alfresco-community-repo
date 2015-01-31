@@ -384,32 +384,18 @@ public class RenditionServicePermissionsTest
                                                             testSiteInfo.doclib,
                                                             "quick.jpg",
                                                             AuthenticationUtil.getFullyAuthenticatedUser());
-                return imgNode;
-            }
-        });
-
-        // This is what ScriptNode.createThumbnail does
-        final ThumbnailDefinition details = thumbnailRegistry.getThumbnailDefinition("doclib");
-        final Action action = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Action>()
-        {
-            @Override
-            public Action execute() throws Throwable
-            {
-                return ThumbnailHelper.createCreateThumbnailAction(details, services);
-            }
-        });
-
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
+                
+                // This is what ScriptNode.createThumbnail does
+                ThumbnailDefinition details = thumbnailRegistry.getThumbnailDefinition("doclib");
+                Action action = ThumbnailHelper.createCreateThumbnailAction(details, services);
+                
                 // Creation of thumbnail
                 services.getActionService().executeAction(action, imgNode, true, false);
                 
                 // The node in question should now have a thumbnail/rendition.
                 assertEquals(1, renditionService.getRenditions(imgNode).size());
                 
-                return null;
+                return imgNode;
             }
         });
         

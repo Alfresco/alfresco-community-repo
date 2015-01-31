@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.security;
 import java.util.Collection;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authority.AuthorityInfo;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Andy Hind
  */
+@AlfrescoPublicApi
 public interface AuthorityService
 {   
     /**

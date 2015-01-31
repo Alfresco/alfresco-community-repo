@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.authority;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AuthorityType;
 
@@ -27,6 +28,7 @@ import org.alfresco.service.cmr.security.AuthorityType;
  * @author janv
  * @since 4.0
  */
+@AlfrescoPublicApi
 public class AuthorityInfo
 {
     private Long nodeId;

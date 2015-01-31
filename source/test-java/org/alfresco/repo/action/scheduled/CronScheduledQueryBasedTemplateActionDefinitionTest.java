@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.ISO8601DateFormat;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +62,7 @@ import org.springframework.context.ApplicationContext;
  */
 public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCase
 {
-    private static final int AMOUNT_OF_DAYS_BEFORE = -2;
+    private static final int AMOUNT_OF_DAYS_BEFORE = -4;
 
     private static final int TEST_DOCUMENTS_AMOUNT = 5;
 
@@ -124,7 +125,7 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
 
     private static final String YESTERDAY_TEST_DOCUMENT_NAME_TEMPLATE = "Yesterday" + TEST_DOCUMENT_NAME_TEMPLATE;
 
-    private static final String MNT_11598_QUERY_TEMPLATE = "@cm\\:created:\\$\\{luceneDateRange(yesterday, \"-P10Y\")\\}";
+    private static final String MNT_11598_QUERY_TEMPLATE = "@cm\\:created:\\$\\{luceneDateRange(\"%s\", \"-P10Y\")\\}";
     
     private static final String TEST_FOLDER_NAME = String.format(ROOT_TEST_FOLDER_NAME_TEMPLATE, System.currentTimeMillis());
 
@@ -275,6 +276,10 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
             {
                 Thread.sleep(500);
             }
+            else
+            {
+            	break;
+            }
         }
         assertFalse("The content was not created or indexed correctly.", notFound);
     }
@@ -299,7 +304,13 @@ public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCas
     @Test
     public void testQueryTemplateFunctionsUnescapingMnt11598() throws Exception
     {
-        scheduler.setQueryTemplate(MNT_11598_QUERY_TEMPLATE);
+        // Set the query to 2 days ago
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.add(Calendar.DAY_OF_YEAR, AMOUNT_OF_DAYS_BEFORE + 2);
+        String isoDate = ISO8601DateFormat.format(calendar.getTime());
+        String queryTemplate = String.format(MNT_11598_QUERY_TEMPLATE, isoDate);
+        scheduler.setQueryTemplate(queryTemplate);
 
         Set<NodeRef> actualNodes = new HashSet<NodeRef>(scheduler.getNodes());
         assertNotNull("Result set must not be null!", actualNodes);

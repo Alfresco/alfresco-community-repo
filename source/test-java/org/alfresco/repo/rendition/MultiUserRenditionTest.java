@@ -234,11 +234,19 @@ public class MultiUserRenditionTest
         
         // Create another doc as non-admin
         AuthenticationUtil.setFullyAuthenticatedUser(NON_ADMIN_USER);
+        final NodeRef nonAdminPdfNode = txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                NodeRef nonAdminPdfNode = createPdfDocumentAsCurrentlyAuthenticatedUser(NON_ADMIN_USER + "_content");
+                return nonAdminPdfNode;
+            }
+        });
+
         final Pair<NodeRef, NodeRef> nonAdminNodes = txnHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Pair<NodeRef, NodeRef>>()
                 {
                     public Pair<NodeRef, NodeRef> execute() throws Throwable
                     {
-                        NodeRef nonAdminPdfNode = createPdfDocumentAsCurrentlyAuthenticatedUser(NON_ADMIN_USER + "_content");
                         renditionService.render(nonAdminPdfNode, doclibRendDefQName);
                         // caches rendition owner
                         NodeRef nonAdminRenditionNode = renditionService.getRenditions(nonAdminPdfNode).get(0).getChildRef();

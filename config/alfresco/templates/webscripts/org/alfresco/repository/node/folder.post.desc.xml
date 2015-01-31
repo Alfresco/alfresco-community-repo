@@ -1,7 +1,7 @@
 <webscript>
   <shortname>Create child folder</shortname>
   <description><![CDATA[
-  Creates a Child Folder in the specified Site Container or existing Folder.
+  Creates a child folder in the specified site container or existing folder.
   <BR>
   By default the new folder will be of type cm:folder, but subtypes of cm:folder
   may be specified instead.

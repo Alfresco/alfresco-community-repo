@@ -838,19 +838,12 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     public Serializable getCreationDate()
     {
-        if (isDocument())
-        {
-            if (isCurrentVersion() || isPWC())
-            {
-                return connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_CREATED);
-            } else
-            {
-                return getVersion().getVersionProperty(VersionBaseModel.PROP_CREATED_DATE);
-            }
-        } else if (isFolder() || isItem())
+        // MNT-12680 we should return always creation date of original node
+        if (isDocument() || isFolder())
         {
             return connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_CREATED);
-        } else
+        }
+        else
         {
             return DUMMY_DATE;
         }

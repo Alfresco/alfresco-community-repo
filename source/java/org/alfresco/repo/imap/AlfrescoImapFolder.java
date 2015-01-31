@@ -317,7 +317,11 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         NodeRef sourceNodeRef = extractNodeRef(message);
         if (isMoveOperation(sourceNodeRef))
         {
-            uid = moveNode(this.folderInfo, message, flags, sourceNodeRef);
+            uid = copyOrmoveNode(this.folderInfo, message, flags, sourceNodeRef, true);
+        }
+        else if (sourceNodeRef != null)
+        {
+            uid = copyOrmoveNode(this.folderInfo, message, flags, sourceNodeRef, false);
         }
         else
         {
@@ -341,13 +345,21 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
      * @throws FileNotFoundException
      */
     @SuppressWarnings("deprecation")
-    private long moveNode(FileInfo folderInfo, MimeMessage message, Flags flags, NodeRef sourceNodeRef)
+    private long copyOrmoveNode(FileInfo folderInfo, MimeMessage message, Flags flags, NodeRef sourceNodeRef, boolean move)
             throws FileExistsException, FileNotFoundException
     {
         FileFolderService fileFolderService = serviceRegistry.getFileFolderService();
         FileFilterMode.setClient(FileFilterMode.Client.imap);
         fileFolderService.setHidden(sourceNodeRef, false);
-        FileInfo messageFile = fileFolderService.move(sourceNodeRef, folderInfo.getNodeRef(), null);
+        FileInfo messageFile = null;
+        if (move)
+        {
+            messageFile = fileFolderService.move(sourceNodeRef, folderInfo.getNodeRef(), null);
+        }
+        else
+        {
+            messageFile = fileFolderService.copy(sourceNodeRef, folderInfo.getNodeRef(), null);
+        }
         final long newMessageUid = (Long) messageFile.getProperties().get(ContentModel.PROP_NODE_DBID);
         imapService.setFlag(messageFile, Flag.RECENT, true);
         imapService.setFlag(messageFile, Flag.DELETED, false);
@@ -367,6 +379,7 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
         String uuid = null;
         String messageId = null;
         NodeRef result = null;
+        NodeService nodeService = serviceRegistry.getNodeService();
         try
         {
             messageId = message.getMessageID();
@@ -391,6 +404,28 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
                 uuid = messageId;
             }
             result = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore", uuid);
+            if (nodeService.exists(result) == false)
+            {
+                result = null;
+            }
+        }
+        
+        if(result == null)
+        {
+            //check X-Alfresco-NodeRef-ID header
+            try
+            {
+                uuid = message.getHeader(AlfrescoImapConst.X_ALF_NODEREF_ID)[0];
+                result = new NodeRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore", uuid);
+                if (nodeService.exists(result) == false)
+                {
+                    result = null;
+                }
+            }
+            catch (MessagingException e)
+            {
+                //Do nothing
+            }
         }
         return result;
     }

@@ -21,7 +21,6 @@ package org.alfresco.rest.api.model;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
@@ -37,13 +36,13 @@ public class SiteImpl implements Site, Comparable<SiteImpl>
 	protected String title;
 	protected String description;
 	protected SiteVisibility visibility;
-	protected SiteRole role;
+	protected String role;
 	
 	public SiteImpl()
 	{
 	}
 	
-	public SiteImpl(SiteInfo siteInfo, SiteRole role)
+	public SiteImpl(SiteInfo siteInfo, String role)
 	{
 		if(siteInfo == null)
 		{
@@ -140,7 +139,7 @@ public class SiteImpl implements Site, Comparable<SiteImpl>
 	}
 
 	@Override
-	public SiteRole getRole()
+	public String getRole()
 	{
 		return role;
 	}

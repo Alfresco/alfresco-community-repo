@@ -19,7 +19,6 @@
 package org.alfresco.rest.api.model;
 
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
 /**
@@ -38,5 +37,5 @@ public interface Site
 	String getTitle();
 	String getDescription();
 	SiteVisibility getVisibility();
-	SiteRole getRole();
+	String getRole();
 }

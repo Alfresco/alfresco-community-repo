@@ -32,13 +32,13 @@ import org.alfresco.service.cmr.site.SiteRole;
 public class SiteMember
 {
 	private String personId;
-	private SiteRole role;
+	private String role;
 
 	public SiteMember()
 	{
 	}
 
-	public SiteMember(String personId, SiteRole role)
+	public SiteMember(String personId, String role)
 	{
 		super();
 		if(personId == null)
@@ -60,12 +60,12 @@ public class SiteMember
 		return personId;
 	}
 
-	public SiteRole getRole()
+	public String getRole()
 	{
 		return role;
 	}
 
-	public void setRole(SiteRole role)
+	public void setRole(String role)
 	{
 		if(role == null)
 		{

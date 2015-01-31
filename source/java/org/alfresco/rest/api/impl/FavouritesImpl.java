@@ -36,7 +36,6 @@ import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -101,7 +100,7 @@ public class FavouritesImpl implements Favourites
 		else if(type.equals(Type.SITE))
 		{
 			SiteInfo siteInfo = siteService.getSite(nodeRef);
-			SiteRole role = sites.getSiteRole(siteInfo.getShortName());
+			String role = sites.getSiteRole(siteInfo.getShortName());
 			Site site = new SiteImpl(siteInfo, role);
 			target = new SiteTarget(site);
 		}

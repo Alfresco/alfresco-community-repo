@@ -29,7 +29,6 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 
 public interface Sites
 {
@@ -59,6 +58,6 @@ public interface Sites
     void removeFavouriteSite(String personId, String siteId);
     CollectionWithPagingInfo<FavouriteSite> getFavouriteSites(String personId, Parameters parameters);
     
-    SiteRole getSiteRole(String siteId);
-    SiteRole getSiteRole(String siteId, String personId);
+    String getSiteRole(String siteId);
+    String getSiteRole(String siteId, String personId);
 }

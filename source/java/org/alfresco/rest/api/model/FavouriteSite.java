@@ -19,7 +19,6 @@
 package org.alfresco.rest.api.model;
 
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 
 /**
  * Represents a user's favourite site.
@@ -35,7 +34,7 @@ public class FavouriteSite extends SiteImpl
 	{
 	}
 	
-	public FavouriteSite(SiteInfo siteInfo, SiteRole role)
+	public FavouriteSite(SiteInfo siteInfo, String role)
 	{
 		super(siteInfo, role);
 	}

@@ -1,23 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
- *
- * This file is part of Alfresco
- *
- * Alfresco is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
- */
-/*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,6 +37,7 @@ import org.alfresco.query.PageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.site.SiteMembership;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.rest.api.Nodes;
@@ -83,7 +66,6 @@ import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -214,17 +196,15 @@ public class SitesImpl implements Sites
     	return CollectionWithPagingInfo.asPaged(paging, ret, pagedResults.hasMoreItems(), null);
     }
     
-    public SiteRole getSiteRole(String siteId)
+    public String getSiteRole(String siteId)
     {
     	String personId = AuthenticationUtil.getFullyAuthenticatedUser();
     	return getSiteRole(siteId, personId);
     }
     
-    public SiteRole getSiteRole(String siteId, String personId)
+    public String getSiteRole(String siteId, String personId)
     {
-    	String roleStr = siteService.getMembersRole(siteId, personId);
-    	SiteRole role = (roleStr != null ? SiteRole.valueOf(roleStr) : null);
-    	return role;
+    	return siteService.getMembersRole(siteId, personId);
     }
     
     public Site getSite(String siteId)
@@ -242,7 +222,7 @@ public class SitesImpl implements Sites
     	}
     	// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
     	siteId = siteInfo.getShortName();
-    	SiteRole role = null;
+    	String role = null;
 		if(includeRole)
 		{
 			role = getSiteRole(siteId);
@@ -274,9 +254,8 @@ public class SitesImpl implements Sites
     	String roleStr = siteService.getMembersRole(siteInfo.getShortName(), personId);
     	if(roleStr != null)
     	{
-    		SiteRole role = SiteRole.valueOf(roleStr);
-    		SiteImpl site = new SiteImpl(siteInfo, role);
-	    	siteMember = new MemberOfSite(site.getId(), siteInfo.getNodeRef(), role);
+    		SiteImpl site = new SiteImpl(siteInfo, roleStr);
+	    	siteMember = new MemberOfSite(site.getId(), siteInfo.getNodeRef(), roleStr);
     	}
     	else
     	{
@@ -302,7 +281,7 @@ public class SitesImpl implements Sites
     	String role = siteService.getMembersRole(siteId, personId);
     	if(role != null)
     	{
-	    	siteMember = new SiteMember(personId, SiteRole.valueOf(role));
+	    	siteMember = new SiteMember(personId, role);
     	}
     	else
     	{
@@ -324,12 +303,11 @@ public class SitesImpl implements Sites
     	// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
     	siteId = siteInfo.getShortName();
     	
-    	SiteRole siteRole = siteMember.getRole();
-    	if(siteRole == null)
+    	String role = siteMember.getRole();
+    	if(role == null)
     	{
     		throw new InvalidArgumentException("Must provide a role");
     	}
-    	String role = siteRole.name();
     	
     	if(siteService.isMember(siteId, personId))
     	{
@@ -341,7 +319,14 @@ public class SitesImpl implements Sites
     		throw new PermissionDeniedException();
     	}
 
-		siteService.setMembership(siteId, personId, role);
+        try
+        {
+            siteService.setMembership(siteId, personId, role);
+        }
+        catch (UnknownAuthorityException e)
+        {
+            throw new InvalidArgumentException("Unknown role '" + role + "'");
+        }
 		return siteMember;
 	}
 	
@@ -400,7 +385,7 @@ public class SitesImpl implements Sites
     		throw new EntityNotFoundException(siteId);
     	}
     	siteId = siteInfo.getShortName();
-    	SiteRole siteRole = siteMember.getRole();
+    	String siteRole = siteMember.getRole();
     	if(siteRole == null)
     	{
     		throw new InvalidArgumentException("Must provide a role");
@@ -412,7 +397,14 @@ public class SitesImpl implements Sites
     		throw new InvalidArgumentException("User is not a member of the site");
     	}
 
-    	siteService.setMembership(siteId, siteMember.getPersonId(), siteRole.toString());
+        try
+        {
+            siteService.setMembership(siteId, siteMember.getPersonId(), siteRole);
+        }
+        catch (UnknownAuthorityException e)
+        {
+            throw new InvalidArgumentException("Unknown role '" + siteRole + "'");
+        }
     	return siteMember;
 	}
 	
@@ -547,11 +539,10 @@ public class SitesImpl implements Sites
 			{
 				SiteInfo siteInfo = sites.get(index);
 
-				SiteRole role = null;
+				String role = null;
 				if(filter.isAllowed(Site.ROLE))
 				{
-					String roleStr = siteService.getMembersRole(siteInfo.getShortName(), personId);
-					role = (roleStr != null ? SiteRole.valueOf(roleStr) : null);
+					role = siteService.getMembersRole(siteInfo.getShortName(), personId);
 				}
 				return new SiteImpl(siteInfo, role);
 			}
@@ -581,7 +572,7 @@ public class SitesImpl implements Sites
 
     	if(favouritesService.isFavourite(personId, nodeRef))
     	{
-        	SiteRole role = getSiteRole(siteId, personId);
+        	String role = getSiteRole(siteId, personId);
     		return new FavouriteSite(siteInfo, role);
     	}
     	else
@@ -740,7 +731,7 @@ public class SitesImpl implements Sites
     	List<FavouriteSite> favourites = new ArrayList<FavouriteSite>(favouriteSites.getPage().size());
     	for(SiteInfo favouriteSite : favouriteSites.getPage())
     	{
-        	SiteRole role = null;
+			String role = null;
 			if(filter.isAllowed(Site.ROLE))
 			{
 				role = getSiteRole(favouriteSite.getShortName(), personId);

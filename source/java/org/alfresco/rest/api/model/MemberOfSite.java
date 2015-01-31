@@ -23,7 +23,6 @@ import org.alfresco.rest.framework.resource.EmbeddedEntityResource;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteRole;
 
 /**
  * Represents membership of a site.
@@ -33,7 +32,7 @@ import org.alfresco.service.cmr.site.SiteRole;
  */
 public class MemberOfSite implements Comparable<MemberOfSite>
 {
-	private SiteRole role;
+	private String role;
 	private String siteShortName;
 	private NodeRef guid;
 
@@ -41,7 +40,7 @@ public class MemberOfSite implements Comparable<MemberOfSite>
 	{
 	}
 
-    public MemberOfSite(String siteShortName, NodeRef siteGuid, SiteRole role)
+    public MemberOfSite(String siteShortName, NodeRef siteGuid, String role)
     {
 		super();
 		if(siteShortName == null)
@@ -61,7 +60,7 @@ public class MemberOfSite implements Comparable<MemberOfSite>
 		this.guid = siteGuid;
 	}
 
-    public static MemberOfSite getMemberOfSite(SiteInfo siteInfo, SiteRole siteRole)
+    public static MemberOfSite getMemberOfSite(SiteInfo siteInfo, String siteRole)
     {
     	MemberOfSite memberOfSite = new MemberOfSite(siteInfo.getShortName(), siteInfo.getNodeRef(), siteRole);
     	return memberOfSite;
@@ -84,12 +83,12 @@ public class MemberOfSite implements Comparable<MemberOfSite>
 		this.guid = guid;
 	}
 
-	public SiteRole getRole()
+	public String getRole()
 	{
 		return role;
 	}
 	
-	public void setRole(SiteRole role)
+	public void setRole(String role)
 	{
 		if(role == null)
 		{

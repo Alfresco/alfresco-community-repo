@@ -27,9 +27,6 @@
                         <if test="item.outer">left outer </if>join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
                         <if test="item.outer">left outer </if>join alf_content_url ${item.alias} on (${item.alias}.id = ${item.alias}_cd.content_url_id)
                     </when>
-                    <when test="item.type == 'ASPECT'">
-                        <if test="item.outer">left outer </if>join alf_node_aspects ${item.alias} on (${item.alias}.node_id = node.id)
-                    </when>
                 </choose>
             </foreach>
         where 
@@ -100,7 +97,8 @@
                              ${item.fieldAndFunction} &lt;&gt; #{item.value}
                         </when>
                         <when test="item.type == 'ASPECT'">
-                             ${item.alias}.qname_id IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>
+                             EXISTS (select 1 from alf_node_aspects as aspect where aspect.node_id = node.id AND 
+                             aspect.qname_id IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>)
                         </when>
                         <!--  skip ORDER and NO_ORDER -->
                     </choose>

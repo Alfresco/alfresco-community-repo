@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -363,7 +363,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         for (Transaction txn : txns)
         {
             count++;
-            InIndex inIndex = isTxnPresentInIndex(txn, true);
+            InIndex inIndex = isTxnPresentInIndex(txn, false);
             if (inIndex == InIndex.NO)
             {
                 // Missing txn
@@ -388,7 +388,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
         for (Transaction txn : txns)
         {
             count++;
-            current = isTxnPresentInIndex(txn, true);
+            current = isTxnPresentInIndex(txn, false);
             if (current == InIndex.NO)
             {
                 // Missing txn

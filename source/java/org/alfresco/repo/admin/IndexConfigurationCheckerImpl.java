@@ -101,8 +101,45 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
             
             // Are we creating the store - in which case we do not check
             // See MNT-11612
-            List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(rootNodeRef, RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, 1, false);
-            if(childAssocs.size() == 0)
+            int countChildAssoc = 0;
+            if (storeRef.getProtocol().equals(StoreRef.PROTOCOL_AVM))
+            {
+                // AVM does not support nodeService.countChildAssocs()
+                long start = 0;
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Counting childAssocs for store: " + storeRef);
+                    start = System.currentTimeMillis();
+                }
+                List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(rootNodeRef,
+                        RegexQNamePattern.MATCH_ALL, RegexQNamePattern.MATCH_ALL, 1, false);
+                countChildAssoc = childAssocs.size();
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Time for counting childAssocs for : " + storeRef + " time="
+                            + (System.currentTimeMillis() - start));
+                }
+            }
+            else
+            {
+                long start = 0;
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Counting childAssocs for store: " + storeRef);
+                    start = System.currentTimeMillis();
+                }
+                countChildAssoc = nodeService.countChildAssocs(rootNodeRef, true);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Time for counting childAssocs for : " + storeRef + " time="
+                            + (System.currentTimeMillis() - start));
+                }
+            }
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Counting childAssocs for store: " + storeRef + " countChildAssoc = " + countChildAssoc);
+            }
+            if (countChildAssoc == 0)
             {
                 continue;
             }

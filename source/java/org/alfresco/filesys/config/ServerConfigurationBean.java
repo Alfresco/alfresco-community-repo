@@ -234,6 +234,38 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 cifsConfig.setBroadcastMask(broadcastAddess);
             }
 
+            // Get the terminal server address
+            
+            List<String> terminalServerList = cifsConfigBean.getTerminalServerList();
+            if (terminalServerList != null && terminalServerList.size() > 0)
+            {
+                // Check if the terminal server address is a valid numeric IP address
+                for (String terminalServerAddress : terminalServerList)
+                {
+                    if (IPAddress.isNumericAddress(terminalServerAddress) == false)
+                        throw new AlfrescoRuntimeException("Invalid terminal server address, must be n.n.n.n format");
+                }
+                // Set the terminal server address
+
+                cifsConfig.setTerminalServerList(terminalServerList);
+            }
+
+            // Get the load balancer address
+
+            List<String> loadBalancerList = cifsConfigBean.getLoadBalancerList();
+            if (loadBalancerList != null && loadBalancerList.size() > 0)
+            {
+                // Check if the load balancer address is a valid numeric IP address
+                for (String loadBalancerAddress : loadBalancerList)
+                {
+                    if (IPAddress.isNumericAddress(loadBalancerAddress) == false)
+                        throw new AlfrescoRuntimeException("Invalid load balancer address, must be n.n.n.n format");
+                }
+                // Set the terminal server address
+
+                cifsConfig.setLoadBalancerList(loadBalancerList);
+            }
+
             // Get the host configuration
 
             String hostName = cifsConfigBean.getServerName();

@@ -18,6 +18,10 @@
  */
 package org.alfresco.filesys.config;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.jlan.server.auth.ICifsAuthenticator;
 import org.alfresco.jlan.smb.server.VirtualCircuitList;
@@ -97,6 +101,59 @@ public class CIFSConfigBean
     
     private int m_maxVC = VirtualCircuitList.DefMaxCircuits;
     
+    /** The terminal server list address. */
+    private List<String> terminalServerList;
+
+    /** The load balancer list address. */
+    private List<String> loadBalancerList;
+    
+    public CIFSConfigBean(String terminalServerList, String loadBalancerList)
+    {
+        this.terminalServerList = convertToIpAddressList(terminalServerList);
+        this.loadBalancerList = convertToIpAddressList(loadBalancerList);
+    }
+
+    /**
+     * Convert string of addresses to the address list.
+     * 
+     * @param addressist
+     */
+    public List<String> convertToIpAddressList(String addressist)
+    {
+        List<String> listIpAddress = null;
+        if (addressist != null && !addressist.isEmpty())
+        {
+            StringTokenizer tkn = new StringTokenizer(addressist, ", \t\n\r\f");
+            listIpAddress = new ArrayList<String>(tkn.countTokens());
+            while (tkn.hasMoreTokens())
+            {
+                String instance = tkn.nextToken();
+                listIpAddress.add(instance);
+            }
+        }
+        return listIpAddress;
+    }
+    
+    /**
+     * Gets the terminal server list address.
+     * 
+     * @return the terminal server list address
+     */
+    public List<String> getTerminalServerList()
+    {
+        return this.terminalServerList;
+    }
+    
+    /**
+     * Gets the load balancer list address.
+     * 
+     * @return the load balancer list address
+     */
+    public List<String> getLoadBalancerList()
+    {
+        return this.loadBalancerList;
+    }
+
     /**
      * Checks if is server enabled.
      * 

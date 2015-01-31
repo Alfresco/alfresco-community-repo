@@ -89,6 +89,8 @@
 
 
    <bean id="cifsServerConfig" class="org.alfresco.filesys.config.CIFSConfigBean">
+      <constructor-arg index="0" value="${cifs.terminalServerList}"/>
+      <constructor-arg index="1" value="${cifs.loadBalancerList}"/>
       <property name="serverEnabled">
          <value>${cifs.enabled}</value>
       </property>

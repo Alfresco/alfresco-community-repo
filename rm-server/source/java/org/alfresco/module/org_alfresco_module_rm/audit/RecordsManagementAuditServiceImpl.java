@@ -1410,12 +1410,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
                 json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
 
+                // TODO: Find another way for checking the event
                 if (entry.getEvent().equals("Create Person") && entry.getNodeRef() != null)
                 {
                     NodeRef nodeRef = entry.getNodeRef();
                     String userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
                     json.put("nodeName", userName == null ? "": userName);
                     json.put("createPerson", true);
+                }
+                if (entry.getEvent().equals("Delete RM Object"))
+                {
+                    json.put("deleteObject", true);
                 }
                 else
                 {

@@ -58,6 +58,8 @@ import org.alfresco.util.test.junitrules.TemporarySites;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.SQLServerDialect;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -114,7 +116,8 @@ public class SubscriptionServiceActivitiesTest
     protected static FeedGenerator feedGenerator;
     protected static RetryingTransactionHelper transactionHelper;
     protected static NodeArchiveService nodeArchiveService;
-    
+    protected static Dialect dialect;
+
     private static Scheduler QUARTZ_SCHEDULER;
     
     // Test Sites - these are all created by USER_ONE & hence USER_ONE is the SiteManager.
@@ -143,6 +146,7 @@ public class SubscriptionServiceActivitiesTest
         contentService = (ContentService) ctx.getBean("ContentService");
         nodeArchiveService = (NodeArchiveService)ctx.getBean("nodeArchiveService");
         transactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
+        dialect = (Dialect) ctx.getBean("dialect");
         
         ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory) ctx.getBean("ActivitiesFeed");
         ApplicationContext activitiesFeedCtx = activitiesFeed.getApplicationContext();
@@ -232,6 +236,13 @@ public class SubscriptionServiceActivitiesTest
     
     @Test public void testFollowingActivity() throws Exception
     {
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (dialect instanceof SQLServerDialect)
+        {
+            return;
+        }
+
         // We'll change things in the system in order to cause the generation of activity events and compare the feeds with these totals as we go.
         // Initially, both users have zero activity feed entries.
         // Java's requirement for final modifiers on variables accessed within inner classes means we can't use simple ints here.

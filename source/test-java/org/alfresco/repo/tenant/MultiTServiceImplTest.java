@@ -42,6 +42,8 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.SQLServerDialect;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,6 +67,7 @@ public class MultiTServiceImplTest
     private NodeService nodeService;
     private SearchService searchService;
     private NamespaceService namespaceService;
+    private Dialect dialect;
     
     private UserTransaction txn;
     
@@ -113,6 +116,7 @@ public class MultiTServiceImplTest
         nodeService = ctx.getBean("NodeService", NodeService.class);
         searchService = ctx.getBean("SearchService", SearchService.class);
         namespaceService = ctx.getBean("NamespaceService", NamespaceService.class);
+        dialect = ctx.getBean("dialect", Dialect.class);
         
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
@@ -586,6 +590,13 @@ public class MultiTServiceImplTest
     @Test
     public void testGetUserDomain()
     {
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (dialect instanceof SQLServerDialect)
+        {
+            return;
+        }
+
         String result = tenantService.getUserDomain(USER1);
         assertEquals("The user domain should be the default one for a non tenant user without a tenant in name.", TenantService.DEFAULT_DOMAIN, result);
         

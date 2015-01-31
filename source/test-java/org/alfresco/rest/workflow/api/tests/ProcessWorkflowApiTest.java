@@ -24,24 +24,33 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricProcessInstance;
 import org.activiti.engine.task.Task;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
+import org.alfresco.rest.api.tests.PersonInfo;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
+import org.alfresco.rest.api.tests.RepoService.TestPerson;
+import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.MemberOfSite;
+import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
 import org.alfresco.rest.workflow.api.model.Variable;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.ProcessesClient;
@@ -49,6 +58,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ISO8601DateFormat;
+import org.alfresco.util.Pair;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.experimental.categories.Category;
@@ -1285,6 +1295,110 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         }
     }
     
+    @Test
+    public void testMNT12382() throws Exception
+    {
+        currentNetwork = getTestFixture().getRandomNetwork();
+        TestPerson initiator = currentNetwork.getPeople().get(0);
+        RequestContext requestContext = new RequestContext(currentNetwork.getId(), initiator.getId());
+        publicApiClient.setRequestContext(requestContext);
+        ProcessInfo processInfo = startReviewPooledProcess(requestContext);
+
+        final List<TestPerson> persons = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<TestPerson>>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public List<TestPerson> execute() throws Throwable
+            {
+                ArrayList<TestPerson> persons = new ArrayList<TestPerson>();
+                persons.add(currentNetwork.createUser(new PersonInfo("Maxim0", "Bobyleu0", "maxim0.bobyleu0", "password", null, "skype", "location", "telephone", "mob", "instant", "google")));
+                persons.add(currentNetwork.createUser(new PersonInfo("Maxim1", "Bobyleu1", "maxim1.bobyleu1", "password", null, "skype", "location", "telephone", "mob", "instant", "google")));
+                persons.add(currentNetwork.createUser(new PersonInfo("Maxim2", "Bobyleu2", "maxim2.bobyleu2", "password", null, "skype", "location", "telephone", "mob", "instant", "google")));
+                return persons;
+            }
+        }, false, true);
+
+        final MemberOfSite memberOfSite = currentNetwork.getSiteMemberships(initiator.getId()).get(0);
+        
+        // startReviewPooledProcess() uses initiator's site id and role name for construct bpm_groupAssignee, thus we need appropriate things for created users
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        TestSite initiatorSite = (TestSite) memberOfSite.getSite();
+                        initiatorSite.inviteToSite(persons.get(0).getId(), memberOfSite.getRole());
+                        initiatorSite.inviteToSite(persons.get(1).getId(), memberOfSite.getRole());
+                        // this user wouldn't be in group
+                        initiatorSite.inviteToSite(persons.get(2).getId(), SiteRole.SiteConsumer == memberOfSite.getRole() ? SiteRole.SiteCollaborator : SiteRole.SiteConsumer);
+                        return null;
+                    }
+                }, AuthenticationUtil.getAdminUserName(), currentNetwork.getId());
+
+                return null;
+            }
+        }, false, true);
+
+        String processId = processInfo.getId();
+
+        // getting process items by workflow initiator
+        ProcessesClient processesClient = publicApiClient.processesClient();
+        JSONObject initiatorItems = processesClient.findProcessItems(processId);
+
+        // getting unclaimed process items by user in group
+        requestContext = new RequestContext(currentNetwork.getId(), persons.get(0).getId());
+        publicApiClient.setRequestContext(requestContext);
+        JSONObject items1 = processesClient.findProcessItems(processId);
+        assertEquals(initiatorItems.toJSONString(), items1.toJSONString());
+
+        // getting unclaimed process items by user not in group
+        requestContext = new RequestContext(currentNetwork.getId(), persons.get(2).getId());
+        publicApiClient.setRequestContext(requestContext);
+        try
+        {
+            JSONObject items2 = processesClient.findProcessItems(processId);
+            fail("User not from group should not see items.");
+        }
+        catch (PublicApiException e)
+        {
+            // expected
+            assertEquals(403, e.getHttpResponse().getStatusCode());
+        }
+
+        // claim task
+        TaskService taskService = activitiProcessEngine.getTaskService();
+        Task task = taskService.createTaskQuery().processInstanceId(processId).singleResult();
+        TestPerson assignee = persons.get(1);
+        taskService.setAssignee(task.getId(), assignee.getId());
+
+        // getting claimed process items by assignee
+        requestContext = new RequestContext(currentNetwork.getId(), assignee.getId());
+        publicApiClient.setRequestContext(requestContext);
+        JSONObject items3 = processesClient.findProcessItems(processId);
+        assertEquals(initiatorItems.toJSONString(), items3.toJSONString());
+
+        // getting claimed process items by user in group
+        requestContext = new RequestContext(currentNetwork.getId(), persons.get(0).getId());
+        publicApiClient.setRequestContext(requestContext);
+        try
+        {
+            JSONObject items4 = processesClient.findProcessItems(processId);
+            fail("User from group should not see items for claimed task by another user.");
+        }
+        catch (PublicApiException e)
+        {
+            // expected
+            assertEquals(403, e.getHttpResponse().getStatusCode());
+        }
+        finally
+        {
+            cleanupProcessInstance(processId);
+        }
+    }
+
     @Test
     public void testGetProcessItems() throws Exception
     {

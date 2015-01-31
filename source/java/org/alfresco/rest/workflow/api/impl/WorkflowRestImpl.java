@@ -17,6 +17,7 @@ import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.history.HistoricTaskInstanceQuery;
 import org.activiti.engine.history.HistoricVariableInstance;
+import org.activiti.engine.task.Task;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -50,6 +51,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.beanutils.ConversionException;
@@ -493,13 +495,26 @@ public class WorkflowRestImpl
             return variableInstances;
         }
         
-        if (authorityService.isAdminAuthority(AuthenticationUtil.getRunAsUser())) 
+        String username = AuthenticationUtil.getRunAsUser();
+        if (authorityService.isAdminAuthority(username)) 
         {
             // Admin is allowed to read all processes in the current tenant
             return variableInstances;
         }
         else
         {
+            // MNT-12382 check for membership in the assigned group
+            ActivitiScriptNode group = (ActivitiScriptNode) variableMap.get("bpm_groupAssignee");
+            if (group != null)
+            {
+                // check that the process is unclaimed
+                Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processId).singleResult();
+                if ((task != null) && (task.getAssignee() == null) && isUserInGroup(username, group.getNodeRef()))
+                {
+                    return variableInstances;
+                }
+            }
+
             // If non-admin user, involvement in the task is required (either owner, assignee or externally involved).
             HistoricTaskInstanceQuery query = activitiProcessEngine.getHistoryService()
                     .createHistoricTaskInstanceQuery()
@@ -549,5 +564,17 @@ public class WorkflowRestImpl
     public void setActivitiWorkflowEngine(ActivitiWorkflowEngine activitiWorkflowEngine)
     {
         this.activitiWorkflowEngine = activitiWorkflowEngine;
+    }
+    
+    private boolean isUserInGroup(String username, NodeRef group)
+    {
+        // Get the group name
+        String groupName = (String) nodeService.getProperty(group, ContentModel.PROP_AUTHORITY_NAME);
+
+        // Get all group members
+        Set<String> groupMembers = authorityService.getContainedAuthorities(AuthorityType.USER, groupName, false);
+
+        // Check if the user is a group member.
+        return (groupMembers != null) && groupMembers.contains(username);
     }
 }

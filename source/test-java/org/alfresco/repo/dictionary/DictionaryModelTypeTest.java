@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import javax.transaction.UserTransaction;
 import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -37,21 +37,27 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.util.BaseAlfrescoSpringTest;
+import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.PropertyMap;
 import org.junit.experimental.categories.Category;
 import org.springframework.util.ResourceUtils;
@@ -62,7 +68,7 @@ import org.springframework.util.ResourceUtils;
  * @author Roy Wetherall, janv
  */
 @Category(BaseSpringTestsCategory.class)
-public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
+public class DictionaryModelTypeTest extends BaseSpringTest
 {
     /** QNames of the test models */
     
@@ -351,16 +357,40 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
     private CheckOutCheckInService cociService;
     private DictionaryDAO dictionaryDAO;
     private PolicyComponent policyComponent;
-    
-    /**
-     * On setup in transaction override
-     */
+    private NodeService nodeService;
+    private ContentService contentService;
+    private MutableAuthenticationService authenticationService;
+    private StoreRef storeRef;
+    private NodeRef rootNodeRef;
+    private ActionService actionService;
+    private TransactionService transactionService;
+    private AuthenticationComponent authenticationComponent;
+
+    private UserTransaction txn;
+
     @Override
-    protected void onSetUpInTransaction() throws Exception
+    protected void onSetUp() throws Exception
     {
-        
-        super.onSetUpInTransaction();
-        
+        this.nodeService = (NodeService) this.applicationContext.getBean("nodeService");
+        this.contentService = (ContentService) this.applicationContext.getBean("contentService");
+        this.authenticationService = (MutableAuthenticationService) this.applicationContext.getBean("authenticationService");
+        this.actionService = (ActionService)this.applicationContext.getBean("actionService");
+        this.transactionService = (TransactionService)this.applicationContext.getBean("transactionComponent");
+
+        // Authenticate as the system user
+        authenticationComponent = (AuthenticationComponent) this.applicationContext
+                .getBean("authenticationComponent");
+        authenticationComponent.setSystemUserAsCurrentUser();
+
+        txn = transactionService.getUserTransaction();
+
+        // Create the store in a separate transaction to run successfully on MS SQL Server
+        txn.begin();
+
+        // Create the store and get the root node
+        this.storeRef = this.nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
+        this.rootNodeRef = this.nodeService.getRootNode(this.storeRef);
+
         // Get the required services
         this.dictionaryService = (DictionaryService)this.applicationContext.getBean("dictionaryService");
         this.namespaceService = (NamespaceService)this.applicationContext.getBean("namespaceService");
@@ -368,44 +398,56 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         this.dictionaryDAO = (DictionaryDAO)this.applicationContext.getBean("dictionaryDAO");
         this.nodeService = (NodeService)this.applicationContext.getBean("NodeService");
         this.policyComponent = (PolicyComponent)this.applicationContext.getBean("policyComponent");
-        
+
         TenantAdminService tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
         MessageService messageService = (MessageService)this.applicationContext.getBean("messageService");
-        
+
         List<String> storeUrlsToValidate = new ArrayList<String>(1);
         storeUrlsToValidate.add(this.storeRef.toString());
         ModelValidatorImpl modelValidator = (ModelValidatorImpl)this.applicationContext.getBean("modelValidator");
         modelValidator.setStoreUrls(storeUrlsToValidate);
 
+        txn.commit();
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
         DictionaryRepositoryBootstrap bootstrap = new DictionaryRepositoryBootstrap();
         bootstrap.setContentService(this.contentService);
         bootstrap.setDictionaryDAO(this.dictionaryDAO);
         bootstrap.setTransactionService(this.transactionService);
-        bootstrap.setTenantAdminService(tenantAdminService); 
+        bootstrap.setTenantAdminService(tenantAdminService);
         bootstrap.setNodeService(this.nodeService);
         bootstrap.setNamespaceService(this.namespaceService);
         bootstrap.setMessageService(messageService);
         bootstrap.setPolicyComponent(policyComponent);
-        
+
         RepositoryLocation location = new RepositoryLocation();
         location.setStoreProtocol(this.storeRef.getProtocol());
         location.setStoreId(this.storeRef.getIdentifier());
         location.setQueryLanguage(RepositoryLocation.LANGUAGE_PATH);
         // NOTE: we are not setting the path for now .. in doing so we are searching the root node only
-        
+
         List<RepositoryLocation> locations = new ArrayList<RepositoryLocation>();
         locations.add(location);
-        
+
         bootstrap.setRepositoryModelsLocations(locations);
-        
+
         // register with dictionary service
         bootstrap.register();
+
+        txn.commit();
+    }
+
+    @Override
+    protected void onTearDown() throws Exception
+    {
+        authenticationService.clearCurrentSecurityContext();
     }
     
     /**
      * Test the creation of dictionary model nodes
      */
-    public void testCreateAndUpdateDictionaryModelNodeContent()
+    public void testCreateAndUpdateDictionaryModelNodeContent() throws Exception
     {
         try
         {
@@ -425,7 +467,10 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         // Create a model node
         PropertyMap properties = new PropertyMap(1);
         properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
-        
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
         final NodeRef modelNode = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -439,11 +484,10 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         contentWriter.setEncoding("UTF-8");
         contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
         contentWriter.putContent(MODEL_ONE_XML);
-        
+
         // End the transaction to force update
-        setComplete();
-        endTransaction();
-        
+        txn.commit();
+
         final NodeRef workingCopy = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Exception
@@ -555,7 +599,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         });
     }
     
-    public void testUpdateDictionaryModelPropertyDelete()
+    public void testUpdateDictionaryModelPropertyDelete() throws Exception
     {
         try
         {
@@ -571,7 +615,10 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         // Check that the namespace is not yet in the namespace service
         String uri = this.namespaceService.getNamespaceURI("test1");
         assertNull(uri);
-        
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
         // Create a model node
         PropertyMap properties = new PropertyMap(1);
         properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
@@ -590,9 +637,8 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         contentWriter.putContent(MODEL_ONE_MODIFIED_XML);
         
         // End the transaction to force update
-        setComplete();
-        endTransaction();
-        
+        txn.commit();
+
         // create node using new type
         final NodeRef node1 = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
@@ -695,7 +741,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         });
     }
     
-    public void testUpdateDictionaryModelConstraintDelete()
+    public void testUpdateDictionaryModelConstraintDelete() throws Exception
     {
         try
         {
@@ -711,7 +757,10 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         // Check that the namespace is not yet in the namespace service
         String uri = this.namespaceService.getNamespaceURI("test2");
         assertNull(uri);
-        
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
         // Create a model node
         PropertyMap properties = new PropertyMap(1);
         properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
@@ -730,9 +779,8 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         contentWriter.putContent(MODEL_TWO_XML);
         
         // End the transaction to force update
-        setComplete();
-        endTransaction();
-        
+        txn.commit();
+
         final NodeRef workingCopy = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
             public NodeRef execute() throws Exception
@@ -817,7 +865,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         });
     }
     
-    public void testIsActiveFlagAndDelete()
+    public void testIsActiveFlagAndDelete() throws Exception
     {
         try
         {
@@ -830,6 +878,8 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
             // We expect this exception
         }
 
+        txn = transactionService.getUserTransaction();
+        txn.begin();
         // Create a model node
         PropertyMap properties = new PropertyMap(1);
         final NodeRef modelNode = this.nodeService.createNode(
@@ -847,9 +897,8 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         contentWriter.putContent(MODEL_ONE_XML);
         
         // End the transaction to force update
-        setComplete();
-        endTransaction();
-        
+        txn.commit();
+
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -948,7 +997,7 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
      * Test for MNT-11653
      */
     @SuppressWarnings("deprecation")
-    public void testOverrideMandatoryProperty()
+    public void testOverrideMandatoryProperty() throws Exception
     {
         try
         {
@@ -968,7 +1017,10 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         // Create a model node
         PropertyMap properties = new PropertyMap(1);
         properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
-        
+
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+
         final NodeRef modelNode = this.nodeService.createNode(
                 this.rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -984,9 +1036,9 @@ public class DictionaryModelTypeTest extends BaseAlfrescoSpringTest
         contentWriter.putContent(MODEL_THREE_XML);
         
         // End the transaction to force update
-        setComplete();
-        endTransaction();
-     
+
+        txn.commit();
+
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception

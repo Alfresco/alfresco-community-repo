@@ -642,14 +642,24 @@ public class InviteServiceTest extends BaseWebScriptTest
 //
     public void testStartInviteForSameInviteeButTwoDifferentSites()
         throws Exception
-    {        
-        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_SITE_ROLE,
-                SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
-        
-        String inviteeEmail = (String) result.get("inviteeEmail");
-        
-        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE,
-                SITE_SHORT_NAME_INVITE_2,  Status.STATUS_OK);
+    {
+        final String inviteeUsername = INVITEE_FIRSTNAME + "_" + INVITEE_LASTNAME;
+        final String inviteeEmail = INVITEE_EMAIL_PREFIX + RandomStringUtils.randomAlphanumeric(6) + "@" + INVITEE_EMAIL_DOMAIN;
+
+        // Create person
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                createPerson(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeUsername, inviteeEmail);
+                return null;
+            }
+
+        }, AuthenticationUtil.getSystemUserName());
+
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+
+        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_2, Status.STATUS_OK);
     }
 
     public void testCancelInvite() throws Exception
@@ -922,19 +932,27 @@ public class InviteServiceTest extends BaseWebScriptTest
     
     public void testInviteeResourcesNotDeletedUponRejectWhenInvitesPending() throws Exception
     {
+        // Create invitee person
+        final String inviteeEmail = INVITEE_EMAIL_PREFIX + RandomStringUtils.randomAlphanumeric(6) + "@" + INVITEE_EMAIL_DOMAIN;
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                createPerson(INVITEE_FIRSTNAME, INVITEE_LASTNAME, INVITEE_FIRSTNAME + "_" + INVITEE_LASTNAME, inviteeEmail);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        
         // inviter invites invitee to site 1
-        JSONObject result = startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
+        JSONObject result = startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_1, Status.STATUS_OK);
         
         // get hold of properties of started invite
         String invite1Id = result.getString("inviteId");
         String invite1Ticket = result.getString("inviteTicket");
-        String inviteeEmail = result.getString("inviteeEmail");
         final String inviteeUserName = result.getString("inviteeUserName");
         
         // inviter invites invitee to site 2
-        startInvite(INVITEE_FIRSTNAME,
-                INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_2, Status.STATUS_OK);
+        startInvite(INVITEE_FIRSTNAME, INVITEE_LASTNAME, inviteeEmail, INVITEE_SITE_ROLE, SITE_SHORT_NAME_INVITE_2, Status.STATUS_OK);
         
         rejectInvite(invite1Id, invite1Ticket, Status.STATUS_OK);
         

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -238,10 +238,7 @@ public class Invite extends DeclarativeWebScript
             }
             catch (InvitationExceptionUserError ie)
             {
-                throw new WebScriptException(Status.STATUS_CONFLICT,
-                    "Cannot proceed with invitation. A person with user name: '" + inviteeUserName
-                    + "' and invitee email address: '"
-                    + inviteeEmail + "' is already a member of the site: '" + siteShortName + "'.");
+                throw new WebScriptException(Status.STATUS_CONFLICT, ie.getMessage());
             }
             catch (InvitationExceptionForbidden fe)
             {

@@ -46,6 +46,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.dao.DuplicateKeyException;
 
 /**
  * iBatis-specific implementation of the PropertyValue DAO.

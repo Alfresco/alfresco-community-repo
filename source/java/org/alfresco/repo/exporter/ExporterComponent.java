@@ -35,6 +35,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.MLPropertyInterceptor;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -45,6 +46,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -921,30 +923,42 @@ public class ExporterComponent
         private boolean isWithinExport(NodeRef nodeRef, ExporterCrawlerParameters parameters)
         {
             boolean isWithin = false;
-            
-            // Current strategy is to determine if node is a child of the root exported node
-            for (NodeRef exportRoot : context.getExportList())
+
+            try
             {
-                if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
+                // Current strategy is to determine if node is a child of the root exported node
+                for (NodeRef exportRoot : context.getExportList())
                 {
-                    // node to export is the root export node (and root is to be exported)
-                    isWithin = true;
-                }
-                else
-                {
-                    // locate export root in primary parent path of node
-                    Path nodePath = nodeService.getPath(nodeRef);
-                    for (int i = nodePath.size() -1; i >= 0; i--)
+                    if (nodeRef.equals(exportRoot) && parameters.isCrawlSelf() == true)
                     {
-                        Path.ChildAssocElement pathElement = (Path.ChildAssocElement)nodePath.get(i);
-                        if (pathElement.getRef().getChildRef().equals(exportRoot))
+                        // node to export is the root export node (and root is to be exported)
+                        isWithin = true;
+                    }
+                    else
+                    {
+                        // locate export root in primary parent path of node
+                        Path nodePath = nodeService.getPath(nodeRef);
+                        for (int i = nodePath.size() - 1; i >= 0; i--)
                         {
-                            isWithin = true;
-                            break;
+                            Path.ChildAssocElement pathElement = (Path.ChildAssocElement) nodePath.get(i);
+                            if (pathElement.getRef().getChildRef().equals(exportRoot))
+                            {
+                                isWithin = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
+            catch (AccessDeniedException accessErr)
+            {
+                // use default if this occurs
+            }
+            catch (InvalidNodeRefException nodeErr)
+            {
+                // use default if this occurs
+            }
+
             return isWithin;
         }
     }

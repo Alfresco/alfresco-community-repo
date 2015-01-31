@@ -37,6 +37,8 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.importer.ACPImportPackageHandler;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -48,6 +50,9 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.CategoryService;
 import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.view.Exporter;
 import org.alfresco.service.cmr.view.ExporterContext;
 import org.alfresco.service.cmr.view.ExporterCrawlerParameters;
@@ -60,6 +65,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
+import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.debug.NodeStoreInspector;
 import org.junit.experimental.categories.Category;
@@ -77,6 +83,8 @@ public class ExporterComponentTest extends BaseSpringTest
     private TransactionService transactionService;
     private StoreRef storeRef;
     private AuthenticationComponent authenticationComponent;
+    private PermissionServiceSPI permissionService;
+    private MutableAuthenticationService authenticationService;
 
     
     @Override
@@ -88,8 +96,10 @@ public class ExporterComponentTest extends BaseSpringTest
         fileFolderService = (FileFolderService) applicationContext.getBean("fileFolderService");
         categoryService = (CategoryService) applicationContext.getBean("categoryService");     
         transactionService = (TransactionService) applicationContext.getBean("transactionService");
+        permissionService = (PermissionServiceSPI) applicationContext.getBean("permissionService");
 
-        this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        this.authenticationService = (MutableAuthenticationService) applicationContext.getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
     }
@@ -238,6 +248,71 @@ public class ExporterComponentTest extends BaseSpringTest
     	{
         	I18NUtil.setContentLocale(currentLocale);
     	}
+    }
+    
+    public void testMNT12504() throws Exception
+    {
+        String testUser = "testUserMnt12504";
+        StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        NodeRef rootNode = nodeService.getRootNode(storeRef);
+
+        // Create folder and two documents
+        NodeRef folder = fileFolderService.create(rootNode, getClass().getName() + "testMNT12504" + GUID.generate(), ContentModel.TYPE_FOLDER).getNodeRef();
+
+        NodeRef docA = nodeService.createNode(folder, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT,
+                Collections.singletonMap(ContentModel.PROP_NAME, (Serializable) "docA.txt")).getChildRef();
+
+        NodeRef docB = nodeService.createNode(folder, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT,
+                Collections.singletonMap(ContentModel.PROP_NAME, (Serializable) "docB.txt")).getChildRef();
+
+        // Add association between docA and docB
+        nodeService.createAssociation(docA, docB, ContentModel.ASSOC_REFERENCES);
+
+        // Set read permissions for user1 on folder and docA. docB should be set to false
+        permissionService.setPermission(folder, testUser, PermissionService.READ, true);
+        permissionService.setInheritParentPermissions(folder, false);
+        permissionService.setPermission(docA, testUser, PermissionService.READ, true);
+        permissionService.setPermission(docB, testUser, PermissionService.READ, false);
+
+        if (!authenticationService.authenticationExists(testUser))
+        {
+            this.authenticationService.createAuthentication(testUser, testUser.toCharArray());
+        }
+        this.authenticationComponent.authenticate(testUser, testUser.toCharArray());
+
+        // Check that test goes as expect
+        assertTrue(this.authenticationComponent.getCurrentUserName().equals(testUser));
+        assertTrue(permissionService.hasPermission(folder, PermissionService.READ).equals(AccessStatus.ALLOWED));
+        assertTrue(permissionService.hasPermission(docA, PermissionService.READ).equals(AccessStatus.ALLOWED));
+        assertTrue(permissionService.hasPermission(docB, PermissionService.READ).equals(AccessStatus.DENIED));
+
+        ExporterCrawlerParameters crawlerParameters = new ExporterCrawlerParameters();
+        crawlerParameters.setExportFrom(new Location(folder));
+        crawlerParameters.setCrawlSelf(true);
+        crawlerParameters.setExcludeAspects(new QName[] { ContentModel.ASPECT_WORKING_COPY });
+
+        File acpFile = TempFileProvider.createTempFile("alf", ACPExportPackageHandler.ACP_EXTENSION);
+        ACPExportPackageHandler acpHandler = new ACPExportPackageHandler(new FileOutputStream(acpFile), new File("test"), new File("test"), null);
+        acpHandler.setNodeService(nodeService);
+        acpHandler.setExportAsFolders(true);
+
+        // Check that fix works as expect
+        boolean isFixed = true;
+        try
+        {
+            exporterService.exportView(acpHandler, crawlerParameters, null);
+        }
+        catch (AccessDeniedException e)
+        {
+            isFixed = false;
+        }
+        finally
+        {
+            this.authenticationComponent.setSystemUserAsCurrentUser();
+            nodeService.deleteNode(folder);
+        }
+
+        assertTrue("The MNT12504 is reproduced.", isFixed);
     }
 
     /**

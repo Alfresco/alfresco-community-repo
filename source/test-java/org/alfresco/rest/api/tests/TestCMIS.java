@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.opencmis.dictionary.QNameFilter;
 import org.alfresco.opencmis.dictionary.QNameFilterImpl;
+import org.alfresco.opencmis.mapping.NodeRefProperty;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
@@ -84,6 +86,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
@@ -147,6 +150,7 @@ public class TestCMIS extends EnterpriseTestApi
     private TenantService tenantService;
     private CMISStrictDictionaryService cmisDictionary;
     private QNameFilter cmisTypeExclusions;
+	private NodeService nodeService;
 
     @Before
     public void before() throws Exception
@@ -157,6 +161,7 @@ public class TestCMIS extends EnterpriseTestApi
         this.tenantService = (TenantService)ctx.getBean("tenantService");
         this.cmisDictionary = (CMISStrictDictionaryService)ctx.getBean("OpenCMISDictionaryService");
         this.cmisTypeExclusions = (QNameFilter)ctx.getBean("cmisTypeExclusions");
+		this.nodeService = (NodeService) ctx.getBean("NodeService");
     }
 
     private void checkSecondaryTypes(Document doc, Set<String> expectedSecondaryTypes, Set<String> expectedMissingSecondaryTypes)
@@ -1318,7 +1323,8 @@ public class TestCMIS extends EnterpriseTestApi
     }
 
     /**
-     * Test that updating properties and content does not automatically create a new version.
+	 * Test that updating properties does not automatically create a new version.
+	 * Test that updating content creates a new version automatically.
      * 
      */
     @Test
@@ -1367,7 +1373,7 @@ public class TestCMIS extends EnterpriseTestApi
         AlfrescoDocument doc = (AlfrescoDocument)docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
         String versionLabel = doc.getVersionLabel();
 
-        // ...and check that updating its properties creates a new minor version...
+		// ...and check that updating its properties does not create a new version 
         properties = new HashMap<String, String>();
         {
             properties.put(PropertyIds.DESCRIPTION, GUID.generate());
@@ -1375,9 +1381,9 @@ public class TestCMIS extends EnterpriseTestApi
         AlfrescoDocument doc1 = (AlfrescoDocument)doc.updateProperties(properties);
         String versionLabel1 = doc1.getVersionLabel();
 
-        assertTrue(Double.parseDouble(versionLabel) < Double.parseDouble(versionLabel1));
+		assertEquals(versionLabel, versionLabel1);
 
-        // ...and check that updating its content does not create a new version
+		// ...and check that updating its content creates a new version
         fileContent = new ContentStreamImpl();
         {
             ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
@@ -1392,9 +1398,117 @@ public class TestCMIS extends EnterpriseTestApi
         @SuppressWarnings("unused")
         String versionLabel2 = doc2.getVersionLabel();
 
+		assertEquals("Set content stream shouldn't create a new version automatically", versionLabel1, versionLabel2);
+	}
+	
+	/**
+	 * Test that updating properties does automatically create a new version if
+	 * <b>autoVersion</b>, <b>initialVersion</b> and <b>autoVersionOnUpdateProps</b> are TRUE
+	 */
+	@Test
+	public void testVersioningUsingUpdateProperties() throws Exception
+	{
+		final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+		String username = "user" + System.currentTimeMillis();
+		PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+		TestPerson person1 = network1.createUser(personInfo);
+		String person1Id = person1.getId();
+
+		final String siteName = "site" + System.currentTimeMillis();
+
+		TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+		{
+			@Override
+			public NodeRef doWork() throws Exception
+			{
+				SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+				TestSite site = repoService.createSite(null, siteInfo);
+
+				String name = GUID.generate();
+				NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), name);
+				return folderNodeRef;
+			}
+		}, person1Id, network1.getId());
+
+		// Create a document...
+		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+		CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, "1.0", AlfrescoObjectFactoryImpl.class.getName());
+		AlfrescoFolder docLibrary = (AlfrescoFolder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
+        Map<String, String> properties = new HashMap<String, String>();
+        {
+        	properties.put(PropertyIds.OBJECT_TYPE_ID, "cmis:document");
+        	properties.put(PropertyIds.NAME, "mydoc-" + GUID.generate() + ".txt");
+        }
+		ContentStreamImpl fileContent = new ContentStreamImpl();
+		{
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("Ipsum and so on");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+		}
+		AlfrescoDocument doc = (AlfrescoDocument)docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+		String versionLabel = doc.getVersionLabel();
+		
+		String nodeRefStr = doc.getPropertyValue(NodeRefProperty.NodeRefPropertyId).toString();
+		final NodeRef nodeRef = new NodeRef(nodeRefStr);
+		
+		TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+		{
+			@Override
+			public NodeRef doWork() throws Exception
+			{
+				// ensure autoversioning is enabled
+				assertTrue(nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE));
+				
+				Map<QName, Serializable> versionProperties = new HashMap<QName, Serializable>();
+				versionProperties.put(ContentModel.PROP_AUTO_VERSION, true);
+				versionProperties.put(ContentModel.PROP_INITIAL_VERSION, true);
+				versionProperties.put(ContentModel.PROP_AUTO_VERSION_PROPS, true);
+				
+				nodeService.addProperties(nodeRef, versionProperties);
+				
+				return null;
+			}
+		}, person1Id, network1.getId());
+
+		// ...and check that updating its properties creates a new minor version...
+		properties = new HashMap<String, String>();
+        {
+        	properties.put(PropertyIds.DESCRIPTION, GUID.generate());
+        }
+		AlfrescoDocument doc1 = (AlfrescoDocument)doc.getObjectOfLatestVersion(false).updateProperties(properties);
+		doc1 = (AlfrescoDocument)doc.getObjectOfLatestVersion(false);
+		String versionLabel1 = doc1.getVersionLabel();
+		
         assertTrue(Double.parseDouble(versionLabel) < Double.parseDouble(versionLabel1));
 
-    }
+		// ...and check that updating its content creates a new version
+		fileContent = new ContentStreamImpl();
+		{
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("Ipsum and so on and so on");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+		}
+
+		doc1.setContentStream(fileContent, true);
+		
+		AlfrescoDocument doc2 = (AlfrescoDocument)doc1.getObjectOfLatestVersion(false);
+		String versionLabel2 = doc2.getVersionLabel();
+		
+		assertTrue("Set content stream should create a new version automatically", Double.parseDouble(versionLabel1) < Double.parseDouble(versionLabel2));
+		assertTrue("It should be latest version : " + versionLabel2, doc2.isLatestVersion());
+		
+		doc2.deleteContentStream();
+		AlfrescoDocument doc3 = (AlfrescoDocument)doc2.getObjectOfLatestVersion(false);
+		String versionLabel3 = doc3.getVersionLabel();
+		
+		assertTrue("Delete content stream should create a new version automatically", Double.parseDouble(versionLabel1) < Double.parseDouble(versionLabel3));
+		assertTrue("It should be latest version : " + versionLabel3, doc3.isLatestVersion());
+	}
     
     /*
      * Test that creating a document with a number of initial aspects does not create lots of initial versions

@@ -27,20 +27,23 @@
             </if>
         where
             assoc.parent_node_id = #{parentNodeId}
+            <foreach item="item" index="index" collection="pattern" open=" " separator=" " close=" ">
+              <if test="prop1qnameId != null or prop2qnameId != null or prop3qnameId != null ">
+              and lower(concat(
+              </if>
             <if test="prop1qnameId != null">
-            and 
-            (
-               lower(prop1.string_value) like lower(#{pattern}) <include refid="alfresco.util.escape"/>
+              prop1.string_value, ' ',  
             </if>
             <if test="prop2qnameId != null">
-            or lower(prop2.string_value) like lower(#{pattern})  <include refid="alfresco.util.escape"/>
+              prop2.string_value, ' ',  
             </if>
             <if test="prop3qnameId != null">
-            or lower(prop3.string_value) like lower(#{pattern})  <include refid="alfresco.util.escape"/>
+              prop3.string_value, ' ',  
             </if>
-            <if test="prop1qnameId != null">
-            )
+              <if test="prop1qnameId != null or prop2qnameId != null or prop3qnameId != null ">  
+              ' ')) like lower(#{item}) <include refid="alfresco.util.escape"/>
             </if>
+            </foreach>
             <if test="includeAspectIds != null">
                 and exists (
                     select *

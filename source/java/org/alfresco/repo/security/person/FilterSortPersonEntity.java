@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.person;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -42,7 +43,7 @@ public class FilterSortPersonEntity
     private Long prop3qnameId = null;
     private Boolean sort3asc = null;
     
-    private String pattern;
+    private List<String> pattern;
     
     private List<Long> includeAspectIds;
     private List<Long> excludeAspectIds;
@@ -65,7 +66,7 @@ public class FilterSortPersonEntity
         this.parentNodeId = parentNodeId;
     }
     
-    public String getPattern()
+    public List<String> getPattern()
     {
         return pattern;
     }
@@ -93,13 +94,20 @@ public class FilterSortPersonEntity
     
     public void setPattern(String pattern)
     {
+        this.pattern = new ArrayList<String>();
         if (pattern != null)
         {
             // escape the '%' character with '\' (standard SQL escape character)
             //pattern = escape(pattern, '%');
             
             // replace the wildcard character '*' with the one used in database queries i.e. '%'
-            this.pattern = pattern.replace('*', '%');
+            pattern = pattern.replace('*', '%');
+            
+            String[] parts = pattern.split(" ");
+            for(String part:parts)
+            {
+                this.pattern.add("%" + part + "%");
+            }
         }
     }
     

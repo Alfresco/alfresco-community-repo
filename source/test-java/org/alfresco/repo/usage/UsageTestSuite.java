@@ -30,20 +30,8 @@ import org.springframework.context.ApplicationContext;
  */
 public class UsageTestSuite extends TestSuite
 {
-    public static ApplicationContext getContext() 
-    {
-        ApplicationContextHelper.setUseLazyLoading(false);
-        ApplicationContextHelper.setNoAutoStart(true);
-        return ApplicationContextHelper.getApplicationContext(
-             new String[] { "classpath:alfresco/minimal-context.xml" }
-        );
-    }
-        
     public static Test suite() 
     {
-        // Setup the context
-        getContext();
-        
         TestSuite suite = new TestSuite();
         suite.addTestSuite(RepoUsageComponentTest.class);
         suite.addTestSuite(UserUsageTest.class);

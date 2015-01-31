@@ -37,6 +37,13 @@ function main()
       for (i = 0, ii = peopleFound.length; i < ii; i++)
       {
          name = search.findNode(peopleFound[i]).properties.userName;
+
+         if (!people.isAccountEnabled(name))
+         {
+            //user is disabled 
+            notAllowed.push(name);
+         }
+
          if (site.getMembersRole(name) != null)
          {
             // User is already a member

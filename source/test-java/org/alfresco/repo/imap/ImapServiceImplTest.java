@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -912,13 +913,18 @@ public class ImapServiceImplTest extends TestCase
         AlfrescoImapFolder destinationMailbox = imapService.getOrCreateMailbox(poweredUser, destinationPath, true, false);
         destinationMailbox.appendMessage(origMessage.getMimeMessage(), flags, null);
 
-        // Check the destination has the original file and only this file
-        FileInfo movedNode = fileFolderService.getFileInfo(origFile.getNodeRef());
-        assertNotNull("The file should exist.", movedNode);
-        assertEquals("The file name should not change.", fileName, movedNode.getName());
-        NodeRef newParentNodeRef = nodeService.getPrimaryParent(origFile.getNodeRef()).getParentRef();
-        assertEquals("The parent should change to destination.", destinationNode.getNodeRef(), newParentNodeRef);
+        // original message should be deleted or about to
+        assertTrue(!nodeService.exists(origFile.getNodeRef()) || imapService.getFlags(origFile).contains(Flags.Flag.DELETED));
+        
+        // new file should be in destination
         assertEquals("There should be only one node in the destination folder", 1, nodeService.getChildAssocs(destinationNode.getNodeRef()).size());
+        NodeRef newNodeRef = nodeService.getChildAssocs(destinationNode.getNodeRef()).get(0).getChildRef();
+        FileInfo newNodeFileInfo = fileFolderService.getFileInfo(newNodeRef);
+        assertEquals("The file name should not change.", fileName, newNodeFileInfo.getName());
+        ContentReader reader = contentService.getReader(newNodeRef, ContentModel.PROP_CONTENT);
+        String contentString = reader.getContentString();
+        // new file content should be the same as original one
+        assertEquals(contentString, nodeContent);
     }
     
     /**

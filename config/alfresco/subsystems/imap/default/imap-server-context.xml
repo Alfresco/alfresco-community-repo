@@ -184,6 +184,11 @@
         <property name="imapServerEnabled">
             <value>${imap.server.enabled}</value>
         </property>
+        <property name="messageHeadersToPersist">
+            <list>
+                <value>Message-Id</value>
+            </list>
+        </property>
     </bean>
     
     <!-- Public Imap Service -->

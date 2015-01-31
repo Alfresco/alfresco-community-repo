@@ -22,10 +22,12 @@ import static org.alfresco.repo.imap.AlfrescoImapConst.DICTIONARY_TEMPLATE_PREFI
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -40,6 +42,7 @@ import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import javax.mail.Flags;
+import javax.mail.Header;
 import javax.mail.Flags.Flag;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -165,6 +168,8 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     private static final Timer deleteDelayTimer = new Timer();
 
     private boolean imapServerEnabled = false;
+
+    private List<String> messageHeadersToPersist = Collections.<String>emptyList();
 
     static
     {
@@ -341,6 +346,11 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     public void setImapServerEnabled(boolean enabled)
     {
         this.imapServerEnabled = enabled;
+    }
+    
+    public void setMessageHeadersToPersist(List<String> headers)
+    {
+        this.messageHeadersToPersist  = headers;
     }
     
     public boolean getImapServerEnabled()
@@ -574,22 +584,30 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                         @Override
                         public Void doWork() throws Exception
                         {
-                             // Ignore if it is NOT hidden: the shuffle may have finished; the operation may have failed
-                            if (!nodeService.exists(nodeRef) || !fileFolderService.isHidden(nodeRef))
+                            return serviceRegistry.getTransactionService().getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
                             {
-                                return null;
-                            }
-                            
-                            // Since this will run in a different thread, the client thread-local must be set
-                            // or else unhiding the node will not unhide it for IMAP.
-                            FileFilterMode.setClient(FileFilterMode.Client.imap);
-                            
-                            // Unhide the node, e.g. for archiving
-                            fileFolderService.setHidden(nodeRef, false);
-                            
-                            // This is the transaction-aware service
-                            fileFolderService.delete(nodeRef);
-                            return null;
+                                @Override
+                                public Void execute() throws Throwable
+                                {
+                                    // Ignore if it is NOT hidden: the shuffle may have finished; the operation may have failed
+                                    if (!nodeService.exists(nodeRef) || !fileFolderService.isHidden(nodeRef))
+                                    {
+                                        return null;
+                                    }
+
+                                    // Since this will run in a different thread, the client thread-local must be set
+                                    // or else unhiding the node will not unhide it for IMAP.
+                                    FileFilterMode.setClient(FileFilterMode.Client.imap);
+
+                                    // Unhide the node, e.g. for archiving
+                                    fileFolderService.setHidden(nodeRef, false);
+
+                                    // This is the transaction-aware service
+                                    fileFolderService.delete(nodeRef);
+
+                                    return null;
+                                }
+                            });
                         }
                     };
                     try
@@ -2028,6 +2046,50 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         }
      	
         return fileName;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void persistMessageHeaders(NodeRef messageRef, MimeMessage message)
+    {
+        try
+        {
+            Enumeration<Header> headers = message.getAllHeaders();
+            List<String> messaheHeadersProperties = new ArrayList<String>();
+            while(headers.hasMoreElements())
+            {
+                Header header = headers.nextElement();
+                if (isPersistableHeader(header))
+                {
+                    messaheHeadersProperties.add(header.getName() + ImapModel.MESSAGE_HEADER_TO_PERSIST_SPLITTER + header.getValue());
+                    
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("[persistHeaders] Persisting Header " + header.getName() + " : " + header.getValue());
+                    }
+                }
+            }
+            
+            Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+            props.put(ImapModel.PROP_MESSAGE_HEADERS, (Serializable)messaheHeadersProperties);
+            
+            serviceRegistry.getNodeService().addAspect(messageRef, ImapModel.ASPECT_IMAP_MESSAGE_HEADERS, props);
+        }
+        catch(MessagingException me)
+        {
+            
+        }
+    }
+    
+    private boolean isPersistableHeader(Header header)
+    {
+        for (String headerToPersist : messageHeadersToPersist)
+        {
+            if (headerToPersist.equalsIgnoreCase(header.getName()))
+            {
+                return true;
+            }
+        }
+        return false; 
     }
     
     static class CacheItem

@@ -23,6 +23,7 @@ import static org.alfresco.repo.imap.AlfrescoImapConst.X_ALF_NODEREF_ID;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -31,6 +32,7 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
+import org.alfresco.model.ImapModel;
 import org.alfresco.repo.imap.ImapService.EmailBodyFormat;
 import org.alfresco.repo.template.TemplateNode;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -38,6 +40,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -119,6 +122,31 @@ public abstract class AbstractMimeMessage extends MimeMessage
         // Optional headers for further implementation of multiple Alfresco server support.
         setHeader(X_ALF_NODEREF_ID, messageFileInfo.getNodeRef().getId());
         // setHeader(X_ALF_SERVER_UID, imapService.getAlfrescoServerUID());
+        
+        setPersistedHeaders();
+    }
+    
+    private void setPersistedHeaders() throws MessagingException
+    {
+        NodeService nodeService = serviceRegistry.getNodeService();
+        if (nodeService.hasAspect(messageFileInfo.getNodeRef(), ImapModel.ASPECT_IMAP_MESSAGE_HEADERS))
+        {
+            @SuppressWarnings("unchecked")
+            List<String> messageHeaders = (List<String>)nodeService.getProperty(messageFileInfo.getNodeRef(), ImapModel.PROP_MESSAGE_HEADERS);
+            
+            if (messageHeaders == null)
+            {
+                return;
+            }
+            
+            for (String header : messageHeaders)
+            {
+                String headerValue = header.substring(header.indexOf(ImapModel.MESSAGE_HEADER_TO_PERSIST_SPLITTER) + 1);
+                String headerName  = header.substring(0, header.indexOf(ImapModel.MESSAGE_HEADER_TO_PERSIST_SPLITTER));
+                
+                setHeader(headerName, headerValue);
+            }
+        }
     }
 
   

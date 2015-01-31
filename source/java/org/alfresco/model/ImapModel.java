@@ -65,5 +65,10 @@ public interface ImapModel
     
     static final QName ASPECT_IMAP_PREFERENCES = QName.createQName(IMAP_MODEL_1_0_URI, "imapPreferences");
     static final QName ASSOC_IMAP_UNSUBSCRIBED = QName.createQName(IMAP_MODEL_1_0_URI, "imapUnsubscribed");
+    
+    static final QName ASPECT_IMAP_MESSAGE_HEADERS = QName.createQName(IMAP_MODEL_1_0_URI, "messageHeaders");
+    static final QName PROP_MESSAGE_HEADERS = QName.createQName(IMAP_MODEL_1_0_URI, "messageHeaders");
+    
+    static final String MESSAGE_HEADER_TO_PERSIST_SPLITTER = ":";
 
 }

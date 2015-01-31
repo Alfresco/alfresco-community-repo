@@ -49,7 +49,7 @@ public abstract class AbstractImapFolder implements MailFolder
     private List<FolderListener> listeners = new LinkedList<FolderListener>();
 
     protected ServiceRegistry serviceRegistry;
-    protected static int MAX_RETRIES = 1;
+    protected static int MAX_RETRIES = 20;
 
     
     public AbstractImapFolder(ServiceRegistry serviceRegistry)
@@ -103,7 +103,7 @@ public abstract class AbstractImapFolder implements MailFolder
      * @param uid - UID of the message
      * @param toFolder - reference to the destination folder.
      */
-    public void copyMessage(final long uid, final MailFolder toFolder) throws FolderException
+    public long copyMessage(final long uid, final MailFolder toFolder) throws FolderException
     {
         AbstractImapFolder toImapMailFolder = (AbstractImapFolder) toFolder;
 
@@ -112,15 +112,14 @@ public abstract class AbstractImapFolder implements MailFolder
             throw new FolderException(AlfrescoImapFolderException.PERMISSION_DENIED);
         }
 
-        CommandCallback<Object> command = new CommandCallback<Object>()
+        CommandCallback<Long> command = new CommandCallback<Long>()
         {
-            public Object command() throws Throwable
+            public Long command() throws Throwable
             {
-                copyMessageInternal(uid, toFolder);
-                return null;
+                return copyMessageInternal(uid, toFolder);
             }
         };
-        command.runFeedback();
+        return command.runFeedback();
     }
 
     /**
@@ -161,6 +160,25 @@ public abstract class AbstractImapFolder implements MailFolder
         command.runFeedback();
     }
 
+    /**
+     * Deletes messages marked with {@link Flags.Flag#DELETED}. Note that this message deletes the messages with current uid
+     */
+    public void expunge(final long uid) throws FolderException
+    {
+        if (isReadOnly())
+        {
+            throw new FolderException("Can't expunge - Permission denied");
+        }
+        CommandCallback<Object> command = new CommandCallback<Object>()
+        {
+            public Object command() throws Throwable
+            {
+                expungeInternal(uid);
+                return null;
+            }
+        };
+        command.runFeedback();
+    }
     
     /**
      * Returns message by its UID.
@@ -258,14 +276,21 @@ public abstract class AbstractImapFolder implements MailFolder
 
     
     /**
-     * Simply returns UIDs of all messages in the folder.
+     * Searches the mailbox for messages that match the given searching criteria
      * 
-     * @param searchTerm - not used
+     * @param searchTerm - search term that contains search criteria.
      * @return UIDs of the messages
      */
-    public long[] search(SearchTerm searchTerm)
+    public long[] search(final SearchTerm searchTerm)
     {
-        return getMessageUids();
+        CommandCallback<long[]> command = new CommandCallback<long[]>()
+        {
+            public long[] command() throws Throwable
+            {
+                return searchInternal(searchTerm);
+            }
+        };
+        return command.run();
     }
 
     /**
@@ -377,11 +402,13 @@ public abstract class AbstractImapFolder implements MailFolder
 
     protected abstract long appendMessageInternal(MimeMessage message, Flags flags, Date internalDate) throws Exception;
 
-    protected abstract void copyMessageInternal(long uid, MailFolder toFolder) throws Exception;
+    protected abstract long copyMessageInternal(long uid, MailFolder toFolder) throws Exception;
     
     protected abstract void deleteAllMessagesInternal() throws Exception;
 
     protected abstract void expungeInternal() throws Exception;
+
+    protected abstract void expungeInternal(long uid) throws Exception;
 
     protected abstract SimpleStoredMessage getMessageInternal(long uid) throws Exception;
 
@@ -392,6 +419,8 @@ public abstract class AbstractImapFolder implements MailFolder
     protected abstract List<SimpleStoredMessage> getNonDeletedMessagesInternal();
 
     protected abstract void replaceFlagsInternal(Flags flags, long uid, FolderListener silentListener, boolean addUid) throws Exception;
+
+    protected abstract long[] searchInternal(SearchTerm searchTerm);
 
     protected abstract void setFlagsInternal(Flags flags, boolean value, long uid, FolderListener silentListener, boolean addUid) throws Exception;
 

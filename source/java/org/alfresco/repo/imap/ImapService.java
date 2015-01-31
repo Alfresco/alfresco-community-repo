@@ -310,6 +310,8 @@ public interface ImapService
     public void extractAttachments(NodeRef messageRef, MimeMessage originalMessage) throws IOException, MessagingException;
     
     public String generateUniqueFilename(NodeRef destFolderNodeRef, String fileName);
+    
+    public void persistMessageHeaders(NodeRef nodeRef, MimeMessage message);
 
     static class FolderStatus
     {        

@@ -197,6 +197,16 @@
          </associations>
       </aspect>
       
+      <aspect name="imap:messageHeaders">
+          <title>IMAP Message Headers</title>
+          <properties>
+             <property name="imap:messageHeaders">
+                <title>Message Headers</title>
+                <type>d:text</type>
+                <multiple>true</multiple>
+             </property>
+          </properties>
+      </aspect>
     </aspects>
 
 </model>

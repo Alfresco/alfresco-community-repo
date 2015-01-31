@@ -93,8 +93,8 @@ public class TransactionalCache<K extends Serializable, V extends Object>
     private int maxCacheSize = 500;
     /** a unique string identifying this instance when binding resources */
     private String resourceKeyTxnData;
-    /** A "null" CacheStatistics impl is used by default for backwards compatibility */
-    private CacheStatistics cacheStats = new NoOpCacheStatistics();
+    /** Use of cacheStats is guarded by the cacheStatsEnabled flag */
+    private CacheStatistics cacheStats;
     /** Enable collection of statistics? */
     private boolean cacheStatsEnabled = false;
     private boolean isTenantAware = true; // true if tenant-aware (default), false if system-wide

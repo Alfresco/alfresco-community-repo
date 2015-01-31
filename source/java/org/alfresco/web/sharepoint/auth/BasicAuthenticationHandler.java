@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -106,6 +106,18 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
         SessionUser sessionUser = session == null ? null : (SessionUser) session.getAttribute(USER_SESSION_ATTRIBUTE);
         if (sessionUser == null)
         {
+            if (remoteUserMapper != null && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive()))
+            {
+                String userId = remoteUserMapper.getRemoteUser(request);
+                if (userId != null)
+                {
+                    // authenticated by other
+                    authenticationComponent.setCurrentUser(userId);
+
+                    request.getSession().setAttribute(USER_SESSION_ATTRIBUTE, new User(userId, authenticationService.getCurrentTicket(), personService.getPerson(userId)));
+                    return true;
+                }
+            }
             if (authHdr != null && authHdr.length() > 5 && authHdr.substring(0, 5).equalsIgnoreCase(BASIC_START))
             {
                 String basicAuth = new String(Base64.decodeBase64(authHdr.substring(5).getBytes()));
@@ -150,21 +162,6 @@ public class BasicAuthenticationHandler extends AbstractAuthenticationHandler im
                 catch (AuthenticationException ex)
                 {
                     authenticationListener.authenticationFailed(new BasicAuthCredentials(username, password), ex);
-                }
-            }
-            else
-            {
-                if (remoteUserMapper != null && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive()))
-                {
-                    String userId = remoteUserMapper.getRemoteUser(request);
-                    if (userId != null)
-                    {
-                        // authenticated by other
-                        authenticationComponent.setCurrentUser(userId);
-
-                        request.getSession().setAttribute(USER_SESSION_ATTRIBUTE, new User(userId, authenticationService.getCurrentTicket(), personService.getPerson(userId)));
-                        return true;
-                    }
                 }
             }
         }

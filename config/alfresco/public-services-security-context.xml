@@ -837,7 +837,7 @@
                 org.alfresco.service.cmr.security.MutableAuthenticationService.setAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.MutableAuthenticationService.deleteAuthentication=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.MutableAuthenticationService.setAuthenticationEnabled=ACL_METHOD.ROLE_ADMINISTRATOR
-                org.alfresco.service.cmr.security.AuthenticationService.getAuthenticationEnabled=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthenticationService.getAuthenticationEnabled=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                 org.alfresco.service.cmr.security.AuthenticationService.authenticationExists=ACL_METHOD.ROLE_ADMINISTRATOR
                 org.alfresco.service.cmr.security.AuthenticationService.getCurrentUserName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthenticationService.invalidateUserSession=ACL_METHOD.ROLE_ADMINISTRATOR

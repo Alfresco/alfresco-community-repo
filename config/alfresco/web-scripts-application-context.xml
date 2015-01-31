@@ -1894,9 +1894,24 @@
       </property>
    </bean>
    
-    <!-- AutoSuggest web script -->
-    <bean id="webscript.org.alfresco.slingshot.search.auto-suggest-search.get" class="org.alfresco.repo.web.scripts.search.AutoSuggestSearchGet" parent="webscript">
-       <property name="suggesterService" ref="suggesterService"/>
-    </bean>
+   <!-- AutoSuggest web script -->
+   <bean id="webscript.org.alfresco.slingshot.search.auto-suggest-search.get" class="org.alfresco.repo.web.scripts.search.AutoSuggestSearchGet" parent="webscript">
+      <property name="suggesterService" ref="suggesterService"/>
+   </bean>
     
+   <!-- JavaScript extensions -->
+   <!-- Extend the utils class to provide additional Remote APIs -->
+   <bean id="utilsScript" parent="baseJavaScriptExtension" class="org.alfresco.web.scripts.WebScriptUtils">
+      <property name="extensionName">
+         <value>utils</value>
+      </property>
+      <property name="serviceRegistry">
+         <ref bean="ServiceRegistry" />
+      </property>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="repositoryContainer">
+         <ref bean="webscripts.container" />
+      </property>
+   </bean>
+   
 </beans>

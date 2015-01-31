@@ -53,7 +53,6 @@ import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -1189,15 +1188,6 @@ public class WebDAVHelper
      */
     public boolean isLockedAndReadOnly(final NodeRef nodeRef)
     {
-        NodeRef iNodeRef = nodeRef;
-        if (getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
-        {
-            List<AssociationRef> targetAssocs = getNodeService().getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
-            if (targetAssocs.size() == 1)
-            {
-                iNodeRef = targetAssocs.get(0).getTargetRef();
-            }
-        }
-        return LockUtils.isLockedAndReadOnly(iNodeRef, m_serviceRegistry.getLockService());
+        return LockUtils.isLockedAndReadOnly(nodeRef, m_serviceRegistry.getLockService());
     }
 }

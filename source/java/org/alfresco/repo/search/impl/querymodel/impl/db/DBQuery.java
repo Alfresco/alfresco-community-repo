@@ -158,6 +158,20 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         return predicatePartCommands;
     }
 
+    public boolean getHasPredicatePartsOrder()
+    {
+        boolean hasPredicatePartsOrder = false;
+        List<DBQueryBuilderPredicatePartCommand> predicateParts = getPredicateParts();
+        if (predicateParts != null)
+        {
+            for(DBQueryBuilderPredicatePartCommand item : predicateParts)
+            {
+                hasPredicatePartsOrder = hasPredicatePartsOrder || "ORDER".equals(item.getType());
+            }
+        }
+        return hasPredicatePartsOrder;
+    }
+
     /*
      * (non-Javadoc)
      * @see org.alfresco.repo.search.impl.querymodel.impl.db.DBQueryBuilderComponent#isSupported()

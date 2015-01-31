@@ -105,6 +105,7 @@
                 </foreach>
             </if>
         <if test="hasOrderBy">
+          <if test="hasPredicatePartsOrder">
             order by
             <foreach item="item" index="index" collection="predicateParts" open="" separator="," close="">
                  <choose>
@@ -114,6 +115,7 @@
                      </when>
                  </choose>
             </foreach>
+          </if>
         </if>    
     </sql>
 

@@ -48,6 +48,7 @@ import org.alfresco.jlan.server.auth.spnego.OID;
 import org.alfresco.jlan.server.auth.spnego.SPNEGO;
 import org.alfresco.repo.SessionUser;
 import org.alfresco.repo.security.authentication.AuthenticationException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.auth.KerberosCredentials;
 import org.alfresco.repo.web.auth.TicketCredentials;
 import org.apache.commons.codec.binary.Base64;
@@ -286,6 +287,12 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         if (user == null)
         {
             user = (SessionUser) httpSess.getAttribute("_alfAuthTicket");
+            // MNT-13191 Opening /alfresco/webdav from a Kerberos-authenticated IE11 browser causes HTTP error 500
+            if (user != null)
+            {
+                String userName = user.getUserName();
+                AuthenticationUtil.setFullyAuthenticatedUser(userName);
+            }
         }
         
         // If the user has been validated and we do not require re-authentication then continue to

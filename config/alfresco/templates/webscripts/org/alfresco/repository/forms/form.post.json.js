@@ -65,7 +65,8 @@ function main()
        
         // determine if the exception was a FormNotFoundException, if so return
         // 404 status code otherwise return 500
-        if (msg.indexOf("FormNotFoundException") != -1)
+        if (msg.indexOf("FormNotFoundException") != -1 ||
+            msg.indexOf("PropertyValueSizeIsMoreMaxLengthException") != -1)
         {
             status.setCode(404, msg);
           

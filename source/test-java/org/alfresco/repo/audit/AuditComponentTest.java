@@ -86,6 +86,10 @@ public class AuditComponentTest extends TestCase
     private static final String APPLICATION_ALF12638_TEST = "Test ALF-12638";
     private static final String APPLICATION_MNT10767_TEST = "Test MNT-10767";
     
+    private static final String APPLICATION_ONE = "app1";
+    private static final String APPLICATION_TWO = "app2";
+    private static final String APPLICATION_THREE = "app3";
+    
     private static final Log logger = LogFactory.getLog(AuditComponentTest.class);
     
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -811,6 +815,66 @@ public class AuditComponentTest extends TestCase
         assertTrue("There should be exactly one audit entry for the API test", success);
     }
 
+    public void testApplication() throws Exception
+    {
+        // Register the test model
+        URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-10070.xml");
+        auditModelRegistry.registerModel(testModelUrl);
+        auditModelRegistry.loadAuditModels();
+        
+        auditModelRegistry.setProperty("audit.enabled", "true");
+
+        auditModelRegistry.setProperty("audit.app1.enabled", "true");
+        auditModelRegistry.setProperty("audit.filter.app1.default.enabled", "true");
+        auditModelRegistry.setProperty("audit.filter.app1.login.user", "~System;~null;.*");
+
+        auditModelRegistry.setProperty("audit.app2.enabled", "true");
+        auditModelRegistry.setProperty("audit.filter.app2.default.enabled", "true");
+        auditModelRegistry.setProperty("audit.filter.app2.login.user", "~System;~null;~admin;.*");
+
+        auditModelRegistry.setProperty("audit.app3.enabled", "true");
+        auditModelRegistry.setProperty("audit.filter.app3.default.enabled", "true");
+        auditModelRegistry.setProperty("audit.filter.app3.login.user", "~System;~null;.*");
+        
+        auditModelRegistry.afterPropertiesSet();  
+        
+        AuthenticationUtil.setRunAsUserSystem();
+        AuditApplication applicationOne = auditModelRegistry.getAuditApplicationByName(APPLICATION_ONE);
+        assertNotNull("Application 'app1' dosn't exist", applicationOne);
+        AuditApplication applicationTwo = auditModelRegistry.getAuditApplicationByName(APPLICATION_TWO);
+        assertNotNull("Application 'app2' dosn't exist", applicationTwo);
+        AuditApplication applicationThree = auditModelRegistry.getAuditApplicationByName(APPLICATION_THREE);
+        assertNotNull("Application 'app3' dosn't exist", applicationThree);
+
+        // auditComponent
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+
+        UserAuditFilter userAuditFilter = new UserAuditFilter();
+        userAuditFilter.setUserFilterPattern("~System;~null;.*");
+        userAuditFilter.afterPropertiesSet();
+        auditComponent.setUserAuditFilter(userAuditFilter);
+
+        Map<String, Serializable> auditMap = new HashMap<String, Serializable>();
+        auditMap.put("/transaction/user", AuthenticationUtil.getFullyAuthenticatedUser());
+        auditMap.put("/transaction/action", "CREATE");
+        auditMap.put("/transaction/type", "cm:content");
+
+        Map<String, Serializable> recordedAuditMap = auditComponent.recordAuditValues("/alfresco-access", auditMap);
+
+        assertFalse("Audit values is empty.", recordedAuditMap.isEmpty());
+
+        Map<String, Serializable> expected = new HashMap<String, Serializable>();
+        expected.put("/" + APPLICATION_TWO + "/transaction/user", AuthenticationUtil.getFullyAuthenticatedUser());
+        expected.put("/" + APPLICATION_ONE + "/transaction/action", "CREATE");
+        expected.put("/" + APPLICATION_THREE + "/transaction/type", "cm:content");
+
+        String failure = EqualsHelper.getMapDifferenceReport(recordedAuditMap, expected);
+        if (failure != null)
+        {
+            fail(failure);
+        }
+    }
+    
    /**
      * See <a href="https://issues.alfresco.com/jira/browse/MNT-10767">MNT-10767</a>
      */
@@ -826,7 +890,6 @@ public class AuditComponentTest extends TestCase
         URL testModelUrl = ResourceUtils.getURL("classpath:alfresco/testaudit/alfresco-audit-test-mnt-10767.xml");
         auditModelRegistry.registerModel(testModelUrl);
         auditModelRegistry.loadAuditModels();
-
         // There should be a log entry for the application
         final List<Long> results = new ArrayList<Long>(5);
         final StringBuilder sb = new StringBuilder();
@@ -909,7 +972,6 @@ public class AuditComponentTest extends TestCase
         fileFolderService.create(newFolderRef, "testcontent-" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT);
     }
 
-    
     public void testAuditOverlimitProperties() throws Exception
     {
         final int OVERLIMIT_SIZE = 1500;

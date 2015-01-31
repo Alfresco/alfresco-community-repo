@@ -529,6 +529,7 @@ public class AuditComponentImpl implements AuditComponent
         {
             Collection<Object> collection = (Collection<Object>) values;
             Iterator<Object> iterator = collection.iterator();
+            Set<String> strings = new HashSet<String>();
             while (iterator.hasNext())
             {
                 Object auditValue = iterator.next();
@@ -542,8 +543,8 @@ public class AuditComponentImpl implements AuditComponent
                     String trimmed = SchemaBootstrap.trimStringForTextFields((String) auditValue);
                     if (!trimmed.equals(auditValue))
                     {
-                        collection.remove(auditValue);
-                        collection.add(trimmed);
+                        strings.add(trimmed);
+                        iterator.remove();
                     }
                 }
                 else if (auditValue instanceof MLText)
@@ -560,6 +561,7 @@ public class AuditComponentImpl implements AuditComponent
                     trimStringsIfNecessary(auditValue);
                 }
             }
+            collection.addAll(strings);
         }
     }
     

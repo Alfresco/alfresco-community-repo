@@ -89,8 +89,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String UPDATE_NODE = "alfresco.node.update_Node";
     private static final String UPDATE_NODE_BULK_TOUCH = "alfresco.node.update_NodeBulkTouch";
     private static final String DELETE_NODE_BY_ID = "alfresco.node.delete_NodeById";
-    private static final String DELETE_NODES_BY_TXN_COMMIT_TIME = "alfresco.node.delete_NodesByTxnCommitTime";
-    private static final String DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME = "alfresco.node.delete_NodePropsByTxnCommitTime";
+    private static final String DELETE_NODES_BY_TXN_COMMIT_TIME = "alfresco.node.delete.delete_NodesByTxnCommitTime";
+    private static final String DELETE_NODE_PROPS_BY_TXN_COMMIT_TIME = "alfresco.node.delete.delete_NodePropsByTxnCommitTime";
     private static final String SELECT_NODE_BY_ID = "alfresco.node.select_NodeById";
     private static final String SELECT_NODE_BY_NODEREF = "alfresco.node.select_NodeByNodeRef";
     private static final String SELECT_NODES_BY_UUIDS = "alfresco.node.select_NodesByUuids";

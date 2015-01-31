@@ -525,10 +525,10 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
        parts = null,
        overriden = false;
 
+   var nodeDisplayPath = utils.displayPath(node).split("/");
    // restructure the display path of the node if we have an overriden root node
-   if (!qnameOnly && rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0)
+   if (!qnameOnly && rootNodeDisplayPath != null && path.indexOf(rootNodeQNamePath) === 0 && path.indexOf(SITES_SPACE_QNAME_PATH) === -1)
    {
-      var nodeDisplayPath = utils.displayPath(node).split("/");
       nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
       displayPath = nodeDisplayPath;
       overriden = true;
@@ -538,9 +538,15 @@ function splitQNamePath(node, rootNodeDisplayPath, rootNodeQNamePath, qnameOnly)
    {
       var tmp = path.substring(SITES_SPACE_QNAME_PATH.length),
           pos = tmp.indexOf('/');
+      if (path.indexOf(rootNodeQNamePath) === 0 && !path.equals(rootNodeQNamePath))
+      {
+          nodeDisplayPath = nodeDisplayPath.splice(rootNodeDisplayPath.length);
+          displayPath = nodeDisplayPath;
+          overriden = true;
+      }
       if (pos >= 1)
       {
-         if (rootNodeQNamePath != null && path.indexOf(rootNodeQNamePath) === 0)
+         if (rootNodeQNamePath != null && path.indexOf(rootNodeQNamePath) === 0 && !path.equals(rootNodeQNamePath))
          {
             for (var i = 0; i < rootNodeQNamePath.split("/").length-1; i++)
             {

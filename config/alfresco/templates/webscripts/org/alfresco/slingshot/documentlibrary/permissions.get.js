@@ -27,13 +27,17 @@ function getPermissions()
    }
 
    // Get array of settable permissions
-   var settable = node.getSettablePermissions(),
-      location = Common.getLocation(node);
-   
-   // If this node lives within a Site, then append the Site-specific roles
+   var settable, location = Common.getLocation(node);
+
+   // MNT-12761
+   // If this node lives within a Site, then append only the Site-specific roles, else Repository-specific
    if (location.siteNode != null)
    {
-      settable = settable.concat(location.siteNode.getNode().getSettablePermissions());
+      settable = location.siteNode.getNode().getSettablePermissions();
+   }
+   else
+   {
+      settable = node.getSettablePermissions();
    }
 
    // Get full permission set, including inherited

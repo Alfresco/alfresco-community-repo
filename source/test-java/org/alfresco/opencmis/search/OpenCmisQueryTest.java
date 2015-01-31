@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -3341,6 +3341,11 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testQuery("SELECT * FROM cmis:document WHERE cmis:name IS NULL", 0, false, "cmis:objectId", new String(), false);
     }
 
+    public void testQueryableProperties() throws Exception
+    {
+        testQuery("SELECT * FROM cmis:document WHERE cmis:description LIKE '%Alfresco%'", 1, true, "cmis:name", new String(), false);
+    }
+    
     public void testObjectEquals()
     {
 

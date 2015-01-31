@@ -94,6 +94,7 @@ public class DbObjectXMLTransformerTest
             // It was worth a try
         }
         t.setOutputProperty(OutputKeys.INDENT, "yes");
+        t.setOutputProperty(OutputKeys.STANDALONE, "no");
     
         writer = new StringWriter();
         xmlOut.setResult(new StreamResult(writer));
@@ -426,7 +427,7 @@ public class DbObjectXMLTransformerTest
 
     private void assertHasPreamble(BufferedReader reader) throws IOException
     {
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", reader.readLine());
+        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>", reader.readLine());
     }
 
     private void dumpOutput()

@@ -34,7 +34,6 @@ import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
@@ -91,7 +90,6 @@ public class ConnectionPoolOverloadTest
     }
     
     @Test
-    @Ignore("The test will fail if db.pool.wait.max=-1 as all the threads will successfully open the transactions.")
     public void testOverload() throws Exception
     {
         List<Thread> threads = new LinkedList<Thread>();

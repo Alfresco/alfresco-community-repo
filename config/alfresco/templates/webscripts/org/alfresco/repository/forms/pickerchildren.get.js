@@ -371,39 +371,7 @@ function findDoclib(nodeRef)
  */
 function resolveNode(reference)
 {
-   var node = null;
-   try
-   {
-      if (reference == "alfresco://company/home")
-      {
-         node = companyhome;
-      }
-      else if (reference == "alfresco://user/home")
-      {
-         node = userhome;
-      }
-      else if (reference == "alfresco://sites/home")
-      {
-         node = companyhome.childrenByXPath("st:sites")[0];
-      }
-      else if (reference == "alfresco://company/shared")
-      {
-         node = companyhome.childrenByXPath("app:shared")[0];
-      }
-      else if (reference.indexOf("://") > 0)
-      {
-         node = search.findNode(reference);
-      }
-      else if (reference.substring(0, 1) == "/")
-      {
-         node = search.xpathSearch(reference)[0];
-      }
-   }
-   catch (e)
-   {
-      return null;
-   }
-   return node;
+   return utils.resolveNodeReference(reference);
 }
 
 main();

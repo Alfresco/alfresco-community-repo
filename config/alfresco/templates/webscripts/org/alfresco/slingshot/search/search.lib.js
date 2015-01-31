@@ -811,57 +811,25 @@ function processMultiValue(propName, propValue, operand, pseudo)
  */
 function resolveRootNode(reference)
 {
-   var node = null;
    try
    {
-      if (reference == "alfresco://company/home")
-      {
-         node = "";
-      }
-      else if (reference == "alfresco://user/home")
-      {
-         node = userhome;
-      }
-      else if (reference == "alfresco://sites/home")
-      {
-         node = companyhome.childrenByXPath("st:sites")[0];
-      }
-      else if (reference == "alfresco://company/shared")
-      {
-         node = companyhome.childrenByXPath("app:shared")[0];
-      }
-      else if (reference.indexOf("://") > 0)
-      {
-         if (reference.indexOf(":") < reference.indexOf("://"))
-         {
-            var newRef = "/" + reference.replace("://", "/");
-            var newRefNodes = search.xpathSearch(newRef);
-            node = search.findNode(String(newRefNodes[0].nodeRef));
-         }
-         else
-         {
-            node = search.findNode(reference);
-         }
-      }
-      else if (reference.substring(0, 1) == "/")
-      {
-         var res = search.xpathSearch(reference);
-         if (res.length === 0)
-         {
-            logger.warn("Unable to resolve specified root node reference: " + reference);
-         }
-         else node = res[0];
-      }
+      var node = utils.resolveNodeReference(reference);
       if (node === null)
       {
          logger.warn("Unable to resolve specified root node reference: " + reference);
       }
+      else if (companyhome.nodeRef === node.nodeRef)
+      {
+         // default root node - no special handling required
+         return null;
+      }
+      return node;
    }
    catch (e)
    {
-      node = null;
+      logger.warn("Unable to resolve specified root node reference: " + reference);
+      return null;
    }
-   return node !== "" ? node : null;
 }
 
 /**

@@ -936,7 +936,7 @@
         where
             ca.parent_node_id = #{parentNode.id} and
             ca.is_primary = #{isPrimary} and
-            ca.id >= #{childNode.id}
+            ca.child_node_id >= #{childNode.id}
             and 1=1
         order by
             ca.child_node_id

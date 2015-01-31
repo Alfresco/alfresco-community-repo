@@ -11,7 +11,7 @@
 	    <actionList>
 		<setInstallerVariable name="continue_installation" value="yes" />
 		<showQuestion>
-		    <text>Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext
+		    <text>Some or all of the libraries necessary to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext libcups
 You are strongly advised to abort this installation and install them first using your package manager.
 For more information, please refer to http://docs.alfresco.com/4.2/topic/com.alfresco.enterprise.doc/concepts/install-lolibfiles.html
 
@@ -35,6 +35,7 @@ Do you want to continue with the installation?</text>
 					<fileTest path="/usr/lib/libXext.so.6" condition="not_exists" />
 					<fileTest path="/usr/lib/libXrender.so.1" condition="not_exists" />
 					<fileTest path="/usr/lib/libfontconfig.so.1" condition="not_exists" />
+					<fileTest path="/usr/lib/libcups.so.2" condition="not_exists" />
 				    </ruleList>
 				</ruleGroup>
 			    </ruleList>
@@ -54,6 +55,7 @@ Do you want to continue with the installation?</text>
 					<fileTest path="/usr/lib/x86_64-linux-gnu/libXext.so.6" condition="not_exists" />
 					<fileTest path="/usr/lib/x86_64-linux-gnu/libXrender.so.1" condition="not_exists" />
 					<fileTest path="/usr/lib/x86_64-linux-gnu/libfontconfig.so.1" condition="not_exists" />
+					<fileTest path="/usr/lib/x86_64-linux-gnu/libcups.so.2" condition="not_exists" />
 				    </ruleList>
 				</ruleGroup>
 			    </ruleList>
@@ -71,6 +73,7 @@ Do you want to continue with the installation?</text>
 					<fileTest path="/usr/lib64/libXext.so.6" condition="not_exists" />
 					<fileTest path="/usr/lib64/libXrender.so.1" condition="not_exists" />
 					<fileTest path="/usr/lib64/libfontconfig.so.1" condition="not_exists" />
+					<fileTest path="/usr/lib64/libcups.so.2" condition="not_exists" />
 				    </ruleList>
 				</ruleGroup>
 			    </ruleList>

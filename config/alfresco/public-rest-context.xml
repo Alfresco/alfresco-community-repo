@@ -75,6 +75,7 @@
    <bean id="publicapi.authenticator" class="org.alfresco.rest.api.PublicApiAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
+      <property name="authenticationComponent" ref="authenticationComponent" />
       <property name="transactionHelper" ref="web.retryingTransactionHelper" />
       <property name="tenantAuthentication" ref="publicapi.tenantAuthenticator"/>
       <property name="validAuthentictorKeys">

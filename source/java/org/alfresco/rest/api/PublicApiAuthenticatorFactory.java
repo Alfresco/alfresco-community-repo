@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.api;
 
 import java.util.Collections;
@@ -7,17 +25,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.repo.management.subsystems.ActivateableBean;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.auth.AuthenticationListener;
 import org.alfresco.repo.web.auth.TenantAuthentication;
 import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRequest;
-import org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory;
+import org.alfresco.repo.web.scripts.servlet.RemoteUserAuthenticatorFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Authenticator;
@@ -33,31 +49,21 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRespons
  * 
  * @author sglover
  */
-public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
+public class PublicApiAuthenticatorFactory extends RemoteUserAuthenticatorFactory
 {
     private static Log logger = LogFactory.getLog(PublicApiAuthenticatorFactory.class);
     
     public static final String DEFAULT_AUTHENTICATOR_KEY_HEADER = "X-Alfresco-Authenticator-Key"; 
-
-    public static final String DEFAULT_REMOTE_USER_HEADER = "X-Alfresco-Remote-User"; 
-
-    private String remoteUserHeader = DEFAULT_REMOTE_USER_HEADER;
+    
     private String authenticatorKeyHeader = DEFAULT_AUTHENTICATOR_KEY_HEADER;
-    private RemoteUserMapper remoteUserMapper;
     private RetryingTransactionHelper retryingTransactionHelper;
     private TenantAuthentication tenantAuthentication;
     private Set<String> validAuthenticatorKeys = Collections.emptySet();
-    private AuthenticationListener authenticationListener;
     private Set<String> outboundHeaderNames;
     
     public void setAuthenticatorKeyHeader(String authenticatorKeyHeader)
     {
         this.authenticatorKeyHeader = authenticatorKeyHeader;
-    }
-    
-    public void setAuthenticationListener(AuthenticationListener authenticationListener)
-    {
-        this.authenticationListener = authenticationListener;
     }
     
     /**
@@ -80,11 +86,6 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
         this.outboundHeaderNames = outboundHeaders;
     }
 
-    public void setRemoteUserMapper(RemoteUserMapper remoteUserMapper)
-    {
-        this.remoteUserMapper = remoteUserMapper;
-    }
-    
     public void setTenantAuthentication(TenantAuthentication service)
     {
         this.tenantAuthentication = service;
@@ -135,11 +136,10 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
     /**
      * Public api authentication with additional tenant applicability check
      */
-    public class PublicApiAuthenticator extends BasicHttpAuthenticator
+    public class PublicApiAuthenticator extends RemoteUserAuthenticator
     {
         // dependencies
         private TenantWebScriptServletRequest servletReq;
-        private WebScriptServletResponse servletRes;
         
         // Proxy listener used to receive initial authentication events from the base BasicHttpAuthenticator
         private ProxyListener proxyListener;
@@ -159,41 +159,9 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
                 throw new WebScriptException("Request is not a tenant aware request");
             }
             servletReq = (TenantWebScriptServletRequest)req;
-            servletRes = res;
             this.proxyListener = proxyListener; 
         }
     
-        private String getRemoteUser()
-        {
-            String userId = null;
-
-            // If the remote user mapper is configured, we may be able to map in an externally authenticated user
-            if (remoteUserMapper != null
-                    && (!(remoteUserMapper instanceof ActivateableBean) || ((ActivateableBean) remoteUserMapper).isActive()))
-            {
-                userId = remoteUserMapper.getRemoteUser(this.servletReq.getHttpServletRequest());
-            }
-            else
-            {
-            	// fall back to extracting the header
-            	userId = servletReq.getHeader(remoteUserHeader);
-            }
-
-            if (logger.isDebugEnabled())
-            {
-                if (userId == null)
-                {
-                    logger.debug("No external user ID in request.");
-                }
-                else
-                {
-                    logger.debug("Extracted external user ID from request: " + userId);
-                }
-            }
-
-            return userId;
-        }
-
         /* (non-Javadoc)
          * @see org.alfresco.web.scripts.Authenticator#authenticate(org.alfresco.web.scripts.Description.RequiredAuthentication, boolean)
          */
@@ -204,60 +172,53 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
             {
                 String authenticatorKey = servletReq.getHeader(authenticatorKeyHeader);
                 String remoteUser = getRemoteUser();
-                if (authenticatorKey != null && 
-                    remoteUser != null)
+                if (authenticatorKey != null && remoteUser != null)
                 {
                     // Trusted auth. Validate key and setup authentication context.
                     authorized = authenticateViaGateway(required, isGuest, authenticatorKey, remoteUser);
                 }
                 else
                 {
-                    // Fallback to standard BasicHttpAutheticator
+                    // Fallback to parent authenticator
                     try
                     {
                         authorized = super.authenticate(required, isGuest);
                     }
                     catch (AuthenticationException ae)
                     {
-                        // eg. guest
+                        // e.g. guest
                         if (logger.isDebugEnabled())
-                        {
                             logger.debug("TenantBasicHttpAuthenticator: required="+required+", isGuest="+isGuest+" - "+ae.getMessage());
-                        }
                     }
                 }
-                if (!authorized)
+                if (authorized)
                 {
-                    // not authorized, no point continuing
-                    return authorized;
-                }
-
-                // check tenant validity
-                final String tenant = servletReq.getTenant();
-                final String email = AuthenticationUtil.getFullyAuthenticatedUser();
-                try
-                {
-                    authorized = retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>()
+                    // check tenant validity
+                    final String tenant = servletReq.getTenant();
+                    final String email = AuthenticationUtil.getFullyAuthenticatedUser();
+                    try
                     {
-                        public Boolean execute() throws Exception
+                        authorized = retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Boolean>()
                         {
-                            return tenantAuthentication.authenticateTenant(email, tenant);
+                            public Boolean execute() throws Exception
+                            {
+                                return tenantAuthentication.authenticateTenant(email, tenant);
+                            }
+                        }, true, false);
+                    }
+                    finally
+                    {
+                        if (!authorized)
+                        {
+                            listener.authenticationFailed(new TenantCredentials(tenant, email, proxyListener.getOrignalCredentials()));
+                            AuthenticationUtil.clearCurrentSecurityContext();
                         }
-                    }, true, false);
-                }
-                finally
-                {
-                    if (!authorized)
-                    {
-                        authenticationListener.authenticationFailed(new TenantCredentials(tenant, email, proxyListener.getOrignalCredentials()));
-                        AuthenticationUtil.clearCurrentSecurityContext();
-                    }
-                    else
-                    {
-                        authenticationListener.userAuthenticated(new TenantCredentials(tenant, email, proxyListener.getOrignalCredentials()));
+                        else
+                        {
+                            listener.userAuthenticated(new TenantCredentials(tenant, email, proxyListener.getOrignalCredentials()));
+                        }
                     }
                 }
-                
                 return authorized;
             }
             finally
@@ -286,7 +247,6 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
                 return false;
             }
         }
-        
     }
     
     private class ProxyListener implements AuthenticationListener
@@ -302,19 +262,18 @@ public class PublicApiAuthenticatorFactory extends BasicHttpAuthenticatorFactory
         @Override
         public void authenticationFailed(WebCredentials credentials)
         {
-            authenticationListener.authenticationFailed(credentials);
+            listener.authenticationFailed(credentials);
         }
 
         @Override
         public void authenticationFailed(WebCredentials credentials, Exception ex)
         {
-            authenticationListener.authenticationFailed(credentials, ex);
+            listener.authenticationFailed(credentials, ex);
         }
         
-
         public WebCredentials getOrignalCredentials()
         {
-            return originalCredentials;
+            return this.originalCredentials;
         }
     }
 }

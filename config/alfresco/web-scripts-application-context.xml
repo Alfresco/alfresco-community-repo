@@ -183,13 +183,21 @@
    <!--  Web Script Authenticators -->
    <!--                            -->
 
-   <!--  HTTP Basic Authenticator (Servlet based) -->
+   <!--  HTTP Basic Authenticator (Servlet based - stateless) -->
    <bean id="webscripts.authenticator.basic" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
    </bean>
 
-   <!--  HTTP Basic Authenticator (Servlet based) for MT -->
+   <!--  HTTP Remote User Authenticator (Servlet based - stateless) -->
+   <bean id="webscripts.authenticator.remoteuser" class="org.alfresco.repo.web.scripts.servlet.RemoteUserAuthenticatorFactory">
+      <property name="authenticationService" ref="AuthenticationService" />
+      <property name="authenticationComponent" ref="authenticationComponent" />
+      <property name="authenticationListener" ref="webScriptAuthenticationListener"/>
+      <property name="remoteUserMapper" ref="RemoteUserMapper" />
+   </bean>
+
+   <!--  HTTP Basic Authenticator (Servlet based - stateless) for MT -->
    <bean id="webscripts.authenticator.basic.tenant" class="org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory">
       <property name="authenticationService" ref="AuthenticationService" />
       <property name="authenticationListener" ref="webScriptAuthenticationListener"/>

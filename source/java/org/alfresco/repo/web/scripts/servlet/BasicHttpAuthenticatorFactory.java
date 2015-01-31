@@ -50,8 +50,8 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
     private static Log logger = LogFactory.getLog(BasicHttpAuthenticator.class);
 
     // Component dependencies
-    private AuthenticationService authenticationService;
-    private AuthenticationListener listener;
+    protected AuthenticationService authenticationService;
+    protected AuthenticationListener listener;
 
     
     /**
@@ -103,12 +103,12 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
     public class BasicHttpAuthenticator implements Authenticator
     {
         // dependencies
-        private WebScriptServletRequest servletReq;
-        private WebScriptServletResponse servletRes;
+        protected WebScriptServletRequest servletReq;
+        protected WebScriptServletResponse servletRes;
         
-        private String authorization;
-        private String ticket;
-        private AuthenticationListener listener;
+        protected String authorization;
+        protected String ticket;
+        protected AuthenticationListener listener;
         
         /**
          * Construct

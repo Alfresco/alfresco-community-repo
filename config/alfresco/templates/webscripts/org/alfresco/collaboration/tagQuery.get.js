@@ -47,6 +47,8 @@ function tagQuery()
       query += "\" AND ";
    }
    query += "ASPECT:\"{http://www.alfresco.org/model/content/1.0}taggable\"";
+   //MNT-2118 Share inconsistencies when displaying locked files with tags
+   query += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
    
    var taggedNodes = search.luceneSearch(query);
 

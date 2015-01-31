@@ -202,6 +202,10 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                 restartLoginChallenge(context, sreq, sresp);
                 return false;
             }
+            else if (isFallbackEnabled())
+            {
+                return performFallbackAuthentication(context, sreq, sresp);
+            }
         }
         
         // Check if the user is already authenticated
@@ -272,10 +276,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
                         sreq.getRemoteAddr() + ":" + sreq.getRemotePort() + ") SID:" + sreq.getSession().getId());
             
             // Send back a request for NTLM authentication
-            sresp.setHeader(WWW_AUTHENTICATE, AUTH_NTLM);
-            sresp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            writeLoginPageLink(context, sreq, sresp);
-            sresp.flushBuffer();
+            restartLoginChallenge(context, sreq, sresp);
             return false;
         }
         else
@@ -1071,6 +1072,12 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             writeLoginPageLink(context, req, res);
         }
+        
+        if (isFallbackEnabled())
+        {
+            includeFallbackAuth(context, req, res);
+        }
+        
         res.flushBuffer();
     }
     

@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -137,7 +136,9 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
     {
         synchronized (this.currentRepoDescriptorLock)
         {
-            return this.currentRepoDescriptor;
+            // this should be updated when the License is verified - but it is possible that no License at all
+            // is available and this will be in an known state - do not allow a null value to be returned
+            return this.currentRepoDescriptor != null ? this.currentRepoDescriptor : new UnknownDescriptor();
         }
     }
 
@@ -269,8 +270,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             }
         };
         Descriptor installed =  helper.doInTransaction(getDescriptorCallback, false, false);
-       
-        if(installed != null)
+        if (installed != null)
         {
             installedRepoDescriptor = installed;
         }
@@ -278,7 +278,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         {
             installedRepoDescriptor = new UnknownDescriptor();
         }
-
+        
         /*
          *  Initialize license service if on classpath.  
          *  If no class exists a dummy license service is used.
@@ -296,7 +296,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
             ((ConfigurableApplicationContext) applicationContext).getBeanFactory().registerSingleton(
                     "licenseService", licenseService);
         }
-    
+        
         // Load heart-beat special service (even if disabled at the moment)
         heartBeat = constructSpecialService("org.alfresco.enterprise.heartbeat.HeartBeat");
         
@@ -513,11 +513,11 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
         }
 
         /**
-         * @return              <b>1.0.0</b> always
+         * @return              <b>0.0.0</b> always
          */
         public VersionNumber getVersionNumber()
         {
-            return new VersionNumber("1.0.0");
+            return new VersionNumber("0.0.0");
         }
 
         /**
@@ -525,7 +525,7 @@ public class DescriptorServiceImpl extends AbstractLifecycleBean
          */
         public String getVersion()
         {
-            return "Unknown (pre 1.0.0 RC2)";
+            return "Unknown";
         }
 
         /**

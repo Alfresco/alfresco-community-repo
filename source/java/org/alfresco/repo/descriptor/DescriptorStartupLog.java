@@ -156,8 +156,7 @@ public class DescriptorStartupLog extends AbstractLifecycleBean
         }
         
         // Log Repository Descriptors
-        // MER - work around for currentRepositoryDescriptor == null
-        if (logger.isInfoEnabled() && descriptorService.getCurrentRepositoryDescriptor() != null)
+        if (logger.isInfoEnabled())
         {
         	logger.info("Server Mode :" + serverModeProvider.getServerMode());
             Descriptor serverDescriptor = descriptorService.getServerDescriptor();

@@ -125,8 +125,9 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
         // get the source multiplicity
         boolean mandatory = assocDef.isTargetMandatory();
         boolean allowMany = assocDef.isTargetMany();
+        boolean enforced = assocDef.isTargetMandatoryEnforced();
         // do we need to check
-        if (!mandatory && allowMany)
+        if (!(mandatory && enforced) && allowMany)
         {
             // it is not mandatory and it allows many on both sides of the assoc
             return;
@@ -165,7 +166,7 @@ public class AssocTargetMultiplicityIntegrityEvent extends AbstractIntegrityEven
             actualSize = targetAssocRefs.size();
         }
         
-        if ((mandatory && actualSize == 0) || (!allowMany && actualSize > 1))
+        if (((mandatory && enforced) && actualSize == 0) || (!allowMany && actualSize > 1))
         {
             if (actualSize == 0)
             {

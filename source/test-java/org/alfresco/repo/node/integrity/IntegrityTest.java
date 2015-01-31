@@ -72,6 +72,7 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_TYPE_WITH_ASSOCS = QName.createQName(NAMESPACE, "typeWithAssocs");
     public static final QName TEST_TYPE_WITH_CHILD_ASSOCS = QName.createQName(NAMESPACE, "typeWithChildAssocs");
     public static final QName TEST_TYPE_WITH_NON_ENFORCED_CHILD_ASSOCS = QName.createQName(NAMESPACE, "typeWithNonEnforcedChildAssocs");
+    public static final QName TEST_TYPE_WITH_NON_ENFORCED_TARGET_ASSOCS = QName.createQName(NAMESPACE, "typeWithNonEnforcedTargetAssocs");
     
     public static final QName TEST_ASSOC_NODE_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "assoc-0to* - 0to*");
     public static final QName TEST_ASSOC_CHILD_ZEROMANY_ZEROMANY = QName.createQName(NAMESPACE, "child-0to* - 0to*");
@@ -80,6 +81,7 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_ASSOC_CHILD_ONE_ONE = QName.createQName(NAMESPACE, "child-1to1 - 1to1");
     public static final QName TEST_ASSOC_ASPECT_ONE_ONE = QName.createQName(NAMESPACE, "aspect-assoc-1to1 - 1to1");
     public static final QName TEST_ASSOC_CHILD_NON_ENFORCED = QName.createQName(NAMESPACE, "child-non-enforced");
+    public static final QName TEST_ASSOC_TARGET_NON_ENFORCED = QName.createQName(NAMESPACE, "target-non-enforced");
     
     public static final QName TEST_ASPECT_WITH_PROPERTIES = QName.createQName(NAMESPACE, "aspectWithProperties");
     public static final QName TEST_ASPECT_WITH_ASSOC = QName.createQName(NAMESPACE, "aspectWithAssoc");
@@ -481,6 +483,17 @@ public class IntegrityTest extends TestCase
         
         // Now remove the last association
         nodeService.removeAssociation(source1, target1, TEST_ASSOC_NODE_ONE_MANY);
+        checkIntegrityNoFailure();
+    }
+    
+    /**
+     * Test for MNT-12367
+     */
+    public void testRelaxedMandatoryAssociation() throws Exception
+    {
+        assertEquals("Per-transaction override not correct", false, IntegrityChecker.isWarnInTransaction());
+        // create node
+        NodeRef nodeRef = createNode("relaxedAssocNode", TEST_TYPE_WITH_NON_ENFORCED_TARGET_ASSOCS, null);
         checkIntegrityNoFailure();
     }
 }

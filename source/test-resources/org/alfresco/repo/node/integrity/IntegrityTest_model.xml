@@ -8,6 +8,7 @@
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
       <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys"/>
+      <import uri='http://www.alfresco.org/model/content/1.0' prefix='cm'/>
    </imports>
    
    <namespaces>
@@ -152,6 +153,24 @@
                </target>
                <duplicate>false</duplicate>
             </child-association>
+         </associations>
+      </type>
+      <!-- Type with mandatory non-enforced assocs -->
+      <type name="test:typeWithNonEnforcedTargetAssocs">
+         <title>Type With Non Enforced Assocs</title>
+         <parent>cm:content</parent>
+         <associations>
+            <association name="test:target-non-enforced">
+               <source>
+                  <mandatory>false</mandatory>
+                  <many>true</many>
+               </source>
+               <target>
+                  <class>cm:content</class>
+                  <mandatory enforced="false">true</mandatory>
+                  <many>false</many>
+               </target>
+            </association>
          </associations>
       </type>
    </types>

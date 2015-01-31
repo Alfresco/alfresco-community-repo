@@ -630,7 +630,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(invitationId);
         for(WorkflowTask task : tasks)
         {
-        	if(taskTypeMatches(task, WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK))
+            if(taskTypeMatches(task, WorkflowModelModeratedInvitation.WF_ACTIVITI_REVIEW_TASK, WorkflowModelModeratedInvitation.WF_REVIEW_TASK))
         	{
         		reviewTask = task;
         		break;

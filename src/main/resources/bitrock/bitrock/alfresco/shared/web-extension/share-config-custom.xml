@@ -358,16 +358,17 @@
             <basic-auth>true</basic-auth>
             <identity>user</identity>
          </endpoint>
-         <!-- 
+         
          <endpoint>
-            <id>activiti-admin</id>
-            <name>Activiti Admin UI - user access</name>
-            <description>Access to Activiti Admin UI, that requires user authentication</description>
-            <connector-id>activiti-admin-connector</connector-id>
-            <endpoint-url>http://localhost:8080/alfresco/activiti-admin</endpoint-url>
+            <id>alfresco-api</id>
+            <parent-id>alfresco</parent-id>
+            <name>Alfresco Public API - user access</name>
+            <description>Access to Alfresco Repository Public API that require user authentication.
+                         This makes use of the authentication that is provided by parent 'alfresco' endpoint.</description>
+            <connector-id>alfresco</connector-id>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/api</endpoint-url>
             <identity>user</identity>
          </endpoint>
-         -->
       </remote>
    </config>
 
@@ -383,9 +384,20 @@
         
         NOTE: For Kerberos SSO rename the "KerberosDisabled" condition above to "Kerberos"
         
-        NOTE: For external SSO, switch the endpoint connector to "AlfrescoHeader" and set
-              the userHeader to the name of the HTTP header that the external SSO
+        NOTE: For external SSO, switch the endpoint connector to "alfrescoHeader" and set
+              the userHeader value to the name of the HTTP header that the external SSO
               uses to provide the authenticated user name.
+        NOTE: For external SSO, Share now supports the "userIdPattern" mechanism as is available
+              on the repository config for External Authentication sub-system. Add the following
+              element to your "alfrescoHeader" connector config:
+              <userIdPattern>^ignore-(\w+)-ignore</userIdPattern>
+              This is an example, ensure the Id pattern matches your repository config.
+        NOTE: For external SSO, Share now supports stateless (no Http Session or sticky session)
+              connection to the repository when using the alfrescoHeader remote user connector.
+              e.g. You can change endpoint config to use the faster /service URL instead of the
+              /wcs URL if you are using External Authentication and then remove sticky session config
+              from your proxy between Share and Alfresco. Note that this is also faster because Share
+              will no longer call the /touch REST API before every remote call to the repository.
    -->
    <!--
    <config evaluator="string-compare" condition="Remote">
@@ -417,6 +429,29 @@
             <description>Access to Alfresco Repository WebScripts that require user authentication</description>
             <connector-id>alfrescoCookie</connector-id>
             <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/wcs</endpoint-url>
+            <identity>user</identity>
+            <external-auth>true</external-auth>
+         </endpoint>
+         
+         <endpoint>
+            <id>alfresco-feed</id>
+            <parent-id>alfresco</parent-id>
+            <name>Alfresco Feed</name>
+            <description>Alfresco Feed - supports basic HTTP authentication via the EndPointProxyServlet</description> 
+            <connector-id>alfrescoHeader</connector-id> 
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/wcs</endpoint-url>
+            <identity>user</identity>
+            <external-auth>true</external-auth>
+         </endpoint>
+         
+         <endpoint>
+            <id>alfresco-api</id>
+            <parent-id>alfresco</parent-id>
+            <name>Alfresco Public API - user access</name>
+            <description>Access to Alfresco Repository Public API that require user authentication.
+                         This makes use of the authentication that is provided by parent 'alfresco' endpoint.</description>
+            <connector-id>alfrescoHeader</connector-id>
+            <endpoint-url>http://localhost:@@BITROCK_TOMCAT_PORT@@/alfresco/api</endpoint-url>
             <identity>user</identity>
             <external-auth>true</external-auth>
          </endpoint>

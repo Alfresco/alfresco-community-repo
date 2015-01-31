@@ -65,6 +65,7 @@ import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
+import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.CmisSession;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Comments;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
@@ -1591,6 +1592,56 @@ public class TestCMIS extends EnterpriseTestApi
 		assertTrue("It should be latest version : " + versionLabel3, doc3.isLatestVersion());
 	}
     
+	
+	/**
+    * 1) Creating a file with incorrect char in description property
+    * 2) Get xml with incorrect char in description
+    * 3) Check xml
+    * @throws Exception
+    */
+   @Test
+   public void testGetXmlWithIncorrectDesctiption() throws Exception
+   {
+       final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+       String username = "user" + System.currentTimeMillis();
+       PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+       TestPerson person1 = network1.createUser(personInfo);
+       String person1Id = person1.getId();
+
+       final String siteName = "site" + System.currentTimeMillis();
+       
+       NodeRef fileNode = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+               {
+                   @Override
+                   public NodeRef doWork() throws Exception
+                   {
+                       SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+                       final TestSite site = network1.createSite(siteInfo);
+                       
+                       NodeRef resNode = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "testdoc.txt", "Test Doc1 Title", "d\u0010", "Test Content");
+                       return resNode;
+                   }
+               }, person1Id, network1.getId());
+       
+       String cmisId = fileNode.getId();
+       HashMap<String, String> reqParams = new HashMap<String, String>();
+       reqParams.put("id", cmisId+";1.0");
+       reqParams.put("filter", "*");
+       reqParams.put("includeAllowableActions", "true");
+       reqParams.put("includeACL", "true");
+       reqParams.put("includePolicyIds", "true");
+       reqParams.put("includeRelationships", "both");
+       reqParams.put("renditionFilter", "*");
+       
+       publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+       HttpResponse resp = publicApiClient.get(Binding.atom, CMIS_VERSION_11, "id", reqParams);
+       String xml = resp.getResponse();
+       // Response hasn't full info at error - writer just stops at incorrect character.
+       // Therefore we can check end tag of root element
+       assertTrue("No end tag was found", xml.endsWith("</atom:entry>"));
+   }
+
     /*
      * Test that creating a document with a number of initial aspects does not create lots of initial versions
      */

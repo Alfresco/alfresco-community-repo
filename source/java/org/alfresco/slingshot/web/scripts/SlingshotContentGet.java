@@ -24,6 +24,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.content.ContentGet;
@@ -84,7 +85,15 @@ public class SlingshotContentGet extends ContentGet
             if (storeType != null && storeId != null && nodeId != null)
             {
                 final NodeRef nodeRef = new NodeRef(storeType, storeId, nodeId);
-                final SiteInfo site = this.siteService.getSite(nodeRef);
+                SiteInfo site = null;
+                try
+                {
+                    site = this.siteService.getSite(nodeRef);
+                }
+                catch (AccessDeniedException ade)
+                {
+                    // We don't have access to the site, don't post any permissions
+                }
                 if (site != null)
                 {
                     // found a valid parent Site - gather the details to post an Activity
@@ -94,13 +103,15 @@ public class SlingshotContentGet extends ContentGet
                         filename = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                     }
                     final String strFilename = filename;
-                    transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>() {
+                    final String siteName = site.getShortName();
+                    transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+                    {
                         @Override
                         public Void execute() throws Throwable
                         {
                             // post an activity - mirror the mechanism as if from the Share application
-                            poster.postFileFolderActivity(ActivityPoster.DOWNLOADED, null, null, 
-                                    site.getShortName(), null, nodeRef, strFilename, "documentlibrary", Client.asType(ClientType.webclient), null);
+                            poster.postFileFolderActivity(ActivityPoster.DOWNLOADED, null, null,
+                                    siteName, null, nodeRef, strFilename, "documentlibrary", Client.asType(ClientType.webclient), null);
                             return null;
                         }
                     }, false, true);

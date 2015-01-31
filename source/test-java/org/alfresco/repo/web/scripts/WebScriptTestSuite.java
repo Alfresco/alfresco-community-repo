@@ -53,6 +53,7 @@ import org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.JBPMWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest;
 import org.alfresco.slingshot.documentlibrary.FolderTemplateTest;
+import org.alfresco.slingshot.web.scripts.SlingshotContentGetTest;
 
 /**
  * Web Scripts test suite
@@ -102,6 +103,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( CommentsApiTest.class );		
         suite.addTestSuite( FolderTemplateTest.class );
         suite.addTestSuite( DeclarativeSpreadsheetWebScriptTest.class );
+        suite.addTestSuite( SlingshotContentGetTest.class);
         
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,

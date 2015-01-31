@@ -78,10 +78,6 @@ public class MailHandler extends BaseActionHandler
       // add the subject for the email
       repoProps.put(MailActionExecuter.PARAM_SUBJECT, actionProps.get(PROP_SUBJECT));
       
-      // add the from address
-      String from = Application.getClientConfig(FacesContext.getCurrentInstance()).getFromEmailAddress();
-      repoProps.put(MailActionExecuter.PARAM_FROM, from);
-      
       // add the template if one was selected by the user
       if (wizard.getUsingTemplate() != null)
       {

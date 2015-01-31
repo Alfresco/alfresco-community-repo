@@ -9,7 +9,7 @@
 <mapper namespace="alfresco.content.select">
 
     <!-- Get content URL entities that were orphaned before a give time -->
-    <select id="select_ContentUrlsOrphaned" fetchSize="-2147483648" parameterType="ContentUrlOrphanQuery" resultMap="result_ContentUrl">
+    <select id="select_ContentUrlsOrphaned" fetchSize="-2147483648" parameterType="ContentUrlOrphanQuery" resultMap="alfresco.content.result_ContentUrl">
         <![CDATA[
         select
             cu.*

@@ -1418,13 +1418,15 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     json.put("nodeName", userName == null ? "": userName);
                     json.put("createPerson", true);
                 }
-                if (entry.getEvent().equals("Delete RM Object"))
-                {
-                    json.put("deleteObject", true);
-                }
                 else
                 {
                     json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
+                }
+
+                // TODO: Find another way for checking the event
+                if (entry.getEvent().equals("Delete RM Object"))
+                {
+                    json.put("deleteObject", true);
                 }
 
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());

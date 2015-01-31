@@ -102,14 +102,6 @@
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>web-server/endorsed</outputDirectory>
-            <includes>
-                <include>xalan:*</include>
-            </includes>
-        </dependencySet>
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
             <outputDirectory>web-server/lib</outputDirectory>
             <includes>
                 <include>org.postgresql:*</include>

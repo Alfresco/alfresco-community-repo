@@ -22,6 +22,12 @@ function main()
       return;
    }
    
+   if (groups.getGroupForFullAuthorityName("GROUP_site_" + shortName) != null)
+   {
+      status.setCode(status.STATUS_BAD_REQUEST, "error.unableToCreate");
+      return;
+   }
+   
    if (json.has("sitePreset") == false || json.get("sitePreset").length == 0)
    {
       status.setCode(status.STATUS_BAD_REQUEST, "Site preset missing when creating site");

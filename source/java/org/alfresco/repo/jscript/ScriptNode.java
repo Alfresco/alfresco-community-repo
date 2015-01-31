@@ -2917,8 +2917,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             String nodeMimeType = getMimetype();
             Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
-            if (!ContentData.hasContent(contentData) ||
-                !services.getContentService().getReader(nodeRef, ContentModel.PROP_CONTENT).exists())
+            if (!ContentData.hasContent(contentData))
             {
                 if (logger.isDebugEnabled())
                     logger.debug("Unable to create thumbnail '" + details.getName() + "' as there is no content");
@@ -3023,16 +3022,17 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      */
     public String[] getThumbnailDefinitions()
     {
-        ContentService contentService = this.services.getContentService();
         ThumbnailService thumbnailService = this.services.getThumbnailService();
         
         List<String> result = new ArrayList<String>(7);
         
-        ContentReader contentReader = contentService.getReader(this.nodeRef, ContentModel.PROP_CONTENT);
-        if (contentReader != null)
+        Serializable value = this.nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        ContentData contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);
+        
+        if (ContentData.hasContent(contentData))
         {
-            String mimetype = contentReader.getMimetype();
-            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(mimetype, contentReader.getSize());
+            String mimetype = contentData.getMimetype();
+            List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(mimetype, contentData.getSize());
             for (ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
             {
                 result.add(thumbnailDefinition.getName());

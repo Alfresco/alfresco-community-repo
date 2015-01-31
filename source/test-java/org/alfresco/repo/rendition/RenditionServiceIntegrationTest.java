@@ -42,6 +42,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.ContentTransformerRegistry;
+import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
@@ -1237,7 +1238,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         performAsyncRendition(testTargetFolder, callback, latch, results);
         
         assertNull(results.getAssoc());
-        assertEquals("Expected a RenditionServiceException", RenditionCancelledException.class, results.getThrowable().getClass());
+        assertEquals("Expected a UnimportantTransformException", UnimportantTransformException.class, results.getThrowable().getClass());
     }
 
     /**

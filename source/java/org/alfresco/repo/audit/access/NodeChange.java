@@ -126,6 +126,7 @@ import org.alfresco.service.namespace.QName;
     private NodeInfo nodeInfo;
 
     private String action;
+    private String runAsUser;
     
     private boolean auditSubActions = false;
     private Set<String> subActions = new LinkedHashSet<String>();
@@ -157,6 +158,8 @@ import org.alfresco.service.namespace.QName;
     {
         // Derive higher level action
         String action;
+        boolean keepRunAsUser = false;
+        
         if (subActions.contains(CHECK_OUT))
         {
             action = "CHECK OUT";
@@ -181,6 +184,8 @@ import org.alfresco.service.namespace.QName;
         {
             // Reads in combinations with other actions tend to only facilitate the other action.
             action = "READ";
+            // MNT-8810 fix, action is considered as READ -> so let's keep actual user who performed readContent 
+            keepRunAsUser = true;
         }
         else if (subActions.contains(DELETE_NODE))
         {
@@ -203,7 +208,10 @@ import org.alfresco.service.namespace.QName;
             // Default to first sub-action
             action = this.action;
         }
-            
+        if (!keepRunAsUser)
+        {
+            runAsUser = null;
+        }
         return action;
     }
     
@@ -455,6 +463,8 @@ import org.alfresco.service.namespace.QName;
     {
         appendSubAction(new NodeChange(nodeInfoFactory, namespaceService, nodeRef).
                 setAction(READ_CONTENT));
+        // MNT-8810 fix, remember runAsUser for read operation
+        runAsUser = AuthenticationUtil.getRunAsUser();
     }
 
     @Override
@@ -524,7 +534,9 @@ import org.alfresco.service.namespace.QName;
         
         if (!subAction) // no need to repeat for sub actions
         {
-            auditMap.put(USER, AuthenticationUtil.getFullyAuthenticatedUser());
+            // MNT-8810 fix, if runAsUser is not null this means that this is READ action and we should use real user who performed readContent,
+            // not the current user as actual read may be executed in runAs block (for example for thumbnail creation)
+            auditMap.put(USER, (runAsUser == null ? AuthenticationUtil.getFullyAuthenticatedUser() : runAsUser));
             addSubActionsToAuditMap(auditMap);
         
             auditMap.put(NODE, nodeInfo.getNodeRef());

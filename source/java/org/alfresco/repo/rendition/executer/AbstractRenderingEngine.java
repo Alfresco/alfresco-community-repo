@@ -36,6 +36,7 @@ import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.action.executer.ActionExecuterAbstractBase;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.nodelocator.NodeLocator;
 import org.alfresco.repo.nodelocator.SelfNodeLocator;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -830,7 +831,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             ContentReader contentReader = contentService.getReader(sourceNode, srcContentProp);
             if (contentReader == null || !contentReader.exists())
             {
-                throw new RenditionServiceException(CONTENT_READER_NOT_FOUND_MESSAGE);
+                throw new UnimportantTransformException(CONTENT_READER_NOT_FOUND_MESSAGE);
             }
             return contentReader;
         }

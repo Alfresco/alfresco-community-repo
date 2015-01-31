@@ -58,6 +58,8 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ScriptPagingDetails;
 import org.alfresco.util.TestWithUserUtils;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.SQLServerDialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
@@ -89,7 +91,8 @@ public class ArchiveAndRestoreTest extends TestCase
     private MutableAuthenticationService authenticationService;
     private OwnableService ownableService;
     private TransactionService transactionService;
-    
+    private Dialect dialect;
+
     private UserTransaction txn;
     private StoreRef workStoreRef;
     private NodeRef workStoreRootNodeRef;
@@ -112,7 +115,7 @@ public class ArchiveAndRestoreTest extends TestCase
     private NodeRef bb_;
     ChildAssociationRef childAssocAtoAA_;
     ChildAssociationRef childAssocBtoBB_;
-    
+
     @Override
     public void setUp() throws Exception
     {
@@ -124,7 +127,8 @@ public class ArchiveAndRestoreTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         ownableService = (OwnableService) ctx.getBean("ownableService");
         transactionService = serviceRegistry.getTransactionService();
-        
+        dialect = (Dialect) ctx.getBean("dialect");
+
         // Start a transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
@@ -611,18 +615,28 @@ public class ArchiveAndRestoreTest extends TestCase
     
     public void testInTransactionRestore() throws Exception
     {
-        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(a_);
-        // expect a failure due to missing archive node
-        assertEquals("Expected failure", RestoreStatus.FAILURE_INVALID_ARCHIVE_NODE, report.getStatus());
-        // check that our transaction was not affected
-        assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
+	    // disable in case of SQL Server
+	    // see MNT-13089
+        if (!(dialect instanceof SQLServerDialect))
+        {
+            RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(a_);
+            // expect a failure due to missing archive node
+            assertEquals("Expected failure", RestoreStatus.FAILURE_INVALID_ARCHIVE_NODE, report.getStatus());
+            // check that our transaction was not affected
+            assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
+        }
     }
     
     public void testInTransactionPurge() throws Exception
     {
-        nodeArchiveService.purgeArchivedNode(a_);
-        // the node should still be there (it was not available to the purge transaction)
-        assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
+        // disable in case of SQL Server
+        // see MNT-13089
+        if (!(dialect instanceof SQLServerDialect))
+        {
+            nodeArchiveService.purgeArchivedNode(a_);
+            // the node should still be there (it was not available to the purge transaction)
+            assertEquals("Transaction should still be valid", Status.STATUS_ACTIVE, txn.getStatus());
+        }
     }
     
     private void commitAndBeginNewTransaction() throws Exception

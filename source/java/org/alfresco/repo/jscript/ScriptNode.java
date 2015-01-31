@@ -3768,11 +3768,6 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
          */
         public void write(Content content, boolean applyMimetype, boolean guessEncoding)
         {
-            write(content, applyMimetype, guessEncoding, false);
-        }
-        
-        public void write(Content content, boolean applyMimetype, boolean guessEncoding, boolean guessMimetype)
-        {
             ContentService contentService = services.getContentService();
             ContentWriter writer = contentService.getWriter(nodeRef, this.property, true);
             InputStream is = null;
@@ -3780,19 +3775,6 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             {
                 writer.setMimetype(content.getMimetype());
             }
-            if (guessMimetype)
-            {
-                InputStream reuseableIS = new ReuseableInputStream(content.getInputStream());
-                writer.setMimetype(services.getMimetypeService().guessMimetype(getName(), reuseableIS));
-                try
-                {
-                    reuseableIS.reset();
-                }
-                catch (IOException e)
-                {
-                }
-            }
-            
             if (guessEncoding)
             {
                 is = new BufferedInputStream(content.getInputStream());
@@ -3967,31 +3949,6 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         
         private ContentData contentData;
         private QName property;
-        
-        public class ReuseableInputStream extends BufferedInputStream
-        {
-            InputStream decorated;
-            
-            ReuseableInputStream(InputStream decorated)
-            {
-                super(decorated);
-                
-                decorated.mark(1024);
-                
-                this.decorated = decorated;
-            }
-            
-            @Override
-            public void close() throws IOException
-            {
-                decorated.reset();
-            }
-            
-            public void close(boolean force) throws IOException
-            {
-                decorated.close();
-            }
-        }
     }
     
     /**

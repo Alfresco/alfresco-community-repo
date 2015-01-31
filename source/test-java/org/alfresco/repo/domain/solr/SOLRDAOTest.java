@@ -29,6 +29,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.permissions.ACLType;
@@ -43,6 +44,8 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
@@ -67,11 +70,13 @@ public class SOLRDAOTest extends TestCase
     private NodeService nodeService;
     private AclDAO aclDaoComponent;
     private SOLRDAO solrDAO;
+    private NodeDAO nodeDAO;
     
     @Override
     public void setUp() throws Exception
     {
         solrDAO = (SOLRDAO)ctx.getBean("solrDAO");
+        nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
         authenticationComponent = (AuthenticationComponent)ctx.getBean("authenticationComponent");
         
         authenticationService = (MutableAuthenticationService)ctx.getBean("authenticationService");
@@ -454,5 +459,65 @@ public class SOLRDAOTest extends TestCase
                 }
             });
         }
+    }
+    
+    /**
+     * MNT-12798
+     */
+    public void testGetNodesFromTxnId()
+    {
+        final StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
+
+        try
+        {
+            RetryingTransactionCallback<Long> createNodeWork1 = new RetryingTransactionCallback<Long>()
+            {
+                @Override
+                public Long execute() throws Throwable
+                {
+                    createTestNode(nodeService.getRootNode(storeRef));
+                    return nodeDAO.getCurrentTransactionId(true);
+                }
+            };
+
+            RetryingTransactionCallback<Long> createNodeWork2 = new RetryingTransactionCallback<Long>()
+            {
+                @Override
+                public Long execute() throws Throwable
+                {
+                    createTestNode(nodeService.getRootNode(storeRef));
+                    return nodeDAO.getCurrentTransactionId(true);
+                }
+            };
+
+            Long txnId1 = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeWork1);
+            Long txnId2 = transactionService.getRetryingTransactionHelper().doInTransaction(createNodeWork2);
+
+            NodeParameters nodeParameters = new NodeParameters();
+            nodeParameters.setFromTxnId(txnId1);
+            nodeParameters.setToTxnId(null);
+            List<Node> nodes1 = getNodes(nodeParameters);
+            assertTrue("Expect 'some' nodes associated with txns", nodes1.size() > 0);
+
+            NodeParameters nodeParameters2 = new NodeParameters();
+            nodeParameters2.setFromTxnId(txnId2);
+            nodeParameters2.setToTxnId(null);
+            List<Node> nodes2 = getNodes(nodeParameters2);
+
+            assertTrue("Higher 'fromTxnId' param should yield fewer results", nodes2.size() < nodes1.size());
+        }
+        finally
+        {
+            nodeService.deleteStore(storeRef);
+        }
+    }
+    
+    private NodeRef createTestNode(NodeRef parent)
+    {
+        NodeRef nodeRef = nodeService.createNode(parent,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        return nodeRef;
     }
 }

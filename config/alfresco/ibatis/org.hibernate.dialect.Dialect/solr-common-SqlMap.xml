@@ -134,7 +134,7 @@
 	           <when test="fromTxnId != null and toTxnId != null">
 	                <![CDATA[txn.id >= #{fromTxnId} and txn.id <= #{toTxnId}]]>
 	           </when>
-	           <when test="fromTxnId = null and toTxnId != null">
+	           <when test="fromTxnId == null and toTxnId != null">
 	                <![CDATA[txn.id <= #{toTxnId}]]>
 	           </when>
                <when test="fromTxnId != null and toTxnId == null">

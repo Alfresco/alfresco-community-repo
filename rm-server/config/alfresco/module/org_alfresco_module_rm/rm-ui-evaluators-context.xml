@@ -660,7 +660,6 @@
    <bean id="jsonConversionComponent.downloadZip"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="downloadZip"/>
-      <property name="capability" value="DownloadZip"/>
    </bean>
 
    <bean id="jsonConversionComponent.transferComplete"

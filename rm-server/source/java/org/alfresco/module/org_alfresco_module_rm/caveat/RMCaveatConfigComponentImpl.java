@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.caveat;
 
+import static org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace;
+
 import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -992,31 +994,58 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
      */
     private String convertToJSONString(SimpleCache<String, Map<String, List<String>>> config)
     {
-        JSONObject obj = new JSONObject();
+        JSONObject configJSONObject = new JSONObject();
 
-        try
+        Collection<String> listNames = config.getKeys();
+        for (String listName : listNames)
         {
-            Collection<String> listNames = config.getKeys();
-            for(String listName : listNames)
+            Map<String, List<String>> members = config.get(listName);
+
+            Set<String> authorityNames = members.keySet();
+            JSONObject listMembers = new JSONObject();
+
+            for (String authorityName : authorityNames)
             {
-                Map<String, List<String>> members = config.get(listName);
-
-                Set<String> authorityNames = members.keySet();
-                JSONObject listMembers = new JSONObject();
-
-                for(String authorityName : authorityNames)
+                List<String> authorities = members.get(authorityName);
+                try
                 {
-                    listMembers.put(authorityName, members.get(authorityName));
+                    listMembers.put(authorityName, authorities);
                 }
+                catch (JSONException error)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Cannot add the key '");
+                    sb.append(authorityName);
+                    sb.append("' with the value '");
+                    sb.append(authorities);
+                    sb.append("' to the JSONObject 'listMembers' '");
+                    sb.append(listMembers);
+                    sb.append("': ");
+                    sb.append(getFullStackTrace(error));
+                    throw new AlfrescoRuntimeException(sb.toString());
+                }
+            }
 
-                obj.put(listName, listMembers);
+            try
+            {
+                configJSONObject.put(listName, listMembers);
+            }
+            catch (JSONException error)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.append("Cannot add the key '");
+                sb.append(listName);
+                sb.append("' with the value '");
+                sb.append(listMembers);
+                sb.append("' to the JSONObject 'configJSONObject' '");
+                sb.append(configJSONObject);
+                sb.append("': ");
+                sb.append(getFullStackTrace(error));
+                throw new AlfrescoRuntimeException(sb.toString());
             }
         }
-        catch (JSONException je)
-        {
-            throw new AlfrescoRuntimeException("Invalid caveat config syntax: "+ je);
-        }
-        return obj.toString();
+
+        return configJSONObject.toString();
     }
 
     /**

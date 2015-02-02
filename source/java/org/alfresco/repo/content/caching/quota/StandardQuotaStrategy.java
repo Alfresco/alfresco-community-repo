@@ -62,7 +62,10 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
     private int cleanThresholdPct = 80;
     private int targetUsagePct = 70;
     private long maxUsageBytes = 0;
+    /* Threshold in seconds indicating a minimal gap between normal cleanup starts */
+    private long normalCleanThresholdSec = 0;
     private AtomicLong currentUsageBytes = new AtomicLong(0);
+    private AtomicLong lastCleanupStart = new AtomicLong(0);
     private CachedContentCleaner cleaner;
     private ContentCacheImpl cache;   // impl specific functionality required
     private int maxFileSizeMB = 0;
@@ -89,6 +92,8 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
         }
         
         loadDiskUsage();
+        // Set the time to start the normal clean
+        lastCleanupStart.set(System.currentTimeMillis() - normalCleanThresholdSec);
         // Run the cleaner thread so that it can update the disk usage more accurately.
         signalCleanerStart("quota (init)");
     }
@@ -226,7 +231,19 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
         }
         else
         {
-            cleaner.execute(reason);
+            long timePassedFromLastClean = System.currentTimeMillis() - lastCleanupStart.get();
+            if (timePassedFromLastClean < normalCleanThresholdSec * 1000)
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Skipping a normal clean as it is too soon. The last cleanup was run " + timePassedFromLastClean/1000f + " seconds ago.");
+                }
+            }
+            else
+            {
+                lastCleanupStart.set(System.currentTimeMillis());
+                cleaner.execute(reason);
+            }
         }
     }
     
@@ -294,7 +311,16 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
         this.cleanThresholdPct = cleanThresholdPct;
     }
 
+    public void setTargetUsagePct(int targetUsagePct)
+    {
+        this.targetUsagePct = targetUsagePct;
+    }
 
+    public void setNormalCleanThresholdSec(long normalCleanThresholdSec)
+    {
+        this.normalCleanThresholdSec = normalCleanThresholdSec;
+    }
+    
     @Required
     public void setCache(ContentCacheImpl cache)
     {

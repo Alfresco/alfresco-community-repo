@@ -54,6 +54,11 @@
             <!-- maxFileSizeMB: files larger than this size will not be kept in the cache -->
             <property name="maxFileSizeMB" value="${system.content.caching.maxFileSizeMB}"/>
             
+            <property name="panicThresholdPct" value="${system.content.caching.panicThresholdPct}"/>
+            <property name="cleanThresholdPct" value="${system.content.caching.cleanThresholdPct}"/>
+            <property name="targetUsagePct" value="${system.content.caching.targetUsagePct}"/>
+            <property name="normalCleanThresholdSec" value="${system.content.caching.normalCleanThresholdSec}"/>
+            
             <property name="cache" ref="contentCache"/>
             <property name="cleaner" ref="cachedContentCleaner"/>
     </bean>

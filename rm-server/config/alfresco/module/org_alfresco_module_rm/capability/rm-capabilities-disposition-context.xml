@@ -209,7 +209,6 @@
       <property name="kinds" value="TRANSFER"/>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.fillingOnChildren" value="true"/>
             <entry key="capabilityCondition.isTransferAccession" value="false"/>
          </map>
       </property>

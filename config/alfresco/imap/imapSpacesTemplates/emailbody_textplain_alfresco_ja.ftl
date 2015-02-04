@@ -21,9 +21,9 @@
 
 コンテンツリンク
 
-コンテンツ フォルダー:   ${contextUrl}/navigate/browse${document.parent.webdavUrl}
-コンテンツ URL:      ${contextUrl}${document.url}
-ダウンロード URL:     ${contextUrl}${document.downloadUrl}
+コンテンツ フォルダー:   ${contentFolderUrl}
+コンテンツ URL:      ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
+ダウンロード URL:     ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true
 WebDAV URL:       ${contextUrl}${document.webdavUrl}
 
 

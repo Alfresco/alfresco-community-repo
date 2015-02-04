@@ -21,6 +21,6 @@ Taille:        ${document.size / 1024} Kb
 
 Liens de contenu
 
-Dossier du contenu :   ${shareContextUrl}/page/site/${parentPathFromSites}
+Dossier du contenu :   ${contentFolderUrl}
 URL de contenu :      ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 Adresse de téléchargement :     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

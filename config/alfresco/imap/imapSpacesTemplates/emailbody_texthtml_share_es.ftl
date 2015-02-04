@@ -84,7 +84,7 @@
 <legend> Enlaces de contenido: </legend>
 <table class="links">
    <tr>
-   <td>Carpeta de contenido:</td><td><a href="${shareContextUrl}/page/site/${parentPathFromSites}">${shareContextUrl}/page/site/${parentPathFromSites}</a></td>
+   <td>Carpeta de contenido:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
    <td>Dirección URL de contenido:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>

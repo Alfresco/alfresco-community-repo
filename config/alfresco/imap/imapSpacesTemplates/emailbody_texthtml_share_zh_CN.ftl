@@ -82,7 +82,7 @@
 <legend> 内容链接 </legend>
 <table class="links">
    <tr>
-   <td>内容文件夹：</td><td> <a href="${shareContextUrl}/page/site/${parentPathFromSites}">${shareContextUrl}/page/site/${parentPathFromSites}</a></td>
+   <td>内容文件夹：</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
    <td>内容 URL：</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>

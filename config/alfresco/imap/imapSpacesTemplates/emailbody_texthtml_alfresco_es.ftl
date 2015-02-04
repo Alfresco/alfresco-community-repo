@@ -64,13 +64,13 @@
 <h2> Enlaces de contenido: </h2>
 <table class="links">
    <tr>
-   <td>Carpeta de contenido:</td><td><a href="${contextUrl}/navigate/browse${document.parent.webdavUrl}">${contextUrl}/navigate/browse${document.parent.webdavUrl}</a></td>
+   <td>Carpeta de contenido:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
-   <td>Dirección URL de contenido:</td><td><a href="${contextUrl}${document.url}">${contextUrl}${document.url}</a></td>
+   <td>Dirección URL de contenido:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>Dirección URL de descarga:</td><td><a href="${contextUrl}${document.downloadUrl}">${contextUrl}${document.downloadUrl}</a></td>
+   <td>Dirección URL de descarga:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
    <tr>
    <td>Dirección URL de WebDAV:</td><td><a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>

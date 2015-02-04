@@ -21,6 +21,6 @@ Größe:       ${document.size / 1024} Kb
 
 Links zum Inhalt
 
-Dokumenten Ordner:   ${shareContextUrl}/page/site/${parentPathFromSites}
+Dokumenten Ordner:   ${contentFolderUrl}
 URL zum Inhalt:   ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 Download URL:     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

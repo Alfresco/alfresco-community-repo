@@ -21,6 +21,6 @@
 
 コンテンツリンク
 
-コンテンツ フォルダー:   ${shareContextUrl}/page/site/${parentPathFromSites}
+コンテンツ フォルダー:   ${contentFolderUrl}
 コンテンツURL:      ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 ダウンロード URL:     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

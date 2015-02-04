@@ -21,6 +21,6 @@ Size:      ${document.size / 1024} Kb
 
 CONTENT LINKS
 
-Content folder:   ${shareContextUrl}/page/site/${parentPathFromSites}
+Content folder:   ${contentFolderUrl}
 Content URL:      ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 Download URL:     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

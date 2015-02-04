@@ -21,6 +21,6 @@
 
 ССЫЛКИ НА КОНТЕНТ
 
-Папка с контентом:   ${shareContextUrl}/page/site/${parentPathFromSites}
+Папка с контентом:   ${contentFolderUrl}
 URL-адрес контента:      ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 Загрузить с URL-адреса:     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

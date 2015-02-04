@@ -29,6 +29,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.alfresco.repo.imap.AlfrescoImapConst.ImapViewMode;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import com.icegreen.greenmail.store.SimpleStoredMessage;
@@ -285,12 +286,20 @@ public interface ImapService
     public String getDefaultEmailBodyTemplate(EmailBodyFormat type);
     
     /**
-     * Determine if provided node belongs to Sites.
+     * Get the node's site container if it belongs to Sites.
      * 
      * @param nodeRef nodeRef
-     * @return true if provided node belongs to sites.
+     * @return nodeRef of the node's site container or null if provided node does not belong to sites.
      */
-    public boolean isNodeInSitesLibrary(NodeRef nodeRef);
+    public NodeRef getNodeSiteContainer(NodeRef nodeRef);
+
+    /**
+     * Get the web URL for the document's parent folder
+     *
+     * @param siteContainerNodeRef or null if the document is not from site
+     * @return url for the content folder
+     */
+    public String getContentFolderUrl(NodeRef siteContainerNodeRef);
 
     /**
      * Determines whether the IMAP server is enabled.
@@ -341,4 +350,10 @@ public interface ImapService
      * @return path for node relatively to site root
      */
     public String getPathFromSites(NodeRef nodeRef);
+
+    /**
+     * @param assocRef an association between the node and it's parent
+     * @return path for node relatively to repository
+     */
+    public String getPathFromRepo(ChildAssociationRef assocRef);
 }

@@ -84,7 +84,7 @@
 <legend> Links zum Inhalt </legend>
 <table class="links">
    <tr>
-   <td>Dokumenten Ordner:</td><td><a href="${shareContextUrl}/page/site/${parentPathFromSites}">${shareContextUrl}/page/site/${parentPathFromSites}</a></td>
+   <td>Dokumenten Ordner:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
    <td>URL zum Inhalt:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>

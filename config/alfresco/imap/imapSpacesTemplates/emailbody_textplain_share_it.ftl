@@ -21,6 +21,6 @@ Dimensioni:          ${document.size / 1024} Kb
 
 Collegamenti del contenuto
 
-Cartella del contenuto:   ${shareContextUrl}/page/site/${parentPathFromSites}
+Cartella del contenuto:   ${contentFolderUrl}
 URL del contenuto:      ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 URL di download:     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

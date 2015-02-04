@@ -82,7 +82,7 @@
 <legend> Contentkoppelingen </legend>
 <table class="links">
    <tr>
-   <td>Contentmap:</td><td> <a href="${shareContextUrl}/page/site/${parentPathFromSites}">${shareContextUrl}/page/site/${parentPathFromSites}</a></td>
+   <td>Contentmap:</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
    <td>Content-URL:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>

@@ -21,7 +21,7 @@
 
 内容链接
 
-内容文件夹：   ${contextUrl}/navigate/browse${document.parent.webdavUrl}
-内容 URL：      ${contextUrl}${document.url}
-下载 URL：     ${contextUrl}${document.downloadUrl}
+内容文件夹：   ${contentFolderUrl}
+内容 URL：     ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
+下载 URL：     ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true
 WebDAV URL：       ${contextUrl}${document.webdavUrl}

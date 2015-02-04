@@ -63,13 +63,13 @@
 <h2> Contentkoppelingen </h2>
 <table class="links">
    <tr>
-   <td>Contentmap:</td><td> <a href="${contextUrl}/navigate/browse${document.parent.webdavUrl}">${contextUrl}/navigate/browse${document.parent.webdavUrl}</a></td>
+   <td>Contentmap:</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
-   <td>Content-URL:</td><td> <a href="${contextUrl}${document.url}">${contextUrl}${document.url}</a></td>
+   <td>Content-URL:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>Download-URL:</td><td> <a href="${contextUrl}${document.downloadUrl}">${contextUrl}${document.downloadUrl}</a></td>
+   <td>Download-URL:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
    <tr>
    <td>WebDAV-URL:</td><td> <a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>

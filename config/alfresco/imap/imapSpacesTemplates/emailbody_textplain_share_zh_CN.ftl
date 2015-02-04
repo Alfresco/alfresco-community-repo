@@ -21,6 +21,6 @@
 
 内容链接
 
-内容文件夹：   ${shareContextUrl}/page/site/${parentPathFromSites}
+内容文件夹：   ${contentFolderUrl}
 内容 URL：      ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 下载 URL：     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

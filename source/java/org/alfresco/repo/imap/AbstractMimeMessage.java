@@ -82,7 +82,7 @@ public abstract class AbstractMimeMessage extends MimeMessage
         this.serviceRegistry = serviceRegistry;
         this.imapService = serviceRegistry.getImapService();
         this.messageFileInfo = fileInfo;
-        this.isMessageInSitesLibrary = imapService.isNodeInSitesLibrary(messageFileInfo.getNodeRef());
+        this.isMessageInSitesLibrary = imapService.getNodeSiteContainer(messageFileInfo.getNodeRef()) != null ? true : false;
         RetryingTransactionHelper txHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
         txHelper.setMaxRetries(MAX_RETRIES);
         txHelper.setReadOnly(false);
@@ -216,28 +216,9 @@ public abstract class AbstractMimeMessage extends MimeMessage
         model.put("date", new Date());
         model.put("contextUrl", new String(imapService.getWebApplicationContextUrl()));
         model.put("alfTicket", new String(serviceRegistry.getAuthenticationService().getCurrentTicket()));
-        if (isMessageInSitesLibrary)
-        {
-            String pathFromSites = imapService.getPathFromSites(parent);
-            StringBuilder parsedPath = new StringBuilder();
-            String[] pathParts = pathFromSites.split("/");
-            if (pathParts.length > 2)
-            {
-                parsedPath.append(pathParts[0]).append("/").append(pathParts[1]);
-                parsedPath.append("?filter=path|");
-                for (int i = 2; i < pathParts.length; i++)
-                {
-                    parsedPath.append("/").append(pathParts[i]);
-                }
-
-            }
-            else
-            {
-                parsedPath.append(pathFromSites);
-            }
-            model.put("shareContextUrl", new String(imapService.getShareApplicationContextUrl()));
-            model.put("parentPathFromSites", parsedPath.toString());
-        }
+        String contentFolderUrl = imapService.getContentFolderUrl(ref);
+        model.put("shareContextUrl", new String(imapService.getShareApplicationContextUrl()));
+        model.put("contentFolderUrl", contentFolderUrl);
         return model;
     }
 

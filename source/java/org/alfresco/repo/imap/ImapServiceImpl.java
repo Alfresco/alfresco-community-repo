@@ -1975,44 +1975,129 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
             });
         }
     }
-        
-    /**
-     * Return true if provided nodeRef is in Sites/.../documentlibrary
-     */
-    public boolean isNodeInSitesLibrary(final NodeRef inputNodeRef)
+
+    public NodeRef getNodeSiteContainer(final NodeRef inputNodeRef)
     {
-        return doAsSystem(new RunAsWork<Boolean>()
+        return doAsSystem(new RunAsWork<NodeRef>()
         {
             @Override
-            public Boolean doWork() throws Exception
+            public NodeRef doWork() throws Exception
             {
                 NodeRef nodeRef = inputNodeRef;
-                boolean isInDocLibrary = false;
-                NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-                while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+                while (true)
                 {
-                    String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
-                    if (parentName.equalsIgnoreCase("documentlibrary"))
+                    NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                    if (parent == null)
                     {
-                        isInDocLibrary = true;
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("The node with nodeRef:" + inputNodeRef + " is not in the site.");
+                        }
+                        nodeRef = null;
+                        break;
                     }
                     nodeRef = parent;
-                    if (nodeService.getPrimaryParent(nodeRef) != null)
+                    if (nodeService.hasAspect(parent, SiteModel.ASPECT_SITE_CONTAINER))
                     {
-                        parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("The node with nodeRef:" + inputNodeRef + " is in the site.");
+                        }
+                        // found the container
+                        break;
                     }
                 }
-                if (parent == null)
-                {
-                    return false;
-                }
-                else
-                {
-                    return nodeService.getType(parent).equals(SiteModel.TYPE_SITE) && isInDocLibrary;
-                }
+                return nodeRef;
             }
         });
 
+    }
+
+    public String getContentFolderUrl(NodeRef contentNodeRef)
+    {
+        String url = "";
+        String CONTAINER_URL_TEMPLATE = "%s/page/site/%s";
+        String REPOSITORY_URL_TEMPLATE = "%s/page/%s";
+
+        NodeRef siteContainerNodeRef = getNodeSiteContainer(contentNodeRef);
+
+        if (siteContainerNodeRef != null)
+        {
+            // the node is in site's container
+            // determine which one
+
+            NodeRef siteNodeRef = nodeService.getPrimaryParent(siteContainerNodeRef).getParentRef();
+            String siteName = ((String) nodeService.getProperty(siteNodeRef, ContentModel.PROP_NAME)).toLowerCase();
+            String componentId = (String) nodeService.getProperty(siteContainerNodeRef, SiteModel.PROP_COMPONENT_ID);
+            switch (componentId.toLowerCase())
+            {
+                case "datalists":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/data-lists");
+                    break;
+                case "wiki":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/wiki");
+                    break;
+                case "links":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/links");
+                    break;
+                case "calendar":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/calendar");
+                    break;
+                case "discussions":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/discussions-topiclist");
+                    break;
+                case "blog":
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), siteName + "/blog-postlist");
+                    break;
+                case "documentlibrary":
+                    String pathFromSites = getPathFromSites(nodeService.getPrimaryParent(contentNodeRef).getParentRef());
+                    StringBuilder parsedPath = new StringBuilder();
+                    String[] pathParts = pathFromSites.split("/");
+                    if (pathParts.length > 2)
+                    {
+                        parsedPath.append(pathParts[0] + "/" + pathParts[1]);
+                        parsedPath.append("?filter=path|");
+                        for (int i = 2; i < pathParts.length; i++)
+                        {
+                            parsedPath.append("/").append(pathParts[i]);
+                        }
+                    }
+                    else
+                    {
+                        parsedPath.append(pathFromSites);
+                    }
+                    url = String.format(CONTAINER_URL_TEMPLATE, getShareApplicationContextUrl(), parsedPath.toString());
+                    break;
+                default:
+                    break;
+            }
+        }
+        else
+        {
+            // the node is in repository
+            String pathFromRepo = getPathFromRepo(nodeService.getPrimaryParent(contentNodeRef));
+            StringBuilder parsedPath = new StringBuilder();
+            String[] pathParts = pathFromRepo.split("/");
+            if (pathParts.length > 1)
+            {
+                parsedPath.append(pathParts[0]);
+                parsedPath.append("?filter=path|");
+                for (int i = 1; i < pathParts.length; i++)
+                {
+                    parsedPath.append("/").append(pathParts[i]);
+                }
+            }
+            else
+            {
+                parsedPath.append(pathFromRepo);
+            }
+            url = String.format(REPOSITORY_URL_TEMPLATE, getShareApplicationContextUrl(), parsedPath.toString());
+        }
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Resolved content folder URL:" + url + " for node " + contentNodeRef);
+        }
+        return url;
     }
 
     public void setNamespaceService(NamespaceService namespaceService)
@@ -2161,4 +2246,27 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
         });
     }
 
+    @Override
+    public String getPathFromRepo(final ChildAssociationRef assocRef)
+    {
+        return doAsSystem(new RunAsWork<String>()
+        {
+            @Override
+            public String doWork() throws Exception
+            {
+                NodeRef ref = assocRef.getParentRef();
+                String name = ((String) nodeService.getProperty(ref, ContentModel.PROP_NAME)).toLowerCase();
+                ChildAssociationRef parent = nodeService.getPrimaryParent(ref);
+                QName qname = parent.getQName();
+                if (qname.equals(QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "company_home")))
+                {
+                    return "repository";
+                }
+                else
+                {
+                    return getPathFromRepo(parent) + "/" + name;
+                }
+            }
+        });
+    }
 }

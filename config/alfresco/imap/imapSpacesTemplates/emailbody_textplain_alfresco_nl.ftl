@@ -21,7 +21,7 @@ Grootte:      ${document.size / 1024} Kb
 
 CONTENTKOPPELINGEN
 
-Contentmap:   ${contextUrl}/navigate/browse${document.parent.webdavUrl}
-Content-URL:      ${contextUrl}${document.url}
-Download-URL:     ${contextUrl}${document.downloadUrl}
+Contentmap:   ${contentFolderUrl}
+Content-URL:      ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
+Download-URL:     ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true
 WebDAV-URL:       ${contextUrl}${document.webdavUrl}

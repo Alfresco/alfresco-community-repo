@@ -21,7 +21,7 @@
 
 ССЫЛКИ НА КОНТЕНТ
 
-Папка с контентом:   ${contextUrl}/navigate/browse${document.parent.webdavUrl}
-URL-адрес контента:      ${contextUrl}${document.url}
-Загрузить с URL-адреса:     ${contextUrl}${document.downloadUrl}
+Папка с контентом:   ${contentFolderUrl}
+URL-адрес контента:      ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
+Загрузить с URL-адреса:      ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true
 URL-адрес WebDAV:       ${contextUrl}${document.webdavUrl}

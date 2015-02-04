@@ -21,6 +21,6 @@ Tamaño:      ${document.size / 1024} Kb
 
 Enlaces de contenido
 
-Carpeta de contenido:   ${shareContextUrl}/page/site/${parentPathFromSites}
+Carpeta de contenido:   ${contentFolderUrl}
 Dirección URL de contenido:    ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
 Dirección URL de descarga:     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

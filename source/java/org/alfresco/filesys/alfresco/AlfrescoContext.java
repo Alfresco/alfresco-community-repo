@@ -260,6 +260,11 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     {
         return sysAdminParams.getAlfrescoProtocol() + "://" + sysAdminParams.getAlfrescoHost() + ":" + sysAdminParams.getAlfrescoPort() + "/" + sysAdminParams.getAlfrescoContext() + "/";
     }
+    
+    public final String getShareUrlPrefix()
+    {
+    	return sysAdminParams.getShareProtocol() + "://" + sysAdminParams.getShareHost() + ":" + sysAdminParams.getSharePort() + "/" + sysAdminParams.getShareContext() + "/";
+    }
 
     /**
      * Return the URL pseudo file name

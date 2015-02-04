@@ -2,8 +2,7 @@
 
 function runAction()
 {
-  var urlStr = webURL + "navigate/showDocDetails/workspace/SpacesStore/" + deskParams.getTarget(0).getNode().getId() +
-    "?ticket=" + deskParams.getTicket();
+  var urlStr = webURL + "page/document-details?nodeRef=" + deskParams.getTarget(0).getNode().getStoreRef() + "/" + deskParams.getTarget(0).getNode().getId();
 
   return urlStr;
 }

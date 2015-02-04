@@ -439,7 +439,7 @@ public abstract class DesktopAction {
         SysAdminParams sysAdminParams = m_filesysContext.getSysAdminParams();
         if (m_webappURL == null || m_webappURL.length() == 0)
         {
-            m_webappURL = m_filesysContext.getURLPrefix();
+            m_webappURL = m_filesysContext.getShareUrlPrefix();
         }
         else
         {

@@ -1137,4 +1137,15 @@
             </props>
         </property>
     </bean>
+
+    <bean id="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2" />
+        <property name="description" value="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9002" />
+        <property name="targetSchema" value="9003" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-del-unused-after-5-16-2.sql</value>
+        </property>
+    </bean>
 </beans>

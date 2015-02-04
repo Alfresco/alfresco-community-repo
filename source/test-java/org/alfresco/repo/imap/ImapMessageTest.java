@@ -304,7 +304,10 @@ public class ImapMessageTest extends TestCase
         final int count = getMessageSize(folder, uid);
 
         // Get first part
-        BODY body = getMessageBodyPart(folder, uid, 0, count - 100);
+        // Split the message into 2 part using a non multiple of 4 - 103 is a prime number
+        // as the BASE64Decoder may not throw the IOException
+        // see MNT-12995
+        BODY body = getMessageBodyPart(folder, uid, 0, count - 103);
 
         // Rename message. The size of letter describing the node will change
         // These changes should be committed because it should be visible from client
@@ -315,7 +318,7 @@ public class ImapMessageTest extends TestCase
         txn.commit();
 
         // Read second message part
-        BODY bodyRest = getMessageBodyPart(folder, uid, count - 100, 100);
+        BODY bodyRest = getMessageBodyPart(folder, uid, count - 103, 103);
 
         // Creating and parsing message from 2 parts
         MimeMessage message = new MimeMessage(Session.getDefaultInstance(new Properties()), new SequenceInputStream(new BufferedInputStream(body.getByteArrayInputStream()),

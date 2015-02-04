@@ -48,7 +48,6 @@ Summary of Available Internal Ant Targets
  - fetchSolr                    : Gets the the Solr artifact
  - fetchWarFile                 : Gets the "original" Community war file
  - fetchEntpriseWarFile         : Gets the "original" Enterprise war file
- - install                      : Executes the "mvn install" command
  - package                      : Executes the "mvn package" command
  - prepareEnv                   : Prepares the development environment (must be run just once)
  - unitTest                     : Runs the unit tests

@@ -8,15 +8,6 @@
 
    <property environment="env" />
 
-   <target name="install">
-      <exec executable="${mvn.exec}" failonerror="true">
-         <arg value="clean" />
-         <arg value="install" />
-         <arg value="-DskipTests" />
-         <arg value="-PfullBuild" />
-      </exec>
-   </target>
-
    <target name="fetchWarFile">
       <xmlproperty file="../pom.xml" keepRoot="false"/>
       <exec executable="${mvn.exec}" failonerror="true">
@@ -49,8 +40,12 @@
       <delete dir="${app.folder}" failonerror="true" />
    </target>
 
-   <target name="alfresco:amp" depends="install, unitTest">
+   <target name="alfresco:amp" depends="unitTest">
       <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="clean" />
+         <arg value="install" />
+         <arg value="-DskipTests" />
+         <arg value="-PfullBuild" />
          <arg value="alfresco:amp" />
       </exec>
    </target>

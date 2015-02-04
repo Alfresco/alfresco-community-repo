@@ -240,10 +240,16 @@ public class TransferServiceImpl extends ServiceBaseImpl
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {
-            if (freezeService.hasFrozenChildren(assoc.getChildRef()))
+            if(freezeService.isFrozen(assoc.getChildRef()))
             {
-                throw new AlfrescoRuntimeException("Could not complete a transfer that contain frozen children.");
+                throw new AlfrescoRuntimeException("Could not complete a transfer that contains held folders");
             }
+            
+            if(freezeService.hasFrozenChildren(assoc.getChildRef()))
+            {
+                throw new AlfrescoRuntimeException("Cound not complete a transfer that contains folders with held children");
+            }
+            
             markComplete(assoc.getChildRef(), accessionIndicator, transferLocation);
         }
 

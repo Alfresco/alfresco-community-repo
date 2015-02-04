@@ -258,7 +258,7 @@ public class ImporterComponent implements ImporterService
     public void importView(Reader viewReader, Location location, ImporterBinding binding, ImporterProgress progress)
     {
         NodeRef nodeRef = getNodeRef(location, binding);
-        parserImport(nodeRef, location.getChildAssocType(), viewReader, new DefaultStreamHandler(), binding, progress);       
+        parserImport(nodeRef, location, viewReader, new DefaultStreamHandler(), binding, progress);
     }
 
     /* (non-Javadoc)
@@ -269,7 +269,7 @@ public class ImporterComponent implements ImporterService
         importHandler.startImport();
         Reader dataFileReader = importHandler.getDataStream(); 
         NodeRef nodeRef = getNodeRef(location, binding);
-        parserImport(nodeRef, location.getChildAssocType(), dataFileReader, importHandler, binding, progress);
+        parserImport(nodeRef, location, dataFileReader, importHandler, binding, progress);
         importHandler.endImport();
     }
     
@@ -404,19 +404,19 @@ public class ImporterComponent implements ImporterService
      * Perform Import via Parser
      * 
      * @param nodeRef node reference to import under
-     * @param childAssocType the child association type to import under
+     * @param location the location to import under
      * @param inputStream the input stream to import from
      * @param streamHandler the content property import stream handler
      * @param binding import configuration
      * @param progress import progress
      */
-    public void parserImport(NodeRef nodeRef, QName childAssocType, Reader viewReader, ImportPackageHandler streamHandler, ImporterBinding binding, ImporterProgress progress)
+    public void parserImport(NodeRef nodeRef, Location location, Reader viewReader, ImportPackageHandler streamHandler, ImporterBinding binding, ImporterProgress progress)
     {
         ParameterCheck.mandatory("Node Reference", nodeRef);
         ParameterCheck.mandatory("View Reader", viewReader);
         ParameterCheck.mandatory("Stream Handler", streamHandler);
         
-        Importer nodeImporter = new NodeImporter(nodeRef, childAssocType, binding, streamHandler, progress);
+        Importer nodeImporter = new NodeImporter(nodeRef, location, binding, streamHandler, progress);
         try
         {
             nodeImporter.start();
@@ -434,19 +434,19 @@ public class ImporterComponent implements ImporterService
      * Perform import via Content Handler
      * 
      * @param nodeRef node reference to import under
-     * @param childAssocType the child association type to import under
+     * @param location the location to import under
      * @param handler the import content handler
      * @param binding import configuration
      * @param progress import progress
      * @return  content handler to interact with
      */
-    public ContentHandler handlerImport(NodeRef nodeRef, QName childAssocType, ImportContentHandler handler, ImporterBinding binding, ImporterProgress progress)
+    public ContentHandler handlerImport(NodeRef nodeRef, Location location, ImportContentHandler handler, ImporterBinding binding, ImporterProgress progress)
     {
         ParameterCheck.mandatory("Node Reference", nodeRef);
 
         DefaultContentHandler defaultHandler = new DefaultContentHandler(handler);
         ImportPackageHandler streamHandler = new ContentHandlerStreamHandler(defaultHandler);
-        Importer nodeImporter = new NodeImporter(nodeRef, childAssocType, binding, streamHandler, progress);
+        Importer nodeImporter = new NodeImporter(nodeRef, location, binding, streamHandler, progress);
         defaultHandler.setImporter(nodeImporter);
         return defaultHandler;        
     }
@@ -474,6 +474,7 @@ public class ImporterComponent implements ImporterService
     {
         private NodeRef rootRef;
         private QName rootAssocType;
+        private Location location;
         private ImporterBinding binding;
         private ImporterProgress progress;
         private ImportPackageHandler streamHandler;
@@ -488,14 +489,15 @@ public class ImporterComponent implements ImporterService
          * Construct
          * 
          * @param rootRef
-         * @param rootAssocType
+         * @param location
          * @param binding
          * @param progress
          */
-        private NodeImporter(NodeRef rootRef, QName rootAssocType, ImporterBinding binding, ImportPackageHandler streamHandler, ImporterProgress progress)
+        private NodeImporter(NodeRef rootRef, Location location, ImporterBinding binding, ImportPackageHandler streamHandler, ImporterProgress progress)
         {
             this.rootRef = rootRef;
-            this.rootAssocType = rootAssocType;
+            this.rootAssocType = location.getChildAssocType();
+            this.location = location;
             this.binding = binding;
             this.progress = progress;
             this.streamHandler = streamHandler;
@@ -570,7 +572,13 @@ public class ImporterComponent implements ImporterService
         {
             return rootAssocType;
         }
-        
+
+        @Override
+        public Location getLocation()
+        {
+            return location;
+        }
+
         /* (non-Javadoc)
          * @see org.alfresco.repo.importer.Importer#start()
          */
@@ -1597,9 +1605,26 @@ public class ImporterComponent implements ImporterService
                 // replace existing node, if node to import has a UUID and an existing node of the same
                 // uuid already exists
                 String uuid = node.getUUID();
-                if (uuid != null && uuid.length() > 0)
+                NodeRef existingNodeRef = null;
+                if (uuid == null)
                 {
-                    NodeRef existingNodeRef = new NodeRef(rootRef.getStoreRef(), uuid);
+                    NodeRef parentNodeRef = node.getParentContext().getParentRef();
+
+                    // Resolve to path within node, if one specified
+                    String path = location.getPath() + "/" + QName.createQName(node.getTypeDefinition().getName().getNamespaceURI(), node.getChildName()).toPrefixString();
+                    // Search the node by name
+                    List<NodeRef> nodeRefs = searchService.selectNodes(parentNodeRef, path, null, namespaceService, false);
+                    if (!nodeRefs.isEmpty())
+                    {
+                        existingNodeRef = nodeRefs.get(0);
+                    }
+                }
+                if (uuid != null && uuid.length() > 0 || existingNodeRef != null)
+                {
+                    if (existingNodeRef == null)
+                    {
+                        existingNodeRef = new NodeRef(rootRef.getStoreRef(), uuid);
+                    }
                     if (nodeService.exists(existingNodeRef))
                     {
                         // do the update

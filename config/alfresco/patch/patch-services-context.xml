@@ -1119,4 +1119,22 @@
       </property>
    </bean>
 
+    <bean id="patch.imapSpacesTemplates3" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
+        <property name="id"><value>patch.imapSpacesTemplates3</value></property>
+        <property name="description"><value>patch.imapSpacesLocaleTemplates2.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9001</value></property>
+        <property name="targetSchema"><value>9002</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.imapConfig.childname}/${spaces.imap_templates.childname}</prop>
+                <prop key="location">alfresco/bootstrap/imapSpacesTemplates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+                <prop key="uuidBinding">UPDATE_EXISTING</prop>
+            </props>
+        </property>
+    </bean>
 </beans>

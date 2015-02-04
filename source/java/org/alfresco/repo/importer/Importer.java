@@ -21,6 +21,7 @@ package org.alfresco.repo.importer;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -40,6 +41,11 @@ public interface Importer
      * @return  the root child association type to import under
      */
     public QName getRootAssocType();
+
+    /**
+     * @return  the location to import under
+     */
+    public Location getLocation();
 
     /**
      * Signal start of import

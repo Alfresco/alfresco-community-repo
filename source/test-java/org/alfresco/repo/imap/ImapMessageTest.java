@@ -311,9 +311,7 @@ public class ImapMessageTest extends TestCase
         NodeRef contentNode = findNode(companyHomePathInStore + TEST_FILE);
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-        // modified the new name as the BASE64Decoder may not throw the IOException
-        // see MNT-12995
-        fileFolderService.rename(contentNode, "testtesttesttesttesttesttesttesttesttest1");
+        fileFolderService.rename(contentNode, "testtesttesttesttesttesttesttesttesttest");
         txn.commit();
 
         // Read second message part

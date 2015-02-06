@@ -24,6 +24,7 @@
             <ref bean="rmDeleteRecordFolderCapability"/>
             <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmDeleteHoldCapability"/>
+            <ref bean="rmUnlinkFromRecordFolderCapability"/>
          </list>
       </property>
    </bean>

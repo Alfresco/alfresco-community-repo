@@ -212,4 +212,17 @@
          </map>
       </property>
    </bean>
+
+   <bean id="rmUnlinkFromRecordFolderCapability"
+         parent="declarativeCapability">
+      <property name="name" value="UnlinkFromRecordFolder" />
+      <property name="permission" value="DeleteLinks" />
+      <property name="private" value="true" />
+      <property name="kind" value="RECORD_FOLDER" />
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+   </bean>
 </beans>

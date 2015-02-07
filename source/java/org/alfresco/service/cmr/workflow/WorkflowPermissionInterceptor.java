@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -105,8 +105,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
 
         }
 
-        // Not including getAssignedTasks and getPooledTasks, as the methods themselves already take into account the authenticated user/group
-        if (methodName.equals("getTasksForWorkflowPath") || methodName.equals("getStartTasks") || methodName.equals("queryTasks"))
+        if (methodName.equals("getAssignedTasks") || methodName.equals("getPooledTasks") || methodName.equals("getTasksForWorkflowPath") || methodName.equals("getStartTasks") || methodName.equals("queryTasks"))
         {
             Object result = invocation.proceed();
             List<WorkflowTask> rawList = (List<WorkflowTask>) result;

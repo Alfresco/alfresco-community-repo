@@ -42,6 +42,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
@@ -210,6 +211,31 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
         JSONArray getArr = new JSONArray(getAllResp.getContentAsString());
         assertNotNull(getArr);
         assertEquals(0, getArr.length());
+    }
+    
+    public void testUpdateThumbnail() throws Exception
+    {
+        // Do a image transformation
+        String url = "/api/node/" + jpgNode.getStoreRef().getProtocol() + "/" + jpgNode.getStoreRef().getIdentifier() + "/" + jpgNode.getId() + "/content/thumbnails";
+        JSONObject tn = new JSONObject();
+        tn.put("thumbnailName", "doclib");
+        Response response = sendRequest(new PostRequest(url, tn.toString(), "application/json"), 200);
+        System.out.println(response.getContentAsString());
+        
+        // Check getAll whilst we are here 
+        Response getAllResp = sendRequest(new GetRequest(getThumbnailsURL(jpgNode)), 200);
+        JSONArray getArr = new JSONArray(getAllResp.getContentAsString());
+        assertNotNull(getArr);
+        assertEquals(1, getArr.length());
+        assertEquals("doclib", getArr.getJSONObject(0).get("thumbnailName"));
+        //Now we know that thumbnail was created
+        
+        
+        sendRequest(new GetRequest(getThumbnailsURL(jpgNode) + "/incorrectname"), 404);
+        //Request for update of thumbnail, that is absent
+        sendRequest(new PutRequest(getThumbnailsURL(jpgNode) + "/incorrectname", "", "application/json"), 404);
+        //Request for update of correct thumbnail
+        sendRequest(new PutRequest(getThumbnailsURL(jpgNode) + "/doclib", "", "application/json"), 200);
     }
     
     public void testThumbnailDefinitions() throws Exception

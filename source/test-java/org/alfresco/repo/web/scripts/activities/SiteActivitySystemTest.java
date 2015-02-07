@@ -516,6 +516,50 @@ public class SiteActivitySystemTest extends TestCase
         }
     }
     
+    public void testMNT13234() throws Exception
+    {
+        // as admin
+        String ticket = callLoginWebScript(WEBSCRIPT_ENDPOINT, ADMIN_USER, ADMIN_PW);
+        assertNotNull(ticket);
+        
+        // create users (should contain uppercase letter)
+        String testid = ""+System.currentTimeMillis();
+        String user1 = "User1_" + testid;
+        String user2 = "User2_" + testid;
+        createUser(ticket, user1, USER_PW);
+        createUser(ticket, user2, USER_PW);
+        
+        addFollower(user1, user2, ticket);
+        
+        // create site and add memberships
+        String site1 = "test_site1_" + testid;
+        createSite(site1, true, ticket);
+        addMembership(site1, user1, ticket, SiteModel.SITE_CONSUMER);
+        addMembership(site1, user2, ticket, SiteModel.SITE_CONSUMER);
+        
+        Thread.sleep(DELAY_MSECS);
+        addFeedControl(user1, site1, null, ticket);
+        getUserFeed(user1, ticket, true, 2);
+    }
+    
+    private void addFollower(String follower, String user, String ticket) throws Exception
+    {
+        // Build the JSON follow request data
+        JSONArray jsonArray = new JSONArray();
+        jsonArray.put(user);
+        
+        String url = WEBSCRIPT_ENDPOINT + "/api/subscriptions/" + follower + "/follow";
+        String response = callPostWebScript(url, ticket, jsonArray.toString());
+        
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("follow: " + follower + " - " + user);
+            logger.debug("--------------");
+            logger.debug(url);
+            logger.debug(response);
+        }
+    }
+    
     public void test11GetUserFeedsAfter() throws Exception
     {
         test02CreateSites();

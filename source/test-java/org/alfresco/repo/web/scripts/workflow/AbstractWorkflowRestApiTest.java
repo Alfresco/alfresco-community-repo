@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -297,6 +297,38 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
        json = getDataFromRequest(url);
        JSONArray resultArray = json.getJSONArray("data");
        assertEquals(0, resultArray.length());
+    }
+    
+    public void testWorkflowPermissions() throws Exception
+    {
+        // Start workflow as USER1 and assign task to USER1.
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER1));
+        Calendar dueDateCal = Calendar.getInstance();
+        Date dueDate = dueDateCal.getTime();
+
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+        String workflowId = adhocPath.getInstance().getId();
+        workflows.add(workflowId);
+
+        WorkflowTask startTask = workflowService.getStartTask(workflowId);
+        workflowService.endTask(startTask.getId(), null);
+
+        // Check tasks of USER1 from behalf of USER2
+        personManager.setUser(USER2);
+        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_USER_TASKS, USER1)), 200);
+        assertEquals(Status.STATUS_OK, response.getStatus());
+        String jsonStr = response.getContentAsString();
+        JSONObject json = new JSONObject(jsonStr);
+        JSONArray results = json.getJSONArray("data");
+        assertNotNull(results);
+        assertTrue("User2 should not see any tasks if he is not initiator or assignee", results.length() == 0);
     }
     
     public void testTaskInstancesForWorkflowGet() throws Exception

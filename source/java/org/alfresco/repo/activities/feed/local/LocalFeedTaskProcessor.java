@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -600,7 +600,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
         return documentPaths;
     }
     
-    protected Set<String> getFollowers(final String userId, String tenantDomain) throws Exception
+    protected Set<String> getFollowers(final RepoCtx ctx, final String userId, String tenantDomain) throws Exception
     {
         if (useRemoteCallbacks)
         {
@@ -620,7 +620,14 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
                     
                     if (fr.getPage() != null)
                     {
-                        result.addAll(fr.getPage());
+                        for (String followerUserName : fr.getPage())
+                        {
+                            if (!ctx.isUserNamesAreCaseSensitive())
+                            {
+                                followerUserName = followerUserName.toLowerCase();
+                            }
+                            result.add(followerUserName);
+                        }
                     }
                     
                     return null;

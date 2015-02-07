@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -371,7 +371,7 @@ public abstract class FeedTaskProcessor
         {
             try
             {
-                followerUsers = getFollowers(postUserId, tenantDomain);
+                followerUsers = getFollowers(ctx, postUserId, tenantDomain);
             }
             catch(Exception e)
             {
@@ -525,7 +525,7 @@ public abstract class FeedTaskProcessor
         return members;
     }
     
-    protected abstract Set<String> getFollowers(String userId, String tenantDomain) throws Exception;
+    protected abstract Set<String> getFollowers(RepoCtx ctx, String userId, String tenantDomain) throws Exception;
     protected abstract boolean canReadSite(final RepoCtx ctx, String siteIdIn, String connectedUser, final String tenantDomain) throws Exception;
     protected abstract boolean canRead(RepoCtx ctx, final String connectedUser, Map<String, Object> model) throws Exception;
     

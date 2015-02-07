@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.security.authentication.external;
 
+import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -219,6 +220,21 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
         {
             return null;
         }
+        
+        // MNT-11041 Share SSOAuthenticationFilter and non-ascii username strings
+        boolean isEncode = Boolean.valueOf(request.getHeader("Remote-User-Encode"));
+        if (userId != null && isEncode)
+        {
+            try
+            {
+                userId = new String(org.apache.commons.codec.binary.Base64.decodeBase64(userId), "UTF-8");
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                //TODO
+            }
+        }
+       
         if (this.userIdPattern == null)
         {
             userId = userId.trim();

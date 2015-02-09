@@ -77,25 +77,19 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
      */
     public Serializable extractData(Serializable value)
     {
-        String extractedData = null;
-
         NodeRef nodeRef = (NodeRef) value;
-        if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+
+        // Get path from the RM root
+        List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
+
+        StringBuilder sb = new StringBuilder(128);
+        for (NodeRef pathNodeRef : nodeRefPath)
         {
-            // Get path from the RM root
-            List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
-
-            StringBuilder sb = new StringBuilder(128);
-            for (NodeRef pathNodeRef : nodeRefPath)
-            {
-                String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
-                sb.append("/").append(name);
-            }
-
-            // Done
-            extractedData = sb.toString();
+            String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
+            sb.append("/").append(name);
         }
 
-        return extractedData;
+        // Done
+        return sb.toString();
     }
 }

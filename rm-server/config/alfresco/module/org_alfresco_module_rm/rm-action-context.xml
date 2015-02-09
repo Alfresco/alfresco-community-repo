@@ -731,6 +731,7 @@
 
    <bean id="reject" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RejectAction" parent="rmAction">
       <property name="publicAction" value="true"/>
+      <property name="auditedImmediately" value="true" />
    </bean>
 
    <!--  File To -->
@@ -844,9 +845,9 @@
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
-   
+
    <!--  Unlink Record -->
-   
+
    <bean id="unlinkFrom_proxy" parent="rmProxyAction">
       <property name="target" ref="unlinkFrom"/>
         <property name="interceptorNames">

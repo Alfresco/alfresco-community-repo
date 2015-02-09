@@ -1240,4 +1240,25 @@ public class FilePlanPermissionServiceImplTest extends BaseRMTestCase
         assertTrue(accessPermissions.containsKey(adminRole));
         assertEquals(RMPermissionModel.FILING, accessPermissions.get(adminRole));
     }
+
+    public void testMoveSubCategoryIntoFilePlan()
+    {
+        final NodeRef rootCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+        final NodeRef subCategory = filePlanService.createRecordCategory(rootCategory, GUID.generate());
+
+        assertFalse(permissionService.getInheritParentPermissions(rootCategory));
+        assertTrue(permissionService.getInheritParentPermissions(subCategory));
+
+        final NodeRef movedSubCategory = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                return fileFolderService.move(subCategory, filePlan, null).getNodeRef();
+            }
+        });
+
+        assertFalse(permissionService.getInheritParentPermissions(rootCategory));
+        assertFalse(permissionService.getInheritParentPermissions(movedSubCategory));
+    }
 }

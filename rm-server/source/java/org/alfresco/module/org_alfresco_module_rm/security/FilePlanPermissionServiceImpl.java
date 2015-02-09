@@ -63,7 +63,8 @@ import org.apache.commons.logging.LogFactory;
 @BehaviourBean
 public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                            implements FilePlanPermissionService,
-                                                      RMPermissionModel
+                                                      RMPermissionModel,
+                                                      NodeServicePolicies.OnMoveNodePolicy
 {
     /** Permission service */
     private PermissionService permissionService;
@@ -99,6 +100,10 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 NodeServicePolicies.OnMoveNodePolicy.QNAME,
                 ASPECT_RECORD,
                 new JavaBehaviour(this, "onMoveRecord", TRANSACTION_COMMIT));
+        getPolicyComponent().bindClassBehaviour(
+                NodeServicePolicies.OnMoveNodePolicy.QNAME,
+                TYPE_RECORD_CATEGORY,
+                new JavaBehaviour(this, "onMoveNode", TRANSACTION_COMMIT));
     }
 
     /**
@@ -541,5 +546,17 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     private boolean canPerformPermissionAction(NodeRef nodeRef)
     {
         return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef);
+    }
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
+    {
+        if (isFilePlan(newChildAssocRef.getParentRef()))
+        {
+            permissionService.setInheritParentPermissions(oldChildAssocRef.getChildRef(), false);
+        }
     }
 }

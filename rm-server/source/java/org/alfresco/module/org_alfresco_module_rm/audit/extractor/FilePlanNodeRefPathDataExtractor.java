@@ -26,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 
 /**
  * An extractor that extracts the NodeRef path from the RM root down to
@@ -41,6 +42,7 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
 {
     private NodeService nodeService;
     private FilePlanService filePlanService;
+    private RuleService ruleService;
 
     /**
      * Used to check that the node in the context is a fileplan component
@@ -50,10 +52,21 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
         this.nodeService = nodeService;
     }
 
+    /**
+     * @param filePlanService   file plan service
+     */
     public void setFilePlanService(FilePlanService filePlanService)
     {
 		this.filePlanService = filePlanService;
 	}
+
+    /**
+     * @param ruleService the ruleService to set
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
 
     /**
      * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
@@ -70,12 +83,24 @@ public final class FilePlanNodeRefPathDataExtractor extends AbstractDataExtracto
 
     public Serializable extractData(Serializable value)
     {
-        NodeRef nodeRef = (NodeRef) value;
+        Serializable extractedData = null;
 
-        // Get path from the RM root
-        List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
+        ruleService.disableRules();
+        try
+        {
+            NodeRef nodeRef = (NodeRef) value;
 
-        // Done
-        return (Serializable) nodeRefPath;
+            // Get path from the RM root
+            List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
+
+            // Done
+            extractedData = (Serializable) nodeRefPath;
+        }
+        finally
+        {
+            ruleService.enableRules();
+        }
+
+        return extractedData;
     }
 }

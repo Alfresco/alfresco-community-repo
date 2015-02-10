@@ -27,6 +27,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.audit.extractor.AbstractDataExtractor;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.rule.RuleService;
 
 /**
  * An extractor that extracts the <b>cm:name</b> path from the RM root down to
@@ -42,6 +43,7 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
 {
     private NodeService nodeService;
     private FilePlanService filePlanService;
+    private RuleService ruleService;
 
     /**
      * Used to check that the node in the context is a fileplan component
@@ -58,6 +60,14 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
     {
 		this.filePlanService = filePlanService;
 	}
+
+    /**
+     * @param ruleService the ruleService to set
+     */
+    public void setRuleService(RuleService ruleService)
+    {
+        this.ruleService = ruleService;
+    }
 
     /**
      * @return              Returns <tt>true</tt> if the data is a NodeRef and it represents
@@ -77,19 +87,31 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
      */
     public Serializable extractData(Serializable value)
     {
-        NodeRef nodeRef = (NodeRef) value;
+        String extractedData = null;
 
-        // Get path from the RM root
-        List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
-
-        StringBuilder sb = new StringBuilder(128);
-        for (NodeRef pathNodeRef : nodeRefPath)
+        ruleService.disableRules();
+        try
         {
-            String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
-            sb.append("/").append(name);
+            NodeRef nodeRef = (NodeRef) value;
+
+            // Get path from the RM root
+            List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
+
+            StringBuilder sb = new StringBuilder(128);
+            for (NodeRef pathNodeRef : nodeRefPath)
+            {
+                String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
+                sb.append("/").append(name);
+            }
+
+            // Done
+            extractedData = sb.toString();
+        }
+        finally
+        {
+            ruleService.enableRules();
         }
 
-        // Done
-        return sb.toString();
+        return extractedData;
     }
 }

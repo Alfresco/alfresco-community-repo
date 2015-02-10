@@ -236,7 +236,8 @@ public class RecordAspect extends    AbstractDisposableItem
             {
                 public Object doWork()
                 {
-                    if (nodeService.exists(record))
+                    if (nodeService.exists(record) && 
+                        recordService.isFiled(record))
                     {
                         // clean record
                         cleanDisposableItem(nodeService, record);

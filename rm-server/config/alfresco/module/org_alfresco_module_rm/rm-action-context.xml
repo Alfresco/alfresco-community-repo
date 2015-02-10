@@ -731,7 +731,6 @@
 
    <bean id="reject" class="org.alfresco.module.org_alfresco_module_rm.action.impl.RejectAction" parent="rmAction">
       <property name="publicAction" value="true"/>
-      <property name="auditedImmediately" value="true" />
    </bean>
 
    <!--  File To -->

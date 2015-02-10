@@ -76,13 +76,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     public boolean supports(ConfigAttribute configAttribute)
     {
-        boolean supports = false;
         String attribute = configAttribute.getAttribute();
-        if (StringUtils.isNotBlank(attribute) && attribute.startsWith(AFTER_RM))
-        {
-            supports = true;
-        }
-        return supports;
+        return (StringUtils.isNotBlank(attribute) && attribute.startsWith(AFTER_RM));
     }
 
     @SuppressWarnings("rawtypes")
@@ -292,10 +287,9 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     }
 
-    @SuppressWarnings({"rawtypes" })
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
-        List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>();
+        List<ConfigAttributeDefintion> definitions = new ArrayList<>();
         Iterator iter = config.getConfigAttributes();
 
         while (iter.hasNext())
@@ -332,7 +326,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             NodeRef testNodeRef = null;
 
-            if (cad.typeString.equals(cad.parent))
+            if (cad.parent)
             {
                 testNodeRef = returnedObject.getParentRef();
             }
@@ -348,7 +342,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 continue;
             }
 
-            if (cad.typeString.equals(cad.parent) && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
+            if (cad.parent && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
             {
                 throw new AccessDeniedException("Access Denied");
             }

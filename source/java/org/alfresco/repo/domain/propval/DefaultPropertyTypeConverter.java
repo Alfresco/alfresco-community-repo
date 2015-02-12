@@ -211,7 +211,7 @@ public class DefaultPropertyTypeConverter implements PropertyTypeConverter
      * Performs the conversion using {@link DefaultTypeConverter} but also adds
      * special handling for {@link Enum enum types}.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> T convert(Class<T> targetClass, Serializable value)
     {
         if (targetClass.isEnum() && value != null && value instanceof String)

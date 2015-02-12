@@ -202,7 +202,6 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return value;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected Long findStringValueByValue(String value)
     {
@@ -250,7 +249,6 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
         return entity;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected PropertyDoubleValueEntity findDoubleValueByValue(Double value)
     {
@@ -312,7 +310,6 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     // 'alf_prop_value' accessors
     //================================
 
-    @SuppressWarnings("unchecked")
     @Override
     protected PropertyValueEntity findPropertyValueById(Long id)
     {
@@ -470,7 +467,6 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     // 'alf_prop_root' accessors
     //================================
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<PropertyIdSearchRow> findPropertyById(Long id)
     {

@@ -308,13 +308,31 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     public void onCreateTransfer(final ChildAssociationRef childAssocRef)
     {
         mandatory("childAssocRef", childAssocRef);
-        NodeRef childRef = childAssocRef.getChildRef();
+
+        final NodeRef childRef = childAssocRef.getChildRef();
         setupPermissions(childAssocRef.getParentRef(), childRef);
-        // Give read permissions for all RM roles for the transfer folders (see RM-1800).
-        // This behaviour will be changed once the add manage permission option is added in the UI for the transfers containers.
-        NodeRef filePlan = getFilePlanService().getFilePlan(childRef);
-        String allRoles = getFilePlanRoleService().getAllRolesContainerGroup(filePlan);
-        getPermissionService().setPermission(childRef, allRoles, READ_RECORDS, true);
+
+        final String user = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        final boolean hasUserPermission = authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
+        {
+            public Boolean doWork()
+            {
+                return getPermissionService().hasPermission(childRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED;
+            }
+        }, user);
+
+        if (!hasUserPermission)
+        {
+            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+            {
+                public Void doWork()
+                {
+                    getPermissionService().setPermission(childRef, user, RMPermissionModel.FILING, true);
+                    return null;
+                }
+            });
+        }
     }
 
     /**
@@ -545,7 +563,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     private boolean canPerformPermissionAction(NodeRef nodeRef)
     {
-        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef);
+        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef) || isTransfer(nodeRef);
     }
 
     /**

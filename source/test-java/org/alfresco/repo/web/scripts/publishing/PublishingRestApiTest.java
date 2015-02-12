@@ -61,6 +61,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -310,7 +311,8 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         PublishingEvent event = publishedEvents.get(0);
         assertEquals(publishChannel.getId(), event.getChannelId());
         assertEquals(comment, event.getComment());
-        assertEquals(Status.SCHEDULED, event.getStatus());
+        Collection<Status> expectedPubEventStatuses = Arrays.asList(Status.SCHEDULED, Status.IN_PROGRESS, Status.COMPLETED);
+        assertTrue(expectedPubEventStatuses.contains(event.getStatus()));
         
         // Check Package
         PublishingPackage pckg = event.getPackage();

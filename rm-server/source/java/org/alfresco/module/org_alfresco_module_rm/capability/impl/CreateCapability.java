@@ -80,10 +80,6 @@ public class CreateCapability extends DeclarativeCapability
      */
     public int evaluate(NodeRef destination, NodeRef linkee, QName assocType)
     {
-        //if the user doesn't have Create Record capability deny access 
-        if(capabilityService.getCapabilityAccessState(destination, RMPermissionModel.CREATE_RECORDS) == AccessStatus.DENIED)
-            return AccessDecisionVoter.ACCESS_DENIED;
-        
         if (linkee != null)
         {
             int state = checkRead(linkee, true);
@@ -98,7 +94,7 @@ public class CreateCapability extends DeclarativeCapability
             {
                 if (linkee == null)
                 {
-                    if (recordService.isRecord(destination) && 
+                    if (recordService.isRecord(destination) &&
                         !recordService.isDeclared(destination) &&
                         permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)
                     {
@@ -124,14 +120,14 @@ public class CreateCapability extends DeclarativeCapability
             conditions.put("capabilityCondition.frozen", Boolean.FALSE);
             conditions.put("capabilityCondition.closed", Boolean.FALSE);
             conditions.put("capabilityCondition.cutoff", Boolean.FALSE);
-        
+
             // if the destination folder is not a record folder and the user has filling capability on it, grant access to create the record
             if (checkConditions(destination, conditions) &&
                    !recordFolderService.isRecordFolder(destination) )
             {
                 return AccessDecisionVoter.ACCESS_GRANTED;
             }
-            
+
             if (checkConditions(destination, conditions) &&
                     recordFolderService.isRecordFolder(destination) &&
                     permissionService.hasPermission(destination, RMPermissionModel.FILE_RECORDS) == AccessStatus.ALLOWED)

@@ -53,7 +53,8 @@ import org.junit.runners.Suite.SuiteClasses;
     JobTestSuite.class,
     HoldTestSuite.class,
     VersionTestSuite.class,
-    RelationshipTestSuite.class
+    RelationshipTestSuite.class/*,
+    TransferTestSuite.class*/
 })
 public class IntegrationTestSuite
 {

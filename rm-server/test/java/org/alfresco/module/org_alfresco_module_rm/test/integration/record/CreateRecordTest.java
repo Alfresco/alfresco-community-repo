@@ -28,29 +28,28 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 
 /**
  * Create record tests.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.2
  */
 public class CreateRecordTest extends BaseRMTestCase
-{    
+{
     public void testCreateRecordCapabilityOnly() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             /** test data */
             String roleName = GUID.generate();
-            String user = GUID.generate();            
+            String user = GUID.generate();
             NodeRef recordFolder;
             NodeRef record;
-            
+
             public void given()
             {
                 // create role
@@ -58,42 +57,42 @@ public class CreateRecordTest extends BaseRMTestCase
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
-                
+
                 // create user and assign to role
-                createPerson(user, true);                
+                createPerson(user, true);
                 filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
-                
+
                 // create file plan structure
                 NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());
             }
-            
+
             public void when()
             {
                 // give read and file permissions to user
                 filePlanPermissionService.setPermission(recordFolder, user, RMPermissionModel.FILING);
-                
+
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
                     public Void doWork() throws Exception
                     {
                         record = recordService.createRecordFromContent(recordFolder, GUID.generate(), TYPE_CONTENT, null, null);
-                        
+
                         return null;
                     }
-                }, user);                             
+                }, user);
             }
-            
+
             public void then()
             {
                 // check the details of the record
                 assertTrue(recordService.isRecord(record));
             }
-        });           
+        });
     }
-    
+
     /**
-     * @see 
+     * @see
      */
     public void testCreateRecordCapabilityOnlyFromFileFolderService() throws Exception
     {
@@ -101,10 +100,10 @@ public class CreateRecordTest extends BaseRMTestCase
         {
             /** test data */
             String roleName = GUID.generate();
-            String user = GUID.generate();            
+            String user = GUID.generate();
             NodeRef recordFolder;
             NodeRef record;
-            
+
             public void given()
             {
                 // create role
@@ -112,45 +111,45 @@ public class CreateRecordTest extends BaseRMTestCase
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
-                
+
                 // create user and assign to role
-                createPerson(user, true);                
+                createPerson(user, true);
                 filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
-                
+
                 // create file plan structure
                 NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());
             }
-            
+
             public void when()
             {
                 // give read and file permissions to user
                 filePlanPermissionService.setPermission(recordFolder, user, RMPermissionModel.FILING);
-                
+
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
                 {
                     public Void doWork() throws Exception
                     {
                         record = fileFolderService.create(recordFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                        
+
                         ContentWriter writer = contentService.getWriter(record, ContentModel.TYPE_CONTENT, true);
                         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                         writer.setEncoding("UTF-8");
                         writer.putContent("Lucy Wetherall");
-                        
+
                         return null;
                     }
-                }, user);                             
+                }, user);
             }
-            
+
             public void then()
             {
                 // check the details of the record
                 assertTrue(recordService.isRecord(record));
             }
-        });           
+        });
     }
-    
+
     /**
      * unit test for RM1649 fix
      * test if a user with create record permissions and without file record permission is able to create a record within unfiled record container
@@ -163,7 +162,7 @@ public class CreateRecordTest extends BaseRMTestCase
             String roleName = GUID.generate();
             String user = GUID.generate();
             NodeRef record;
-            
+
             public void given()
             {
                 // create a role with view and create capabilities
@@ -171,16 +170,16 @@ public class CreateRecordTest extends BaseRMTestCase
                 capabilities.add(capabilityService.getCapability("ViewRecords"));
                 capabilities.add(capabilityService.getCapability("CreateRecords"));
                 filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
-              
-                
+
+
                 // create user and assign to role
                 createPerson(user, true);
                 filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
-                
+
                 //give read and file permission to user on unfiled records container
                 filePlanPermissionService.setPermission(unfiledContainer , user, RMPermissionModel.FILING);
             }
-            
+
             public void when()
             {
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -188,62 +187,17 @@ public class CreateRecordTest extends BaseRMTestCase
                     public Void doWork() throws Exception
                     {
                         record = recordService.createRecordFromContent(unfiledContainer, GUID.generate(), TYPE_CONTENT, null, null);
-                        
+
                         return null;
                     }
                 }, user);
             }
-            
+
             public void then()
             {
                 // check the details of the record
                 assertTrue(recordService.isRecord(record));
 
-            }
-        });
-    }
-
-    public void testCreateRecordWithoutCreateRecordCapability() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
-        {
-            /** test data */
-            String roleName = GUID.generate();
-            String user = GUID.generate();
-            NodeRef recordFolder;
-
-            public void given()
-            {
-                // create role
-                Set<Capability> capabilities = new HashSet<Capability>(2);
-                capabilities.add(capabilityService.getCapability("ViewRecords"));
-                filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
-
-                // create user and assign to role
-                createPerson(user, true);
-                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
-
-                // create file plan structure
-                NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());
-            }
-
-            public void when()
-            {
-                // give read and file permissions to user
-                filePlanPermissionService.setPermission(recordFolder, user,
-                            RMPermissionModel.FILING);
-
-                AuthenticationUtil.runAs(new RunAsWork<Void>()
-                {
-                    public Void doWork() throws Exception
-                    {
-                        recordService.createRecordFromContent(recordFolder, GUID.generate(),
-                                    TYPE_CONTENT, null, null);
-
-                        return null;
-                    }
-                }, user);
             }
         });
     }

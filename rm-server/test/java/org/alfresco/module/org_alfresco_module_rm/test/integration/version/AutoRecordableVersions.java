@@ -32,15 +32,15 @@ import org.alfresco.util.PropertyMap;
 
 /**
  * Auto Recordable Versions Integration Test
- *  
+ *
  * @author Roy Wetherall
  * @since 2.3
  */
-public class AutoRecordableVersions extends RecordableVersionsBaseTest 
+public class AutoRecordableVersions extends RecordableVersionsBaseTest
 {
     /** example content */
     public final static String MY_NEW_CONTENT = "this is some new content that I have changed to trigger auto version";
-    
+
     /**
      * Given that all revisions will be recorded,
      * When I update the content of a document,
@@ -51,34 +51,34 @@ public class AutoRecordableVersions extends RecordableVersionsBaseTest
         doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
         {
             public void given() throws Exception
-            {     
+            {
                 // set the recordable version policy
                 PropertyMap recordableVersionProperties = new PropertyMap(1);
                 recordableVersionProperties.put(PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
                 recordableVersionProperties.put(PROP_FILE_PLAN, filePlan);
-                nodeService.addAspect(dmDocument, RecordableVersionModel.ASPECT_VERSIONABLE, recordableVersionProperties);   
-                
+                nodeService.addAspect(dmDocument, RecordableVersionModel.ASPECT_VERSIONABLE, recordableVersionProperties);
+
                 // make the node versionable
                 PropertyMap versionableProperties = new PropertyMap(1);
                 versionableProperties.put(ContentModel.PROP_INITIAL_VERSION, false);
-                nodeService.addAspect(dmDocument, ContentModel.ASPECT_VERSIONABLE, versionableProperties);                                            
+                nodeService.addAspect(dmDocument, ContentModel.ASPECT_VERSIONABLE, versionableProperties);
             }
-            
+
             public void when()
-            {   
+            {
                 // generate new version by updating content
                 ContentWriter writer = contentService.getWriter(dmDocument, ContentModel.PROP_CONTENT, true);
                 writer.putContent(MY_NEW_CONTENT);
-            }            
-            
+            }
+
             public void then()
             {
                 // check that the record has been recorded
                 checkRecordedVersion(dmDocument, null, "0.1");
             }
-        });        
-    }  
-    
+        });
+    }
+
     /**
      * Given that all revisions will be automatically recorded,
      * When I update a document 3 times,
@@ -90,18 +90,18 @@ public class AutoRecordableVersions extends RecordableVersionsBaseTest
         {
             /** given **/
             public void given() throws Exception
-            {   
+            {
                 doTestInTransaction(new VoidTest()
                 {
                     @Override
                     public void runImpl() throws Exception
-                    {                 
+                    {
                         // set the recordable version policy
                         PropertyMap recordableVersionProperties = new PropertyMap(1);
                         recordableVersionProperties.put(PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
                         recordableVersionProperties.put(PROP_FILE_PLAN, filePlan);
-                        nodeService.addAspect(dmDocument, RecordableVersionModel.ASPECT_VERSIONABLE, recordableVersionProperties);   
-                        
+                        nodeService.addAspect(dmDocument, RecordableVersionModel.ASPECT_VERSIONABLE, recordableVersionProperties);
+
                         // make the node versionable
                         PropertyMap versionableProperties = new PropertyMap(1);
                         versionableProperties.put(ContentModel.PROP_INITIAL_VERSION, false);
@@ -109,16 +109,16 @@ public class AutoRecordableVersions extends RecordableVersionsBaseTest
                     }
                 });
             }
-            
+
             /** when **/
             public void when()
-            {   
+            {
                 // update the content 3 times
                 updateContent();
                 updateContent();
                 updateContent();
-            }            
-            
+            }
+
             /** then */
             public void then()
             {
@@ -129,17 +129,17 @@ public class AutoRecordableVersions extends RecordableVersionsBaseTest
                     {
                         // check that the record has been recorded
                         checkRecordedVersion(dmDocument, null, "0.3");
-                        
-                        Version version = versionService.getCurrentVersion(dmDocument);                        
+
+                        Version version = versionService.getCurrentVersion(dmDocument);
                         NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
-                        
+
                         boolean foundPrevious = false;
                         Set<Relationship> relationships = relationshipService.getRelationshipsFrom(record);
                         assertNotNull(relationships);
                         assertEquals(1, relationships.size());
                         for (Relationship relationship : relationships)
                         {
-                            if (relationship.getUniqueName().equals("versions"))
+                            if (relationship.getUniqueName().equals(CUSTOM_REF_VERSIONS.getLocalName()))
                             {
                                 NodeRef previousVersionRecord = relationship.getTarget();
                                 assertNotNull(previousVersionRecord);
@@ -150,9 +150,9 @@ public class AutoRecordableVersions extends RecordableVersionsBaseTest
                     }
                 });
             }
-            
+
             /**
-             * Helper method to update content of dmDocument 
+             * Helper method to update content of dmDocument
              */
             private void updateContent()
             {
@@ -165,7 +165,7 @@ public class AutoRecordableVersions extends RecordableVersionsBaseTest
                         writer.putContent(MY_NEW_CONTENT);
                     }
                 });
-            }            
-        });        
-    } 
+            }
+        });
+    }
 }

@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.version;
 
+import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel.CUSTOM_REF_VERSIONS;
 import static org.codehaus.plexus.util.StringUtils.isNotBlank;
 
 import java.io.Serializable;
@@ -406,7 +407,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                 public Void doWork() throws Exception
                 {
                     // indicate that the new record versions the previous record
-                    relationshipService.addRelationship("versions", record, latestRecordVersion);
+                    relationshipService.addRelationship(CUSTOM_REF_VERSIONS.getLocalName(), record, latestRecordVersion);
                     return null;
                 }
             });

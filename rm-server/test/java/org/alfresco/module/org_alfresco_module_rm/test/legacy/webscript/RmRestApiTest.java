@@ -431,7 +431,7 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         // GET a specific custom reference definition.
         // Here, we're using one of the built-in references
         // qname = rmc:versions
-        rsp = sendRequest(new GetRequest(RMA_CUSTOM_REFS_DEFINITIONS_URL + "/" + "versions"), expectedStatus);
+        rsp = sendRequest(new GetRequest(RMA_CUSTOM_REFS_DEFINITIONS_URL + "/" + CUSTOM_REF_VERSIONS.getLocalName()), expectedStatus);
 
         jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
 
@@ -597,7 +597,7 @@ public class RmRestApiTest extends BaseRMWebScriptTestCase implements RecordsMan
         }
 
         // Add a supersedes ref instance between them
-        final String supersedesRefLocalName = "supersedes";
+        final String supersedesRefLocalName = CUSTOM_REF_SUPERSEDES.getLocalName();
         String jsonString = new JSONStringer().object()
             .key("toNode").value(testRecord2.toString())
             .key("refId").value(supersedesRefLocalName)

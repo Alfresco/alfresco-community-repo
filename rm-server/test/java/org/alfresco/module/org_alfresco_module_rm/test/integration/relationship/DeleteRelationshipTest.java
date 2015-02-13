@@ -27,12 +27,12 @@ import org.alfresco.util.GUID;
 
 /**
  * Delete relationship test.
- * 
+ *
  * @author Ana Bozianu
  * @since 2.3
  */
 public class DeleteRelationshipTest extends BaseRMTestCase
-{    
+{
 	public void testDeleteRelationship() throws Exception
     {
     	doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -40,27 +40,27 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             /** test data */
         	NodeRef sourceNode;
         	NodeRef targetNode;
-        	String associationName = "obsoletes";
-                
+        	String associationName = CUSTOM_REF_OBSOLETES.getLocalName();
+
             public void given()
             {
-            	
+
             	// create the source record
             	sourceNode = utils.createRecord(rmFolder, GUID.generate());
-             
+
                 //create the target record
             	targetNode = utils.createRecord(rmFolder, GUID.generate());
-                
+
                 //create relationship
                 relationshipService.addRelationship(associationName, sourceNode, targetNode);
             }
-            
+
             public void when()
             {
-                //delete relationship  
+                //delete relationship
             	relationshipService.removeRelationship(associationName, sourceNode, targetNode);
             }
-            
+
             public void then()
             {
                //check if relationship is deleted
@@ -70,8 +70,8 @@ public class DeleteRelationshipTest extends BaseRMTestCase
             		assertFalse(r.getTarget().equals(targetNode) && r.getUniqueName().equals(associationName));
             	}
             }
-        });           
+        });
     }
-    
-  
+
+
 }

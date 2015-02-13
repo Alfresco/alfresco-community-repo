@@ -36,6 +36,9 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     /** I18N */
     private static final String MSG_NODE_NOT_TRANSFER = "rm.action.node-not-transfer";
 
+    /** Action name */
+    public static final String NAME = "transferComplete";
+
     /** Transfer service */
     private TransferService transferService;
 

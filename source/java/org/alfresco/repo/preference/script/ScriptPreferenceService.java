@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -75,7 +75,18 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
         
         for (Map.Entry<String, Serializable> entry : prefs.entrySet())
         {
-            String[] keys = entry.getKey().replace(".", "+").split("\\+");            
+            String key = entry.getKey();
+            String[] keys;
+            int colonIndex = key.indexOf(":");
+            if (colonIndex > -1)
+            {
+                keys = key.substring(0, colonIndex).replace(".", "+").split("\\+");
+                keys[keys.length - 1] = keys[keys.length - 1].concat(key.substring(colonIndex));
+            }
+            else
+            {
+                keys = key.replace(".", "+").split("\\+");
+            }
             setPrefValue(keys, entry.getValue(), result);
         }        
         

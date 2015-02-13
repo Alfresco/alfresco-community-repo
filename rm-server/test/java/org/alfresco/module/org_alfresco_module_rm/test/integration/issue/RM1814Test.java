@@ -54,7 +54,7 @@ public class RM1814Test extends BaseRMTestCase
             @Override
             public Void run()
             {
-                relationshipService.addRelationship("versions", recordOne, recordThree);
+                relationshipService.addRelationship(CUSTOM_REF_VERSIONS.getLocalName(), recordOne, recordThree);
                 return null;
             }
         });
@@ -67,7 +67,7 @@ public class RM1814Test extends BaseRMTestCase
             @Override
             public void run() throws Exception
             {
-                relationshipService.addRelationship("obsoletes", recordOne, recordTwo);
+                relationshipService.addRelationship(CUSTOM_REF_OBSOLETES.getLocalName(), recordOne, recordTwo);
             }
         });
 
@@ -76,7 +76,7 @@ public class RM1814Test extends BaseRMTestCase
             @Override
             public Void run()
             {
-                relationshipService.addRelationship("supports", recordOne, recordFour);
+                relationshipService.addRelationship(CUSTOM_REF_SUPPORTS.getLocalName(), recordOne, recordFour);
                 return null;
             }
         });

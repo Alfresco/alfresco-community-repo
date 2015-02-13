@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
-import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
@@ -69,7 +68,7 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** script service */
     protected ScriptService scriptService;
-    
+
     /** record service */
     protected RecordService recordService;
 
@@ -88,7 +87,7 @@ public class RecordAspect extends    AbstractDisposableItem
     {
         this.scriptService = scriptService;
     }
-    
+
     /**
      * @param recordService     record service
      */
@@ -150,7 +149,7 @@ public class RecordAspect extends    AbstractDisposableItem
     public void onCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
-        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")))
+        if (reference.equals(CUSTOM_REF_VERSIONS))
         {
             // Apply the versioned aspect to the from node
             nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
@@ -172,7 +171,7 @@ public class RecordAspect extends    AbstractDisposableItem
     public void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
-        if (reference.equals(QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions")))
+        if (reference.equals(CUSTOM_REF_VERSIONS))
         {
             // Apply the versioned aspect to the from node
             nodeService.removeAspect(fromNodeRef, ASPECT_VERSIONED_RECORD);
@@ -236,7 +235,7 @@ public class RecordAspect extends    AbstractDisposableItem
             {
                 public Object doWork()
                 {
-                    if (nodeService.exists(record) && 
+                    if (nodeService.exists(record) &&
                         recordService.isFiled(record))
                     {
                         // clean record

@@ -217,10 +217,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Version service */
     private VersionService versionService;
-    
+
     /** Relationship service */
     private RelationshipService relationshipService;
-    
+
     /** records management container type */
     private RecordsManagementContainerType recordsManagementContainerType;
 
@@ -352,7 +352,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.versionService = versionService;
     }
-    
+
     /**
      * @param relationshipService   relationship service
      */
@@ -360,8 +360,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.relationshipService = relationshipService;
     }
-    
-    public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType) 
+
+    public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType)
     {
 		this.recordsManagementContainerType = recordsManagementContainerType;
 	}
@@ -862,7 +862,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                         // get the latest version record, if there is one
                         NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
-                        
+
                         behaviourFilter.disableBehaviour();
                         try
                         {
@@ -880,10 +880,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         aspectProperties.put(PROP_RECORD_ORIGINATING_USER_ID, owner);
                         aspectProperties.put(PROP_RECORD_ORIGINATING_CREATION_DATE, new Date());
                         nodeService.addAspect(nodeRef, ASPECT_RECORD_ORIGINATING_DETAILS, aspectProperties);
-                        
+
                         // make the document a record
                         makeRecord(nodeRef);
-                        
+
                         if (latestVersionRecord != null)
                         {
                             // indicate that this is the 'final' record version
@@ -891,9 +891,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, I18NUtil.getMessage(FINAL_VERSION));
                             versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, I18NUtil.getMessage(FINAL_DESCRIPTION));
                             nodeService.addAspect(nodeRef, RecordableVersionModel.ASPECT_VERSION_RECORD, versionRecordProps);
-                            
+
                             // link to previous version
-                            relationshipService.addRelationship("versions", nodeRef, latestVersionRecord);
+                            relationshipService.addRelationship(CUSTOM_REF_VERSIONS.getLocalName(), nodeRef, latestVersionRecord);
                         }
 
                         if (isLinked)
@@ -928,7 +928,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             }
         });
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromCopy(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -983,7 +983,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                     	recordsManagementContainerType.enable();
                     }
-                    
+
                     // make record
                     makeRecord(record);
 
@@ -1022,17 +1022,17 @@ public class RecordServiceImpl extends BaseBehaviourBean
             }
         });
     }
-    
+
     /**
      * Helper to get the latest version record for a given document (ie non-record)
-     * 
+     *
      * @param nodeRef   node reference
      * @return NodeRef  latest version record, null otherwise
      */
     private NodeRef getLatestVersionRecord(NodeRef nodeRef)
     {
         NodeRef versionRecord = null;
-        
+
         // wire record up to previous record
         VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
         if (versionHistory != null)
@@ -1048,9 +1048,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     break;
                 }
             }
-        }  
-        
-        return versionRecord;        
+        }
+
+        return versionRecord;
     }
 
     /**
@@ -1105,10 +1105,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 writer.setMimetype(reader.getMimetype());
                 writer.putContent(reader);
             }
-            
+
             result = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
             {
-    			public NodeRef doWork() throws Exception 
+    			public NodeRef doWork() throws Exception
     			{
     				// Check if the "record" aspect has been applied already.
     		        // In case of filing a report the created node will be made
@@ -1119,10 +1119,10 @@ public class RecordServiceImpl extends BaseBehaviourBean
     		            // make record
     		            makeRecord(record);
     		        }
-    		        
+
     				return record;
     			}
-            	
+
             });
         }
         finally
@@ -1280,6 +1280,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 ruleService.disableRules();
                 try
                 {
+                    // get the latest version record, if there is one
+                    NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
+
+                    if (latestVersionRecord != null)
+                    {
+                        relationshipService.removeRelationship(CUSTOM_REF_VERSIONS.getLocalName(), nodeRef, latestVersionRecord);
+                    }
+
                     // get record property values
                     final Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
                     final String recordId = (String)properties.get(PROP_IDENTIFIER);
@@ -1690,24 +1698,24 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     throw new AlfrescoRuntimeException("Can not link a record to the same record folder more than once");
                 }
             }
-            
+
             // get the current name of the record
             String name = nodeService.getProperty(record, ContentModel.PROP_NAME).toString();
-            
+
             // create a secondary link to the record folder
             nodeService.addChild(
-                    recordFolder, 
-                    record, 
-                    ContentModel.ASSOC_CONTAINS, 
+                    recordFolder,
+                    record,
+                    ContentModel.ASSOC_CONTAINS,
                     QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
         }
-        else 
+        else
         {
             // can only link a record to a record folder
             throw new AlfrescoRuntimeException("Can only link a record to a record folder.");
         }
     }
-    
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#unlink(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -1726,11 +1734,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
             {
                 throw new AlfrescoRuntimeException("Can't unlink a record from it's owning record folder.");
             }
-            
+
             // remove the link
             nodeService.removeChild(recordFolder, record);
-        } 
-        else 
+        }
+        else
         {
             // can only unlink a record from a record folder
             throw new AlfrescoRuntimeException("Can only unlink a record from a record folder.");

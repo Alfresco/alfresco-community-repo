@@ -49,4 +49,8 @@ public interface RecordsManagementCustomModel
     // Some Custom references which are present on system startup.
     QName CUSTOM_REF_VERSIONS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "versions");
     QName CUSTOM_REF_SUPERSEDES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supersedes");
+    QName CUSTOM_REF_OBSOLETES = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "obsoletes");
+    QName CUSTOM_REF_SUPPORTS = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "supports");
+    QName CUSTOM_REF_CROSSREFERENCE = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "crossreference");
+    QName CUSTOM_REF_RENDITION = QName.createQName(RecordsManagementCustomModel.RM_CUSTOM_URI, "rendition");
 }

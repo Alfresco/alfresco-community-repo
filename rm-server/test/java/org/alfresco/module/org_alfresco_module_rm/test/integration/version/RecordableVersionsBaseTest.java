@@ -49,23 +49,32 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
     protected static final String DESCRIPTION = "description";
     protected static final String PUBLISHER = "publisher";
     protected static final String SUBJECT = "subject";
-    protected static final String OWNER = "Grace Wetherall";
+    protected static final String OWNER = "GracieWetherall";
     
     protected static final String CONTENT = 
               "Simple + Smart.  A smarter way to build, a smarter way to deploy.  Its simple because we focus on the end "
               + "user and smart because we support more open standards than any other ECM platform, while delivering all "
               + "the value a traditional platform provides.";          
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
+     */
     @Override
     protected boolean isCollaborationSiteTest()
     {
         return true;
     }
     
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#setupCollaborationSiteTestDataImpl()
+     */
     @Override
     protected void setupCollaborationSiteTestDataImpl()
     {
         super.setupCollaborationSiteTestDataImpl();
+        
+        // create authentication for owner
+        createPerson(OWNER);
         
         // add titled aspect
         PropertyMap titledProperties = new PropertyMap(2);
@@ -89,6 +98,18 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         writer.setEncoding("UTF-8");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.putContent(CONTENT);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#tearDownImpl()
+     */
+    @Override
+    protected void tearDownImpl()
+    {
+        super.tearDownImpl();
+        
+        // remove owner 
+        personService.deletePerson(OWNER);
     }
     
     /**
@@ -145,6 +166,9 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         assertNotNull(headVersion);
     }
     
+    /**
+     * Helper method to check that the current version is not recorded
+     */
     protected void checkNotRecordedAspect(NodeRef document, String description, String versionLabel)
     {
         // double check that the document is not a record
@@ -196,6 +220,16 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
                 fail("Property missing from frozen state .. " + beforePropertyName);
             }
         }
+        
+        // filter out missing properties with null values
+        for (Map.Entry<QName, Serializable> entry : frozenProperties.entrySet())
+        {
+            if (entry.getValue() == null)
+            {
+                cloneFrozenProperties.remove(entry.getKey());
+            }
+        }
+        
         
         // frozen properties should be empty
         assertTrue("Properties in frozen state, but not in origional. " + cloneFrozenProperties.keySet(), cloneFrozenProperties.isEmpty());

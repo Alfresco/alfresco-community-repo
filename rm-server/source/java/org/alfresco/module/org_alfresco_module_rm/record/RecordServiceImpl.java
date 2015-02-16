@@ -854,9 +854,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // add the current owner to the list of extended writers
                         String owner = ownableService.getOwner(nodeRef);
 
-                        // remove the owner
-                        ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
-
                         // get the documents primary parent assoc
                         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
@@ -907,9 +904,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                                 // set the extended security
                                 Set<String> combinedWriters = new HashSet<String>(writers);
-                                combinedWriters.add(owner);
+                                if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
+                                {
+                                    combinedWriters.add(owner);
+                                }
                                 combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
-
                                 extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
                             }
                             finally
@@ -1187,6 +1186,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // remove versionable aspect(s)
             nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
+            
+            // remove the owner
+            ownableService.setOwner(document, OwnableService.NO_OWNER);
         }
         catch (FileNotFoundException e)
         {

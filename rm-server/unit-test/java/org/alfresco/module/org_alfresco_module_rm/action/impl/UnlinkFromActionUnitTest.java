@@ -18,10 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.action.BaseActionUnitTest;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Before;
@@ -34,7 +39,7 @@ import org.mockito.InjectMocks;
  * @author Roy Wetherall
  * @since 2.3
  */
-public class UnlinkFromActionUnitTest extends BaseUnitTest
+public class UnlinkFromActionUnitTest extends BaseActionUnitTest
 {
     private NodeRef record;
     private NodeRef recordFolder;
@@ -107,11 +112,10 @@ public class UnlinkFromActionUnitTest extends BaseUnitTest
         doReturn(false).when(mockedNodeService).hasAspect(record, ASPECT_PENDING_DELETE);
         
         // create action mock
-        Action mockedAction = mock(Action.class);
-        doReturn(null).when(mockedAction).getParameterValue(UnlinkFromAction.PARAM_RECORD_FOLDER);
+        mockActionParameterValue(UnlinkFromAction.PARAM_RECORD_FOLDER, null);
         
         // execute action
-        action.executeImpl(mockedAction, record);        
+        action.executeImpl(getMockedAction(), record);        
     }
     
     /**
@@ -127,11 +131,10 @@ public class UnlinkFromActionUnitTest extends BaseUnitTest
         doReturn(false).when(mockedNodeService).hasAspect(record, ASPECT_PENDING_DELETE);
         
         // create action mock
-        Action mockedAction = mock(Action.class);
-        doReturn(recordFolder.toString()).when(mockedAction).getParameterValue(UnlinkFromAction.PARAM_RECORD_FOLDER);
+        mockActionParameterValue(UnlinkFromAction.PARAM_RECORD_FOLDER, recordFolder.toString());
         
         // execute action
-        action.executeImpl(mockedAction, record);     
+        action.executeImpl(getMockedAction(), record);     
         
         // verify unlink
         verify(mockedRecordService, times(1)).unlink(record, recordFolder);

@@ -28,10 +28,11 @@
    
    <!--  Declare as Record Version action -->
    <bean id="declare-as-version-record" parent="action-executer" class="org.alfresco.module.org_alfresco_module_rm.action.dm.DeclareAsVersionRecordAction">
-      <property name="versionService" ref="VersionService" />
+      <property name="recordableVersionService" ref="RecordableVersionService" />
       <property name="nodeService" ref="NodeService" />
       <property name="filePlanService" ref="FilePlanService" />
       <property name="dictionaryService" ref="DictionaryService" />
+      <property name="authenticationUtil" ref="rm.authenticationUtil" />
       <property name="applicableTypes">
          <list>
             <value>{http://www.alfresco.org/model/content/1.0}content</value>

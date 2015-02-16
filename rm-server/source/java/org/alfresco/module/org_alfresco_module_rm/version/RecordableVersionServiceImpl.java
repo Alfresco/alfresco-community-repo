@@ -25,7 +25,9 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -34,19 +36,24 @@ import org.alfresco.module.org_alfresco_module_rm.model.rma.type.CmObjectType;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.policy.PolicyScope;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.Version2ServiceImpl;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.version.ReservedVersionNameException;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,7 +65,8 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.3
  */
 public class RecordableVersionServiceImpl extends    Version2ServiceImpl
-                                          implements RecordableVersionModel
+                                          implements RecordableVersionModel,
+                                                     RecordableVersionService
 {
     /** share logger with version2ServiceImpl */
     private static Log logger = LogFactory.getLog(Version2ServiceImpl.class);
@@ -69,6 +77,23 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
     /** version record property */
     public static final String PROP_VERSION_RECORD = "RecordVersion";
+    
+    /** version aspect property names */
+    private static final String[] VERSION_PROPERTY_NAMES = new String[]
+    {
+        Version2Model.PROP_CREATED_DATE,
+        Version2Model.PROP_VERSION_LABEL,
+        Version2Model.PROP_VERSION_DESCRIPTION,
+        
+        Version2Model.PROP_FROZEN_NODE_DBID,
+        Version2Model.PROP_FROZEN_NODE_REF,
+        
+        Version2Model.PROP_FROZEN_CREATED,
+        Version2Model.PROP_FROZEN_CREATOR,
+        Version2Model.PROP_FROZEN_MODIFIED,
+        Version2Model.PROP_FROZEN_MODIFIER,
+        Version2Model.PROP_FROZEN_ACCESSED
+    };
 
     /** file plan service */
     private FilePlanService filePlanService;
@@ -87,6 +112,15 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
     /** cm object type */
     private CmObjectType cmObjectType;
+    
+    /** extended permission service */
+    private ExtendedPermissionService extendedPermissionService;
+    
+    /** extended security service */
+    private ExtendedSecurityService extendedSecurityService;
+    
+    /** ownable service */
+    private OwnableService ownableService;
 
     /**
      * @param filePlanService   file plan service
@@ -134,6 +168,30 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     public void setCmObjectType(CmObjectType cmObjectType)
     {
         this.cmObjectType = cmObjectType;
+    }
+    
+    /**
+     * @param extendedPermissionService extended permission service
+     */
+    public void setExtendedPermissionService(ExtendedPermissionService extendedPermissionService)
+    {
+        this.extendedPermissionService = extendedPermissionService;
+    }
+    
+    /**
+     * @param extendedSecurityService   extended security service
+     */
+    public void setExtendedSecurityService(ExtendedSecurityService extendedSecurityService)
+    {
+        this.extendedSecurityService = extendedSecurityService;
+    }
+    
+    /**
+     * @param ownableService    ownable service
+     */
+    public void setOwnableService(OwnableService ownableService)
+    {
+        this.ownableService = ownableService;
     }
 
     /**
@@ -498,5 +556,246 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         {
             dbNodeService.setProperty(nodeRef, PROP_RECORDABLE_VERSION_POLICY, versionPolicy);
         }
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#isLatestVersionRecorded(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public boolean isCurrentVersionRecorded(NodeRef nodeRef)
+    {
+        boolean result = false;       
+        Version version = getCurrentVersion(nodeRef);
+        if (version != null)
+        {
+            result = isRecordedVersion(version);
+        }   
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#isRecordedVersion(org.alfresco.service.cmr.version.Version)
+     */
+    @Override
+    public boolean isRecordedVersion(Version version)
+    {
+        boolean result = true;
+        if (version.getVersionProperties().get(PROP_VERSION_RECORD) == null)
+        {
+            result = false;
+        }
+        return result;
+    }
+    
+    /**
+     * Create Version Store Ref
+     * 
+     * @param  store ref
+     * @return  store ref for version store
+     */
+    public StoreRef convertStoreRef(StoreRef storeRef)
+    {
+        return new StoreRef(StoreRef.PROTOCOL_WORKSPACE, storeRef.getIdentifier());
+    }
+    
+    /**
+     * Convert the incomming node ref (with the version store protocol specified)
+     * to the internal representation with the workspace protocol.
+     *
+     * @param nodeRef   the incomming verison protocol node reference
+     * @return          the internal version node reference
+     */
+    public NodeRef convertNodeRef(NodeRef nodeRef)
+    {
+        return new NodeRef(convertStoreRef(nodeRef.getStoreRef()), nodeRef.getId());
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#createRecordFromLatestVersion(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public NodeRef createRecordFromLatestVersion(final NodeRef filePlan, final NodeRef nodeRef)
+    {        
+        ParameterCheck.mandatory("filePlan", filePlan);
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        NodeRef record = null;
+        
+        // check for versionable aspect
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+        {
+            // get the latest version
+            final Version currentVersion = getCurrentVersion(nodeRef);
+            
+            if (currentVersion != null &&
+                !isRecordedVersion(currentVersion))
+            {
+                // create the record from the current frozen state
+                record = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+                {
+                    public NodeRef doWork() throws Exception
+                    {
+                        // get the documents readers
+                        Long aclId = nodeService.getNodeAclId(nodeRef);
+                        Set<String> readers = extendedPermissionService.getReaders(aclId);
+                        Set<String> writers = extendedPermissionService.getWriters(aclId);
+
+                        // add the current owner to the list of extended writers
+                        String owner = ownableService.getOwner(nodeRef);
+                        
+                        // grab the frozen state
+                        NodeRef currentFrozenState = currentVersion.getFrozenStateNodeRef();
+                        
+                        // determine the type of the object
+                        QName type = nodeService.getType(currentFrozenState);
+                        
+                        // grab all the properties
+                        Map<QName, Serializable> properties = nodeService.getProperties(currentFrozenState);
+                        
+                        // grab all the aspects
+                        Set<QName> aspects = nodeService.getAspects(currentFrozenState);
+                        
+                        // create the record
+                        NodeRef record = recordService.createRecordFromContent(
+                                filePlan, 
+                                (String)properties.get(ContentModel.PROP_NAME), 
+                                type, 
+                                properties, 
+                                null);
+                        
+                        // apply aspects to record
+                        for (QName aspect : aspects)
+                        {
+                            // add the aspect, properties have already been set
+                            nodeService.addAspect(record, aspect, null);
+                        }
+                        
+                        // apply version record aspect to record
+                        PropertyMap versionRecordProps = new PropertyMap(3);
+                        versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
+                        versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, currentVersion.getVersionLabel());
+                        versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, currentVersion.getDescription());
+                        nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
+
+                        // wire record up to previous record
+                        linkToPreviousVersionRecord(nodeRef, record);
+                        
+                        // set the extended security
+                        Set<String> combinedWriters = new HashSet<String>(writers);
+                        if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
+                        {
+                            combinedWriters.add(owner);
+                        }
+                        combinedWriters.add(authenticationUtil.getFullyAuthenticatedUser());
+                        extendedSecurityService.addExtendedSecurity(record, readers, combinedWriters);
+                        
+                        return record;
+                    }
+                });
+                
+                // get the version history
+                NodeRef versionHistoryRef = getVersionHistoryNodeRef(nodeRef);
+                
+                // get details from the version before we remove it
+                int versionNumber = getVersionNumber(currentVersion);
+                Map<QName, Serializable> versionProperties = getVersionAspectProperties(currentVersion);
+                QName sourceTypeRef = getVersionType(currentVersion);
+                
+                // patch-up owner information, which needs to be frozen for recorded versions
+                String owner = (String)nodeService.getProperty(currentVersion.getFrozenStateNodeRef(), ContentModel.PROP_OWNER);
+                if (owner != null)
+                {
+                    versionProperties.put(PROP_FROZEN_OWNER, owner);
+                }
+                
+                // delete the current version
+                this.dbNodeService.deleteNode(convertNodeRef(currentVersion.getFrozenStateNodeRef()));
+                
+                // create a new version history if we need to
+                if (!nodeService.exists(versionHistoryRef))
+                {
+                    versionHistoryRef = createVersionHistory(nodeRef);
+                }
+                
+                // create recorded version nodeRef
+                ChildAssociationRef childAssocRef = dbNodeService.createNode(
+                        versionHistoryRef,
+                        Version2Model.CHILD_QNAME_VERSIONS,
+                        QName.createQName(Version2Model.NAMESPACE_URI, Version2Model.CHILD_VERSIONS + "-" + versionNumber),
+                        sourceTypeRef,
+                        null);
+                NodeRef versionNodeRef = childAssocRef.getChildRef();
+
+                // add aspect with the standard version properties to the 'version' node
+                nodeService.addAspect(versionNodeRef, Version2Model.ASPECT_VERSION, versionProperties);
+
+                // add the recordedVersion aspect with link to record
+                nodeService.addAspect(versionNodeRef, ASPECT_RECORDED_VERSION, Collections.singletonMap(PROP_RECORD_NODE_REF, (Serializable)record));
+            }
+        }
+        
+        return record;
+    }
+    
+    /**
+     * Helper method to get the version number of a given version by inspecting the
+     * name of the parent association.
+     * 
+     * @param version   version
+     * @return int      version number
+     */
+    private int getVersionNumber(Version version)
+    {
+        NodeRef versionNodeRef = getVersionNodeRef(version);
+        ChildAssociationRef assoc = dbNodeService.getPrimaryParent(versionNodeRef);
+        String fullVersionNumber = assoc.getQName().getLocalName();
+        String versionNumber = fullVersionNumber.substring(fullVersionNumber.indexOf("-") + 1);
+        return Integer.parseInt(versionNumber);
+    }
+        
+    /**
+     * Helper method to get all the version aspect properties from an existing version
+     * 
+     * @param version                   version
+     * @return Map<QName, Serializable> property values
+     */
+    private Map<QName, Serializable> getVersionAspectProperties(Version version)
+    {
+        NodeRef versionNodeRef = getVersionNodeRef(version);
+        Map<QName, Serializable> versionProps = dbNodeService.getProperties(versionNodeRef);
+        Map<QName, Serializable> result = new HashMap<QName, Serializable>(9);
+        for (String propertyName : VERSION_PROPERTY_NAMES)
+        {
+            QName propertyQName = QName.createQName(Version2Model.NAMESPACE_URI, propertyName);
+            result.put(propertyQName, versionProps.get(propertyQName));
+            
+            if (propertyName.equals(Version2Model.PROP_FROZEN_NODE_DBID))
+            {
+                System.out.println(versionProps.get(propertyQName));
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Helper method to get the type of a versions frozen state
+     * 
+     * @param currentVersion
+     * @return
+     */
+    private QName getVersionType(Version version)
+    {
+        return nodeService.getType(getVersionNodeRef(version));
+    }    
+    
+    /**
+     * Helper method to get the internal node reference of a version
+     * 
+     * @param version   version
+     * @return NodeRef  internal node reference to version
+     */
+    private NodeRef getVersionNodeRef(Version version)
+    {
+        return convertNodeRef(version.getFrozenStateNodeRef());        
     }
 }

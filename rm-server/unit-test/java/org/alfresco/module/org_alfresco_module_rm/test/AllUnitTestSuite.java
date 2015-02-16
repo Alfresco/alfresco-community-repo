@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
+import org.alfresco.module.org_alfresco_module_rm.action.dm.DeclareAsVersionRecordActionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportActionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.UnlinkFromActionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponentUnitTest;
@@ -79,6 +80,7 @@ import org.junit.runners.Suite.SuiteClasses;
     // action implementations
     FileReportActionUnitTest.class,
     UnlinkFromActionUnitTest.class,
+    DeclareAsVersionRecordActionUnitTest.class,
 
     // patches
     RMv22RemoveInPlaceRolesFromAllPatchUnitTest.class,

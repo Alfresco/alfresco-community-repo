@@ -287,6 +287,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     }
 
+    @SuppressWarnings("rawtypes")
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
         List<ConfigAttributeDefintion> definitions = new ArrayList<>();

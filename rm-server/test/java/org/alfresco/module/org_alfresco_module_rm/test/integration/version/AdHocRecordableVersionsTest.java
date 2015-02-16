@@ -38,7 +38,7 @@ import org.alfresco.service.cmr.version.VersionType;
  * @author Roy Wetherall
  * @since 2.3
  */
-public class AdHocRecordableVersions extends RecordableVersionsBaseTest
+public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
 {
     /**
      * Adhoc recorded version creation, with no policy defined as site collaborator

@@ -29,6 +29,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,14 +39,19 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.version.common.VersionImpl;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 
 /**
  * Recordable version service implementation unit test.
@@ -71,7 +77,7 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
     private @Mock(name="dbNodeService")   NodeService mockedDbNodeService;
 
     /** recordable version service */
-    private @InjectMocks TestRecordableVersionServiceImpl recordableVersionService;
+    private @InjectMocks @Spy TestRecordableVersionServiceImpl recordableVersionService;
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
@@ -383,5 +389,110 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
 
         // then the recorded version is created
         verify(mockedRecordService, times(1)).createRecordFromCopy(filePlan, nodeRef);
+    }
+    
+    /**
+     * Given that a node is not versionable
+     * When I try and create a record from the latest version
+     * Then nothing will happen, because there is not version to record
+     */
+    @Test
+    public void notVersionableCreateRecordFromVersion()
+    {
+        // content node is not versionable
+        doReturn(false).when(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        
+        // create record from version
+        recordableVersionService.createRecordFromLatestVersion(filePlan, nodeRef);
+        
+        // nothing happens
+        verify(mockedRecordService, never()).createRecordFromCopy(eq(filePlan), any(NodeRef.class));
+    }
+    
+    /**
+     * Given that a nodes last version is recorded
+     * When I try and create a record from the latest version
+     * Then nothing will happen, because the latest version is already recorded
+     */
+    @Test
+    public void alreadyRecordedCreateRecordFromVersion()
+    {
+        // latest version is already recorded
+        Version mockedVersion = mock(VersionImpl.class);
+        doReturn(Collections.singletonMap(RecordableVersionServiceImpl.PROP_VERSION_RECORD, generateNodeRef())).when(mockedVersion).getVersionProperties();        
+        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        doReturn(mockedVersion).when(recordableVersionService).getCurrentVersion(nodeRef);
+        
+        // create record from version
+        recordableVersionService.createRecordFromLatestVersion(filePlan, nodeRef);
+        
+        // nothing happens
+        verify(mockedRecordService, never()).createRecordFromCopy(eq(filePlan), any(NodeRef.class));        
+    }
+    
+    /**
+     * Given that a nodes last version is not recorded
+     * When I try to create a record from the latest version
+     * Then the latest version is marked as record and a new record version is created to store the version state
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void notRecordedCreateRecordFromVersion()
+    {
+        // latest version is not recorded
+        Version mockedVersion = mock(VersionImpl.class);
+        NodeRef versionNodeRef = generateNodeRef();
+        doReturn(Collections.emptyMap()).when(mockedVersion).getVersionProperties();        
+        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        
+        // version history
+        NodeRef versionHistoryNodeRef = generateNodeRef();
+        doReturn(versionHistoryNodeRef).when(mockedDbNodeService).getChildByName(any(NodeRef.class), eq(Version2Model.CHILD_QNAME_VERSION_HISTORIES), any(String.class));
+        
+        // version number
+        doReturn(mockedVersion).when(recordableVersionService).getCurrentVersion(nodeRef);
+        doReturn(versionNodeRef).when(recordableVersionService).convertNodeRef(any(NodeRef.class));
+        makePrimaryParentOf(versionNodeRef, versionHistoryNodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "something-0"), mockedDbNodeService);
+        
+        // created version
+        NodeRef newVersionNodeRef = generateNodeRef();
+        doReturn(generateChildAssociationRef(versionHistoryNodeRef, newVersionNodeRef)).when(mockedDbNodeService).createNode(
+                eq(versionHistoryNodeRef),
+                eq(Version2Model.CHILD_QNAME_VERSIONS),
+                any(QName.class),
+                any(QName.class),
+                any(Map.class));
+        
+        // created record
+        NodeRef newRecordNodeRef = generateNodeRef();
+        doReturn(newRecordNodeRef).when(mockedRecordService).createRecordFromContent(
+                eq(filePlan), 
+                any(String.class), 
+                any(QName.class), 
+                any(Map.class), 
+                any(ContentReader.class));
+                
+        // create record from version
+        recordableVersionService.createRecordFromLatestVersion(filePlan, nodeRef);
+        
+        // verify that the version is converted to a recorded version
+        verify(mockedRecordService, times(1)).createRecordFromContent(
+                eq(filePlan), 
+                any(String.class), 
+                any(QName.class), 
+                any(Map.class), 
+                any(ContentReader.class));
+        verify(mockedDbNodeService, times(1)).deleteNode(any(NodeRef.class));
+        verify(mockedDbNodeService, times(1)).createNode(
+                eq(versionHistoryNodeRef),
+                eq(Version2Model.CHILD_QNAME_VERSIONS),
+                any(QName.class),
+                any(QName.class),
+                any(Map.class));
+        verify(mockedNodeService, times(1)).addAspect(eq(newVersionNodeRef), eq(Version2Model.ASPECT_VERSION), any(Map.class));
+        verify(mockedNodeService, times(1)).addAspect(
+                newVersionNodeRef, 
+                RecordableVersionModel.ASPECT_RECORDED_VERSION, 
+                Collections.singletonMap(RecordableVersionModel.PROP_RECORD_NODE_REF, (Serializable)newRecordNodeRef));        
     }
 }

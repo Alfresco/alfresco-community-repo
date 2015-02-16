@@ -47,6 +47,7 @@ import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -125,7 +126,8 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @Mock(name="extendedPermissionService")      protected ExtendedPermissionService    mockedExtendedPermissionService;
     @Mock(name="extendedSecurityService")        protected ExtendedSecurityService      mockedExtendedSecurityService;
     @Mock(name="recordableVersionConfigService") protected RecordableVersionConfigService mockedRecordableVersionConfigService;
-    @Mock(name="cmObjectType")                   protected CmObjectType                 cmObjectType;
+    @Mock(name="cmObjectType")                   protected CmObjectType                 mockedCmObjectType;
+    @Mock(name="recordableVersionService")       protected RecordableVersionService     mockedRecordableVersionService;
 
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;
@@ -386,7 +388,17 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
      */
     protected void makePrimaryParentOf(NodeRef child, NodeRef parent)
     {
-        doReturn(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, parent, generateQName(), child))
+        makePrimaryParentOf(child, parent, ContentModel.ASSOC_CONTAINS, generateQName());
+    }
+    
+    protected void makePrimaryParentOf(NodeRef child, NodeRef parent, QName assocType, QName assocName)
+    {
+        makePrimaryParentOf(child, parent, assocType, assocName, mockedNodeService); 
+    }
+    
+    protected void makePrimaryParentOf(NodeRef child, NodeRef parent, QName assocType, QName assocName, NodeService mockedNodeService)
+    {
+        doReturn(new ChildAssociationRef(assocType, parent, assocName, child))
             .when(mockedNodeService)
             .getPrimaryParent(child);
     }

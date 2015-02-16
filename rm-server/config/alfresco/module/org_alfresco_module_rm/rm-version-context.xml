@@ -20,6 +20,9 @@
       <property name="recordService" ref="RecordService" />
       <property name="modelSecurityService" ref="ModelSecurityService" />
       <property name="cmObjectType" ref="cm.object" />
+      <property name="extendedPermissionService" ref="ExtendedPermissionService" />
+      <property name="extendedSecurityService" ref="ExtendedSecurityService" />
+      <property name="ownableService" ref="OwnableService" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="versionService" />
@@ -37,6 +40,34 @@
 
    <!--  rmv:versionable aspect behaviour bean -->
    <bean id="rm.versionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.model.VersionableAspect" parent="rm.baseBehaviour">
+   </bean>
+   
+   <!-- recordable version service -->
+   <bean id="RecordableVersionService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces" value="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService" />
+      <property name="target" ref="versionService"/>
+      <property name="interceptorNames">
+         <list>
+            <idref local="RecordableVersionService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="RecordableVersionService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="RecordableVersionService_transaction" parent="baseTransaction"/>
+
+   <bean id="RecordableVersionService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isCurrentVersionRecorded=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isRecordedVersion=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.createRecordFromLatestVersion=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
    </bean>
 
 </beans>

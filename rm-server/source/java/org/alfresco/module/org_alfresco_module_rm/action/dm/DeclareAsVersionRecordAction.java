@@ -18,28 +18,20 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
-import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.version.VersionModel;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionService;
-import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,7 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  */
 public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstractBase
-                                implements RecordsManagementModel
+                                          implements RecordsManagementModel
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(DeclareAsVersionRecordAction.class);
@@ -64,10 +56,10 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     public static final String PARAM_FILE_PLAN = "file-plan";
 
     /** Sync Model URI */
-    static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
+    private static final String SYNC_MODEL_1_0_URI = "http://www.alfresco.org/model/sync/1.0";
     
     /** Synced aspect */
-    static final QName ASPECT_SYNCED = QName.createQName(SYNC_MODEL_1_0_URI, "synced");
+    private static final QName ASPECT_SYNCED = QName.createQName(SYNC_MODEL_1_0_URI, "synced");
 
     /** Node service */
     private NodeService nodeService;
@@ -78,8 +70,11 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     /** Dictionary service */
     private DictionaryService dictionaryService;
     
-    /** version service */
-    private VersionService versionService;
+    /** recordable version service */
+    private RecordableVersionService recordableVersionService;
+    
+    /** authentication util */
+    private AuthenticationUtil authenticationUtil;
 
     /**
      * @param nodeService   node service
@@ -106,12 +101,20 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
     }
     
     /**
-     * @param versionService	version service
+     * @param recordableVersionService  recordable version service
      */
-    public void setVersionService(VersionService versionService) 
+    public void setRecordableVersionService(RecordableVersionService recordableVersionService)
     {
-		this.versionService = versionService;
-	}
+        this.recordableVersionService = recordableVersionService;
+    }
+    
+    /**
+     * @param authenticationUtil    authentication util
+     */
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
+    }
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -182,14 +185,14 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
             {
                 // TODO .. eventually make the file plan parameter required
 
-                filePlan = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+                filePlan = authenticationUtil.runAs(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<NodeRef>()
                 {
                     @Override
                     public NodeRef doWork()
                     {
                         return filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
                     }
-                }, AuthenticationUtil.getAdminUserName());
+                }, authenticationUtil.getAdminUserName());
 
                 // if the file plan is still null, raise an exception
                 if (filePlan == null)
@@ -214,15 +217,8 @@ public class DeclareAsVersionRecordAction extends AuditableActionExecuterAbstrac
                 }
             }
             
-            // create version properties
-            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(4);
-            versionProperties.put(Version.PROP_DESCRIPTION, "Recorded version");					// TODO make this a configurable option of the action
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);				// TODO make this a configurable option of the action
-            versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
-            versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
-            
-            // create recordable version
-            versionService.createVersion(actionedUponNodeRef, versionProperties);
+            // create record from latest version
+            recordableVersionService.createRecordFromLatestVersion(filePlan, actionedUponNodeRef);
         }
     }
 

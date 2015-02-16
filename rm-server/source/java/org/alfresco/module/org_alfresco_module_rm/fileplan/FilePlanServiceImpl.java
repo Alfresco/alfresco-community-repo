@@ -467,7 +467,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         // Prepend it to the path
         nodeRefPath.addFirst(nodeRef);
         // Are we not at the root
-        if (!isFilePlan(nodeRef))
+        if (!isFilePlan(nodeRef) && isFilePlanComponent(nodeRef))
         {
             ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
             if (assocRef == null)

@@ -93,15 +93,18 @@ public final class FilePlanNamePathDataExtractor extends AbstractDataExtractor
         try
         {
             NodeRef nodeRef = (NodeRef) value;
-
-            // Get path from the RM root
-            List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
-
             StringBuilder sb = new StringBuilder(128);
-            for (NodeRef pathNodeRef : nodeRefPath)
+            
+            if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
             {
-                String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
-                sb.append("/").append(name);
+                // Get path from the RM root
+                List<NodeRef> nodeRefPath = filePlanService.getNodeRefPath(nodeRef);
+    
+                for (NodeRef pathNodeRef : nodeRefPath)
+                {
+                    String name = (String)nodeService.getProperty(pathNodeRef, ContentModel.PROP_NAME);
+                    sb.append("/").append(name);
+                }
             }
 
             // Done

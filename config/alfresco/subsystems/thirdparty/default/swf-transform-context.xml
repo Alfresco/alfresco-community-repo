@@ -9,10 +9,13 @@
       </property>
       <property name="checkCommand">
          <bean class="org.alfresco.util.exec.RuntimeExec">
-            <property name="commandMap">
+            <property name="commandsAndArguments">
                <map>
                   <entry key=".*">
-                     <value>${swf.exe} -V</value>
+                     <list>				  
+                        <value>${swf.exe}</value>
+                        <value>-V</value>						
+                     </list>
                   </entry>
                </map>
             </property>
@@ -23,10 +26,22 @@
       </property>
       <property name="transformCommand">
          <bean class="org.alfresco.util.exec.RuntimeExec">
-            <property name="commandMap">
+            <property name="commandsAndArguments">
                <map>
                   <entry key=".*">
-                     <value>${swf.exe} -T ${flashVersion} ${swf.encoder.params} ${source} -o ${target} -s languagedir=${swf.languagedir} -p ${pageRange}</value>
+                     <list>
+                        <value>${swf.exe}</value>
+                        <value>-T</value>
+                        <value>${flashVersion}</value> 
+                        <value>${swf.encoder.params}</value> 
+                        <value>${source}</value> 
+                        <value>-o</value> 
+                        <value>${target}</value> 
+                        <value>-s</value> 
+                        <value>languagedir=${swf.languagedir}</value> 
+                        <value>-p</value> 
+                        <value>${pageRange}</value>
+                     </list>					 
                   </entry>
                </map> 
             </property>

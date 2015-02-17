@@ -460,24 +460,23 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     private void getNodeRefPathRecursive(NodeRef nodeRef, Deque<NodeRef> nodeRefPath)
     {
-        if (!isFilePlanComponent(nodeRef))
+        if (isFilePlanComponent(nodeRef))
         {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_INVALID_RM_NODE, ASPECT_FILE_PLAN_COMPONENT.toString()));
-        }
-        // Prepend it to the path
-        nodeRefPath.addFirst(nodeRef);
-        // Are we not at the root
-        if (!isFilePlan(nodeRef) && isFilePlanComponent(nodeRef))
-        {
-            ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
-            if (assocRef == null)
+            // Prepend it to the path
+            nodeRefPath.addFirst(nodeRef);
+            // Are we not at the root
+            if (!isFilePlan(nodeRef))
             {
-                // We hit the top of the store
-                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_ROOT));
+                ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
+                if (assocRef == null)
+                {
+                    // We hit the top of the store
+                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_ROOT));
+                }
+                // Recurse
+                nodeRef = assocRef.getParentRef();
+                getNodeRefPathRecursive(nodeRef, nodeRefPath);
             }
-            // Recurse
-            nodeRef = assocRef.getParentRef();
-            getNodeRefPathRecursive(nodeRef, nodeRefPath);
         }
     }
 

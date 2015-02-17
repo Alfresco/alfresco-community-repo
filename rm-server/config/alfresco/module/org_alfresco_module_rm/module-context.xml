@@ -127,7 +127,7 @@
 
    <bean id="rmEventType.crossReferencedRecordTransfered" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferencedRecordActionedUpon" parent="rmEventType">
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}crossreference"/>
-      <property name="actionName" value="transfer"/>
+      <property name="actionName" value="transferComplete"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>

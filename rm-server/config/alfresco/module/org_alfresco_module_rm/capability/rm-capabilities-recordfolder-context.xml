@@ -33,9 +33,6 @@
             <ref bean="rmCreateRecordFolderCapability"/>
             <ref bean="rmModifyRecordFolderCapability"/>
             <ref bean="rmDeleteRecordFolderCapability"/>
-            <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
-            <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
-            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
          </list>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>

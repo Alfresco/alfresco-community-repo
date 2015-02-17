@@ -633,11 +633,21 @@
       <property name="kinds">
          <set>
             <value>RECORD_CATEGORY</value>
+         </set>
+      </property>
+      <property name="capability" value ="CreateModifyDestroyFolders"/>
+   </bean>
+
+   <bean id="jsonConversionComponent.newUnfiledRecordsFolder"
+         parent="jsonConversionComponent.baseAction">
+      <property name="name" value="newUnfiledRecordsFolder"/>
+      <property name="kinds">
+         <set>
             <value>UNFILED_RECORD_CONTAINER</value>
             <value>UNFILED_RECORD_FOLDER</value>
          </set>
       </property>
-      <property name="capability" value ="CreateModifyDestroyFolders"/>
+      <property name="capability" value ="CreateModifyDestroyUnfiledRecordContainer"/>
    </bean>
 
    <bean id="jsonConversionComponent.import"
@@ -657,6 +667,13 @@
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="export"/>
       <property name="capability" value="ViewRecords"/>
+      <property name="kinds">
+         <set>
+            <value>FILE_PLAN</value>
+            <value>RECORD_CATEGORY</value>
+            <value>RECORD_FOLDER</value>
+         </set>
+      </property>
    </bean>
 
    <bean id="jsonConversionComponent.downloadZip"

@@ -40,6 +40,7 @@ import org.alfresco.error.ExceptionStackUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.service.license.LicenseIntegrityException;
 import org.alfresco.util.LockHelper.LockTryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,6 +59,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DeadlockLoserDataAccessException;
 import org.springframework.jdbc.JdbcUpdateAffectedIncorrectNumberOfRowsException;
 import org.springframework.jdbc.UncategorizedSQLException;
+
 
 /**
  * A helper that runs a unit of work inside a UserTransaction,
@@ -104,6 +106,7 @@ public class RetryingTransactionHelper
                     SQLException.class,
                     BatchUpdateException.class,
                     DataIntegrityViolationException.class,
+                    LicenseIntegrityException.class,
                     StaleStateException.class,
                     TooManyResultsException.class,              // Expected one result but found multiple (bad key alert)
                     ObjectNotFoundException.class,

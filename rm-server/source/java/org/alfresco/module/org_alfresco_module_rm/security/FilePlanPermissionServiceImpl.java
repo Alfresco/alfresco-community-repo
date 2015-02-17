@@ -289,8 +289,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     )
     public void onCreateHold(final ChildAssociationRef childAssocRef)
     {
-        mandatory("childAssocRef", childAssocRef);
-        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+        createContainerElement(childAssocRef);
     }
 
     /**
@@ -307,18 +306,36 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     )
     public void onCreateTransfer(final ChildAssociationRef childAssocRef)
     {
+        createContainerElement(childAssocRef);
+    }
+
+    /**
+     * Helper method to create a container element, e.g. transfer folder or hold
+     *
+     * @param childAssocRef
+     */
+    private void createContainerElement(final ChildAssociationRef childAssocRef)
+    {
         mandatory("childAssocRef", childAssocRef);
-
-        final NodeRef childRef = childAssocRef.getChildRef();
+        NodeRef childRef = childAssocRef.getChildRef();
         setupPermissions(childAssocRef.getParentRef(), childRef);
+        grantFilingPermissionToCreator(childRef);
+    }
 
+    /**
+     * Helper method to give filing permissions to the currently logged in user who creates the node (transfer folder, hold, etc.)
+     *
+     * @param nodeRef The node reference of the created object
+     */
+    private void grantFilingPermissionToCreator(final NodeRef nodeRef)
+    {
         final String user = AuthenticationUtil.getFullyAuthenticatedUser();
 
         final boolean hasUserPermission = authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
         {
             public Boolean doWork()
             {
-                return getPermissionService().hasPermission(childRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED;
+                return getPermissionService().hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED;
             }
         }, user);
 
@@ -328,7 +345,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 public Void doWork()
                 {
-                    getPermissionService().setPermission(childRef, user, RMPermissionModel.FILING, true);
+                    getPermissionService().setPermission(nodeRef, user, RMPermissionModel.FILING, true);
                     return null;
                 }
             });

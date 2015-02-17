@@ -1371,7 +1371,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 final Set<QName> aspects = nodeService.getAspects(nodeRef);
                 for (QName aspect : aspects)
                 {
-                    if (RM_URI.equals(aspect.getNamespaceURI()))
+                    if (RM_URI.equals(aspect.getNamespaceURI()) || 
+                        RecordableVersionModel.RMV_URI.equals(aspect.getNamespaceURI()))
                     {
                         nodeService.removeAspect(nodeRef, aspect);
                     }

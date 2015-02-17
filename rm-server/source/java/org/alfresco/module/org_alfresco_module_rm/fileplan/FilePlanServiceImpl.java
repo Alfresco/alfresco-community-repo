@@ -65,7 +65,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     private static final String MSG_DUP_ROOT = "rm.service.dup-root";
     private static final String MSG_ROOT_TYPE = "rm.service.root-type";
     private static final String MSG_PATH_NODE = "rm.service.path-node";
-    private static final String MSG_INVALID_RM_NODE = "rm.service.invalid-rm-node";
     private static final String MSG_NO_ROOT = "rm.service.no-root";
     private static final String MSG_CONTAINER_PARENT_TYPE= "rm.service.container-parent-type";
     private static final String MSG_CONTAINER_TYPE = "rm.service.container-type";

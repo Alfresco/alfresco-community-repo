@@ -37,7 +37,7 @@
 
         <!-- Binaries -->
         <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}/manager" />
-        <setInstallerVariable name="common_distribution_folder" value="${binaries_folder}/common-20140108" />
+        <setInstallerVariable name="common_distribution_folder" value="${binaries_folder}/common-20150213" />
         <setInstallerVariable name="postgres_distribution_folder" value="${local_binaries_folder}/postgresql" />
         <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64" />
         <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64" />

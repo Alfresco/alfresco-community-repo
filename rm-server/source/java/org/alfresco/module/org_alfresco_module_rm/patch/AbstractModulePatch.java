@@ -58,6 +58,12 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
 
     /** module patch target module schema number */
     private int targetSchema;
+    
+    /** if it should use a read only transaction */
+    private boolean txnReadOnly = true;
+    
+    /** if it should use a new transaction */
+    private boolean txnRequiresNew = false;
 
     /**
      * Initiialisation method
@@ -65,6 +71,16 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
     public void init()
     {
         modulePatchExecuter.register(this);
+    }
+    
+    protected void  setTxnReadOnly(boolean txnReadOnly) 
+    {
+        this.txnReadOnly = txnReadOnly;
+    }
+
+    protected void setTxnRequiresNew(boolean txnRequiresNew) 
+    {
+        this.txnRequiresNew = txnRequiresNew;
     }
 
     /**
@@ -216,8 +232,8 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
         // do patch in transaction
         transactionService.getRetryingTransactionHelper().doInTransaction(
                 new ApplyCallback(),
-                true,
-                false);
+                txnReadOnly,
+                txnRequiresNew);
         
         if (LOGGER.isInfoEnabled())
         {

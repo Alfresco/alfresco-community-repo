@@ -551,8 +551,8 @@
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getUsersAssignedToRole=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getGroupsAssignedToRole=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllAssignedToRole=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.assignRoleToAuthority=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyUsersAndGroups
-                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.unassignRoleFromAuthority=RM_CAP.0.rma:filePlanComponent.CreateModifyDestroyUsersAndGroups
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.assignRoleToAuthority=RM_CAP.0.rma:filePlanComponent.ManageAccessControls
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.unassignRoleFromAuthority=RM_CAP.0.rma:filePlanComponent.ManageAccessControls
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getAllRolesContainerGroup=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.*=RM_DENY
                 ]]>

@@ -128,5 +128,13 @@ public abstract class CapabilityPatch extends AbstractModulePatch
         }
     }
     
+    @Override
+    public void apply()
+    {
+        setTxnReadOnly(false);
+        setTxnRequiresNew(true);
+        super.apply();
+    }
+    
     protected abstract void applyCapabilityPatch(NodeRef filePlan);
 }

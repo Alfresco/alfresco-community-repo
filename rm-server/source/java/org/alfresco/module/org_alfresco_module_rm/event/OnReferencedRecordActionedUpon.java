@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
@@ -50,7 +51,8 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 @BehaviourBean
 public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEventTypeImpl
-                                            implements RecordsManagementModel
+                                            implements RecordsManagementModel,
+                                            BeforeRMActionExecution
 
 {
     /** Disposition service */
@@ -146,13 +148,14 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
      * @param name
      * @param parameters
      */
+    @Override
     @Behaviour
     (
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent",
             notificationFrequency = NotificationFrequency.FIRST_EVENT
     )
-    public void beforeActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
+    public void beforeRMActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
     {
         AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
         {

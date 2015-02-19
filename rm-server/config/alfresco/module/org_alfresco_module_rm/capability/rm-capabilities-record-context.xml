@@ -19,6 +19,7 @@
       <property name="permission" value="CreateRecords"/>
       <property name="kinds">
          <list>
+            <value>RECORD</value>
             <value>RECORD_FOLDER</value>
          </list>
       </property>

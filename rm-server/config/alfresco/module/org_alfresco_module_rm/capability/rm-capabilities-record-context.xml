@@ -17,6 +17,12 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="35" />
       <property name="permission" value="CreateRecords"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD</value>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
@@ -124,7 +130,7 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="45" />
    </bean>
-   
+
    <bean id="rmDeleteLinksCapability"
          parent="declarativeCapability">
       <property name="name" value="DeleteLinks"/>

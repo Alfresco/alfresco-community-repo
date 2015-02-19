@@ -44,7 +44,6 @@
             <ref bean="rmEditRecordMetadataCapability"/>
             <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmEditHoldCapability"/>
-            <ref bean="rmCreateRecordsCapability"/>
          </list>
       </property>
    </bean>
@@ -63,7 +62,6 @@
             <ref bean="rmEditRecordMetadataCapability"/>
             <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
             <ref bean="rmEditHoldCapability"/>
-            <ref bean="rmCreateRecordsCapability"/>
          </list>
       </property>
    </bean>
@@ -135,6 +133,7 @@
    <bean id="rmCopyRecordCapability"
       parent="declarativeCapability">
       <property name="name" value="CopyRecord"/>
+      <property name="permission" value="CreateRecords"/>
       <property name="private" value="true"/>
       <property name="kinds">
          <list>
@@ -153,6 +152,7 @@
    <bean id="rmCopyUnfiledRecordCapability"
       parent="declarativeCapability">
       <property name="name" value="CopyUnfiledRecord"/>
+      <property name="permission" value="CreateRecords"/>
       <property name="private" value="true"/>
       <property name="kinds">
          <list>
@@ -170,6 +170,7 @@
    <bean id="rmCopyRecordFolderCapability"
       parent="declarativeCapability">
       <property name="name" value="CopyRecordFolder"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
       <property name="private" value="true"/>
       <property name="kinds">
          <list>
@@ -204,6 +205,7 @@
    <bean id="rmCopyRecordCategoryCapability"
       parent="declarativeCapability">
       <property name="name" value="CopyRecordCategory"/>
+      <property name="permission" value="CreateModifyDestroyFileplanMetadata"/>
       <property name="private" value="true"/>
       <property name="kinds">
          <list>

@@ -145,7 +145,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     {
         if (AccessStatus.DENIED.equals(capabilityService.getCapability("FillingPermissionOnly").hasPermission(nodeRef)))
         {
-            throw new AlfrescoRuntimeException("The destination is either frozen, closed or cut off!");
+            throw new AlfrescoRuntimeException("You don't have filing permission on the destination or the destination is either frozen, closed or cut off!");
         }
     }
 

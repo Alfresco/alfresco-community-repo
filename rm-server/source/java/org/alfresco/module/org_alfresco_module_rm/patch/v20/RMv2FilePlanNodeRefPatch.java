@@ -126,35 +126,45 @@ public class RMv2FilePlanNodeRefPatch extends ModulePatchComponent
 
                 NodeRef filePlan =  filePlanService.getFilePlan(filePlanComponentNodeRef);
 
-                // set the file plan node reference
-                if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
-                {
-                   nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
+                if(filePlan != null)
+                {           
+	                // set the file plan node reference
+	                if (nodeService.getProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF) == null)
+	                {
+	                   nodeService.setProperty(filePlanComponentNodeRef, PROP_ROOT_NODEREF, filePlan);
+	                }
+	
+	                // only set the admin permissions on record categories, record folders and records
+	                FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(filePlanComponentNodeRef);
+	                if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) ||
+	                    FilePlanComponentKind.RECORD_FOLDER.equals(kind) ||
+	                    FilePlanComponentKind.RECORD.equals(kind))
+	                {
+	                    // ensure the that the records management role has read and file on the node
+	                    Role adminRole = filePlanRoleService.getRole(filePlan, "Administrator");
+	                    if (adminRole != null)
+	                    {
+	                        permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
+	                    }
+	
+	                    // ensure that the default vital record default values have been set (RM-753)
+	                    Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR);
+	                    if (vitalRecordIndicator == null)
+	                    {
+	                        nodeService.setProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR, false);
+	                    }
+	                    Serializable reviewPeriod = nodeService.getProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD);
+	                    if (reviewPeriod == null)
+	                    {
+	                        nodeService.setProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD, new Period("none|0"));
+	                    }
+	                }                
                 }
-
-                // only set the admin permissions on record categories, record folders and records
-                FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(filePlanComponentNodeRef);
-                if (FilePlanComponentKind.RECORD_CATEGORY.equals(kind) ||
-                    FilePlanComponentKind.RECORD_FOLDER.equals(kind) ||
-                    FilePlanComponentKind.RECORD.equals(kind))
+                else
                 {
-                    // ensure the that the records management role has read and file on the node
-                    Role adminRole = filePlanRoleService.getRole(filePlan, "Administrator");
-                    if (adminRole != null)
+                    if (LOGGER.isWarnEnabled())
                     {
-                        permissionService.setPermission(filePlanComponentNodeRef, adminRole.getRoleGroupName(), RMPermissionModel.FILING, true);
-                    }
-
-                    // ensure that the default vital record default values have been set (RM-753)
-                    Serializable vitalRecordIndicator = nodeService.getProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR);
-                    if (vitalRecordIndicator == null)
-                    {
-                        nodeService.setProperty(filePlanComponentNodeRef, PROP_VITAL_RECORD_INDICATOR, false);
-                    }
-                    Serializable reviewPeriod = nodeService.getProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD);
-                    if (reviewPeriod == null)
-                    {
-                        nodeService.setProperty(filePlanComponentNodeRef, PROP_REVIEW_PERIOD, new Period("none|0"));
+                        LOGGER.warn("   ... node " + filePlanComponent.toString() + " was skiped, beacuse there was no associated file plan.");
                     }
                 }
             }

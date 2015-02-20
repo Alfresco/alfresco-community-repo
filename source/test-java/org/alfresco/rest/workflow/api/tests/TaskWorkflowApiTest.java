@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.activiti.engine.TaskService;
 import org.activiti.engine.history.HistoricTaskInstance;
 import org.activiti.engine.runtime.Clock;
 import org.activiti.engine.runtime.ProcessInstance;
@@ -46,13 +47,18 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiScriptNode;
+import org.alfresco.rest.api.tests.PersonInfo;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
+import org.alfresco.rest.api.tests.RepoService.TestPerson;
+import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
+import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
 import org.alfresco.rest.workflow.api.tests.WorkflowApiClient.TasksClient;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -372,6 +378,110 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         finally
         {
             cleanupProcessInstance(processInstance);
+        }
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testUpdateTaskMnt13276() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+        String initiatorId = requestContext.getRunAsUser();
+        ProcessInfo processInfo = startReviewPooledProcess(requestContext);
+        
+        // create test users
+        final List<TestPerson> persons = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<List<TestPerson>>()
+        {
+            @SuppressWarnings("synthetic-access")
+            public List<TestPerson> execute() throws Throwable
+            {
+                ArrayList<TestPerson> persons = new ArrayList<TestPerson>();
+                String temp = "_" + System.currentTimeMillis();
+                persons.add(currentNetwork.createUser(new PersonInfo("user0", "user0", "user0" + temp, "password", null, "skype", "location", "telephone", "mob", "instant", "google")));
+                persons.add(currentNetwork.createUser(new PersonInfo("user1", "user1", "user1" + temp, "password", null, "skype", "location", "telephone", "mob", "instant", "google")));
+                persons.add(currentNetwork.createUser(new PersonInfo("user2", "user2", "user2" + temp, "password", null, "skype", "location", "telephone", "mob", "instant", "google")));
+                return persons;
+            }
+        }, false, true);
+
+        final MemberOfSite memberOfSite = currentNetwork.getSiteMemberships(initiatorId).get(0);
+
+        // startReviewPooledProcess() uses initiator's site id and role name for construct bpm_groupAssignee, thus we need appropriate things for created users
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        TestSite initiatorSite = (TestSite) memberOfSite.getSite();
+                        initiatorSite.inviteToSite(persons.get(0).getId(), memberOfSite.getRole());
+                        initiatorSite.inviteToSite(persons.get(1).getId(), memberOfSite.getRole());
+                        // this user wouldn't be in group
+                        initiatorSite.inviteToSite(persons.get(2).getId(), SiteRole.SiteConsumer == memberOfSite.getRole() ? SiteRole.SiteCollaborator : SiteRole.SiteConsumer);
+                        return null;
+                    }
+                }, AuthenticationUtil.getAdminUserName(), currentNetwork.getId());
+                return null;
+            }
+        }, false, true);
+
+        try
+        {
+            Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInfo.getId()).singleResult();
+            TasksClient tasksClient = publicApiClient.tasksClient();
+
+            // Updating the task by user in group
+            JSONObject taskBody = new JSONObject();
+            taskBody.put("name", "Updated name by user in group");
+            List<String> selectedFields = new ArrayList<String>();
+            selectedFields.addAll(Arrays.asList(new String[] { "name" }));
+            requestContext.setRunAsUser(persons.get(0).getId());
+            JSONObject result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+            assertEquals("Updated name by user in group", result.get("name"));
+            task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInfo.getId()).singleResult();
+            assertNotNull(task);
+            assertEquals("Updated name by user in group", task.getName());
+
+            // Updating the task by user not in group
+            try
+            {
+                taskBody.put("name", "Updated name by user not in group");
+                requestContext.setRunAsUser(persons.get(2).getId());
+                tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+                fail("User not from group should not see items.");
+            }
+            catch (PublicApiException expected)
+            {
+                assertEquals(HttpStatus.FORBIDDEN.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("Permission was denied", expected.getHttpResponse());
+            }
+            
+            // claim task
+            TaskService taskService = activitiProcessEngine.getTaskService();
+            task = taskService.createTaskQuery().processInstanceId(processInfo.getId()).singleResult();
+            taskService.setAssignee(task.getId(), persons.get(1).getId());
+            // Updating by user in group for claimed task by another user
+            try
+            {
+                taskBody = new JSONObject();
+                taskBody.put("name", "Updated name by user in group for claimed task");
+                selectedFields.addAll(Arrays.asList(new String[] { "name" }));
+                requestContext.setRunAsUser(persons.get(0).getId());
+                result = tasksClient.updateTask(task.getId(), taskBody, selectedFields);
+                fail("User from group should not see items for claimed task by another user.");
+            }
+            catch (PublicApiException expected)
+            {
+                assertEquals(HttpStatus.FORBIDDEN.value(), expected.getHttpResponse().getStatusCode());
+                assertErrorSummary("Permission was denied", expected.getHttpResponse());
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(processInfo.getId());
         }
     }
     

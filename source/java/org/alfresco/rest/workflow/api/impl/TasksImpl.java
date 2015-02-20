@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -777,6 +777,16 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                     {
                         authorized = true;
                         break;
+                    }
+                    // MNT-13276
+                    if ((taskInstance.getAssignee() == null) && (link.getGroupId() != null) && link.getType().equals(IdentityLinkType.CANDIDATE))
+                    {
+                        Set<String> userGroups = authorityService.getAuthoritiesForUser(user);
+                        if (userGroups.contains(link.getGroupId()))
+                        {
+                            authorized = true;
+                            break;
+                        }
                     }
                     if (taskAction == TaskStateTransition.CLAIMED && link.getGroupId() != null && link.getType().equals(IdentityLinkType.CANDIDATE)) 
                     {

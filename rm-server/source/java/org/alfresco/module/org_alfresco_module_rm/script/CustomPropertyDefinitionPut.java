@@ -34,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.extensions.surf.util.ParameterCheck;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -133,7 +134,7 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         String propId = (String)params.get(PROP_ID);
         ParameterCheck.mandatoryString("propId", propId);
 
-        QName propQName = rmAdminService.getQNameForClientId(propId);
+        QName propQName = rmAdminService.getQNameForClientId(URLEncoder.encode(propId));
         if (propQName == null)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,

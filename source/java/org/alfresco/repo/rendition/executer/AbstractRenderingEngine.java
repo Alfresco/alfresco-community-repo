@@ -720,7 +720,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
             if(clazz == null)
                 throw new RenditionServiceException("The class must not be null!", new NullPointerException());
             Class<? extends Serializable> valueClass = value.getClass();
-            if ( !valueClass.isAssignableFrom(clazz))
+            if ( !clazz.isAssignableFrom(valueClass))
             {
                 throw new RenditionServiceException("The parameter: " + paramName + " must be of type: "
                             + clazz.getName() + "but was of type: " + valueClass.getName());

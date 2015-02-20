@@ -255,6 +255,45 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
             }
         });
     }
+
+    public void testHTMLRenderFreeMarkerTemplate() throws Exception
+    {
+        this.setComplete();
+        this.endTransaction();
+        final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
+                "htmlRenderingDefinition");
+
+        this.renditionNode = transactionHelper
+                .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+                {
+                    @Override
+                    public NodeRef execute() throws Throwable
+                    {
+                        // create test model
+                        RenditionDefinition htmlDefinition = renditionService
+                                .createRenditionDefinition(renditionName,
+                                        FreemarkerRenderingEngine.NAME);
+
+                        htmlDefinition.setParameterValue(
+                                FreemarkerRenderingEngine.PARAM_TEMPLATE_NODE,
+                                nodeWithFreeMarkerContent);
+                        htmlDefinition.setParameterValue(FreemarkerRenderingEngine.PARAM_MIME_TYPE,
+                                MimetypeMap.MIMETYPE_HTML);
+                        
+                        Map<String, Serializable> paramMap = new HashMap<String, Serializable>();
+                        paramMap.put("test", "test");
+                        htmlDefinition.setParameterValue(FreemarkerRenderingEngine.PARAM_MODEL,
+                                (Serializable) paramMap);
+
+
+                        ChildAssociationRef renditionAssoc = renditionService.render(
+                                nodeWithDocContent, htmlDefinition);
+                        assertNotNull("The rendition association was null", renditionAssoc);
+                        return renditionAssoc.getChildRef();
+                    }
+                });
+
+    }
     
     public void testRenderFreeMarkerTemplateOneTransaction() throws Exception
     {

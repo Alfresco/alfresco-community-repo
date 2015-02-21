@@ -60,7 +60,7 @@ function main()
       
       // collect values for the permission setting
       var authority = perm.getString("authority");
-      if (people.getGroup(authority) == null && people.getPerson(authority) == null)
+      if (authority != "GROUP_EVERYONE" && people.getGroup(authority) == null && people.getPerson(authority) == null)
       {
          // ACE-3280: silently not add non-existent users
          return;

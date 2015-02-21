@@ -920,9 +920,6 @@
                 <property name="groupDisplayName">
                     <value>SITE_ADMINISTRATORS</value>
                 </property>
-                <property name="adminUserName">
-                    <value>${alfresco_user_store.adminusername}</value>
-                </property>
                 <property name="authorityZones">
                     <set>
                         <value>APP.DEFAULT</value>
@@ -954,9 +951,6 @@
                 </property>
                 <property name="groupDisplayName">
                     <value>ALFRESCO_SEARCH_ADMINISTRATORS</value>
-                </property>
-                <property name="adminUserName">
-                    <value>${alfresco_user_store.adminusername}</value>
                 </property>
                 <property name="authorityZones">
                     <set>

@@ -22,6 +22,7 @@ package org.alfresco.repo.admin.patch.impl;
 import java.util.Set;
 
 import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -76,13 +77,8 @@ public class AddGroupAuthorityPatch extends AbstractPatch
                     this.groupAuthorityDetails.groupDisplayName,
                     this.groupAuthorityDetails.authorityZones);
 
-        if (this.groupAuthorityDetails.adminUserName != null
-                    && authorityService.isAdminAuthority(this.groupAuthorityDetails.adminUserName))
-        {
-            // Add admin as a member of the created group
-            authorityService.addAuthority(groupAuthorityName,
-                        this.groupAuthorityDetails.adminUserName);
-        }
+        authorityService.addAuthority(groupAuthorityName, AuthenticationUtil.getAdminUserName());
+
         result.append(I18NUtil.getMessage(MSG_RESULT, groupAuthorityName));
 
         return result.toString();
@@ -97,7 +93,6 @@ public class AddGroupAuthorityPatch extends AbstractPatch
     {
         private String groupName;
         private String groupDisplayName;
-        private String adminUserName;
         private Set<String> authorityZones;
 
         /**
@@ -114,17 +109,6 @@ public class AddGroupAuthorityPatch extends AbstractPatch
         public void setGroupDisplayName(String groupDisplayName)
         {
             this.groupDisplayName = groupDisplayName;
-        }
-
-        /**
-         * Sets the Admin's username, so it can be included as a member of the
-         * group. If null, an empty group will be created.
-         * 
-         * @param adminUserName the adminUserName to set
-         */
-        public void setAdminUserName(String adminUserName)
-        {
-            this.adminUserName = adminUserName;
         }
 
         /**

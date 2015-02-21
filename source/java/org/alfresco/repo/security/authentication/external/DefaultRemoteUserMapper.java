@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -223,16 +223,20 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
         
         // MNT-11041 Share SSOAuthenticationFilter and non-ascii username strings
         boolean isEncode = Boolean.valueOf(request.getHeader("Remote-User-Encode"));
-        if (userId != null && isEncode)
+        try
         {
-            try
+            if (userId != null && isEncode)
             {
                 userId = new String(org.apache.commons.codec.binary.Base64.decodeBase64(userId), "UTF-8");
             }
-            catch (UnsupportedEncodingException e)
+            else if (userId != null && !org.apache.commons.codec.binary.Base64.isBase64(userId))
             {
-                //TODO
+                userId = new String(userId.getBytes("ISO-8859-1"), "UTF-8");
             }
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            //TODO
         }
        
         if (this.userIdPattern == null)

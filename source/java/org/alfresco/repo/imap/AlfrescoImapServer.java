@@ -30,7 +30,9 @@ import com.icegreen.greenmail.Managers;
 import com.icegreen.greenmail.imap.ImapHostManager;
 import com.icegreen.greenmail.imap.ImapServer;
 import com.icegreen.greenmail.user.UserManager;
+import com.icegreen.greenmail.util.DummySSLServerSocketFactory;
 import com.icegreen.greenmail.util.ServerSetup;
+
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
 
@@ -84,6 +86,52 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
                     if(logger.isErrorEnabled())
                     {
                         logger.error("Unable to open socket bindTo:" + bindTo + "port " + setup.getPort(), e);
+                    }
+                    throw e;
+                }
+            }
+            return ret;
+        }
+    }
+    
+    private class DefaultImapServer extends ImapServer
+    {
+        
+        public DefaultImapServer(ServerSetup setup, Managers managers)
+        {
+            super(setup, managers);
+        }
+
+        // same behavior as in overridden method, just added exception logging 
+        protected synchronized ServerSocket openServerSocket() throws IOException {
+            ServerSocket ret;
+            if (setup.isSecure()) 
+            {
+                try
+                {
+                    ret = (SSLServerSocket) DummySSLServerSocketFactory.getDefault().createServerSocket(
+                    setup.getPort(), 0, bindTo);
+                } 
+                catch (IOException e)
+                {
+                    if(logger.isErrorEnabled())
+                    {
+                        logger.error("Unable to open socket bindTo:" + bindTo + " port " + setup.getPort(), e);
+                    }
+                    throw e;
+                }
+            } 
+            else 
+            {
+                try
+                {
+                    ret = new ServerSocket(setup.getPort(), 0, bindTo);
+                }
+                catch (IOException e)
+                {
+                    if(logger.isErrorEnabled())
+                    {
+                        logger.error("Unable to open socket bindTo:" + bindTo + " port " + setup.getPort(), e);
                     }
                     throw e;
                 }
@@ -201,7 +249,7 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             
             if(isImapEnabled())
             {
-                serverImpl = new ImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers);
+                serverImpl = new DefaultImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers);
                 serverImpl.startService(null);
             
                 if (logger.isInfoEnabled())

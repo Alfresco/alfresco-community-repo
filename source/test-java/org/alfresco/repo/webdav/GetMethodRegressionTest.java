@@ -204,11 +204,6 @@ public class GetMethodRegressionTest extends TestCase
             {
                 auditService.setAuditEnabled(false);
             }
-
-            fileFolderService.delete(rootTestFolder);
-
-            NodeArchiveService archiveService = (NodeArchiveService) applicationContext.getBean("nodeArchiveService");
-            archiveService.purgeAllArchivedNodes(rootTestFolder.getStoreRef());
         }
     }
 

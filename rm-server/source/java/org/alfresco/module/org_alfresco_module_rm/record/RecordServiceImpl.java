@@ -637,7 +637,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                 if (!propertyUnchanged &&
                     !(ContentModel.PROP_CONTENT.equals(property) && beforeValue == null) &&
-                    !isPropertyEditable(nodeRef, property))
+                    !isPropertyEditable(nodeRef, property) &&
+                    !checkEligablePermissions(nodeRef))
                 {
                     // the user can't edit the record property
                     throw new ModelAccessDeniedException(
@@ -647,6 +648,28 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
             }
         }
+    }
+
+    private boolean checkEligablePermissions(NodeRef nodeRef)
+    {
+        boolean result = false;
+        List<String> permissions = Arrays.asList(
+                RMPermissionModel.CREATE_RECORDS,
+                RMPermissionModel.CREATE_MODIFY_DESTROY_FOLDERS,
+                RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA
+        );
+
+        NodeRef filePlan = getFilePlan(nodeRef);
+        for (String permission : permissions)
+        {
+            if (permissionService.hasPermission(filePlan, permission) == AccessStatus.ALLOWED)
+            {
+                result = true;
+                break;
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -1186,7 +1209,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             // remove versionable aspect(s)
             nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
-            
+
             // remove the owner
             ownableService.setOwner(document, OwnableService.NO_OWNER);
         }
@@ -1371,7 +1394,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 final Set<QName> aspects = nodeService.getAspects(nodeRef);
                 for (QName aspect : aspects)
                 {
-                    if (RM_URI.equals(aspect.getNamespaceURI()) || 
+                    if (RM_URI.equals(aspect.getNamespaceURI()) ||
                         RecordableVersionModel.RMV_URI.equals(aspect.getNamespaceURI()))
                     {
                         nodeService.removeAspect(nodeRef, aspect);
@@ -1408,63 +1431,51 @@ public class RecordServiceImpl extends BaseBehaviourBean
             throw new AlfrescoRuntimeException("Can not check if the property " + property.toString() + " is editable, because node reference is not a record.");
         }
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
-        }
+        NodeRef filePlan = getFilePlan(record);
 
         // DEBUG ...
-        NodeRef filePlan = getFilePlan(record);
-        Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
-
-        if (logger.isDebugEnabled())
+        boolean debugEnabled = logger.isDebugEnabled();
+        if (debugEnabled)
         {
+            logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
+
+            Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
+
             logger.debug(" ... users roles");
-        }
 
-        for (Role role : roles)
-        {
-            if (logger.isDebugEnabled())
+            for (Role role : roles)
             {
                 logger.debug("     ... user has role " + role.getName() + " with capabilities ");
-            }
 
-            for (Capability cap : role.getCapabilities())
-            {
-                if (logger.isDebugEnabled())
+                for (Capability cap : role.getCapabilities())
                 {
                     logger.debug("         ... " + cap.getName());
                 }
             }
-        }
 
-        if (logger.isDebugEnabled())
-        {
             logger.debug(" ... user has the following set permissions on the file plan");
-        }
-        Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
-        for (AccessPermission perm : perms)
-        {
-            if (logger.isDebugEnabled()  &&
-                (perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
-                 perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
+
+            Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
+            for (AccessPermission perm : perms)
             {
-                logger.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
+                if ((perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
+                     perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
+                {
+                    logger.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
+                }
+            }
+
+            if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
+            {
+                logger.debug(" ... user has the edit non record metadata permission on the file plan");
             }
         }
-
-        if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED) &&
-                logger.isDebugEnabled())
-        {
-            logger.debug(" ... user has the edit non record metadata permission on the file plan");
-        }
-
         // END DEBUG ...
 
         boolean result = alwaysEditProperty(property);
         if (result)
         {
-            if (logger.isDebugEnabled())
+            if (debugEnabled)
             {
                 logger.debug(" ... property marked as always editable.");
             }
@@ -1480,7 +1491,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (AccessStatus.ALLOWED.equals(accessNonRecord))
             {
-                if (logger.isDebugEnabled())
+                if (debugEnabled)
                 {
                     logger.debug(" ... user has edit nonrecord metadata capability");
                 }
@@ -1491,7 +1502,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             if (AccessStatus.ALLOWED.equals(accessRecord)  ||
                 AccessStatus.ALLOWED.equals(accessDeclaredRecord))
             {
-                if (logger.isDebugEnabled())
+                if (debugEnabled)
                 {
                     logger.debug(" ... user has edit record or declared metadata capability");
                 }
@@ -1501,7 +1512,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (allowNonRecordEdit && allowRecordEdit)
             {
-                if (logger.isDebugEnabled())
+                if (debugEnabled)
                 {
                     logger.debug(" ... so all properties can be edited.");
                 }
@@ -1513,7 +1524,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // can only edit non record properties
                 if (!isRecordMetadata(filePlan, property))
                 {
-                    if (logger.isDebugEnabled())
+                    if (debugEnabled)
                     {
                         logger.debug(" ... property is not considered record metadata so editable.");
                     }
@@ -1522,7 +1533,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
                 else
                 {
-                    if (logger.isDebugEnabled())
+                    if (debugEnabled)
                     {
                         logger.debug(" ... property is considered record metadata so not editable.");
                     }
@@ -1533,7 +1544,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // can only edit record properties
                 if (isRecordMetadata(filePlan, property))
                 {
-                    if (logger.isDebugEnabled())
+                    if (debugEnabled)
                     {
                         logger.debug(" ... property is considered record metadata so editable.");
                     }
@@ -1542,7 +1553,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
                 else
                 {
-                    if (logger.isDebugEnabled())
+                    if (debugEnabled)
                     {
                         logger.debug(" ... property is not considered record metadata so not editable.");
                     }

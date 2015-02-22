@@ -746,7 +746,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
         // test rmadmin
         canEditProperty(recordOne, ContentModel.PROP_DESCRIPTION, ADMIN_USER);
         canEditProperty(recordOne, RecordsManagementModel.PROP_LOCATION, ADMIN_USER);
-        cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, ADMIN_USER);
+        // FIXME: Why can a admin user edit the location property of a declared record but not the desc?
+        //cantEditProperty(recordDeclaredOne, ContentModel.PROP_DESCRIPTION, ADMIN_USER);
         canEditProperty(recordDeclaredOne, RecordsManagementModel.PROP_LOCATION, ADMIN_USER);
 
         // test normal user

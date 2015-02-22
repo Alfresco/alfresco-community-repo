@@ -187,6 +187,7 @@
    <bean id="rmCopyUnfiledRecordFolderCapability"
       parent="declarativeCapability">
       <property name="name" value="CopyUnfiledRecordFolder"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
       <property name="private" value="true"/>
       <property name="kinds">
          <list>

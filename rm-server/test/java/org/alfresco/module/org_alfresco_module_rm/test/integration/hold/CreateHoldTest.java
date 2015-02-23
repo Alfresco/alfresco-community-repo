@@ -96,7 +96,9 @@ public class CreateHoldTest extends BaseRMTestCase
                 {
                     public Void doWork() throws Exception
                     {
+                        // ensure the user has the correct permission to create the hold
                         filePlanPermissionService.setPermission(holdsContainer, testUser, FILING);
+                        
                         return null;
                     }
                 }, getAdminUserName());

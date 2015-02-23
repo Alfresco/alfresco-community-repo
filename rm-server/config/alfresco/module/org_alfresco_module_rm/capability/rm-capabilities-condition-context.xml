@@ -14,17 +14,20 @@
         <property name="filePlanService" ref="FilePlanService" />
         <property name="dispositionService" ref="DispositionService" />
         <property name="recordFolderService" ref="recordFolderService" />
+        <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
     </bean>
 
     <bean id="capabilityCondition.frozen"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenCapabilityCondition">
+       <property name="holdService" ref="HoldService" />
     </bean>
 
     <bean id="capabilityCondition.frozenOrFrozenChildren"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FrozenCapabilityCondition">
     	<property name="checkChildren" value="true" />
+       <property name="holdService" ref="HoldService" />
     </bean>
 
     <bean id="capabilityCondition.frozenOrHold"
@@ -214,6 +217,11 @@
          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HoldCapabilityCondition">
       <property name="includedInHold" value="true"/>
       <property name="holdService" ref="HoldService" />
+   </bean>
+   
+   <bean id="capabilityCondition.hasFillingOnHoldContainer"
+         parent="capabilityCondition.base"
+         class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FillingOnHoldContainerCapabilityCondition">
    </bean>
 
 </beans>

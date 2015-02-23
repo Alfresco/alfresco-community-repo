@@ -22,7 +22,7 @@
       <property name="index" value="30" />
    </bean>
 
-   <!--  controls user and gropus role assignments -->
+   <!-- controls user and gropus role assignments -->
    <bean id="rmManageAccessControlsCapability"
       parent="declarativeCapability">
       <property name="name" value="ManageAccessControls" />
@@ -31,13 +31,13 @@
       <property name="index" value="40" />
    </bean>
 
+   <!-- controls an entities permissions -->
    <bean id="rmManageAccessRightsCapability"
       parent="declarativeCapability">
       <property name="name" value="ManageAccessRights"/>
       <property name="permission" value="ManageAccessRights"/>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>

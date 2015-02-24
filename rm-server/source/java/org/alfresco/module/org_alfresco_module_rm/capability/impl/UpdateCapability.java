@@ -19,16 +19,10 @@
 package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
 import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
-
-import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCompositeCapability;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -48,36 +42,6 @@ public class UpdateCapability extends DeclarativeCompositeCapability
      */
     public int evaluate(NodeRef nodeRef, QName aspectQName, Map<QName, Serializable> properties)
     {
-        int result = evaluate(nodeRef);
-
-        if (AccessDecisionVoter.ACCESS_GRANTED != result)
-        {
-            if (checkEligablePermissions(nodeRef))
-            {
-                result = AccessDecisionVoter.ACCESS_GRANTED;
-            }
-        }
-
-        return result;
-    }
-
-    private boolean checkEligablePermissions(NodeRef nodeRef)
-    {
-        boolean result = false;
-        List<String> permissions = Arrays.asList(
-                RMPermissionModel.CREATE_RECORDS
-        );
-
-        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-        for (String permission : permissions)
-        {
-            if (permissionService.hasPermission(filePlan, permission) == AccessStatus.ALLOWED)
-            {
-                result = true;
-                break;
-            }
-        }
-
-        return result;
+        return evaluate(nodeRef);
     }
 }

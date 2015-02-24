@@ -21,17 +21,22 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -39,6 +44,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Spy;
 
 /**
  * Unit test for RecordServiceImpl
@@ -54,7 +60,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     private static QName TYPE_MY_FILE_PLAN                  = generateQName();
     private static QName ASPECT_FOR_FILE_PLAN               = generateQName();
 
-    @InjectMocks private RecordServiceImpl recordService;
+    @Spy @InjectMocks private RecordServiceImpl recordService;
 
     @SuppressWarnings("unchecked")
     @Before
@@ -239,5 +245,65 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         
         // verify link was created
         verify(mockedNodeService, times(1)).removeChild(recordFolder, record);       
-    }    
+    }   
+    
+    /**
+     * Given that a new record is being created
+     * When the behaviour is triggered
+     * Then the record is stored for later reference in the transaction
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void onCreateChildAssociationNewRecord()
+    {
+        // standard content node
+        NodeRef nodeRef = generateCmContent("test.txt");
+        ChildAssociationRef assoc = generateChildAssociationRef(generateNodeRef(), nodeRef);
+        
+        doNothing().when(recordService).file(nodeRef);
+        
+        // doesn't have no content aspect
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+            .thenReturn(false);
+        
+        Set<Object> values = mock(HashSet.class);
+        when(mockedTransactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS))
+            .thenReturn(values);
+        
+        // trigger behaviour
+        recordService.onCreateChildAssociation(assoc, true);
+        
+        // verify
+        verify(values, times(1)).add(nodeRef);
+    }
+    
+    /**
+     * Given that an existing record is linked
+     * When the behaviour is triggered
+     * Then the record is not stored for later reference in the transaction
+     */
+    @SuppressWarnings("unchecked")
+    @Test
+    public void onCreateChildAssociationExistingRecord()
+    {
+        // standard content node
+        NodeRef nodeRef = generateCmContent("test.txt");
+        ChildAssociationRef assoc = generateChildAssociationRef(generateNodeRef(), nodeRef);
+
+        doNothing().when(recordService).file(nodeRef);
+        
+        // doesn't have no content aspect
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
+            .thenReturn(false);
+        
+        Set<Object> values = mock(HashSet.class);
+        when(mockedTransactionalResourceHelper.getSet(RecordServiceImpl.KEY_NEW_RECORDS))
+            .thenReturn(values);
+        
+        // trigger behaviour
+        recordService.onCreateChildAssociation(assoc, false);
+        
+        // verify
+        verify(values, never()).add(nodeRef);        
+    }
 }

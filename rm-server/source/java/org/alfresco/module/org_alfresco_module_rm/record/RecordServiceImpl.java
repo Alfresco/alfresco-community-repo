@@ -72,7 +72,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -128,7 +127,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
 
     /** transation data key */
-    private static final String IGNORE_ON_UPDATE = "ignoreOnUpdate";
+    private static final String KEY_IGNORE_ON_UPDATE = "ignoreOnUpdate";
+    private static final String KEY_PENDING_FILLING = "pendingFilling";
+    public static final String KEY_NEW_RECORDS = "newRecords";
 
     /** I18N */
     private static final String MSG_NODE_HAS_ASPECT = "rm.service.node-has-aspect";
@@ -413,7 +414,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // check whether filling is pending aspect removal
-            Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
+            Set<NodeRef> pendingFilling = transactionalResourceHelper.getSet(KEY_PENDING_FILLING);
             if (pendingFilling.contains(nodeRef))
             {
                 file(nodeRef);
@@ -504,11 +505,20 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
                         {
                             // we need to postpone filling until the NO_CONTENT aspect is removed
-                            Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
+                            Set<NodeRef> pendingFilling = transactionalResourceHelper.getSet(KEY_PENDING_FILLING);
                             pendingFilling.add(nodeRef);
                         }
                         else
                         {
+                            // store information about the 'new' record in the transaction
+                            // @since 2.3 
+                            // @see https://issues.alfresco.com/jira/browse/RM-1956 
+                            if (bNew)
+                            {
+                                Set<NodeRef> newRecords = transactionalResourceHelper.getSet(KEY_NEW_RECORDS);
+                                newRecords.add(nodeRef);
+                            }
+                            
                             // create and file the content as a record
                             file(nodeRef);
                         }
@@ -567,7 +577,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
      */
     public void disablePropertyEditableCheck(NodeRef nodeRef)
     {
-        Set<NodeRef> ignoreOnUpdate = TransactionalResourceHelper.getSet(IGNORE_ON_UPDATE);
+        Set<NodeRef> ignoreOnUpdate = transactionalResourceHelper.getSet(KEY_IGNORE_ON_UPDATE);
         ignoreOnUpdate.add(nodeRef);
     }
 
@@ -598,7 +608,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             !AuthenticationUtil.isRunAsUserTheSystemUser() &&
             nodeService.exists(nodeRef) &&
             isRecord(nodeRef) &&
-            !TransactionalResourceHelper.getSet(IGNORE_ON_UPDATE).contains(nodeRef))
+            !transactionalResourceHelper.getSet(KEY_IGNORE_ON_UPDATE).contains(nodeRef))
         {
             for (Map.Entry<QName, Serializable> entry : after.entrySet())
             {
@@ -637,8 +647,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                 if (!propertyUnchanged &&
                     !(ContentModel.PROP_CONTENT.equals(property) && beforeValue == null) &&
-                    !isPropertyEditable(nodeRef, property) &&
-                    !checkEligablePermissions(nodeRef))
+                    !isPropertyEditable(nodeRef, property))
                 {
                     // the user can't edit the record property
                     throw new ModelAccessDeniedException(
@@ -648,28 +657,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
             }
         }
-    }
-
-    private boolean checkEligablePermissions(NodeRef nodeRef)
-    {
-        boolean result = false;
-        List<String> permissions = Arrays.asList(
-                RMPermissionModel.CREATE_RECORDS,
-                RMPermissionModel.CREATE_MODIFY_DESTROY_FOLDERS,
-                RMPermissionModel.CREATE_MODIFY_DESTROY_FILEPLAN_METADATA
-        );
-
-        NodeRef filePlan = getFilePlan(nodeRef);
-        for (String permission : permissions)
-        {
-            if (permissionService.hasPermission(filePlan, permission) == AccessStatus.ALLOWED)
-            {
-                result = true;
-                break;
-            }
-        }
-
-        return result;
     }
 
     /**
@@ -1711,7 +1698,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     // we can not link a record to the same location more than once
                     throw new AlfrescoRuntimeException("Can not link a record to the same record folder more than once");
                 }
-            }
+            }                        
 
             // get the current name of the record
             String name = nodeService.getProperty(record, ContentModel.PROP_NAME).toString();

@@ -26,7 +26,6 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -63,6 +62,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** authentication helper */
     protected AuthenticationUtil authenticationUtil;
+    
+    /** transactional resource helper */
+    protected TransactionalResourceHelper transactionalResourceHelper; 
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -104,6 +106,14 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.authenticationUtil = authenticationUtil;
     }
+    
+    /**
+     * @param transactionalResourceHelper   transactional resource helper
+     */
+    public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
+    {
+        this.transactionalResourceHelper = transactionalResourceHelper;
+    }
 
     /**
      * Helper to get internal node service.
@@ -129,7 +139,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         FilePlanComponentKind result = null;
 
-        Map<NodeRef, FilePlanComponentKind> map = TransactionalResourceHelper.getMap("rm.transaction.filePlanComponentByNodeRef");
+        Map<NodeRef, FilePlanComponentKind> map = transactionalResourceHelper.getMap("rm.transaction.filePlanComponentByNodeRef");
         if (map.containsKey(nodeRef))
         {
             result = map.get(nodeRef);
@@ -387,7 +397,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         NodeRef result = null;
         if (nodeRef != null)
         {
-            Map<NodeRef, NodeRef> transactionCache = TransactionalResourceHelper.getMap("rm.servicebase.getFilePlan");
+            Map<NodeRef, NodeRef> transactionCache = transactionalResourceHelper.getMap("rm.servicebase.getFilePlan");
             if (transactionCache.containsKey(nodeRef))
             {
                 result = transactionCache.get(nodeRef);

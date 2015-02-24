@@ -32,6 +32,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+        <property name='transactionalResourceHelper' ref="rm.transactionalResourceHelper" />
      </bean>
 
     <!-- Records Management Service Registry -->

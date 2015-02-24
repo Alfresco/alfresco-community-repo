@@ -24,12 +24,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
 
 import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.policy.ConfigAttributeDefinition;
@@ -37,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.aopalliance.intercept.MethodInvocation;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -54,8 +57,73 @@ public class RMEntryVoterUnitTest extends BaseUnitTest
     /** RM Entry */
     private @InjectMocks RMEntryVoter entryVoter;
     
-    /** Mocked policy */
+    /** mocked policy */
     private @Mock Policy mockedPolicy;
+    
+    /** mocked authentication */
+    private @Mock Authentication mockedAuthentication;
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
+     */
+    @Before
+    @Override
+    public void before() throws Exception
+    {
+        super.before();
+        
+        // don't run as system
+        when(mockedAuthenticationUtil.isRunAsUserTheSystemUser())
+            .thenReturn(false);
+        
+        // indicate that "vote" transaction value is not set
+        when(mockedTransactionalResourceHelper.isResourcePresent("voting"))
+            .thenReturn(false);
+    }
+    
+    /**
+     * Given that the system is already voting 
+     * When I vote
+     * Then access granted
+     */
+    @Test
+    public void alreadyVoting() throws Exception
+    {
+        // indicate already voting
+        when(mockedTransactionalResourceHelper.isResourcePresent("voting"))
+            .thenReturn(true);
+        
+        // given I am providing an invalid policy for a method
+        MethodInvocation mockedMethodInvocation = createMethodInvoation("myTestMethod", NodeRef.class);
+        net.sf.acegisecurity.ConfigAttributeDefinition mockedConfigDef = createConfigDefinition("RM.invalid");
+        
+        // call vote
+        assertEquals(
+                AccessDecisionVoter.ACCESS_GRANTED,
+                entryVoter.vote(mockedAuthentication, mockedMethodInvocation, mockedConfigDef));    
+    }
+    
+    /**
+     * Given that I am running this as the system user
+     * When I evaluate
+     * Then access granted
+     */
+    @Test
+    public void runAsSystem() throws Exception
+    {
+        // run as system
+        when(mockedAuthenticationUtil.isRunAsUserTheSystemUser())
+            .thenReturn(true);
+        
+        // given I am providing an invalid policy for a method
+        MethodInvocation mockedMethodInvocation = createMethodInvoation("myTestMethod", NodeRef.class);
+        net.sf.acegisecurity.ConfigAttributeDefinition mockedConfigDef = createConfigDefinition("RM.invalid");
+        
+        // call vote
+        assertEquals(
+                AccessDecisionVoter.ACCESS_GRANTED,
+                entryVoter.vote(mockedAuthentication, mockedMethodInvocation, mockedConfigDef));    
+    }
     
     /**
      * Given that we have provided an invalid policy
@@ -64,9 +132,8 @@ public class RMEntryVoterUnitTest extends BaseUnitTest
      */
     @Test
     public void invalidPolicy() throws Exception
-    {
+    {   
         // given I am providing an invalid policy for a method
-        Authentication mockedAuthentication = mock(Authentication.class);
         MethodInvocation mockedMethodInvocation = createMethodInvoation("myTestMethod", NodeRef.class);
         net.sf.acegisecurity.ConfigAttributeDefinition mockedConfigDef = createConfigDefinition("RM.invalid");
 
@@ -85,12 +152,12 @@ public class RMEntryVoterUnitTest extends BaseUnitTest
     @Test
     public void validPolicy() throws Exception
     {
+        // valid policy
         when(mockedPolicy.getName())
             .thenReturn(POLICY_NAME);
         entryVoter.registerPolicy(mockedPolicy);
         
         //  mock calling details
-        Authentication mockedAuthentication = mock(Authentication.class);
         MethodInvocation mockedMethodInvocation = createMethodInvoation("myTestMethod", NodeRef.class);
         net.sf.acegisecurity.ConfigAttributeDefinition mockedConfigDef = createConfigDefinition("RM." + POLICY_NAME);
         

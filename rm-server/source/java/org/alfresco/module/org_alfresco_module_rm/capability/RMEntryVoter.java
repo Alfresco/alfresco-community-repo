@@ -34,8 +34,8 @@ import org.alfresco.module.org_alfresco_module_rm.capability.policy.ConfigAttrib
 import org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy;
 import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.aopalliance.intercept.MethodInvocation;
@@ -66,6 +66,9 @@ public class RMEntryVoter extends RMSecurityCommon
     
     /** Alfresco transaction support */
     private AlfrescoTransactionSupport alfrescoTransactionSupport;
+    
+    /** authentication util */
+    private AuthenticationUtil authenticationUtil;
 
     /** Policy map */
     private Map<String, Policy> policies = new HashMap<String, Policy>();
@@ -100,6 +103,14 @@ public class RMEntryVoter extends RMSecurityCommon
     public void setAlfrescoTransactionSupport(AlfrescoTransactionSupport alfrescoTransactionSupport)
     {
         this.alfrescoTransactionSupport = alfrescoTransactionSupport;
+    }
+    
+    /**
+     * @param authenticationUtil    authentication util
+     */
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
     }
 
     /**
@@ -171,7 +182,7 @@ public class RMEntryVoter extends RMSecurityCommon
     	try
     	{
 	        // The system user can do anything
-	        if (AuthenticationUtil.isRunAsUserTheSystemUser())
+	        if (authenticationUtil.isRunAsUserTheSystemUser())
 	        {
 	            if (logger.isDebugEnabled())
 	            {

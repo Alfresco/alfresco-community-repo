@@ -34,6 +34,7 @@ import java.util.UUID;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -134,6 +135,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @Mock(name="transactionalResourceHelper")    protected TransactionalResourceHelper  mockedTransactionalResourceHelper;
     @Mock(name="alfrescoTransactionSupport")     protected AlfrescoTransactionSupport   mockedAlfrescoTransactionSupport;
     @Mock(name="freezeService")                  protected FreezeService                mockedFreezeService;
+    @Mock(name="dispositionService")             protected DispositionService           mockedDispositionService;
 
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;

@@ -43,6 +43,8 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFi
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
@@ -221,6 +223,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Relationship service */
     private RelationshipService relationshipService;
+    
+    /** Disposition service */
+    private DispositionService dispositionService;
 
     /** records management container type */
     private RecordsManagementContainerType recordsManagementContainerType;
@@ -362,6 +367,17 @@ public class RecordServiceImpl extends BaseBehaviourBean
         this.relationshipService = relationshipService;
     }
 
+    /**
+     * @param dispositionService    disposition service
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+    
+    /**
+     * @param recordsManagementContainerType    records management container type
+     */
     public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType)
     {
 		this.recordsManagementContainerType = recordsManagementContainerType;
@@ -518,18 +534,33 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 Set<NodeRef> newRecords = transactionalResourceHelper.getSet(KEY_NEW_RECORDS);
                                 newRecords.add(nodeRef);
                             }
+                            else
+                            {
+                                // if we are linking a record
+                                NodeRef parentNodeRef = childAssocRef.getParentRef();
+                                if (isRecord(nodeRef) && isRecordFolder(parentNodeRef))
+                                {
+                                    // validate the link conditions
+                                    validateLinkConditions(nodeRef, parentNodeRef);
+                                }
+                            }
                             
                             // create and file the content as a record
                             file(nodeRef);
                         }
                     }
                 }
+                catch (RecordLinkRuntimeException e)
+                {
+                    // rethrow exception
+                    throw e;
+                }
                 catch (AlfrescoRuntimeException e)
                 {
                     // do nothing but log error
-                    if (logger.isDebugEnabled())
+                    if (logger.isWarnEnabled())
                     {
-                        logger.debug("Unable to file pending record.", e);
+                        logger.warn("Unable to file pending record.", e);
                     }
                 }
                 finally
@@ -1685,7 +1716,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         ParameterCheck.mandatory("record", record);
         ParameterCheck.mandatory("recordFolder", recordFolder);
-
+        
         // ensure we are linking a record to a record folder
         if(isRecord(record) && isRecordFolder(recordFolder))
         {
@@ -1696,24 +1727,51 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 if (parent.getParentRef().equals(recordFolder))
                 {
                     // we can not link a record to the same location more than once
-                    throw new AlfrescoRuntimeException("Can not link a record to the same record folder more than once");
+                    throw new RecordLinkRuntimeException("Can not link a record to the same record folder more than once");
                 }
-            }                        
-
+            }
+            
+            // validate link conditions
+            validateLinkConditions(record, recordFolder);
+    
             // get the current name of the record
             String name = nodeService.getProperty(record, ContentModel.PROP_NAME).toString();
-
+    
             // create a secondary link to the record folder
             nodeService.addChild(
-                    recordFolder,
-                    record,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
+                recordFolder,
+                record,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
         }
         else
         {
             // can only link a record to a record folder
-            throw new AlfrescoRuntimeException("Can only link a record to a record folder.");
+            throw new RecordLinkRuntimeException("Can only link a record to a record folder.");
+        }
+    }
+    
+    /**
+     * 
+     * @param record
+     * @param recordFolder
+     */
+    private void validateLinkConditions(NodeRef record, NodeRef recordFolder)
+    {       
+        // ensure that the linking record folders have compatible disposition schedules
+        DispositionSchedule recordDispositionSchedule = dispositionService.getDispositionSchedule(record);
+        if (recordDispositionSchedule != null)
+        {
+            DispositionSchedule recordFolderDispositionSchedule = dispositionService.getDispositionSchedule(recordFolder);
+            if (recordFolderDispositionSchedule != null)
+            {
+                if (recordDispositionSchedule.isRecordLevelDisposition() != recordFolderDispositionSchedule.isRecordLevelDisposition())
+                {
+                    // we can't link a record to an incompatible disposition schedule
+                    throw new RecordLinkRuntimeException("Can not link a record to a record folder with an incompatible disposition schedule.  "
+                                                     + "They must either both be record level or record folder level dispositions.");
+                }
+            }
         }
     }
 
@@ -1733,7 +1791,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
             if (primaryParent.equals(recordFolder))
             {
-                throw new AlfrescoRuntimeException("Can't unlink a record from it's owning record folder.");
+                throw new RecordLinkRuntimeException("Can't unlink a record from it's owning record folder.");
             }
 
             // remove the link
@@ -1742,7 +1800,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // can only unlink a record from a record folder
-            throw new AlfrescoRuntimeException("Can only unlink a record from a record folder.");
+            throw new RecordLinkRuntimeException("Can only unlink a record from a record folder.");
         }
     }
 

@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -33,9 +34,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -77,6 +79,9 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
 
         // set-up dictionary service
         when(mockedDictionaryService.getAllAspects()).thenReturn(CollectionUtils.EMPTY_COLLECTION);
+        
+        // mock up getting behaviours
+        when(recordService.getBehaviour(any(String.class))).thenReturn(mock(Behaviour.class));
     }
 
     @Test
@@ -106,7 +111,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         NodeRef recordFolder = generateRecordFolder();
         
         // set expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+        exception.expect(RecordLinkRuntimeException.class);
         
         // link
         recordService.link(nonRecord, recordFolder);
@@ -118,7 +123,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         NodeRef nonRecordFolder = generateNodeRef(TYPE_FOLDER);
         
         // set expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+        exception.expect(RecordLinkRuntimeException.class);
         
         // link
         recordService.link(record, nonRecordFolder);
@@ -139,7 +144,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         makeChildrenOf(recordFolder, record);
         
         // set expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+        exception.expect(RecordLinkRuntimeException.class);
         
         // link
         recordService.link(record, recordFolder);
@@ -175,6 +180,147 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
     }
     
     /**
+     * Given that the source record has no disposition schedule
+     * When I link
+     * Then it is successful
+     */
+    @Test public void linkNoSourceDisposition()    
+    {
+        // create record and record folder
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        makeChildrenOf(generateRecordFolder(), record);
+    
+        // set the name of the record
+        String name = generateText(); 
+        doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
+        
+        // set dispositions
+        when(mockedDispositionService.getDispositionSchedule(record))
+            .thenReturn(null);
+        
+        // link
+        recordService.link(record, recordFolder);
+        
+        // verify link was created
+        verify(mockedNodeService, times(1)).addChild(
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));          
+    }
+    
+    /**
+     * Given that the target record folder has no disposition schedule
+     * When I link
+     * Then it is successful
+     */
+    @Test public void linkNoTargetDisposition()
+    {
+        // create record and record folder
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        makeChildrenOf(generateRecordFolder(), record);
+    
+        // set the name of the record
+        String name = generateText(); 
+        doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
+        
+        // set dispositions
+        when(mockedDispositionService.getDispositionSchedule(record))
+            .thenReturn(mock(DispositionSchedule.class));
+        when(mockedDispositionService.getDispositionSchedule(record))
+            .thenReturn(null);
+        
+        // link
+        recordService.link(record, recordFolder);
+        
+        // verify link was created
+        verify(mockedNodeService, times(1)).addChild(
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));         
+    }
+    
+    /**
+     * Given that the source record and target record folder have incompatible disposition schedules
+     * When I link
+     * Then I expect a failure
+     */
+    @Test public void linkIncompatibleDispositions()
+    {
+        // create record and record folder
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        makeChildrenOf(generateRecordFolder(), record);
+    
+        // set the name of the record
+        String name = generateText(); 
+        doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
+        
+        // set dispositions
+        DispositionSchedule recordDispositionSchedule = mock(DispositionSchedule.class);
+        when(recordDispositionSchedule.isRecordLevelDisposition())
+            .thenReturn(true);
+        when(mockedDispositionService.getDispositionSchedule(record))
+            .thenReturn(recordDispositionSchedule);
+        
+        DispositionSchedule recordFolderDispositionSchedule = mock(DispositionSchedule.class);
+        when(recordFolderDispositionSchedule.isRecordLevelDisposition())
+            .thenReturn(false);
+        when(mockedDispositionService.getDispositionSchedule(recordFolder))
+            .thenReturn(recordFolderDispositionSchedule);
+        
+        // expect exception
+        exception.expect(RecordLinkRuntimeException.class);
+        exception.expectMessage("incompatible disposition schedule");
+        
+        // link
+        recordService.link(record, recordFolder);
+    }
+    
+    /**
+     * Given that the source record and target record folder have compatible disposition schedules
+     * When I link
+     * Then it is successful
+     */
+    @Test public void linkCompatibleDispositions()
+    {
+        // create record and record folder
+        NodeRef record = generateRecord();
+        NodeRef recordFolder = generateRecordFolder();
+        makeChildrenOf(generateRecordFolder(), record);
+    
+        // set the name of the record
+        String name = generateText(); 
+        doReturn(name).when(mockedNodeService).getProperty(record, PROP_NAME);
+        
+        // set dispositions
+        DispositionSchedule recordDispositionSchedule = mock(DispositionSchedule.class);
+        when(recordDispositionSchedule.isRecordLevelDisposition())
+            .thenReturn(true);
+        when(mockedDispositionService.getDispositionSchedule(record))
+            .thenReturn(recordDispositionSchedule);
+        
+        DispositionSchedule recordFolderDispositionSchedule = mock(DispositionSchedule.class);
+        when(recordFolderDispositionSchedule.isRecordLevelDisposition())
+            .thenReturn(true);
+        when(mockedDispositionService.getDispositionSchedule(recordFolder))
+            .thenReturn(recordFolderDispositionSchedule);
+        
+        // link
+        recordService.link(record, recordFolder);  
+        
+        // verify link was created
+        verify(mockedNodeService, times(1)).addChild(
+                    recordFolder, 
+                    record, 
+                    ContentModel.ASSOC_CONTAINS, 
+                    QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));       
+    }
+    
+    /**
      * Given invalid types
      * When unlinking 
      * Then exception thrown
@@ -186,7 +332,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         NodeRef recordFolder = generateRecordFolder();
         
         // set expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+        exception.expect(RecordLinkRuntimeException.class);
         
         // unlink
         recordService.unlink(nonRecord, recordFolder);        
@@ -198,7 +344,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         NodeRef nonRecordFolder = generateNodeRef(TYPE_FOLDER);
         
         // set expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+        exception.expect(RecordLinkRuntimeException.class);
         
         // unlink
         recordService.unlink(record, nonRecordFolder);
@@ -219,7 +365,7 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         makePrimaryParentOf(record, recordFolder);
         
         // set expected exception
-        exception.expect(AlfrescoRuntimeException.class);
+        exception.expect(RecordLinkRuntimeException.class);
         
         // link
         recordService.unlink(record, recordFolder);

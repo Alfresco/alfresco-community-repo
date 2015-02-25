@@ -16,29 +16,38 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
+package org.alfresco.module.org_alfresco_module_rm.record;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import org.alfresco.error.AlfrescoRuntimeException;
+
 
 /**
- * Record integration test suite
- *
+ * Record link exception class
+ * 
  * @author Roy Wetherall
- * @since 2.2
+ * @since 2.3
  */
-@RunWith(Suite.class)
-@SuiteClasses(
+public class RecordLinkRuntimeException extends AlfrescoRuntimeException
 {
-    RejectRecordTest.class,
-    CreateRecordTest.class,
-    MoveRecordTest.class,
-    HideInplaceRecordTest.class,
-    MoveInplaceRecordTest.class,
-    ViewRecordTest.class,
-    LinkRecordTest.class
-})
-public class RecordTestSuite
-{
+    private static final long serialVersionUID = 5202539484220535897L;
+
+    public RecordLinkRuntimeException(String msgId, Throwable cause)
+    {
+        super(msgId, cause);
+    }
+
+    public RecordLinkRuntimeException(String msgId, Object[] msgParams, Throwable cause)
+    {
+        super(msgId, msgParams, cause);
+    }
+
+    public RecordLinkRuntimeException(String msgId, Object[] msgParams)
+    {
+        super(msgId, msgParams);
+    }
+
+    public RecordLinkRuntimeException(String msgId)
+    {
+        super(msgId);
+    }
 }

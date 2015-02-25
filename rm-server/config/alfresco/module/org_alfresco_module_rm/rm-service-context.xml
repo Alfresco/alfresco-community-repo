@@ -1054,6 +1054,7 @@
         <property name="relationshipService" ref="RelationshipService" />
         <property name="recordsManagementContainerType" ref="rma.recordsManagementContainer"/>
         <property name="renditionService" ref="RenditionService" />
+        <property name="dispositionService" ref="DispositionService"/>
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">

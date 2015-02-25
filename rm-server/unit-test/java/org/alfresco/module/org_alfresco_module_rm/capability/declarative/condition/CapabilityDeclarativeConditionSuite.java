@@ -16,20 +16,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.capability.policy;
+package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition;
 
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.aopalliance.intercept.MethodInvocation;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-public class UpdatePropertiesPolicy extends AbstractBasePolicy
+/**
+ * capability.declarative.condition unit test suite
+ *
+ * @author Roy Wetherall
+ * @since 2.3
+ */
+@RunWith(Suite.class)
+@SuiteClasses(
 {
-    @SuppressWarnings("rawtypes")
-	public int evaluate(
-            MethodInvocation invocation,
-            Class[] params,
-            ConfigAttributeDefinition cad)
-    {
-        NodeRef nodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
-        return getCapabilityService().getCapability("UpdateProperties").evaluate(nodeRef);
-    }
+    HoldCapabilityConditionUnitTest.class,
+    FillingOnHoldContainerCapabilityConditionUnitTest.class,
+    FrozenCapabilityConditionUnitTest.class
+})
+public class CapabilityDeclarativeConditionSuite
+{
 }

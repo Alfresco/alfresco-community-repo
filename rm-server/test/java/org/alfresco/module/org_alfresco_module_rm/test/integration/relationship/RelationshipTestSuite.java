@@ -31,6 +31,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
+    CreateRelationshipTest.class,
     DeleteRelationshipTest.class
 })
 public class RelationshipTestSuite

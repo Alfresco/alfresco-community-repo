@@ -32,6 +32,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="dictionaryService" ref="DictionaryService"/>
         <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+        <property name='transactionalResourceHelper' ref="rm.transactionalResourceHelper" />
      </bean>
 
     <!-- Records Management Service Registry -->
@@ -418,11 +419,11 @@
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getFilePlanBySiteId=RM_ALLOW,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.existsUnfiledContainer=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getUnfiledContainer=RM.Read.0,AFTER_RM.FilterNode
-                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createUnfiledContainer=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getHoldContainer=RM.Read.0,AFTER_RM.FilterNode
-                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createHoldContainer=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createHoldContainer=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getTransferContainer=RM.Read.0,AFTER_RM.FilterNode
-                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createTransferContainer=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createTransferContainer=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createFilePlan=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getNodeRefPath=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.isFilePlanContainer=RM_ALLOW
@@ -430,7 +431,7 @@
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getAllContained=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getContainedRecordCategories=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.getContainedRecordFolders=RM.Read.0,AFTER_RM.FilterNode
-                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createRecordCategory=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.createRecordCategory=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.*=RM_DENY
                 ]]>
             </value>
@@ -538,8 +539,8 @@
         <property name="objectDefinitionSource">
             <value>
                <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.setupFilePlanRoles=RM.Write.0
-                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.tearDownFilePlanRoles=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.setupFilePlanRoles=RM_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.tearDownFilePlanRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRoles=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRolesByUser=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.getRole=RM_ALLOW
@@ -1023,10 +1024,10 @@
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolder=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.isRecordFolderClosed=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.createRecordFolder=RM.Create.0
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.setupRecordFolder=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.closeRecordFolder=RM.Write.0
+                org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.closeRecordFolder=RM_CAP.0.rma:filePlanComponent.CloseFolders
                 org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService.*=RM_DENY
                 ]]>
             </value>
@@ -1053,6 +1054,7 @@
         <property name="relationshipService" ref="RelationshipService" />
         <property name="recordsManagementContainerType" ref="rma.recordsManagementContainer"/>
         <property name="renditionService" ref="RenditionService" />
+        <property name="dispositionService" ref="DispositionService"/>
     </bean>
 
     <bean id="recordMetadataAspectBootstrap" class="org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap" init-method="init" abstract="true">
@@ -1167,7 +1169,7 @@
          <value>
             <![CDATA[
                org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService.hideRecord=RM_ALLOW
-               org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService.moveRecord=RM.Write.0
+               org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService.moveRecord=RM.Create.0
                org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService.*=RM_DENY
             ]]>
          </value>
@@ -1523,15 +1525,15 @@
 			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHold=RM.Read.0,AFTER_RM.FilterNode
 			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.heldBy=RM.Read.0,AFTER_RM.FilterNode
 			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHeld=RM.Read.0,AFTER_RM.FilterNode
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.createHold=RM.Read.0
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.createHold=RM_CAP.0.rma:filePlanComponent.CreateHold
 			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.getHoldReason=RM.Read.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.setHoldReason=RM.Write.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.deleteHold=RM.Write.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHold=RM.Write.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHolds=RM.Write.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHold=RM.Write.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHolds=RM.Write.0
-			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromAllHolds=RM.Write.0
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.setHoldReason=RM_CAP.0.rma:filePlanComponent.EditHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.deleteHold=RM_CAP.0.rma:filePlanComponent.DeleteHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHold=RM_CAP.0.rma:filePlanComponent.AddToHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.addToHolds=RM_ALLOW
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHold=RM_CAP.0.rma:filePlanComponent.RemoveFromHold
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromHolds=RM_ALLOW
+			   org.alfresco.module.org_alfresco_module_rm.hold.HoldService.removeFromAllHolds=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.hold.HoldService.*=RM_DENY
             ]]>
          </value>
@@ -1583,8 +1585,8 @@
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.existsRelationshipDefinition=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipsFrom=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.getRelationshipsTo=RM_ALLOW
-               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.addRelationship=RM_ALLOW
-               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.removeRelationship=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.addRelationship=RM_CAP.1.rma:filePlanComponent.ChangeOrDeleteReferences,RM_CAP.2.rma:filePlanComponent.ChangeOrDeleteReferences
+               org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.removeRelationship=RM_CAP.1.rma:filePlanComponent.ChangeOrDeleteReferences,RM_CAP.2.rma:filePlanComponent.ChangeOrDeleteReferences
                org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService.*=RM_DENY
             ]]>
          </value>

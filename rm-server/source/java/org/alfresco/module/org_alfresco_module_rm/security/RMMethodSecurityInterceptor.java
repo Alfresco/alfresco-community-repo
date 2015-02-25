@@ -39,7 +39,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
     {
         public String name;
         public AccessStatus status;
-        public Map<String, Boolean> conditions = new HashMap<String, Boolean>();
+        public Map<String, Boolean> conditions = new HashMap<String, Boolean>();        
     }
 
     /**

@@ -18,60 +18,43 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition;
 
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 
 /**
- * Indicates whether an item is held or not.
- * <p>
- * A hold object is by definition considered to be held.
+ * Filling capability for hold condition.
  * 
  * @author Roy Wetherall
+ * @since 2.3
  */
-public class FrozenCapabilityCondition extends AbstractCapabilityCondition
+public class FillingOnHoldContainerCapabilityCondition extends AbstractCapabilityCondition
 {
-    /** indicates whether children should be checked */
-    private boolean checkChildren = false;
-    
-    /** hold service */
-    private HoldService holdService;
-
     /**
-     * @param checkChildren true to check children, false otherwise
+     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
-    public void setCheckChildren(boolean checkChildren)
-    {
-        this.checkChildren = checkChildren;
-    }
-    
-    /**
-     * @param holdService   hold service
-     */
-    public void setHoldService(HoldService holdService)
-    {
-        this.holdService = holdService;
-    }
-
     @Override
     public boolean evaluateImpl(NodeRef nodeRef)
     {
         boolean result = false;
+        NodeRef holdContainer = nodeRef;      
         
-        // check whether we are working with a hold or not
-        if (holdService.isHold(nodeRef))
+        // if we have a file plan, go get the hold container
+        if (filePlanService.isFilePlan(nodeRef) == true)
         {
-            result = true;
+            holdContainer = filePlanService.getHoldContainer(nodeRef);
         }
-        else
-        {
-            result = freezeService.isFrozen(nodeRef);
-            if (!result && checkChildren)
+        
+        // ensure we are dealing with a hold container
+        if (TYPE_HOLD_CONTAINER.equals(nodeService.getType(holdContainer)))
+        {        
+            if (permissionService.hasPermission(holdContainer, RMPermissionModel.FILE_RECORDS) != AccessStatus.DENIED)
             {
-                result = freezeService.hasFrozenChildren(nodeRef);
+                result = true;
             }
         }
-        return result;
+        
+        return result;     
     }
-
 }

@@ -969,7 +969,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService#cutoffDisposableItem(NodeRef)
      */
     @Override
-    public void cutoffDisposableItem(NodeRef nodeRef)
+    public void cutoffDisposableItem(final NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
@@ -1001,7 +1001,15 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                 if (recordFolderService.isRecordFolder(nodeRef) &&
                     !recordFolderService.isRecordFolderClosed(nodeRef))
                 {
-                    recordFolderService.closeRecordFolder(nodeRef);
+                    // runAs system so that we can close a record that has already been cutoff
+                    authenticationUtil.runAsSystem(new RunAsWork<Void>()
+                    {
+                        public Void doWork() throws Exception
+                        {
+                            recordFolderService.closeRecordFolder(nodeRef);
+                            return null;
+                        }
+                    });                    
                 }
             }
             else

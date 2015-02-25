@@ -87,4 +87,12 @@ public class AuthenticationUtil
     {
         return org.alfresco.repo.security.authentication.AuthenticationUtil.getSystemUserName();
     }
+    
+    /**
+     * @see org.alfresco.repo.security.authentication.AuthenticationUtil#isRunAsUserTheSystemUser()
+     */
+    public boolean isRunAsUserTheSystemUser()
+    {
+        return org.alfresco.repo.security.authentication.AuthenticationUtil.isRunAsUserTheSystemUser();        
+    }
 }

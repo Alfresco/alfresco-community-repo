@@ -96,7 +96,9 @@
           depends-on="CapabilityService">
         <property name="namespacePrefixResolver" ref="namespaceService"/>
         <property name="capabilityService" ref="capabilityService"/>
-
+        <property name='transactionalResourceHelper' ref="rm.transactionalResourceHelper" />
+        <property name='alfrescoTransactionSupport' ref="rm.alfrescoTransactionSupport" />
+        <property name='authenticationUtil' ref="rm.authenticationUtil" />
     </bean>
 
     <!-- ======================= -->

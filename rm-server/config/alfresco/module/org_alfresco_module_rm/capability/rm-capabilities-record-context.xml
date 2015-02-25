@@ -245,7 +245,8 @@
    </bean>
 
    <bean id="rmEditNonRecordMetadataCapability"
-      parent="declarativeCapability">
+      parent="declarativeCapability"
+      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditNonRecordMetadataCapability">
       <property name="name" value="EditNonRecordMetadata"/>
       <property name="permission" value="EditNonRecordMetadata"/>
       <property name="kinds">
@@ -263,6 +264,7 @@
       </property>
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="20" />
+      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper"/>
    </bean>
 
    <bean id="rmEditRecordMetadataCapability"

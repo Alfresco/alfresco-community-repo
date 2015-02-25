@@ -28,6 +28,8 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
@@ -92,7 +94,7 @@ public class CreateRecordTest extends BaseRMTestCase
     }
 
     /**
-     * @see
+     * 
      */
     public void testCreateRecordCapabilityOnlyFromFileFolderService() throws Exception
     {
@@ -201,4 +203,85 @@ public class CreateRecordTest extends BaseRMTestCase
             }
         });
     }
+    
+    /**
+     * Given I have ViewRecord and CreateRecord capabilities
+     * And I have filling on a record folder
+     * When I create content via ScriptNode (simulated)
+     * Then the record is successfully created
+     * 
+     * @see https://issues.alfresco.com/jira/browse/RM-1956
+     */
+    public void testCreateRecordViaCoreServices() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            /** test data */
+            String roleName = GUID.generate();
+            String user = GUID.generate();
+            NodeRef recordFolder;
+            NodeRef record;
+
+            public void given()
+            {
+                // create a role with view and create capabilities
+                Set<Capability> capabilities = new HashSet<Capability>(2);
+                capabilities.add(capabilityService.getCapability("ViewRecords"));
+                capabilities.add(capabilityService.getCapability("CreateRecords"));
+                filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
+
+                // create user and assign to role
+                createPerson(user, true);
+                filePlanRoleService.assignRoleToAuthority(filePlan, roleName, user);
+
+                // create file plan structure
+                NodeRef rc = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                recordFolder = recordFolderService.createRecordFolder(rc, GUID.generate());                 
+            }
+
+            public void when()
+            {
+                // give read and file permissions to user
+                filePlanPermissionService.setPermission(recordFolder, user, RMPermissionModel.FILING);
+                
+                record = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+                {
+                    public NodeRef doWork() throws Exception
+                    {
+                        NodeRef record = fileFolderService.create(recordFolder, "testRecord.txt", ContentModel.TYPE_CONTENT).getNodeRef();                        
+                        ContentData content = (ContentData)nodeService.getProperty(record, PROP_CONTENT);
+                        nodeService.setProperty(record, PROP_CONTENT, ContentData.setMimetype(content, MimetypeMap.MIMETYPE_TEXT_PLAIN));                        
+                        return record;
+                    }
+                }, user);
+            }
+
+            public void then()
+            {
+                // check the details of the record
+                assertTrue(recordService.isRecord(record));
+                
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        // we are expecting an expception here
+                        try
+                        {
+                            ContentData content = (ContentData)nodeService.getProperty(record, PROP_CONTENT);
+                            nodeService.setProperty(record, PROP_CONTENT, ContentData.setMimetype(content, MimetypeMap.MIMETYPE_TEXT_PLAIN));
+                            fail("Expecting access denied exception");
+                        }
+                        catch (AccessDeniedException exception)
+                        {
+                            // expceted
+                        }
+                        
+                        return null;
+                    }
+                }, user);
+            }
+  
+        });
+    }    
 }

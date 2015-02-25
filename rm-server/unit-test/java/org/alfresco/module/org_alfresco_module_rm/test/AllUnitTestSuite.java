@@ -23,7 +23,9 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportActionUn
 import org.alfresco.module.org_alfresco_module_rm.action.impl.UnlinkFromActionUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponentUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponentUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.HoldCapabilityConditionUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMEntryVoterUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.CapabilityDeclarativeConditionSuite;
+import org.alfresco.module.org_alfresco_module_rm.capability.impl.EditNonRecordsMetadataCapabilityUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuterUnitTest;
@@ -58,6 +60,7 @@ import org.junit.runners.Suite.SuiteClasses;
     DispositionLifecycleJobExecuterUnitTest.class,
     DictionaryBootstrapPostProcessorUnitTest.class,
     DateParameterProcessorUnitTest.class,
+    RMEntryVoterUnitTest.class,
 
     // services
     RecordServiceImplUnitTest.class,
@@ -68,14 +71,14 @@ import org.junit.runners.Suite.SuiteClasses;
     // evaluators
     TransferEvaluatorUnitTest.class,
     FrozenEvaluatorUnitTest.class,
+    
+    // capabilities
+    EditNonRecordsMetadataCapabilityUnitTest.class,
 
     // web scripts
     HoldsGetUnitTest.class,
     HoldPostUnitTest.class,
     HoldPutUnitTest.class,
-
-    // capability conditions
-    HoldCapabilityConditionUnitTest.class,
 
     // action implementations
     FileReportActionUnitTest.class,
@@ -91,7 +94,10 @@ import org.junit.runners.Suite.SuiteClasses;
     
     // bootstrap
     BootstrapImporterModuleComponentUnitTest.class,
-    RecordContributorsGroupBootstrapComponentUnitTest.class
+    RecordContributorsGroupBootstrapComponentUnitTest.class,
+    
+    // suites by package
+    CapabilityDeclarativeConditionSuite.class
 })
 public class AllUnitTestSuite
 {

@@ -34,7 +34,9 @@ import java.util.UUID;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
+import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -46,7 +48,9 @@ import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderServi
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
+import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -128,6 +132,10 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
     @Mock(name="recordableVersionConfigService") protected RecordableVersionConfigService mockedRecordableVersionConfigService;
     @Mock(name="cmObjectType")                   protected CmObjectType                 mockedCmObjectType;
     @Mock(name="recordableVersionService")       protected RecordableVersionService     mockedRecordableVersionService;
+    @Mock(name="transactionalResourceHelper")    protected TransactionalResourceHelper  mockedTransactionalResourceHelper;
+    @Mock(name="alfrescoTransactionSupport")     protected AlfrescoTransactionSupport   mockedAlfrescoTransactionSupport;
+    @Mock(name="freezeService")                  protected FreezeService                mockedFreezeService;
+    @Mock(name="dispositionService")             protected DispositionService           mockedDispositionService;
 
     /** application context mock */
     @Mock(name="applicationContext")             protected ApplicationContext           mockedApplicationContext;

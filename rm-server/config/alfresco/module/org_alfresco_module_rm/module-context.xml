@@ -5,6 +5,12 @@
 
    <!--  Authentication Helper -->
    <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>
+   
+   <!-- Transactional Resouce Helper -->
+   <bean name="rm.transactionalResourceHelper" class="org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper" />
+   
+   <!--  Alfresco Transaction Support Helper -->
+   <bean name="rm.alfrescoTransactionSupport" class="org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport" />
 
    <!-- Import extended repository context -->
 

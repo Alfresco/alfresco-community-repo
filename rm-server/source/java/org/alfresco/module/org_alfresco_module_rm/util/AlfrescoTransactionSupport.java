@@ -16,29 +16,30 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+package org.alfresco.module.org_alfresco_module_rm.util;
 
 /**
- * Record integration test suite
- *
+ * Alfresco Transaction Support delegation bean.
+ * 
  * @author Roy Wetherall
- * @since 2.2
+ * @since 2.3
+ * @see org.alfresco.repo.transaction.AlfrescoTransactionSupport
  */
-@RunWith(Suite.class)
-@SuiteClasses(
+public class AlfrescoTransactionSupport
 {
-    RejectRecordTest.class,
-    CreateRecordTest.class,
-    MoveRecordTest.class,
-    HideInplaceRecordTest.class,
-    MoveInplaceRecordTest.class,
-    ViewRecordTest.class,
-    LinkRecordTest.class
-})
-public class RecordTestSuite
-{
+    /**
+     * @see org.alfresco.repo.transaction.AlfrescoTransactionSupport#bindResource(Object, Object)
+     */
+    public void bindResource(Object key, Object resource)
+    {
+        org.alfresco.repo.transaction.AlfrescoTransactionSupport.bindResource(key, resource);
+    }
+    
+    /**
+     * @see org.alfresco.repo.transaction.AlfrescoTransactionSupport#unbindResource(Object)
+     */
+    public void unbindResource(Object key)
+    {
+        org.alfresco.repo.transaction.AlfrescoTransactionSupport.unbindResource(key);
+    }
 }

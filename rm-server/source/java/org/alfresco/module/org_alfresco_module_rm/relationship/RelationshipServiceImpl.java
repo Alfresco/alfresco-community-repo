@@ -629,9 +629,12 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         for (AssociationRef associationRef : associationRefs)
         {
             String uniqueName = associationRef.getTypeQName().getLocalName();
-            NodeRef from = associationRef.getSourceRef();
-            NodeRef to = associationRef.getTargetRef();
-            relationships.add(new RelationshipImpl(uniqueName, from, to));
+            if (existsRelationshipDefinition(uniqueName))
+            {
+                NodeRef from = associationRef.getSourceRef();
+                NodeRef to = associationRef.getTargetRef();
+                relationships.add(new RelationshipImpl(uniqueName, from, to));
+            }
         }
 
         return relationships;
@@ -650,9 +653,12 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         for (ChildAssociationRef childAssociationRef : childAssociationRefs)
         {
             String uniqueName = childAssociationRef.getQName().getLocalName();
-            NodeRef from = childAssociationRef.getParentRef();
-            NodeRef to = childAssociationRef.getChildRef();
-            relationships.add(new RelationshipImpl(uniqueName, from, to));
+            if (existsRelationshipDefinition(uniqueName))
+            {
+                NodeRef from = childAssociationRef.getParentRef();
+                NodeRef to = childAssociationRef.getChildRef();
+                relationships.add(new RelationshipImpl(uniqueName, from, to));
+            }
         }
 
         return relationships;

@@ -31,16 +31,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class ChangeOrDeleteReferencesCapability extends DeclarativeCapability
 {
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability#evaluateImpl(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    protected int evaluateImpl(NodeRef nodeRef)
-    {
-        // Can't be sure, because we don't have information about the target so we still abstain
-        return AccessDecisionVoter.ACCESS_ABSTAIN;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
     public int evaluate(NodeRef source, NodeRef target)

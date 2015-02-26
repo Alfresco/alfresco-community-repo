@@ -2,6 +2,8 @@ package org.alfresco.repo.webdav;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 
@@ -202,5 +204,28 @@ public class WebDAVLockServiceImplTest
         // nodeRef3
         lockInfo = davLockService.getLockInfo(nodeRef3);
         assertEquals(null, lockInfo);
+    }
+    
+    @Test
+    public void mnt13183LockInfo()
+    {
+        // CIFS lock node to 1 hour
+        lockService.lock(nodeRef1, LockType.WRITE_LOCK, 3600, Lifetime.EPHEMERAL, "lock_info_that_is_not_from_webdav");
+
+        // WebDAV get lock info
+        LockInfo lockInfoNodeRef1 = davLockService.getLockInfo(nodeRef1);
+        assertNull("exclusiveLockToken is null", lockInfoNodeRef1.getExclusiveLockToken());
+        
+        String user = AuthenticationUtil.getFullyAuthenticatedUser();
+        
+        // WebDav lock, check marker
+        davLockService.lock(nodeRef2, user, 3600);
+        
+        LockState lockState2 = lockService.getLockState(nodeRef2);
+        assertNotNull("lockState is not null", lockState2);
+        
+        String additionalInfo2 = lockState2.getAdditionalInfo();
+        assertNotNull("additionalInfo is not null", additionalInfo2);
+        assertTrue("Check WEBDAV_LOCK marker", additionalInfo2.startsWith(LockInfoImpl.ADDINFO_WEBDAV_MARKER));   
     }
 }

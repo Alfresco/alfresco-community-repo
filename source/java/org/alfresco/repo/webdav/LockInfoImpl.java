@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class LockInfoImpl implements Serializable, LockInfo
 {
     private static final long serialVersionUID = 1L;
+    
+    public static final String ADDINFO_WEBDAV_MARKER = "WebDAV_LockInfo";
     
     // Exclusive lock token
     private String exclusiveLockToken = null;
@@ -264,20 +266,29 @@ public class LockInfoImpl implements Serializable, LockInfo
         {
             throw new RuntimeException("Unable to generate JSON for " + toString(), e);
         }
-        return json;
+        return ADDINFO_WEBDAV_MARKER + ":" + json;
     }
 
     public static LockInfo fromJSON(String json)
     {
         ObjectMapper objectMapper = new ObjectMapper();
-        try
+        
+        if (json != null && json.startsWith(ADDINFO_WEBDAV_MARKER))
         {
-            LockInfo lockInfo = objectMapper.readValue(json, LockInfoImpl.class);
-            return lockInfo;
+            try
+            {
+                json = json.substring(ADDINFO_WEBDAV_MARKER.length() + 1);
+                LockInfo lockInfo = objectMapper.readValue(json, LockInfoImpl.class);
+                return lockInfo;
+            }
+            catch (Throwable e)
+            {
+                throw new IllegalArgumentException("Unable to parse JSON from [" + json + "]", e);
+            }
         }
-        catch (Throwable e)
+        else
         {
-            throw new RuntimeException("Unable to parse JSON from [" + json + "]", e);
+            throw new IllegalArgumentException("Was not detected WEBDAV_LOCK marker.");
         }
     }
     

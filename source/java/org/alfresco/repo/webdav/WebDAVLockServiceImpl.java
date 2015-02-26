@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -343,14 +343,16 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
         if (lockState != null)
         {
             String additionalInfo = lockState.getAdditionalInfo();
-            if (additionalInfo != null)
+            
+            try
             {
                 lockInfo = LockInfoImpl.fromJSON(additionalInfo);
             }
-            else
+            catch (IllegalArgumentException e)
             {
                 lockInfo = new LockInfoImpl();
             }
+
             lockInfo.setExpires(lockState.getExpires());
             lockInfo.setOwner(lockState.getOwner());
         }

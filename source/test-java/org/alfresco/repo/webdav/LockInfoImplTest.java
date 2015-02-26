@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -142,6 +142,8 @@ public class LockInfoImplTest
         
         String json = lockInfo.toJSON();
         ObjectMapper objectMapper = new ObjectMapper();
+        assertTrue("ADDINFO_WEBDAV_MARKER", json.startsWith(LockInfoImpl.ADDINFO_WEBDAV_MARKER));
+        json = json.substring(LockInfoImpl.ADDINFO_WEBDAV_MARKER.length() + 1);
         LockInfoImpl parsed = objectMapper.readValue(json, LockInfoImpl.class);
         assertEquals("opaque-lock-token", parsed.getExclusiveLockToken());
         assertEquals(WebDAV.INFINITY, parsed.getDepth());
@@ -156,6 +158,8 @@ public class LockInfoImplTest
         lockInfo.setScope(WebDAV.XML_SHARED);
         
         json = lockInfo.toJSON();
+        assertTrue("ADDINFO_WEBDAV_MARKER", json.startsWith(LockInfoImpl.ADDINFO_WEBDAV_MARKER));
+        json = json.substring(LockInfoImpl.ADDINFO_WEBDAV_MARKER.length() + 1);
         parsed = objectMapper.readValue(json, LockInfoImpl.class);
         Set<String> sortedTokens = new TreeSet<String>(parsed.getSharedLockTokens());
         Iterator<String> tokenIt = sortedTokens.iterator();
@@ -175,8 +179,7 @@ public class LockInfoImplTest
         lockInfo.setDepth(WebDAV.INFINITY);
         lockInfo.setScope(WebDAV.XML_EXCLUSIVE);
         
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(lockInfo);
+        String json = lockInfo.toJSON();
         // Execute the factory method we're testing
         LockInfo parsed = LockInfoImpl.fromJSON(json);
         assertEquals("opaque-lock-token", parsed.getExclusiveLockToken());
@@ -191,7 +194,7 @@ public class LockInfoImplTest
         lockInfo.setDepth(WebDAV.ZERO);
         lockInfo.setScope(WebDAV.XML_SHARED);
         
-        json = objectMapper.writeValueAsString(lockInfo);
+        json = lockInfo.toJSON();
         // Execute the factory method we're testing
         parsed = LockInfoImpl.fromJSON(json);
         Set<String> sortedTokens = new TreeSet<String>(parsed.getSharedLockTokens());

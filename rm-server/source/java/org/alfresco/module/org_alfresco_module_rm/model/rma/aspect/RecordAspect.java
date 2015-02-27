@@ -168,13 +168,22 @@ public class RecordAspect extends    AbstractDisposableItem
        kind = BehaviourKind.CLASS,
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onRemoveReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
+    public void onRemoveReference(final NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
         if (reference.equals(CUSTOM_REF_VERSIONS))
         {
-            // Apply the versioned aspect to the from node
-            nodeService.removeAspect(fromNodeRef, ASPECT_VERSIONED_RECORD);
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork()
+                {
+                    // Apply the versioned aspect to the from node
+                    nodeService.removeAspect(fromNodeRef, ASPECT_VERSIONED_RECORD);
+
+                    return null;
+                }
+            });
         }
 
         // Execute script if for the reference event

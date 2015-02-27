@@ -223,7 +223,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Relationship service */
     private RelationshipService relationshipService;
-    
+
     /** Disposition service */
     private DispositionService dispositionService;
 
@@ -374,7 +374,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         this.dispositionService = dispositionService;
     }
-    
+
     /**
      * @param recordsManagementContainerType    records management container type
      */
@@ -527,8 +527,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         else
                         {
                             // store information about the 'new' record in the transaction
-                            // @since 2.3 
-                            // @see https://issues.alfresco.com/jira/browse/RM-1956 
+                            // @since 2.3
+                            // @see https://issues.alfresco.com/jira/browse/RM-1956
                             if (bNew)
                             {
                                 Set<NodeRef> newRecords = transactionalResourceHelper.getSet(KEY_NEW_RECORDS);
@@ -544,7 +544,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                     validateLinkConditions(nodeRef, parentNodeRef);
                                 }
                             }
-                            
+
                             // create and file the content as a record
                             file(nodeRef);
                         }
@@ -1716,7 +1716,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
         ParameterCheck.mandatory("record", record);
         ParameterCheck.mandatory("recordFolder", recordFolder);
-        
+
         // ensure we are linking a record to a record folder
         if(isRecord(record) && isRecordFolder(recordFolder))
         {
@@ -1730,13 +1730,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     throw new RecordLinkRuntimeException("Can not link a record to the same record folder more than once");
                 }
             }
-            
+
             // validate link conditions
             validateLinkConditions(record, recordFolder);
-    
+
             // get the current name of the record
             String name = nodeService.getProperty(record, ContentModel.PROP_NAME).toString();
-    
+
             // create a secondary link to the record folder
             nodeService.addChild(
                 recordFolder,
@@ -1750,14 +1750,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
             throw new RecordLinkRuntimeException("Can only link a record to a record folder.");
         }
     }
-    
+
     /**
-     * 
+     *
      * @param record
      * @param recordFolder
      */
     private void validateLinkConditions(NodeRef record, NodeRef recordFolder)
-    {       
+    {
         // ensure that the linking record folders have compatible disposition schedules
         DispositionSchedule recordDispositionSchedule = dispositionService.getDispositionSchedule(record);
         if (recordDispositionSchedule != null)
@@ -1815,14 +1815,24 @@ public class RecordServiceImpl extends BaseBehaviourBean
     )
     public void beforeDeleteNode(NodeRef nodeRef)
     {
-        NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF);
+        final NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF);
         if (versionedNodeRef != null)
         {
             String versionLabel = (String) nodeService.getProperty(nodeRef, PROP_VERSION_LABEL);
             if (isNotBlank(versionLabel))
             {
-                Version version = versionService.getVersionHistory(versionedNodeRef).getVersion(versionLabel);
-                versionService.deleteVersion(versionedNodeRef, version);
+                final Version version = versionService.getVersionHistory(versionedNodeRef).getVersion(versionLabel);
+
+                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork()
+                    {
+                        versionService.deleteVersion(versionedNodeRef, version);
+
+                        return null;
+                    }
+                });
             }
         }
     }

@@ -152,7 +152,18 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
          }
          
          // Add the normal bundle
-         this.delegates.add(getResourceBundle(locale, this.bundleName));
+         ResourceBundle normalBundle = getResourceBundle(locale, this.bundleName);
+         if (normalBundle != null)
+         {
+            this.delegates.add(normalBundle);
+         }
+         else
+         {
+            if (logger.isWarnEnabled())
+            {
+               logger.warn("Resource bundle missing : " + this.bundleName + ", locale : " + locale);
+            }
+         }
                   
          // Add the added bundles
          for (String addedBundleName : ResourceBundleWrapper.addedBundleNames)

@@ -770,7 +770,7 @@ public class SOLRWebScriptTest extends BaseWebScriptTest
             String propName = (String)propNames.next();
             String value = properties.getString(propName);
 
-            propertyMap.put(QName.createQName(propName, namespaceService), value);
+            propertyMap.put(QName.resolveToQName(namespaceService, propName), value);
         }
 
         return propertyMap;

@@ -249,7 +249,7 @@ import org.springframework.extensions.webscripts.json.JSONUtils;
             {
                 public String convert(QName source)
                 {
-                    return source.toPrefixString(SOLRTypeConverter.this.namespaceService);
+                    return source.toString();
                 }
             });
             

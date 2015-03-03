@@ -79,17 +79,6 @@
          <param-value>WebDavAuthenticationFilter</param-value>
       </init-param>
    </filter>
-   
-   <filter>
-      <description>Set HTTP cache Expires header 30 days forward for a mapping.</description>
-      <filter-name>CacheExpiresFilter</filter-name>
-      <filter-class>org.alfresco.web.scripts.servlet.StaticAssetCacheFilter</filter-class>
-      <init-param>
-         <description>Add an Expires Header 30 days forward</description>
-         <param-name>expires</param-name>
-         <param-value>30</param-value>
-      </init-param>
-   </filter>
 
    <filter>
       <description>Sets fallback default locale for ALL requests</description>
@@ -207,31 +196,6 @@
    <filter-mapping>
       <filter-name>WebDAV Authentication Filter</filter-name>
       <url-pattern>/cmisatom/*</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>CacheExpiresFilter</filter-name>
-      <url-pattern>*.jpg</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>CacheExpiresFilter</filter-name>
-      <url-pattern>*.png</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>CacheExpiresFilter</filter-name>
-      <url-pattern>*.gif</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>CacheExpiresFilter</filter-name>
-      <url-pattern>*.css</url-pattern>
-   </filter-mapping>
-
-   <filter-mapping>
-      <filter-name>CacheExpiresFilter</filter-name>
-      <url-pattern>*.js</url-pattern>
    </filter-mapping>
 
    <!-- Enterprise filter-mapping placeholder -->

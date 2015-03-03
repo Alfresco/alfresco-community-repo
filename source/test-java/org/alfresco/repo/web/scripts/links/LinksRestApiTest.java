@@ -20,6 +20,7 @@ package org.alfresco.repo.web.scripts.links;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.transaction.UserTransaction;
@@ -537,6 +538,47 @@ public class LinksRestApiTest extends BaseWebScriptTest
        deleteLink(name, Status.STATUS_NO_CONTENT);
        getLink(name, Status.STATUS_NOT_FOUND);
        deleteLink(name, Status.STATUS_NOT_FOUND);
+    }
+
+    /**
+     * MNT-13456 Check for XSS attack via update of link
+     * @throws Exception
+     */
+    public void testXssLinks() throws Exception
+    {
+        String LINK_TITLE = "lnk" + System.currentTimeMillis();
+        String LINK_URL = "http://alfresco.com";
+
+        HashMap<String, Integer> mapForCheck = new HashMap<String, Integer>();
+        mapForCheck.put("http:javasc\\ript:alert('mail.ru')", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("javas\\0cr\\ip\\00t:alert('dd')", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("alfresco.my", Status.STATUS_OK);
+        mapForCheck.put("javascript:alert('http://somedata.html')", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("http://alfresco.org", Status.STATUS_OK);
+        mapForCheck.put("localhost:8080", Status.STATUS_OK);
+        mapForCheck.put("localhost:8080/share", Status.STATUS_OK);
+        mapForCheck.put("localhost:80A80/share", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("http:java\\00script:alert('XSS')", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("http:javas\\0cript:alert('XSS')", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("http: &#14;  javascript:alert('XSS')", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("<SCRIPT/XSS SRC='http://ha.ckers.org/xss.js'></SCRIPT>", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("<iframe src=http://ha.ckers.org/scriptlet.html <", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("html:vbscript:msgbox(\"XSS\")", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("<STYLE>@im\\port'\\ja\\vasc\\ript:alert(\"XSS\")';</STYLE>", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("<IMG SRC= onmouseover=\"alert('xxs')\">", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("BODY onload!#$%&()*~+-_.,:;?@[/|\\]^`=alert(\"XSS\")>", Status.STATUS_BAD_REQUEST);
+        mapForCheck.put("onload54(dd)fg`=df", Status.STATUS_BAD_REQUEST);
+
+        JSONObject link;
+
+        link = createLink(LINK_TITLE, "Link desc", LINK_URL, false, Status.STATUS_OK);
+        String name = getNameFromLink(link);
+
+        for (String url : mapForCheck.keySet())
+        {
+            int expStatus = mapForCheck.get(url);
+            updateLink(name, LINK_TITLE, "Link desc", url, false, expStatus);
+        }
     }
     
     /**

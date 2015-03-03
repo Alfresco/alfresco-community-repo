@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.content.MimetypeMap;
@@ -60,7 +61,7 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
 
     protected static final String PARAM_MESSAGE = "message";
     protected static final String PARAM_ITEM = "item";
-    
+
     private static Log logger = LogFactory.getLog(AbstractLinksWebScript.class);
     
     // Injected services
@@ -69,7 +70,11 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     protected LinksService linksService;
     protected PersonService personService;
     protected ActivityService activityService;
-    
+
+    private String protocolsWhiteList = "http,https,ftp,mailto";
+    private ArrayList<String> allowedProtocols;
+    private ArrayList<Pattern> xssPatterns;
+
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -93,6 +98,98 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
     public void setActivityService(ActivityService activityService)
     {
         this.activityService = activityService;
+    }
+
+    public void setProtocolsWhiteList(String protocolsWhiteList)
+    {
+        this.protocolsWhiteList = protocolsWhiteList;
+    }
+
+    public void setXssRegexp(ArrayList<String> xssRegexp)
+    {
+        xssPatterns = new ArrayList<>(xssRegexp.size());
+        for (String xssRegexpStr : xssRegexp)
+        {
+            xssPatterns.add(Pattern.compile(xssRegexpStr));
+        }
+    }
+
+    private boolean isProtocolAllowed(String protocol)
+    {
+        // will be used default protocol prefix
+        if (protocol.length() == 0)
+        {
+            return true;
+        }
+
+        if (allowedProtocols == null)
+        {
+            allowedProtocols = new ArrayList<String>();
+            for (String delimProtocol : protocolsWhiteList.split(","))
+            {
+                if (delimProtocol.trim().length() == 0)
+                {
+                    continue;
+                }
+                allowedProtocols.add(delimProtocol.trim());
+            }
+        }
+
+        return allowedProtocols.contains(protocol);
+    }
+
+    private boolean isPossibleXSS(String url)
+    {
+        // check for null
+        if (xssPatterns == null)
+        {
+            return false;
+        }
+
+        boolean result = false;
+        for (Pattern pattern : xssPatterns)
+        {
+            if (pattern.matcher(url).matches())
+            {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    private boolean isUrlCorrect(String url)
+    {
+        //default behavior if url absent
+        if (url == null)
+        {
+            return true;
+        }
+
+        if (url.trim().length() == 0 || isPossibleXSS(url))
+        {
+            return false;
+        }
+
+        int colonPos = url.indexOf(":");
+        colonPos = colonPos > 0 ? colonPos : 0;
+        String protocol = url.substring(0, colonPos);
+
+        boolean result = isProtocolAllowed(protocol);
+        //check for record host:port e.g.: localhost:8080
+        if (!result)
+        {
+            String secondUrlPart = url.substring(colonPos+1);
+            int slashPos = secondUrlPart.indexOf("/");
+            slashPos = slashPos > 0 ? slashPos : secondUrlPart.length();
+            String port = secondUrlPart.substring(0, slashPos);
+
+            Pattern p = Pattern.compile("^[0-9]*$");
+            if (p.matcher(port).matches())
+            {
+                result =  true;
+            }
+        }
+        return result;
     }
     
     
@@ -306,7 +403,18 @@ public abstract class AbstractLinksWebScript extends DeclarativeWebScript
        
        // Link name is optional
        String linkName = templateVars.get("path");
-       
+
+        //sanitise url
+        if (json != null)
+        {
+            String url = getOrNull(json, "url");
+            if (!isUrlCorrect(url))
+            {
+                String error = "Url not allowed";
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
+            }
+        }
+
        // Have the real work done
        return executeImpl(site, linkName, req, json, status, cache); 
     }

@@ -18,10 +18,12 @@
  */
 package org.alfresco.repo.web.scripts.links;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.links.LinkInfo;
@@ -41,8 +43,8 @@ public class LinkPut extends AbstractLinksWebScript
 {
    private static final String MSG_ACCESS_DENIED= "links.err.access.denied";
    private static final String MSG_NOT_FOUND= "links.err.not.found";
-    
-   @Override
+
+    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, String linkName,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
@@ -60,13 +62,14 @@ public class LinkPut extends AbstractLinksWebScript
          model.put(PARAM_MESSAGE, rb.getString(MSG_NOT_FOUND));
          return model;
       }
-      
-      
+
       // Get the new link details from the JSON
       // Update the main properties
       link.setTitle(getOrNull(json, "title"));
       link.setDescription(getOrNull(json, "description"));
-      link.setURL(getOrNull(json, "url"));
+      String url = getOrNull(json, "url");
+
+      link.setURL(url);
       
       // Handle internal / not internal
       if (json.containsKey("internal"))

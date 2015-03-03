@@ -1187,7 +1187,7 @@ function getSearchResults(params)
    {
       return processResults(
          nodes,
-         params.pageSize,
+         params.maxResults,
          params.startIndex,
          rootNode,
          rs.meta);

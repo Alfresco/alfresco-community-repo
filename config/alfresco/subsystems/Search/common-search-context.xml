@@ -29,6 +29,12 @@
                 <value>{http://www.alfresco.org/model/application/1.0}configurations</value>
             </list>
         </property>
+        <property name="ignorePathsForSpecificAspects">
+            <value>${search.solrTrackingSupport.ignorePathsForSpecificAspects}</value>
+        </property>
+        <property name="aspectsForIgnoringPaths">
+            <list></list>
+        </property>
     </bean>
 
     <!-- Query Register Component -->

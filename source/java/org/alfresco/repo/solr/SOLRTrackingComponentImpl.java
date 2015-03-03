@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -85,8 +85,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private boolean enabled = true;
     private boolean cacheAncestors =true;
     private boolean ignorePathsForSpecificTypes = false;
+    private boolean ignorePathsForSpecificAspects = false;
     private Set<QName> typesForIgnoringPaths = new HashSet<QName>();
+    private Set<QName> aspectsForIgnoringPaths = new HashSet<QName>();
     private List<String> typesForIgnoringPathsString;
+    private List<String> aspectsForIgnoringPathsString;
     
     
     @Override
@@ -106,14 +109,29 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         return ignorePathsForSpecificTypes;
     }
 
+    public boolean isIgnorePathsForSpecificAspects()
+    {
+        return ignorePathsForSpecificAspects;
+    }
+
     public void setIgnorePathsForSpecificTypes(boolean ignorePersonAndConfigurationPaths)
     {
         this.ignorePathsForSpecificTypes = ignorePersonAndConfigurationPaths;
     }
 
+    public void setIgnorePathsForSpecificAspects(boolean ignorePathsForSpecificAspects)
+    {
+        this.ignorePathsForSpecificAspects = ignorePathsForSpecificAspects;
+    }
+
     public void setTypesForIgnoringPaths(List<String> typesForIgnoringPaths)
     {
         typesForIgnoringPathsString = typesForIgnoringPaths;
+    }
+
+    public void setAspectsForIgnoringPaths(List<String> aspectsForIgnoringPaths)
+    {
+        this.aspectsForIgnoringPathsString = aspectsForIgnoringPaths;
     }
 
     /**
@@ -174,6 +192,36 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         this.dictionaryDAO = dictionaryDAO;
     }
 
+    private interface DefinitionExistChecker
+    {
+        boolean isDefinitionExists(QName qName);
+    }
+
+    private void initIgnoringPathsByCriterion(List<String> initDataInString, Set<QName> dataForIgnoringPaths, DefinitionExistChecker dec)
+    {
+        if (null != initDataInString)
+        {
+            for (String qNameInString : initDataInString)
+            {
+                if ((null != qNameInString) && !qNameInString.isEmpty())
+                {
+                    try
+                    {
+                        QName qname = QName.resolveToQName(namespaceService, qNameInString);
+                        if (dec.isDefinitionExists(qname))
+                        {
+                            dataForIgnoringPaths.add(qname);
+                        }
+                    }
+                    catch (InvalidQNameException e)
+                    {
+                        // Just ignore
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Initialize
      */    
@@ -188,29 +236,24 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "dictionaryDAO", dictionaryDAO);
         PropertyCheck.mandatory(this, "aclDAO", aclDAO);
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
 
-        if ((null != typesForIgnoringPathsString) && (null != namespaceService))
+        initIgnoringPathsByCriterion(typesForIgnoringPathsString, typesForIgnoringPaths, new DefinitionExistChecker()
         {
-            for (String typeQName : typesForIgnoringPathsString)
+            @Override
+            public boolean isDefinitionExists(QName qName)
             {
-                if ((null != typeQName) && !typeQName.isEmpty())
-                {
-                    try
-                    {
-                        QName type = QName.resolveToQName(namespaceService, typeQName);
-
-                        if (null != dictionaryService.getType(type))
-                        {
-                            this.typesForIgnoringPaths.add(type);
-                        }
-                    }
-                    catch (InvalidQNameException e)
-                    {
-                        // Just ignore
-                    }
-                }
+                return (null != dictionaryService.getType(qName));
             }
-        }
+        });
+        initIgnoringPathsByCriterion(aspectsForIgnoringPathsString, aspectsForIgnoringPaths, new DefinitionExistChecker()
+        {
+            @Override
+            public boolean isDefinitionExists(QName qName)
+            {
+                return (null != dictionaryService.getAspect(qName));
+            }
+        });
     }
     
     @Override
@@ -766,22 +809,15 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 
             if(includeAspects || includePaths || includeParentAssociations)
             {
-                aspects = new HashSet<QName>();
-                Set<QName> sourceAspects = nodeDAO.getNodeAspects(nodeId);
-                for(QName aspectQName : sourceAspects)
-                {
-                    AspectDefinition aspect = dictionaryService.getAspect(aspectQName);
-                    if(aspect != null)
-                    {
-                        aspects.add(aspectQName);
-                    }
-                }
+                aspects = getNodeAspects(nodeId);
             }
             nodeMetaData.setAspects(aspects);
 
-            boolean ignoreLargeMetadata = ignorePathsForSpecificTypes && shouldTypeBeIgnored(getNodeType(nodeId));
-            if (!ignoreLargeMetadata && ignorePathsForSpecificTypes)
+            boolean ignoreLargeMetadata = (ignorePathsForSpecificTypes && shouldBeIgnoredByType(getNodeType(nodeId))) ||
+                    (ignorePathsForSpecificAspects && shouldBeIgnoredByAspect(nodeId, aspects));
+            if (!ignoreLargeMetadata && (ignorePathsForSpecificTypes || ignorePathsForSpecificAspects))
             {
+                // check if parent should be ignored
                 final List<Long> parentIds = new LinkedList<Long>();
                 nodeDAO.getParentAssocs(nodeId, null, null, true, new ChildAssocRefQueryCallback()
                 {
@@ -810,8 +846,19 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                     }
                 });
 
-                QName parentType = (!parentIds.isEmpty()) ? (getNodeType(parentIds.iterator().next())) : (null);
-                ignoreLargeMetadata = shouldTypeBeIgnored(parentType);
+                if (!parentIds.isEmpty())
+                {
+                    Long parentId = parentIds.iterator().next();
+                    if (ignorePathsForSpecificTypes)
+                    {
+                        QName parentType = getNodeType(parentId);
+                        ignoreLargeMetadata = shouldBeIgnoredByType(parentType);
+                    }
+                    if (!ignoreLargeMetadata && ignorePathsForSpecificAspects)
+                    {
+                        ignoreLargeMetadata = shouldBeIgnoredByAspect(parentId);
+                    }
+                }
             }
 
             CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
@@ -919,7 +966,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                         if (ignorePathsForSpecificTypes)
                         {
                             QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
-                            addCurrentChildAssoc = !shouldTypeBeIgnored(nodeType);
+                            addCurrentChildAssoc = !shouldBeIgnoredByType(nodeType);
+                        }
+                        if (!addCurrentChildAssoc && ignorePathsForSpecificAspects)
+                        {
+                            addCurrentChildAssoc = !shouldBeIgnoredByAspect(childNodePair.getFirst());
                         }
                         if (addCurrentChildAssoc)
                         {
@@ -961,7 +1012,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                         if (ignorePathsForSpecificTypes)
                         {
                             QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
-                            addCurrentId = !shouldTypeBeIgnored(nodeType);
+                            addCurrentId = !shouldBeIgnoredByType(nodeType);
+                        }
+                        if (!addCurrentId)
+                        {
+                            addCurrentId = !shouldBeIgnoredByAspect(childNodePair.getFirst());
                         }
                         if (addCurrentId)
                         {
@@ -1051,7 +1106,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         return (null == type) ? (null) : (result);
     }
 
-    private boolean shouldTypeBeIgnored(QName nodeType)
+    private boolean shouldBeIgnoredByType(QName nodeType)
     {
         if (null != nodeType)
         {
@@ -1065,6 +1120,56 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 if (dictionaryService.isSubClass(nodeType, type))
                 {
                     return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private Set<QName> getNodeAspects(Long nodeId)
+    {
+        Set<QName> aspects = new HashSet<QName>();
+        Set<QName> sourceAspects = nodeDAO.getNodeAspects(nodeId);
+        for(QName aspectQName : sourceAspects)
+        {
+            AspectDefinition aspect = dictionaryService.getAspect(aspectQName);
+            if(aspect != null)
+            {
+                aspects.add(aspectQName);
+            }
+        }
+        return aspects;
+    }
+
+    private boolean shouldBeIgnoredByAspect(Long nodeId)
+    {
+        return shouldBeIgnoredByAspect(nodeId, null);
+    }
+
+    private boolean shouldBeIgnoredByAspect(Long nodeId, Set<QName> aspects)
+    {
+        if (null == nodeId)
+        {
+            return false;
+        }
+
+        aspects = (aspects != null) ? aspects : getNodeAspects(nodeId);
+
+        if (!aspects.isEmpty())
+        {
+            for (QName aspectForIgnoringPaths : aspectsForIgnoringPaths)
+            {
+                if (aspects.contains(aspectForIgnoringPaths))
+                {
+                    return true;
+                }
+                for (QName nodeAspect : aspects)
+                {
+                    if (dictionaryService.isSubClass(nodeAspect, aspectForIgnoringPaths))
+                    {
+                        return true;
+                    }
                 }
             }
         }

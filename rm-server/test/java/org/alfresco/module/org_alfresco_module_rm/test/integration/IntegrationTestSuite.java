@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.integration.record.Record
 import org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder.RecordFolderTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.relationship.RelationshipTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.report.ReportTestSuite;
+import org.alfresco.module.org_alfresco_module_rm.test.integration.transfer.TransferTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.version.VersionTestSuite;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -53,8 +54,8 @@ import org.junit.runners.Suite.SuiteClasses;
     JobTestSuite.class,
     HoldTestSuite.class,
     VersionTestSuite.class,
-    RelationshipTestSuite.class/*,
-    TransferTestSuite.class*/
+    RelationshipTestSuite.class,
+    TransferTestSuite.class
 })
 public class IntegrationTestSuite
 {

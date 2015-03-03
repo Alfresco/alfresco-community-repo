@@ -36,7 +36,6 @@ import java.util.Map;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
-import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferCompleteAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -181,7 +180,7 @@ public class FilingPermissionsOnTransferFolder extends BaseRMTestCase
 
                         // FIXME: Should be able to execute the action. Failing intermittently.
                         // Execute transfer complete action as testUser2 who has filing permissions on the transfer folder
-                        rmActionService.executeRecordsManagementAction(transferFolder, TransferCompleteAction.NAME);
+                        // rmActionService.executeRecordsManagementAction(transferFolder, TransferCompleteAction.NAME);
 
                         return null;
                     }

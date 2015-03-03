@@ -185,6 +185,10 @@
         <property name="dictionaryService"      ref="DictionaryService" />
         <property name="behaviourFilter"        ref="policyBehaviourFilter" />
         <property name="eventPublisher"         ref="eventPublisher" />
+
+        <property name="bulkMaxItems"           value="${opencmis.bulkUpdateProperties.maxItemsSize}" />
+        <property name="bulkBatchSize"          value="${opencmis.bulkUpdateProperties.batchSize}" />
+        <property name="bulkWorkerThreads"      value="${opencmis.bulkUpdateProperties.workerThreads}" />
     </bean>
 
     <bean id="OpenCMISQueryService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">

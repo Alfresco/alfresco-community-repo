@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,12 +28,15 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,12 +50,14 @@ import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.batch.BatchProcessWorkProvider;
+import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.batch.BatchProcessor.BatchProcessWorker;
 import org.alfresco.repo.content.encoding.ContentCharsetFinder;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -1755,119 +1760,184 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             final List<String> addSecondaryTypeIds, final List<String> removeSecondaryTypeIds, ExtensionsData extension)
     {
         checkRepositoryId(repositoryId);
-
-        if(objectIdAndChangeTokens.size() > 1)
+        
+        if(objectIdAndChangeTokens.size() > connector.getBulkMaxItems())
         {
-        	throw new CmisConstraintException("Bulk update not supported for more than one object.");
+            throw new CmisConstraintException("Bulk update not supported for more than " + connector.getBulkMaxItems() + " objects.");
         }
 
+        // WorkProvider
+        class WorkProvider implements BatchProcessWorkProvider<BulkEntry>
+        {
+            private final Iterator<BulkUpdateObjectIdAndChangeToken> iterator;
+            private final int size;
+            private final int batchSize;
+            private BulkUpdateContext context;
+
+            public WorkProvider(List<BulkUpdateObjectIdAndChangeToken> objectIdAndChangeTokens, BulkUpdateContext context, int batchSize)
+            {
+                this.iterator = objectIdAndChangeTokens.iterator();
+                this.size = objectIdAndChangeTokens.size();
+                this.context = context;
+                this.batchSize = batchSize;
+            }
+
+            @Override
+            public synchronized int getTotalEstimatedWorkSize()
+            {
+                return size;
+            }
+
+            @Override
+            public synchronized Collection<BulkEntry> getNextWork()
+            {
+                Collection<BulkEntry> results = new ArrayList<BulkEntry>(batchSize);
+                while (results.size() < batchSize && iterator.hasNext())
+                {
+                    results.add(new BulkEntry(context, iterator.next(), properties, addSecondaryTypeIds, removeSecondaryTypeIds, getContext().isObjectInfoRequired()));
+                }
+                return results;
+            }
+        }
+        
         BulkUpdateContext context = new BulkUpdateContext(objectIdAndChangeTokens.size());
         RetryingTransactionHelper helper = connector.getRetryingTransactionHelper();
-        for(BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken : objectIdAndChangeTokens)
-        {
-            BulkUpdateCallback callback = new BulkUpdateCallback(context, objectIdAndChangeToken, properties, addSecondaryTypeIds, removeSecondaryTypeIds);
-        	helper.doInTransaction(callback, false, true);
-        }
+        final String runAsUser = AuthenticationUtil.getRunAsUser();
 
+        // Worker
+        BatchProcessWorker<BulkEntry> worker = new BatchProcessWorker<BulkEntry>()
+        {
+            @Override
+            public void process(final BulkEntry entry) throws Throwable
+            {
+                entry.update();
+            }
+
+            public String getIdentifier(BulkEntry entry)
+            {
+                return entry.getObjectIdAndChangeToken().getId();
+            }
+
+            @Override
+            public void beforeProcess() throws Throwable
+            {
+                // Authentication
+                AuthenticationUtil.setFullyAuthenticatedUser(runAsUser);
+            }
+
+            @Override
+            public void afterProcess() throws Throwable
+            {
+                // Clear authentication
+                AuthenticationUtil.clearCurrentSecurityContext();
+            }
+        };
+
+        // Processor
+        BatchProcessor<BulkEntry> processor = new BatchProcessor<BulkEntry>(
+                "CMISbulkUpdateProperties",
+                helper,
+                new WorkProvider(objectIdAndChangeTokens, context, connector.getBulkBatchSize()),
+                connector.getBulkWorkerThreads(), connector.getBulkBatchSize(),
+                null,
+                logger, 100);
+        processor.process(worker, true);
+        
         for(CMISNodeInfo info : context.getSuccesses())
         {
-        	NodeRef nodeRef = info.getNodeRef();
-        	connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
+            NodeRef nodeRef = info.getNodeRef();
+            connector.getActivityPoster().postFileFolderUpdated(info.isFolder(), nodeRef);
         }
 
         return context.getChanges();
     }
     
-    private class BulkUpdateCallback implements RetryingTransactionCallback<Void>
+    private class BulkEntry
     {
-    	private String repositoryId;
-    	private BulkUpdateContext context;
+        private String repositoryId;
+        private BulkUpdateContext bulkUpdateContext;
 
-    	private BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken;
-    	private Properties properties;
-    	private List<String> addSecondaryTypeIds;
-    	private List<String> removeSecondaryTypeIds;
+        private BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken;
+        private Properties properties;
+        private List<String> addSecondaryTypeIds;
+        private List<String> removeSecondaryTypeIds;
+        private boolean isObjectInfoRequired;
 
-    	BulkUpdateCallback(BulkUpdateContext context, BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken,
-    			Properties properties, List<String> addSecondaryTypeIds, List<String> removeSecondaryTypeIds)
-    	{
-    		this.context = context;
-    		this.objectIdAndChangeToken = objectIdAndChangeToken;
-    		this.properties = properties;
-    		this.addSecondaryTypeIds = addSecondaryTypeIds;
-    		this.removeSecondaryTypeIds = removeSecondaryTypeIds;
-    	}
-
-        public Void execute() throws Exception
+        BulkEntry(BulkUpdateContext bulkUpdateContext, BulkUpdateObjectIdAndChangeToken objectIdAndChangeToken, Properties properties, List<String> addSecondaryTypeIds,
+                List<String> removeSecondaryTypeIds, boolean isObjectInfoRequired)
         {
-        	try
-        	{
-	        	String objectId = objectIdAndChangeToken.getId();
-	            final CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
-	
-	            if(!info.isVariant(CMISObjectVariant.ASSOC) && !info.isVariant(CMISObjectVariant.VERSION))
-	            {
-	                final NodeRef nodeRef = info.getNodeRef();
-	
-	                connector.setProperties(nodeRef, info.getType(), properties, new String[0]);
-	                
-	            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
-	                if (isObjectInfoRequired)
-	                {
-	                    getObjectInfo(repositoryId, objectId, "*", IncludeRelationships.NONE);
-	                }
-	
-	                connector.addSecondaryTypes(nodeRef, addSecondaryTypeIds);
-	                connector.removeSecondaryTypes(nodeRef, removeSecondaryTypeIds);
-	
-	                if(properties.getProperties().size() > 0 || addSecondaryTypeIds.size() > 0 || removeSecondaryTypeIds.size() > 0)
-	                {
-	                	context.success(info);
-	                }
-	            }
-        	}
-        	catch(Throwable t)
-        	{
-        		// catch all exceptions as per the CMIS specification. Only successful updates are recorded for return to the
-        		// client.
-        	}
+            this.bulkUpdateContext = bulkUpdateContext;
+            this.objectIdAndChangeToken = objectIdAndChangeToken;
+            this.properties = properties;
+            this.addSecondaryTypeIds = addSecondaryTypeIds;
+            this.removeSecondaryTypeIds = removeSecondaryTypeIds;
+            this.isObjectInfoRequired = isObjectInfoRequired;
+        }
 
-            return null;
+        public void update()
+        {
+            String objectId = objectIdAndChangeToken.getId();
+            final CMISNodeInfo info = getOrCreateNodeInfo(objectId, "Object");
+
+            if (!info.isVariant(CMISObjectVariant.ASSOC) && !info.isVariant(CMISObjectVariant.VERSION))
+            {
+                final NodeRef nodeRef = info.getNodeRef();
+
+                connector.setProperties(nodeRef, info.getType(), properties, new String[0]);
+
+                if (isObjectInfoRequired)
+                {
+                    getObjectInfo(repositoryId, objectId, "*", IncludeRelationships.NONE);
+                }
+
+                connector.addSecondaryTypes(nodeRef, addSecondaryTypeIds);
+                connector.removeSecondaryTypes(nodeRef, removeSecondaryTypeIds);
+
+                if (properties.getProperties().size() > 0 || addSecondaryTypeIds.size() > 0 || removeSecondaryTypeIds.size() > 0)
+                {
+                    bulkUpdateContext.success(info);
+                }
+            }
         };
+        
+        public BulkUpdateObjectIdAndChangeToken getObjectIdAndChangeToken()
+        {
+            return objectIdAndChangeToken;
+        }
     };
 
     private static class BulkUpdateContext
     {
-    	private List<CMISNodeInfo> successes;
-    	
-    	BulkUpdateContext(int size)
-    	{
-    		this.successes = new ArrayList<CMISNodeInfo>(size);
-    	}
-    	
-    	void success(CMISNodeInfo info)
-    	{
-    		successes.add(info);
-    	}
-    	
-    	List<CMISNodeInfo> getSuccesses()
-    	{
-			return successes;
-		}
+        private Set<CMISNodeInfo> successes;
+        
+        BulkUpdateContext(int size)
+        {
+            this.successes = Collections.newSetFromMap(new ConcurrentHashMap<CMISNodeInfo, Boolean>());
+        }
+        
+        void success(CMISNodeInfo info)
+        {
+            successes.add(info);
+        }
+        
+        Set<CMISNodeInfo> getSuccesses()
+        {
+            return successes;
+        }
 
-		List<BulkUpdateObjectIdAndChangeToken> getChanges()
-    	{
-    		List<BulkUpdateObjectIdAndChangeToken> changes = new ArrayList<BulkUpdateObjectIdAndChangeToken>(successes.size());
-    		for(CMISNodeInfo info : successes)
-    		{
-    			BulkUpdateObjectIdAndChangeTokenImpl a = new BulkUpdateObjectIdAndChangeTokenImpl();
-	            a.setId(info.getObjectId());
-//	            a.setNewId(info.getObjectId());
-	            changes.add(a);
-    		}
+        List<BulkUpdateObjectIdAndChangeToken> getChanges()
+        {
+            List<BulkUpdateObjectIdAndChangeToken> changes = new ArrayList<BulkUpdateObjectIdAndChangeToken>(successes.size());
+            for(CMISNodeInfo info : successes)
+            {
+                BulkUpdateObjectIdAndChangeTokenImpl a = new BulkUpdateObjectIdAndChangeTokenImpl();
+                a.setId(info.getObjectId());
+//              a.setNewId(info.getObjectId());
+                changes.add(a);
+            }
 
-        	return changes;
-    	}
+            return changes;
+        }
     }
 
     @Override

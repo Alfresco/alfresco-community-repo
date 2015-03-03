@@ -351,6 +351,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     private ObjectFilter objectFilter;
 
+    // Bulk update properties 
+    private int bulkMaxItems = 1000;
+    private int bulkBatchSize = 20;
+    private int bulkWorkerThreads = 2;
+    
     // --------------------------------------------------------------
     // Configuration
     // --------------------------------------------------------------
@@ -764,6 +769,39 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return proxyUser;
     }
 
+    /**
+     * Sets bulk update properties.
+     */
+    public void setBulkMaxItems(int size)
+    {
+        bulkMaxItems = size;
+    }
+    
+    public int getBulkMaxItems()
+    {
+        return bulkMaxItems;
+    }
+    
+    public void setBulkBatchSize(int size)
+    {
+        bulkBatchSize = size;
+    }
+    
+    public int getBulkBatchSize()
+    {
+        return bulkBatchSize;
+    }
+    
+    public void setBulkWorkerThreads(int threads)
+    {
+        bulkWorkerThreads = threads;
+    }
+    
+    public int getBulkWorkerThreads()
+    {
+        return bulkWorkerThreads;
+    }
+    
     // --------------------------------------------------------------
     // Lifecycle methods
     // --------------------------------------------------------------

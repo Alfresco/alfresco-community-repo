@@ -76,8 +76,8 @@ public class BlogPostsPost extends AbstractBlogWebScript
         model.put(ITEM, blogPostData);
         model.put(EXTERNAL_BLOG_CONFIG, BlogPostLibJs.hasExternalBlogConfiguration(nodeRef, services));
         
-        boolean isDraft = blogPostData.get(ITEM) != null &&
-                          ((Boolean)blogPostData.get(ITEM)).booleanValue();
+        boolean isDraft = blogPostData.get("isDraft") != null &&
+                          ((Boolean)blogPostData.get("isDraft")).booleanValue();
         if (jsonPostParams.getSite() != null &&
                 jsonPostParams.getContainer() != null &&
                 jsonPostParams.getPage() != null &&

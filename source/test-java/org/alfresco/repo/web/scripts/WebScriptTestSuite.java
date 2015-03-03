@@ -35,6 +35,7 @@ import org.alfresco.repo.web.scripts.forms.FormRestApiJsonPost_Test;
 import org.alfresco.repo.web.scripts.groups.GroupsTest;
 import org.alfresco.repo.web.scripts.invitation.InvitationWebScriptTest;
 import org.alfresco.repo.web.scripts.invite.InviteServiceTest;
+import org.alfresco.repo.web.scripts.links.LinksRestApiTest;
 import org.alfresco.repo.web.scripts.person.PersonServiceTest;
 import org.alfresco.repo.web.scripts.preference.PreferenceServiceTest;
 import org.alfresco.repo.web.scripts.publishing.PublishingRestApiTest;
@@ -105,7 +106,8 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( DeclarativeSpreadsheetWebScriptTest.class );
         suite.addTestSuite( SlingshotContentGetTest.class);
         suite.addTestSuite( XssVulnerabilityTest.class );
-        
+        suite.addTestSuite( LinksRestApiTest.class );
+
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,
         //  due to finalisers closing caches when we're not looking

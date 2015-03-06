@@ -101,7 +101,15 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
      */
     public void setRedirectedProtocolBindings(Map<String, I> protocolBindings)
     {
-        this.redirectedProtocolBindings = protocolBindings;
+        if (protocolBindings != null)
+        {
+            this.redirectedProtocolBindings = Collections.unmodifiableMap(protocolBindings);
+        }
+        else
+        {
+            logger.warn("Null map injected");
+            this.redirectedProtocolBindings = protocolBindings;
+        }
     }
 
     /**
@@ -112,14 +120,15 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
      */
     public void setRedirectedStoreBindings(Map<String, I> storeBindings)
     {
-        redirectedStoreBindings = new HashMap<StoreRef, I>(storeBindings.size());
-        for(String ref : storeBindings.keySet())
+
+        Map<StoreRef, I> redirectedStoreBindingsMap = new HashMap<StoreRef, I>(storeBindings.size());
+        for (String ref : storeBindings.keySet())
         {
-            redirectedStoreBindings.put(new StoreRef(ref), storeBindings.get(ref));
+            redirectedStoreBindingsMap.put(new StoreRef(ref), storeBindings.get(ref));
         }
+        redirectedStoreBindings = Collections.unmodifiableMap(redirectedStoreBindingsMap);
     }
 
-    
     /* (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
      */

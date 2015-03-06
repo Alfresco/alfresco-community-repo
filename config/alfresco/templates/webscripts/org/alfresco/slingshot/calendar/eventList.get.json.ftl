@@ -16,6 +16,7 @@
       <#if counter &gt; 0>,</#if>
    {
       "name": "${item.title}",
+      "location": "${event.location}",
       "uri": "calendar/event/${siteId}/${event.systemName}",
       "startAt": {
           "iso8601": "${item.start}",

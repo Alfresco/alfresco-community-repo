@@ -1135,46 +1135,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
-    public void testListSiteMemberships()
-    {
-        String siteName1 = "testMembership1";
-        String siteName2 = "testMembership2";
-        String siteName3 = "testMembership3";
-        // Create a site as user one
-        this.siteService.createSite(TEST_SITE_PRESET, siteName1, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
-        
-        // Get the members of the site and check that user one is a manager
-        List<SiteMembership> members = this.siteService.listSiteMemberships(USER_ONE, 0);
-        assertNotNull(members);
-        assertEquals(1, members.size());
-        assertEquals(USER_ONE, members.get(0).getPersonId());
-        assertEquals(SiteModel.SITE_MANAGER, members.get(0).getRole());
-     
-        // Create a site as user two and add user one
-        this.authenticationComponent.setCurrentUser(USER_TWO);
-        this.siteService.createSite(TEST_SITE_PRESET, siteName2, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
-        this.siteService.setMembership("testMembership2", USER_ONE, SiteModel.SITE_CONSUMER);
-        
-        // Create a site as user three and add user one
-        this.authenticationComponent.setCurrentUser(USER_THREE);
-        this.siteService.createSite(TEST_SITE_PRESET, siteName3, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
-        this.siteService.setMembership("testMembership3", USER_ONE, SiteModel.SITE_COLLABORATOR);
-        
-        this.authenticationComponent.setCurrentUser(USER_ONE);
-        members = this.siteService.listSiteMemberships(USER_ONE, 0);
-        assertNotNull(members);
-        assertEquals(3, members.size());
-        assertEquals(USER_ONE, members.get(0).getPersonId());
-        assertEquals(SiteModel.SITE_MANAGER, members.get(0).getRole());
-        assertEquals(siteName1, members.get(0).getSiteInfo().getShortName());
-        assertEquals(USER_ONE, members.get(1).getPersonId());
-        assertEquals(SiteModel.SITE_CONSUMER, members.get(1).getRole());
-        assertEquals(siteName2, members.get(1).getSiteInfo().getShortName());
-        assertEquals(USER_ONE, members.get(2).getPersonId());
-        assertEquals(SiteModel.SITE_COLLABORATOR, members.get(2).getRole());
-        assertEquals(siteName3, members.get(2).getSiteInfo().getShortName());
-    }
-    
     public void testJoinLeave()
     {
         // Create a site as user one

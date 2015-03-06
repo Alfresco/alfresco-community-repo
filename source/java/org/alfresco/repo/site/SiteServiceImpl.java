@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1180,6 +1180,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         };
     }
 
+        /**
+     * This method returns the {@link SiteInfo siteInfos} for sites to which the specified user has access.
+     * Note that if the user has access to more than 1000 sites, the list will be truncated to 1000 entries.
+     * 
+     * @param userName the username
+     * @return a list of {@link SiteInfo site infos}.
+     */
     public String resolveSite(String group)
     {
         // purge non Site related Groups and strip the group name down to the site "shortName" it relates too
@@ -1199,20 +1206,48 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         return null;
     }
 
-    /**
-     * This method returns the {@link SiteInfo siteInfos} for sites to which the specified user has access.
-     * Note that if the user has access to more than 1000 sites, the list will be truncated to 1000 entries.
-     * 
-     * @param userName the username
-     * @return a list of {@link SiteInfo site infos}.
-     */
     private List<SiteInfo> listSitesImpl(final String userName, int size)
     {
-        List<SiteMembership> siteMemberships = listSiteMemberships(userName, size);
-        List<SiteInfo> result = new ArrayList<SiteInfo>(siteMemberships.size());
-        for (SiteMembership membership : siteMemberships)
+        final int maxResults = size > 0 ? size : 1000;
+        final Set<String> siteNames = new TreeSet<String>();
+        
+        // MNT-13198 - use the bridge table
+        String actualUserName = personService.getUserIdentifier(userName);
+        if(actualUserName != null)
         {
-            result.add(membership.getSiteInfo());
+            Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, actualUserName, false);
+            for(String authority : containingAuthorities)
+            {
+                if (siteNames.size() < maxResults)
+                {
+                    String siteName = resolveSite(authority);
+                    // MNT-10836 fix, after MNT-10109 we should also check site existence
+                    // A simple exists check would be better than getting the site properties etc - profiling suggests x2 faster
+                    if ((siteName != null) && hasSite(siteName))
+                    {
+                        siteNames.add(siteName);
+                    }
+                }
+            }
+        }
+        if (siteNames.isEmpty())
+        {
+            return Collections.emptyList();
+        }
+        List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
+                getSiteRoot(),
+                ContentModel.ASSOC_CONTAINS,
+                siteNames);
+        List<SiteInfo> result = new ArrayList<SiteInfo>(assocs.size());
+        for (ChildAssociationRef assoc : assocs)
+        {
+            // Ignore any node that is not a "site" type
+            NodeRef site = assoc.getChildRef();
+            QName siteClassName = this.directNodeService.getType(site);
+            if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
+            {
+                result.add(createSiteInfo(site));
+            }
         }
         return result;
     }
@@ -3014,82 +3049,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         return result;
     }
 
-    private String resolveRole(String group)
-    {
-        // purge non Site related Groups and strip the group name down to the role
-        if (group.startsWith(GROUP_SITE_PREFIX))
-        {
-            int roleIndex = group.lastIndexOf('_');
-            if (roleIndex + 1 <= GROUP_SITE_PREFIX_LENGTH)
-            {
-                // There is no role associated
-                return null;
-            }
-            else
-            {
-                return group.substring(roleIndex + 1);
-            }
-        }
-        return null;
-    }
-    
-    @Override
-    public List<SiteMembership> listSiteMemberships (String userName, int size)
-    {
-        final int maxResults = size > 0 ? size : 1000;
-        final Set<String> siteNames = new TreeSet<String>();
-        Map<String, String> roleSitePairs = new HashMap<String, String>();
-        // MNT-13198 - use the bridge table
-        String actualUserName = personService.getUserIdentifier(userName);
-        if(actualUserName != null)
-        {
-            Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, actualUserName, false);
-            for(String authority : containingAuthorities)
-            {
-                if (siteNames.size() < maxResults)
-                {
-                    String siteName = resolveSite(authority);
-                    // MNT-10836 fix, after MNT-10109 we should also check site existence
-                    // A simple exists check would be better than getting the site properties etc - profiling suggests x2 faster
-                    if ((siteName != null) && hasSite(siteName))
-                    {
-                        String role = resolveRole(authority);
-                        if (role != null)
-                        {
-                            siteNames.add(siteName);
-                            roleSitePairs.put(siteName, role);
-                        }
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        if (siteNames.isEmpty())
-        {
-            return Collections.emptyList();
-        }
-        List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
-                getSiteRoot(),
-                ContentModel.ASSOC_CONTAINS,
-                siteNames);
-        List<SiteMembership> result = new ArrayList<SiteMembership>(assocs.size());
-        for (ChildAssociationRef assoc : assocs)
-        {
-            // Ignore any node that is not a "site" type
-            NodeRef site = assoc.getChildRef();
-            QName siteClassName = this.directNodeService.getType(site);
-            if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
-            {
-                SiteInfo siteInfo = createSiteInfo(site);
-                result.add(new SiteMembership(siteInfo, userName, roleSitePairs.get(siteInfo.getShortName())));
-            }
-        }
-        return result;
-    }
-    
     public PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest)
     {
         SiteMembershipCannedQueryFactory sitesCannedQueryFactory = (SiteMembershipCannedQueryFactory)cannedQueryRegistry.getNamedObject("sitesCannedQueryFactory");

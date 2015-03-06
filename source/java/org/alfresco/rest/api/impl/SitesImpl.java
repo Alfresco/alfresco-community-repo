@@ -415,22 +415,44 @@ public class SitesImpl implements Sites
 		personId = people.validatePerson(personId);
 
     	PagingRequest pagingRequest = Util.getPagingRequest(paging);
+    	
+        final Collator collator = Collator.getInstance();
+        final Set<SiteMembership> sortedSiteMembers = new TreeSet<SiteMembership>(new Comparator<SiteMembership>()
+        {
+            @Override
+            public int compare(SiteMembership o1, SiteMembership o2)
+            {
+                return collator.compare(o1.getSiteInfo().getTitle(), o2.getSiteInfo().getTitle());
+            }
+        });
+        
+        List<SiteMembership> siteMembers = siteService.listSiteMemberships (personId, -1);
+        int totalSize = siteMembers.size();
+        sortedSiteMembers.addAll(siteMembers);
+        PageDetails pageDetails = PageDetails.getPageDetails(pagingRequest, totalSize);
+        List<MemberOfSite> ret = new ArrayList<MemberOfSite>(totalSize);
+        
+        Iterator<SiteMembership> it = sortedSiteMembers.iterator();
+        for(int counter = 0; counter < pageDetails.getEnd() && it.hasNext(); counter++)
+        {
+            SiteMembership siteMember = it.next();
 
-        final List<Pair<SiteService.SortFields, Boolean>> sort = new ArrayList<Pair<SiteService.SortFields, Boolean>>();
-        sort.add(new Pair<SiteService.SortFields, Boolean>(SiteService.SortFields.SiteTitle, Boolean.TRUE));
-        sort.add(new Pair<SiteService.SortFields, Boolean>(SiteService.SortFields.Role, Boolean.TRUE));
+            if(counter < pageDetails.getSkipCount())
+            {
+                continue;
+            }
+            
+            if(counter > pageDetails.getEnd() - 1)
+            {
+                break;
+            }
 
-        PagingResults<SiteMembership> results = siteService.listSitesPaged(personId, sort, pagingRequest);
-        List<SiteMembership> siteMembers = results.getPage();
-    	List<MemberOfSite> ret = new ArrayList<MemberOfSite>(siteMembers.size());
-    	for(SiteMembership siteMember : siteMembers)
-    	{
-    		SiteInfo siteInfo = siteMember.getSiteInfo();
-    		MemberOfSite memberOfSite = new MemberOfSite(siteInfo.getShortName(), siteInfo.getNodeRef(), siteMember.getRole());
-    		ret.add(memberOfSite);
-    	}
+            SiteInfo siteInfo = siteMember.getSiteInfo();
+            MemberOfSite memberOfSite = new MemberOfSite(siteInfo.getShortName(), siteInfo.getNodeRef(), siteMember.getRole());
+            ret.add(memberOfSite);
+        }
+        return CollectionWithPagingInfo.asPaged(paging, ret, pageDetails.hasMoreItems(), null);
 
-    	return CollectionWithPagingInfo.asPaged(paging, ret, results.hasMoreItems(), null);
 	}
 	
 	public SiteContainer getSiteContainer(String siteId, String containerId)

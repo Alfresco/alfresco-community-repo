@@ -966,7 +966,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     {
     	NodeRef personRef = null;
 
-        ParameterCheck.mandatoryString("Username", username);
+        ParameterCheck.mandatory("Username", username);
         try
         {
 	        personRef = personService.getPersonOrNull(username);

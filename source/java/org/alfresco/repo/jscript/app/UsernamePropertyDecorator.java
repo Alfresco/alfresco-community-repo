@@ -60,7 +60,12 @@ public class UsernamePropertyDecorator extends BasePropertyDecorator
         // DO NOT change this to just use getPersonOrNullImpl
         //  - there is Cloud THOR prod hack see personServiceImpl.personExists
         //  - and THOR-293 
-        if (this.personService.personExists(username))
+        if (username.isEmpty())
+        {
+            firstName = "";
+            lastName = "";
+        }
+        else if (this.personService.personExists(username))
         {
             NodeRef personRef = this.personService.getPerson(username, false);
             firstName = (String)this.nodeService.getProperty(personRef, ContentModel.PROP_FIRSTNAME);

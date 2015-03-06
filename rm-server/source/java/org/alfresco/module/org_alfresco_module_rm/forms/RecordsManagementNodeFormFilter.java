@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +43,7 @@ import org.alfresco.repo.forms.processor.node.FieldUtils;
 import org.alfresco.repo.forms.processor.node.FormFieldConstants;
 import org.alfresco.repo.i18n.StaticMessageLookup;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -258,14 +261,23 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      * @param form
      * @param nodeRef
      */
-    protected void addTransientProperties(Form form, NodeRef nodeRef)
+    protected void addTransientProperties(Form form, final NodeRef nodeRef)
     {
         if (recordService.isRecord(nodeRef))
         {
             addTransientPropertyField(form, TRANSIENT_DECLARED, DataTypeDefinition.BOOLEAN, recordService.isDeclared(nodeRef));
         }
 
-        DispositionSchedule ds = getDispositionService().getDispositionSchedule(nodeRef);
+        // Need to get the disposition schedule as the system user. See RM-1727.
+        DispositionSchedule ds = runAsSystem(new RunAsWork<DispositionSchedule>()
+        {
+            @Override
+            public DispositionSchedule doWork()
+            {
+                return getDispositionService().getDispositionSchedule(nodeRef);
+            }
+        });
+
         if (ds != null)
         {
             String instructions = ds.getDispositionInstructions();

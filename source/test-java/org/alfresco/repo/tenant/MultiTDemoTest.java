@@ -963,7 +963,7 @@ public class MultiTDemoTest extends TestCase
         // find person
         final NodeRef personNodeRef = personService.getPerson(userName);
         // clear user usage
-        nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, null);
+        nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, "");
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override

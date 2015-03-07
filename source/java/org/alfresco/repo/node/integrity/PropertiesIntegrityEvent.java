@@ -151,7 +151,7 @@ public class PropertiesIntegrityEvent extends AbstractIntegrityEvent
         {
             QName propertyQName = propertyDef.getName();
             // check that enforced, mandatoryproperties are set
-            if (propertyDef.isMandatory() && propertyDef.isMandatoryEnforced() && !nodeProperties.containsKey(propertyQName))
+            if (propertyDef.isMandatory() && propertyDef.isMandatoryEnforced() && (!nodeProperties.containsKey(propertyQName) || null == nodeProperties.get(propertyQName)))
             {
                 String nameProp = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
                 IntegrityRecord result = new IntegrityRecord(

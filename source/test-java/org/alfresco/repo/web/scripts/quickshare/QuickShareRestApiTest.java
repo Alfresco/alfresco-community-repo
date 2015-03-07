@@ -302,7 +302,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         
         // unshare
         authenticationComponent.setCurrentUser(USER_TWO);
-        rsp = sendRequest(new DeleteRequest(UNSHARE_URL.replace("{shared_id}", sharedId)), expectedStatusForbidden, USER_ONE);
+        rsp = sendRequest(new DeleteRequest(UNSHARE_URL.replace("{shared_id}", sharedId)), expectedStatusForbidden, USER_TWO);
         authenticationComponent.setCurrentUser(USER_ONE);
         rsp = sendRequest(new DeleteRequest(UNSHARE_URL.replace("{shared_id}", sharedId)), expectedStatusOK, USER_ONE);
         
@@ -415,7 +415,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
                   }
                   
                   // Do the create
-                  SiteInfo site = siteService.createSite("Testing", shortName, shortName, null, SiteVisibility.PUBLIC);
+                  SiteInfo site = siteService.createSite("Testing", shortName, shortName, "myDescription", SiteVisibility.PUBLIC);
                   
                   // Ensure we have a doclib
                   siteService.createContainer(shortName, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);

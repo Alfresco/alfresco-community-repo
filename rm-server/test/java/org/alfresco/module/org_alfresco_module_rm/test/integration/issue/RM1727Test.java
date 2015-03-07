@@ -24,7 +24,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.Item;
-import org.alfresco.repo.forms.PropertyFieldDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
 
@@ -39,7 +38,6 @@ public class RM1727Test extends BaseRMTestCase
     private String myUser;
     private NodeRef folder;
     private NodeRef record;
-    private PropertyFieldDefinition declaredField;
 
     private RecordsManagementNodeFormFilter nodeFormFilter;
     private Form form;

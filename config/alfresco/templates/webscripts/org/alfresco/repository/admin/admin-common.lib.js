@@ -10,6 +10,8 @@
  * Repository Admin Console
  * 
  * Common JavaScript library functions.
+ * 
+ * @author Kevin Roast
  */
 
 /* Admin JavaScript namespace - public functions exposed through this namespace. */
@@ -70,6 +72,7 @@ var Admin = Admin || {};
          var info =
          {
             id: scriptName,
+            uri: tool.URIs[0],
             label: msg.get(labelId) != labelId ? msg.get(labelId) : tool.shortName,
             group: group,
             groupLabel: group != "" ? (msg.get(groupLabelId) != groupLabelId ? msg.get(groupLabelId) : String(group).replace(/_/g, " ")) : "",
@@ -139,6 +142,16 @@ var Admin = Admin || {};
       var tools = Admin.getConsoleTools(),
           tool = tools[0][0];
       return tool.id;
+   }
+   
+   /**
+    * Return the URI of the default Admin Console tool (first tool indexed in the list)
+    */
+   Admin.getDefaultToolURI = function getDefaultTool()
+   {
+      var tools = Admin.getConsoleTools(),
+          tool = tools[0][0];
+      return tool.uri;
    }
    
    /**

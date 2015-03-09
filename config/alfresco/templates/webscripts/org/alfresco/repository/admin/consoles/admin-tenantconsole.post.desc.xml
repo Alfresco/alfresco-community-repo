@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Admin Console - Tenant Admin Console</shortname>
+   <description><![CDATA[Tenant Admin Console POST method for executing commands.]]></description>
+   <url>/admin/admin-tenantconsole</url>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction>required</transaction>
+</webscript>

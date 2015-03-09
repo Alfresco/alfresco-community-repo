@@ -6,10 +6,10 @@
    
    @param title - Title msg for the page
    @param readonly (default:false) - boolean read only flag, if true will not display the Submit buttons.
-   @param controller (default:"/enterprise/admin") - optionally override the Form controller
+   @param controller (default:"/admin") - optionally override the Form controller
    @param params (default:"") - url encoded params to be added to the HTML form URL
 -->
-<#macro page title readonly=false controller="/enterprise/admin" params="" dialog=false>
+<#macro page title readonly=false controller=DEFAULT_CONTROLLER!"/admin" params="" dialog=false>
 <#assign FORM_ID="admin-jmx-form" />
 <#if metadata??>
 <#assign HOSTNAME>${msg("admin-console.host")}: ${metadata.hostname}</#assign>
@@ -465,7 +465,7 @@ Admin.addEventListener(window, 'load', function() {
    <div class="sticky-wrapper">
       
       <div class="header">
-         <span><a href="${url.serviceContext}/enterprise/admin">${msg("admin-console.header")}</a></span><#if metadata??><span class="meta">${HOSTNAME}</span><span class="meta">${HOSTADDR}</span></#if>
+         <span><a href="${url.serviceContext}${DEFAULT_CONTROLLER!"/admin"}">${msg("admin-console.header")}</a></span><#if metadata??><span class="meta">${HOSTNAME}</span><span class="meta">${HOSTADDR}</span></#if>
          <div style="float:right"><a href="http://docs.alfresco.com/5.0/concepts/ch-administering.html" target="_blank">${msg("admin-console.help")}</a></div>
       </div>
       
@@ -479,7 +479,7 @@ Admin.addEventListener(window, 'load', function() {
    <#list tools as group>
       <#list group as tool>
          <#if tool_index = 0 && tool.group != ""></ul><h3>${tool.groupLabel}</h3><ul></#if>
-               <li class="<#if tool.selected><#local tool=tool.id/>selected</#if>"><a href="${tool.id}" class="tool-link" title="${tool.description?html}">${tool.label?html}</a></li>
+               <li class="<#if tool.selected><#local tool=tool.uri/>selected</#if>"><a href="${url.serviceContext}${tool.uri}" class="tool-link" title="${tool.description?html}">${tool.label?html}</a></li>
       </#list>
    </#list>
 </#if>
@@ -507,7 +507,7 @@ Admin.addEventListener(window, 'load', function() {
             </div>
 </#if>
             <div class="main">
-               <form id="${FORM_ID}" action="${url.serviceContext}${controller}?t=${tool}<#if params!="">&${params}</#if>" enctype="multipart/form-data" accept-charset="utf-8" method="post">
+               <form id="${FORM_ID}" action="${url.serviceContext}${controller}?t=${tool?url}<#if params!="">&${params}</#if>" enctype="multipart/form-data" accept-charset="utf-8" method="post">
 <#-- Template-specific markup -->
 <#nested>
 

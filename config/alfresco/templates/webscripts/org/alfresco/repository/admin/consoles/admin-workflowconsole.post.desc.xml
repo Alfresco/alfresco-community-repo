@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Admin Console - Workflow Admin Console</shortname>
+   <description><![CDATA[Workflow Admin Console POST method for executing commands.]]></description>
+   <url>/admin/admin-workflowconsole</url>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction>required</transaction>
+</webscript>

@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Admin Console - Node Browser</shortname>
+   <description><![CDATA[Admin Console POST method for the Node Browser.]]></description>
+   <url>/admin/admin-nodebrowser</url>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction allow="readonly">required</transaction>
+</webscript>

@@ -3,12 +3,17 @@
 /**
  * Repository Admin Console
  * 
- * Root page GET method
+ * Tenant Console POST method
  */
 function main()
 {
+   // execute supplied command
+   var cmd = args["tenant-cmd"];
+   tenantInterpreter.executeCmd(cmd);
+   
+   // generate the return URL
    status.code = 301;
-   status.location = url.serviceContext + Admin.getDefaultToolURI();
+   status.location = url.service;
    status.redirect = true;
 }
 

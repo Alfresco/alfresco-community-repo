@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Admin Console - Repo Model and Messages Admin Console</shortname>
+   <description><![CDATA[Admin Console WebScript that displays the Repo Model and Messages Console.]]></description>
+   <url>/admin/admin-repoconsole</url>
+   <family>AdminConsole</family>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction allow="readonly">required</transaction>
+</webscript>

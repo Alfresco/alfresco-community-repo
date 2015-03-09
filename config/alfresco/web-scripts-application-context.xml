@@ -1932,4 +1932,51 @@
       </property>
    </bean>
    
+   <!-- Repository Admin Console messages -->
+   <bean id="communityAdminConsoleResourceBundle" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.messages.admin-console</value>
+         </list>
+      </property>
+   </bean>
+   
+   <!-- Repository Admin Console Node Browser -->
+   <bean id="webscript.org.alfresco.repository.admin.support-tools.admin-nodebrowser.post"
+         class="org.alfresco.repo.web.scripts.admin.NodeBrowserPost"
+         parent="webscript">
+      <property name="nodeService" ref="NodeService"/>
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="searchService" ref="SearchService"/>
+      <property name="namespaceService" ref="NamespaceService"/>
+      <property name="permissionService" ref="PermissionService"/>
+      <property name="ownableService" ref="OwnableService" />
+   </bean>
+   
+   <!-- Repository Admin Console script extensions -->
+   <bean id="scriptRepoInterpreter" parent="baseJavaScriptExtension" class="org.alfresco.repo.web.scripts.admin.DynamicInterpreterExtension">
+      <property name="extensionName">
+         <value>repoInterpreter</value>
+      </property>
+      <property name="interpreter">
+         <ref bean="repoAdminInterpreter" />
+      </property>
+   </bean>
+   <bean id="scriptTenantInterpreter" parent="baseJavaScriptExtension" class="org.alfresco.repo.web.scripts.admin.DynamicInterpreterExtension">
+      <property name="extensionName">
+         <value>tenantInterpreter</value>
+      </property>
+      <property name="interpreter">
+         <ref bean="tenantInterpreter" />
+      </property>
+   </bean>
+   <bean id="scriptWorkflowInterpreter" parent="baseJavaScriptExtension" class="org.alfresco.repo.web.scripts.admin.DynamicInterpreterExtension">
+      <property name="extensionName">
+         <value>workflowInterpreter</value>
+      </property>
+      <property name="interpreter">
+         <ref bean="workflowInterpreter" />
+      </property>
+   </bean>
+   
 </beans>

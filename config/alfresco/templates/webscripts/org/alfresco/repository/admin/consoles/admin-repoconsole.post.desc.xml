@@ -1,0 +1,9 @@
+<webscript>
+   <shortname>Admin Console - Repo Admin Console</shortname>
+   <description><![CDATA[Repo Admin Console POST method for executing commands.]]></description>
+   <url>/admin/admin-repoconsole</url>
+   <format default="html">argument</format>
+   <authentication>admin</authentication>
+   <lifecycle>internal</lifecycle>
+   <transaction>required</transaction>
+</webscript>

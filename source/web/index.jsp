@@ -82,6 +82,7 @@ TransactionService transactionService = (TransactionService)context.getBean("tra
    else
    {
 %>
+            <p><a href="./s/admin">Alfresco Administration Console</a> (admin only)</p>
             <p></p>
             <p><a href="http://forums.alfresco.com/">Alfresco Forums</a></p>
             <p><a href="http://issues.alfresco.com/">Alfresco JIRA</a></p>

@@ -81,8 +81,7 @@ var Admin = Admin || {};
          };
          
          // process family metadata
-         var isCommunity = (utils.getRestrictions().licenseMode == "UNKNOWN"),
-             index = -1,
+         var index = -1,
              addTool = true,
              familys = tool.familys.toArray();
          for (var f=0; f<familys.length; f++)
@@ -96,7 +95,7 @@ var Admin = Admin || {};
             // find community only pages
             if (familys[f] == "AdminConsole:Edition:Community")
             {
-               addTool = isCommunity;
+               addTool = !Admin.enterprise && (utils.getRestrictions().licenseMode == "UNKNOWN");
             }
          }
          

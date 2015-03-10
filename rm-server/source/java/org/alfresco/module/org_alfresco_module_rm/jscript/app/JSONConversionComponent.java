@@ -294,7 +294,7 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
         if (originatingLocation != null)
         {
             String pathSeparator = "/";
-            String displayPath = PathUtil.getDisplayPath(nodeService.getPath(originatingLocation), true);
+            String displayPath = getDisplayPath(originatingLocation);
             String[] displayPathElements = displayPath.split(pathSeparator);
             Object[] subPath = ArrayUtils.subarray(displayPathElements, 5, displayPathElements.length);
             StringBuffer originatingLocationPath = new StringBuffer();
@@ -304,6 +304,23 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
             }
             rootJSONObject.put("originatingLocationPath", originatingLocationPath.toString());
         }
+    }
+    
+    /**
+     * Helper method to get the display path.
+     * 
+     * @param nodeRef   node reference
+     * @return String   display path
+     */
+    private String getDisplayPath(final NodeRef nodeRef)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                return PathUtil.getDisplayPath(nodeService.getPath(nodeRef), true);
+            }
+        }, AuthenticationUtil.getAdminUserName());
     }
 
     /**

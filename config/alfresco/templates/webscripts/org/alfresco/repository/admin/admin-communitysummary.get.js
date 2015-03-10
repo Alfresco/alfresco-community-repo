@@ -3,7 +3,7 @@
 /**
  * Repository Admin Console
  * 
- * Community Summary GET method
+ * Community System Summary GET method
  */
 function main()
 {
@@ -13,7 +13,7 @@ function main()
       "FreeMemory": Math.round(java.lang.Runtime.getRuntime().freeMemory() / 1024 / 1024 / 1024 * 100) / 100,
       "MaxMemory": Math.round(java.lang.Runtime.getRuntime().maxMemory() / 1024 / 1024 / 1024 * 100) / 100,
       "TotalMemory": Math.round(java.lang.Runtime.getRuntime().totalMemory() / 1024 / 1024 / 1024 * 100) / 100,
-      "CPUs": java.lang.Runtime.getRuntime().availableProcessors()
+      "AvailableProcessors": java.lang.Runtime.getRuntime().availableProcessors()
    };
    
    // System properties

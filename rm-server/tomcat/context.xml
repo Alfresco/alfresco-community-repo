@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context docBase="${alfresco.client.war.folder}" path="${alfresco.client.contextPath}">
+  <Resources className="org.apache.naming.resources.VirtualDirContext"
+    extraResourcePaths="/=${project.build.directory}/${project.build.finalName}/web" />
+    <Loader searchVirtualFirst="true" className="org.apache.catalina.loader.VirtualWebappLoader"
+    virtualClasspath="${project.build.outputDirectory};${project.build.testOutputDirectory};${project.build.directory}/${project.build.finalName}/config" />
+</Context>

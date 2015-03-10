@@ -6,7 +6,11 @@
    <packaging>pom</packaging>
    <version>3.0-SNAPSHOT</version>
    <name>Alfresco Records Management</name>
-
+   <parent>
+      <groupId>org.alfresco.maven</groupId>
+      <artifactId>alfresco-sdk-parent</artifactId>
+      <version>2.0.0</version>
+   </parent>
    <url>http://www.alfresco.org/</url>
    <inceptionYear>2005</inceptionYear>
    <organization>
@@ -60,13 +64,27 @@
       </snapshotRepository>
    </distributionManagement>
 
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-platform-distribution</artifactId>
+            <version>${alfresco.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
+
    <modules>
       <module>rm-server</module>
       <module>rm-share</module>
    </modules>
 
    <properties>
-      <alfresco.base.version>5.0</alfresco.base.version>
+      <alfresco.version>5.0</alfresco.version>
+      <app.war.location>${project.build.directory}/${webapp.id.name}.war</app.war.location>
+      <alfresco.base.version>${alfresco.version}</alfresco.base.version>
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>
@@ -111,25 +129,8 @@
             <configuration>
                <backup>true</backup>
                <ampLocation>${project.build.directory}/${project.build.finalName}-amp.amp</ampLocation>
-               <warLocation>${project.build.directory}/${webapp.id.name}.war</warLocation>
+               <warLocation>${app.war.location}</warLocation>
                <classifier>amp</classifier>
-            </configuration>
-         </plugin>
-         <plugin>
-            <artifactId>maven-war-plugin</artifactId>
-            <configuration>
-               <overlays>
-                  <overlay>
-                     <groupId>org.alfresco</groupId>
-                     <artifactId>${webapp.id}</artifactId>
-                     <type>war</type>
-                  </overlay>
-                  <overlay>
-                     <groupId>org.alfresco</groupId>
-                     <artifactId>${project.artifactId}</artifactId>
-                     <type>amp</type>
-                  </overlay>
-               </overlays>
             </configuration>
          </plugin>
       </plugins>

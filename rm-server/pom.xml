@@ -10,7 +10,11 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-server</artifactId>
    <name>Alfresco RM Server</name>
+   <packaging>amp</packaging>
    <properties>
+      <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
+      <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
+      <alfresco.mysql.version>5.1.14</alfresco.mysql.version>
       <webapp.id.name>alfresco</webapp.id.name>
       <webapp.id>${webapp.id.name}</webapp.id>
    </properties>
@@ -97,12 +101,12 @@
                      <dependency>
                         <groupId>postgresql</groupId>
                         <artifactId>postgresql</artifactId>
-                        <version>9.1-901.jdbc4</version>
+                        <version>${alfresco.postgres.version}</version>
                      </dependency>
                      <dependency>
                         <groupId>mysql</groupId>
                         <artifactId>mysql-connector-java</artifactId>
-                        <version>5.1.14</version>
+                        <version>${alfresco.mysql.version}</version>
                      </dependency>
                   </dependencies>
                   <executions>
@@ -136,15 +140,15 @@
          <build>
             <plugins>
                <plugin>
-                  <groupId>org.alfresco.maven.plugin</groupId>
-                  <artifactId>alfresco-maven-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <goals>
-                           <goal>amp</goal>
-                        </goals>
-                     </execution>
-                  </executions>
+                  <groupId>org.apache.tomcat.maven</groupId>
+                  <artifactId>tomcat7-maven-plugin</artifactId>
+                  <dependencies>
+                     <dependency>
+                        <groupId>postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${alfresco.postgres.version}</version>
+                     </dependency>
+                  </dependencies>
                </plugin>
                <plugin>
                   <artifactId>maven-antrun-plugin</artifactId>
@@ -171,10 +175,201 @@
          </build>
       </profile>
       <profile>
+         <id>appWarLocationSetting</id>
+         <properties>
+            <app.war.location>${project.build.directory}/${project.build.finalName}-war</app.war.location>
+         </properties>
+      </profile>
+      <profile>
          <id>enterprise</id>
          <properties>
             <webapp.id>alfresco-enterprise</webapp.id>
          </properties>
+      </profile>
+      <profile>
+         <id>amp-with-solr</id>
+         <properties>
+            <skipTests>true</skipTests>
+            <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+         </properties>
+         <build>
+            <plugins>
+               <!-- Fetch and unpack Alfresco Repository / Share / Solr in the target / folder -->
+               <plugin>
+                  <groupId>org.apache.maven.plugins</groupId>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>unpack-alfresco</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                           <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                           <outputDirectory>${alfresco.client.war.folder}</outputDirectory>
+                           <artifactItems>
+                              <artifactItem>
+                                 <groupId>${alfresco.client.war.groupId}</groupId>
+                                 <artifactId>${alfresco.client.war}</artifactId>
+                                 <type>war</type>
+                                 <version>${alfresco.client.war.version}</version>
+                              </artifactItem>
+                           </artifactItems>
+                        </configuration>
+                     </execution>
+                     <!-- Extract Solr config -->
+                     <execution>
+                        <id>unpack-alfresco-config</id>
+                        <goals>
+                           <goal>unpack</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                           <outputDirectory>${alfresco.solr.home}</outputDirectory>
+                           <artifactItems>
+                              <artifactItem>
+                                 <artifactId>alfresco-solr4</artifactId>
+                                 <groupId>${alfresco.groupId}</groupId>
+                                 <classifier>config</classifier>
+                                 <version>${alfresco.version}</version>
+                                 <type>zip</type>
+                              </artifactItem>
+                           </artifactItems>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+               <!-- The current AMP artifact is installed into the Alfresco folder using alfresco-maven-plugin -->
+               <plugin>
+                  <groupId>org.alfresco.maven.plugin</groupId>
+                  <artifactId>alfresco-maven-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>amps-to-war-overlay</id>
+                        <phase>package</phase>
+                        <goals>
+                           <goal>install</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+                  <configuration>
+                     <!-- We need to selectively not install web resources so to enable rapid dev -->
+                     <includeWebResources>false</includeWebResources>
+                  </configuration>
+               </plugin>
+               <!-- Fix the path when we are running on WINDOWS -->
+               <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>build-helper-maven-plugin</artifactId>
+                  <version>1.8</version>
+                  <executions>
+                     <execution>
+                        <id>regex-property</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                           <goal>regex-property</goal>
+                        </goals>
+                        <configuration>
+                           <name>solrHomePath</name>
+                           <value>${alfresco.solr.home}</value>
+                           <regex>\\</regex>
+                           <replacement>/</replacement>
+                           <failIfNoMatch>false</failIfNoMatch>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+               <!-- Replaces values in Solr config -->
+               <plugin>
+                  <groupId>com.google.code.maven-replacer-plugin</groupId>
+                  <artifactId>replacer</artifactId>
+                  <executions>
+                     <execution>
+                        <id>setup-solr-config</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                           <goal>replace</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+                  <configuration>
+                     <includes>
+                        <include>${alfresco.solr.home}/context.xml</include>
+                        <include>${alfresco.solr.home}/archive-SpacesStore/conf/solrcore.properties</include>
+                        <include>${alfresco.solr.home}/workspace-SpacesStore/conf/solrcore.properties</include>
+                        <include>${alfresco.client.war.folder}/WEB-INF/web.xml</include>
+                     </includes>
+                     <replacements>
+                        <replacement>
+                           <token>@@ALFRESCO_SOLR4_DIR@@</token>
+                           <value>${alfresco.solr.home}/</value>
+                        </replacement>
+                        <replacement>
+                           <token>@@ALFRESCO_SOLR4_MODEL_DIR@@</token>
+                           <value>${alfresco.solr.home}/alfrescoModels/</value>
+                        </replacement>
+                        <replacement>
+                           <token>@@ALFRESCO_SOLR4_CONTENT_DIR@@</token>
+                           <value>${alfresco.solr.home}/data/content/</value>
+                        </replacement>
+                        <replacement>
+                           <token>@@ALFRESCO_SOLR4_DATA_DIR@@</token>
+                           <value>${alfresco.solr.home}/data/index/</value>
+                        </replacement>
+                        <replacement>
+                           <token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
+                           <value><![CDATA[<!--]]></value>
+                        </replacement>
+                        <replacement>
+                           <token><![CDATA[<!-- Toggle securecomms placeholder end -->]]></token>
+                           <value><![CDATA[-->]]></value>
+                        </replacement>
+                     </replacements>
+                  </configuration>
+               </plugin>
+               <plugin>
+                  <groupId>org.apache.tomcat.maven</groupId>
+                  <artifactId>tomcat7-maven-plugin</artifactId>
+                  <executions>
+                     <execution>
+                        <id>run-embedded</id>
+                        <goals>
+                           <goal>run</goal>
+                        </goals>
+                        <phase>integration-test</phase>
+                        <configuration>
+                           <useTestClasspath>false</useTestClasspath>
+                           <ignorePackaging>true</ignorePackaging>
+                           <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
+                           <systemProperties>
+                              <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
+                           </systemProperties>
+                           <delegate>false</delegate>
+                           <contextFile>${project.basedir}/tomcat/context.xml</contextFile>
+                           <webapps>
+                              <webapp>
+                                 <groupId>${alfresco.groupId}</groupId>
+                                 <artifactId>alfresco-solr4</artifactId>
+                                 <version>${alfresco.version}</version>
+                                 <type>war</type>
+                                 <asWebapp>true</asWebapp>
+                                 <contextPath>/solr4</contextPath>
+                                 <contextFile>${alfresco.solr.home}/context.xml</contextFile>
+                              </webapp>
+                           </webapps>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+         <dependencies>
+            <dependency>
+               <groupId>org.alfresco.maven</groupId>
+               <artifactId>alfresco-rad</artifactId>
+               <version>${maven.alfresco.version}</version>
+            </dependency>
+         </dependencies>
       </profile>
    </profiles>
    <dependencies>
@@ -187,13 +382,11 @@
       <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco.base.version}</version>
       </dependency>
       <!-- Test dependencies -->
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
-         <version>4.11</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -206,7 +399,6 @@
       <dependency>
          <groupId>org.mockito</groupId>
          <artifactId>mockito-all</artifactId>
-         <version>1.9.5</version>
          <scope>test</scope>
       </dependency>
       <dependency>
@@ -233,13 +425,12 @@
       <dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
-         <version>9.1-901.jdbc4</version>
+         <version>${alfresco.postgres.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>mysql</groupId>
          <artifactId>mysql-connector-java</artifactId>
-         <version>5.1.14</version>
          <scope>test</scope>
       </dependency>
       <!-- Dependencies for the test result reports -->

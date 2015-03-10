@@ -87,6 +87,13 @@ h3
    padding: 4px 0;
 }
 
+h4
+{
+   font-size: 108%;
+   font-family: Open Sans Bold, Arial, sans-serif;
+   padding-bottom: 0.5em;
+}
+
 .title
 {
    margin: 1em 0 0;

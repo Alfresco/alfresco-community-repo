@@ -422,7 +422,7 @@ public class UserUsageTrackingComponent extends AbstractLifecycleBean implements
                 int clearCount = 0;
                 for (NodeRef personNodeRef : personNodeRefs)
                 {
-                    nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, "0");
+                    nodeService.setProperty(personNodeRef, ContentModel.PROP_SIZE_CURRENT, new Long(-1L));
                     usageService.deleteDeltas(personNodeRef);
                     
                     if (logger.isTraceEnabled())

@@ -95,7 +95,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
             {
                 Set<QName> aspects = recordService.getRecordMetadataAspects(filePlan);
                 assertNotNull(aspects);
-                assertEquals(1, aspects.size());
+                assertEquals(2, aspects.size());
                 assertTrue(aspects.containsAll(getAspectList()));
 
                 return null;

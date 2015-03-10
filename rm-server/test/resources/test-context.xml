@@ -232,5 +232,12 @@
 	    	</map>
     	</property>
     </bean>
-
+    <bean id="testRecordMetadataWithPropertyAspectBootstrap" parent="recordMetadataAspectBootstrap">
+       <property name="recordMetadataAspects">
+	    	<map>
+	    		<entry key="rmt:recordMetaDataWithProperty" value="rma:filePlan" />
+	    	</map>
+    	</property>
+    </bean>
+    
 </beans>

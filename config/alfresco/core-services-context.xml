@@ -1307,6 +1307,14 @@
 
    <bean id="nameChecker" class="org.alfresco.repo.dictionary.constraint.NameChecker">
       <property name="dictionaryService" ref="dictionaryService" />
+      <!--
+      <property name="constraintLocalName">
+          <value>userNameConstraint</value>
+      </property>
+      <property name="namespaceURI">
+          <value>http://www.alfresco.org/model/content/1.0</value>
+      </property>
+      -->
    </bean>
    
    <bean id="suggesterService" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">

@@ -38,7 +38,7 @@ import de.schlichtherle.truezip.file.TConfig;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TVFS;
-import de.schlichtherle.truezip.fs.archive.zip.ZipDriver;
+import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
 import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 
 /**
@@ -96,7 +96,7 @@ public class ModuleManagementTool implements LogOutput
     public ModuleManagementTool()
     {
         TConfig config = TConfig.get();
-        config.setArchiveDetector(new TArchiveDetector("war|amp", new ZipDriver(IOPoolLocator.SINGLETON)));
+        config.setArchiveDetector(new TArchiveDetector("war|amp", new JarDriver(IOPoolLocator.SINGLETON)));
 
         // Load the default file mapping properties
         this.defaultFileMappingProperties = new Properties();

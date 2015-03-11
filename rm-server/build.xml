@@ -7,12 +7,23 @@
    <property file="build.local.properties" />
    <property file="build.properties" />
 
-   <target name="copyDBDriver">
+   <target name="copyPostgresDBDriver">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
          <arg value="-DgroupId=postgresql" />
          <arg value="-DartifactId=postgresql" />
          <arg value="-Dversion=9.1-901.jdbc4" />
+         <arg value="-Dpackaging=jar" />
+         <arg value="-Ddest=${app.tomcat.folder}/lib" />
+      </exec>
+   </target>
+
+   <target name="copyMySqlDBDriver">
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=mysql" />
+         <arg value="-DartifactId=mysql-connector-java" />
+         <arg value="-Dversion=5.1.31" />
          <arg value="-Dpackaging=jar" />
          <arg value="-Ddest=${app.tomcat.folder}/lib" />
       </exec>
@@ -109,7 +120,7 @@
       </copy>
    </target>
 
-   <target name="prepareEnv" depends="copyDBDriver, copyDevContextFile, configureSolr4" />
+   <target name="prepareEnv" depends="copyPostgresDBDriver, copyMySqlDBDriver, copyDevContextFile, configureSolr4" />
 
    <target name="unitTest">
       <exec executable="${mvn.exec}" failonerror="true">

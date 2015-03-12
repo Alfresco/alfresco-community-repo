@@ -132,6 +132,7 @@
                <ampLocation>${project.build.directory}/${project.build.finalName}-amp.amp</ampLocation>
                <warLocation>${app.war.location}</warLocation>
                <classifier>amp</classifier>
+               <includeDependencies>true</includeDependencies>
             </configuration>
          </plugin>
       </plugins>

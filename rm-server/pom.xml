@@ -10,7 +10,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-server</artifactId>
    <name>Alfresco RM Server</name>
-   <packaging>amp</packaging>
+   <!-- <packaging>amp</packaging> -->
    <properties>
       <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>

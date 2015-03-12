@@ -74,7 +74,7 @@ public class MoveMethod extends HierarchicalMethod
         FileInfo sourceInfo = null;
         try
         {
-            sourceInfo = getDAVHelper().getNodeForPath(rootNodeRef, sourcePath);
+            sourceInfo = getNodeForPath(rootNodeRef, sourcePath);
         }
         catch (FileNotFoundException e)
         {

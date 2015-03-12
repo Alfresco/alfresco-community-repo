@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.webdav;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -98,12 +97,11 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
         NodeRef rootNodeRef = getRootNodeRef();
 
         String path = getPath();
-        List<String> pathElements = getDAVHelper().splitAllPaths(path);
         FileInfo fileInfo = null;
         try
         {
             // get the node to delete
-            fileInfo = fileFolderService.resolveNamePath(rootNodeRef, pathElements);
+            fileInfo = getNodeForPath(rootNodeRef, path);
         }
         catch (FileNotFoundException e)
         {

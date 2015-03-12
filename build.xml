@@ -93,8 +93,8 @@
 
    <target name="incrementalBuild" depends="package, unitTest" description="">
       <xmlproperty file="pom.xml" keepRoot="false"/>
-      <copy file="${ant.build.directory}/${artifactId}-${parent.version}.jar" tofile="${ant.build.directory}/${artifactId}-${parent.version}-amp.jar" failonerror="true" />
-      <move file="${ant.build.directory}/${artifactId}-${parent.version}-amp.jar" todir="${app.folder}/WEB-INF/lib" failonerror="true" />
+      <copy file="${ant.build.directory}/${artifactId}.jar" tofile="${ant.build.directory}/${artifactId}-amp.jar" failonerror="true" />
+      <move file="${ant.build.directory}/${artifactId}-amp.jar" todir="${app.folder}/WEB-INF/lib" failonerror="true" />
       <copy todir="${app.folder}/WEB-INF/classes" failonerror="true">
          <fileset dir="${ant.config.directory}">
             <exclude name="**/module.properties" />

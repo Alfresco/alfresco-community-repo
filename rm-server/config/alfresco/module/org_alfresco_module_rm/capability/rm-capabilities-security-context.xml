@@ -5,6 +5,7 @@
 
    <!--  Assignable Capabilities -->
    
+   <!-- controls user and group creation/destruction -->
    <bean id="rmCreateModifyDestroyUsersAndGroupsCapability"
       parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyUsersAndGroups" />
@@ -21,6 +22,7 @@
       <property name="index" value="30" />
    </bean>
 
+   <!--  controls user and gropus role assignments -->
    <bean id="rmManageAccessControlsCapability"
       parent="declarativeCapability">
       <property name="name" value="ManageAccessControls" />

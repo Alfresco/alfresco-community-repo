@@ -45,7 +45,7 @@
          <arg value="clean" />
          <arg value="install" />
          <arg value="-DskipTests" />
-         <arg value="-Dminifyjs=false" />
+         <arg value="-Dminifyjs=${minifyjs}" />
          <arg value="-PfullBuild" />
          <arg value="alfresco:amp" />
       </exec>

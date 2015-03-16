@@ -76,6 +76,15 @@
       <copy todir="${app.folder}" failonerror="true">
          <fileset dir="${ant.source.web.directory}" />
       </copy>
+      <xmlproperty file="../pom.xml" keepRoot="false"/>
+      <exec executable="${mvn.exec}" failonerror="true">
+         <arg value="dependency:get" />
+         <arg value="-DgroupId=${groupId}" />
+         <arg value="-DartifactId=aikau" />
+         <arg value="-Dversion=${alfresco.aikau.version}" />
+         <arg value="-Dpackaging=jar" />
+         <arg value="-Ddest=${app.folder}/WEB-INF/lib/" />
+      </exec>
    </target>
 
    <target name="package">

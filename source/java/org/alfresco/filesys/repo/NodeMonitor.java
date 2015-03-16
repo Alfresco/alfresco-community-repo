@@ -20,7 +20,6 @@
 package org.alfresco.filesys.repo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,9 +33,8 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,6 +47,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -447,14 +446,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 */
 	private void fireNodeEvent(NodeEvent nodeEvent) {
     	
-	    String eventKey = FileSysNodeEvent;
-	    List<NodeEvent> events = AlfrescoTransactionSupport.getResource(eventKey);
-	    if(events == null)
-	    {
-	        events = new ArrayList<NodeEvent>();
-	        AlfrescoTransactionSupport.bindListener( this);
-	        AlfrescoTransactionSupport.bindResource( eventKey, events);
-	    }
+	    List<NodeEvent> events = TransactionalResourceHelper.getList(FileSysNodeEvent);
 	    events.add(nodeEvent);
 	    		
 		// Store the event in the transaction until committed, and register the transaction listener
@@ -489,14 +481,11 @@ public class NodeMonitor extends TransactionListenerAdapter
 	public void afterCommit() {
 		
 		// Get the node event that was stored in the transaction
-		List<NodeEvent>events = (List<NodeEvent>) AlfrescoTransactionSupport.getResource( FileSysNodeEvent);
-		if ( events != null) 
+		List<NodeEvent>events = TransactionalResourceHelper.getList( FileSysNodeEvent);
+		for(NodeEvent event: events )
 		{
-			for(NodeEvent event: events )
-			{
-			    // Queue the primary event for processing
-			    m_eventQueue.addEvent(event);
-			}	
+		    // Queue the primary event for processing
+		    m_eventQueue.addEvent(event);
 		}
 	}
 	

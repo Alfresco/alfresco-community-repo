@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -76,6 +77,8 @@ public class FileFolderLoaderTest extends TestCase
     @Override
     public void setUp() throws Exception
     {
+        // Make sure we don't get leaked threads from other tests
+        AuthenticationUtil.clearCurrentSecurityContext();
         AuthenticationUtil.pushAuthentication();
 
         RunAsWork<Void> setUpWork = new RunAsWork<Void>()
@@ -121,7 +124,7 @@ public class FileFolderLoaderTest extends TestCase
     @Override
     public void tearDown() throws Exception
     {
-        RunAsWork<Void> setUpWork = new RunAsWork<Void>()
+        RunAsWork<Void> tearDownWork = new RunAsWork<Void>()
         {
             @Override
             public Void doWork() throws Exception
@@ -133,7 +136,7 @@ public class FileFolderLoaderTest extends TestCase
                 return null;
             }
         };
-        AuthenticationUtil.runAsSystem(setUpWork);
+        AuthenticationUtil.runAsSystem(tearDownWork);
 
         AuthenticationUtil.popAuthentication();
     }
@@ -426,12 +429,12 @@ public class FileFolderLoaderTest extends TestCase
                 // Check description
                 if (lastDescr == null)
                 {
-                    lastDescr = (String) nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION);
+                    lastDescr = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION));
                     assertEquals("cm:description length is incorrect. ", 256, lastDescr.getBytes().length);
                 }
                 else
                 {
-                    String currentDescr = (String) nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION);
+                    String currentDescr = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION));
                     assertNotEquals("All descriptions must differ due to varying seed. ", lastDescr, currentDescr);
                     lastDescr = currentDescr;
                 }
@@ -496,12 +499,12 @@ public class FileFolderLoaderTest extends TestCase
                 // Check description
                 if (lastDescr == null)
                 {
-                    lastDescr = (String) nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION);
+                    lastDescr = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION));
                     assertEquals("cm:description length is incorrect. ", 256, lastDescr.getBytes().length);
                 }
                 else
                 {
-                    String currentDescr = (String) nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION);
+                    String currentDescr = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION));
                     assertEquals("All descriptions must be identical due to varying seed. ", lastDescr, currentDescr);
                     lastDescr = currentDescr;
                 }

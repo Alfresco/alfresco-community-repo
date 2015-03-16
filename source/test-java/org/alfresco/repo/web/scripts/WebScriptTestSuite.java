@@ -21,6 +21,7 @@ package org.alfresco.repo.web.scripts;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.model.filefolder.RemoteFileFolderLoaderTest;
 import org.alfresco.repo.web.scripts.action.RunningActionRestApiTest;
 import org.alfresco.repo.web.scripts.activities.feed.control.FeedControlTest;
 import org.alfresco.repo.web.scripts.admin.AdminWebScriptTest;
@@ -107,7 +108,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( SlingshotContentGetTest.class);
         suite.addTestSuite( XssVulnerabilityTest.class );
         suite.addTestSuite( LinksRestApiTest.class );
-
+        suite.addTestSuite( RemoteFileFolderLoaderTest.class );
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,
         //  due to finalisers closing caches when we're not looking

@@ -1886,6 +1886,9 @@
         <property name="transactionHelper" ref="retryingTransactionHelper" />
     </bean>
 
+    <!-- FileFolderLoader API -->
+    <bean id="webscript.org.alfresco.repository.model.filefolder.load.post" class="org.alfresco.repo.web.scripts.model.filefolder.FileFolderLoaderPost" parent="webscript"/>
+    
     <!-- Node browser web script -->
     <bean id="webscript.org.alfresco.slingshot.node-browser.node-browser.get" parent="webscript"
    	class="org.alfresco.slingshot.web.scripts.NodeBrowserScript">

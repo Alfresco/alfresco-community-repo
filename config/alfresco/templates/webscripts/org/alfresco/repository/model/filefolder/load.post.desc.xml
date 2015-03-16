@@ -1,0 +1,25 @@
+<webscript>
+  <shortname>Load files into a folder</shortname>
+  <description>  <![CDATA[
+  Create text documents in a folder.
+  <br />
+  The following properties may be set.
+  
+  <dl>
+  <dt>folderPath</dt><dd>path of the folder to use (default:---)</dd>
+  <dt>fileCount</dt><dd>the number of files to create (default:100)</dd>
+  <dt>filesPerTxn</dt><dd>the number of files committed at a time (default:100)</dd>
+  <dt>minFileSize</dt><dd>the smallest file size (standard deviation lower limit) (default:80K)</dd>
+  <dt>maxFileSize</dt><dd>the largest file size (standard deviation upper limit) (default:120K)</dd>
+  <dt>maxUniqueDocuments</dt><dd>total number of random unique text combinations from which to choose (default:Long.MAX_VALUE)</dd>
+  <dt>forceBinaryStorage</dt><dd>force the text to be written to permanent storage, otherwise it is spoofed (default:false)</dd>
+  <dt>descriptionCount</dt><dd>the number of cm:description properties to create (default:1)</dd>
+  <dt>descriptionSize</dt><dd>the size (bytes) of each cm:description property (default:128)</dd>
+  </dl>
+  ]]></description>
+  <url>/api/model/filefolder/load</url>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>draft_public_api</lifecycle>
+</webscript>

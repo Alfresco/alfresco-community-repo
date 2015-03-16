@@ -18,12 +18,8 @@
  */
 package org.alfresco.repo.web.scripts;
 
-import static org.mockito.Matchers.any;
-import static org.springframework.extensions.webscripts.Status.STATUS_OK;
-
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -51,6 +47,9 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+
+import static org.mockito.Matchers.any;
+import static org.springframework.extensions.webscripts.Status.STATUS_OK;
 
 /**
  * Unit test to test runas function

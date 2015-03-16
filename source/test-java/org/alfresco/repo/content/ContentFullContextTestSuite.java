@@ -26,6 +26,7 @@ import org.alfresco.repo.content.cleanup.ContentStoreCleanerTest;
 import org.alfresco.repo.content.filestore.FileContentStoreTest;
 import org.alfresco.repo.content.filestore.NoRandomAccessFileContentStoreTest;
 import org.alfresco.repo.content.filestore.ReadOnlyFileContentStoreTest;
+import org.alfresco.repo.content.filestore.SpoofedTextContentReaderTest;
 import org.alfresco.repo.content.replication.ContentStoreReplicatorTest;
 import org.alfresco.repo.content.replication.ReplicatingContentStoreTest;
 
@@ -47,6 +48,7 @@ public class ContentFullContextTestSuite extends TestSuite
         // These tests need a full context, at least for now
         suite.addTestSuite(ContentStoreCleanerTest.class);
         //suite.addTestSuite(CharsetFinderTest.class);
+        suite.addTest(new JUnit4TestAdapter(SpoofedTextContentReaderTest.class));
         suite.addTest(new JUnit4TestAdapter(FileContentStoreTest.class));
         suite.addTest(new JUnit4TestAdapter(NoRandomAccessFileContentStoreTest.class));
         suite.addTest(new JUnit4TestAdapter(ReadOnlyFileContentStoreTest.class));

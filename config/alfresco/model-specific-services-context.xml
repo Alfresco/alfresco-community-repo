@@ -147,6 +147,13 @@
       <property name="temporaryFiles" ref="temporaryFiles" />
       <property name="enabled" value="${fileFolderService.checkHidden.enabled}" />
    </bean>
+
+  <!-- FileFolderLoader and required beans -->
+   <bean name="fileFolderLoader" class="org.alfresco.repo.model.filefolder.FileFolderLoader">
+       <constructor-arg ref="repositoryState" />
+       <constructor-arg ref="transactionService" />
+       <constructor-arg ref="repositoryHelper" />
+   </bean>
  
   <!-- Multilingual specific service -->
    <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >

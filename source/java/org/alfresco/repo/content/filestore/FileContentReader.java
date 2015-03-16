@@ -239,7 +239,9 @@ public class FileContentReader extends AbstractContentReader
 
     /**
      * @return Returns false as this is a reader
+     * @deprecated Since 5.1.  This method has no value: a file reader can never write (DH: 2015/02/17)
      */
+    @Deprecated
     public boolean canWrite()
     {
         return false;   // we only allow reading

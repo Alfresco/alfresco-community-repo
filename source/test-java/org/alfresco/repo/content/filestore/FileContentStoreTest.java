@@ -18,14 +18,9 @@
  */
 package org.alfresco.repo.content.filestore;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 import org.alfresco.repo.content.AbstractWritableContentStoreTest;
 import org.alfresco.repo.content.ContentContext;
@@ -35,11 +30,20 @@ import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.service.cmr.repository.ContentIOException;
+import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.TempFileProvider;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests read and write functionality for the store.
@@ -64,6 +68,13 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
                 getName());
         
         store.setDeleteEmptyDirs(true);
+        // Do not need super class's transactions
+    }
+    
+    @After
+    public void after()
+    {
+        // Do not need super class's transactions
     }
 
     @Override
@@ -76,6 +87,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
      * Checks that the store disallows concurrent writers to be issued to the same URL.
      */
     @SuppressWarnings("unused")
+    @Test
     public void testConcurrentWriteDetection() throws Exception
     {
         ByteBuffer buffer = ByteBuffer.wrap("Something".getBytes());
@@ -98,6 +110,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     }
 
     @Override
+    @Test
     public void testRootLocation() throws Exception
     {
         ContentStore store = getStore();
@@ -111,6 +124,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
      * Ensures that the size is something other than <tt>-1</tt> or <tt>Long.MAX_VALUE</tt>
      */
     @Override
+    @Test
     public void testSpaceFree() throws Exception
     {
         ContentStore store = getStore();
@@ -123,6 +137,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
      * Ensures that the size is something other than <tt>-1</tt> or <tt>Long.MAX_VALUE</tt>
      */
     @Override
+    @Test
     public void testSpaceTotal() throws Exception
     {
         ContentStore store = getStore();
@@ -135,6 +150,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     /**
      * Empty parent directories should be removed when a URL is removed.
      */
+    @Test
     public void testDeleteRemovesEmptyDirs() throws Exception
     {
         ContentStore store = getStore();
@@ -161,6 +177,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     /**
      * Only non-empty directories should be deleted.
      */
+    @Test
     public void testDeleteLeavesNonEmptyDirs()
     {
         ContentStore store = getStore();
@@ -198,6 +215,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
     /**
      * Empty parent directories are not deleted if the store is configured not to.
      */
+    @Test
     public void testNoParentDirsDeleted() throws Exception
     {
         store.setDeleteEmptyDirs(false);
@@ -221,6 +239,7 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
      * the expected exception.
      * @since Thor
      */
+    @Test
     public void testWriteFileWithSizeLimit() throws Exception
     {
         ContentWriter writer = getWriter();
@@ -247,9 +266,10 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         assertTrue("Stream close not detected", writer.isClosed());
     }
     
-    /*
+    /**
      * Test for MNT-12301 case.
      */
+    @Test
     public void testFileAccessOutsideStoreRoot()
     {
         String url = FileContentStore.STORE_PROTOCOL + ContentStore.PROTOCOL_DELIMITER + "../somefile.bin";
@@ -295,6 +315,31 @@ public class FileContentStoreTest extends AbstractWritableContentStoreTest
         }
     }
     
+    /**
+     * Ensure that the store is able to produce readers for spoofed text.
+     * 
+     * @since 5.1
+     */
+    @Test
+    public void testSpoofedContent() throws Exception
+    {
+        String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 0L, 1024L);
+        ContentContext ctx = new ContentContext(null, url);
+        try
+        {
+            store.getWriter(ctx);
+            fail("FileContentStore should report that all 'spoof' content exists.");
+        }
+        catch (ContentExistsException e)
+        {
+            // Expected
+        }
+        assertFalse("Deletion should be 'false'.", store.delete(url));
+        assertTrue("All spoofed content already exists!", store.exists(url));
+        ContentReader reader = store.getReader(url);
+        assertTrue(reader instanceof SpoofedTextContentReader);
+        assertEquals(1024L, reader.getContentString().getBytes("UTF-8").length);
+    }
     
     private void assertDirExists(File root, String dir)
     {

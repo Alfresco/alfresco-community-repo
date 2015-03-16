@@ -52,6 +52,7 @@ import org.junit.runners.Suite.SuiteClasses;
     // These need to come afterwards, as they insert extra
     //  interceptors which would otherwise confuse things
     FileFolderServiceImplTest.class,
+    // TODO
     FileFolderDuplicateChildTest.class,
     FileFolderServicePropagationTest.class
 })

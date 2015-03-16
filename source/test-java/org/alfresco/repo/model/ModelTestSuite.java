@@ -50,9 +50,9 @@ import org.junit.runners.Suite.SuiteClasses;
     
 	HiddenAspectTest.class,
 	
-//    FileFolderLoaderTest.class,
-//    FileFolderPerformanceTester.class,
-//    
+    FileFolderLoaderTest.class,
+    FileFolderPerformanceTester.class,
+    
     // Add the file folder tests
     // These need to come afterwards, as they insert extra
     //  interceptors which would otherwise confuse things

@@ -995,8 +995,6 @@
                   <configuration>
                        <includes>
                            <include>**/org/alfresco/AllUnitTestsSuite.java</include>
-                           <include>**/org/alfresco/repo/model/filefolder/FileFolderPerformanceTester.java</include>
-                           <include>**/org/alfresco/repo/model/filefolder/FileFolderLoaderTest.java</include>
                        </includes>
                   </configuration>
                </execution>

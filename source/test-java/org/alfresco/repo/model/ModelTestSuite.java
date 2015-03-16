@@ -20,6 +20,7 @@ package org.alfresco.repo.model;
 
 import org.alfresco.repo.model.filefolder.FileFolderDuplicateChildTest;
 import org.alfresco.repo.model.filefolder.FileFolderLoaderTest;
+import org.alfresco.repo.model.filefolder.FileFolderPerformanceTester;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImplTest;
 import org.alfresco.repo.model.filefolder.FileFolderServicePropagationTest;
 import org.alfresco.repo.model.filefolder.HiddenAspectTest;
@@ -49,11 +50,13 @@ import org.junit.runners.Suite.SuiteClasses;
     
 	HiddenAspectTest.class,
 	
+    FileFolderLoaderTest.class,
+    FileFolderPerformanceTester.class,
+    
     // Add the file folder tests
     // These need to come afterwards, as they insert extra
     //  interceptors which would otherwise confuse things
     FileFolderServiceImplTest.class,
-    FileFolderLoaderTest.class,
     FileFolderDuplicateChildTest.class,
     FileFolderServicePropagationTest.class
 })

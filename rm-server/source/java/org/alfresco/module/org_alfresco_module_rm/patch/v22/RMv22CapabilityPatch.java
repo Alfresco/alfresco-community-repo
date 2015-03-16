@@ -35,7 +35,7 @@ public class RMv22CapabilityPatch extends CapabilityPatch
      */
     protected void applyCapabilityPatch(NodeRef filePlan) 
     {
-        // add new capability
+        // add new capbilities
         addCapability(filePlan,
                       "FileDestructionReport",
                       FilePlanRoleService.ROLE_ADMIN,
@@ -52,5 +52,11 @@ public class RMv22CapabilityPatch extends CapabilityPatch
                       "RemoveFromHold",
                       FilePlanRoleService.ROLE_ADMIN,
                       FilePlanRoleService.ROLE_RECORDS_MANAGER);
+        
+        // @see https://issues.alfresco.com/jira/browse/RM-2058
+        addCapability(filePlan, 
+        		      "ManageAccessControls", 
+        		      FilePlanRoleService.ROLE_SECURITY_OFFICER,
+                      FilePlanRoleService.ROLE_RECORDS_MANAGER);        
     }
 }

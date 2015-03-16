@@ -32,7 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExe
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluatorUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.model.compatibility.DictionaryBootstrapPostProcessorUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22RemoveInPlaceRolesFromAllPatchUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.patch.v22.PatchV22Suite;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigGetTest;
@@ -84,20 +84,19 @@ import org.junit.runners.Suite.SuiteClasses;
     FileReportActionUnitTest.class,
     UnlinkFromActionUnitTest.class,
     DeclareAsVersionRecordActionUnitTest.class,
-
-    // patches
-    RMv22RemoveInPlaceRolesFromAllPatchUnitTest.class,
-
+    
     // recorded version config
     RecordedVersionConfigGetTest.class,
     RecordedVersionConfigPostTest.class,
-    
+
     // bootstrap
     BootstrapImporterModuleComponentUnitTest.class,
     RecordContributorsGroupBootstrapComponentUnitTest.class,
     
     // suites by package
-    CapabilityDeclarativeConditionSuite.class
+    CapabilityDeclarativeConditionSuite.class,
+    PatchV22Suite.class
+
 })
 public class AllUnitTestSuite
 {

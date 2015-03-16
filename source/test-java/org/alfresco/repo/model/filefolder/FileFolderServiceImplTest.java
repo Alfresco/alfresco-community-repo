@@ -186,12 +186,12 @@ public class FileFolderServiceImplTest extends TestCase
                 QName.createQName(NamespaceService.ALFRESCO_URI, "working root1"),
                 QName.createQName("http://www.alfresco.org/test/filefoldertest/1.0", "folder")).getChildRef();
         nodeService.createNode(
-        		workingRootNodeRef1,
+                workingRootNodeRef1,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.ALFRESCO_URI, "node1"),
                 ContentModel.TYPE_CONTENT).getChildRef();
         nodeService.createNode(
-        		workingRootNodeRef1,
+                workingRootNodeRef1,
                 QName.createQName("http://www.alfresco.org/test/filefoldertest/1.0", "contains1"),
                 QName.createQName(NamespaceService.ALFRESCO_URI, "node2"),
                 ContentModel.TYPE_CONTENT).getChildRef();
@@ -265,20 +265,20 @@ public class FileFolderServiceImplTest extends TestCase
 
     public void testShallowFilesAndFoldersListWithLocale() throws Exception
     {
-		Locale savedLocale = I18NUtil.getContentLocaleOrNull();
-		try
-		{
-			I18NUtil.setContentLocale(Locale.CANADA);
-	        List<FileInfo> files = fileFolderService.list(workingRootNodeRef);
-	        // check
-	        String[] expectedNames = new String[]
-	        { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
-	        checkFileList(files, 2, 3, expectedNames);
-		}
-		finally
-		{
-	        I18NUtil.setContentLocale(savedLocale);
-		}
+        Locale savedLocale = I18NUtil.getContentLocaleOrNull();
+        try
+        {
+            I18NUtil.setContentLocale(Locale.CANADA);
+            List<FileInfo> files = fileFolderService.list(workingRootNodeRef);
+            // check
+            String[] expectedNames = new String[]
+            { NAME_L0_FILE_A, NAME_L0_FILE_B, NAME_L0_FOLDER_A, NAME_L0_FOLDER_B, NAME_L0_FOLDER_C };
+            checkFileList(files, 2, 3, expectedNames);
+        }
+        finally
+        {
+            I18NUtil.setContentLocale(savedLocale);
+        }
     }
     
     public void testShallowFilesOnlyList() throws Exception
@@ -1046,17 +1046,17 @@ public class FileFolderServiceImplTest extends TestCase
      */
     public void testGetType() throws Exception
     {
-    	Locale savedLocale = I18NUtil.getContentLocaleOrNull();
-    	try
-    	{
-	        I18NUtil.setContentLocale(Locale.CANADA);
-	        FileFolderServiceType type = fileFolderService.getType(ContentModel.TYPE_FOLDER);
-	        assertEquals("Type incorrect for folder", FileFolderServiceType.FOLDER, type);
-    	}
-    	finally
-    	{
+        Locale savedLocale = I18NUtil.getContentLocaleOrNull();
+        try
+        {
+            I18NUtil.setContentLocale(Locale.CANADA);
+            FileFolderServiceType type = fileFolderService.getType(ContentModel.TYPE_FOLDER);
+            assertEquals("Type incorrect for folder", FileFolderServiceType.FOLDER, type);
+        }
+        finally
+        {
             I18NUtil.setContentLocale(savedLocale);
-    	}
+        }
     }
     
     public void testETHREEOH_3088_MoveIntoSelf() throws Exception
@@ -1348,7 +1348,7 @@ public class FileFolderServiceImplTest extends TestCase
     {
         // sanity checks only (see also GetChildrenCannedQueryTest)
         
-    	I18NUtil.setContentLocale(Locale.CANADA);
+        I18NUtil.setContentLocale(Locale.CANADA);
 
         // test 1
         PagingRequest pagingRequest = new PagingRequest(100, null);
@@ -1397,7 +1397,7 @@ public class FileFolderServiceImplTest extends TestCase
     
     public void testALF12758()
     {
-    	// test that the FileFolderService returns only cm:contains children
+        // test that the FileFolderService returns only cm:contains children
         PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
         PagingResults<FileInfo> pagingResults = fileFolderService.list(workingRootNodeRef1, true, true, null, null, null, pagingRequest);
         assertNotNull(pagingResults);
@@ -1438,47 +1438,47 @@ public class FileFolderServiceImplTest extends TestCase
     
     public void testList_HiddenFiles()
     {
-    	// Test that hidden files are not returned for clients that should not be able to see them,
-    	// and that the total result count is correct.
+        // Test that hidden files are not returned for clients that should not be able to see them,
+        // and that the total result count is correct.
 
-    	Client saveClient = FileFilterMode.setClient(Client.webdav);
-    	try
-    	{
-    		// create some hidden files
-	    	NodeRef nodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
-	    	NodeRef nodeRef1 = fileFolderService.create(nodeRef, "parent", ContentModel.TYPE_CONTENT).getNodeRef();
-	    	for(int i = 0; i < 10; i++)
-	    	{
-	    		fileFolderService.create(nodeRef1, ".child" + i, ContentModel.TYPE_CONTENT).getNodeRef();
-	    	}
-	    	
-	    	// and some visible files
-	    	for(int i = 0; i < 10; i++)
-	    	{
-	    		fileFolderService.create(nodeRef1, "visiblechild" + i, ContentModel.TYPE_CONTENT).getNodeRef();
-	    	}
+        Client saveClient = FileFilterMode.setClient(Client.webdav);
+        try
+        {
+            // create some hidden files
+            NodeRef nodeRef = fileFolderService.create(workingRootNodeRef, "" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+            NodeRef nodeRef1 = fileFolderService.create(nodeRef, "parent", ContentModel.TYPE_CONTENT).getNodeRef();
+            for(int i = 0; i < 10; i++)
+            {
+                fileFolderService.create(nodeRef1, ".child" + i, ContentModel.TYPE_CONTENT).getNodeRef();
+            }
+            
+            // and some visible files
+            for(int i = 0; i < 10; i++)
+            {
+                fileFolderService.create(nodeRef1, "visiblechild" + i, ContentModel.TYPE_CONTENT).getNodeRef();
+            }
 
-	    	// switch to a client that should not see the hidden files
-	    	saveClient = FileFilterMode.setClient(Client.cmis);
-    		PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
-    		pagingRequest.setRequestTotalCountMax(10000); // need this so that total count is set
+            // switch to a client that should not see the hidden files
+            saveClient = FileFilterMode.setClient(Client.cmis);
+            PagingRequest pagingRequest = new PagingRequest(0, Integer.MAX_VALUE);
+            pagingRequest.setRequestTotalCountMax(10000); // need this so that total count is set
 
-    		PagingResults<FileInfo> results = fileFolderService.list(nodeRef1, true, true, null, null, pagingRequest);
-    		Pair<Integer, Integer> totalResultCount = results.getTotalResultCount();
-    		assertNotNull(totalResultCount.getFirst());
-    		assertEquals("Total result lower count should be 10", 10, totalResultCount.getFirst().intValue());
-    		assertNotNull(totalResultCount.getSecond());
-    		assertEquals("Total result upper count should be 10", 10, totalResultCount.getSecond().intValue());
-    		for(FileInfo fileInfo : results.getPage())
-    		{
-    			assertTrue(fileInfo.getName().startsWith("visiblechild"));
-    		}
-    		assertEquals("Expected only 10 results", 10, results.getPage().size());
-    	}
-    	finally
-    	{
-    		FileFilterMode.setClient(saveClient);
-    	}
+            PagingResults<FileInfo> results = fileFolderService.list(nodeRef1, true, true, null, null, pagingRequest);
+            Pair<Integer, Integer> totalResultCount = results.getTotalResultCount();
+            assertNotNull(totalResultCount.getFirst());
+            assertEquals("Total result lower count should be 10", 10, totalResultCount.getFirst().intValue());
+            assertNotNull(totalResultCount.getSecond());
+            assertEquals("Total result upper count should be 10", 10, totalResultCount.getSecond().intValue());
+            for(FileInfo fileInfo : results.getPage())
+            {
+                assertTrue(fileInfo.getName().startsWith("visiblechild"));
+            }
+            assertEquals("Expected only 10 results", 10, results.getPage().size());
+        }
+        finally
+        {
+            FileFilterMode.setClient(saveClient);
+        }
     }
     
     public void testList_notCheckedOut_ALF_13602()
@@ -1637,7 +1637,7 @@ public class FileFolderServiceImplTest extends TestCase
          assertFalse(copyInfo.getName().contains("(Working Copy)"));
          assertTrue(copyInfo.getName().substring(0, copyExtIndex).startsWith(checkedOutName.substring(0, origExtIndex)));
     }
-	
+    
     public void testSortingCustomFields()
     {
         // Test sorting based on MNT-11120
@@ -1734,5 +1734,5 @@ public class FileFolderServiceImplTest extends TestCase
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
         expectedNames = new String[] { "B-null", "A-foo", "A-bar", "B-baz", "A-null", "B-biz" };
         checkFileList(pageRes, 6, 0, expectedNames);
-    }	
+    }    
 }

@@ -52,6 +52,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.Pair;
+import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -725,8 +726,11 @@ public class RetryingTransactionHelperTest extends TestCase
         assertFalse("New transaction has not started", txnId.equals(listener.newTxnId));
     }
 
-    private void runThreads(final RetryingTransactionHelper txnHelper, final List<Throwable> caughtExceptions,
-            Pair<Integer, Integer>... startDurationPairs)
+    @SuppressWarnings("unchecked")
+    private void runThreads(
+            final RetryingTransactionHelper txnHelper,
+            final List<Throwable> caughtExceptions,
+            final Pair<Integer, Integer>... startDurationPairs)
     {
         ExecutorService executorService = new ThreadPoolExecutor(10, 10, 0L, TimeUnit.MILLISECONDS,
                 new ArrayBlockingQueue<Runnable>(10));

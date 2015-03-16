@@ -119,14 +119,14 @@
         <property name="lockService" ref="lockService" />
         <!-- Done by bootstrap due to circular dependency -->
         <!-- <property name="checkOutCheckInService" ref="checkOutCheckInService" />  -->
-		<property name="modelDAO" ref="permissionsModelDAO" />
-		<property name="requiredFor">
-			<list>
-				<value>Unlock</value>
-				<value>CheckIn</value>
-				<value>CancelCheckOut</value>
-			</list>
-		</property>
+        <property name="modelDAO" ref="permissionsModelDAO" />
+        <property name="requiredFor">
+            <list>
+                <value>Unlock</value>
+                <value>CheckIn</value>
+                <value>CancelCheckOut</value>
+            </list>
+        </property>
     </bean>
 
     <!-- =========================== -->
@@ -134,7 +134,7 @@
     <!-- =========================== -->
     
     <bean id="permissionModelBootstrap" class="org.alfresco.repo.security.permissions.impl.model.PermissionModelBootstrap" abstract="true" init-method="init">
-    	<property name="permissionModel" ref="permissionsModelDAO"/>    
+        <property name="permissionModel" ref="permissionsModelDAO"/>    
     </bean>
 
     <!-- ====== -->
@@ -538,8 +538,8 @@
 
     <!-- Category queries are filtered for nodes that are visible to the current user    -->
     <!-- Other methods are unrestricted at the moment                                    -->
-	
-	<!-- Uses the public node service for all mutations -  access is allowed here and enforced by the public node service -->
+    
+    <!-- Uses the public node service for all mutations -  access is allowed here and enforced by the public node service -->
 
     <bean id="CategoryService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
@@ -557,7 +557,7 @@
                 org.alfresco.service.cmr.search.CategoryService.createCategory=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.deleteClassification=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.deleteCategory=ACL_ALLOW
-				org.alfresco.service.cmr.search.CategoryService.getTopCategories=ACL_ALLOW
+                org.alfresco.service.cmr.search.CategoryService.getTopCategories=ACL_ALLOW
                 org.alfresco.service.cmr.search.CategoryService.*=ACL_DENY
             </value>
         </property>
@@ -796,16 +796,16 @@
                 org.alfresco.service.cmr.security.AuthorityService.getShortName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.getName=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.authorityExists=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.setAuthorityDisplayName=ACL_METHOD.ROLE_ADMINISTRATOR
-				org.alfresco.service.cmr.security.AuthorityService.getAuthorityDisplayName=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.getOrCreateZone=ACL_METHOD.ROLE_ADMINISTRATOR
-				org.alfresco.service.cmr.security.AuthorityService.getZone=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.getAuthorityZones=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.getAllAuthoritiesInZone=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.getAllRootAuthoritiesInZone=ACL_ALLOW
-				org.alfresco.service.cmr.security.AuthorityService.addAuthorityToZones=ACL_METHOD.ROLE_ADMINISTRATOR
-				org.alfresco.service.cmr.security.AuthorityService.removeAuthorityFromZones=ACL_METHOD.ROLE_ADMINISTRATOR
-				org.alfresco.service.cmr.security.AuthorityService.getDefaultZones=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.setAuthorityDisplayName=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthorityService.getAuthorityDisplayName=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.getOrCreateZone=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthorityService.getZone=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.getAuthorityZones=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.getAllAuthoritiesInZone=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.getAllRootAuthoritiesInZone=ACL_ALLOW
+                org.alfresco.service.cmr.security.AuthorityService.addAuthorityToZones=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthorityService.removeAuthorityFromZones=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.security.AuthorityService.getDefaultZones=ACL_ALLOW
                 org.alfresco.service.cmr.security.AuthorityService.*=ACL_DENY
             </value>
         </property>
@@ -1200,7 +1200,7 @@
     <!-- TODO: Add content usage security -->
     <bean id="ContentUsageService_security" class="org.alfresco.repo.security.permissions.impl.AlwaysProceedMethodInterceptor" />
     
-	<bean id="PublicServiceAccessService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+    <bean id="PublicServiceAccessService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
         <property name="authenticationManager">
             <ref bean="authenticationManager"/>
         </property>
@@ -1212,7 +1212,7 @@
         </property>
         <property name="objectDefinitionSource">
             <value>org.alfresco.service.cmr.security.PublicServiceAccessService.hasAccess=ACL_ALLOW
-			</value>
+            </value>
         </property>
     </bean>
     
@@ -1230,5 +1230,5 @@
         <property name="service" value="org.alfresco.repo.node.archive.NodeArchiveService" />
         <property name="methodName" value="listArchivedNodes" />
     </bean>
-	
+    
 </beans>

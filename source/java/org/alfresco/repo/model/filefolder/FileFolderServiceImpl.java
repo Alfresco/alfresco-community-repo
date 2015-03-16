@@ -33,7 +33,6 @@ import java.util.ResourceBundle.Control;
 import java.util.Set;
 import java.util.Stack;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.CannedQueryFactory;
 import org.alfresco.query.CannedQueryResults;
@@ -286,6 +285,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return fileInfo;
     }
 
+    @Override
     public List<FileInfo> toFileInfoList(List<NodeRef> nodeRefs)
     {
         List<FileInfo> fileInfos = new LinkedList<FileInfo>();
@@ -319,37 +319,13 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
     }
     
-    /**
-     * Checks the type for whether it is a file or folder.  All invalid types
-     * lead to runtime exceptions.
-     * 
-     * @param typeQName the type to check
-     * @return Returns true if the type is a valid folder type, false if it is a file.
-     * @throws AlfrescoRuntimeException if the type is not handled by this service
-     */
-    private boolean isFolder(QName typeQName) throws InvalidTypeException
-    {
-        FileFolderServiceType type = getType(typeQName);
-        
-        switch (type)
-        {
-        case FILE:
-            return false;
-        case FOLDER:
-            return true;
-        case SYSTEM_FOLDER:
-            throw new InvalidTypeException("This service should ignore type " + ContentModel.TYPE_SYSTEM_FOLDER);
-        case INVALID:
-        default:
-            throw new InvalidTypeException("Type is not handled by this service: " + typeQName);
-        }
-    }
-
+    @Override
     public boolean exists(NodeRef nodeRef)
     {
         return nodeService.exists(nodeRef);
     }
     
+    @Override
     public FileFolderServiceType getType(QName typeQName)
     {
         if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
@@ -373,6 +349,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
     }
     
+    @Override
     public List<FileInfo> list(NodeRef contextNodeRef)
     {
         // execute the query
@@ -481,10 +458,11 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     }
     
    
+    @Override
     public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
-    	CannedQueryResults<NodeRef> results = listImpl(rootNodeRef, null,  searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
-    	return getPagingResults(pagingRequest, results);
+        CannedQueryResults<NodeRef> results = listImpl(rootNodeRef, null,  searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
+        return getPagingResults(pagingRequest, results);
     }
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders)
@@ -500,16 +478,6 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     
     // note: similar to getChildAssocs(contextNodeRef, searchTypeQNames) but enables paging features, including max items, sorting etc (with permissions per-applied)
 
-    /**
-     * 
-     * @param contextNodeRef
-     * @param pattern
-     * @param searchTypeQNames
-     * @param ignoreAspectQNames
-     * @param sortProps
-     * @param pagingRequest
-     * @return
-     */
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern,  Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
@@ -537,6 +505,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return results;
     }
     
+    @Override
     public List<FileInfo> listFiles(NodeRef contextNodeRef)
     {
         // execute the query
@@ -551,6 +520,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return results;
     }
 
+    @Override
     public List<FileInfo> listFolders(NodeRef contextNodeRef)
     {
         // execute the query
@@ -565,8 +535,8 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return results;
     }
     
-    public List<FileInfo> listDeepFolders(NodeRef contextNodeRef,
-            SubFolderFilter filter)
+    @Override
+    public List<FileInfo> listDeepFolders(NodeRef contextNodeRef, SubFolderFilter filter)
     {
         List<NodeRef> nodeRefs = listSimpleDeep(contextNodeRef, false, true, filter);
         
@@ -614,6 +584,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return resultNodeRef;
     }
 
+    @Override
     public NodeRef searchSimple(NodeRef contextNodeRef, String name)
     {
         ParameterCheck.mandatory("name", name);
@@ -634,6 +605,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     /**
      * @see #search(NodeRef, String, boolean, boolean, boolean)
      */
+    @Override
     public List<FileInfo> search(NodeRef contextNodeRef, String namePattern, boolean includeSubFolders)
     {
         return search(contextNodeRef, namePattern, true, true, includeSubFolders);
@@ -644,6 +616,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     /**
      * Full search with all options
      */
+    @Override
     public List<FileInfo> search(
             NodeRef contextNodeRef,
             String namePattern,
@@ -971,6 +944,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     /**
      * @see #move(NodeRef, NodeRef, String)
      */
+    @Override
     public FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException
     {
         return moveOrCopy(sourceNodeRef, null, null, newName, true);
@@ -1006,6 +980,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     /**
      * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
      */
+    @Override
     public FileInfo copy(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
     {
         return moveOrCopy(sourceNodeRef, null, targetParentRef, newName, false);
@@ -1238,11 +1213,13 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return systemPaths.contains(prefixedPath);
     }
     
+    @Override
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException
     {
         return createImpl(parentNodeRef, name, typeQName, null);
     } 
     
+    @Override
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException
     {
         return createImpl(parentNodeRef, name, typeQName, assocQName);
@@ -1262,7 +1239,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
             case SYSTEM_FOLDER:
                 throw new InvalidTypeException("System Folders are not handled by this service :" + typeQName);
             case INVALID:
-        	    throw new InvalidTypeException("Type is not handled by this service: " + typeQName);
+                throw new InvalidTypeException("Type is not handled by this service: " + typeQName);
             case FILE:
             case FOLDER:
             default:
@@ -1303,6 +1280,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return fileInfo;
     }
     
+    @Override
     public void delete(NodeRef nodeRef)
     {
         nodeService.deleteNode(nodeRef);
@@ -1364,6 +1342,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
      *         including the destination file or folder
      * @throws FileNotFoundException if the node could not be found
      */
+    @Override
     public List<FileInfo> getNamePath(NodeRef rootNodeRef, NodeRef nodeRef) throws FileNotFoundException
     {
         // check the root
@@ -1450,6 +1429,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
      *         including the destination file or folder
      * @throws FileNotFoundException if the node could not be found
      */
+    @Override
     public List<String> getNameOnlyPath(NodeRef rootNodeRef, final NodeRef nodeRef) throws FileNotFoundException
     {
         // check the root
@@ -1522,11 +1502,13 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
     }
 
+    @Override
     public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements) throws FileNotFoundException
     {
         return resolveNamePath(rootNodeRef, pathElements, true);        
     }
 
+    @Override
     public FileInfo resolveNamePath(NodeRef rootNodeRef, List<String> pathElements, boolean mustExist) throws FileNotFoundException
     {
         if (pathElements.size() == 0)
@@ -1540,12 +1522,13 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         for (int i = 0; i < folderCount; i++)
         {
             String pathElement = pathElements.get(i);
+            currentPath.append("/").append(pathElement);
             NodeRef folderNodeRef = searchSimple(parentNodeRef, pathElement);
             if (folderNodeRef == null)
             {
                 if (mustExist)
                 {
-                    throw new FileNotFoundException("Folder not found: " + currentPath);
+                    throw new FileNotFoundException("Folder not found: " + currentPath + " (in " + rootNodeRef + ")");
                 }
                 else
                 {
@@ -1556,12 +1539,13 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
         // we have resolved the folder path - resolve the last component
         String pathElement = pathElements.get(pathElements.size() - 1);
+        currentPath.append("/").append(pathElement);
         NodeRef fileNodeRef = searchSimple(parentNodeRef, pathElement);
         if (fileNodeRef == null)
         {
             if (mustExist)
             {
-                throw new FileNotFoundException("File not found: " + currentPath);
+                throw new FileNotFoundException("File not found: " + currentPath + " (in " + rootNodeRef + ")");
             }
             else
             {
@@ -1580,6 +1564,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return result;
     }
 
+    @Override
     public FileInfo getFileInfo(NodeRef nodeRef)
     {
         try
@@ -1592,6 +1577,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         }
     }
 
+    @Override
     public ContentReader getReader(NodeRef nodeRef)
     {
         FileInfo fileInfo = toFileInfo(nodeRef, false);
@@ -1602,6 +1588,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         return contentService.getReader(nodeRef, ContentModel.PROP_CONTENT);
     }
 
+    @Override
     public ContentWriter getWriter(NodeRef nodeRef)
     {
         FileInfo fileInfo = toFileInfo(nodeRef, false);

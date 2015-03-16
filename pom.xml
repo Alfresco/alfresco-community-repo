@@ -28,7 +28,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-text-gen</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.1</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco.services</groupId>
@@ -84,11 +84,6 @@
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <version>3.3</version>
         </dependency>
         <dependency>
             <groupId>commons-pool</groupId>
@@ -1001,6 +996,7 @@
                        <includes>
                            <include>**/org/alfresco/AllUnitTestsSuite.java</include>
                            <include>**/org/alfresco/repo/model/filefolder/FileFolderPerformanceTester.java</include>
+                           <include>**/org/alfresco/repo/model/filefolder/FileFolderLoaderTest.java</include>
                        </includes>
                   </configuration>
                </execution>

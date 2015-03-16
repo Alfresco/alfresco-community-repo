@@ -153,9 +153,14 @@
        <constructor-arg ref="repositoryState" />
        <constructor-arg ref="transactionService" />
        <constructor-arg ref="repositoryHelper" />
+       <constructor-arg ref="FileFolderService" />
+       <constructor-arg ref="nodeService" />
+       <constructor-arg ref="contentService" />
+       <constructor-arg ref="policyBehaviourFilter" />
    </bean>
+   <alias name="fileFolderLoader" alias="FileFolderLoader"/>
  
-  <!-- Multilingual specific service -->
+   <!-- Multilingual specific service -->
    <bean name="multilingualContentService" class="org.alfresco.repo.model.ml.MultilingualContentServiceImpl" >
       <property name="nodeService">
          <ref bean="mlAwareNodeService" />

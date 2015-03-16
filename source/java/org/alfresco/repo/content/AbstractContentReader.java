@@ -510,7 +510,7 @@ public abstract class AbstractContentReader extends AbstractContentAccessor impl
             // done
             return content;
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             throw new ContentIOException("Failed to copy content to string: \n" +
                     "   accessor: " + this,

@@ -349,16 +349,6 @@ public class FileContentStore
         Pair<String, String> urlParts = super.getContentUrlParts(contentUrl);
         String protocol = urlParts.getFirst();
         String relativePath = urlParts.getSecond();
-        return makeFile(protocol, relativePath);
-    }
-
-    /**
-     * Make the file based on the content URL parts.
-     * 
-     * @param protocol          must be {@link ContentStore#PROTOCOL_DELIMITER} for this class
-     */
-    private File makeFile(String protocol, String relativePath)
-    {
         // Check the protocol
         if (!protocol.equals(FileContentStore.STORE_PROTOCOL))
         {
@@ -388,16 +378,13 @@ public class FileContentStore
     @Override
     public boolean exists(String contentUrl)
     {
-        Pair<String, String> urlParts = super.getContentUrlParts(contentUrl);
-        String protocol = urlParts.getFirst();
-        String relativePath = urlParts.getSecond();
-        if (protocol.equals(SPOOF_PROTOCOL))
+        if (contentUrl.startsWith(SPOOF_PROTOCOL))
         {
             return true;
         }
         else
         {
-            File file = makeFile(protocol, relativePath);
+            File file = makeFile(contentUrl);
             return file.exists();
         }
     }
@@ -447,18 +434,15 @@ public class FileContentStore
      */
     public ContentReader getReader(String contentUrl)
     {
-        Pair<String, String> urlParts = super.getContentUrlParts(contentUrl);
-        String protocol = urlParts.getFirst();
-        String relativePath = urlParts.getSecond();
         // Handle the spoofed URL
-        if (protocol.equals(SPOOF_PROTOCOL))
+        if (contentUrl.startsWith(SPOOF_PROTOCOL))
         {
             return new SpoofedTextContentReader(contentUrl);
         }
         // else, it's a real file we are after
         try
         {
-            File file = makeFile(protocol, relativePath);
+            File file = makeFile(contentUrl);
             ContentReader reader = null;
             if (file.exists())
             {
@@ -626,17 +610,13 @@ public class FileContentStore
         {
             throw new UnsupportedOperationException("This store is currently read-only: " + this);
         }
-        // Dig out protocol
-        Pair<String, String> urlParts = super.getContentUrlParts(contentUrl);
-        String protocol = urlParts.getFirst();
-        String relativePath = urlParts.getSecond();
-        if (protocol.equals(SPOOF_PROTOCOL))
+        if (contentUrl.startsWith(SPOOF_PROTOCOL))
         {
             // This is not a failure but the content can never actually be deleted
             return false;
         }
         // Handle regular files based on the real files
-        File file = makeFile(protocol, relativePath);
+        File file = makeFile(contentUrl);
         boolean deleted = false;
         if (!file.exists())
         {

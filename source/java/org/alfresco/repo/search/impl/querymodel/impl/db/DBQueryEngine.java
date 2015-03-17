@@ -156,6 +156,11 @@ public class DBQueryEngine implements QueryEngine
         Map<Set<String>, ResultSet> answer = new HashMap<Set<String>, ResultSet>();
         DBQuery dbQuery = (DBQuery)query;
         
+        if(options.getStores().size() > 1)
+        {
+            throw new QueryModelException("Multi-store queries are not supported");
+        }
+        
         // MT
         StoreRef storeRef = options.getStores().get(0);
         storeRef = storeRef != null ? tenantService.getName(storeRef) : null;

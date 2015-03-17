@@ -317,9 +317,9 @@ public class SolrSearchService implements SearchService
     @Override
     public ResultSet query(SearchParameters searchParameters)
     {
-        if (searchParameters.getStores().size() != 1)
+        if(searchParameters.getStores().size() == 0)
         {
-            throw new IllegalStateException("Only one store can be searched at present");
+            throw new IllegalStateException("At least one store must be defined to search");
         }
         
         String parameterisedQueryString;

@@ -68,9 +68,9 @@ public class SearcherComponent extends AbstractSearcherComponent
     
     public ResultSet query(SearchParameters searchParameters)
     {
-        if(searchParameters.getStores().size() != 1)
+        if(searchParameters.getStores().size() == 0)
         {
-            throw new IllegalStateException("Only one store can be searched at present");
+            throw new IllegalStateException("At least one store must be defined to search");
         }
         StoreRef storeRef = searchParameters.getStores().get(0);
         SearchService searcher = indexerAndSearcherFactory.getSearcher(storeRef, !searchParameters.excludeDataInTheCurrentTransaction());

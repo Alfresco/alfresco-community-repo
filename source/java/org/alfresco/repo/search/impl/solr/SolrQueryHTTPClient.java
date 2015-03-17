@@ -343,6 +343,29 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             url.append("?wt=").append(encoder.encode("json", "UTF-8"));
             url.append("&fl=").append(encoder.encode("DBID,score", "UTF-8"));
             
+            if(searchParameters.getStores().size() > 1)
+            {
+                boolean requiresSeparator = false;
+                url.append("&shards=");
+                for(StoreRef storeRef : searchParameters.getStores())
+                {
+                    if(requiresSeparator)
+                    {
+                        url.append(',');
+                    }
+                    else
+                    {
+                        requiresSeparator = true;
+                    }
+                    SolrStoreMapping shard = extractMapping(storeRef);
+                    HttpClient client = httpClients.get(storeRef);
+                    url.append(client.getHostConfiguration().getHost());
+                    url.append(':');
+                    url.append(client.getHostConfiguration().getPort());
+                    url.append(shard.getBaseUrl());
+                }
+            }
+            
             // Emulate old limiting behaviour and metadata
             final LimitBy limitBy;
             int maxResults = -1;

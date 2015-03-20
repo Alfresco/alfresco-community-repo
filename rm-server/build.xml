@@ -7,6 +7,10 @@
    <property file="build.local.properties" />
    <property file="build.properties" />
 
+   <target name="createTargetDirectory">
+      <mkdir dir="target"/>
+   </target>
+
    <target name="copyPostgresDBDriver">
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
@@ -45,6 +49,7 @@
          <arg value="-Dclassifier=config-ssl" />
          <arg value="-Dpackaging=zip" />
          <arg value="-Ddest=${ant.build.directory}/solr4-config.zip" />
+         <arg value="-Dtransitive=false" />
       </exec>
       <exec executable="${mvn.exec}" failonerror="true">
          <arg value="dependency:get" />
@@ -120,7 +125,7 @@
       </copy>
    </target>
 
-   <target name="prepareEnv" depends="copyPostgresDBDriver, copyMySqlDBDriver, copyDevContextFile, configureSolr4" />
+   <target name="prepareEnv" depends="createTargetDirectory, copyPostgresDBDriver, copyMySqlDBDriver, copyDevContextFile, configureSolr4" />
 
    <target name="unitTest">
       <exec executable="${mvn.exec}" failonerror="true">

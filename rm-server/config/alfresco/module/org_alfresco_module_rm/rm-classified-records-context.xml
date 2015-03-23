@@ -1,0 +1,52 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--  Classification Service  -->
+
+   <bean id="classificationService"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl"
+         init-method="initConfiguredClassificationLevels"
+         parent="baseService">
+      <property name="attributeService" ref="AttributeService"/>
+   </bean>
+
+   <bean id="ClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService</value>
+      </property>
+      <property name="target">
+         <ref bean="classificationService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="ClassificationService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="ClassificationService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="ClassificationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="ClassificationService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            <![CDATA[
+               org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getApplicableLevels=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=RM_DENY
+            ]]>
+         </value>
+      </property>
+   </bean>
+</beans>

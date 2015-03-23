@@ -1,0 +1,18 @@
+[
+  {
+    "name" : "TopSecret",
+    "displayLabel" : "rm.classification.topSecret"
+  },
+  {
+    "name" : "Secret",
+    "displayLabel" : "rm.classification.secret"
+  },
+  {
+    "name" : "Confidential",
+    "displayLabel" : "rm.classification.confidential"
+  },
+  {
+    "name" : "NoClearance",
+    "displayLabel" : "rm.classification.noClearance"
+  }
+]

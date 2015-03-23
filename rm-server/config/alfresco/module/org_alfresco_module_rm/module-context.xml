@@ -60,6 +60,7 @@
             <value>alfresco.module.org_alfresco_module_rm.messages.dataset-service</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.rm-system</value>
             <value>alfresco.module.org_alfresco_module_rm.messages.template</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.rm-classification</value>
          </list>
       </property>
    </bean>
@@ -87,7 +88,10 @@
    <!-- Import the RM service's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-service-context.xml"/>
 
-   <!--  Import DOD 5015 -->
+   <!-- Import the Classified Records Services -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-classified-records-context.xml"/>
+
+    <!--  Import DOD 5015 -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/dod5015/dod5015-context.xml"/>
 
    <!-- Import the RM identifier service's -->

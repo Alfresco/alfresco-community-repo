@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,7 +30,6 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-
 
 /**
  * Unit tests for {@link ClassificationServiceImpl}.
@@ -63,21 +62,11 @@ public class ClassificationServiceImplUnitTest extends BaseUnitTest
                                                        ClassificationLevel.class.getSimpleName(), idsAndLabels.length));
         }
 
-        final int resultLength = idsAndLabels.length / 2;
-        final String[] ids    = new String[resultLength];
-        final String[] labels = new String[resultLength];
+        final List<ClassificationLevel> levels = new ArrayList<>(idsAndLabels.length / 2);
 
-        for (int i = 0; i < idsAndLabels.length; i++)
+        for (int i = 0; i < idsAndLabels.length; i += 2)
         {
-            if (i % 2 == 0) { ids[i / 2] = idsAndLabels[i]; }
-            else            { labels[(i - 1) / 2] = idsAndLabels[i]; }
-        }
-
-        final List<ClassificationLevel> levels = new ArrayList<>(resultLength);
-
-        for (int i = 0; i < resultLength; i++)
-        {
-            levels.add(new ClassificationLevel(ids[i], labels[i]));
+            levels.add(new ClassificationLevel(idsAndLabels[i], idsAndLabels[i+1]));
         }
 
         return levels;
@@ -94,17 +83,7 @@ public class ClassificationServiceImplUnitTest extends BaseUnitTest
 
         classificationService.initConfiguredClassificationLevels();
 
-        assertEquals(DEFAULT_CLASSIFICATION_LEVELS, classificationService.getApplicableLevels());
-    }
-
-    @Test public void alternativeConfigurationVanillaSystem()
-    {
-        classificationService = new TestClassificationService(null, ALT_CLASSIFICATION_LEVELS);
-        classificationService.setAttributeService(mockedAttributeService);
-
-        classificationService.initConfiguredClassificationLevels();
-
-        assertEquals(ALT_CLASSIFICATION_LEVELS, classificationService.getApplicableLevels());
+        assertEquals(DEFAULT_CLASSIFICATION_LEVELS, classificationService.getClassificationLevels());
     }
 
     @Test public void alternativeConfigurationPreviouslyStartedSystem()
@@ -114,7 +93,7 @@ public class ClassificationServiceImplUnitTest extends BaseUnitTest
 
         classificationService.initConfiguredClassificationLevels();
 
-        assertEquals(ALT_CLASSIFICATION_LEVELS, classificationService.getApplicableLevels());
+        assertEquals(ALT_CLASSIFICATION_LEVELS, classificationService.getClassificationLevels());
     }
 
     @Test (expected=MissingConfiguration.class)
@@ -141,6 +120,6 @@ public class ClassificationServiceImplUnitTest extends BaseUnitTest
         }
 
         @Override List<ClassificationLevel> getPersistedLevels()  { return persisted; }
-        @Override List<ClassificationLevel> getConfiguredLevels() { return configured; }
+        @Override List<ClassificationLevel> getConfigurationLevels() { return configured; }
     }
 }

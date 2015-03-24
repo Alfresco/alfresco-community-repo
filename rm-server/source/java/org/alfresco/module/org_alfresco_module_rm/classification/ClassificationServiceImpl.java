@@ -38,9 +38,9 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
 {
     private static Log logger = LogFactory.getLog(ClassificationServiceImpl.class);
 
-    private static final String[] ATTRIBUTE_KEYS = new String[] { "org.alfresco",
-                                                                  "module.org_alfresco_module_rm",
-                                                                  "classification.levels" };
+    private static final String[] LEVELS_KEY = new String[] { "org.alfresco",
+                                                              "module.org_alfresco_module_rm",
+                                                              "classification.levels" };
 
     public static final String DEFAULT_CONFIG_LOCATION =
                                  "/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json";
@@ -56,24 +56,24 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
 
     void initConfiguredClassificationLevels()
     {
-        final List<ClassificationLevel> allPersistedLevels = getPersistedLevels();
-        final List<ClassificationLevel> configuredLevels   = getConfiguredLevels();
+        final List<ClassificationLevel> allPersistedLevels  = getPersistedLevels();
+        final List<ClassificationLevel> configurationLevels = getConfigurationLevels();
 
         if (logger.isDebugEnabled())
         {
             // Note! We cannot log the level names or even the size of these lists for security reasons.
             logger.debug("Persisted classification levels: " + loggableStatusOf(allPersistedLevels));
-            logger.debug("Configured classification levels: " + loggableStatusOf(configuredLevels));
+            logger.debug("Classpath classification levels: " + loggableStatusOf(configurationLevels));
         }
 
-        if (configuredLevels == null || configuredLevels.isEmpty())
+        if (configurationLevels == null || configurationLevels.isEmpty())
         {
             throw new MissingConfiguration("Classification level configuration is missing.");
         }
-        else if ( !configuredLevels.equals(allPersistedLevels))
+        else if ( !configurationLevels.equals(allPersistedLevels))
         {
-            attributeService.setAttribute((Serializable) configuredLevels, ATTRIBUTE_KEYS);
-            this.configuredLevels = configuredLevels;
+            attributeService.setAttribute((Serializable) configurationLevels, LEVELS_KEY);
+            this.configuredLevels = configurationLevels;
         }
         else
         {
@@ -96,21 +96,23 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     List<ClassificationLevel> getPersistedLevels() {
         return authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<ClassificationLevel>>()
         {
-            @Override public List<ClassificationLevel> doWork() throws Exception
+            @Override
+            @SuppressWarnings("unchecked")
+            public List<ClassificationLevel> doWork() throws Exception
             {
-                return (List<ClassificationLevel>) attributeService.getAttribute(ATTRIBUTE_KEYS);
+                return (List<ClassificationLevel>) attributeService.getAttribute(LEVELS_KEY);
             }
         });
     }
 
     /** Gets the list (in descending order) of classification levels - as defined in the system configuration. */
-    List<ClassificationLevel> getConfiguredLevels()
+    List<ClassificationLevel> getConfigurationLevels()
     {
         return config.getConfiguredLevels();
     }
 
     @Override
-    public List<ClassificationLevel> getApplicableLevels()
+    public List<ClassificationLevel> getClassificationLevels()
     {
         return configuredLevels == null ? Collections.<ClassificationLevel>emptyList() :
                                           Collections.unmodifiableList(configuredLevels);

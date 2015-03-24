@@ -42,7 +42,7 @@
       <property name="objectDefinitionSource">
          <value>
             <![CDATA[
-               org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getApplicableLevels=RM_ALLOW
+               org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=RM_ALLOW
                org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=RM_DENY
             ]]>
          </value>

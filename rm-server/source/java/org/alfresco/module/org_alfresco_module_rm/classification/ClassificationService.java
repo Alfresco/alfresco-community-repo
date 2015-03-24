@@ -32,7 +32,9 @@ public interface ClassificationService
 {
     /**
      * Returns an immutable list of the defined classification levels.
-     * @return classification levels in descending order from highest to lowest.
+     * @return classification levels in descending order from highest to lowest
+     *         (where fewer users have access to the highest classification levels
+     *         and therefore access to the most restricted documents).
      */
-    public List<ClassificationLevel> getApplicableLevels();
+    public List<ClassificationLevel> getClassificationLevels();
 }

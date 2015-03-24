@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -57,7 +57,7 @@ class Configuration
         List<ClassificationLevel> result;
         try (final InputStream in = this.getClass().getResourceAsStream(configLocation))
         {
-            if ( in == null) { result = Collections.emptyList(); }
+            if (in == null) { result = Collections.emptyList(); }
             else
             {
                 final String jsonString = IOUtils.toString(in);
@@ -65,7 +65,8 @@ class Configuration
 
                 result = new ArrayList<>(jsonArray.length());
 
-                for (int i = 0; i < jsonArray.length(); i++) {
+                for (int i = 0; i < jsonArray.length(); i++)
+                {
                     final JSONObject nextObj = jsonArray.getJSONObject(i);
                     final String name = nextObj.getString("name");
                     final String displayLabelKey = nextObj.getString("displayLabel");

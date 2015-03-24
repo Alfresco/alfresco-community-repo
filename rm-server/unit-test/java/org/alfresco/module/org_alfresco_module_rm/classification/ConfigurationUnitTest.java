@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,7 +26,6 @@ import java.util.List;
 import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImplUnitTest.asLevelList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
 
 /**
  * Unit tests for {@link Configuration}.

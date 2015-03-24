@@ -26,6 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGr
 import org.alfresco.module.org_alfresco_module_rm.capability.RMEntryVoterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.CapabilityDeclarativeConditionSuite;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.EditNonRecordsMetadataCapabilityUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSuite;
 import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuterUnitTest;
@@ -92,10 +93,11 @@ import org.junit.runners.Suite.SuiteClasses;
     // bootstrap
     BootstrapImporterModuleComponentUnitTest.class,
     RecordContributorsGroupBootstrapComponentUnitTest.class,
-    
+
     // suites by package
     CapabilityDeclarativeConditionSuite.class,
-    PatchV22Suite.class
+    PatchV22Suite.class,
+    ClassificationSuite.class
 
 })
 public class AllUnitTestSuite

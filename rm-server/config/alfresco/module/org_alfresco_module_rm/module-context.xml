@@ -46,7 +46,7 @@
        <property name="authenticationUtil" ref="rm.authenticationUtil"/>
     </bean>
 
-   <!--  Bootstap the message property files -->
+   <!--  Bootstrap the message property files -->
    <bean id="org_alfresco_module_rm_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
       <property name="resourceBundles">
          <list>

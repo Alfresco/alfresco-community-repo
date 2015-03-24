@@ -29,6 +29,8 @@
       <testResources>
          <testResource>
             <directory>test/resources</directory>
+         </testResource>
+         <testResource>
             <directory>unit-test/resources</directory>
          </testResource>
       </testResources>

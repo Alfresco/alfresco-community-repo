@@ -7,7 +7,6 @@
 
    <bean id="classificationService"
          class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl"
-         init-method="initConfiguredClassificationLevels"
          parent="baseService">
       <property name="attributeService" ref="AttributeService"/>
    </bean>

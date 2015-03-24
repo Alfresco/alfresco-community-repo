@@ -54,7 +54,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
 
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
 
-    public void initConfiguredClassificationLevels()
+    void initConfiguredClassificationLevels()
     {
         final List<ClassificationLevel> allPersistedLevels = getPersistedLevels();
         final List<ClassificationLevel> configuredLevels   = getConfiguredLevels();
@@ -62,7 +62,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         if (logger.isDebugEnabled())
         {
             // Note! We cannot log the level names or even the size of these lists for security reasons.
-            logger.debug("Persisted classification levels: "  + loggableStatusOf(allPersistedLevels));
+            logger.debug("Persisted classification levels: " + loggableStatusOf(allPersistedLevels));
             logger.debug("Configured classification levels: " + loggableStatusOf(configuredLevels));
         }
 

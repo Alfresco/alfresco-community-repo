@@ -49,4 +49,11 @@
          </value>
       </property>
    </bean>
+
+   <bean id="classificationServiceBootstrap"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap">
+       <constructor-arg ref="rm.authenticationUtil"/>
+       <constructor-arg ref="classificationService"/> <!-- Intentionally using the small 'c' here -->
+       <constructor-arg ref="TransactionService"/>
+   </bean>
 </beans>

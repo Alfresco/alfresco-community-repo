@@ -29,6 +29,7 @@
       <testResources>
          <testResource>
             <directory>test/resources</directory>
+            <directory>unit-test/resources</directory>
          </testResource>
       </testResources>
       <plugins>

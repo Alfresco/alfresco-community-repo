@@ -41,10 +41,8 @@
    <bean id="ClassificationService_security" parent="baseSecurity">
       <property name="objectDefinitionSource">
          <value>
-            <![CDATA[
-               org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=RM_ALLOW
-               org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=RM_DENY
-            ]]>
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=ACL_DENY
          </value>
       </property>
    </bean>
@@ -54,5 +52,13 @@
        <constructor-arg ref="rm.authenticationUtil"/>
        <constructor-arg ref="classificationService"/> <!-- Intentionally using the small 'c' here -->
        <constructor-arg ref="TransactionService"/>
+   </bean>
+
+   <bean id="rmClassificationResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
+      <property name="resourceBundles">
+         <list>
+            <value>alfresco.module.org_alfresco_module_rm.messages.rm-classification</value>
+         </list>
+      </property>
    </bean>
 </beans>

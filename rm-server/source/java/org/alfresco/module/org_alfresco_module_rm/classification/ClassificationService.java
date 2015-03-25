@@ -36,5 +36,5 @@ public interface ClassificationService
      *         (where fewer users have access to the highest classification levels
      *         and therefore access to the most restricted documents).
      */
-    public List<ClassificationLevel> getClassificationLevels();
+    List<ClassificationLevel> getClassificationLevels();
 }

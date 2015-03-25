@@ -142,7 +142,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
-        verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class));
+        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class));
 
         // ensure each node is process correctly
         verify(mockedNodeService, times(1)).getProperty(node1, RecordsManagementModel.PROP_DISPOSITION_ACTION);
@@ -213,7 +213,7 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure work is executed in transaction for each node processed
         verify(mockedNodeService, times(2)).exists(any(NodeRef.class));
-        verify(mockedRetryingTransactionHelper, times(2)).doInTransaction(any(RetryingTransactionCallback.class));
+        verify(mockedRetryingTransactionHelper, times(2)).<Object>doInTransaction(any(RetryingTransactionCallback.class));
 
         // ensure each node is process correctly
         // node1

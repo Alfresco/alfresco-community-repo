@@ -167,7 +167,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
                 return callback.execute();
             }
         };
-        doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).doInTransaction(any(RetryingTransactionCallback.class));
+        doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object>doInTransaction(any(RetryingTransactionCallback.class));
 
         // setup mocked authentication util
         setupAuthenticationUtilMock();
@@ -215,7 +215,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
                 return work.doWork();
             }
 
-        }).when(mockedAuthenticationUtil).runAsSystem(any(RunAsWork.class));
+        }).when(mockedAuthenticationUtil).<Object>runAsSystem(any(RunAsWork.class));
 
         // just do the work
         doAnswer(new Answer<Object>()
@@ -228,7 +228,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
                 return work.doWork();
             }
 
-        }).when(mockedAuthenticationUtil).runAs(any(RunAsWork.class), anyString());
+        }).when(mockedAuthenticationUtil).<Object>runAs(any(RunAsWork.class), anyString());
 
         // assume admin
         doReturn("admin").when(mockedAuthenticationUtil).getAdminUserName();

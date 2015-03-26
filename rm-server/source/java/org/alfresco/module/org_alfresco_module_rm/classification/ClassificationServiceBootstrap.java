@@ -33,7 +33,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 public class ClassificationServiceBootstrap extends AbstractLifecycleBean
 {
     private final AuthenticationUtil        authenticationUtil;
-    private final ClassificationServiceImpl classificationService;
+    private final ClassificationServiceImpl classificationServiceImpl;
     private final TransactionService        transactionService;
 
     public ClassificationServiceBootstrap(AuthenticationUtil authUtil,
@@ -41,7 +41,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean
                                           TransactionService txService)
     {
         this.authenticationUtil    = authUtil;
-        this.classificationService = cService;
+        this.classificationServiceImpl = cService;
         this.transactionService    = txService;
     }
 
@@ -55,7 +55,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean
                 {
                     public Void execute()
                     {
-                        classificationService.initConfiguredClassificationLevels();
+                        classificationServiceImpl.initConfiguredClassificationLevels();
+                        classificationServiceImpl.initConfiguredClassificationReasons();
                         return null;
                     }
                 };

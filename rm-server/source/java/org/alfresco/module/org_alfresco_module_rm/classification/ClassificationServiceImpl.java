@@ -24,6 +24,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -36,21 +38,30 @@ import java.util.List;
 public class ClassificationServiceImpl extends ServiceBaseImpl
                                        implements ClassificationService
 {
-    private static Log logger = LogFactory.getLog(ClassificationServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class); 
 
     private static final String[] LEVELS_KEY = new String[] { "org.alfresco",
                                                               "module.org_alfresco_module_rm",
                                                               "classification.levels" };
+    private static final String[] REASONS_KEY = new String[] { "org.alfresco",
+														       "module.org_alfresco_module_rm",
+														       "classification.reasons" };
 
-    public static final String DEFAULT_CONFIG_LOCATION =
-                                 "/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json";
+
+	static final String DEFAULT_CONFIG_DIRECTORY = "/alfresco/module/org_alfresco_module_rm/classification/";
+	static final String DEFAULT_LEVELS_FILE = DEFAULT_CONFIG_DIRECTORY
+			+ "rm-classification-levels.json";
+	static final String DEFAULT_REASONS_FILE = DEFAULT_CONFIG_DIRECTORY
+			+ "rm-classification-reasons.json";
 
     private AttributeService attributeService; // TODO What about other code (e.g. REST API) accessing the AttrService?
 
     /** The classification levels currently configured in this server. */
     private List<ClassificationLevel> configuredLevels;
+    /** The classification reasons currently configured in this server. */
+    private List<ClassificationReason> configuredReasons;
 
-    private Configuration config = new Configuration(DEFAULT_CONFIG_LOCATION);
+    private Configuration config = new Configuration(DEFAULT_LEVELS_FILE, DEFAULT_REASONS_FILE);
 
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
 
@@ -59,12 +70,9 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         final List<ClassificationLevel> allPersistedLevels  = getPersistedLevels();
         final List<ClassificationLevel> configurationLevels = getConfigurationLevels();
 
-        if (logger.isDebugEnabled())
-        {
-            // Note! We cannot log the level names or even the size of these lists for security reasons.
-            logger.debug("Persisted classification levels: " + loggableStatusOf(allPersistedLevels));
-            logger.debug("Classpath classification levels: " + loggableStatusOf(configurationLevels));
-        }
+		// Note! We cannot log the level names or even the size of these lists for security reasons.
+		LOGGER.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
+		LOGGER.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
 
         if (configurationLevels == null || configurationLevels.isEmpty())
         {
@@ -78,6 +86,29 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         else
         {
             this.configuredLevels = allPersistedLevels;
+        }
+    }
+    
+    void initConfiguredClassificationReasons() {
+    	final List<ClassificationReason> allPersistedReasons  = getPersistedReasons();
+        final List<ClassificationReason> configurationReasons = getConfigurationReasons();
+
+		// Note! We cannot log the reasons or even the size of these lists for security reasons.
+		LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(allPersistedReasons));
+		LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(configurationReasons));
+
+        if (configurationReasons == null || configurationReasons.isEmpty())
+        {
+            throw new MissingConfiguration("Classification reason configuration is missing.");
+        }
+        else if ( !configurationReasons.equals(allPersistedReasons))
+        {
+            attributeService.setAttribute((Serializable) configurationReasons, REASONS_KEY);
+            this.configuredReasons = configurationReasons;
+        }
+        else
+        {
+            this.configuredReasons = allPersistedReasons;
         }
     }
 
@@ -109,6 +140,28 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     List<ClassificationLevel> getConfigurationLevels()
     {
         return config.getConfiguredLevels();
+    }
+    
+    /**
+     * Gets the list of classification reasons as persisted in the system.
+     * @return the list of classification reasons if they have been persisted, else {@code null}.
+     */
+    List<ClassificationReason> getPersistedReasons() {
+        return authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<ClassificationReason>>()
+        {
+            @Override
+            @SuppressWarnings("unchecked")
+            public List<ClassificationReason> doWork() throws Exception
+            {
+                return (List<ClassificationReason>) attributeService.getAttribute(REASONS_KEY);
+            }
+        });
+    }
+
+    /** Gets the list of classification reasons - as defined and ordered in the system configuration. */
+    List<ClassificationReason> getConfigurationReasons()
+    {
+        return config.getConfiguredReasons();
     }
 
     @Override

@@ -18,18 +18,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MalformedConfiguration;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * This class is responsible for providing the configured classification levels, dealing with
@@ -40,11 +40,13 @@ import java.util.List;
  */
 class Configuration
 {
-    public final String configLocation;
+    public final String levelConfigLocation;
+    public final String reasonConfigLocation;
 
-    public Configuration(String classpathLocation)
+    public Configuration(String levelConfigLocation, String reasonConfigLocation)
     {
-        this.configLocation = classpathLocation;
+        this.levelConfigLocation = levelConfigLocation;
+        this.reasonConfigLocation = reasonConfigLocation;
     }
 
     /**
@@ -55,7 +57,7 @@ class Configuration
     public List<ClassificationLevel> getConfiguredLevels()
     {
         List<ClassificationLevel> result;
-        try (final InputStream in = this.getClass().getResourceAsStream(configLocation))
+        try (final InputStream in = this.getClass().getResourceAsStream(levelConfigLocation))
         {
             if (in == null) { result = Collections.emptyList(); }
             else
@@ -80,4 +82,37 @@ class Configuration
         }
         return result;
     }
+
+    /**
+     * Gets the list of classification reasons as defined in the system configuration.
+     *
+     * @return the configured classification reasons in descending order, or an empty list if there are none.
+     */
+	public List<ClassificationReason> getConfiguredReasons() {
+        List<ClassificationReason> result;
+        try (final InputStream in = this.getClass().getResourceAsStream(reasonConfigLocation))
+        {
+            if (in == null) { result = Collections.emptyList(); }
+            else
+            {
+                final String jsonString = IOUtils.toString(in);
+                final JSONArray jsonArray = new JSONArray(new JSONTokener(jsonString));
+
+                result = new ArrayList<>(jsonArray.length());
+
+                for (int i = 0; i < jsonArray.length(); i++)
+                {
+                    final JSONObject nextObj = jsonArray.getJSONObject(i);
+                    final String id = nextObj.getString("id");
+                    final String displayLabelKey = nextObj.getString("displayLabel");
+                    result.add(new ClassificationReason(id, displayLabelKey));
+                }
+            }
+        }
+        catch (IOException | JSONException e)
+        {
+            throw new MalformedConfiguration("Could not read classification reason configuration", e);
+        }
+        return result;
+	}
 }

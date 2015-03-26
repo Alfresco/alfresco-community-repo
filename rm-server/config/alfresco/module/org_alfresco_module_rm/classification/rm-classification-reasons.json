@@ -1,0 +1,14 @@
+[
+  {
+    "id" : "1.4(a)",
+    "displayLabel" : "rm.classification-reason.militaryPlans"
+  },
+  {
+    "id" : "1.4(b)",
+    "displayLabel" : "rm.classification-reason.foreignGovernment"
+  },
+  {
+    "id" : "1.4(c)",
+    "displayLabel" : "rm.classification.intelligenceActivities"
+  }
+]

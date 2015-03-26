@@ -18,14 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MalformedConfiguration;
-import org.junit.Test;
+import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImplUnitTest.asLevelList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImplUnitTest.asLevelList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MalformedConfiguration;
+import org.junit.Test;
 
 /**
  * Unit tests for {@link Configuration}.
@@ -40,23 +41,48 @@ public class ConfigurationUnitTest
                                                                                                "Confidential", "C",
                                                                                                "NoClearance",  "NC");
 
-    @Test public void readingDefaultConfigurationShouldWork()
+    @Test public void getConfiguredLevels_readingDefaultConfigurationShouldWork()
     {
-        Configuration c = new Configuration(ClassificationServiceImpl.DEFAULT_CONFIG_LOCATION);
+        Configuration c = new Configuration(ClassificationServiceImpl.DEFAULT_LEVELS_FILE, ClassificationServiceImpl.DEFAULT_REASONS_FILE);
         List<ClassificationLevel> config = c.getConfiguredLevels();
         assertEquals(DEFAULT_CLASSIFICATION_LEVELS, config);
     }
 
-    @Test public void readingMissingConfigurationShouldProduceEmptyConfig() throws Exception
+    @Test public void getConfiguredLevels_readingMissingConfigurationShouldProduceEmptyConfig() throws Exception
     {
-        Configuration c = new Configuration("/no/such/resource");
+        Configuration c = new Configuration("/no/such/resource", "/no/such/resource");
         assertTrue(c.getConfiguredLevels().isEmpty());
     }
 
     @Test (expected = MalformedConfiguration.class)
-    public void readingMalformedConfigurationShouldFail() throws Exception
+    public void getConfiguredLevels_readingMalformedConfigurationShouldFail()
     {
-        Configuration c = new Configuration("/alfresco/classification/rm-classification-levels-malformed.json");
-        c.getConfiguredLevels();
+		Configuration c = new Configuration(
+				"/alfresco/classification/rm-classification-levels-malformed.json",
+				"/alfresco/classification/rm-classification-levels-malformed.json");	
+			c.getConfiguredLevels();
+    }
+
+    @Test public void getConfiguredReasons_readingDefaultConfigurationShouldWork()
+    {
+        Configuration c = new Configuration(ClassificationServiceImpl.DEFAULT_LEVELS_FILE, 
+        		ClassificationServiceImpl.DEFAULT_REASONS_FILE);
+        List<ClassificationReason> config = c.getConfiguredReasons();
+        assertFalse(config.isEmpty());
+    }
+
+    @Test public void getConfiguredReasons_readingMissingConfigurationShouldProduceEmptyConfig() throws Exception
+    {
+        Configuration c = new Configuration("/no/such/resource", "/no/such/resource");
+        assertTrue(c.getConfiguredReasons().isEmpty());
+    }
+    
+    @Test (expected = MalformedConfiguration.class)
+    public void getConfiguredReasons_readingMalformedConfigurationShouldFail()
+    {
+		Configuration c = new Configuration(
+				"/alfresco/classification/rm-classification-levels-malformed.json",
+				"/alfresco/classification/rm-classification-levels-malformed.json");
+    	c.getConfiguredReasons();
     }
 }

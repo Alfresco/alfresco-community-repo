@@ -59,7 +59,17 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     /** The classification reasons currently configured in this server. */
     private List<ClassificationReason> configuredReasons;
 
-    private Configuration config = new Configuration(DEFAULT_LEVELS_FILE, DEFAULT_REASONS_FILE);
+    private final Configuration config;
+
+    public ClassificationServiceImpl()
+    {
+        this.config = new Configuration(DEFAULT_LEVELS_FILE, DEFAULT_REASONS_FILE);
+    }
+
+    ClassificationServiceImpl(Configuration config)
+    {
+        this.config = config;
+    }
 
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
 

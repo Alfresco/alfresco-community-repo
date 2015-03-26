@@ -50,7 +50,7 @@ class Configuration
     }
 
     /**
-     * Gets the list (in descending order) of classification levels - as defined in the system configuration.
+     * Gets the list (in descending order) of classification levels - as defined in the classpath.
      *
      * @return the configured classification levels in descending order, or an empty list if there are none.
      */

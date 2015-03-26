@@ -18,18 +18,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Neil Mc Erlean

@@ -32,8 +32,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 /**
- * This class is responsible for providing the configured classification levels, dealing with
- * JSON schema as part of that.
+ * This class is responsible for providing the configured classification levels
+ * and classification reasons, dealing with JSON schema as part of that.
  *
  * @author Neil Mc Erlean
  * @since 3.0

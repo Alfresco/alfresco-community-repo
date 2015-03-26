@@ -19,15 +19,26 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link ClassificationServiceImpl}.
@@ -35,7 +46,7 @@ import static org.junit.Assert.assertEquals;
  * @author Neil Mc Erlean
  * @since 3.0
  */
-public class ClassificationServiceImplUnitTest extends BaseUnitTest
+public class ClassificationServiceImplUnitTest
 {
     private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("Top Secret",   "rm.classification.topSecret",
                                                                                                "Secret",       "rm.classification.secret",
@@ -70,54 +81,68 @@ public class ClassificationServiceImplUnitTest extends BaseUnitTest
         return levels;
     }
 
-    @Mock(name="attributeService") protected AttributeService mockedAttributeService;
-
     private ClassificationServiceImpl classificationService;
 
-    @Test public void defaultConfigurationVanillaSystem()
+    private AttributeService   mockedAttributeService   = mock(AttributeService.class);
+    private AuthenticationUtil mockedAuthenticationUtil = mock(AuthenticationUtil.class);
+    private Configuration      mockConfig               = mock(Configuration.class);
+
+    @Before public void setUp()
     {
-        classificationService = new TestClassificationService(null, DEFAULT_CLASSIFICATION_LEVELS);
+        reset(mockConfig, mockedAttributeService);
+
+        // FIXME This should be out of here (and BaseUnitTest) and into a common utility class.
+        // We don't care about authentication here.
+        doAnswer(new Answer<Object>()
+        {
+            @SuppressWarnings("rawtypes")
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable
+            {
+                org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork work
+                        = (org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork)invocation.getArguments()[0];
+                return work.doWork();
+            }
+
+        }).when(mockedAuthenticationUtil).<Object>runAs(any(org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork.class), anyString());
+
+        // Use the admin user
+        doReturn("admin").when(mockedAuthenticationUtil).getAdminUserName();
+        doReturn("admin").when(mockedAuthenticationUtil).getFullyAuthenticatedUser();
+
+        classificationService = new ClassificationServiceImpl(mockConfig);
         classificationService.setAttributeService(mockedAttributeService);
-
-        classificationService.initConfiguredClassificationLevels();
-
-        assertEquals(DEFAULT_CLASSIFICATION_LEVELS, classificationService.getClassificationLevels());
+        classificationService.setAuthenticationUtil(mockedAuthenticationUtil);
     }
 
-    @Test public void alternativeConfigurationPreviouslyStartedSystem()
+    @Test public void defaultLevelsConfigurationVanillaSystem()
     {
-        classificationService = new TestClassificationService(DEFAULT_CLASSIFICATION_LEVELS, ALT_CLASSIFICATION_LEVELS);
-        classificationService.setAttributeService(mockedAttributeService);
+        when(mockConfig.getConfiguredLevels()).thenReturn(DEFAULT_CLASSIFICATION_LEVELS);
+        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         classificationService.initConfiguredClassificationLevels();
 
-        assertEquals(ALT_CLASSIFICATION_LEVELS, classificationService.getClassificationLevels());
+        verify(mockedAttributeService).setAttribute(eq((Serializable) DEFAULT_CLASSIFICATION_LEVELS),
+                anyString(), anyString(), anyString());
+    }
+
+    @Test public void alternativeLevelsConfigurationPreviouslyStartedSystem()
+    {
+        when(mockConfig.getConfiguredLevels()).thenReturn(ALT_CLASSIFICATION_LEVELS);
+        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString()))
+                                   .thenReturn((Serializable) DEFAULT_CLASSIFICATION_LEVELS);
+
+        classificationService.initConfiguredClassificationLevels();
+
+        verify(mockedAttributeService).setAttribute(eq((Serializable) ALT_CLASSIFICATION_LEVELS),
+                anyString(), anyString(), anyString());
     }
 
     @Test (expected=MissingConfiguration.class)
-    public void missingConfigurationVanillaSystemShouldFail() throws Exception
+    public void missingLevelsConfigurationVanillaSystemShouldFail() throws Exception
     {
-        classificationService = new TestClassificationService(null, null);
-        classificationService.setAttributeService(mockedAttributeService);
+        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         classificationService.initConfiguredClassificationLevels();
-    }
-
-    /**
-     * Helper class for test purposes that allows us to replace the persisted
-     * and configured lists of {@link ClassificationLevel}s.
-     */
-    private static class TestClassificationService extends ClassificationServiceImpl
-    {
-        private final List<ClassificationLevel> persisted;
-        private final List<ClassificationLevel> configured;
-        public TestClassificationService(List<ClassificationLevel> persisted, List<ClassificationLevel> configured)
-        {
-            this.persisted  = persisted;
-            this.configured = configured;
-        }
-
-        @Override List<ClassificationLevel> getPersistedLevels()  { return persisted; }
-        @Override List<ClassificationLevel> getConfigurationLevels() { return configured; }
     }
 }

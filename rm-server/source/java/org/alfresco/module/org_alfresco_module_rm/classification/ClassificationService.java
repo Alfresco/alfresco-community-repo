@@ -37,4 +37,10 @@ public interface ClassificationService
      *         and therefore access to the most restricted documents).
      */
     List<ClassificationLevel> getClassificationLevels();
+
+    /**
+     * Returns an immutable list of the defined classification reasons.
+     * @return classification reasons in the order that they are defined.
+     */
+    List<ClassificationReason> getClassificationReasons();
 }

@@ -84,7 +84,7 @@ class Configuration
     }
 
     /**
-     * Gets the list of classification reasons as defined in the system configuration.
+     * Gets the list of classification reasons as defined in the classpath.
      *
      * @return the configured classification reasons in descending order, or an empty list if there are none.
      */

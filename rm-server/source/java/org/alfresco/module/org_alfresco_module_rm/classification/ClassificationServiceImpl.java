@@ -98,27 +98,35 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     }
     
     void initConfiguredClassificationReasons() {
-    	final List<ClassificationReason> allPersistedReasons  = getPersistedReasons();
-        final List<ClassificationReason> configurationReasons = getConfigurationReasons();
+        final List<ClassificationReason> persistedReasons = getPersistedReasons();
+        final List<ClassificationReason> classpathReasons = getConfigurationReasons();
 
-		// Note! We cannot log the reasons or even the size of these lists for security reasons.
-		LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(allPersistedReasons));
-		LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(configurationReasons));
+        // Note! We cannot log the reasons or even the size of these lists for security reasons.
+        LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
+        LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
 
-        if (configurationReasons == null || configurationReasons.isEmpty())
+        if (isEmpty(persistedReasons))
         {
-            throw new MissingConfiguration("Classification reason configuration is missing.");
-        }
-        else if ( !configurationReasons.equals(allPersistedReasons))
-        {
-            attributeService.setAttribute((Serializable) configurationReasons, REASONS_KEY);
-            this.configuredReasons = configurationReasons;
+            if (isEmpty(classpathReasons))
+            {
+                throw new MissingConfiguration("Classification reason configuration is missing.");
+            }
+            attributeService.setAttribute((Serializable) classpathReasons, REASONS_KEY);
+            this.configuredReasons = classpathReasons;
         }
         else
         {
-            this.configuredReasons = allPersistedReasons;
+            if (isEmpty(classpathReasons) || !classpathReasons.equals(persistedReasons))
+            {
+                LOGGER.warn("Classification reasons configured in classpath do not match those stored in Alfresco." +
+                        "Alfresco will use the unchanged values stored in the database.");
+                // RM-2073 says that we should log a warning and proceed normally.
+            }
+            this.configuredReasons = persistedReasons;
         }
     }
+
+    private static boolean isEmpty(List<?> l) { return l == null || l.isEmpty(); }
 
     /** Helper method for debug-logging of sensitive lists. */
     private String loggableStatusOf(List<?> l)
@@ -178,4 +186,9 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         return configuredLevels == null ? Collections.<ClassificationLevel>emptyList() :
                                           Collections.unmodifiableList(configuredLevels);
     }
-}
+
+    @Override public List<ClassificationReason> getClassificationReasons()
+    {
+        return configuredReasons == null ? Collections.<ClassificationReason>emptyList() :
+                Collections.unmodifiableList(configuredReasons);
+    }}

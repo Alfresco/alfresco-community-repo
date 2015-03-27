@@ -87,7 +87,6 @@ public class PolicyComponentImpl implements PolicyComponent
      * Construct
      * 
      * @param dictionary  dictionary service
-     * @param behaviourFilter  behaviour filter
      */
     public PolicyComponentImpl(DictionaryService dictionary)
     {

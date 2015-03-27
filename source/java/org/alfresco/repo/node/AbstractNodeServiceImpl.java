@@ -190,8 +190,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * Registers the node policies as well as node indexing behaviour if the
-     * {@link #setIndexer(Indexer) indexer} is present.
+     * Registers the node policies as well as node indexing behaviour
      */
     public void init()
     {
@@ -304,7 +303,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
     
     /**
-     * @see NodeServicePolicies.BeforeMoveNodePolicy#onMoveNode(ChildAssociationRef, NodeRef)
+     * @see NodeServicePolicies.BeforeMoveNodePolicy#beforeMoveNode(ChildAssociationRef, NodeRef)
      */
     protected void invokeBeforeMoveNode(ChildAssociationRef oldChildAssocRef, NodeRef newParentRef)
     {
@@ -410,7 +409,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
     
     /**
-     * @see NodeServicePolicies.OnUpdateProperties#onUpdatePropertiesPolicy(NodeRef, Map, Map)
+     * @see NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(NodeRef, Map, Map)
      */
     protected void invokeOnUpdateProperties(
             NodeRef nodeRef,
@@ -483,7 +482,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * @see NodeServicePolicies.BeforeAr
+     * @see NodeServicePolicies.BeforeArchiveNodePolicy
      */
     protected void invokeBeforeArchiveNode(NodeRef nodeRef)
     {
@@ -500,7 +499,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * @see NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(ChildAssociationRef)
+     * @see NodeServicePolicies.OnDeleteNodePolicy#onDeleteNode(ChildAssociationRef, boolean)
      */
     protected void invokeOnDeleteNode(ChildAssociationRef childAssocRef, QName childNodeTypeQName, Set<QName> childAspectQnames, boolean isArchivedNode)
     {
@@ -534,7 +533,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * @see NodeServicePolicies.OnRestoreNodePolicy#onDeleteNode(ChildAssociationRef)
+     * @see NodeServicePolicies.OnRestoreNodePolicy#onRestoreNode(ChildAssociationRef)
      */
     protected void invokeOnRestoreNode(ChildAssociationRef childAssocRef)
     {
@@ -576,7 +575,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * @see NodeServicePolicies.BeforeRemoveAspectPolicy#BeforeRemoveAspect(NodeRef,
+     * @see NodeServicePolicies.BeforeRemoveAspectPolicy#beforeRemoveAspect(NodeRef,
      *      QName)
      */
     protected void invokeBeforeRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
@@ -606,7 +605,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
     
     /**
-     * @see NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef)
+     * @see NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(ChildAssociationRef, boolean)
      */
     protected void invokeOnCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
@@ -667,7 +666,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     /**
-     * @see NodeServicePolicies.OnCreateAssociationPolicy#onCreateAssociation(NodeRef, NodeRef, QName)
+     * @see NodeServicePolicies.OnCreateAssociationPolicy#onCreateAssociation(AssociationRef)
      */
     protected void invokeOnCreateAssociation(AssociationRef nodeAssocRef)
     {
@@ -808,7 +807,6 @@ public abstract class AbstractNodeServiceImpl implements NodeService
      * Sets the default property values
      * 
      * @param classDefinition       the model type definition for which to get defaults
-     * @param properties            the properties of the node
      */
     protected Map<QName, Serializable> getDefaultProperties(ClassDefinition classDefinition)
     {

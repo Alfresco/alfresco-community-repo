@@ -36,7 +36,7 @@ import org.junit.experimental.categories.Category;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * @see org.alfresco.repo.ml.MultilingualContentServiceImpl
+ * @see org.alfresco.repo.model.ml.MultilingualContentServiceImpl
  *
  * @author Derek Hulley
  * @author Philippe Dubois

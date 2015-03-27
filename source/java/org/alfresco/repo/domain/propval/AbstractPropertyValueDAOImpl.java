@@ -276,7 +276,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
     /**
      * Set the cache to use for <b>alf_prop_root</b> lookups (optional).
      * 
-     * @param propertyValueCache     the cache of IDs to property values
+     * @param propertyCache     the cache of IDs to property values
      */
     public void setPropertyCache(SimpleCache<Serializable, Object> propertyCache)
     {
@@ -850,7 +850,7 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
 
     /**
      * {@inheritDoc}
-     * @see #createPropertyImpl(Serializable, int, int)
+     * @see #createPropertyImpl(Long, long, long, Long, Serializable)
      */
     public Long createProperty(Serializable value)
     {

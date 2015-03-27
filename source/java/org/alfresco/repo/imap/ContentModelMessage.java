@@ -66,7 +66,6 @@ public class ContentModelMessage extends AbstractMimeMessage
     /**
      * This method builds {@link MimeMessage} based on {@link ContentModel}
      * 
-     * @param fileInfo - Source file information {@link FileInfo}
      * @throws MessagingException
      */
     private void buildContentModelMessage() throws MessagingException
@@ -97,7 +96,6 @@ public class ContentModelMessage extends AbstractMimeMessage
     /**
      * This method builds {@link Multipart} based on {@link ContentModel}
      * 
-     * @param fileInfo - Source file information {@link FileInfo}
      * @throws MessagingException
      */
     private Multipart buildContentModelMultipart() throws MessagingException
@@ -227,7 +225,6 @@ public class ContentModelMessage extends AbstractMimeMessage
      * Content Author name if provided. If name not specified, it takes Content Creator name. 
      * If content creator does not exists, the default from address will be returned.
      * 
-     * @param contentAuthor The content author full name.
      * @return Generated InternetAddress[] array.
      * @throws AddressException
      */

@@ -121,7 +121,7 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
      * A comma or space separated list of values that, if returned by the executed command,
      * indicate an error value.  This defaults to <b>"1, 2"</b>.
      * 
-     * @param erroCodesStr
+     * @param errCodesStr
      */
     public void setErrorCodes(String errCodesStr)
     {

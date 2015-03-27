@@ -884,7 +884,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
     }
     
     /**
-     * Test {@link https://issues.alfresco.com/jira/browse/ALFCOM-2299 ALFCOM-2299}
+     * Test <a href="https://issues.alfresco.com/jira/browse/ALFCOM-2299">ALFCOM-2299</a>
      */
     public void testAspectRemovalCascadeDelete() throws Exception
     {

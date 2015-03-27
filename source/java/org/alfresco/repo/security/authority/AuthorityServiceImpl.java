@@ -737,7 +737,6 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
 
         /**
          * @param username
-         * @param auths
          */
         public UserAuthoritySet(String username)
         {

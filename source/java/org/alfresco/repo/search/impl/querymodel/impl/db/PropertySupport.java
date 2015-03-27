@@ -72,8 +72,8 @@ public class PropertySupport implements DBQueryBuilderComponent
     }
 
     /**
-     * @param term
-     *            the term to set
+     * @param value
+     *            the value to set
      */
     public void setValue(String value)
     {

@@ -83,7 +83,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationService#register(org.alfresco.module.blogIntegration.BlogIntegrationImplementation)
+     * @see org.alfresco.repo.blog.BlogIntegrationService#register(org.alfresco.repo.blog.BlogIntegrationImplementation)
      */
     public void register(BlogIntegrationImplementation implementation)
     {
@@ -95,7 +95,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationService#getBlogIntegrationImplementation(java.lang.String)
+     * @see org.alfresco.repo.blog.BlogIntegrationService#getBlogIntegrationImplementation(java.lang.String)
      */
     public BlogIntegrationImplementation getBlogIntegrationImplementation(String implementationName)
     {
@@ -103,7 +103,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
 
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationService#getBlogIntegrationImplementations()
+     * @see org.alfresco.repo.blog.BlogIntegrationService#getBlogIntegrationImplementations()
      */
     public List<BlogIntegrationImplementation> getBlogIntegrationImplementations()
     {
@@ -111,7 +111,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
 
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationService#getBlogDetails(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.blog.BlogIntegrationService#getBlogDetails(org.alfresco.service.cmr.repository.NodeRef)
      */
     public List<BlogDetails> getBlogDetails(NodeRef nodeRef)
     {
@@ -157,7 +157,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationService#newPost(org.alfresco.module.blogIntegration.BlogDetails, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, boolean)
+     * @see org.alfresco.repo.blog.BlogIntegrationService#newPost(org.alfresco.module.blogIntegration.BlogDetails, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, boolean)
      */
     public void newPost(BlogDetails blogDetails, NodeRef nodeRef, QName contentProperty, boolean publish)
     {
@@ -249,7 +249,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationService#updatePost(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, boolean)
+     * @see org.alfresco.repo.blog.BlogIntegrationService#updatePost(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, boolean)
      */
     public void updatePost(NodeRef nodeRef, QName contentProperty, boolean publish)
     {
@@ -326,7 +326,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
 
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationService#deletePost(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.blog.BlogIntegrationService#deletePost(org.alfresco.service.cmr.repository.NodeRef)
      */
     public void deletePost(NodeRef nodeRef)
     {

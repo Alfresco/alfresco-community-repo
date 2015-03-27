@@ -28,7 +28,7 @@ import org.apache.commons.logging.Log;
 
 /**
  * Implementation of a {@link Log} that logs messages to a structure accessible via
- * {@link TransformerConfigMBean#getTransformationDebug(int)}.<p>
+ * {@link TransformerConfigMBean#getTransformationDebugLog(int)}.<p>
  * 
  * @author Alan Davis
  */

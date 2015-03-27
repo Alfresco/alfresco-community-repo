@@ -45,7 +45,7 @@ public class ErrorProneActionExecutor extends ActionExecuterAbstractBase
     /**
      * Send an email message
      * 
-     * @throws AlfrescoRuntimeExeption
+     * @throws AlfrescoRuntimeException
      */
     @Override
     protected void executeImpl(

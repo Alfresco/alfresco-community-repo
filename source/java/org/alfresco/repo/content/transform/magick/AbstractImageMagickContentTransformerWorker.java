@@ -74,7 +74,7 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
 
     /**
      * Checks for the JMagick and ImageMagick dependencies, using the common
-     * {@link #transformInternal(File, File) transformation method} to check
+     * {@link #transformInternal(File, String , File, java.lang.String, TransformationOptions) transformation method} to check
      * that the sample image can be converted.
      * <p>
      * If initialization is successful, then autoregistration takes place.
@@ -231,7 +231,7 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
     }
 
     /**
-     * @see #transformInternal(File, File)
+     * @see #transformInternal(File, String, File, String, TransformationOptions)
      */
     public final void transform(
             ContentReader reader,

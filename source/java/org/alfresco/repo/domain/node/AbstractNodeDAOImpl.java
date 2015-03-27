@@ -323,7 +323,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     /**
      * Set the cache that maintains the extended Store root node data
      * 
-     * @param cache                 the cache
+     * @param allRootNodesCache                 the cache
      */
     public void setAllRootNodesCache(SimpleCache<StoreRef, Set<NodeRef>> allRootNodesCache)
     {
@@ -883,7 +883,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         }
 
         /**
-         * @param key                   the store ID
+         * @param storeRef                   the store ID
          */
         public Pair<StoreRef, Node> findByKey(StoreRef storeRef)
         {
@@ -1699,7 +1699,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @param invalidateNodePropertiesCache <tt>true</tt> if the node's cached properties are unreliable
      * @param invalidateParentAssocsCache   <tt>true</tt> if the node's cached parent assocs are unreliable
      * 
-     * @see #updateNodeImpl(NodeEntity, NodeUpdateEntity)
+     * @see #updateNodeImpl(Node, NodeUpdateEntity, Set<QName>)
      */
     private boolean touchNode(
             Long nodeId, AuditablePropertiesEntity auditableProps, Set<QName> nodeAspects,

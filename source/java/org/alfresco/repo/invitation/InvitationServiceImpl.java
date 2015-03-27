@@ -182,8 +182,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * Start the invitation process for a NominatedInvitation
      * 
      * @param inviteeUserName Alfresco user name of the invitee
-     * @param Invitation
-     * @param ResourceType resourceType
+     * @param resourceType resourceType
      * @param resourceName
      * @param inviteeRole
      * @param serverPath
@@ -216,8 +215,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * Start the invitation process for a NominatedInvitation
      * 
      * @param inviteeUserName Alfresco user name of the invitee
-     * @param Invitation
-     * @param ResourceType resourceType
+     * @param resourceType resourceType
      * @param resourceName
      * @param inviteeRole
      * @param acceptUrl
@@ -252,9 +250,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @param inviteeFirstName
      * @param inviteeLastName
      * @param inviteeEmail
-     * @param inviteeUserName optional Alfresco user name of the invitee, null
-     *            if not on system.
-     * @param Invitation .ResourceType resourceType
+     * @param inviteeEmail
+     * @param resourceType Invitation.ResourceType
      * @param resourceName
      * @param inviteeRole
      * @param acceptUrl
@@ -280,9 +277,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * @param inviteeFirstName
      * @param inviteeLastName
      * @param inviteeEmail
-     * @param inviteeUserName optional Alfresco user name of the invitee, null
-     *            if not on system.
-     * @param Invitation .ResourceType resourceType
+     * @param resourceType
      * @param resourceName
      * @param inviteeRole
      * @param serverPath
@@ -324,9 +319,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Start the invitation process for a ModeratedInvitation
      * 
-     * @param comments why does the invitee want access to the resource ?
+     * @param inviteeComments why does the invitee want access to the resource ?
      * @param inviteeUserName who is to be invited
-     * @param Invitation .ResourceType resourceType what resource type ?
+     * @param resourceType Invitation .ResourceType what resource type ?
      * @param resourceName which resource
      * @param inviteeRole which role ?
      */
@@ -403,7 +398,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Moderator approves this invitation
      * 
-     * @param request the request to approve
+     * @param invitationId the request id
      * @param reason comments about the acceptance
      */
     public Invitation approve(String invitationId, String reason)
@@ -1228,7 +1223,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * Starts the Invite workflow
      * 
      * @param inviteeFirstName first name of invitee
-     * @param inviteeLastNamme last name of invitee
+     * @param inviteeLastName last name of invitee
      * @param inviteeEmail email address of invitee
      * @param siteShortName short name of site that the invitee is being invited
      *            to by the inviter
@@ -1236,6 +1231,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      *            site by the inviter
      * @param serverPath externally accessible server address of server hosting
      *            invite web scripts
+     * @param acceptUrl accept Url
+     * @param rejectUrl reject Url
      */
     private NominatedInvitation startNominatedInvite(String inviteeFirstName, String inviteeLastName,
                 String inviteeEmail, String inviteeUserName, Invitation.ResourceType resourceType,
@@ -1538,7 +1535,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Check that the specified user has manager role over the resource.
      * 
-     * @param userId
+     * @param userId user id
      * @throws InvitationException
      */
     private void checkManagerRole(String userId, Invitation.ResourceType resourceType, String siteShortName)

@@ -400,8 +400,8 @@ public class ContentSearchContext extends SearchContext
 
     /**
      * Restart a search at the specified resume point.
-     * 
-     * @param resumeId Resume point id.
+     *
+     * @param info File to restart the search at.
      * @return true if the search can be restarted, else false.
      */
     public boolean restartAt(FileInfo info)
@@ -483,7 +483,7 @@ public class ContentSearchContext extends SearchContext
     /**
      * Restart the current search at the specified file.
      * 
-     * @param info File to restart the search at.
+     * @param resumeId Resume point id.
      * @return true if the search can be restarted, else false.
      */
     public boolean restartAt(int resumeId)

@@ -55,7 +55,7 @@ public class DotDotContentSearchContext extends ContentSearchContext {
      * @param searchStr Search path
      * @param pseudoList List of pseudo files to be blended into the returned list of files
      * @param relPath Relative path being searched
-     * @param stateCache File state cache
+     * @param lockedFilesAsOffline set state
      */
     protected DotDotContentSearchContext(
             CifsHelper cifsHelper,

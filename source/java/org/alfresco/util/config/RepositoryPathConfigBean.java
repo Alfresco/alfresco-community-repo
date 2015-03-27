@@ -63,7 +63,7 @@ public class RepositoryPathConfigBean
     /**
      * Sets the Alfresco store name.
      * 
-     * @param store
+     * @param storeRef
      *            the Alfresco store name
      */
     public void setStore(String storeRef)

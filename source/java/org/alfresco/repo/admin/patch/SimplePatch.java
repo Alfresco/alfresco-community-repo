@@ -24,7 +24,8 @@ public class SimplePatch extends AbstractPatch
     /**
      * Helper constructor for some tests.  Default properties are set automatically.
      * 
-     * @param mustFail true if this instance must always fail to apply
+     * @param transactionService TransactionService
+     * @param requiresTransaction true if transaction required
      */
     /* protected */ SimplePatch(TransactionService transactionService, boolean requiresTransaction)
     {

@@ -2150,7 +2150,6 @@ public class IndexInfo implements IndexMonitor
     /**
      * Check status must be called holding the file lock.
      * 
-     * @param raf
      * @throws IOException
      */
     private void setStatusFromFile() throws IOException
@@ -3362,9 +3361,6 @@ public class IndexInfo implements IndexMonitor
             }                
         }
 
-        /**
-         * @param action
-         */
         private MergeAction decideMergeAction()
         {
             MergeAction action = MergeAction.NONE;

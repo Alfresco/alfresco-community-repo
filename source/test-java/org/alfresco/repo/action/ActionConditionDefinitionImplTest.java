@@ -31,9 +31,6 @@ public class ActionConditionDefinitionImplTest extends BaseParameterizedItemDefi
      */
     private static final String CONDITION_EVALUATOR = "conditionEvaluator";
 
-    /**
-     * @see org.alfresco.repo.rule.common.RuleItemDefinitionImplTest#create()
-     */
     protected ParameterizedItemDefinitionImpl create()
     {    
         // Test duplicate param name

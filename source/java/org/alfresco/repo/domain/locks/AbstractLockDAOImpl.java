@@ -322,7 +322,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
      * Get any existing lock data for the shared resources.  The locks returned are not filtered and
      * may be expired.
      * 
-     * @param lockResourceIds           a list of shared resource IDs for which to retrieve the current locks
+     * @param sharedLockResourceIds           a list of shared resource IDs for which to retrieve the current locks
      * @return                          Returns a list of locks (expired or not) for the given lock resources
      */
     protected abstract List<LockEntity> getLocksBySharedResourceIds(List<Long> sharedLockResourceIds);
@@ -345,7 +345,7 @@ public abstract class AbstractLockDAOImpl implements LockDAO
     /**
      * Update an existing lock
      * @param lockEntity                the specific lock to update
-     * @param lockApplicant             the new lock token
+     * @param lockToken             the new lock token
      * @param timeToLive                the new lock time, in milliseconds, for the lock to remain valid
      * @return                          Returns the updated lock
      * @throws ConcurrencyFailureException  if the entity was not updated

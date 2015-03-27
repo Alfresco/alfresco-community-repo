@@ -76,7 +76,6 @@ public interface BlogIntegrationService
     
     /**
      * 
-     * @param postId
      * @param nodeRef
      * @param contentProperty
      * @param publish
@@ -85,7 +84,6 @@ public interface BlogIntegrationService
     
     /**
      * 
-     * @param postId
      * @param nodeRef
      */
     void deletePost(NodeRef nodeRef);

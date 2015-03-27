@@ -204,7 +204,7 @@ public class AttachmentsExtractor
     * Create an attachment given a mime part
     * 
     * @param messageFile the file containing the message
-    * @param destinationFolder where to put the attachment
+    * @param attachmentsFolderRef where to put the attachment
     * @param part the mime part
     * @throws MessagingException
     * @throws IOException

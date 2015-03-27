@@ -153,7 +153,6 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
      * shares. In this base class, we initialize all desktop actions.
      * 
      * @param ctx the context
-     * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
     public void registerContext(DeviceContext ctx) throws DeviceContextException

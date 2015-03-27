@@ -148,7 +148,7 @@ public class ThreadPoolExecutorFactoryBean implements FactoryBean, InitializingB
      * The maximum number of queued work instances to keep before blocking
      * against further adds.
      * 
-     * @param size      the queue size before blocks, or <b>-1</b> default
+     * @param workQueueSize      the queue size before blocks, or <b>-1</b> default
      *                  to indicate no upper bound
      */
     public void setWorkQueueSize(int workQueueSize)

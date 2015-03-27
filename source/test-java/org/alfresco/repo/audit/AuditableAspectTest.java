@@ -48,7 +48,7 @@ import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Checks that the behaviour of the {@link org.alfresco.repo.audit.AuditableAspect auditable aspect}
+ * Checks that the behaviour of the {@link ContentModel#ASPECT_AUDITABLE auditable aspect}
  * is correct.
  * 
  * @author Derek Hulley

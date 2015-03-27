@@ -46,7 +46,7 @@ public abstract class AbstractPersonRule extends AbstractRule
      * Constructs a person rule with a reference to an {@link ApplicationContextInit rule}. This other rule will
      * be used to access the application context and from there the necessary services for the creation and deletion of users.
      * 
-     * @param appContext a rule which can provide the spring application context.
+     * @param appContextRule a rule which can provide the spring application context.
      */
     public AbstractPersonRule(ApplicationContextInit appContextRule)
     {

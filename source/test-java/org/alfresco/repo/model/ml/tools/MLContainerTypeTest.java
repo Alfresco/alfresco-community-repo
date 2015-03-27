@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Multilingual container type test cases
  * 
- * @see org.alfresco.service.cmr.ml.MLContainerType
+ * @see org.alfresco.repo.model.ml.MLContainerType
  * 
  * @author Yannick Pignot
  */

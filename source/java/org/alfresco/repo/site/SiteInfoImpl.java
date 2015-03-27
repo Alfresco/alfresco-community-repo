@@ -101,7 +101,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getNodeRef()
+     * @see org.alfresco.service.cmr.site.SiteInfo#getNodeRef()
      */
     public NodeRef getNodeRef()
     {
@@ -109,7 +109,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getSitePreset()
+     * @see org.alfresco.service.cmr.site.SiteInfo#getSitePreset()
      */
     public String getSitePreset()
     {
@@ -117,7 +117,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getShortName()
+     * @see org.alfresco.service.cmr.site.SiteInfo#getShortName()
      */
     public String getShortName()
     {
@@ -125,7 +125,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getTitle()
+     * @see org.alfresco.service.cmr.site.SiteInfo#getTitle()
      */
     public String getTitle()
     {
@@ -134,7 +134,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#setTitle(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteInfo#setTitle(java.lang.String)
      */
     public void setTitle(String title)
     {
@@ -142,7 +142,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getDescription()
+     * @see org.alfresco.service.cmr.site.SiteInfo#getDescription()
      */
     public String getDescription()
     {
@@ -150,7 +150,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#setDescription(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteInfo#setDescription(java.lang.String)
      */
     public void setDescription(String description)
     {
@@ -158,7 +158,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#setIsPublic(boolean)
+     * @see org.alfresco.service.cmr.site.SiteInfo#setIsPublic(boolean)
      */
     public void setIsPublic(boolean isPublic)
     {
@@ -173,7 +173,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getIsPublic()
+     * @see org.alfresco.service.cmr.site.SiteInfo#getIsPublic()
      */
     public boolean getIsPublic()
     {
@@ -202,7 +202,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getCustomProperties()
+     * @see org.alfresco.service.cmr.site.SiteInfo#getCustomProperties()
      */
     public Map<QName, Serializable> getCustomProperties()
     {
@@ -210,7 +210,7 @@ public class SiteInfoImpl implements SiteInfo
     }
     
     /**
-     * @see org.alfresco.repo.site.SiteInfo#getCustomProperty(org.alfresco.service.namespace.QName)
+     * @see org.alfresco.service.cmr.site.SiteInfo#getCustomProperty(org.alfresco.service.namespace.QName)
      */
     public Serializable getCustomProperty(QName name)
     {

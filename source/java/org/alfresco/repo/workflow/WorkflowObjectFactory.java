@@ -97,9 +97,9 @@ public class WorkflowObjectFactory
 
     /**
      * Create a new {@link WorkflowDeployment}.
-     * @param wfDef 
-     * @param problems 
-     * @return
+     * @param wfDef WorkflowDefinition
+     * @param problems String
+     * @return WorkflowDeployment
      */
     public WorkflowDeployment createDeployment(WorkflowDefinition wfDef, String... problems)
     {
@@ -109,13 +109,13 @@ public class WorkflowObjectFactory
 
     /**
      * Create a new {@link WorkflowDefinition}.
-     * @param defId 
-     * @param defName 
-     * @param version 
-     * @param defaultTitle 
-     * @param startTaskDef 
-     * @param processDef
-     * @return
+     * @param defId String
+     * @param defName String
+     * @param version int
+     * @param defaultTitle String
+     * @param defaultDescription String
+     * @param startTaskDef WorkflowTaskDefinition
+     * @return WorkflowDefinition
      */
     public WorkflowDefinition createDefinition(String defId,
                 String defName, int version, 
@@ -290,7 +290,7 @@ public class WorkflowObjectFactory
      * 
      * @param displayId  message resource id lookup
      * @param labelKey  label to lookup (title or description)
-     * @param defaultLabel  default value if not found in message resource bundle
+     * @param defaults  default values if not found in message resource bundle
      * @return  the label
      */
     private String getLabel(String displayId, String labelKey, String... defaults)
@@ -314,9 +314,9 @@ public class WorkflowObjectFactory
     }
 
     /**
-     * @param label
-     * @param defaults
-     * @return
+     * @param label String
+     * @param defaults String
+     * @return String
      */
     private String getDefaultLabel(String label, String... defaults)
     {
@@ -362,7 +362,7 @@ public class WorkflowObjectFactory
     
     /**
      * Throws exception if domain mismatch
-     * @param defName
+     * @param defName String
      */
     public void checkDomain(String defName)
     {

@@ -34,7 +34,7 @@ public interface AppliedPatchDAO
     /**
      * Creates and saves a new instance of the patch.
      * 
-     * @param patchInfo         the patch ID and details
+     * @param appliedPatch         the patch
      */
     public void createAppliedPatch(AppliedPatch appliedPatch);
     

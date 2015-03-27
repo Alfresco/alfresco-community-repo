@@ -55,7 +55,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Rename user tool. This tool provides minimal support for renaming users.
- * See {@link displayHelp} message for restrictions.
+ * See {@link #displayHelp} message for restrictions.
  * <pre>
  * Usage: renameUser -user username [options] oldUsername newUsername");
  *        renameUser -user username [options] -file filename");

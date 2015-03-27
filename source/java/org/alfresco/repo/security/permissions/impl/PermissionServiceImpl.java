@@ -1694,8 +1694,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
          * 
          * @param pe -
          *            the permissions entry to consider
-         * @param granters -
-         *            the set of granters
          * @param authorisations -
          *            the set of authorities
          * @param denied -
@@ -1839,9 +1837,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
          * Internal hook point for recursion
          * 
          * @param authorisations
-         * @param nodeRef
-         * @param denied
-         * @param recursiveIn
+         * @param aclId
+         * @param context
          * @return true if granted
          */
         boolean evaluate(Set<String> authorisations, Long aclId, PermissionContext context)
@@ -1913,8 +1910,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
          * Check that a given authentication is available on a node
          * 
          * @param authorisations
-         * @param nodeRef
-         * @param denied
+         * @param aclId
+         * @param context
          * @return true if a check is required
          */
         boolean checkRequired(Set<String> authorisations, Long aclId, PermissionContext context)
@@ -1958,14 +1955,12 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param pe -
-         *            the permissions entry to consider
-         * @param granters -
-         *            the set of granters
+         * @param context
          * @param authorisations -
          *            the set of authorities
          * @param denied -
          *            the set of denied permissions/authority pais
+         * @param context
          * @return true if granted
          */
         private boolean isGranted(AccessControlEntry ace, Set<String> authorisations, Set<Pair<String, PermissionReference>> denied, PermissionContext context)
@@ -2031,14 +2026,12 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param pe -
-         *            the permissions entry to consider
-         * @param granters -
-         *            the set of granters
+         * @param ace
          * @param authorisations -
          *            the set of authorities
-         * @param denied -
+         * @param allowed -
          *            the set of denied permissions/authority pais
+         * @param context
          * @return true if granted
          */
         private boolean isDenied(AccessControlEntry ace, Set<String> authorisations, Set<Pair<String, PermissionReference>> allowed, PermissionContext context)
@@ -2186,10 +2179,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Internal hook point for recursion
          * 
-         * @param authorisations
-         * @param nodeRef
-         * @param denied
-         * @param recursiveIn
+         * @param authority
+         * @param aclId
          * @return true if granted
          */
         boolean evaluate(String authority, Long aclId)
@@ -2249,7 +2240,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check if we have a global permission
          * 
-         * @param authorisations
+         * @param authority
          * @return true if granted
          */
         private boolean checkGlobalPermissions(String authority)
@@ -2267,9 +2258,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check that a given authentication is available on a node
          * 
-         * @param authorisations
-         * @param nodeRef
-         * @param denied
+         * @param authority
+         * @param aclId
          * @return true if a check is required
          */
         boolean checkRequired(String authority, Long aclId)
@@ -2298,12 +2288,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param pe -
-         *            the permissions entry to consider
-         * @param granters -
-         *            the set of granters
-         * @param authorisations -
-         *            the set of authorities
+         * @param ace
+         * @param authority
          * @param denied -
          *            the set of denied permissions/authority pais
          * @return true if granted
@@ -2450,10 +2436,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Internal hook point for recursion
          * 
-         * @param authorisations
-         * @param nodeRef
-         * @param denied
-         * @param recursiveIn
+         * @param authority
+         * @param aclId
          * @return true if granted
          */
         boolean evaluate(String authority, Long aclId)
@@ -2513,7 +2497,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check if we have a global permission
          * 
-         * @param authorisations
+         * @param authority
          * @return true if granted
          */
         private boolean checkGlobalPermissions(String authority)
@@ -2531,9 +2515,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check that a given authentication is available on a node
          * 
-         * @param authorisations
-         * @param nodeRef
-         * @param denied
+         * @param authority
+         * @param aclId
          * @return true if a check is required
          */
         boolean checkRequired(String authority, Long aclId)
@@ -2562,14 +2545,10 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param pe -
-         *            the permissions entry to consider
-         * @param granters -
-         *            the set of granters
-         * @param authorisations -
-         *            the set of authorities
-         * @param denied -
-         *            the set of denied permissions/authority pais
+         * @param ace
+         * @param authority
+         * @param allowed -
+         *            the set of allowed permissions/authority pais
          * @return true if granted
          */
         private boolean isDenied(AccessControlEntry ace, String authority, Set<Pair<String, PermissionReference>> allowed)
@@ -2690,7 +2669,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Converts specified version nodeRef (eg. versionStore://...) to versioned nodeRef (eg. workspace://SpacesStore/...)
      * 
-     * @param nodeRef - <b>always</b> version nodeRef (ie. in the 'version' store)
+     * @param versionNodeRef - <b>always</b> version nodeRef (ie. in the 'version' store)
      * @return versioned nodeRef (ie.in the 'live' store)
      */
     @SuppressWarnings("deprecation")

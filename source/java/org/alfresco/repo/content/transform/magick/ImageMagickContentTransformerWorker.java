@@ -114,10 +114,9 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         return this.versionString;
     }
 
-    
     /**
      * Checks for the JMagick and ImageMagick dependencies, using the common
-     * {@link #transformInternal(File, File) transformation method} to check
+     * {@link #transformInternal(File, String, File, String, TransformationOptions) transformation method} to check
      * that the sample image can be converted. 
      */
     @Override
@@ -249,7 +248,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
     /**
      * Gets the imagemagick command string for the image crop options provided
      * 
-     * @param imageResizeOptions    image resize options
+     * @param cropOptions    image resize options
      * @return String               the imagemagick command options
      */
     private String getImageCropCommandOptions(CropSourceOptions cropOptions)

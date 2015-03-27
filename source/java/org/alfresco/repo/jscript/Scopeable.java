@@ -33,7 +33,7 @@ public interface Scopeable
     /**
      * Set the Scriptable global scope
      * 
-     * @param script relative global scope
+     * @param scope relative global scope
      */
     void setScope(Scriptable scope);
 }

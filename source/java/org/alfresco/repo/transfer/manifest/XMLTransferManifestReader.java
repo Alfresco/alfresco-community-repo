@@ -718,7 +718,7 @@ public class XMLTransferManifestReader extends DefaultHandler implements Content
     }
 
     /**
-     * @param uri
+     * @param namespaceURI
      * @return the prefix
      */
     public Collection<String> getPrefixes(String namespaceURI) throws NamespaceException

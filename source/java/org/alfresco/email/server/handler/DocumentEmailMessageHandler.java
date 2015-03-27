@@ -140,7 +140,6 @@ public class DocumentEmailMessageHandler extends AbstractForumEmailMessageHandle
     /**
      * Finds the first forum node
      * 
-     * @param nodeService Alfresco Node Service
      * @param nodeRef Parent node
      * @return Found node or null
      */

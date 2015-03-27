@@ -405,7 +405,7 @@ public class ImporterComponent implements ImporterService
      * 
      * @param nodeRef node reference to import under
      * @param location the location to import under
-     * @param inputStream the input stream to import from
+     * @param viewReader the view Reader
      * @param streamHandler the content property import stream handler
      * @param binding import configuration
      * @param progress import progress
@@ -769,7 +769,7 @@ public class ImporterComponent implements ImporterService
          *
          * @param nodeRef containing node
          * @param propertyName the name of the content-type property
-         * @param contentData the identifier of the content to import
+         * @param importContentData the identifier of the content to import
          */
         private void importContent(NodeRef nodeRef, QName propertyName, String importContentData)
         {
@@ -1086,7 +1086,7 @@ public class ImporterComponent implements ImporterService
         /**
          * Bind properties
          * 
-         * @param properties
+         * @param context
          * @return
          */
         @SuppressWarnings("unchecked")
@@ -1144,7 +1144,7 @@ public class ImporterComponent implements ImporterService
         /**
          * Bind permissions - binds authorities
          * 
-         * @param properties
+         * @param permissions
          * @return
          */
         private List<AccessPermission> bindPermissions(List<AccessPermission> permissions)
@@ -1288,7 +1288,6 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report node created progress
          * 
-         * @param progress
          * @param childAssocRef
          */
         private void reportNodeCreated(ChildAssociationRef childAssocRef)
@@ -1302,8 +1301,10 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report node linked progress
          * 
-         * @param progress
-         * @param childAssocRef
+         * @param childRef
+         * @param parentRef
+         * @param assocType
+         * @param childName
          */
         private void reportNodeLinked(NodeRef childRef, NodeRef parentRef, QName assocType, QName childName)
         {
@@ -1316,7 +1317,6 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report content created progress
          * 
-         * @param progress
          * @param nodeRef
          * @param sourceUrl
          */
@@ -1331,7 +1331,6 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report aspect added progress
          *  
-         * @param progress
          * @param nodeRef
          * @param aspect
          */
@@ -1346,7 +1345,6 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report property set progress
          * 
-         * @param progress
          * @param nodeRef
          * @param properties
          */
@@ -1390,7 +1388,7 @@ public class ImporterComponent implements ImporterService
             /**
              * Construct
              * 
-             * @param newUUID  force allocation of new UUID
+             * @param assignNewUUID  force allocation of new UUID
              */
             public CreateNewNodeImporterStrategy(boolean assignNewUUID)
             {

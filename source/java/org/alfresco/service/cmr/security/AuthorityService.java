@@ -148,7 +148,7 @@ public interface AuthorityService
      * @return all authorities by type
      * 
      * @deprecated use {@link #getAuthorities(AuthorityType, String, String, boolean, boolean, PagingRequest)} at least
-     * @see getAuthorities (paged)
+     * @see #getAuthorities (paged)
      */
     @Auditable(parameters = {"type"})
     @Deprecated
@@ -165,7 +165,7 @@ public interface AuthorityService
      * @param sortAscending       if true then sort ascending else sort descending (ignore if sortByDisplayName is false)
      * @param pagingRequest       the requested page (skipCount, maxItems, queryExectionId)
      * 
-     * @throws UnknownAuthorityException - if zoneName is not null and does not exist
+     * @throws org.alfresco.repo.security.authority.UnknownAuthorityException - if zoneName is not null and does not exist
      * 
      * @author janv
      * @since 4.0
@@ -184,7 +184,7 @@ public interface AuthorityService
      * @param sortAscending       if true then sort ascending else sort descending (ignore if sortByDisplayName is false)
      * @param pagingRequest       the requested page (skipCount, maxItems, queryExectionId)
      * 
-     * @throws UnknownAuthorityException - if zoneName is not null and does not exist
+     * @throws org.alfresco.repo.security.authority.UnknownAuthorityException - if zoneName is not null and does not exist
      * 
      * @author janv
      * @since 4.0
@@ -227,7 +227,7 @@ public interface AuthorityService
      *            the short name of the authority to create
      * @param authorityDisplayName
      *            the display name for the authority
-     * @param authorityZone
+     * @param authorityZones
      *            identifier for external user registry owning the authority or <code>null</code> if not applicable
      * @return the full name of the authority (this will be the prefix, if any associated with the type appended with
      *         the short name)
@@ -315,7 +315,7 @@ public interface AuthorityService
      * Get the authorities that contain the given authority,
      * <b>but use {@code getAuthoritiesForUser(userName).contains(authority)}</b> rather than
      * {@code getContainingAuthorities(type, userName, false).contains(authority)} or
-     * use {@link #getContainingAuthoritiesInZone(AuthorityType, String, AuthorityService.ZONE_APP_DEFAULT)}
+     * use {@link #getContainingAuthoritiesInZone(AuthorityType, String, AuthorityService#ZONE_APP_DEFAULT, AuthorityFilter, int)}
      * <b>as they will be much faster</b>.
      * 
      * For example, this method can be used find out all the authorities that contain a
@@ -441,7 +441,7 @@ public interface AuthorityService
      * 
      * @param name
      *            the authority long name
-     * @return the the name of the zone containing the specified authority, {@link AuthorityService#DEFAULT_ZONE} if the
+     * @return the the name of the zone containing the specified authority, {@link AuthorityService#ZONE_APP_DEFAULT} if the
      *         authority exists but has no zone, or <code>null</code> if the authority does not exist.
      */
     @Auditable(parameters = {"name"})
@@ -456,7 +456,7 @@ public interface AuthorityService
      * @param type       the authority type to filter by or <code>null</code> for all authority types
      * @return the names of all authorities in a zone, optionally filtered by type
      * 
-     * @see getAuthorities (paged)
+     * @see #getAuthorities (paged)
      */
     @Auditable(parameters = {"zoneName", "type"})
     public Set<String> getAllAuthoritiesInZone(String zoneName, AuthorityType type);
@@ -476,7 +476,7 @@ public interface AuthorityService
     /**
      * Add a zone to an authority.
      * @param authorityName
-     * @param zone
+     * @param zones
      */
     @Auditable(parameters = {"authorityName", "zones"})
     public void addAuthorityToZones(String authorityName, Set<String> zones);
@@ -484,7 +484,7 @@ public interface AuthorityService
     /**
      * Remove a zone from an authority
      * @param authorityName
-     * @param zone
+     * @param zones
      */
     @Auditable(parameters = {"authorityName", "zones"})
     public void removeAuthorityFromZones(String authorityName, Set<String> zones);

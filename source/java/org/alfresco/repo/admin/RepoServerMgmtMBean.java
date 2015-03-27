@@ -112,8 +112,6 @@ public interface RepoServerMgmtMBean
 	 * 
 	 * Max users = 0 prevents further logins
 	 * Max users = -1 allow logins (without a max limit)
-	 * 
-	 * @param int  maxUsers
 	 */
 	public int getMaxUsers();
 }

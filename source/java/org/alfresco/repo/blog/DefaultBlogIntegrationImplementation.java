@@ -54,7 +54,7 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
     protected abstract String getEndpointURL(BlogDetails blogDetails);
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationImplementation#newPost(org.alfresco.module.blogIntegration.BlogDetails, java.lang.String, java.lang.String, boolean)
+     * @see org.alfresco.repo.blog.BlogIntegrationImplementation#newPost(org.alfresco.repo.blog.BlogDetails, java.lang.String, java.lang.String, boolean)
      */
     public String newPost(BlogDetails blogDetails, String title, String body, boolean publish)
     {
@@ -76,7 +76,7 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
     }
 
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationImplementation#updatePost(org.alfresco.module.blogIntegration.BlogDetails, java.lang.String, java.lang.String, java.lang.String, boolean)
+     * @see org.alfresco.repo.blog.BlogIntegrationImplementation#updatePost(org.alfresco.repo.blog.BlogDetails, java.lang.String, java.lang.String, java.lang.String, boolean)
      */
     public boolean updatePost(BlogDetails blogDetails, String postId, String title, String body, boolean publish)
     {
@@ -105,7 +105,7 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
     }
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationImplementation#getPost(org.alfresco.module.blogIntegration.BlogDetails, java.lang.String)
+     * @see org.alfresco.repo.blog.BlogIntegrationImplementation#getPost(org.alfresco.repo.blog.BlogDetails, java.lang.String)
      */
     @SuppressWarnings("unchecked")
     public Map<String, Object> getPost(BlogDetails blogDetails, String postId)
@@ -121,7 +121,7 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
     }
 
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationImplementation#deletePost(org.alfresco.module.blogIntegration.BlogDetails, java.lang.String)
+     * @see org.alfresco.repo.blog.BlogIntegrationImplementation#deletePost(org.alfresco.repo.blog.BlogDetails, java.lang.String)
      */
     public boolean deletePost(BlogDetails blogDetails, String postId)
     {

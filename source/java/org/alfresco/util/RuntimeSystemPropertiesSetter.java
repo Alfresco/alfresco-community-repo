@@ -42,7 +42,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * to work properly.
  *
  * @author Jon Cox
- * @see #setProperties(String)
+ * @see #setJvmProperties(Map)
 */
 public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, ApplicationContextAware, PriorityOrdered
 {
@@ -54,7 +54,7 @@ public class RuntimeSystemPropertiesSetter implements BeanFactoryPostProcessor, 
     private ResourcePatternResolver resolver;
     
     /**
-     * @see #setProperties(String)
+     * @see #setJvmProperties(Map)
      */
     private Map<String, String> jvmProperties;
 

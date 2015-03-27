@@ -79,7 +79,7 @@ public class ScriptThumbnailService extends BaseScopableProcessorExtension
     /**
      * Gets the resource path for the place holder thumbnail for the given named thumbnail and the given mime type.
      * If there is no icon available for the specified MIME type, a generic icon will be used instead.
-     * The generic icon is that returned by {@link getPlaceHolderResourcePath(String)}
+     * The generic icon is that returned by {@link #getPlaceHolderResourcePath(String)}
      * If neither a MIME-specific icon nor a generic icon is available, <code>null</code> is returned.
      * 
      * @param thumbnailName     the thumbnail name

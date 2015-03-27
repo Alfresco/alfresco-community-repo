@@ -30,8 +30,10 @@ import org.apache.tika.parser.dwg.DWGParser;
 
 /**
  * Metadata extractor for the
- * {@link org.alfresco.repo.content.MimetypeMap#MIMETYPE_DWG MIMETYPE_DWG}
- * mimetype.
+ * {@link org.alfresco.repo.content.MimetypeMap#MIMETYPE_APP_DWG MIMETYPE_APP_DWG}
+ * and
+ * {@link org.alfresco.repo.content.MimetypeMap#MIMETYPE_IMG_DWG MIMETYPE_IMG_DWG}
+ * mimetypes.
  * <pre>
  *   <b>title:</b>           --      cm:title
  *   <b>description:</b>     --      cm:description

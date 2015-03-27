@@ -90,7 +90,7 @@ public class NamespaceEntity
     }
     
     /**
-     * Convenience getter to interpret the {@link #EMPTY_URI_SUBSTITUTE}
+     * Convenience getter to interpret the {@link QName#EMPTY_URI_SUBSTITUTE}
      */
     public String getUriSafe()
     {
@@ -104,7 +104,7 @@ public class NamespaceEntity
         }
     }
     /**
-     * Convenience setter to interpret the {@link #EMPTY_URI_SUBSTITUTE}
+     * Convenience setter to interpret the {@link QName#EMPTY_URI_SUBSTITUTE}
      */
     public void setUriSafe(String uri)
     {

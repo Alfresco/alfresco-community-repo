@@ -37,7 +37,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * <p/>
  * Ratings can be {@link RatingService#applyRating(NodeRef, float, String) applied},
  * {@link RatingService#applyRating(NodeRef, float, String) updated} and
- * {@link RatingService#removeRatingByCurrentUser(NodeRef, RatingScheme) removed}.
+ * {@link RatingService#removeRatingByCurrentUser(NodeRef, String) removed}.
  * 
  * @author Neil McErlean
  * @since 3.4
@@ -83,7 +83,7 @@ public interface RatingService
      * the specified node in the specified {@link RatingScheme}.
      * 
      * @param targetNode the node on which the rating is sought.
-     * @param ratingScheme the rating scheme to use.
+     * @param ratingSchemeName the rating scheme name to use.
      * 
      * @return the number of individual ratings applied to this node.
      * @see RatingService#getRatingSchemes()
@@ -99,7 +99,7 @@ public interface RatingService
      * node are summed to give the result.
      * 
      * @param targetNode the node on which the rating total is sought.
-     * @param ratingScheme the rating scheme to use.
+     * @param ratingSchemeName the rating scheme name to use.
      * 
      * @return the sum of all individual ratings applied to this node in the specified scheme.
      * @see RatingService#getRatingSchemes()
@@ -123,7 +123,7 @@ public interface RatingService
      * {@link RatingScheme} - if there is one.
      * 
      * @param targetNode the node on which the rating is sought.
-     * @param ratingScheme the rating scheme to use.
+     * @param ratingSchemeName the rating scheme name to use.
      * 
      * @return the Rating object if there is one, else <code>null</code>.
      * @see RatingService#getRatingSchemes()
@@ -151,7 +151,7 @@ public interface RatingService
      * {@link RatingScheme}.
      * 
      * @param targetNode the node from which the rating is to be removed.
-     * @param ratingScheme the rating scheme to use.
+     * @param ratingSchemeName the rating scheme name to use.
      * 
      * @return the deleted Rating object if there was one, else <code>null</code>.
      * @see RatingService#getRatingSchemes()

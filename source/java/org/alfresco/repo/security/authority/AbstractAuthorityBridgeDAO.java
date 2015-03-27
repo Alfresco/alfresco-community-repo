@@ -162,7 +162,6 @@ public abstract class AbstractAuthorityBridgeDAO implements AuthorityBridgeDAO
      * @param memberAssocQNameId
      * @param authorityNameQNameId
      * @param storeId
-     * @param user
      * @return
      */
     protected abstract List<AuthorityBridgeLink> selectDirectAuthoritiesForUser(Long authorityContainerTypeQNameId, Long memberAssocQNameId, Long authorityNameQNameId, Long storeId,

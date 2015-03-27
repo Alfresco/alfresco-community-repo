@@ -722,7 +722,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * @param stagingFolder
+     * @param file
      */
     private void deleteFile(File file)
     {
@@ -1498,7 +1498,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
         /**
          * Make the lock - called on main thread
          *
-         * @throws LockAquisitionException
+         * @throws org.alfresco.repo.lock.LockAcquisitionException
          */
         public synchronized void makeLock()
         {

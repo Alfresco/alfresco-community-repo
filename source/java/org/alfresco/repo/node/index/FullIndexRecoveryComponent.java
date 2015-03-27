@@ -229,7 +229,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
      * This will create smaller result sets which circumvents performance problems using
      * sql LIMIT on some jdbc drivers and databases.
      * 
-     * @param windowSize	the size of collection window in milliseconds. 
+     * @param minWindowSize	the size of collection window in milliseconds.
      * @param count			the number of transctions to attempt to collect 
      * @return				returns a list of transactions
      */
@@ -291,7 +291,7 @@ public class FullIndexRecoveryComponent extends AbstractReindexComponent
      * This will create smaller result sets which circumvents performance problems using
      * sql LIMIT on some jdbc drivers and databases.
      * 
-     * @param windowSize	the size of collection window in milliseconds. 
+     * @param minWindowSize	the size of collection window in milliseconds.
      * @param count			the number of transctions to attempt to collect 
      * @return				returns a list of transactions
      */

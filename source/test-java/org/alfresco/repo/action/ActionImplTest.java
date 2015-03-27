@@ -36,9 +36,6 @@ public class ActionImplTest extends BaseParameterizedItemImplTest
 	private static final String NAME_COND2 = "nameCond2";
 	private static final String NAME_COND3 = "nameCond3";
 
-	/**
-     * @see org.alfresco.repo.rule.common.RuleItemImplTest#create()
-     */
     @Override
     protected ParameterizedItemImpl create()
     {

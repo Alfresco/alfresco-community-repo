@@ -216,7 +216,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Set the asynchronous action execution queues
      * 
-     * @param asynchronousActionExecutionQueue the asynchronous action execution
+     * @param asynchronousActionExecutionQueues the asynchronous action execution
      *            queues
      * @deprecated Rather than inject a Map<String, AsynchronousActionExecutionQueue>, it is
      *             preferable to inject individual {@link AsynchronousActionExecutionQueue} instances
@@ -400,7 +400,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ActionService#createAction()
+     * @see org.alfresco.service.cmr.action.ActionService#createAction(String)
      */
     public Action createAction(String name)
     {
@@ -1662,9 +1662,6 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         }
     }
 
-    /**
-     * @see org.alfresco.repo.action.RuntimeActionService#getPostTransactionPendingActions()
-     */
     @SuppressWarnings("unchecked")
     private List<PendingAction> getPostTransactionPendingActions()
     {
@@ -1780,7 +1777,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     }
 
     /**
-     * @return Returns {@link AdctionParameterTypeCopyBehaviourCallback}
+     * @return Returns {@link CopyBehaviourCallback}
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

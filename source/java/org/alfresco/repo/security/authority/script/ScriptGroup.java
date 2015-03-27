@@ -631,7 +631,7 @@ public class ScriptGroup implements Authority, Serializable
     /**
      * Returns an array of ScriptGroup objects representing the given paged results.
      * 
-     * @param groups The paged results
+     * @param pagedGroups The paged results
      * @param paging Object representing the paging details
      * @param sortBy field for sorting
      * @param sortAsc sort ascending or not
@@ -666,7 +666,7 @@ public class ScriptGroup implements Authority, Serializable
     /**
      * Returns an array of ScriptGroup objects representing the given paged results.
      * 
-     * @param groups sorted paged results (the page of results get sorted again taking I18n into account)
+     * @param pagedGroups sorted paged results (the page of results get sorted again taking I18n into account)
      * @param paging Object representing the paging details
      * @param serviceRegistry
      * @param scope

@@ -190,7 +190,7 @@ public class EnterpriseCifsAuthenticator extends CifsAuthenticatorBase implement
     /**
      * Sets the HTTP service login configuration entry name.
      * 
-     * @param loginEntryName
+     * @param jaasConfigEntryName
      *            the loginEntryName to set
      */
     public void setJaasConfigEntryName(String jaasConfigEntryName)

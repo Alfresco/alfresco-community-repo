@@ -51,7 +51,7 @@ public class NodeEventQueue {
 	/**
 	 * Add an event to the queue
 	 * 
-	 * @param evetn NodeEvent
+	 * @param event NodeEvent
 	 */
 	public final synchronized void addEvent(NodeEvent event) {
 

@@ -22,7 +22,7 @@ import org.alfresco.jlan.server.filesys.DiskInterface;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Extended {@link org.alfresco.filesys.server.filesys.DiskInterface disk interface} to
+ * Extended {@link org.alfresco.jlan.server.filesys.DiskInterface disk interface} to
  * allow access to some of the internal configuration properties.
  * 
  * @author Derek Hulley

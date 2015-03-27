@@ -44,9 +44,9 @@ public class ElementContext
     /**
      * Construct
      * 
-     * @param dictionary
      * @param elementName
-     * @param progress
+     * @param dictionary
+     * @param importer
      */
     public ElementContext(QName elementName, DictionaryService dictionary, Importer importer)
     {

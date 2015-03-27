@@ -313,7 +313,7 @@ public abstract class TikaPoweredMetadataExtracter
      * null by default so parse all.
      * 
      * @param metadata
-     * @param sourceMimeType
+     * @param targetMimeType
      * @return the document selector
      */
     protected DocumentSelector getDocumentSelector(Metadata metadata, String targetMimeType)

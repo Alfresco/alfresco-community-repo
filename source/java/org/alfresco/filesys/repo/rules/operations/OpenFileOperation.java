@@ -38,8 +38,9 @@ public class OpenFileOperation implements Operation
     /**
      * 
      * @param name the name of the file to open
-     * @param writeAccess if true open the file in read/write
-     * @param rootNode
+     * @param mode if true open the file in read/write
+     * @param truncate boolean
+     * @param rootNode root node
      * @param path the full path/name to open
      */
     public OpenFileOperation(String name, OpenFileMode mode, boolean truncate, NodeRef rootNode, String path)

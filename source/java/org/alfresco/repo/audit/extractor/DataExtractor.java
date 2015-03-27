@@ -27,7 +27,7 @@ import org.alfresco.api.AlfrescoPublicApi;
  * from those arguments, return values, exceptions and any other value passed into the audit
  * components for recording.
  * <p/>
- * The framework will first determine if data passed into the instance is {@link #isSupported(Object) supported}
+ * The framework will first determine if data passed into the instance is {@link #isSupported(Serializable) supported}
  * and will then pass it in for {@link #extractData(Serializable) conversion} to the type that will be
  * recorded.
  * 

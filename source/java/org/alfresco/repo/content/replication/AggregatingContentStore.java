@@ -87,7 +87,7 @@ public class AggregatingContentStore extends AbstractContentStore
     /**
      * Set the secondary stores that this component will replicate to or from
      * 
-     * @param stores a list of stores to replicate to or from
+     * @param secondaryStores a list of stores to replicate to or from
      */
     public void setSecondaryStores(List<ContentStore> secondaryStores)
     {

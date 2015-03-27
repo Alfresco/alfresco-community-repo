@@ -58,7 +58,7 @@ import org.springframework.context.ApplicationContext;
  * every test-case execution. Also default query template is not set for {@link CronScheduledQueryBasedTemplateActionDefinition} instance
  * 
  * @author Dmitry Velichkevich
- * @see CronScheduledQueryBasedTemplateActionDefinitionTest#initializeScheduler(ServiceRegistry)
+ * @see CronScheduledQueryBasedTemplateActionDefinitionTest#initializeScheduler()
  */
 public class CronScheduledQueryBasedTemplateActionDefinitionTest extends TestCase
 {

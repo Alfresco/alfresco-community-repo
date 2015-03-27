@@ -316,7 +316,7 @@ public class ExporterComponentTest extends BaseSpringTest
     }
 
     /**
-     * @param contentChildAssocRef
+     * @param nodeRef nodeRef
      * @return
      * @throws FileNotFoundException
      * @throws IOException

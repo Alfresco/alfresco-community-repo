@@ -29,7 +29,7 @@ package org.alfresco.repo.security.authentication;
  * <p>
  * As SHA is a one-way hash, the salt can contain any characters. The default
  * strength for the SHA encoding is SHA-1. If you wish to use higher strengths
- * use the argumented constructor. {@link #ShaPasswordEncoder(int strength)}
+ * use the argumented constructor. {@link #ShaPasswordEncoderImpl(int)}
  * </p>
  * <p>
  * The applicationContext example...

@@ -119,7 +119,7 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
      * 
      * @param requiredAssocs
      * @param currentAssocs
-     * @param correspondingNodeRef
+     * @param nodeRef
      * @param isSource
      */
     private void processPeerAssociations(List<AssociationRef> requiredAssocs,
@@ -329,9 +329,7 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
         
         /**
          * 
-         * @param sourceRef
-         * @param targetRef
-         * @param assocTypeQName
+         * @param ref
          */
         public AssociationRefKey(AssociationRef ref)
         {

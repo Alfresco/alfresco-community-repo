@@ -348,9 +348,9 @@ public class TemporaryNodes extends ExternalResource
      * list of NodeRefs to be tidied up by the rule.
      * This method will be run in its own transaction and will be run with the specified user as the fully authenticated user,
      * thus ensuring the named user is the cm:creator of the new node.
-     * 
+     *
+     * @param quickFileName the file name of the quick file - will also be the cm:name of the new node.
      * @param parentNode the parent node
-     * @param nodeCmName the file name of the quick file - will also be the cm:name of the new node.
      * @param nodeCreator the username of the person who will create the node
      * @return the newly created NodeRef.
      * @since 4.1.4

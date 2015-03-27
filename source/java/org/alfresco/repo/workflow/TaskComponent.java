@@ -58,7 +58,7 @@ public interface TaskComponent
     /**
      * Gets the pooled tasks available to the specified authority
      * 
-     * @param authority   the authority
+     * @param authorities   the list of authorities
      * @param lazyInitialization hint in order to return partially-initialized entities
      * @return  the list of pooled tasks
      */
@@ -123,7 +123,7 @@ public interface TaskComponent
      * End the Task (i.e. complete the task)
      * 
      * @param taskId  the task id to end
-     * @param transition  the task transition to take on completion (or null, for the default transition)
+     * @param transitionId  the task transition id to take on completion (or null, for the default transition)
      * @return  the updated task
      */    
     public WorkflowTask endTask(String taskId, String transitionId);

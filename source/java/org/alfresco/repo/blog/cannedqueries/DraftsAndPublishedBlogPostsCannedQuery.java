@@ -45,7 +45,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Neil Mc Erlean
  * @since 4.0
  * 
- * @see BlogService#getMyDraftsAndAllPublished(NodeRef, Date, Date, String, org.alfresco.query.PagingRequest)
+ * @see org.alfresco.service.cmr.blog.BlogService#getMyDraftsAndAllPublished(NodeRef, Date, Date, org.alfresco.query.PagingRequest)
  */
 public class DraftsAndPublishedBlogPostsCannedQuery extends AbstractCannedQueryPermissions<BlogEntity>
 {

@@ -37,19 +37,17 @@ public interface BulkFilesystemImporter
      * Initiates a bulk filesystem import.
      * Note: getStatus().inProgress() must be false prior to calling this method or an Exception will be thrown.
      * 
-     * @param target         The target space to ingest the content into <i>(must not be null and must be a valid, writable space in the repository)</i>.
-     * @param source         The source directory on the local filesystem to read content from <i>(must not be null and must be a valid, readable directory on the local filesystem)</i>.
-     * @param replaceExisting A flag indicating whether to replace (true) or skip (false) files that are already in the repository.
+     * @param bulkImportParameters         The target bulk import parameters.
+     * @param nodeImporter         The node importer.
      */
     void bulkImport(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter);
 
     /**
      * Initiates a bulk filesystem import asynchronously i.e. in a background thread.
      * Note: getStatus().inProgress() must be false prior to calling this method or an Exception will be thrown.
-     * 
-     * @param target         The target space to ingest the content into <i>(must not be null and must be a valid, writable space in the repository)</i>.
-     * @param source         The source directory on the local filesystem to read content from <i>(must not be null and must be a valid, readable directory on the local filesystem)</i>.
-     * @param replaceExisting A flag indicating whether to replace (true) or skip (false) files that are already in the repository.
+     *
+     * @param bulkImportParameters         The target bulk import parameters.
+     * @param nodeImporter         The node importer.
      */
     void asyncBulkImport(BulkImportParameters bulkImportParameters, NodeImporter nodeImporter);
     

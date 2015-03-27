@@ -51,7 +51,7 @@ public class NodeLockedException extends AlfrescoRuntimeException
     }
     
     /**
-     * @param message
+     * @param nodeRef NodeRef
      */
     public NodeLockedException(NodeRef nodeRef)
     {

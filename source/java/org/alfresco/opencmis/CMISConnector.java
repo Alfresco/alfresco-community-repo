@@ -1765,12 +1765,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Notifies listeners that a read has taken place.
      * 
-     * @param streamNodeRef
-     * @param type
+     * @param nodeRef
+     * @param name
      * @param mimeType
      * @param contentSize
      * @param encoding
-     * @param string
+     * @param range
      */
     protected void publishReadEvent(final NodeRef nodeRef, final String name, final String mimeType, final long contentSize, final String encoding, final String range)
     {

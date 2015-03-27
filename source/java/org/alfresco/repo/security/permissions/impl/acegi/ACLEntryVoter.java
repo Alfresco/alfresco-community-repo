@@ -165,7 +165,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the ownable service
-     * @param nodeService
+     * @param ownableService
      */
     public void setOwnableService(OwnableService ownableService)
     {

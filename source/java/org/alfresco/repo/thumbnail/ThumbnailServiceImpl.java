@@ -611,7 +611,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
 
     /**
      * Creates a {@link RenditionDefinition} with no parameters set.
-     * @param thumbnailName
+     * @param thumbnailQName
      * @param transformationOptions
      * @return
      */
@@ -631,7 +631,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
      * @param contentProperty
      * @param mimetype
      * @param transformationOptions
-     * @param thumbnailName
+     * @param thumbnailQName
      * @param assocDetails
      * @return
      */
@@ -675,7 +675,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
 
     /**
      * Sets the thumbnail name if the rendition is of type cm:thumbnail.
-     * @param thumbnailAssoc
+     * @param thumbnail
      * @param thumbnailName
      */
     private void setThumbnailNameProperty(NodeRef thumbnail, String thumbnailName)

@@ -195,7 +195,7 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     }
 
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies$OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      * @exception AlfrescoRuntimeException Throws if the <b>alias</b> property is duplicated.
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
@@ -208,7 +208,7 @@ public class AliasableAspect implements NodeServicePolicies.OnAddAspectPolicy,
     }
 
     /**
-     * @see org.alfresco.repo.node.NodeServicePolicies$OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
      * @exception AlfrescoRuntimeException Throws if the <b>alias</b> property is duplicated.
      */
     public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)

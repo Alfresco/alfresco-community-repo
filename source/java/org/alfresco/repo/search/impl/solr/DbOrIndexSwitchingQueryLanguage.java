@@ -73,7 +73,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
 
 
     /**
-     * @param solrQueryLanguage the solrQueryLanguage to set
+     * @param indexQueryLanguage the indexQueryLanguage to set
      */
     public void setIndexQueryLanguage(LuceneQueryLanguageSPI indexQueryLanguage)
     {

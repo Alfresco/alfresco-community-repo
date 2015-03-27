@@ -195,7 +195,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     
     /**
      * @see #transform(ContentReader, ContentWriter, Map)
-     * @see #transformInternal(ContentReader, ContentWriter, Map)
+     * @see #transformInternal(ContentReader, ContentWriter, TransformationOptions)
      */
     public final void transform(ContentReader reader, ContentWriter writer) throws ContentIOException
     {

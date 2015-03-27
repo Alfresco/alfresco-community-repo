@@ -42,7 +42,7 @@ import org.alfresco.repo.bulkimport.ImportableItem;
  *
  * @since 4.0
  * 
- * @see org.alfresco.extension.bulkfilesystemimport.BulkImportStatus
+ * @see org.alfresco.repo.bulkimport.BulkImportStatus
  */
 public class BulkImportStatusImpl implements BulkImportStatus
 {

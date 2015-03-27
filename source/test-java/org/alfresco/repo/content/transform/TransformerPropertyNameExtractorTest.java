@@ -102,8 +102,8 @@ public class TransformerPropertyNameExtractorTest
      * a) returns all the supplied mimetypes
      * b) returns the extension given the mimetype
      * c) returns the mimetype given the extension.
+     * @param mimetypeService mimetype service
      * @param mimetypesAndExtensions sequence of mimetypes and extenstions.
-     * @param transformerProperties to mock the return values
      * @throws IllegalStateException if there is not an extension for every mimetype
      */
     public static void mockMimetypes(MimetypeService mimetypeService, String... mimetypesAndExtensions)

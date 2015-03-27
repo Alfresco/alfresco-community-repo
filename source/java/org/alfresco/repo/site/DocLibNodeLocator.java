@@ -46,7 +46,7 @@ public class DocLibNodeLocator extends AbstractNodeLocator
      * Finds the site in which the source {@link NodeRef} resides and returns the Document Library container for that site.
      * If no site can be found or the site does not have a Document Library then the Company Home is returned.
      * 
-     * @param sourceNode the starting point for locating the site Document Library.
+     * @param source the starting point for locating the site Document Library.
      * @param params Not used.
      * @return the Document Library or the Company Home.
      */

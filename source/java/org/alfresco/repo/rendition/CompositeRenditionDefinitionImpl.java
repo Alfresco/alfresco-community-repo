@@ -43,8 +43,8 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     private final ActionList<RenditionDefinition> actions = new ActionListImpl<RenditionDefinition>();
 
     /**
-     * @param nodeRef
-     * @param id
+     * @param id - the action id
+     * @param renditionName - a unique name for the rendering action
      */
     public CompositeRenditionDefinitionImpl(String id, QName renditionName)
     {

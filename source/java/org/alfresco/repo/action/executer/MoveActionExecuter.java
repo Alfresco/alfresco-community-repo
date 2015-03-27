@@ -74,7 +74,7 @@ public class MoveActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.ref.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, NodeRef)
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {

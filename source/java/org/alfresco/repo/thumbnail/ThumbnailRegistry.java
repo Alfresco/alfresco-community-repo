@@ -411,7 +411,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     /**
      * Get the definition of a named thumbnail
      * 
-     * @param  thumbnailNam         the thumbnail name
+     * @param  thumbnailName         the thumbnail name
      * @return ThumbnailDetails     the details of the thumbnail
      */
     public ThumbnailDefinition getThumbnailDefinition(String thumbnailName)

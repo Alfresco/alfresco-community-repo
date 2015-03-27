@@ -331,7 +331,7 @@ public class AuditMethodInterceptor implements MethodInterceptor
      * values. Not all values may be audited. Some cannot be converted to something that can be
      * serialised or may only be read once (so would be damaged). String audit values may be trimmed.
      * @param value to be audited.
-     * @return Return {@link NOT_AUDITABLE} if it is not possible to audit the value,a value that may be audited. May be null.
+     * @return Return {@link #NOT_RECORDABLE} if it is not possible to audit the value,a value that may be audited. May be null.
      * @throws TypeConversionException if not possible to convert the original object.
      */
     private Serializable getRecordableValue(Object value)

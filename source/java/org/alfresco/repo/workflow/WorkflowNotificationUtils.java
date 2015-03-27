@@ -88,10 +88,9 @@ public class WorkflowNotificationUtils
 
     
     /**
-     * 
-     * @param services
+     *
      * @param taskId
-     * @param title
+     * @param taskTitle
      * @param description
      * @param dueDate
      * @param priority
@@ -186,8 +185,8 @@ public class WorkflowNotificationUtils
     /**
      * Send workflow assigned email notification.
      * 
-     * @param services              service registry
      * @param taskId                workflow global task id
+     * @param taskType              task type
      * @param assignedAuthorites    assigned authorities
      * @param pooled                true if pooled task, false otherwise
      */
@@ -215,8 +214,8 @@ public class WorkflowNotificationUtils
     /**
      * Send workflow assigned email notification.
      * 
-     * @param services              service registry
      * @param taskId                workflow global task id
+     * @param taskType              task type
      * @param assignedAuthority     assigned authority
      * @param pooled                true if pooled task, false otherwise
      */

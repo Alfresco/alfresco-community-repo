@@ -168,7 +168,6 @@ public class CifsHelper
     }
 
     /**
-     * @param serviceRegistry for repo connection
      * @param nodeRef
      * @return Returns true if the node is a subtype of {@link ContentModel#TYPE_FOLDER folder}
      * @throws AlfrescoRuntimeException if the type is neither related to a folder or content
@@ -485,7 +484,7 @@ public class CifsHelper
      * 
      * @param rootNodeRef the root node of the path
      * @param path the path to a node
-     * @param isFile true if the node to be created must be a file
+     * @param typeQName type of fole
      * @return Returns a newly created file or folder node
      * @throws FileExistsException if the file or folder already exists
      */
@@ -627,7 +626,7 @@ public class CifsHelper
      *   <li>\New Folder\Sub Folder</li>
      * </ul>
      * 
-     * @param searchRootNodeRef the node from which to start the path search
+     * @param pathRootNodeRef the node from which to start the path search
      * @param path the search path to either a folder or file
      * @return Returns references to all matching nodes
      */
@@ -712,8 +711,10 @@ public class CifsHelper
     /**
      * Relink the content data from a new node to an existing node to preserve the version history.
      * 
-     * @param oldNodeRef NodeRef
-     * @param newNodeRef NodeRef
+     * @param tempNodeRef temp nodeRef
+     * @param nodeToMoveRef NodeRef
+     * @param newParentNodeRef NodeRef
+     * @param newName new name
      */
     public void relinkNode(NodeRef tempNodeRef, NodeRef nodeToMoveRef, NodeRef newParentNodeRef, String newName)
             throws FileNotFoundException, FileExistsException

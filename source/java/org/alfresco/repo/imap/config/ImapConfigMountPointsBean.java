@@ -72,7 +72,7 @@ public class ImapConfigMountPointsBean extends RepositoryFolderConfigBean
      * 
      * @param mode
      *            the new mode (virtual or archive)
-     * @see MountPointMode
+     * @see ImapViewMode
      */
     public void setModeName(String mode)
     {

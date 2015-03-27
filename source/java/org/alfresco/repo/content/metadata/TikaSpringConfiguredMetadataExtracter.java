@@ -77,7 +77,7 @@ public class TikaSpringConfiguredMetadataExtracter extends TikaPoweredMetadataEx
     
     /**
      * Injects the Tika parser to use
-     * @param parser
+     * @param tikaParser
      */
     public void setTikaParser(Parser tikaParser)
     {

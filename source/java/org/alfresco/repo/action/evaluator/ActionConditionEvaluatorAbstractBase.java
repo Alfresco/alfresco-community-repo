@@ -83,7 +83,7 @@ public abstract class ActionConditionEvaluatorAbstractBase extends Parameterized
 	}
 	
 	/**
-     * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluator#evaluate(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluator#evaluate(org.alfresco.service.cmr.action.ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean evaluate(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
     {

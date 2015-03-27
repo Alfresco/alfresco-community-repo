@@ -199,7 +199,7 @@ public interface PropertyValueDAO
      * be serialized and probably stored as BLOB values.
      * <p/>
      * All collections and maps will be opened up to any depth.  To limit this behaviour,
-     * use {@link #getOrCreatePropertyValue(Serializable, int)}.
+     * use {@link #getOrCreatePropertyValue(Serializable)}.
      * 
      * @param value             the value to find the ID for (may be <tt>null</tt>)
      */
@@ -293,7 +293,9 @@ public interface PropertyValueDAO
      * such context exists.  The associated property may be <tt>null</tt> even if the unique
      * context exists.
      *
-     * @param values            a combination of one to three values in order
+     * @param value1            first value
+     * @param value2            second value
+     * @param value3            third value
      * @return                  Returns the ID-valueId pair or <tt>null</tt> if the context
      *                          doesn't exist.
      * 

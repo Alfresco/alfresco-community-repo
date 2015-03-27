@@ -50,9 +50,9 @@ import org.htmlparser.util.ParserException;
  *  the current settings around links and non-breaking spaces.
  * </p>
  * 
- * @see http://htmlparser.sourceforge.net/
+ * @see <a href="http://htmlparser.sourceforge.net/">http://htmlparser.sourceforge.net</a>
  * @see org.htmlparser.beans.StringBean
- * @see http://sourceforge.net/tracker/?func=detail&aid=1644504&group_id=24399&atid=381401
+ * @see <a href="http://sourceforge.net/tracker/?func=detail&aid=1644504&group_id=24399&atid=381401">HTML Parser</a>
  * 
  * @author Derek Hulley
  */

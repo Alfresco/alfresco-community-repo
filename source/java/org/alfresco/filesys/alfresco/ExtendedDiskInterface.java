@@ -31,9 +31,8 @@ public interface ExtendedDiskInterface extends DiskInterface
      * Register an independently created device context object for this instance of the shared device. Useful, e.g. when
      * context singleton configuration managed by a container.
      * 
-     * @param context
+     * @param ctx
      *            the device context
-     * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
     public void registerContext(DeviceContext ctx) throws DeviceContextException;

@@ -102,7 +102,7 @@ public class AlfrescoImapUserManager extends UserManager
     /**
      * The login method.
      * 
-     * @see com.icegreen.greenmail.imap.commands.LoginCommand#doProcess()
+     * @see com.icegreen.greenmail.imap.commands.LoginCommand#doProcess(com.icegreen.greenmail.imap.ImapRequestLineReader, com.icegreen.greenmail.imap.ImapResponse, com.icegreen.greenmail.imap.ImapSession)
      */
     public boolean test(String userid, String password)
     {

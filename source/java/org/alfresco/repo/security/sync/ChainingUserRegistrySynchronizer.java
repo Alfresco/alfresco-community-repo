@@ -71,7 +71,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A <code>ChainingUserRegistrySynchronizer</code> is responsible for synchronizing Alfresco's local user (person) and
  * group (authority) information with the external subsystems in the authentication chain (most typically LDAP
- * directories). When the {@link #synchronize(boolean)} method is called, it visits each {@link UserRegistry} bean in
+ * directories). When the {@link #synchronize(boolean, boolean)} method is called, it visits each {@link UserRegistry} bean in
  * the 'chain' of application contexts, managed by a {@link ChildApplicationContextManager}, and compares its
  * timestamped user and group information with the local users and groups last retrieved from the same source. Any
  * updates and additions made to those users and groups are applied to the local copies. The ordering of each

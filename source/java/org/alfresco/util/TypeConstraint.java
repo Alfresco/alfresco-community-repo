@@ -101,7 +101,7 @@ public class TypeConstraint
     /**
      * Processes the user-defined list of types into valid QNames & models, it validates them
      * against the dictionary and also supports wildcards
-     * @param excludeTypeNames
+     * @param typeNames
      * @return Set<QName> Valid type QNames
      */
     protected void preprocessExcludedTypes(List<String> typeNames)
@@ -129,7 +129,7 @@ public class TypeConstraint
     /**
      * Processes the user-defined list of types into valid QNames & models, it validates them
      * against the dictionary and also supports wildcards
-     * @param excludeTypeNames
+     * @param typeNames
      * @return Set<QName> Valid type QNames
      */
     protected void preprocessExpectedTypes(List<String> typeNames)

@@ -976,7 +976,6 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
      * @param sleepTime
      * @param maxTries
      * @param test
-     * @param context
      */
     public static void postAsyncActionTest(
             TransactionService transactionService,

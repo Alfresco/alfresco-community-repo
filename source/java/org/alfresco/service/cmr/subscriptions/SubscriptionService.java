@@ -127,8 +127,6 @@ public interface SubscriptionService extends ActivateableBean
      * 
      * @param userId
      *            the id of the user
-     * @param type
-     *            the type of the nodes
      */
     @NotAuditable
     int getFollowingCount(String userId);
@@ -138,8 +136,6 @@ public interface SubscriptionService extends ActivateableBean
      * 
      * @param userId
      *            the id of the user
-     * @param type
-     *            the type of the nodes
      */
     @NotAuditable
     int getFollowersCount(String userId);

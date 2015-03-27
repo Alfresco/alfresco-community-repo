@@ -202,7 +202,7 @@ public abstract class FilteredFormProcessor<ItemType, PersistType> extends Abstr
     /**
      * Generates a list of default fields to add if no field names are specified.
      * @param data Used for field creation.
-     * @param ignoredFields TODO
+     * @param fieldsToIgnore TODO
      * @return a {@link List} of {@link Field Fields} which may be empty.
      */
     protected List<Field> generateDefaultFields(FormCreationData data, List<String> fieldsToIgnore)

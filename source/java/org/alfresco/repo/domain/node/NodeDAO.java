@@ -70,7 +70,7 @@ public interface NodeDAO extends NodeBulkLoader
      */
     
     /**
-     * @param forceNew          <tt>true</tt> to ensure that a new transaction entry is created
+     * @param ensureNew          <tt>true</tt> to ensure that a new transaction entry is created
      *                          if the current transaction does not have one.
      * @return                  Returns the ID of the current transaction entry or <tt>null</tt> if
      *                          there have not been any modifications to nodes registered in the
@@ -352,7 +352,7 @@ public interface NodeDAO extends NodeBulkLoader
      * or in a later transaction.
      * 
      * @param nodeId            the node to change
-     * @param modifiedDate      the date to set for <b>cm:modified</b>
+     * @param date      the date to set for <b>cm:modified</b>
      * @return                  Returns <tt>true</tt> if the <b>cm:modified</b> property was actually set
      * @deprecated Use {@link #setModifiedProperties(Long, Date, String)} to also change the <b>cm:modifier</b> property
      */
@@ -422,7 +422,9 @@ public interface NodeDAO extends NodeBulkLoader
     /**
      * Remove a specific node association
      * 
-     * @param assocId           the node association ID to remove
+     * @param sourceNodeId           the source node ID
+     * @param targetNodeId           the target node id
+     * @param assocTypeQName           the node association QName
      * @return                  Returns the number of associations removed
      */
     public int removeNodeAssoc(Long sourceNodeId, Long targetNodeId, QName assocTypeQName);
@@ -533,7 +535,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param childNodeId       the child node ID
      * @param assocTypeQName    the association type
      * @param assocQName        the association path qualified name
-     * @param newIndex          the new index
+     * @param index          the new index
      * @return                  Returns the number of associations modified
      */
     public int setChildAssocIndex(
@@ -724,7 +726,7 @@ public interface NodeDAO extends NodeBulkLoader
      * When searching for <code>primaryOnly == true</code>, checks that there is exactly
      * one path.
      * 
-     * @param currentNodePair       the leave or child node to start with
+     * @param nodePair       the leave or child node to start with
      * @param primaryOnly           <tt>true</tt> to follow only primary parent associations
      */
     public List<Path> getPaths(Pair<Long, NodeRef> nodePair, boolean primaryOnly) throws InvalidNodeRefException;

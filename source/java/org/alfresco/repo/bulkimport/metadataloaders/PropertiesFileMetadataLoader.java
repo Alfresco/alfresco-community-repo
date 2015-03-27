@@ -106,7 +106,7 @@ extends AbstractMapBasedMetadataLoader
 
     
     /**
-     * @see org.alfresco.extension.bulkfilesystemimport.metadataloaders.AbstractMapBasedMetadataLoader#loadMetadataFromFile(java.io.File)
+     * @see org.alfresco.repo.bulkimport.metadataloaders.AbstractMapBasedMetadataLoader#loadMetadataFromFile(java.io.File)
      */
     @Override
     protected Map<String,Serializable> loadMetadataFromFile(File metadataFile)

@@ -160,7 +160,7 @@ public interface ModuleDetails extends Serializable
     /**
      * Sets the editions of Alfresco the module is valid for
      * 
-     * @param edition  comma seperated list of editions.  e.g. community,Enterprise
+     * @param editions  comma seperated list of editions.  e.g. community,Enterprise
      */
      void setEditions(List<String> editions);
 }

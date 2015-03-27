@@ -63,8 +63,8 @@ public abstract class AbstractImapFolder implements MailFolder
     
     /**
      * Method that checks mandatory parameter.
-     * @param The parameter instance to check.
-     * @param The name of the parameter.
+     * @param parameter The parameter instance to check.
+     * @param name The name of the parameter.
      */
     protected void checkParameter(Object parameter, String name)
     {

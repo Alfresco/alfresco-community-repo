@@ -133,7 +133,7 @@ public class JavaBehaviour extends BaseBehaviour
         /**
          * Constuct.
          * 
-         * @param instance  the object instance holding the method
+         * @param behaviour  the java behaviour
          * @param delegateMethod  the method to invoke
          */
         private JavaMethodInvocationHandler(JavaBehaviour behaviour, Method delegateMethod)

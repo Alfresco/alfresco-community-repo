@@ -369,7 +369,6 @@ public class ContentStoreCleaner
     
     /**
      * 
-     * @param minIdInclusive        the min content URL ID (inclusive)
      * @param maxTimeExclusive      the max orphan time (exclusive)
      * @param batchSize             the maximum number of orphans to process
      * @return                      Returns the last processed orphan ID or <tt>null</tt> if nothing was processed

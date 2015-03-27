@@ -425,7 +425,6 @@ public interface SiteService
      *
      * @param shortName  short name of site
      * @param componentId  component id
-     * @param folderType  type of folder to create (if null, creates standard folder)
      * @return  noderef of container
      */
     @NotAuditable

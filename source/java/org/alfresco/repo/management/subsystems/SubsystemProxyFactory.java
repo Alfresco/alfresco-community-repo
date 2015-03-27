@@ -152,8 +152,8 @@ public class SubsystemProxyFactory extends ProxyFactoryBean implements Applicati
      * Sets an optional default bean to be used if the target bean is not found. Generally used when a subsystem does not
      * exist.
      * 
-     * @param sourceBeanName
-     *            the sourceBeanName to set
+     * @param defaultBean
+     *            the defaultBean to set
      */
     public void setDefaultBean(Object defaultBean)
     {

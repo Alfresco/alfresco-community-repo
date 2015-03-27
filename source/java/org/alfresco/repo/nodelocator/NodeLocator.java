@@ -40,7 +40,7 @@ public interface NodeLocator
      * {@link Map} of parameters.
      * Returns <code>null</code> if the specified node could not be found.
      * 
-     * @param sourceNode the starting point for locating a new node. The source node. Can be <code>null</code>.
+     * @param source the starting point for locating a new node. The source node. Can be <code>null</code>.
      * @param params an arbitrary {@link Map} of parameters.Can be <code>null</code>.
      * @return the node to be found or <code>null</code>.
      */

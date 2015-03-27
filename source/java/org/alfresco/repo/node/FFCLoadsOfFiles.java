@@ -46,7 +46,7 @@ import org.springframework.context.ApplicationContext;
 /**
  * Perform document loads and fetches of child associations in increasing numbers.
  * <p>
- * {@link https://issues.alfresco.com/jira/browse/ETWOTWO-744}
+ * <a href="https://issues.alfresco.com/jira/browse/ETWOTWO-744">ETWOTWO-744</a>
  * 
  * @author Derek Hulley
  * @author CACEIS

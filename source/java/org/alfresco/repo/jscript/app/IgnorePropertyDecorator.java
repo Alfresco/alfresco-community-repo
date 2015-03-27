@@ -33,7 +33,7 @@ import org.json.simple.JSONAware;
 public class IgnorePropertyDecorator extends BasePropertyDecorator
 {
     /**
-     * @see org.alfresco.repo.jscript.app.PropertyDecorator#decorate(org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
+     * @see org.alfresco.repo.jscript.app.PropertyDecorator#decorate(QName, org.alfresco.service.cmr.repository.NodeRef, java.io.Serializable)
      */
     public JSONAware decorate(QName propertyName, NodeRef nodeRef, Serializable value)
     {

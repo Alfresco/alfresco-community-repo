@@ -69,7 +69,7 @@ public class RenditionPreventionRegistry
     
     /**
      * Checks if the specified type/aspect is registered as a marker for rendition prevention.
-     * @param contentClassName aspect name.
+     * @param aspectQName aspect name.
      * @return <code>true</code> if this aspect will prevent renditions, else <code>false</code>
      */
     public boolean isContentClassRegistered(QName aspectQName)

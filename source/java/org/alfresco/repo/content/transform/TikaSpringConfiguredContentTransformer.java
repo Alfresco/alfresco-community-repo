@@ -61,7 +61,7 @@ public class TikaSpringConfiguredContentTransformer extends TikaPoweredContentTr
     
     /**
      * Injects the Tika parser to use
-     * @param parser
+     * @param tikaParser
      */
     public void setTikaParser(Parser tikaParser)
     {

@@ -192,7 +192,7 @@ public class JscriptWorkflowTask extends BaseScopableProcessorExtension implemen
     /**
      * End the task
      * 
-     * @param transition
+     * @param transitionId
      *            transition to end the task for
      */
     public void endTask(String transitionId)

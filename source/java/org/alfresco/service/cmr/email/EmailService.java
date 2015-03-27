@@ -42,7 +42,7 @@ public interface EmailService
      * examining the email's target address.
      * @param delivery instructions - who gets the message and who is it from
      * @param message the email message
-     * @throws EmailMessageRejectException if the message is rejected for <b>any</b> reason
+     * @throws org.alfresco.service.cmr.email.EmailMessageException if the message is rejected for <b>any</b> reason
      */
     @Auditable(parameters = { "message" })
     void importMessage(EmailDelivery delivery, EmailMessage message);
@@ -52,7 +52,7 @@ public interface EmailService
      * @param delivery instructions - who gets the message and who is it from
      * @param nodeRef the node to import the message to
      * @param message the email message
-     * @throws EmailMessageRejectException if the message is rejected for <b>any</b> reason
+     * @throws org.alfresco.service.cmr.email.EmailMessageException if the message is rejected for <b>any</b> reason
      */
     @Auditable(parameters = { "nodeRef", "message" })
     void importMessage(EmailDelivery delivery, NodeRef nodeRef, EmailMessage message);

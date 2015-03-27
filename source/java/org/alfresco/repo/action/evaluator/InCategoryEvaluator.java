@@ -90,10 +90,10 @@ public class InCategoryEvaluator extends ActionConditionEvaluatorAbstractBase
 	}
 	
 	/**
-	 * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+	 * @see org.alfresco.repo.action.evaluator.ActionConditionEvaluatorAbstractBase#evaluateImpl(ActionCondition, org.alfresco.service.cmr.repository.NodeRef)
 	 */
 	@Override
-	protected boolean evaluateImpl(
+    protected boolean evaluateImpl(
 			ActionCondition ruleCondition,
 			NodeRef actionedUponNodeRef) 
 	{

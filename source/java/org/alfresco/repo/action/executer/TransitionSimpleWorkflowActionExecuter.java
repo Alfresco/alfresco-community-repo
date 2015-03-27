@@ -87,7 +87,7 @@ public class TransitionSimpleWorkflowActionExecuter extends ActionExecuterAbstra
 	}
 
 	/**
-	 * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
+	 * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(Action, org.alfresco.service.cmr.repository.NodeRef)
 	 */
 	@Override
 	protected void executeImpl(

@@ -77,7 +77,6 @@ public interface SOLRTrackingComponent
      * Get the nodes satisfying the constraints in nodeParameters
      * 
      * @param nodeParameters set of constraints for which nodes to return
-     * @param maxResults limit the results. 0 or Integer.MAX_VALUE does not limit the results
      * @param callback a callback to receive the results
      */
 	public void getNodes(NodeParameters nodeParameters, NodeQueryCallback callback);
@@ -85,8 +84,8 @@ public interface SOLRTrackingComponent
 	/**
 	 * Returns metadata for a set of node ids
 	 * 
-	 * @param nodeIds a set of nodeIds for which to return node metadata
-	 * @param maxResults limit the results. 0 or Integer.MAX_VALUE does not limit the results
+	 * @param nodeMetaDataParameters NodeMetaDataParameters
+	 * @param resultFilter MetaDataResultsFilter
 	 * @param callback a callback to receive the results
 	 */
 	public void getNodesMetadata(NodeMetaDataParameters nodeMetaDataParameters, MetaDataResultsFilter resultFilter, NodeMetaDataQueryCallback callback);
@@ -130,7 +129,7 @@ public interface SOLRTrackingComponent
         /**
          * Handle a node.
          * 
-         * @param node                      the node meta data
+         * @param nodeMetaData                      the node meta data
          * @return                          Return <tt>true</tt> to continue processing rows or <tt>false</tt> to stop
          */
         boolean handleNodeMetaData(NodeMetaData nodeMetaData);

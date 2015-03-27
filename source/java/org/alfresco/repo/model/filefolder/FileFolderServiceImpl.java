@@ -848,9 +848,9 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
      * then all its chidren are excluded as well.
      * 
      * @param contextNodeRef the starting point.
-     * @param folders return nodes of type folders.
      * @param files return nodes of type files.
-     * @param subfolder filter controls which folders to search.  If null then all subfolders are searched.
+     * @param folders return nodes of type folders.
+     * @param folderFilter filter controls which folders to search.  If null then all subfolders are searched.
      * @return list of node references
      */
    /* <p>
@@ -951,7 +951,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     }
 
     /**
-     * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
+     * @see #moveOrCopy(NodeRef, NodeRef, NodeRef, String, boolean)
      */
     @Override
     public FileInfo move(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException
@@ -960,7 +960,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     }
     
     /**
-     * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
+     * @see #moveOrCopy(NodeRef, NodeRef, NodeRef, String, boolean)
      */
     @Override
     public FileInfo moveFrom(NodeRef sourceNodeRef, NodeRef sourceParentRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException

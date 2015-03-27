@@ -49,7 +49,7 @@ public class LuceneResultSetRow extends AbstractResultSetRow
      * Wrap a position in a lucene Hits class with node support
      * 
      * @param resultSet
-     * @param position
+     * @param index
      */
     public LuceneResultSetRow(LuceneResultSet resultSet, int index)
     {

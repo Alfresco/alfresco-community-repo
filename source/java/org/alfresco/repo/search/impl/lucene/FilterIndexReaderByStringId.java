@@ -198,7 +198,6 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         /**
          * @param id
          * @param in
-         * @param deletedDocuments
          */
         public FilterTermDocs(String id, TermDocs in)
         {
@@ -342,7 +341,6 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         /**
          * @param id
          * @param in
-         * @param deletedDocuements
          */
         public FilterTermPositions(String id, TermPositions in)
         {

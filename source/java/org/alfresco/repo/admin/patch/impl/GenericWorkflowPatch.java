@@ -71,7 +71,7 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
     /**
      * Sets the Workflow Names to be undeployed
      * 
-     * @param workflowDefinitions
+     * @param undeployWorkflowNames list with names
      */
     public void setUndeployWorkflowNames(List<String> undeployWorkflowNames)
     {

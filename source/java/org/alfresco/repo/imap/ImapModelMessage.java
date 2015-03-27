@@ -44,7 +44,7 @@ public class ImapModelMessage extends AbstractMimeMessage
      * Constructs {@link ImapModelMessage} object.
      * 
      * @param fileInfo - reference to the {@link FileInfo} object representing the message.
-     * @param imapHelper - reference to the {@link ImapHelper} object.
+     * @param serviceRegistry - serviceRegistry object.
      * @param generateBody - if {@code true} message body will be generated.
      * 
      * @throws MessagingException if generation of the body fails.
@@ -67,7 +67,6 @@ public class ImapModelMessage extends AbstractMimeMessage
     /**
      * This method builds MimeMessage based on either ImapModel or ContentModel type.
      * 
-     * @param fileInfo - Source file information {@link FileInfo}
      * @throws MessagingException
      */
     private void buildImapMessage() throws MessagingException

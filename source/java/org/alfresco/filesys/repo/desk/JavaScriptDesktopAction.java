@@ -439,7 +439,7 @@ public class JavaScriptDesktopAction extends DesktopAction {
     /**
 	 * Load, or reload, the script
 	 * 
-	 * @param scriptFile File
+	 * @param scriptResource script resource
 	 */
     private final void loadScript(Resource scriptResource)
         throws IOException

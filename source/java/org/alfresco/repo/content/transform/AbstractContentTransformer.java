@@ -111,7 +111,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer, 
 
     /**
      * Set the transformations that this transformer can do regardless of what it returns
-     * via the {@link ContentTransformer#getReliability(String, String) reliability check}.
+     * via the {@link org.alfresco.repo.content.transform.ContentTransformerContentTransformer#getReliability(String, String) reliability check}.
      * 
      * @param explicitTransformations explicit key mappings
      */
@@ -328,7 +328,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer, 
      * <ul>
      *   <li>Times the transformation</li>
      *   <li>Ensures that the transformation is allowed</li>
-     *   <li>Calls the subclass implementation of {@link #transformInternal(ContentReader, ContentWriter)}</li>
+     *   <li>Calls the subclass implementation of {@link #transformInternal(ContentReader, ContentWriter, Map)}</li>
      *   <li>Transforms any exceptions generated</li>
      *   <li>Logs a successful transformation</li>
      * </ul>

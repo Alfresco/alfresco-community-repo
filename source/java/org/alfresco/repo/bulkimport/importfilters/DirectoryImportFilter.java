@@ -39,7 +39,7 @@ public class DirectoryImportFilter
 {
 
     /**
-     * @see org.alfresco.extension.bulkfilesystemimport.ImportFilter#shouldFilter(org.alfresco.extension.bulkfilesystemimport.ImportableItem)
+     * @see org.alfresco.repo.bulkimport.ImportFilter#shouldFilter(org.alfresco.repo.bulkimport.ImportableItem)
      */
     public boolean shouldFilter(final ImportableItem importableItem)
     {

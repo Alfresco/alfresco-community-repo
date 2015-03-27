@@ -116,7 +116,7 @@ public class MetadataExtracterRegistry
      * <p>
      * The result is cached for quicker access next time.
      * 
-     * @param mimetype the source MIME of the extraction
+     * @param sourceMimetype the source MIME of the extraction
      * @return Returns a metadata extracter that can extract metadata from the
      *         chosen MIME type.
      */
@@ -219,7 +219,7 @@ public class MetadataExtracterRegistry
      * <p>
      * The result is cached for quicker access next time.
      * 
-     * @param mimetype the source MIME of the extraction
+     * @param sourceMimetype the source MIME of the extraction
      * @return Returns a metadata embedder that can embed metadata in the
      *         chosen MIME type.
      */

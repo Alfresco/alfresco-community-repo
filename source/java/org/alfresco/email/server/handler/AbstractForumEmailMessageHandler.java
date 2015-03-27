@@ -50,7 +50,7 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
      * Posts content
      * 
      * @param nodeRef   Reference to node
-     * @param parser    Mail parser
+     * @param message    Mail parser
      * @return          Returns the new post node
      */
     protected NodeRef addPostNode(NodeRef nodeRef, EmailMessage message)
@@ -105,7 +105,7 @@ public abstract class AbstractForumEmailMessageHandler extends AbstractEmailMess
      * Finds first child with specified name
      * 
      * @param nodeRef Parent node for the search
-     * @param subject String for search
+     * @param name String for search
      * @return Reference to found node or null if node isn't found
      */
     protected NodeRef getTopicNode(NodeRef nodeRef, String name)

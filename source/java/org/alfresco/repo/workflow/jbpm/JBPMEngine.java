@@ -2725,7 +2725,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * Construct a Process Definition from the provided Process Definition
      * stream
      * 
-     * @param workflowDefinition
+     * @param definitionStream
      *            stream to create process definition from
      * @param mimetype
      *            mimetype of stream
@@ -2858,7 +2858,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * Gets Properties of Task
      * 
      * @param instance task instance
-     * @param properties properties to set
+     * @param localProperties properties to set
      */
     protected Map<QName, Serializable> getTaskProperties(TaskInstance instance, boolean localProperties)
     {
@@ -2869,7 +2869,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * Gets Properties of Task
      * 
      * @param instance task instance
-     * @param properties properties to set
+     * @param localProperties properties to set
      * @param variablesCache cahce of context instance variables if any exists
      */
     @SuppressWarnings("unchecked")
@@ -3466,7 +3466,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     /**
      * Convert person name to an Alfresco Person
      * 
-     * @param names
+     * @param name
      *            the person name to convert
      * @return  the Alfresco person
      */
@@ -3487,7 +3487,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
     /**
      * Convert authority name to an Alfresco Authority
      * 
-     * @param names
+     * @param name
      *            the authority names to convert
      * @return  the Alfresco authorities
      */
@@ -3589,8 +3589,6 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * 
      * @param token
      *            JBoss JBPM Token
-     * @param wfInstance 
-     * @param node 
      * @return  Workflow Path
      */
     protected WorkflowPath createWorkflowPath(Token token)
@@ -3775,7 +3773,7 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      * 
      * @param task
      *            JBoss Task Instance
-     * @param taskDef 
+     * @param definition task definition
      * @param path 
      * @param properties 
      * @return  Workflow Task

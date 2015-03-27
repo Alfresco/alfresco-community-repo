@@ -268,7 +268,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
 
     /**
      * @see #getDirectWritableChannel()
-     * @see #getCallbackWritableChannel()
+     * @see #getCallbackWritableChannel(java.nio.channels.WritableByteChannel, List)
      */
     public synchronized final WritableByteChannel getWritableChannel() throws ContentIOException
     {

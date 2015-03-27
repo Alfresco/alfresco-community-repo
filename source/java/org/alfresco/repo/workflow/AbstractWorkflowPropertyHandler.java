@@ -46,7 +46,6 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     protected MessageService messageService;
     
     /**
-     * @param task 
      * @param value
      * @param assocDef
      */
@@ -61,7 +60,6 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     }
 
     /**
-     * @param task 
      * @param value
      * @param propDef
      * @return

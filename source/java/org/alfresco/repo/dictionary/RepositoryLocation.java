@@ -100,7 +100,7 @@ public class RepositoryLocation
     /**
      * Set the query language
      *
-     * @param path  the search language
+     * @param queryLanguage  the search language
      */
     public void setQueryLanguage(String queryLanguage)
     {

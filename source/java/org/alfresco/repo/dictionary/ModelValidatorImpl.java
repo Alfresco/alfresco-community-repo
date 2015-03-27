@@ -271,8 +271,7 @@ public class ModelValidatorImpl implements ModelValidator
      *   - no deletion of types, aspects or properties or associations
      *   - no addition, update or deletion of default/mandatory aspects
      * 
-     * @paramn modelName
-     * @param newOrUpdatedModel
+     * @param compiledModel
      */
     @Override
     public void validateModel(CompiledModel compiledModel)

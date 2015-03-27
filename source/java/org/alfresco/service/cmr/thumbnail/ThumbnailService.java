@@ -59,7 +59,7 @@ public interface ThumbnailService
      * The returned node reference is to the 'rn:rendition' content node that contains
      * the thumbnail content in the standard 'cm:content' property.
      * 
-     * @see org.alfresco.service.cmr.thumnail.ThumbnailDefinition
+     * @see org.alfresco.repo.thumbnail.ThumbnailDefinition
      * 
      * @param  node                     the source content node
      * @param  contentProperty          the content property

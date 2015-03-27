@@ -63,7 +63,7 @@ public interface AlienProcessor
      * <p>
      * The tree needs to be walked upwards to take account of the removed alien node.
      * 
-     * @param nodeBeingDeleted node about to be deleted 
+     * @param deletedNodeRef node about to be deleted
      * @param oldRef null if the deleted node is still "in place" and readable else the old ref prior to 
      * the node being moved.
      */

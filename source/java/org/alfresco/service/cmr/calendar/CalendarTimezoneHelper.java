@@ -275,7 +275,7 @@ public class CalendarTimezoneHelper
     *  and should be replaced with something more general.
     * Until then, it is deliberately not public.
     *  
-    * @param params iCal params for the event, and the TZ (prefixed)
+    * @param icalText iCal text for the event, and the TZ (prefixed)
     */
    protected static Map<String, String> getICalParams(String icalText)
    {

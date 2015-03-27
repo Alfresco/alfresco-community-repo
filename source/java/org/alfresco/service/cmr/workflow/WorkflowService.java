@@ -352,7 +352,7 @@ public interface WorkflowService
      * Signal the transition from one Workflow Node to another
      * 
      * @param pathId  the workflow path to signal on
-     * @param transition  the transition to follow (or null, for the default transition)
+     * @param transitionId  the transition id to follow (or null, for the default transition)
      * @return  the updated workflow path
      */
     @Auditable(parameters = {"pathId", "transitionId"})
@@ -481,7 +481,7 @@ public interface WorkflowService
      * Gets the pooled tasks available to the specified authority
      * 
      * @param authority   the authority
-     * @param lazyInitialization hint to the underlying workflow-engine to allow returning {@link WorkflowTask}s which
+     * @param lazyinitialization hint to the underlying workflow-engine to allow returning {@link WorkflowTask}s which
      * 		  aren't fully initialized but will be when the required values are required. If <code>true</code>, the
      * 		  returned enities should be used inside of the transaction-boundaries of this service-call.
      *        If <code>false</code>, fully initialized entities are returned, just as with {@link #getPooledTasks(String)}.
@@ -533,7 +533,7 @@ public interface WorkflowService
      * End the Task (i.e. complete the task)
      * 
      * @param taskId  the task id to end
-     * @param transition  the task transition to take on completion (or null, for the default transition)
+     * @param transitionId  the task transition id to take on completion (or null, for the default transition)
      * @return  the updated task
      */
     @Auditable(parameters = {"taskId", "transitionId"})

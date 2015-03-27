@@ -508,7 +508,7 @@ public class AlienProcessorImpl implements AlienProcessor
      * The retreat will stop is there is a "sub-invasion".
      * <p>   
      * @param nodeRef the top of the tree
-     * @param repoId the repository that is retreating.
+     * @param fromRepositoryId the repository that is retreating.
      */
     private void retreatDownwards(NodeRef nodeRef, String fromRepositoryId)
     {

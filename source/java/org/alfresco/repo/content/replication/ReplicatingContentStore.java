@@ -63,7 +63,7 @@ import org.apache.commons.logging.LogFactory;
  * is synchronously copied to all other stores.  The write is therefore slowed
  * down, but the content replication will occur <i>in-transaction</i>.
  * <p>
- * The {@link #setOutboundThreadPoolExecutor(boolean) outboundThreadPoolExecutor }
+ * The {@link #setOutboundThreadPoolExecutor(ThreadPoolExecutor) outboundThreadPoolExecutor }
  * property to enable asynchronous replication.<br>
  * With asynchronous replication, there is always a risk that a failure
  * occurs during the replication.  Depending on the configuration of the server,
@@ -156,7 +156,7 @@ public class ReplicatingContentStore extends AbstractContentStore
     /**
      * Set the secondary stores that this component will replicate to or from
      * 
-     * @param stores a list of stores to replicate to or from
+     * @param secondaryStores a list of stores to replicate to or from
      */
     public void setSecondaryStores(List<ContentStore> secondaryStores)
     {

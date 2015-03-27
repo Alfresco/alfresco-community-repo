@@ -139,7 +139,7 @@ public class AddFailedThumbnailActionExecuter extends ActionExecuterAbstractBase
     }
 
 	/**
-     * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.service.cmr.repository.NodeRef, NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.service.cmr.action.Action, NodeRef)
      */
     public void executeImpl(final Action ruleAction, final NodeRef actionedUponNodeRef)
     {

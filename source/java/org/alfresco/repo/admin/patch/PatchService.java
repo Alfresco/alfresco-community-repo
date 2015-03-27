@@ -68,9 +68,9 @@ public interface PatchService
     /**
      * Retrieves all applied patches between two specific times.
      * 
-     * @param from
+     * @param fromDate
      *            the start date of the search, or null to get all patches from the start
-     * @param to
+     * @param toDate
      *            the end date of the search, or null to g
      * @return Returns all applied patches (successful or not)
      */

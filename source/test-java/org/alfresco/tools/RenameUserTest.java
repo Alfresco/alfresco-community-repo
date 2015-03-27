@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit test for RenameUser. {@link PersonTest} contains integration tests.
+ * Unit test for RenameUser. {@link org.alfresco.repo.security.person.PersonTest} contains integration tests.
  * 
  * @author Alan Davis
  */

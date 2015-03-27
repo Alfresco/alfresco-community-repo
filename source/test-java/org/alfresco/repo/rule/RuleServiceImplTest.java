@@ -455,7 +455,6 @@ public class RuleServiceImplTest extends BaseRuleTest
      * Helper method to easily create a new node which can be actionable (or not)
      * 
      * @param parent        the parent node
-     * @param isActionable  indicates whether the node is actionable or not
      */
     private NodeRef createNewNode(NodeRef parent)
     {

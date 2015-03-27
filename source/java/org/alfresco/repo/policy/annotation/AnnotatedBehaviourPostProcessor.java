@@ -223,7 +223,7 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
     /**
      *
      * @param behaviourBean
-     * @param typeName
+     * @param behaviour
      * @return
      */
     private QName resolveType(BehaviourBean behaviourBean, Behaviour behaviour)

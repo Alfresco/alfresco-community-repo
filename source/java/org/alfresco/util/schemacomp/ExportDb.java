@@ -92,8 +92,10 @@ public class ExportDb
     /**
      * Create a new instance of the tool within the context of an existing database connection
      * 
-     * @param connection            the database connection to use for metadata queries
+     * @param dataSource            the database connection to use for metadata queries
      * @param dialect               the Hibernate dialect
+     * @param descriptorService     descriptorService
+     * @param databaseMetaDataHelper     databaseMetaDataHelper
      */
     public ExportDb(final DataSource dataSource, final Dialect dialect, DescriptorService descriptorService, DatabaseMetaDataHelper databaseMetaDataHelper)
     {
@@ -132,8 +134,7 @@ public class ExportDb
     
     /**
      * Initializes the fields ready to perform the database metadata reading 
-     * @param dialect               the Hibernate dialect
-     * @throws NoSuchFieldException 
+     * @throws NoSuchFieldException
      * @throws SecurityException 
      * @throws IllegalAccessException 
      * @throws IllegalArgumentException 

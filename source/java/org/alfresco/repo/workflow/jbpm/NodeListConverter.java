@@ -107,7 +107,7 @@ public class NodeListConverter extends SerializableToByteArrayConverter
     }
     
     /**
-     * @param nodeRefs
+     * @param value Object
      * @return
      */
     @SuppressWarnings("unchecked")

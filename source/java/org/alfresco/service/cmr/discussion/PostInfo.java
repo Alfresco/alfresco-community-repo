@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * This class represents a Post in a Forum Topic.
  * 
  * To retrieve replies to this, see 
- *  {@link DiscussionService#listPostReplies(PostInfo, int, org.alfresco.query.PagingRequest)}
+ *  {@link DiscussionService#listPostReplies(PostInfo, int)}
  * 
  * @author Nick Burch
  * @since 4.0

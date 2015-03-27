@@ -189,7 +189,7 @@ public class HomeShareMapper implements ShareMapper
     /**
      * Find a share using the name and type for the specified client.
      * 
-     * @param host String
+     * @param tohost String
      * @param name String
      * @param typ int
      * @param sess SrvSession
@@ -344,7 +344,8 @@ public class HomeShareMapper implements ShareMapper
     /**
      * Create a disk share for the home folder
      * 
-     * @param client AlfrescoClientInfo
+     * @param homeFolderRef nodeRef
+     * @param userName user name
      * @return DiskSharedDevice
      */
     private final DiskSharedDevice createHomeDiskShare(NodeRef homeFolderRef, String userName)

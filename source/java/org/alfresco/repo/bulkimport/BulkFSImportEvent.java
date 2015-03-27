@@ -41,10 +41,6 @@ public class BulkFSImportEvent extends ApplicationEvent
      * 
      * @param source
      *            the source index monitor
-     * @param description
-     *            the event description
-     * @param count
-     *            its instance count
      */
     public BulkFSImportEvent(BulkFilesystemImporter source)
     {

@@ -25,9 +25,6 @@ import org.alfresco.service.cmr.action.ActionCondition;
  */
 public class ActionConditionImplTest extends BaseParameterizedItemImplTest
 {
-    /**
-     * @see org.alfresco.repo.rule.common.RuleItemImplTest#create()
-     */
     @Override
     protected ParameterizedItemImpl create()
     {

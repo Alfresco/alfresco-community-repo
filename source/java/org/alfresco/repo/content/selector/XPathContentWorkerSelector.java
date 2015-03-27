@@ -168,7 +168,7 @@ public class XPathContentWorkerSelector<W extends ContentWorker> implements Cont
     /**
      * Check the given document against the list of XPath statements provided.
      * 
-     * @param document          the XML document
+     * @param doc          the XML document
      * @return                  Returns a content worker that was matched or <tt>null</tt>
      */
     private W processDocument(Document doc)

@@ -614,8 +614,10 @@ public class HiddenAspect
     /**
      * Hides the node by applying the hidden and not indexed aspects. The node will be hidden from all clients.
      * 
-     * @param client
-     * @param fileInfo
+     * @param nodeRef nodeRef
+     * @param cascadeHiddenAspect
+     * @param cascadeIndexControlAspect
+     * @param clientControlled
      * @return
      */
     public void hideNode(NodeRef nodeRef, boolean cascadeHiddenAspect, boolean cascadeIndexControlAspect, boolean clientControlled)

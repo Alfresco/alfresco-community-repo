@@ -113,7 +113,6 @@ public class PeerAssociatedNodeFinder extends AbstractNodeFinder
 
     /**
      * @param thisNode
-     * @param serviceRegistry
      * @return
      */
     private Set<NodeRef> processExcludedSet(NodeRef thisNode)

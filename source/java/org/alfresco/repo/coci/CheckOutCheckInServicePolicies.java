@@ -60,7 +60,7 @@ public interface CheckOutCheckInServicePolicies
           
         /**
          * 
-         * @param nodeRef
+         * @param workingCopy - working copy
          */
         void onCheckOut(NodeRef workingCopy);
     }
@@ -109,7 +109,7 @@ public interface CheckOutCheckInServicePolicies
          
        /**
         * 
-        * @param nodeRef
+        * @param workingCopyNodeRef - working copy nodeRef
         */
        void beforeCancelCheckOut(NodeRef workingCopyNodeRef);
    }

@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 /**
  * This class holds a post and all replies to it, possibly nested.
  * 
- * This is used with {@link DiscussionService#listPostReplies(PostWithReplies, int, org.alfresco.query.PagingRequest)}
+ * This is used with {@link DiscussionService#listPostReplies(PostInfo, int)}
  * 
  * @author Nick Burch
  * @since 4.0

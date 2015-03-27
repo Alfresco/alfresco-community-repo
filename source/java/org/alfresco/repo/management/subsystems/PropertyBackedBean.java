@@ -79,7 +79,7 @@ public interface PropertyBackedBean extends PropertyBackedBeanState
      * confirmed to the entire cluster with {@link #start()}, presumably after persistence of the new state has been
      * completed.
      * 
-     * @param properties
+     * @param attributes
      */
     public void removeProperties(Collection<String> attributes);
 }

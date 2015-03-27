@@ -40,7 +40,7 @@ public class MoveNodeEvent extends NodeEvent {
 	 * @param fType FileFolderServiceTtype
 	 * @param nodeRef NodeRef
 	 * @param fromPath String
-	 * @param toNodeRef NodeRef
+	 * @param toPath String
 	 */
 	public MoveNodeEvent( FileFolderServiceType fType, NodeRef nodeRef, String fromPath, String toPath) {
 		super( fType, nodeRef);

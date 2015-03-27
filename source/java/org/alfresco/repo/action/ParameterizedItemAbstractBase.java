@@ -94,7 +94,7 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	/**
 	 * Sets the action service 
 	 * 
-	 * @param actionRegistration the action service
+	 * @param runtimeActionService the action service
 	 */
 	public void setRuntimeActionService(RuntimeActionService runtimeActionService)
 	{

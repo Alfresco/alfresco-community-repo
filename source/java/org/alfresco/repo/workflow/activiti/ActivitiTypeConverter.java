@@ -113,8 +113,8 @@ public class ActivitiTypeConverter
      * including all instances for default domain
      * and excluding shared instances (THOR-206) for tenants 
      * 
-     * @param completedInstances
-     * @param function
+     * @param values
+     * @param processKeyGetter
      * @return
      */
     public <F, T> List<T> doSpecialTenantFilterAndSafeConvert(List<F> values, Function<F, String> processKeyGetter)
@@ -149,7 +149,7 @@ public class ActivitiTypeConverter
 
     /**
      * Convert a {@link ProcessDefinition} into a {@link WorkflowDefinition}.
-     * @param processDef
+     * @param definition
      * @return
      */
     public WorkflowDefinition convert(ProcessDefinition definition)
@@ -209,7 +209,8 @@ public class ActivitiTypeConverter
 
     /**
      * Get the taskDefinition key based on the Activiti task definition id,
-     * @param taskDefinitionId id of the {@link TaskDefinition}
+     * @param taskDefinitionKey
+     * @param processDefinitionId
      * @return
      */
     public WorkflowTaskDefinition getTaskDefinition(String taskDefinitionKey, String processDefinitionId)

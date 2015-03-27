@@ -26,21 +26,24 @@ public interface PseudoFileOverlay
 {
     /**
      * Is this a pseudo file?
-     * @param path the path of the file
+     * @param parentDir NodeRef
+     * @param name String
      * @return true the file is a pseudo file
      */
     public boolean isPseudoFile(NodeRef parentDir, String name);
     
     /**
      * Get the pseudo file
-     * @param path the path of the file
+     * @param parentDir NodeRef
+     * @param name String
      * @return the pseudoFile or null if there is no pseudo file
      */
     public PseudoFile getPseudoFile(NodeRef parentDir, String name);
     
     /**
      * Search for the pseudo files on the specified path
-     * @param path the path
+     * @param parentDir NodeRef
+     * @param name String
      * @return list of pseudo files.
      */
     public PseudoFileList searchPseudoFiles(NodeRef parentDir, String name);

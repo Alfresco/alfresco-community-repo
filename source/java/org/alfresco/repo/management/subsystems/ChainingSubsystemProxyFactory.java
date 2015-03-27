@@ -33,7 +33,7 @@ import org.springframework.context.ApplicationContext;
  * A factory bean, used in conjunction with {@link ChildApplicationContextManager} allowing selected interfaces to be
  * proxied to a chain of child application contexts. To decide the target of a particular method call, the returned
  * proxy will search the application context chain in sequence and use the first one that has a bean of the required
- * name or type that doesn't implement the {@link ActivatableBean} interface or whose whose
+ * name or type that doesn't implement the {@link org.alfresco.repo.management.subsystems.ActivateableBean} interface or whose whose
  * {@link ActivateableBean#isActive()} method returns <code>true</code>. This allows certain functions of a chained
  * subsystem (e.g. CIFS authentication, SSO) to be targeted to specific members of the chain.
  */

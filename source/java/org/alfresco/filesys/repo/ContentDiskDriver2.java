@@ -405,7 +405,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     }
     
     /**
-     * @param hiddenAspect
+     * @param lockKeeper lockKeeper
      */
     public void setAlfrescoLockKeeper(LockKeeper lockKeeper)
     {
@@ -629,9 +629,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Get the file information for the specified file.
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection
-     * @param name File name/path that information is required for.
+     * @param path File name/path that information is required for.
      * @return File information if valid, else null
      * @exception java.io.IOException The exception description.
      */
@@ -760,10 +760,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * Start a new search on the filesystem using the specified searchPath that may contain
      * wildcards.
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection
      * @param searchPath File(s) to search for, may include wildcards.
-     * @param attrib Attributes of the file(s) to search for, see class SMBFileAttribute.
+     * @param attributes Attributes of the file(s) to search for, see class SMBFileAttribute.
      * @return SearchContext
      * @exception java.io.FileNotFoundException If the search could not be started.
      */
@@ -903,7 +903,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * Check if the specified file exists, and whether it is a file or directory.
      * 
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection
      * @param name the path of the file 
      * @return FileStatus (0: NotExist, 1 : FileExist, 2: DirectoryExists) 
@@ -984,7 +984,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Open a file or folder - obsolete implementation.
      * 
-     * @param sess SrvSession
+     * @param session SrvSession
      * @param tree TreeConnection
      * @param params FileOpenParams
      * @return NetworkFile
@@ -1099,7 +1099,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * <p>
      * The directory must be empty in order to be able to delete ity
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection
      * @param dir Directory name.
      * @exception java.io.IOException The exception description.
@@ -1186,7 +1186,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Flush any buffered output for the specified file.
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection
      * @param file Network file context.
      * @exception java.io.IOException The exception description.
@@ -1209,9 +1209,9 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Close the file.
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection.
-     * @param param Network file context.
+     * @param file Network file context.
      * 
      * @exception java.io.IOException If an error occurs.
      */
@@ -1228,9 +1228,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Delete the specified file.
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection
-     * @param file NetworkFile
+     * @param rootNode Root node
+     * @param path NetworkFile
      * @exception java.io.IOException The exception description.
      * @return NodeRef of deletedFile
      */
@@ -1927,10 +1928,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * @param sess Session details
      * @param tree Tree connection
      * @param file Network file
-     * @param buf Buffer to return data to
-     * @param bufPos Starting position in the return buffer
-     * @param siz Maximum size of data to return
-     * @param filePos File offset to read data
+     * @param buffer Buffer to return data to
+     * @param bufferPosition Starting position in the return buffer
+     * @param size Maximum size of data to return
+     * @param fileOffset File offset to read data
      * @return Number of bytes read
      * @exception java.io.IOException The exception description.
      */
@@ -2013,10 +2014,10 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
      * @param sess Server session
      * @param tree Tree connection
      * @param file Network file details
-     * @param buf byte[] Data to be written
-     * @param bufoff Offset within the buffer that the data starts
-     * @param siz int Data length
-     * @param fileoff Position within the file that the data is to be written.
+     * @param buffer byte[] Data to be written
+     * @param bufferOffset Offset within the buffer that the data starts
+     * @param size int Data length
+     * @param fileOffset Position within the file that the data is to be written.
      * @return Number of bytes actually written
      * @exception java.io.IOException The exception description.
      */
@@ -2118,7 +2119,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Get the node for the specified path
      * 
-     * @param tree TreeConnection
+     * @param rootNode rootNode
      * @param path String
      * @return NodeRef
      * @exception FileNotFoundException
@@ -2155,7 +2156,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
     /**
      * Convert a node into a share relative path
      * 
-     * @param tree rootNode
+     * @param rootNode rootNode
      * @param nodeRef NodeRef
      * @return String
      * @exception FileNotFoundException

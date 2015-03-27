@@ -47,7 +47,7 @@ public interface InvitationService
     * Start the invitation process for a NominatedInvitation for a user who does not yet have an Alfresco User Name
     * The server path is calculated based on the sysAdmin parameters
     * @param inviteeUserName Alfresco user name of who should be invited
-    * @param ResourceType resourceType
+    * @param resourceType resourceType
     * @param resourceName
     * @param inviteeRole
     * @param acceptUrl
@@ -84,7 +84,7 @@ public interface InvitationService
     * @param inviteeFirstName
     * @param inviteeLastName
     * @param inviteeEmail
-    * @param Invitation.ResourceType resourceType
+    * @param resourceType Invitation.ResourceType
     * @param resourceName
     * @param inviteeRole 
     * @param acceptUrl 
@@ -119,7 +119,7 @@ public interface InvitationService
 	 * Start the invitation process for a NominatedInvitation for a user who does not yet have an Alfresco User Name
 	 * 
 	 * @param inviteeUserName Alfresco user name of who should be invited
-	 * @param ResourceType resourceType
+	 * @param resourceType resourceType
 	 * @param resourceName
 	 * @param inviteeRole
 	 * @param serverPath
@@ -158,7 +158,7 @@ public interface InvitationService
 	 * @param inviteeFirstName
 	 * @param inviteeLastName
      * @param inviteeEmail
-     * @param Invitation.ResourceType resourceType
+     * @param resourceType Invitation.ResourceType
      * @param resourceName
      * @param inviteeRole 
      * @param serverPath 
@@ -196,7 +196,7 @@ public interface InvitationService
 	/**
 	 * Start the invitation process for a ModeratedInvitation
      * @param inviteeUserName who is to be invited
-     * @param Invitation.ResourceType resourceType  what resource type ?
+     * @param resourceType Invitation.ResourceType what resource type ?
      * @param resourceName which resource
      * @param inviteeRole which role ?
 	 */
@@ -226,7 +226,7 @@ public interface InvitationService
 	/**
 	 * For a Nominated Invitation invitee accepts this invitation
 	 * 
-	 * @param request
+	 * @param invitationId
 	 * @param ticket
 	 * @return the invitation
 	 */

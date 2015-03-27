@@ -61,7 +61,7 @@ public interface IndexerAndSearcher
     public abstract void flush();
 
     /**
-     * @param luceneAlfrescoFtsQueryLanguage
+     * @param luceneQueryLanguageSPI
      */
     public abstract void registerQueryLanguage(LuceneQueryLanguageSPI luceneQueryLanguageSPI);
 

@@ -53,7 +53,7 @@ public class DbAftsQueryLanguage  extends AbstractAlfrescoFtsQueryLanguage
     }
 
     /**
-     * @param namespacePrefixResolver the namespacePrefixResolver to set
+     * @param namespaceService the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {

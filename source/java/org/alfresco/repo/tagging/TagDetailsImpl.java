@@ -36,7 +36,6 @@ public class TagDetailsImpl implements TagDetails
     /**
      * Constructor
      * 
-     * @param tagScope  tag scope
      * @param tagName   tag name
      * @param tagCount  tag count
      */
@@ -47,7 +46,7 @@ public class TagDetailsImpl implements TagDetails
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TagDetails#getTagName()
+     * @see org.alfresco.service.cmr.tagging.TagDetails#getName()
      */
     public String getName()
     {
@@ -55,7 +54,7 @@ public class TagDetailsImpl implements TagDetails
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TagDetails#getTagCount()
+     * @see org.alfresco.service.cmr.tagging.TagDetails#getCount()
      */
     public int getCount()
     {

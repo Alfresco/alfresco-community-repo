@@ -226,9 +226,8 @@ public abstract class AbstractEmailMessageHandler implements EmailMessageHandler
     /**
      * Add emailed aspect to the specified node.
      * 
-     * @param nodeService Alfresco Node Service.
      * @param nodeRef Target node.
-     * @param mailParser Mail message that will be used for extracting necessary information
+     * @param message Mail message that will be used for extracting necessary information
      */
     protected void addEmailedAspect(NodeRef nodeRef, EmailMessage message) 
     {

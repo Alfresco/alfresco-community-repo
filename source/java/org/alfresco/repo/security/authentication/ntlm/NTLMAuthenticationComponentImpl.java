@@ -537,7 +537,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
     /**
      * Authenticate using a token
      * 
-     * @param token Authentication
+     * @param auth Authentication
      * @return Authentication
      * @throws AuthenticationException
      */
@@ -654,7 +654,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * 
      * @param ntlmToken NTLMLocalToken
      * @param authSess AuthenticateSession
-     * @throws AutheticationException
+     * @throws org.alfresco.repo.security.authentication.AuthenticationException
      */
     private void authenticateLocal(NTLMLocalToken ntlmToken, AuthenticateSession authSess)
     {
@@ -773,7 +773,7 @@ public class NTLMAuthenticationComponentImpl extends AbstractAuthenticationCompo
      * Authenticate using passthru authentication with a client
      * 
      * @param ntlmToken NTLMPassthruToken
-     * @throws AuthenticationExcepion
+     * @throws org.alfresco.repo.security.authentication.AuthenticationException
      */
     private void authenticatePassthru(NTLMPassthruToken ntlmToken)
     {

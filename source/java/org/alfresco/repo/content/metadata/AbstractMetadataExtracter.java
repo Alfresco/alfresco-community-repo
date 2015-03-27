@@ -215,8 +215,10 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter, Be
     /**
      * {@inheritDoc}
      * 
-     * @param propertyMapping       ignored
-     * 
+     * @param reader
+     * @param overwritePolicy
+     * @param destination
+     *
      * @see #extract(ContentReader, Map)
      */
     public final Map<QName, Serializable> extract(

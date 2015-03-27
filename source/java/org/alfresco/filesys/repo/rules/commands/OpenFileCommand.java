@@ -39,9 +39,9 @@ public class OpenFileCommand implements Command
     /**
      * 
      * @param name
-     * @param writeAccess
-     * @param rootNode
+     * @param mode
      * @param truncate
+     * @param rootNode
      * @param path
      */
     public OpenFileCommand(String name, OpenFileMode mode, boolean truncate, NodeRef rootNode, String path)

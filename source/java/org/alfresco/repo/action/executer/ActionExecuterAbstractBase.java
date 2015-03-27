@@ -286,7 +286,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
     /**
      * Set the queueName which will execute this action
      * if blank or null then the action will be executed on the "default" queue
-     * @param the name of the execution queue which should execute this action.
+     * @param queueName name of the execution queue which should execute this action.
      */ 
     public void setQueueName(String queueName) 
     {

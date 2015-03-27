@@ -14,7 +14,7 @@ public interface ContentComparator
      * trivial changes need to be discarded.
      * <p>
      * @param existingContent
-     * @param newFile
+     * @param file file
      * @return true content is equal, false content is different.
      */
     boolean isContentEqual(ContentReader existingContent, File file);

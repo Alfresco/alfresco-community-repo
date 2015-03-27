@@ -77,8 +77,12 @@ public class LuceneResultSet extends AbstractResultSet
     /**
      * Wrap a lucene seach result with node support
      * 
-     * @param storeRef
      * @param hits
+     * @param searcher
+     * @param nodeService nodeService
+     * @param tenantService tenant service
+     * @param searchParameters
+     * @param config - lucene config
      */
     public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, TenantService tenantService, SearchParameters searchParameters,
             LuceneConfig config)

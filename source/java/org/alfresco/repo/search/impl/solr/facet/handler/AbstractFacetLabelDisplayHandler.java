@@ -70,7 +70,7 @@ public abstract class AbstractFacetLabelDisplayHandler implements FacetLabelDisp
     /**
      * Set the service registry
      * 
-     * @param services the service registry
+     * @param serviceRegistry the service registry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {

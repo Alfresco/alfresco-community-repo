@@ -247,7 +247,7 @@ public class NodePropertyValue implements Cloneable, Serializable
             }
 
             /**
-             * Strings longer than the maximum of {@link NodePropertyValue#DEFAULT_MAX_STRING_LENGTH}
+             * Strings longer than the maximum of {@link org.alfresco.repo.domain.schema.SchemaBootstrap#DEFAULT_MAX_STRING_LENGTH}
              * characters will be serialized.
              */
             @Override

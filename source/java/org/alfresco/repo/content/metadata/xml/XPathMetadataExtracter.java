@@ -74,7 +74,7 @@ import org.w3c.dom.NodeList;
  *   </li>
  *   <li>
  *     A mapping of document property names to Alfresco repository model QNames.
- *     See {@link #setXPathMappingProperties(Properties).}
+ *     See {@link #setXpathMappingProperties(Properties).}
  *   </li>
  * </ul>
  * <p>

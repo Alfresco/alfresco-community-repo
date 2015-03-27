@@ -879,10 +879,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
     /**
      * Asserts that a group's display name has the expected value.
      * 
-     * @param personName
+     * @param name
      *            the person name
-     * @param email
-     *            the email
+     * @param displayName
+     *            the display name
      */
     private void assertGroupDisplayNameEquals(String name, String displayName)
     {
@@ -1343,8 +1343,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
          * 
          * @param size
          *            the collection size
-         * @param authorities
-         *            the authorities
+         * @param persons
+         *            the persons
          */
         public RandomGroupCollection(int size, Collection<NodeDescription> persons)
         {

@@ -354,7 +354,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      * Execute a Lucene search (sorted)
      * 
      * @param search   Lucene search string to execute
-     * @param sortKey  property name to sort on
+     * @param sortColumn  column to sort on
      * @param asc      true => ascending sort
      * 
      * @return JavaScript array of Node results from the search - can be empty but not null
@@ -379,7 +379,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      * 
      * @param store    Store reference to search against i.e. workspace://SpacesStore
      * @param search   Lucene search string to execute
-     * @param sortKey  property name to sort on
+     * @param sortColumn  column to sort on
      * @param asc      true => ascending sort
      * 
      * @return JavaScript array of Node results from the search - can be empty but not null

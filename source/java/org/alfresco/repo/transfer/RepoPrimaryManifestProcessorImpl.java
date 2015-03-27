@@ -397,7 +397,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     
     /**
      * Delete this node
-     * @param exNode
+     * @param node
+     * @param nodeToDelete
      */
     protected void delete(TransferManifestDeletedNode node, NodeRef nodeToDelete)
     {
@@ -758,7 +759,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
      *            The noderef of the existing node in the local repo that is to be updated with these properties. May be
      *            null, indicating that these properties are destined for a brand new local node.
      * @param props the new properties
-     * @param the existing properties, null if this is a create
+     * @param existingProps the existing properties, null if this is a create
      * @return A map containing the content properties which are going to be replaced from the supplied "props" map
      */
     private Map<QName, Serializable> processProperties(NodeRef nodeToUpdate, Map<QName, Serializable> props,
@@ -847,7 +848,6 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param node
      * @param nodeToUpdate
      * @param contentProps
      */

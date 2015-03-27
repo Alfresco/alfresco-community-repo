@@ -52,7 +52,7 @@ public class ContentTransformerRegistry
     private final TransformerSelector transformerSelector;
     
     /**
-     * @param mimetypeMap all the mimetypes available to the system
+     * @param transformerSelector Transformer selector
      */
     public ContentTransformerRegistry(TransformerSelector transformerSelector)
     {
@@ -198,7 +198,7 @@ public class ContentTransformerRegistry
     /**
      * A key for a combination of a source and target mimetype
      * 
-     * @Deprecated since 3.0
+     * Deprecated since 3.0
      */
     @Deprecated
     public static class TransformationKey

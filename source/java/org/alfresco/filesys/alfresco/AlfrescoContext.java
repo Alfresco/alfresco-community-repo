@@ -380,7 +380,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     /**
      * Set the debug flags, also requires the logger to be enabled for debug output
      * 
-     * @param dbg int
+     * @param flagsStr
      */
     public final void setDebug(String flagsStr)
     {

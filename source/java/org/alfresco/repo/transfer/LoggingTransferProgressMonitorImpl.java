@@ -60,7 +60,7 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
      * @param obj
      * @param ex
      * @throws TransferException
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#log(java.lang.String, java.lang.Object, java.lang.Throwable)
+     * @see org.alfresco.repo.transfer.TransferProgressMonitor#logException(java.lang.String, java.lang.Object, java.lang.Throwable)
      */
     public void logException(String transferId, Object obj, Throwable ex) throws TransferException
     {
@@ -72,7 +72,7 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
      * @param transferId
      * @param obj
      * @throws TransferException
-     * @see org.alfresco.repo.transfer.TransferProgressMonitor#log(java.lang.String, java.lang.Object)
+     * @see org.alfresco.repo.transfer.TransferProgressMonitor#logComment(java.lang.String, java.lang.Object)
      */
     public void logComment(String transferId, Object obj) throws TransferException
     {

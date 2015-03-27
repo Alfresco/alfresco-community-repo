@@ -78,8 +78,6 @@ public abstract class AbstractCopyCannedQueryFactory<R> extends AbstractCannedQu
         /**
          * @param originalNodeRef               the original node
          * @param copyParentNodeRef             the copied node's primary parent (optional)
-         * @param copyNodeAspectsToIgnore       aspects on the copied node that effectively hide it
-         *                                      (<tt>null</tt> or empty allowed)
          */
         public CopyCannedQueryDetail(NodeRef originalNodeRef, NodeRef copyParentNodeRef)
         {

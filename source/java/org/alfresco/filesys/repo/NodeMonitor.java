@@ -107,8 +107,12 @@ public class NodeMonitor extends TransactionListenerAdapter
 	/**
 	 * Class constructor
 	 * 
-	 * @param filesysDriver ContentDiskDriver
 	 * @param filesysCtx ContentContext
+	 * @param nodeService NodeService
+	 * @param policyComponent PolicyComponent
+	 * @param fileFolderService FileFolderService
+	 * @param permissionService PermissionService
+	 * @param transService TransactionService
 	 */
 	protected NodeMonitor(ContentContext filesysCtx, NodeService nodeService, PolicyComponent policyComponent,
 			FileFolderService fileFolderService, PermissionService permissionService, TransactionService transService) {
@@ -419,7 +423,6 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 * node (parentNodeRef) - this will have the correct path
 	 * 
 	 * @param parentNodeRef the old parent of the node
-	 * @param childNodeRef  the child node (renamed or moved node)
 	 * @param nodeName		the old name of the childs
 	 * @return
 	 */

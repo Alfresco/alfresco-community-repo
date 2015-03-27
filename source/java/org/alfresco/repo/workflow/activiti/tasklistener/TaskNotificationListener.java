@@ -52,7 +52,7 @@ public class TaskNotificationListener implements TaskListener
     private ActivitiPropertyConverter propertyConverter;
     
     /**
-     * @param services  the service registry
+     * @param service  the service registry
      */
     public void setWorkflowNotification(WorkflowNotificationUtils service)
     {

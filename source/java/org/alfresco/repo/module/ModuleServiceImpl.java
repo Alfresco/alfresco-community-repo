@@ -47,7 +47,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 
 /**
  * This component controls the execution of
- * {@link org.alfresco.repo.module.runtime.ModuleComponent module startup components}.
+ * {@link org.alfresco.repo.module.ModuleComponent module startup components}.
  * <p/>
  * All required startup executions are performed in a single transaction, so this
  * component guarantees that the module initialization is consistent.  Module components are

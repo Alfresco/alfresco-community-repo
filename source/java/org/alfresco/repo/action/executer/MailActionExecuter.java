@@ -468,7 +468,7 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     /**
      * Send an email message
      * 
-     * @throws AlfrescoRuntimeExeption
+     * @throws org.alfresco.error.AlfrescoRuntimeException
      */
     @Override
     protected void executeImpl(

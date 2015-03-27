@@ -160,8 +160,8 @@ public interface AclDAO
     public void deleteAclForNode(long aclId);
 
     /**
-     * @param inheritedAclId
-     * @param aclId
+     * @param shared
+     * @param defining
      */
     public void fixSharedAcl(Long shared, Long defining);
 

@@ -51,8 +51,8 @@ public class ACPImportPackageHandler
     /**
      * Constuct Handler
      * 
-     * @param sourceDir  source directory
-     * @param packageDir  relative directory within source to place exported content  
+     * @param zipFile  source file
+     * @param dataFileEncoding  encoding of file
      */
     public ACPImportPackageHandler(File zipFile, String dataFileEncoding)
     {

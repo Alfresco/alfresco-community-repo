@@ -100,7 +100,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the Transaction Service
      * 
-     * @param userTransaction the transaction service
+     * @param transactionService the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -150,7 +150,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the tenant admin service
      * 
-     * @param tenantService the tenant admin service
+     * @param tenantAdminService the tenant admin service
      */
     public void setTenantAdminService(TenantAdminService tenantAdminService)
     {
@@ -190,7 +190,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the initial list of Workflow resource bundles to bootstrap with
      * 
-     * @param modelResources the model names
+     * @param labels the list of labels
      */
     public void setLabels(List<String> labels)
     {

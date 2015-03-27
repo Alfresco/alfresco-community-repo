@@ -69,8 +69,8 @@ public class StandardNodeCrawlerImpl implements NodeCrawler
     }
 
     /**
-     * @param nodeService
-     *            the nodeService to set
+     * @param serviceRegistry
+     *            the serviceRegistry to set
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {

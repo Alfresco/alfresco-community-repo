@@ -171,7 +171,7 @@ public interface LockInfo
      * Sets the expiry date/time to lockTimeout seconds into the future. Provide
      * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeout
+     * @param lockTimeoutSecs
      */
     void setTimeoutSeconds(int lockTimeoutSecs);
     

@@ -107,7 +107,7 @@ public class AssociationFieldDefinition extends FieldDefinition
     /**
      * Sets whether multiple targets can be selected 
      * 
-     * @param targetMany true if multiple targets can be selected
+     * @param endpointMany true if multiple targets can be selected
      */
     public void setEndpointMany(boolean endpointMany)
     {

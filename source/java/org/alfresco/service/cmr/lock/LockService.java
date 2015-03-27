@@ -46,7 +46,6 @@ public interface LockService
     * A lock made with this call will never expire.
     * 
     * @param  nodeRef  a reference to a node 
-    * @param  userName  a reference to the user that will own the lock
     * @param  lockType the lock type
     * @throws UnableToAquireLockException
     *                  thrown if the lock could not be obtained
@@ -266,7 +265,6 @@ public interface LockService
     * will be raised and the process rolled back.
     * 
     * @param  nodeRefs  the node references
-    * @param  userName   the user reference
     * @throws UnableToReleaseLockException
     *                  thrown if the lock could not be released
     */
@@ -277,7 +275,7 @@ public interface LockService
    /**
     * Gets the lock status for the node reference relative to the current user.
     * 
-    * @see LockService#getLockStatus(NodeRef, NodeRef)
+    * @see LockService#getLockStatus(NodeRef)
     * 
     * @param nodeRef    the node reference
     * @return           the lock status
@@ -289,7 +287,7 @@ public interface LockService
    /**
     * Gets the lock status for the node reference for the specified user.
     * 
-    * @see LockService#getLockStatus(NodeRef, NodeRef)
+    * @see LockService#getLockStatus(NodeRef)
     * 
     * @param nodeRef    the node reference
     * @param userName   the user name

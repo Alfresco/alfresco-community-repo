@@ -170,8 +170,8 @@ public interface ContentService
     
 
     /**
-     * @see org.aflresco.service.cmr.repository.ContentService.transform(ContentReader, ContentReader)
-     * @see org.aflresco.service.cmr.repository.ContentService.transform(ContentReader, ContentWriter, TransformationOptions)
+     * @see ContentService#transform(ContentReader, ContentWriter)
+     * @see ContentService#transform(ContentReader, ContentWriter, TransformationOptions)
      * 
      * A map of transform options can be provided.
      * 
@@ -182,7 +182,7 @@ public interface ContentService
      *      given source and target mimetypes of the reader and writer
      * @throws ContentIOException if the transformation fails
      * 
-     * @depricated 
+     * @deprecated
      * As of release 3.0 the TransformOptions class should be used to pass transformation options 
      * to a transformation execution.
      */
@@ -192,7 +192,7 @@ public interface ContentService
             throws NoTransformerException, ContentIOException;
     
     /**
-     * @see org.aflresco.service.cmr.repository.ContentService.transform(ContentReader, ContentReader)
+     * @see ContentService#transform(ContentReader, ContentWriter)
      * 
      * A transformation options can be provided.
      * 
@@ -214,11 +214,11 @@ public interface ContentService
      * Since no transformation options are provided only the source and destination mimetypes are
      * considered when getting the correct transformer.
      * 
-     * @param the source mimetype
-     * @param the target mimetype
+     * @param sourceMimetype the source mimetype
+     * @param targetMimetype the target mimetype
      * @return Returns a transformer that can be used, or null if one was not available
      * 
-     * @see org.alfresco.service.cmr.respository.ContentService.getTransformer(String, String, TransformationOptions)
+     * @see ContentService#getTransformer(String, String, long, String, TransformationOptions)
      * @see ContentAccessor#getMimetype()
      */
     @Auditable(parameters = {"sourceMimetype", "targetMimetype"})
@@ -272,9 +272,9 @@ public interface ContentService
     /**
      * Returns the maximum source size of any content that may transformed between the supplied
      * mimetypes using the supplied options.
-     * @param sourceMimetype
-     * @param targetMimetype
-     * @param options
+     * @param sourceMimetype source mime type
+     * @param targetMimetype target mime type
+     * @param options transformation options
      * @return 0 if there are no transformers, -1 if there is no limit or if positive number the size in bytes.
      */
     @Auditable(parameters = {"sourceMimetype", "targetMimetype", "options"})
@@ -301,7 +301,7 @@ public interface ContentService
     public ContentTransformer getImageTransformer();
     
     /**
-     * @deprecated use {@link #isTransformable(String, String, long, String, TransformationOptions).
+     * @deprecated use {@link #isTransformable(ContentReader, ContentWriter, TransformationOptions).
      */
     @Auditable(parameters = {"reader", "writer"})
     public boolean isTransformable(ContentReader reader, ContentWriter writer);

@@ -97,7 +97,7 @@ public interface RepoUsageComponent
     
     /**
      * Get the current repository usage data.  This will not trigger an update of the data if it
-     * is not available; only {@link #updateUsage() pre-loaded data} will be used.
+     * is not available; only {@link #updateUsage(UsageType) pre-loaded data} will be used.
      * 
      * @return                      Returns the repository-specific current usage data.
      */

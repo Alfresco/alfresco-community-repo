@@ -53,7 +53,7 @@ public class SchemaUpgradeScriptPatch extends AbstractPatch
      * where the <b>${hibernate.dialect.class}</b> placeholder will be substituted with the Hibernate
      * <code>Dialect</code> as configured for the system.
      * 
-     * @param scriptUrl the scriptUrl filename
+     * @param script the script
      */
     public void setScriptUrl(String script)
     {

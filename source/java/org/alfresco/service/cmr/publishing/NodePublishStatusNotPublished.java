@@ -29,7 +29,6 @@ public class NodePublishStatusNotPublished extends BaseNodePublishStatus
 {
     /**
      * @param node
-     * @param environment
      * @param channelName TODO
      */
     public NodePublishStatusNotPublished(NodeRef node, String channelName)

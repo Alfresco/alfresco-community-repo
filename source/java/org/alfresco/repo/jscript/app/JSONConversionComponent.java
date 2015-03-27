@@ -375,7 +375,7 @@ public class JSONConversionComponent
     /**
      * 
      * @param nodeRef
-     * @param map 
+     * @param properties
      * @param useShortQNames
      * @return
      * @throws JSONException

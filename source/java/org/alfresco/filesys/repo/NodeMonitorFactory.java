@@ -57,7 +57,6 @@ public class NodeMonitorFactory {
 	/**
 	 * Create a node monitor
 	 * 
-	 * @param filesysDriver ContentDiskDriver
 	 * @param filesysCtx ContentContext
 	 */
 	public NodeMonitor createNodeMonitor(final ContentContext filesysCtx) 

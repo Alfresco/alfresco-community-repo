@@ -40,7 +40,7 @@ public interface FullTextSearchIndexer extends BeanFactoryAware
      * 
      * @param storeRef
      * @param remaining
-     * @param e
+     * @param t
      */
     public abstract void indexCompleted(StoreRef storeRef, int remaining, Throwable t);
 

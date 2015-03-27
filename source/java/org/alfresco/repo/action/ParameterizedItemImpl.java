@@ -45,7 +45,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
     /**
      * Constructor
      * 
-     * @param ruleItem  the rule item
+     * @param id  the id
      */
     public ParameterizedItemImpl(String id)
     {
@@ -55,7 +55,7 @@ public abstract class ParameterizedItemImpl implements ParameterizedItem, Serial
     /**
      * Constructor
      * 
-     * @param ruleItem          the rule item
+     * @param id          the rule item
      * @param parameterValues   the parameter values
      */
     public ParameterizedItemImpl(String id, Map<String, Serializable> parameterValues)

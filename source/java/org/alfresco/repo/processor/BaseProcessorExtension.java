@@ -39,7 +39,7 @@ public abstract class BaseProcessorExtension implements ProcessorExtension
 	/**
 	 * Sets the processor
 	 * 
-	 * @param scriptProcessor		the processor
+	 * @param processor		the processor
 	 */
 	public void setProcessor(Processor processor)
 	{
@@ -57,7 +57,7 @@ public abstract class BaseProcessorExtension implements ProcessorExtension
 	/**
 	 * Sets the extension name
 	 * 
-	 * @param extensionName the extension name
+	 * @param extension the extension name
 	 */
 	public void setExtensionName(String extension)
 	{

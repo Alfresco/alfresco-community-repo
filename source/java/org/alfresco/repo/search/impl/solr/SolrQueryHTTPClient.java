@@ -166,7 +166,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     }
     
     /**
-     * @param nodeDao the nodeDao to set
+     * @param nodeDAO the nodeDao to set
      */
     public void setNodeDAO(NodeDAO nodeDAO)
     {

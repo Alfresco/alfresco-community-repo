@@ -316,8 +316,8 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     /**
      * Support to set a shared ACL on a node and all of its children
      * 
-     * @param nodeRef
-     *            the parent node
+     * @param nodeId
+     *            the parent node id
      * @param inheritFrom
      *            the parent node's ACL
      * @param mergeFrom

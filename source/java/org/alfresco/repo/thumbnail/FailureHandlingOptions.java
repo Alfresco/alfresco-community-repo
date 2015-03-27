@@ -77,7 +77,7 @@ public class FailureHandlingOptions
     
     /**
      * Sets the initial minimum retry period for thumbnail creation/update.
-     * @param initialMinimumRetryPeriod minimum retry period in ms.
+     * @param retryPeriod minimum retry period in ms.
      */
     public void setRetryPeriod(long retryPeriod)
     {
@@ -91,7 +91,7 @@ public class FailureHandlingOptions
 
     /**
      * Sets the minimum retry period for thumbnail creation/update.
-     * @param minimumRetryPeriodLong minimum retry period in ms.
+     * @param quietPeriod minimum retry period in ms.
      */
     public void setQuietPeriod(long quietPeriod)
     {

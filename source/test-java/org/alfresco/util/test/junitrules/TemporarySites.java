@@ -172,7 +172,7 @@ public class TemporarySites extends AbstractPersonRule
      * @param siteTitle       the title of the new site
      * @param siteDescription the description of the new site
      * @param visibility      the visibility
-     * @param node type       the node type of the site (must be st:site or subtype)
+     * @param siteType        the site type (must be st:site or subtype)
      * @param siteCreator     the username of the person who will create the site
      * @return the newly created SiteInfo.
      */

@@ -847,7 +847,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /**
      * Removes a property added by code within the local node.
      *
-     * @param propertyNames to be removed.
+     * @param name to be removed.
      */
     public void removeProperty(String name)
     {
@@ -857,7 +857,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /**
      * Removes properties added by code within the local node.
      *
-     * @param propertyNames to be removed.
+     * @param properties to be removed.
      */
     public void removeProperties(Collection<String> properties)
     {

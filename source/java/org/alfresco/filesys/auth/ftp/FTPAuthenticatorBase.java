@@ -158,7 +158,7 @@ public abstract class FTPAuthenticatorBase implements FTPAuthenticator, Activate
     /**
 	 * Authenticate the user
 	 * 
-	 * @param client ClientInfo
+	 * @param info ClientInfo
 	 * @param sess FTPSrvSession
 	 * @return boolean
 	 */

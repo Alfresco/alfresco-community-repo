@@ -155,7 +155,7 @@ public class NTLMPassthruToken extends NTLMLocalToken
      * Set the authentication expire time, this indicates that an authentication session is associated with this
      * token and the session will be closed if the authentication is not completed by this time.
      * 
-     * @param startTime long
+     * @param expireTime long
      */
     protected final void setAuthenticationExpireTime(long expireTime)
     {

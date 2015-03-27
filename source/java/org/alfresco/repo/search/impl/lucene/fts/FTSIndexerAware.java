@@ -32,7 +32,7 @@ public interface FTSIndexerAware
      * 
      * @param storeRef
      * @param remaining
-     * @param e
+     * @param t
      */
     public void indexCompleted(StoreRef storeRef, int remaining, Throwable t);   
 }

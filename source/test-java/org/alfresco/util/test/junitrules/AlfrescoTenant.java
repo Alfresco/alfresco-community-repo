@@ -87,7 +87,7 @@ public class AlfrescoTenant extends AbstractRule
      * Constructs the rule with a spring ApplicationContext.
      * 
      * @param appContext the spring app context (needed to get at Alfresco services).
-     * @param userName   the username for the person to be created.
+     * @param tenantName   the tenantName for the person to be created.
      */
     public AlfrescoTenant(ApplicationContext appContext, String tenantName)
     {

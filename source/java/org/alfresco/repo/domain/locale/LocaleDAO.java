@@ -39,7 +39,7 @@ public interface LocaleDAO
     Pair<Long, Locale> getLocalePair(Long id);
     
     /**
-     * @param id            the locale to fetch or <tt>null</tt> to get the default locale
+     * @param locale            the locale to fetch or <tt>null</tt> to get the default locale
      * @return              the locale or <tt>null</tt> if no such locale exists
      */
     Pair<Long, Locale> getLocalePair(Locale locale);

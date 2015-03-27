@@ -48,7 +48,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
     private static final Logger log = LoggerFactory.getLogger(AlfrescoJavaMailSender.class);
 
     /**
-     * {@link KeyedPoolableObjectFactory} which uses the {@link Session} returned by {@link JavaMailSenderImpl.getSession()} to create a new
+     * {@link KeyedPoolableObjectFactory} which uses the {@link Session} returned by {@link JavaMailSenderImpl#getSession()} to create a new
      * {@link Transport}. 
      */
     private final class TransportFactory implements KeyedPoolableObjectFactory
@@ -131,9 +131,9 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
     /**
      * Wrapper implementation of {@link Transport}, which borrows from a pool on connection, and returns to the pool on close.  
      * 
-     * @see AlfrescoJavaMailSender#getTranport(Session)
+     * @see AlfrescoJavaMailSender#getTransport(Session)
      */
-    private static class PooledTransportWrapper extends Transport 
+    private static class PooledTransportWrapper extends Transport
     {
         private Transport wrapped = null;
         private String protocol;

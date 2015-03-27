@@ -71,7 +71,6 @@ public interface SOLRDAO
      * Get the nodes satisfying the constraints in nodeParameters
      * 
      * @param nodeParameters set of constraints for which nodes to return
-     * @param maxResults limit the results. 0 or Integer.MAX_VALUE does not limit the results
      * @return list of matching nodes
      */
 	public List<Node> getNodes(NodeParameters nodeParameters);

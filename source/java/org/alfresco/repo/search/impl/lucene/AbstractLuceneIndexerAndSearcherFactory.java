@@ -496,7 +496,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
      * Get a searcher over the index and the current delta
      * 
      * @param storeRef
-     * @param deltaId
+     * @param indexer
      * @return - the searcher made by the concrete implementation.
      * @throws SearcherException
      */

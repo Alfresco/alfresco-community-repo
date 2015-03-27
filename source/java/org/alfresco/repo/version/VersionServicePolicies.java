@@ -97,26 +97,27 @@ public interface VersionServicePolicies
 				PolicyScope nodeDetails);
 	}
 	
-	/**
-	 * 
-     * Called for all types and aspects before reverting a node.
-     * 
-     * @param classRef                the type or aspect qualified name
-     * @param revertDetails           the details of the impending revert
-     * @return                        Return the callback that will be used to modify the revert behaviour for this
-     *                                type or aspect.  Return <tt>null</tt> to assume the default.
-     * 
-     * 
-     * @since V4.2
- 	 */
+
 	public interface OnRevertVersionPolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "getRevertVersionCallback");
-        
+
+        /**
+         *
+         * Called for all types and aspects before reverting a node.
+         *
+         * @param classRef                the type or aspect qualified name
+         * @param copyDetails           the details of the impending revert
+         * @return                        Return the callback that will be used to modify the revert behaviour for this
+         *                                type or aspect.  Return <tt>null</tt> to assume the default.
+         *
+         *
+         * @since V4.2
+         */
         VersionRevertCallback getRevertVersionCallback(QName classRef, VersionRevertDetails copyDetails);
 	}
 
-	
+
 	/**
 	 * Calculate version lable policy interface
 	 */
@@ -128,8 +129,8 @@ public interface VersionServicePolicies
 				int versionNumber,
 				Map<String, Serializable>verisonProperties);
 	}
-    
-    
+
+
     /**
      * After create version policy interface
      *
@@ -138,11 +139,11 @@ public interface VersionServicePolicies
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "afterVersionRevert");
         /**
-         * Called after the version has been reverted 
-         * 
+         * Called after the version has been reverted
+         *
          * @param nodeRef   the node that has been reverted
          * @param version           the reverted version
          */
         public void afterVersionRevert(NodeRef nodeRef, Version version);
-    }    
+    }
 }

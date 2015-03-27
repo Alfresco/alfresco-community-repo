@@ -616,7 +616,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Sets the user names who for this particular authentication system should be considered administrators by default.
      * 
-     * @param defaultAdministratorUserNames
+     * @param defaultGuestUserNames
      *            a set of user names
      */
     public void setDefaultGuestUserNames(Set<String> defaultGuestUserNames)
@@ -627,7 +627,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Convenience method to allow the administrator user names to be specified as a comma separated list
      * 
-     * @param defaultAdministratorUserNames
+     * @param defaultGuestUserNames
      */
     public void setDefaultGuestUserNameList(String defaultGuestUserNames)
     {

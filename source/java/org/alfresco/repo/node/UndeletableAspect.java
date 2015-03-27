@@ -39,7 +39,7 @@ import org.alfresco.service.namespace.QName;
  * This aspect/behaviour combination allows for detailed application control of when node deletion is allowed
  * or disallowed for particular nodes. It is not related to the normal permissions controls, which of course apply.
  * <p/>
- * An example of its usage is in the {@link SiteService}, where {@link SiteModel#TYPE_SITE} nodes are given the
+ * An example of its usage is in the {@link SiteService}, where {@link org.alfresco.repo.site.SiteModel#TYPE_SITE} nodes are given the
  * {@link ContentModel#ASPECT_UNDELETABLE} as a mandatory aspect. Therefore any attempt to delete such a node will
  * result in an exception. However, this behaviour is disabled within the {@link SiteService} in order to allow
  * site node deletion from within that service but from no other code.

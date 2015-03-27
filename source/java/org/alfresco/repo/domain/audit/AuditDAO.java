@@ -106,7 +106,7 @@ public interface AuditDAO
     /**
      * Creates a new audit model entry or finds an existing one
      * 
-     * @param               the URL of the configuration
+     * @param  url          the URL of the configuration
      * @return              Returns the ID of the config matching the input stream and the
      *                      content storage details
      * @since 3.2

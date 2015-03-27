@@ -141,12 +141,15 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Constructs {@link AlfrescoImapFolder} object.
      * 
-     * @param qualifiedMailboxName - name of the mailbox (e.g. "admin" for admin user).
      * @param folderInfo - reference to the {@link FileInfo} object representing the folder.
+     * @param userName - name of user (e.g. "admin" for admin user).
      * @param folderName - name of the folder.
-     * @param viewMode - defines view mode. Can be one of the following: {@link AlfrescoImapConst#MODE_ARCHIVE} or {@link AlfrescoImapConst#MODE_VIRTUAL}.
-     * @param rootNodeRef - reference to the root node of the store where folder is placed.
-     * @param mountPointName - name of the mount point.
+     * @param folderPath - path of the folder.
+     * @param viewMode - defines view mode. Can be one of the following: {@link ImapViewMode#ARCHIVE} or {@link ImapViewMode#VIRTUAL}.
+     * @param extractAttachmentsEnabled
+     * @param imapService
+     * @param serviceRegistry
+     * @param mountPointId - id of the mount point.
      */
     public AlfrescoImapFolder(
             FileInfo folderInfo,
@@ -165,14 +168,16 @@ public class AlfrescoImapFolder extends AbstractImapFolder implements Serializab
     /**
      * Constructs {@link AlfrescoImapFolder} object.
      * 
-     * @param qualifiedMailboxName - name of the mailbox (e.g. "admin" for admin user).
      * @param folderInfo - reference to the {@link FileInfo} object representing the folder.
+     * @param userName - name of the user (e.g. "admin" for admin user).
      * @param folderName - name of the folder.
-     * @param viewMode - defines view mode. Can be one of the following: {@link AlfrescoImapConst#MODE_ARCHIVE} or {@link AlfrescoImapConst#MODE_VIRTUAL}.
-     * @param rootNodeRef - reference to the root node of the store where folder is placed.
-     * @param mountPointName - name of the mount point.
+     * @param folderPath - path of the folder.
+     * @param viewMode - defines view mode. Can be one of the following: {@link ImapViewMode#ARCHIVE} or {@link ImapViewMode#VIRTUAL}.
      * @param imapService - the IMAP service.
+     * @param serviceRegistry
      * @param selectable - defines whether the folder is selectable or not.
+     * @param extractAttachmentsEnabled
+     * @param mountPointId
      */
     public AlfrescoImapFolder(
             FileInfo folderInfo,

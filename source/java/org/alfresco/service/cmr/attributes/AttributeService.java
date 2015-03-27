@@ -87,7 +87,7 @@ public interface AttributeService
     /**
      * Set an attribute, overwriting its prior value if it already existed.  <tt>null</tt>
      * values are treated as unique i.e. if the value set is <tt>null</tt> then
-     * {@link #exists(String...)} will still return <tt>true</tt>.  If the attribute doesn't
+     * {@link #exists(Serializable...)} will still return <tt>true</tt>.  If the attribute doesn't
      * exist, it will be created otherwise it will be modified.
      *
      * @param value                 The value to store (can be a collection or <tt>null</tt>)

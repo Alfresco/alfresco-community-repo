@@ -105,8 +105,8 @@ public abstract class AbstractMimeMessage extends MimeMessage
     
     /**
      * Method that checks mandatory parameter.
-     * @param The parameter instance to check.
-     * @param The name of the parameter.
+     * @param parameter The parameter instance to check.
+     * @param name The name of the parameter.
      */
     protected void checkParameter(Object parameter, String name)
     {
@@ -187,7 +187,6 @@ public abstract class AbstractMimeMessage extends MimeMessage
     /**
      * Returns the text representing email body for ContentModel node.
      * 
-     * @param nodeRef NodeRef of the target content.
      * @param type The type of the returned body. May be the one of {@link EmailBodyFormat}.
      * @return Text representing email body for ContentModel node.
      */

@@ -379,7 +379,7 @@ public class ContentContext extends AlfrescoContext
     /**
      * Set the node monitor
      * 
-     * @param filesysDriver ContentDiskDriver
+     * @param nodeMonitor node monitor
      */
     protected void setNodeMonitor( NodeMonitor nodeMonitor) {
         m_nodeMonitor = nodeMonitor;

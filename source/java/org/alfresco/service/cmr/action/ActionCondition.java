@@ -30,8 +30,6 @@ public interface ActionCondition extends ParameterizedItem
 {
 	/**
 	 * Get the action condition definition name
-	 * 
-	 * @param	the action condition definition name
 	 */
     public String getActionConditionDefinitionName();
     

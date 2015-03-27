@@ -63,7 +63,7 @@ public abstract class BaseBlogIntegrationImplementation implements BlogIntegrati
     }
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationImplementation#getName()
+     * @see org.alfresco.repo.blog.BlogIntegrationImplementation#getName()
      */
     public String getName()
     {
@@ -81,7 +81,7 @@ public abstract class BaseBlogIntegrationImplementation implements BlogIntegrati
     }
     
     /**
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationImplementation#getDisplayName()
+     * @see org.alfresco.repo.blog.BlogIntegrationImplementation#getDisplayName()
      */
     public String getDisplayName()
     {

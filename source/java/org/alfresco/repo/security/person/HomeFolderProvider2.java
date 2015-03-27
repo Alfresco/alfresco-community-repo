@@ -78,7 +78,7 @@ public interface HomeFolderProvider2
     
     /**
      * Set the authority to use as the owner of all home folder nodes.
-     * If {@code null} the {@link ContentModel.PROP_USERNAME} value of
+     * If {@code null} the {@link org.alfresco.model.ContentModel#PROP_USERNAME} value of
      * the person is used.
      */
     String getOwner();
@@ -95,7 +95,7 @@ public interface HomeFolderProvider2
 
     /**
      * Callback from {@link PortableHomeFolderManager} to locate or create a home folder.
-     * Implementations normally call {@link PortableHomeFolderManager.getHomeFolder}.
+     * Implementations normally call {@link PortableHomeFolderManager#getHomeFolder}.
      */
     HomeSpaceNodeRef getHomeFolder(NodeRef person);
 }

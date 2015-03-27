@@ -268,7 +268,7 @@ public class LockServiceImpl implements LockService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType)
+     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType)
      */
     public void lock(NodeRef nodeRef, LockType lockType)
     {
@@ -277,7 +277,7 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType, int)
+     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int)
      */
     @Override
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
@@ -286,7 +286,7 @@ public class LockServiceImpl implements LockService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType, int, Lifetime, String)
+     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, Lifetime, String)
      */
     @Override
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime)
@@ -295,7 +295,7 @@ public class LockServiceImpl implements LockService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType, int, Lifetime, String)
+     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, Lifetime, String)
      */
     @Override
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, String additionalInfo)
@@ -414,7 +414,7 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.lock.LockType, int, boolean)
+     * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, boolean)
      */
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
             throws UnableToAquireLockException
@@ -432,7 +432,7 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#lock(java.util.Collection, java.lang.String, org.alfresco.service.cmr.lock.LockType, int)
+     * @see org.alfresco.service.cmr.lock.LockService#lock(java.util.Collection, org.alfresco.service.cmr.lock.LockType, int)
      */
     public void lock(Collection<NodeRef> nodeRefs, LockType lockType, int timeToExpire)
             throws UnableToAquireLockException
@@ -445,7 +445,7 @@ public class LockServiceImpl implements LockService,
     }    
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, String)
+     * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef)
      */
     @Override
     public void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
@@ -463,8 +463,7 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, String,
-     *      boolean, boolean)
+     * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, boolean, boolean)
      */
     @Override
     public void unlock(NodeRef nodeRef, boolean unlockChildren, boolean allowCheckedOut)
@@ -529,8 +528,7 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.repo.lock.LockService#unlock(Collection<NodeRef>,
-     *      String)
+     * @see org.alfresco.service.cmr.lock.LockService#unlock(Collection<NodeRef>)
      */
     public void unlock(Collection<NodeRef> nodeRefs) throws UnableToReleaseLockException
     {
@@ -741,7 +739,6 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#getLocks()
      * @deprecated Uses search and does not report on ephemeral locks.
      */
     @Deprecated
@@ -785,7 +782,6 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#getLocks(org.alfresco.service.cmr.lock.LockType)
      * @deprecated Uses search and does not report on ephemeral locks.
      */
     @Deprecated

@@ -181,7 +181,7 @@ public class ModuleManagementTool implements LogOutput
     /**
      * Installs a given AMP file into a given WAR file.  
      * 
-     * @see ModuleManagementTool.installModule(String, String, boolean, boolean, boolean)
+     * @see ModuleManagementTool#installModule(String, String, boolean, boolean, boolean)
      * 
      * @param ampFileLocation   the location of the AMP file to be installed
      * @param warFileLocation   the location of the WAR file into which the AMP file is to be installed

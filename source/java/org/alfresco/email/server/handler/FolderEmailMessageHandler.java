@@ -98,7 +98,7 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
      * Add content to Alfresco repository
      * 
      * @param spaceNodeRef          Addressed node
-     * @param mailParser            Mail message
+     * @param message            Mail message
      * @throws IOException          Exception can be thrown while saving a content into Alfresco repository.
      * @throws MessagingException   Exception can be thrown while parsing e-mail message.
      */

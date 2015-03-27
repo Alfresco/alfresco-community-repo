@@ -257,7 +257,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets the format of exported references (child and association references)
      * 
-     * @param  reference type
+     * @param  referenceType type
      */
     public void setReferenceType(ReferenceType referenceType)
     {

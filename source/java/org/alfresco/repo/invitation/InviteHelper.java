@@ -187,7 +187,6 @@ public class InviteHelper implements InitializingBean
      * (used for rendering the response).
      * 
      * @param startInviteTask startInvite task to get invite info properties from
-     * @param serviceRegistry service registry instance
      * @return InviteInfo instance containing invite information
      */
     public InviteInfo getPendingInviteInfo(WorkflowTask startInviteTask)
@@ -235,7 +234,6 @@ public class InviteHelper implements InitializingBean
      * @param siteName
      * @param role
      * @param runAsUser
-     * @param siteService
      * @param overrideExisting
      */
     public void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser, final boolean overrideExisting)
@@ -261,9 +259,6 @@ public class InviteHelper implements InitializingBean
      * 
      * @param inviteeUserName
      * @param currentInviteId TODO
-     * @param authenticationservice
-     * @param personService
-     * @param workflowService
      */
     public void deleteAuthenticationIfUnused(final String inviteeUserName, final String currentInviteId)
     {

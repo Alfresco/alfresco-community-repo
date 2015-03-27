@@ -121,7 +121,7 @@ public class XPathNodeLocator extends AbstractNodeLocator
     }
     
     /**
-     * @param defaultStore the defaultStore to set
+     * @param defaultStoreStr the defaultStoreStr to set
      */
     public void setDefaultStore(String defaultStoreStr)
     {

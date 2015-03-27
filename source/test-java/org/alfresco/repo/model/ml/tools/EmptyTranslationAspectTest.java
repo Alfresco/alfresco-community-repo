@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Empty translations aspect test cases
  * 
- * @see org.alfresco.service.cmr.ml.EmptyTranslationAspect
+ * @see org.alfresco.repo.model.ml.EmptyTranslationAspect
  * 
  * @author Yannick Pignot
  */

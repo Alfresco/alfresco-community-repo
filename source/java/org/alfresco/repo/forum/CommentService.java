@@ -65,7 +65,7 @@ public interface CommentService
     /**
      * Updates the comment
      * 
-     * @param nodeRef the comment node.
+     * @param commentNodeRef the comment node.
      * @param title - title of the comment
      * @param comment - body of the comment
      */
@@ -74,7 +74,8 @@ public interface CommentService
     /**
      * Returns a paged list of comments.
      * 
-     * @param nodeRef the node which is being commented on .
+     * @param discussableNode the node which is being commented on .
+     * @param paging paging.
      * @return a list of comment nodes
      */
     PagingResults<NodeRef> listComments(NodeRef discussableNode, PagingRequest paging);

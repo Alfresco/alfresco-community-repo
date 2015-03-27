@@ -56,13 +56,13 @@ public enum ActionStatus
    Cancelled, 
    /**
     * The Action failed to run to completion. Call 
-    *  {@link Action#getExecutionFailureCause()} to find
+    *  {@link Action#getExecutionFailureMessage()} to find
     *  out why.
     */
    Failed,
    /**
     * The Action failed with a transient exception. Call 
-    *  {@link Action#getExecutionFailureCause()} to find
+    *  {@link Action#getExecutionFailureMessage()} to find
     *  out why.
     *  @since 4.0.1
     */

@@ -34,9 +34,8 @@ public class NodeItemContext extends ElementContext
     /**
      * Construct
      * 
-     * @param elementName
-     * @param dictionary
-     * @param importer
+     * @param elementName QName
+     * @param nodeContext NodeContext
      */
     public NodeItemContext(QName elementName, NodeContext nodeContext)
     {

@@ -54,7 +54,7 @@ public class DownloadStatus implements Serializable
 	 * @param status Current status of the download
 	 * @param done Done count
 	 * @param total Total to be de done
-	 * @param filesAddedCount Number of files added to the archive
+	 * @param filesAdded Number of files added to the archive
 	 * @param totalFiles The number of files that will eventually be added to the archive 
 	 */
 	public DownloadStatus(Status status, long done, long total, long filesAdded, long totalFiles)

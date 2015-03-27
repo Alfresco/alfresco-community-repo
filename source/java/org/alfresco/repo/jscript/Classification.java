@@ -197,10 +197,6 @@ public final class Classification extends BaseScopableProcessorExtension
     
     /**
      * Tag class returned from getCategoryUsage().
-     * 
-     * @param CategoryNode
-     * @param frequency
-     * @return
      */
     public final class Tag
     {

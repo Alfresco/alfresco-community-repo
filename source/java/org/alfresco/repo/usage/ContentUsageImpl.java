@@ -399,7 +399,7 @@ public class ContentUsageImpl implements ContentUsageService,
         }
     }
     
-    /**
+    /*
      * Called after an <b>cm:ownable</b> aspect has been added to a node
      *
      * @param nodeRef the node to which the aspect was added
@@ -501,7 +501,7 @@ public class ContentUsageImpl implements ContentUsageService,
     /**
      * Set user's usage. Should only be called by background (collapse) job !
      * 
-     * @param userName
+     * @param personNodeRef person nodeRef
      * @param currentUsage
      */
     public void setUserStoredUsage(NodeRef personNodeRef, long currentUsage)
@@ -568,9 +568,9 @@ public class ContentUsageImpl implements ContentUsageService,
     /**
      * Set user's current quota.
      * Usually called by Web Client (Admin Console) if admin is changing/setting a user's quota.
-     * 
-     * @param userName
-     * @param currentQuota
+     *
+     * @param userName user name
+     * @param currentQuota User's new quota (in bytes)
      */
     public void setUserQuota(String userName, long currentQuota)
     {

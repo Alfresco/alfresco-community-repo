@@ -86,7 +86,7 @@ public interface Importer
     /**
      * Is excluded Content Model Class?
      * 
-     * @param  QName  the class name to test
+     * @param  className  the class name to test
      * @return  true => the provided class is excluded from import
      */
     public boolean isExcludedClass(QName className);

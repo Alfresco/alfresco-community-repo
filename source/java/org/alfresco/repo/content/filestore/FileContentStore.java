@@ -340,8 +340,6 @@ public class FileContentStore
      * @throws UnsupportedContentUrlException
      *                      if the URL is invalid and doesn't support the
      *                      {@link FileContentStore#STORE_PROTOCOL correct protocol}
-     * 
-     * @see #checkUrl(String)
      */
     /*package*/ File makeFile(String contentUrl)
     {

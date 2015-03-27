@@ -43,7 +43,7 @@ public class IntegrityRecord implements Serializable
     /**
      * Add a stack trace to the list of traces associated with this failure
      * 
-     * @param trace a stack trace
+     * @param traces a stack trace
      */
     public void setTraces(List<StackTraceElement[]> traces)
     {

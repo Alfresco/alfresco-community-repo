@@ -83,7 +83,7 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
     
 
     /**
-     * @see org.alfresco.extension.bulkfilesystemimport.MetadataLoader#getMetadataFileExtension()
+     * @see org.alfresco.repo.bulkimport.MetadataLoader#getMetadataFileExtension()
      */
     @Override
     public final String getMetadataFileExtension()
@@ -101,7 +101,7 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
 
 
     /**
-     * @see org.alfresco.extension.bulkfilesystemimport.MetadataLoader#loadMetadata(org.alfresco.extension.bulkfilesystemimport.ImportableItem.ContentAndMetadata, org.alfresco.extension.bulkfilesystemimport.MetadataLoader.Metadata)
+     * @see org.alfresco.repo.bulkimport.MetadataLoader#loadMetadata(ContentAndMetadata, Metadata)
      */
     @Override
     public final void loadMetadata(final ContentAndMetadata contentAndMetadata, Metadata metadata)

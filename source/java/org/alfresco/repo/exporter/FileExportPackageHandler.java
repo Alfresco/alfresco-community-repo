@@ -53,7 +53,7 @@ public class FileExportPackageHandler
      * 
      * @param destDir  destination directory
      * @param dataFile  filename of data file (relative to destDir)
-     * @param packageDir  directory for content (relative to destDir)  
+     * @param contentDir  directory for content (relative to destDir)
      * @param overwrite  force overwrite of existing package directory
      * @param mimetypeService (optional) mimetype service
      */

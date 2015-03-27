@@ -192,9 +192,8 @@ public interface ImapService
      * Search for emails in specified folder depend on view mode.
      * 
      * @param contextNodeRef context folder for search
-     * @param namePattern name pattern for search
+     * @param contextNodeRef context NodeRef
      * @param viewMode (ARCHIVE, MIXED or VIRTUAL)
-     * @param includeSubFolders includeSubFolders
      * @return list of emails that context folder contains.
      */
     public FolderStatus getFolderStatus(final String userName, final NodeRef contextNodeRef, ImapViewMode viewMode);
@@ -225,7 +224,7 @@ public interface ImapService
     /**
      * Return flags that belong to the specified imap folder.
      * 
-     * @param messageInfo imap folder info.
+     * @param messageFileInfo imap folder info.
      * @return flags.
      */
     public Flags getFlags(FileInfo messageFileInfo);
@@ -233,7 +232,7 @@ public interface ImapService
     /**
      * Set flags to the specified imapFolder.
      * 
-     * @param messageInfo FileInfo of imap Folder.
+     * @param messageFileInfo FileInfo of imap Folder.
      * @param flags flags to set.
      * @param value value to set.
      */
@@ -242,7 +241,7 @@ public interface ImapService
     /**
      * Set flag to the specified imapFolder.
      * 
-     * @param messageInfo FileInfo of imap Folder
+     * @param messageFileInfo FileInfo of imap Folder
      * @param flag flag to set.
      * @param value value value to set.
      */
@@ -280,7 +279,7 @@ public interface ImapService
      * In this case it returns {@code NodeRef.toString()} of the template. If there are no template in the repository it
      * returns a default template on the classpath.
      * 
-     * @param Type one of the possible body types text/html and text/plain
+     * @param type one of the possible body types text/html and text/plain
      * @return
      */
     public String getDefaultEmailBodyTemplate(EmailBodyFormat type);

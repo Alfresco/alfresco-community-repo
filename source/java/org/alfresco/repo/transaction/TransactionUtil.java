@@ -146,8 +146,6 @@ public class TransactionUtil
      * 
      * @param transactionService the transaction service
      * @param transactionWork the transaction work
-     * @param ignoreException indicates whether errors raised in the work are
-     *        ignored or re-thrown
      * @param nonPropagatingUserTransaction indicates whether the transaction
      *        should be non propigating or not
      * @param readOnly true if the transaction should be read-only

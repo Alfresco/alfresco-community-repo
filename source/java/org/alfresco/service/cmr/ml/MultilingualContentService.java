@@ -163,7 +163,7 @@ public interface MultilingualContentService
      * This involves the copy of the <b>cm:mlContainer</b> node and the copy of its <b>cm:mlDocument</b>.
      * <p>
      *
-     * @param translationNodeRef            The <b>cm:mlContainer</b> to copy
+     * @param mlContainerNodeRef            The nodeRef to copy
      * @param newParentRef                  The new parent of the copied <b>cm:mlDocument</b>
      * @param prefixName                    The prefix of the name of the copied translations. Can be null.
      * @return                              The copied <b>cm:mlContainer</b>
@@ -180,7 +180,7 @@ public interface MultilingualContentService
      * This not involves changing the <b>cm:mlContainer</b> node but moves its <b>cm:mlDocument</b>.
      * <p>
      *
-     * @param translationNodeRef            The <b>cm:mlContainer</b> to move
+     * @param mlContainerNodeRef            The nodeRef> to move
      * @param newParentRef                  The new parent of the moved <b>cm:mlDocument</b>
      * @throws FileExistsException
      * @throws FileNotFoundException

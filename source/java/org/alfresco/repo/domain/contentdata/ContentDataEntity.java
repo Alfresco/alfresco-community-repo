@@ -24,7 +24,7 @@ import org.alfresco.util.EqualsHelper;
  * Entity bean for <b>alf_content_data</b> table.
  * <p>
  * These are unique (see {@link #equals(Object) equals} and {@link #hashCode() hashCode}) based
- * on the {@link #getContentUrl() content URL} value.
+ * on the {@link #getContentUrlId() content URL} value.
  * 
  * @author Derek Hulley
  * @since 3.2

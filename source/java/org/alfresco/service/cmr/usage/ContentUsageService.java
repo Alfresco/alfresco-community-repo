@@ -49,7 +49,8 @@ public interface ContentUsageService
      * 
      * Note: -1 means no quota limit set
      * 
-     * @param User's new quota (in bytes)
+     * @param userName User name
+     * @param newQuota User's new quota (in bytes)
      */
     @Auditable
     public void setUserQuota(String userName, long newQuota);

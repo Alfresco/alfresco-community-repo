@@ -458,7 +458,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
 
     /**
      * The maximum maximum batch size
-     * @param batchSize the batchSize to set
+     * @param batchSzie the batchSize to set
      */
     public void setBatchSize(int batchSzie)
     {

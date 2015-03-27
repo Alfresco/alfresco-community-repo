@@ -67,7 +67,7 @@ public class SchemaBootstrapRegistration
     }
 
     /**
-     * @param postCreateScriptUrls      a list of schema create URLs that will be registered in order.
+     * @param preCreateScriptUrls      a list of schema create URLs that will be registered in order.
      * 
      * @see SchemaBootstrap#addPostCreateScriptUrl(String)
      */

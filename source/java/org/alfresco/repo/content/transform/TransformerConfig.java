@@ -127,7 +127,7 @@ public interface TransformerConfig
      * The suffix to property names to indicate which Alfresco version the transformer is
      * available with. If not specified it is not restricted. So if set to "Enterprise" it
      * is not available to Community.
-     * @see AMP
+     * @see #AMP
      */
     static final String EDITION = ".edition";
     
@@ -174,7 +174,7 @@ public interface TransformerConfig
 
     /**
      * To support the historical concept of EXPLICIT transformers, all such transformers
-     * are given a {@link PRIORITY_EXPLICIT} (50). By default transformers have a default of 10.
+     * are given a {@link #PRIORITY_EXPLICIT} (50). By default transformers have a default of 10.
      * A value of 5 allows better transformers to be added later.
      */
     public int PRIORITY_EXPLICIT = 50;
@@ -320,11 +320,11 @@ public interface TransformerConfig
 
     /**
      * Returns the priority of the specified transformer for the the combination of source and target mimetype.
-     * @param transformer
+     * @param contentTransformerHelper
      * @param sourceMimetype
      * @param targetMimetype
      * @return the priority. To support the historical concept of EXPLICIT transformers, all such transformers
-     *         are given a {@link PRIORITY_EXPLICIT} (50). By default transformers have a default of 100.
+     *         are given a {@link #PRIORITY_EXPLICIT} (50). By default transformers have a default of 100.
      */
     public int getPriority(ContentTransformer contentTransformerHelper,
             String sourceMimetype, String targetMimetype);
@@ -332,7 +332,7 @@ public interface TransformerConfig
     /**
      * Returns the threshold of the transformer. It is only after this number of transformation attempts
      * that the average time is used.
-     * @param transformer
+     * @param contentTransformerHelper
      * @param sourceMimetype
      * @param targetMimetype
      * @return the threshold.

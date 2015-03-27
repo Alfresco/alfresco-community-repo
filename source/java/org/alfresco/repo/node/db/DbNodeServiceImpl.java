@@ -1582,7 +1582,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * Gets the properties map, sets the value (null is allowed) and checks that the new set
      * of properties is valid.
      * 
-     * @see DbNodeServiceImpl.NullPropertyValue
+     * @see DbNodeServiceImpl#NullPropertyValue
      */
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
     {

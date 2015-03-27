@@ -99,7 +99,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * Set the public node service
      * 
-     * @param nodeService
+     * @param publicNodeService
      */
     public void setPublicNodeService(NodeService publicNodeService)
     {

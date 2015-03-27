@@ -33,7 +33,6 @@ public class NodePublishStatusPublishedAndOnQueue extends BaseNodePublishStatus
 
     /**
      * @param nodeRef
-     * @param environment
      * @param channelName TODO
      * @param queuedPublishingEvent The next scheduled {@link PublishingEvent} on the {@link PublishingQueue}
      * @param latestPublishingEvent The last {@link PublishingEvent} to successfully publish the node.

@@ -31,7 +31,7 @@ import org.springframework.beans.factory.InitializingBean;
 /**
  * This class provides the basic implementation of a rating property rollup.
  * By providing an implementation of this class (or reusing an existing one),
- * injecting the object into the {@link RatingScheme} and following the content
+ * injecting the object into the {@link org.alfresco.service.cmr.rating.RatingScheme} and following the content
  * model naming conventions described in {@link RatingRollupNamingConventionsUtil}, it
  * should be possible to have new rating property rollups automatically calculated
  * and persisted into the Alfresco content model, thereby enabling indexing, searching

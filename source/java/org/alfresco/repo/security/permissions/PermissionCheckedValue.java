@@ -48,7 +48,7 @@ public interface PermissionCheckedValue
         /**
          * Helper method to create a {@link PermissionCheckedValue} from an existing <code>Object</code>.
          * 
-         * @param collection        the <code>Object</code> to proxy
+         * @param object        the <code>Object</code> to proxy
          * @return                  a <code>Object</code> of the same type but including the
          *                          {@link PermissionCheckedValue} interface
          */

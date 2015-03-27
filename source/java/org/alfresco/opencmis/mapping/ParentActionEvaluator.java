@@ -34,8 +34,7 @@ public class ParentActionEvaluator extends AbstractActionEvaluator
     /**
      * Construct
      * 
-     * @param serviceRegistry
-     * @param action
+     * @param evaluator
      */
     protected ParentActionEvaluator(AbstractActionEvaluator evaluator)
     {

@@ -654,7 +654,7 @@ public class JBPMEngineTest extends BaseAlfrescoSpringTest
      * Filter task list by workflow instance
      * 
      * @param tasks
-     * @param processInstanceId
+     * @param workflowInstanceId
      * @return
      */
     private List<WorkflowTask> filterTasksByWorkflowInstance(List<WorkflowTask> tasks, String workflowInstanceId)

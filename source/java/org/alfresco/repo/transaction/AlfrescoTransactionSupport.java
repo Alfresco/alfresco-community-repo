@@ -264,7 +264,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * <p> will be better for the caller
      * to only bind once per transaction, if possible.
      * 
-     * @param indexerAndSearcher the Lucene indexer to perform transaction completion
+     * @param listener the transaction listener
      *      tasks on
      *      
      * @since 5.0

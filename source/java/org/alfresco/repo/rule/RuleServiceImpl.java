@@ -1358,7 +1358,7 @@ public class RuleServiceImpl
     /**
      * Register the rule type
      * 
-     * @param ruleTypeAdapter  the rule type adapter
+     * @param ruleType  the rule type adapter
      */
     public void registerRuleType(RuleType ruleType) 
     {

@@ -32,7 +32,7 @@ public class AliasableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCa
     static final CopyBehaviourCallback INSTANCE = new AliasableAspectCopyBehaviourCallback();
     
     /**
-     * Disallows copying of the {@link ASPECT_ALIASABLE aspect.
+     * Disallows copying of the {@link EmailServerModel#ASPECT_ALIASABLE aspect.
      */
     @Override
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
@@ -48,7 +48,7 @@ public class AliasableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCa
     }
 
     /**
-     * Prevents copying off the {@link ContentModel#PROP_NAME <b>cm:name</b>} property.
+     * Prevents copying off the {@link org.alfresco.model.ContentModel#PROP_NAME <b>cm:name</b>} property.
      */
     @Override
     public Map<QName, Serializable> getCopyProperties(

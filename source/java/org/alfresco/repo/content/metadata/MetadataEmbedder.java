@@ -49,7 +49,7 @@ public interface MetadataEmbedder extends ContentWorker {
      * Embeds the given properties into the file specified by the given content writer.
      *      * <p>
      * The embedding viability can be determined by an up front call to
-     * {@link #isSupported(String)}.
+     * {@link #isEmbeddingSupported(String)}.
      * <p>
      * The source mimetype <b>must</b> be available on the
      * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} method

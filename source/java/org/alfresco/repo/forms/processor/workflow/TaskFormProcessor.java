@@ -174,7 +174,7 @@ public class TaskFormProcessor extends AbstractWorkflowFormProcessor<WorkflowTas
     }
 
     /**
-     * @param item
+     * @param task
      * @return
      */
     private Object getPackageItemValues(WorkflowTask task)

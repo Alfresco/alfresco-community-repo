@@ -459,7 +459,8 @@ public class HomeFolderProviderSynchronizer extends AbstractLifecycleBean
     /**
      * Creates the new home folder structure, before we move home folders so that
      * we don't have race conditions that result in unnecessary retries.
-     * @param parentFolderStructure
+     * @param person person nodeRef
+     * @param overrideProviderName override provider name
      */
     private void createParentFolders(NodeRef person, String overrideProviderName)
     {

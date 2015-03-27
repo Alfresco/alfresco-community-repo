@@ -203,7 +203,7 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
     }
 
     /**
-     * @see VersionCounterService#nextVersionNumber(StoreRef)
+     * @see VersionService#createVersion(NodeRef, Map)
      */
     public Version createVersion(
             NodeRef nodeRef,
@@ -352,7 +352,7 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
      * accordingly.
      *
      * @param  nodeRef              a node reference
-     * @param  versionProperties    the version properties
+     * @param  origVersionProperties    the version properties
      * @param  versionNumber        the version number
      * @return                      the newly created version
      * @throws ReservedVersionNameException
@@ -592,10 +592,9 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
      *
      * @param versionableNodeRef  the reference to the node being versioned
      * @param versionHistoryRef   version history node reference
-     * @param preceedingNodeRef   the version node preceeding this in the version history
-     *                               , null if none
+     * @param standardVersionProperties   version properties
      * @param versionProperties   version properties
-     * @param versionNumber          the version number
+     * @param nodeDetails          PolicyScope
      * @return                    the version node reference
      */
     private NodeRef createNewVersion(
@@ -950,7 +949,7 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
     }
     
     /**
-     * @see org.alfresco.cms.version.VersionService#ensureVersioningEnabled(NodeRef,Map)
+     * @see VersionService#ensureVersioningEnabled(NodeRef,Map)
      */
     public void ensureVersioningEnabled(NodeRef nodeRef, Map<QName, Serializable> versionProperties)
     {
@@ -1312,7 +1311,7 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
     }
 
     /**
-     * @see org.alfresco.cms.version.VersionService#deleteVersionHistory(NodeRef)
+     * @see VersionService#deleteVersionHistory(NodeRef)
      */
     public void deleteVersionHistory(NodeRef nodeRef)
         throws AspectMissingException

@@ -197,7 +197,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     /**
      * Types and aspects for which we will abstain on voting if they are present.
-     * @param abstainFor
+     * @param unfilteredFor
      */
     public void setUnfilteredFor(Set<String> unfilteredFor)
     {

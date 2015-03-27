@@ -55,8 +55,8 @@ public class WorkflowPropertyConverter
     /**
      * Sets Properties of Task
      * 
-     * @param instance
-     *            task instance
+     * @param taskDef
+     *            task definition
      * @param properties
      *            properties to set
      */

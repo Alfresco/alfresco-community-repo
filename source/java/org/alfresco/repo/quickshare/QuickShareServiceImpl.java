@@ -300,7 +300,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
 
     /**
      * Is this service enable? 
-     * @throws uickShareDisabledException if it isn't.
+     * @throws QuickShareDisabledException if it isn't.
      */
     private void checkEnabled()
     {

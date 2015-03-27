@@ -47,8 +47,7 @@ public interface RepositoryDiskInterface
      * CreateFile.
      * 
      * @param rootNode
-     * @param fromPath - the source node
-     * @param toPath - the target node
+     * @param Path - path
      * @param allocationSize size to allocate for new file
      * @param isHidden
      * @throws FileNotFoundException 
@@ -60,9 +59,10 @@ public interface RepositoryDiskInterface
      * 
      * Either restores the file or creates a new one.
      * 
+     * @param sess
+     * @param tree
      * @param rootNode
-     * @param fromPath - the source node
-     * @param toPath - the target node
+     * @param path - path
      * @param allocationSize size to allocate for new file
      * @param originalNodeRef
      * @throws FileNotFoundException 
@@ -90,9 +90,10 @@ public interface RepositoryDiskInterface
     /**
      * CloseFile.
      * 
+     * @param tree
      * @param rootNode
-     * @param fromPath - the source node
-     * @param toPath - the target node
+     * @param Path - path
+     * @param file - file
      * @throws FileNotFoundException
      * @return node ref of deleted file or null if no file deleted
      */
@@ -128,10 +129,11 @@ public interface RepositoryDiskInterface
     /**
      * Rename the specified file.
      *
-     * @param sess            Server session
-     * @param tree        Tree connection
+     * @param rootNode            root node
      * @param oldName     java.lang.String
      * @param newName     java.lang.String
+     * @param soft
+     * @param moveAsSystem        move as system
      * @exception java.io.IOException The exception description.
      */
     public void renameFile(NodeRef rootNode, String oldName, String newName, boolean soft, boolean moveAsSystem)

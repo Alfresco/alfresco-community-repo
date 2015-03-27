@@ -54,7 +54,7 @@ public interface ChainingUserRegistrySynchronizerStatus
     
     /**
      * Get the synchronization status
-     * @param zone
+     * @param zoneId - zone id
      * @return the status
      */
     public String getSynchronizationStatus(String zoneId);

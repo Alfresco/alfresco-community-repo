@@ -295,7 +295,7 @@ public class WarHelperImpl implements WarHelper
     
     /**
      * Reads a .properites file from the war and returns it as a Properties object
-     * @param propertiesPath Path to the properties file (including .properties)
+     * @param propertiesFile Path to the properties file (including .properties)
      * @return Properties object or null
      */
     private Properties loadProperties(TFile propertiesFile)

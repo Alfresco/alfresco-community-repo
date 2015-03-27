@@ -1134,8 +1134,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
      * Gets the members (people) of a group (including all sub-groups)
      * 
      * @param group        the group to retrieve members for
-     * @param recurse      recurse into sub-groups
-     * 
+     *
      * @return members of the group as a JavaScript array
      */
     public Scriptable getMembers(ScriptNode group)

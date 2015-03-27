@@ -265,7 +265,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions, String)} which allows the
+     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)} which allows the
      *             limits to be selected based on mimetype and use.
      */
     protected TransformationOptionLimits getLimits()

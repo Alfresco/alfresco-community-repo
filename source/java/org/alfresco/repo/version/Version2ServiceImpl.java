@@ -439,12 +439,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     /**
      * Creates a new version node, setting the properties both calculated and specified.
      *
-     * @param versionableNodeRef  the reference to the node being versioned
+     * @param sourceTypeRef  the reference to the node being versioned
      * @param versionHistoryRef   version history node reference
-     * @param preceedingNodeRef   the version node preceeding this in the version history
-     *                               , null if none
+     * @param standardVersionProperties   version properties
      * @param versionProperties   version properties
      * @param versionNumber          the version number
+     * @param nodeDetails          PolicyScope
      * @return                    the version node reference
      */
     protected NodeRef createNewVersion(

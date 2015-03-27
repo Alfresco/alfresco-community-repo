@@ -107,7 +107,7 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     }
 
     /**
-     * @param identifier
+     * @param object
      * @return
      */
     public boolean contains(DbObject object)

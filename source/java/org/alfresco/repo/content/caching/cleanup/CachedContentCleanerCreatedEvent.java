@@ -30,7 +30,7 @@ public class CachedContentCleanerCreatedEvent extends CachingContentStoreEvent
     private static final long serialVersionUID = 1L;
     
     /**
-     * @param source
+     * @param cleaner - cleaner
      */
     public CachedContentCleanerCreatedEvent(CachedContentCleaner cleaner)
     {

@@ -50,7 +50,7 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
      * 
      * @param remoteSystemId
      * @param accessToken
-     * @param refresh Token
+     * @param refreshToken String
      * @param expiresAt
      * @param issuedAt if null, the current Datetime will be used
      * @return OAuth2CredentialsInfo

@@ -532,7 +532,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
     /**
      * Cache-only operation: Get the key for a given value key (note: not 'value' but 'value key').
      * 
-     * @param value                 The entity value key, which must be valid (<tt>null</tt> not allowed)
+     * @param valueKey                 The entity value key, which must be valid (<tt>null</tt> not allowed)
      * @return                      The entity key (may be <tt>null</tt>)
      */
     @SuppressWarnings("unchecked")
@@ -649,7 +649,7 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
      * or not; usually the former will generate {@link ConcurrencyFailureException} or something recognised
      * by the {@link RetryingTransactionHelper#RETRY_EXCEPTIONS RetryingTransactionHelper}.
      * 
-     * @param key                   the entity value, which may be valid or invalid (<tt>null</tt> allowed)
+     * @param value                   the entity value, which may be valid or invalid (<tt>null</tt> allowed)
      * @return                      Returns the row deletion count
      */
     public int deleteByValue(V value)

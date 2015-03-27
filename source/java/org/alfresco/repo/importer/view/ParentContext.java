@@ -49,12 +49,10 @@ public class ParentContext extends ElementContext
     /**
      * Construct
      * 
-     * @param dictionary
-     * @param configuration
-     * @param progress
      * @param elementName
-     * @param parentRef
-     * @param assocType
+     * @param dictionary
+     * @param elementName
+     * @param importer
      */
     public ParentContext(QName elementName, DictionaryService dictionary, Importer importer)
     {
@@ -80,7 +78,7 @@ public class ParentContext extends ElementContext
      * 
      * @param elementName
      * @param parent
-     * @param childDef
+     * @param assocDef
      */
     public ParentContext(QName elementName, NodeContext parent, AssociationDefinition assocDef)
     {

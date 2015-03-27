@@ -323,7 +323,6 @@ public class RatingServiceImpl implements RatingService
     /**
      * This method converts a NodeRef (which must be an instance of a cm:rating node)
      * into a {@link Rating} object.
-     * @param ratingSchemeName
      * @param user
      * @param ratingNode
      * @return

@@ -231,7 +231,6 @@ public interface CopyService
      * 
      * @param originalNodeRef           the original node reference
      * @param copyParentNodeRef         only find copies that are homed in this node
-     * @param copyNodeAspectsToIgnore   only find copies that <b>don't</b> have these aspects
      * @param pagingRequest             page request details
      * @return                          the page(s) of nodes that were copied from the given node
      */
@@ -250,8 +249,7 @@ public interface CopyService
      * @param assocTypeQName            the type of the new child assoc         
      * @param assocQName                the qualified name of the child association from the 
      *                                  parent to the new node
-     * @param copyChildren              indicates that the children of the node should also be copied                                 
-     * 
+     *
      * @return                          new name if top-level node will be renamed during copy or
      *                                  <tt>null</tt> if it will remain the same  
      */

@@ -95,7 +95,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
      * @param properties                the node properties being copied
      * @param propertyQName             the qualified name of the property to check
      * 
-     * @see #repointNodeRefs(NodeRef, QName, Map, NodeService)
+     * @see #repointNodeRefs(NodeRef, NodeRef, QName, Map, NodeService)
      */
     public void recordNodeRefsForRepointing(
             NodeRef sourceNodeRef,

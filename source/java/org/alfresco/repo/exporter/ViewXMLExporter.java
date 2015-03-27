@@ -800,7 +800,7 @@ import org.xml.sax.helpers.AttributesImpl;
 
     /**
      * Get the prefix for the specified URI
-     * @param uri  the URI
+     * @param qname  the QName
      * @return  the prefix (or null, if one is not registered)
      */
     private String toPrefixString(QName qname)

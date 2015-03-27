@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.publishing.MutablePublishingEvent;
 public class MutablePublishingEventImpl extends PublishingEventImpl implements MutablePublishingEvent
 {
     /**
-     * @param publishingEventImpl
+     * @param event PublishingEventImpl
      */
     public MutablePublishingEventImpl(PublishingEventImpl event)
     {

@@ -27,7 +27,7 @@ import org.quartz.JobExecutionException;
 /**
  * A scheduled job that regularly invokes a {@link UserRegistrySynchronizer}. Supports a
  * <code>synchronizeChangesOnly</code> string parameter. When <code>"false"</code> means that the
- * {@link UserRegistrySynchronizer#synchronize(boolean)} method will be called with a <code>true</code> forceUpdate
+ * {@link UserRegistrySynchronizer#synchronize(boolean, boolean)} method will be called with a <code>true</code> forceUpdate
  * argument rather than the default <code>false</code>.
  * 
  * @author dward

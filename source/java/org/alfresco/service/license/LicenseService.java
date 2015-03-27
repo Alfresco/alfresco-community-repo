@@ -87,7 +87,7 @@ public interface LicenseService
     /**
      * Inteface for components wishing to know when the license has changed
      *  
-     * @see registerOnLicenseChange
+     * @see #registerOnLicenseChange(LicenseChangeHandler)
      */
     public interface LicenseChangeHandler 
     {

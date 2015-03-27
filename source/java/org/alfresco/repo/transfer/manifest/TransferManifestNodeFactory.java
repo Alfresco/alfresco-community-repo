@@ -26,7 +26,7 @@ public interface TransferManifestNodeFactory
 {
     /**
      * Create an object that represents the specified node in a form that can be used to transfer it elsewhere.
-     * Calling this operation is identical to calling {@link TransferManifestNodeFactory#createTransferManifestNode(NodeRef, TransferDefinition, boolean)}
+     * Calling this operation is identical to calling {@link TransferManifestNodeFactory#createTransferManifestNode(NodeRef, TransferDefinition, TransferContext, boolean)}
      * specifying <code>false</code> as the value of the <code>forceDelete</code> parameter.
      * @param nodeRef The identifier of the node to be distilled for transfer
      * @param definition The transfer definition against which the node is being transferred

@@ -28,7 +28,7 @@ import org.alfresco.util.VersionNumber;
  *
  * @author Yanick Pignot
  * 
- * @deprecated See {@link VersionHistory}
+ * @deprecated See {@link org.alfresco.service.cmr.version.VersionHistory}
  */
 public class VersionLabelComparator implements Comparator<Version>
 {

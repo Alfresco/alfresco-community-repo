@@ -84,7 +84,7 @@ public class CheckOutActionExecuter extends ActionExecuterAbstractBase
 	}
 
     /**
-     * @see org.alfresco.repo.action.executer.ActionExecuter#execute(org.alfresco.repo.ref.NodeRef, org.alfresco.repo.ref.NodeRef)
+     * @see org.alfresco.repo.action.executer.ActionExecuter#execute(Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     public void executeImpl(Action ruleAction, NodeRef actionedUponNodeRef)
     {

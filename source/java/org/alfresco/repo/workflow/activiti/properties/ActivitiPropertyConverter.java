@@ -358,7 +358,7 @@ public class ActivitiPropertyConverter
     /**
      * Sets Default Properties of Task
      * 
-     * @param instance
+     * @param task
      *            task instance
      */
     public void setDefaultTaskProperties(DelegateTask task)
@@ -546,7 +546,7 @@ public class ActivitiPropertyConverter
     /**
      * Get all variable updates for activity, latest updates on top
      * 
-     * @param taskId
+     * @param activityId
      * @return
      */
     public Map<String, Object> getHistoricActivityVariables(String activityId)
@@ -652,8 +652,9 @@ public class ActivitiPropertyConverter
 
     /**
      * Converts a {@link Serializable} value to the type of the specified property. 
+     * @param task
      * @param value
-     * @param definition
+     * @param propertyName
      * @return
      */
     public Serializable convertValueToPropertyType(Task task, Serializable value, QName propertyName)

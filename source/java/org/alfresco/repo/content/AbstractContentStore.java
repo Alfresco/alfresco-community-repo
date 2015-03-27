@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
  * Implementations must override either of the <b>getWriter</b> methods;
  * {@link #getWriter(ContentContext)} or {@link #getWriterInternal(ContentReader, String)}.
  * 
- * @see #getWriter(ContentReader, String)
+ * @see #getWriter(org.alfresco.repo.content.ContentContext)
  * @see #getWriterInternal(ContentReader, String)
  * 
  * @author Derek Hulley

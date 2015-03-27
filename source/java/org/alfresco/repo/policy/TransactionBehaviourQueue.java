@@ -160,8 +160,6 @@ public class TransactionBehaviourQueue implements TransactionListener
     
     /**
      * Execution Instance Key - to uniquely identify an ExecutionContext
-     * 
-     * @param <P>
      */
     private class ExecutionInstanceKey
     {

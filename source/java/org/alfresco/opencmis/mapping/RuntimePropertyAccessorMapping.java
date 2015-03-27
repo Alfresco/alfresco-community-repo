@@ -62,8 +62,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     private Map<BaseTypeId, Map<Action, CMISActionEvaluator>> actionEvaluators = new HashMap<BaseTypeId, Map<Action, CMISActionEvaluator>>();
 
     /**
-     * @param service
-     *            registry
+     * @param serviceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -71,8 +70,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmis
-     *            connector
+     * @param cmisConnector
      */
     public void setCmisConnector(CMISConnector cmisConnector)
     {
@@ -80,8 +78,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmis
-     *            mapping
+     * @param cmisMapping
      */
     public void setCmisMapping(CMISMapping cmisMapping)
     {
@@ -89,8 +86,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmis
-     *            mapping
+     * @param cmisDictionaryService
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {

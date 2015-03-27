@@ -233,7 +233,7 @@ public class ActivitiWorkflowManagerFactory implements FactoryBean<ActivitiWorkf
     }
     
     /**
-     * @param wether or not to deploy workflows in multi-tenant context.
+     * @param deployWorkflowsInTenant wether or not to deploy workflows in multi-tenant context.
      */
 	public void setDeployWorkflowsInTenant(boolean deployWorkflowsInTenant) {
 		this.deployWorkflowsInTenant = deployWorkflowsInTenant;

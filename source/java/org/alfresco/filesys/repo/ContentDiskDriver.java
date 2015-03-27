@@ -208,7 +208,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Class constructor
      * 
-     * @param serviceRegistry to connect to the repository services
+     * @param cifsHelper to connect to the repository services
      */
     public ContentDiskDriver(CifsHelper cifsHelper)
     {
@@ -316,8 +316,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
 
     /**
      * Return the node archive service
-     * 
-     * @param NodeArchiveService
      */
     public final NodeArchiveService getNodeArchiveService() {
     	return nodeArchiveService;
@@ -469,7 +467,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Set the node archive service
      * 
-     * @param NodeArchiveService nodeArchiveService
+     * @param nodeArchiveService nodeArchiveService
      */
     public void setNodeArchiveService(NodeArchiveService nodeArchiveService) {
     	this.nodeArchiveService = nodeArchiveService;
@@ -648,7 +646,6 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * WARNING: side effect, will commit or roll back current user transaction context.
      * 
      * @param ctx the context
-     * @param serverConfig ServerConfigurationBean
      * @exception DeviceContextException
      */
     //  MER TODO - transaction handling in registerContext needs changing
@@ -863,9 +860,9 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
     /**
      * Get the file information for the specified file.
      * 
-     * @param sess Server session
+     * @param session Server session
      * @param tree Tree connection
-     * @param name File name/path that information is required for.
+     * @param path File name/path that information is required for.
      * @return File information if valid, else null
      * @exception java.io.IOException The exception description.
      */
@@ -1109,7 +1106,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * @param sess Server session
      * @param tree Tree connection
      * @param searchPath File(s) to search for, may include wildcards.
-     * @param attrib Attributes of the file(s) to search for, see class SMBFileAttribute.
+     * @param attributes Attributes of the file(s) to search for, see class SMBFileAttribute.
      * @return SearchContext
      * @exception java.io.FileNotFoundException If the search could not be started.
      */
@@ -2510,7 +2507,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * 
      * @param sess Server session
      * @param tree Tree connection.
-     * @param param Network file context.
+     * @param file Network file context.
      * @exception java.io.IOException If an error occurs.
      */
     public void closeFile(SrvSession sess, TreeConnection tree, final NetworkFile file) throws IOException
@@ -2880,7 +2877,7 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * 
      * @param sess Server session
      * @param tree Tree connection
-     * @param file NetworkFile
+     * @param name NetworkFile
      * @exception java.io.IOException The exception description.
      */
     public void deleteFile(final SrvSession sess, final TreeConnection tree, final String name) throws IOException
@@ -3823,10 +3820,10 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * @param sess Session details
      * @param tree Tree connection
      * @param file Network file
-     * @param buf Buffer to return data to
-     * @param bufPos Starting position in the return buffer
-     * @param siz Maximum size of data to return
-     * @param filePos File offset to read data
+     * @param buffer Buffer to return data to
+     * @param bufferPosition Starting position in the return buffer
+     * @param size Maximum size of data to return
+     * @param fileOffset File offset to read data
      * @return Number of bytes read
      * @exception java.io.IOException The exception description.
      */
@@ -3906,10 +3903,10 @@ public class ContentDiskDriver extends AlfrescoTxDiskDriver implements DiskInter
      * @param sess Server session
      * @param tree Tree connection
      * @param file Network file details
-     * @param buf byte[] Data to be written
-     * @param bufoff Offset within the buffer that the data starts
-     * @param siz int Data length
-     * @param fileoff Position within the file that the data is to be written.
+     * @param buffer byte[] Data to be written
+     * @param bufferOffset Offset within the buffer that the data starts
+     * @param size int Data length
+     * @param fileOffset Position within the file that the data is to be written.
      * @return Number of bytes actually written
      * @exception java.io.IOException The exception description.
      */

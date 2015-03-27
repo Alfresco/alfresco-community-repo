@@ -108,7 +108,7 @@ public final class XmlPropertiesFileMetadataLoader extends AbstractMapBasedMetad
     }
 
     /**
-     * @see org.alfresco.extension.bulkfilesystemimport.metadataloaders.AbstractMapBasedMetadataLoader#loadMetadataFromFile(java.io.File)
+     * @see AbstractMapBasedMetadataLoader#loadMetadataFromFile(java.io.File)
      */
     @Override
     protected Map<String,Serializable> loadMetadataFromFile(File metadataFile)

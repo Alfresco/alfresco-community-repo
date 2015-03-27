@@ -39,9 +39,9 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
     
     /**
      * Get the version label value base on the data provided.
-     * 
+     *
+     * @param classRef      QName
      * @param preceedingVersion  the preceeding version, null if none
-     * @param versionNumber      the new version number 
      * @param versionProperties  the version property values
      * @return                   the version label
      */
@@ -123,7 +123,7 @@ public class SerialVersionLabelPolicy implements CalculateVersionLabelPolicy
         /**
          * Constructor
          * 
-         * @param version  the vesion to take the version from
+         * @param versionLabel  the vesion label to take the version from
          */
         public SerialVersionLabel(String versionLabel)
         {

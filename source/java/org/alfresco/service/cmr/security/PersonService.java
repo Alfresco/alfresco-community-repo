@@ -108,7 +108,7 @@ public interface PersonService
     /**
      * Retrieve the person info for an existing {@code person NodeRef}
      * 
-     * @param person NodeRef
+     * @param personRef NodeRef
      * @return PersonInfo (username, firstname, lastname)
      * @throws NoSuchPersonException if the person doesn't exist
      */
@@ -330,7 +330,7 @@ public interface PersonService
     /**
      * Get paged list of people optionally filtered and/or sorted
      *
-     * @param filterProps       list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
+     * @param stringPropFilters       list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
      * @param filterIgnoreCase  true to ignore case when filtering, false to be case-sensitive when filtering
      * @param sortProps         sort property, eg. cm:username ascending
      * @param pagingRequest     skip, max + optional query execution id
@@ -345,11 +345,11 @@ public interface PersonService
     /**
      * Get paged list of people optionally filtered and/or sorted
      *
-     * @param filterProps            list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
-     * @param filterIgnoreCase       true to ignore case when filtering, false to be case-sensitive when filtering
+     * @param pattern
+     * @param filterStringProps            list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
      * @param inclusiveAspects       if set, filter out any people that don't have one of these aspects
      * @param exclusiveAspects       if set, filter out any people that do have one of these aspects
-     * @param includeAdministrators  true to include administrators in the results.
+     * @param includeAdministraotrs  true to include administrators in the results.
      * @param sortProps              sort property, eg. cm:username ascending
      * @param pagingRequest          skip, max + optional query execution id
      * 

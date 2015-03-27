@@ -22,7 +22,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Wrapper for a {@link NodeRef} to provide path and type values using namespace prefixes.
- * Use the {@link NodeInfoFactory#newNodeInfo()} to create new instances.
+ * Use the {@link NodeInfoFactory#newNodeInfo(org.alfresco.service.cmr.repository.NodeRef)} to create new instances.
  * 
  * @author Alan Davis
  */

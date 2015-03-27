@@ -142,7 +142,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the Transaction Service
      * 
-     * @param userTransaction the transaction service
+     * @param transactionService the transaction service
      */
     public void setTransactionService(TransactionService transactionService)
     {

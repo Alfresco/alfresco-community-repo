@@ -262,7 +262,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
     }
     
     /**
-     * Helper method for {@link HomeFolderProvider2.getHomeFolder} (so that it
+     * Helper method for {@link HomeFolderProvider2#getHomeFolder} (so that it
      * does not need its own NodeService) that returns a person property value.
      */
     public String getPersonProperty(NodeRef person, QName name)
@@ -312,7 +312,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
     }
 
     /**
-     * Helper method for {@link HomeFolderProvider2.getHomeFolder(NodeRef)}
+     * Helper method for {@link HomeFolderProvider2#getHomeFolder(NodeRef)}
      * implementations to return a {@link HomeSpaceNodeRef}
      * @param referenceRootNode indicates that a reference to the root node
      *        should be returned if the home folder property on the person

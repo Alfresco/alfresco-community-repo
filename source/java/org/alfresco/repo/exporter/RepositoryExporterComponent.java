@@ -182,8 +182,10 @@ public class RepositoryExporterComponent implements RepositoryExporterService
      * Add a file system based .acp file into the repository
      *
      * @param repoDestination  location within repository to place .acp file
-     * @param packageName  acp package name
-     * @param packageDescription  acp package description  
+     * @param name   name
+     * @param title  title
+     * @param description  description
+     * @param mimeType  mime type
      * @param exportFile  the .acp file
      * @return  node reference to import .acp file
      */
@@ -251,8 +253,8 @@ public class RepositoryExporterComponent implements RepositoryExporterService
     /**
      * Enumerate list of pre-configured Stores and export one by one
      * 
-     * @param <ExportHandle>  type of export file handle
      * @param stores  the list of stores to export
+     * @param packageName  package name
      * @param exportStore  the exporter call-back for handling the actual export
      * @return  the list export file handles
      */

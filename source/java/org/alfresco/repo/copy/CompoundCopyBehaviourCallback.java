@@ -125,7 +125,7 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
 
     /**
      * Individual callbacks effectively have a veto on the copy i.e. if one of the
-     * callbacks returns <tt>false</tt> for {@link CopyBehaviourCallback#mustCopy(NodeRef)},
+     * callbacks returns <tt>false</tt> for {@link CopyBehaviourCallback#getMustCopy(org.alfresco.service.namespace.QName, org.alfresco.repo.copy.CopyDetails)},
      * then the copy will NOT proceed.  However, a warning is generated indicating that
      * there is a conflict in the defined behaviour.
      * 

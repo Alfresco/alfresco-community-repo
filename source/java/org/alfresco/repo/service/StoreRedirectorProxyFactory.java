@@ -85,7 +85,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
     /**
      * Sets the default component binding
      * 
-     * @param binding
+     * @param defaultBinding
      *            the component to call by default
      */
     public void setDefaultBinding(I defaultBinding)
@@ -96,7 +96,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
     /**
      * Sets the binding of store type (protocol string) to component
      * 
-     * @param bindings
+     * @param protocolBindings
      *            the bindings
      */
     public void setRedirectedProtocolBindings(Map<String, I> protocolBindings)
@@ -115,7 +115,7 @@ public class StoreRedirectorProxyFactory<I> implements FactoryBean, Initializing
     /**
      * Sets the binding of store type (protocol string) to component
      * 
-     * @param bindings
+     * @param storeBindings
      *            the bindings
      */
     public void setRedirectedStoreBindings(Map<String, I> storeBindings)

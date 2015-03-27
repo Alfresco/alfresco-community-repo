@@ -744,7 +744,8 @@ public class Site implements Serializable
     /**
      * Apply a set of permissions to the node.
      * 
-     * @param nodeRef   node reference
+     * @param node   node
+     * @param permissions   permissions
      */
     public void setPermissions(final ScriptNode node, final Object permissions)
     {
@@ -811,7 +812,7 @@ public class Site implements Serializable
      * <p>
      * All permissions will be deleted and the node set to inherit permissions.
      * 
-     * @param nodeRef   node reference
+     * @param node   node
      */
     public void resetAllPermissions(ScriptNode node)
     {

@@ -126,7 +126,7 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
 	}
     
     /**
-     * @see org.alfresco.extension.bulkfilesystemimport.BulkFilesystemImporter#getStatus()
+     * @see org.alfresco.repo.bulkimport.BulkFilesystemImporter#getStatus()
      */
     public final BulkImportStatus getStatus()
     {
@@ -360,7 +360,7 @@ public abstract class AbstractBulkFilesystemImporter implements BulkFilesystemIm
     }
     
     /**
-     * @see org.alfresco.extension.bulkfilesystemimport.BulkFilesystemImporter#bulkImport(java.io.File, org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see org.alfresco.repo.bulkimport.BulkFilesystemImporter#bulkImport(org.alfresco.repo.bulkimport.BulkImportParameters, org.alfresco.repo.bulkimport.NodeImporter)
      */
     public void bulkImport(final BulkImportParameters bulkImportParameters, final NodeImporter nodeImporter)
     {

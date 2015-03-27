@@ -1357,7 +1357,6 @@ public class WorkflowServiceImpl implements WorkflowService
     }
 
     /**
-     * @param contents
      * @param workflowPackage
      */
     private List<NodeRef> getRepositoryPackageContents(NodeRef workflowPackage)

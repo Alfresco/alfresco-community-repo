@@ -145,7 +145,7 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
     /**
      * Returns a DTO containing the users and groups to add and the links to remove.
      * 
-     * @param actors
+     * @param value
      * @param links
      * @return
      */

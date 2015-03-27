@@ -364,7 +364,7 @@ public interface CopyBehaviourCallback
      * @return                      Returns the type of {@link ChildAssocRecurseAction recursion}
      *                              to perform after having copied the child association
      * 
-     * @see #getChildAssociationCopyAction(QName, CopyDetails, ChildAssociationRef, boolean)
+     * @see #getChildAssociationCopyAction(QName, CopyDetails, CopyChildAssociationDetails)
      */
     ChildAssocRecurseAction getChildAssociationRecurseAction(
             QName classQName,

@@ -54,9 +54,9 @@ public class OpenOfficeContentNetworkFile extends ContentNetworkFile {
     /**
      * Class constructor
      * 
-     * @param transactionService TransactionService
      * @param nodeService NodeService
      * @param contentService ContentService
+     * @param mimetypeService MimetypeService
      * @param nodeRef NodeRef
      * @param name String
      */
@@ -112,10 +112,10 @@ public class OpenOfficeContentNetworkFile extends ContentNetworkFile {
     /**
      * Read from the file.
      * 
-     * @param buf byte[]
-     * @param len int
-     * @param pos int
-     * @param fileOff long
+     * @param buffer byte[]
+     * @param length int
+     * @param position int
+     * @param fileOffset long
      * @return Length of data read.
      * @exception IOException
      */
@@ -134,10 +134,10 @@ public class OpenOfficeContentNetworkFile extends ContentNetworkFile {
     /**
      * Write a block of data to the file.
      * 
-     * @param buf byte[]
-     * @param len int
-     * @param pos int
-     * @param fileOff long
+     * @param buffer byte[]
+     * @param length int
+     * @param position int
+     * @param fileOffset long
      * @exception IOException
      */
     public void writeFile(byte[] buffer, int length, int position, long fileOffset)

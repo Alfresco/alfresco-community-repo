@@ -29,7 +29,7 @@ import org.alfresco.repo.blog.DefaultBlogIntegrationImplementation;
 public class TypepadIntegration extends DefaultBlogIntegrationImplementation
 {
     /**
-     * @see org.alfresco.module.blogIntegration.DefaultBlogIntegrationImplementation#getEndpointURL(org.alfresco.module.blogIntegration.BlogDetails)
+     * @see org.alfresco.repo.blog.DefaultBlogIntegrationImplementation#getEndpointURL(org.alfresco.repo.blog.BlogDetails)
      */
     @Override
     protected String getEndpointURL(BlogDetails blogDetails)
@@ -40,7 +40,7 @@ public class TypepadIntegration extends DefaultBlogIntegrationImplementation
     /**
      * For some reason typepad returns a hash table rather than the expected boolean result.
      * 
-     * @see org.alfresco.module.blogIntegration.BlogIntegrationImplementation#deletePost(org.alfresco.module.blogIntegration.BlogDetails, java.lang.String)
+     * @see org.alfresco.repo.blog.BlogIntegrationImplementation#deletePost(org.alfresco.repo.blog.BlogDetails, java.lang.String)
      */
     @Override
     public boolean deletePost(BlogDetails blogDetails, String postId)

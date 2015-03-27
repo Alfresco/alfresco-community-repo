@@ -650,7 +650,7 @@ public class NodeServiceImpl implements NodeService, VersionModel
     /**
      * Gets an association by ID.
      * 
-     * @param assocId
+     * @param id
      *            the association id
      * @return the association, or <code>null</code> if it does not exist
      */

@@ -47,7 +47,7 @@ public class UUIDSupport implements DBQueryBuilderComponent
     private boolean leftOuter;
 
     /**
-     * @param uud the uud to set
+     * @param uuid the uud to set
      */
     public void setUuid(String uuid)
     {

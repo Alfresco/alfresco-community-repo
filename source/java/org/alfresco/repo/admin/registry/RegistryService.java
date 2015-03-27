@@ -42,7 +42,7 @@ public interface RegistryService
      * @return              Returns the value stored in the key or <tt>null</tt> if
      *                      no value exists at the path and name provided
      * 
-     * @see #addProperty(String, Serializable)
+     * @see #addProperty(RegistryKey, Serializable)
      */
     Serializable getProperty(RegistryKey key);
     

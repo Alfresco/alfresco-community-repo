@@ -29,7 +29,7 @@ public class WordPressIntegration extends DefaultBlogIntegrationImplementation
     private static String ENDPOINT = "xmlrpc.php";
     
     /**
-     * @see org.alfresco.module.blogIntegration.DefaultBlogIntegrationImplementation#getEndpointURL(org.alfresco.module.blogIntegration.BlogDetails)
+     * @see DefaultBlogIntegrationImplementation#getEndpointURL(BlogDetails)
      */
     @Override
     protected String getEndpointURL(BlogDetails blogDetails)

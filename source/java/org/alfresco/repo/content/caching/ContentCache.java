@@ -95,7 +95,7 @@ public interface ContentCache
      * Retrieve a ContentWriter to write content to a cache file. Upon closing the stream
      * a listener will add the new content file to the in-memory lookup table.
      * 
-     * @param context
+     * @param url url
      * @return ContentWriter
      */
     ContentWriter getWriter(String url);

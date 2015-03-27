@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * The one and only implementation of the ContentCache class. Binary content data itself
- * is stored on disk in the location specified by {@link cacheRoot}.
+ * is stored on disk in the location specified by {@link #cacheRoot}.
  * <p>
  * The in-memory lookup table is provided by a SimpleCache implementation.
  * 
@@ -155,7 +155,6 @@ public class ContentCacheImpl implements ContentCache
     /**
      * Create a File object and makes any intermediate directories in the path.
      * 
-     * @param contentUrl
      * @return File
      */
     private File createCacheFile()

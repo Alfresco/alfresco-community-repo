@@ -42,8 +42,6 @@ public class ContentStoreCreatedEvent extends ApplicationEvent
      * @param source
      *            the source content store
      * @param extendedEventParams 
-     * @param rootDirectory
-     *            the root directory
      */
     public ContentStoreCreatedEvent(ContentStore source, Map<String, Serializable> extendedEventParams)
     {

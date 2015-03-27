@@ -49,8 +49,7 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
     /**
      * Extracts relevant node refs and Ids from auditing data
      * 
-     * @see org.alfresco.repo.audit.extractor.DataExtractor.extractData(java.io.
-     *      Serializable)
+     * @see org.alfresco.repo.audit.extractor.DataExtractor#extractData(java.io.Serializable)
      */
     public Serializable extractData(Serializable value) throws Throwable
     {
@@ -65,8 +64,7 @@ public class CMISChangeLogDataExtractor extends AbstractDataExtractor
 
     /**
      * @return Returns <tt>true</tt> if items in the CMIS domain model
-     * @see org.alfresco.repo.audit.extractor.DataExtractor.isSupported(java.io.
-     *      Serializable)
+     * @see org.alfresco.repo.audit.extractor.DataExtractor#isSupported(java.io.Serializable)
      */
     public boolean isSupported(Serializable data)
     {

@@ -57,9 +57,6 @@ public abstract class EmailServer extends AbstractLifecycleBean
     private EmailService emailService;
     private AuthenticationComponent authenticationComponent;
 
-    /**
-     * @param serverConfiguration Server configuration
-     */
     protected EmailServer()
     {
         this.enabled = false;

@@ -77,7 +77,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
     /**
      * Sets the Transaction Invocation Handler
      * 
-     * @param handlerFactory
+     * @param factory
      */
     protected static void setTransactionInvocationHandlerFactory(TransactionInvocationHandlerFactory factory)
     {
@@ -221,7 +221,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
         /**
          * Construct
          * 
-         * @param policyInterfaces  the collection of policy implementations
+         * @param policyInterface  the collection of policy implementations
          */
         public SingleHandler(P policyInterface)
         {

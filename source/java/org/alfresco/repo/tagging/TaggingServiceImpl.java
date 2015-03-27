@@ -443,7 +443,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#isTag(java.lang.String)
+     * @see org.alfresco.service.cmr.tagging.TaggingService#isTag(StoreRef, java.lang.String)
      */
     public boolean isTag(StoreRef storeRef, String tag)
     {
@@ -452,7 +452,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#createTag(java.lang.String)
+     * @see org.alfresco.service.cmr.tagging.TaggingService#createTag(StoreRef, java.lang.String)
      */
     public NodeRef createTag(StoreRef storeRef, String tag)
     {
@@ -517,7 +517,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags()
+     * @see org.alfresco.service.cmr.tagging.TaggingService#getTags(StoreRef)
      */
     public List<String> getTags(StoreRef storeRef)
     {
@@ -1056,7 +1056,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
     
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#refreshTagScopt(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see org.alfresco.service.cmr.tagging.TaggingService#refreshTagScope(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
     public void refreshTagScope(NodeRef nodeRef, boolean async)
     {
@@ -1207,7 +1207,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(java.lang.String)
+     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(StoreRef, java.lang.String)
      */
     public List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag)
     {
@@ -1232,7 +1232,7 @@ public class TaggingServiceImpl implements TaggingService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.service.cmr.tagging.TaggingService#findTaggedNodes(StoreRef, java.lang.String, org.alfresco.service.cmr.repository.NodeRef)
      */
     public List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag, NodeRef nodeRef)
     {
@@ -1415,7 +1415,7 @@ public class TaggingServiceImpl implements TaggingService,
     /**
      * Records the fact that the given tag for the given node will need to
      *  be added or removed from its parent tags scopes.
-     * {@link #updateTagScope(NodeRef, Map, boolean)} will schedule the update
+     * {@link #updateTagScope(NodeRef, Map)} will schedule the update
      *  to occur, and an async action will do it. 
      */
     @SuppressWarnings("unchecked")

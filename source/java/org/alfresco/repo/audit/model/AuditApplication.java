@@ -169,7 +169,7 @@ public class AuditApplication
      * @param path              the path in format <b>/app-key/x/y/z</b>
      * @throws AuditModelException      if the path is invalid
      * 
-     * @see #AUDIT_PATH_REGEX
+     * @see #AUDIT_PATH_PATTERN
      */
     public void checkPath(String path)
     {
@@ -198,7 +198,7 @@ public class AuditApplication
      * @param path              the path in format <b>/app-key/x/y/z</b>
      * @throws AuditModelException      if the path is invalid
      * 
-     * @see #AUDIT_PATH_REGEX
+     * @see #AUDIT_PATH_PATTERN
      */
     public static void checkPathFormat(String path)
     {
@@ -222,10 +222,10 @@ public class AuditApplication
      * so <code>"/a", "b", "/c"</code> becomes <code>"/a/b/c"</code> allowing path to be appended
      * to other paths.
      * <p>
-     * The final result is checked against a {@link #AUDIT_PATH_REGEX regular expression} to ensure
+     * The final result is checked against a {@link #AUDIT_PATH_PATTERN regular expression} to ensure
      * it is valid.
      * 
-     * @param pathElements      the elements of the path e.g. <code>"a", "b", "c"</code>.
+     * @param pathComponents      the elements of the path e.g. <code>"a", "b", "c"</code>.
      * @return                  Returns the compiled path e.g <code>"/a/b/c"</code>.
      */
     public static String buildPath(String ... pathComponents)
@@ -261,8 +261,6 @@ public class AuditApplication
     /**
      * @param path              the audit path for form <b>/abc/def</b>
      * @return                  the root key of form <b>abc</b>
-     * 
-     * @see #AUDIT_ROOT_KEY_REGEX
      */
     public static String getRootKey(String path)
     {

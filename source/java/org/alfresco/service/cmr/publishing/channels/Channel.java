@@ -74,7 +74,7 @@ public interface Channel
     
     /**
      * Returns the URL for the specified node on this channel.
-     * @param The content node whose published URL is being requested.
+     * @param publishedNode The content node whose published URL is being requested.
      * @return a URL for the published content. May return <code>null</code> if the specified node has not
      * been published to this channel.
      */

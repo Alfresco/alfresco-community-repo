@@ -48,7 +48,7 @@ public class LinkMemoryNetworkFile extends NodeRefNetworkFile
      * Class constructor.
      * 
      * @param name String
-     * @param localPath String
+     * @param data byte[]
      * @param finfo FileInfo
      * @param nodeRef NodeRef
      */

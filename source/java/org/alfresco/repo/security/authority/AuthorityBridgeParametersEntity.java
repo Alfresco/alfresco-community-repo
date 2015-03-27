@@ -126,7 +126,7 @@ public class AuthorityBridgeParametersEntity
     }
 
     /**
-     * @param childName the childName to set
+     * @param nodeId the node id to set
      */
     public void setNodeId(Long nodeId)
     {

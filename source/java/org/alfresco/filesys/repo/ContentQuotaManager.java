@@ -367,7 +367,7 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 	/**
 	 * Load the user quota details
 	 * 
-	 * @param user - name of the user.
+	 * @param userName - name of the user.
 	 * @return UserQuotaDetails
 	 * @throws QuotaManagerException
 	 */

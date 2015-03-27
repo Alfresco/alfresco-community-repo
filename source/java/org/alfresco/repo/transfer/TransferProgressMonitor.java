@@ -68,7 +68,6 @@ public interface TransferProgressMonitor
      * @param sourceNode
      * @param destNode
      * @param path The path of the updated node
-     * @param orphan
      */
     void logUpdated(String transferId, NodeRef sourceNode, NodeRef destNode, String path);
   
@@ -79,7 +78,6 @@ public interface TransferProgressMonitor
      * @param sourceNode
      * @param destNode
      * @param path The path of the deleted node
-     * @param orphan
      */
     void logDeleted(String transferId, NodeRef sourceNode, NodeRef destNode, String path);
     

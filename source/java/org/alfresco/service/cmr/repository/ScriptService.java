@@ -209,8 +209,7 @@ public interface ScriptService
      * @param script        Optional ref to the script itself
      * @param document      Optional ref to a document Node
      * @param space         Optional ref to a space Node
-     * @param resolver      Image resolver to resolve icon images etc.
-     * 
+     *
      * @return A Map of global scope scriptable Node objects
      */
     @Auditable(parameters = {"person", "companyHome", "userHome", "script", "document", "document"})

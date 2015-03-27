@@ -22,7 +22,7 @@ import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.util.Pair;
 
 /**
- * An implementation of {@link RemoteAlfrescoTicketInfo} which works
+ * An implementation of {@link org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketInfo} which works
  *  with the regular Alfresco alf_ticket ticket system
  *  
  * @author Nick Burch

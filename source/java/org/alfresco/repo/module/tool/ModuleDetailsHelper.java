@@ -150,7 +150,7 @@ public class ModuleDetailsHelper
      * Saves the module details to the war in the correct location based on the module id
      * 
      * @param warLocation   the war location
-     * @param moduleId      the module id
+     * @param moduleDetails      the module id
      */
     public static void saveModuleDetails(String warLocation, ModuleDetails moduleDetails)
     {

@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * To retrieve either the Primary Post, or all Posts,
  *  use {@link DiscussionService#getPrimaryPost(TopicInfo)}
- *  and {@link DiscussionService#listPostReplies(TopicInfo, int, org.alfresco.query.PagingRequest)}
+ *  and {@link DiscussionService#listPostReplies(TopicInfo, int)}
  *
  * @author Nick Burch
  * @since 4.0

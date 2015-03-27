@@ -47,7 +47,7 @@ public class CacheFileProps
     /**
      * Construct a CacheFileProps specifying which cache file the properties belong to.
      * 
-     * @param cachedFile
+     * @param cacheFile - cache file
      */
     public CacheFileProps(File cacheFile)
     {

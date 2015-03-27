@@ -44,7 +44,7 @@ public interface WorkflowNodeConverter
      * a {@link List} of the appropriate Node type is returned. Otherwise a
      * single instance of the appropriate Node type is returned.
      * 
-     * @param values
+     * @param value
      * @param isMany
      * @return
      */

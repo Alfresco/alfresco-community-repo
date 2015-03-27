@@ -67,7 +67,7 @@ public class TenantPerson extends AlfrescoPerson
 	/**
 	 * Constructs the rule with a reference to a {@link ApplicationContextInit rule} which can be used to retrieve the ApplicationContext.
 	 * 
-	 * @param appContextRule a rule which can be used to retrieve the spring app context.
+	 * @param appContextInit a rule which can be used to retrieve the spring app context.
 	 * @param userName   the username for the person to be created.
 	 * @param tenant    the tenant the person should be created under.
 	 */

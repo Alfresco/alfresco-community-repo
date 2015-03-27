@@ -161,7 +161,7 @@ public interface ContentDataDAO
      * 
      * @since 5.0
      * @param contentUrlId
-     * @param contentUrlKeyEntity
+     * @param contentUrlKey url key
      */
     boolean updateContentUrlKey(long contentUrlId, ContentUrlKeyEntity contentUrlKey);
 
@@ -170,7 +170,9 @@ public interface ContentDataDAO
      * master key, starting from 'fromId' and returning at most 'maxResults' entities.
      * 
      * @since 5.0
-     * @param contentUrlEntity
+     * @param masterKeyAlias master key alias
+     * @param fromId id
+     * @param maxResults max results
      * @return
      */
     List<ContentUrlKeyEntity> getSymmetricKeysByMasterKeyAlias(String masterKeyAlias, long fromId, int maxResults);

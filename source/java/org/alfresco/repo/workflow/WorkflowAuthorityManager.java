@@ -50,8 +50,8 @@ public class WorkflowAuthorityManager
     /**
      * Convert authority name to an Alfresco Authority
      * 
-     * @param names
-     *            the authority names to convert
+     * @param name
+     *            the authority name to convert
      * @return the Alfresco authorities
      */
     public NodeRef mapNameToAuthority(String name)

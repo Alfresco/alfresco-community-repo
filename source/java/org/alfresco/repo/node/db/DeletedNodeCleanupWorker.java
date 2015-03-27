@@ -84,7 +84,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
     /**
      * Set the purge transaction block size. This determines how many unused transactions are purged in one go.
      * 
-     * @param txnBlockSize
+     * @param purgeSize
      */
     public void setPurgeSize(int purgeSize)
     {

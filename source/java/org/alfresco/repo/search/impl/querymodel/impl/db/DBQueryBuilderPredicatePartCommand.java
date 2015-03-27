@@ -110,7 +110,7 @@ public class DBQueryBuilderPredicatePartCommand
     }
 
     /**
-     * @param joinAlias the joinAlias to set
+     * @param alias the joinAlias to set
      */
     public void setAlias(String alias)
     {

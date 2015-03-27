@@ -243,7 +243,7 @@ public class AlfrescoCifsAuthenticator extends CifsAuthenticatorBase
      * 
      * @param client User/client details from the tree connect request.
      * @param share Shared device the client wants to connect to.
-     * @param pwd Share password.
+     * @param sharePwd Share password.
      * @param sess Server session.
      * @return int Granted file permission level or disallow status if negative. See the
      *         FilePermission class.

@@ -188,8 +188,8 @@ public class NodeCrawlerTest extends BaseAlfrescoSpringTest
     }
 
     /**
-     * @param companyHome2
-     * @param nodeType
+     * @param parent NodeRef
+     * @param nodeType QName
      * @return
      */
     private NodeRef makeNode(NodeRef parent, QName nodeType)

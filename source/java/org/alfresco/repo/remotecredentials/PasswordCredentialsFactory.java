@@ -69,7 +69,6 @@ public class PasswordCredentialsFactory implements RemoteCredentialsInfoFactory
      * Serializes the given {@link BaseCredentialsInfo} object to node properties.
      * 
      * @param info The Credentials object to serialize
-     * @param coreProperties The core rc:credentialBase properties for the node
      * @return The final set of properties to be serialized for the node
      */
     public Map<QName,Serializable> serializeCredentials(BaseCredentialsInfo info)

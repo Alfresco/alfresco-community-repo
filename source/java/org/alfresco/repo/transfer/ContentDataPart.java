@@ -47,9 +47,9 @@ public class ContentDataPart extends PartBase
 
     /**
      * ContentDataPart 
-     * @param contentService
+     * @param contentService content service
      * @param partName
-     * @param data
+     * @param data data
      */
     public ContentDataPart(ContentService contentService, String partName, ContentData data) {
         super(partName, data.getMimetype(), data.getEncoding(), null);
@@ -62,7 +62,7 @@ public class ContentDataPart extends PartBase
      * Write the disposition header to the output stream
      * @param out The output stream
      * @throws IOException If an IO problem occurs
-     * @see Part#sendDispositionHeader(OutputStream)
+     * @see org.apache.commons.httpclient.methods.multipart.Part#sendDispositionHeader(OutputStream)
      */
     protected void sendDispositionHeader(OutputStream out) 
     throws IOException {

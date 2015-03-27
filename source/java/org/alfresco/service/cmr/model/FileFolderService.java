@@ -93,7 +93,7 @@ public interface FileFolderService
      * 
      * Note: this could be a long list (and will be trimmed at a pre-configured maximum).  You should consider using a paging request.
      * 
-     * @param folderNodeRef the folder to start searching in
+     * @param contextNodeRef the folder nodeRef to start searching in
      * @return Returns a list of matching files
      */
     @Auditable(parameters = {"folderNodeRef"})

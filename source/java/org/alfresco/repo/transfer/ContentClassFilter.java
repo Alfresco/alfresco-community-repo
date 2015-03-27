@@ -82,9 +82,6 @@ public class ContentClassFilter extends AbstractNodeFilter
         return (!exclude && (typeIsInSet || aspectIsInSet)) || (exclude && (!typeIsInSet && !aspectIsInSet));
     }
 
-    /**
-     * @param serviceRegistry
-     */
     public void init()
     {
         super.init();

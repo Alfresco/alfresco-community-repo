@@ -96,7 +96,7 @@ public interface MessageService extends TenantDeployer, MessageLookup
      * Once registered the messages will be available via getMessage, assuming the
      * bundle resource exists at the given path location.
      *
-     * @param bundleBaseName    the bundle base path
+     * @param bundleBasePath    the bundle base path
      */
     public void registerResourceBundle(String bundleBasePath);
     
@@ -109,7 +109,7 @@ public interface MessageService extends TenantDeployer, MessageLookup
      * <p>
      * Once unregistered the messages will no longer be available via getMessage
      *
-     * @param bundleBaseName    the bundle base path
+     * @param resBundlePath    the bundle base path
      */
     public void unregisterResourceBundle(String resBundlePath);
     

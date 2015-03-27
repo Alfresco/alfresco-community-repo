@@ -37,7 +37,7 @@ public class BaseScopableProcessorExtension extends BaseProcessorExtension imple
     /**
      * Set the Scriptable global scope
      * 
-     * @param script relative global scope
+     * @param scope relative global scope
      */
     public void setScope(Scriptable scope)
     {

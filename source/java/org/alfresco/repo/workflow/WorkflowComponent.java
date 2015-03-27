@@ -289,7 +289,7 @@ public interface WorkflowComponent
      * process.
      * 
      * @param pathId  the workflow path to signal on
-     * @param transition  the transition to follow (or null, for the default transition)
+     * @param transitionId  the transition id to follow (or null, for the default transition)
      * @return  the updated workflow path
      */
     public WorkflowPath signal(String pathId, String transitionId);

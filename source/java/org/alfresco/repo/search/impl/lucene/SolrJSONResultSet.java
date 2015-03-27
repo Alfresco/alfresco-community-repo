@@ -86,7 +86,12 @@ public class SolrJSONResultSet implements ResultSet, JSONResult
     
     /**
      * Detached result set based on that provided
-     * @param resultSet
+     * @param json
+     * @param searchParameters
+     * @param nodeService
+     * @param nodeDao
+     * @param limitBy
+     * @param maxResults
      */
     public SolrJSONResultSet(JSONObject json, SearchParameters searchParameters, NodeService nodeService, NodeDAO nodeDao, LimitBy limitBy, int maxResults)
     {

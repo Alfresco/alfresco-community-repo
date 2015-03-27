@@ -31,7 +31,7 @@ import org.junit.experimental.categories.Category;
 /**
  * Multilingual document aspect test cases
  *
- * @see org.alfresco.service.cmr.ml.MultilingualDocumentAspect
+ * @see org.alfresco.repo.model.ml.MultilingualDocumentAspect
  *
  * @author Yannick Pignot
  */

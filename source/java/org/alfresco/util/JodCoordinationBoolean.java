@@ -21,7 +21,7 @@ package org.alfresco.util;
 import org.alfresco.util.bean.BooleanBean;
 
 /**
- * Wraps a {@link #JodCoordination} object to return one of its boolean methods,
+ * Wraps a {@link org.alfresco.util.JodCoordination} object to return one of its boolean methods,
  * so that it may be used as the input to another bean.
  *  
  * @author Alan Davis

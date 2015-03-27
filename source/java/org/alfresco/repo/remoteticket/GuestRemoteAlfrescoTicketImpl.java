@@ -21,7 +21,7 @@ package org.alfresco.repo.remoteticket;
 import org.alfresco.util.Pair;
 
 /**
- * An implementation of {@link RemoteAlfrescoTicketInfo} which authenticates
+ * An implementation of {@link org.alfresco.service.cmr.remoteticket.RemoteAlfrescoTicketInfo} which authenticates
  *  as the Guest user
  *  
  * @author Nick Burch

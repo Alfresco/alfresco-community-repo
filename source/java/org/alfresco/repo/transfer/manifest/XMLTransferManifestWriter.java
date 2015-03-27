@@ -259,7 +259,7 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
     /**
      * Write a normal transfer manifest node
      *
-     * @param nodeRef
+     * @param node
      * @throws SAXException
      */
     public void writeTransferManifestNode(TransferManifestNormalNode node) throws SAXException

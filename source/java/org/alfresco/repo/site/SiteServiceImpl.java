@@ -1184,7 +1184,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * This method returns the {@link SiteInfo siteInfos} for sites to which the specified user has access.
      * Note that if the user has access to more than 1000 sites, the list will be truncated to 1000 entries.
      * 
-     * @param userName the username
+     * @param group the group
      * @return a list of {@link SiteInfo site infos}.
      */
     public String resolveSite(String group)
@@ -2131,7 +2131,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * One of the user's firstname or lastname must match at least
      *  one of the filters given.
      * 
-     * @param filter
+     * @param nameFilters
      * @param username
      * @return
      */
@@ -2680,7 +2680,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
 
 
     /**
-     * @see org.alfresco.service.cmr.site.SiteService#getContainer(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#getContainer(java.lang.String, String)
      */
     public NodeRef getContainer(String shortName, String componentId)
     {
@@ -2726,7 +2726,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     }
 
     /**
-     * @see org.alfresco.service.cmr.site.SiteService#hasContainer(java.lang.String)
+     * @see org.alfresco.service.cmr.site.SiteService#hasContainer(java.lang.String, String)
      */
     public boolean hasContainer(final String shortName, final String componentId)
     {

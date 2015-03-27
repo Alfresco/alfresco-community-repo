@@ -186,7 +186,7 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     /**
      * Set the repository models locations
      * 
-     * @param repositoryModelsLocations   list of the repository models locations
+     * @param repositoryLocations   list of the repository models locations
      */    public void setRepositoryModelsLocations(
             List<RepositoryLocation> repositoryLocations)
     {

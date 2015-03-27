@@ -422,7 +422,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
 
     /**
      * Records the date when the action began execution,
-     *  normally called by the {@link ActionService} when
+     *  normally called by the {@link org.alfresco.service.cmr.action.ActionService} when
      *  it starts running the action.
      */
     public void setExecutionStartDate(Date startDate) {
@@ -435,7 +435,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
 
     /**
      * Records the date when the action finished execution,
-     *  normally called by the {@link ActionService} when
+     *  normally called by the {@link org.alfresco.service.cmr.action.ActionService} when
      *  the action completes or fails.
      */
     public void setExecutionEndDate(Date endDate) {
@@ -448,7 +448,7 @@ public class ActionImpl extends ParameterizedItemImpl implements Action
 
     /**
      * Updates the current execution status. This is 
-     *  normally called by the {@link ActionService} as
+     *  normally called by the {@link org.alfresco.service.cmr.action.ActionService} as
      *  it progresses the Action's execution.
      */
     public void setExecutionStatus(ActionStatus status) {

@@ -61,7 +61,6 @@ public class DesktopParams {
 	 * Class constructor
 	 * 
 	 * @param sess SrvSession
-	 * @param driver AlfrescoDiskDriver
 	 * @param folderNode NodeRef
 	 * @param folderFile NetworkFile
 	 */

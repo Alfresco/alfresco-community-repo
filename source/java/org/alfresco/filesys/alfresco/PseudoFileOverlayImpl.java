@@ -262,8 +262,8 @@ public class PseudoFileOverlayImpl implements PseudoFileOverlay
     
     /**
      * Get the pseudo file
-     * @param path
-     * @param nodeRef
+     * @param parentDir NodeRef
+     * @param fname String
      * @return the pseudoFile or null if there is no pseudo file
      */
     public PseudoFile getPseudoFile(NodeRef parentDir, String fname)

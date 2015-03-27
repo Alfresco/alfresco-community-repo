@@ -61,7 +61,7 @@ public class IncomingImapMessage extends AbstractMimeMessage
      * Constructs {@link IncomingImapMessage} object based on {@link MimeMessage}
      * 
      * @param fileInfo - reference to the {@link FileInfo} object representing the message.
-     * @param imapHelper - reference to the {@link ImapHelper} object.
+     * @param serviceRegistry - reference to serviceRegistry object.
      * @param message - {@link MimeMessage}
      * @throws MessagingException
      */

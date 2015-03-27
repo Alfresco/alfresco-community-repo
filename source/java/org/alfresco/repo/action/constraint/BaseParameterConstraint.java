@@ -138,7 +138,7 @@ public abstract class BaseParameterConstraint implements ParameterConstraint,
     }
     
     /**
-     * @see org.alfresco.service.cmr.action.ParameterConstraint#getValueDisplayLabel(java.io.Serializable)
+     * @see org.alfresco.service.cmr.action.ParameterConstraint#getValueDisplayLabel(String)
      */
     public String getValueDisplayLabel(String value)
     {
@@ -146,7 +146,7 @@ public abstract class BaseParameterConstraint implements ParameterConstraint,
     }
 
     /**
-     * @see org.alfresco.service.cmr.action.ParameterConstraint#isValidValue(java.io.Serializable)
+     * @see org.alfresco.service.cmr.action.ParameterConstraint#isValidValue(String)
      */
     public boolean isValidValue(String value)
     {

@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.transfer.TransferEvent;
  * An abstract implementation of TransferEvent.
  * Also implements the operations required by RangedTransferEvent.
  * @see TransferEvent
- * @see RangedTransferEvent
+ * @see org.alfresco.service.cmr.transfer.RangedTransferEvent
  */
 public abstract class TransferEventImpl implements TransferEvent
 {

@@ -208,7 +208,7 @@ public class ViewParser implements Parser
      * Process start of xml element
      * 
      * @param xpp
-     * @param contextStack
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -344,11 +344,7 @@ public class ViewParser implements Parser
      * Process Root
      * 
      * @param xpp
-     * @param parentRef
-     * @param childAssocType
-     * @param configuration
-     * @param progress
-     * @param contextStack
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -367,7 +363,7 @@ public class ViewParser implements Parser
      * 
      * @param xpp
      * @param metaDataName
-     * @param contextStack
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -398,7 +394,7 @@ public class ViewParser implements Parser
      * 
      * @param xpp
      * @param typeDef
-     * @param contextStack
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -432,8 +428,8 @@ public class ViewParser implements Parser
      * Process start reference
      * 
      * @param xpp
-     * @param typeDef
-     * @param contextStack
+     * @param refName
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -512,7 +508,7 @@ public class ViewParser implements Parser
      * 
      * @param xpp
      * @param aspectDef
-     * @param contextStack
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -536,7 +532,7 @@ public class ViewParser implements Parser
      * Process ACL definition
      * 
      * @param xpp
-     * @param contextStack
+     * @param parserContext
      */
     private void processACL(XmlPullParser xpp, ParserContext parserContext)
     {
@@ -557,7 +553,7 @@ public class ViewParser implements Parser
      * Process ACE definition
      * 
      * @param xpp
-     * @param contextStack
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -652,8 +648,8 @@ public class ViewParser implements Parser
      * Process property definition
      * 
      * @param xpp
-     * @param propDef
-     * @param contextStack
+     * @param propertyName
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -824,8 +820,8 @@ public class ViewParser implements Parser
      * Process start of association definition
      * 
      * @param xpp
-     * @param AssocDef
-     * @param contextStack
+     * @param assocDef
+     * @param parserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -847,7 +843,7 @@ public class ViewParser implements Parser
      * Process end of xml element
      * 
      * @param xpp
-     * @param contextStack
+     * @param parserContext
      */
     private void processEndElement(XmlPullParser xpp, ParserContext parserContext)
     {
@@ -890,7 +886,8 @@ public class ViewParser implements Parser
     /**
      * Process end of the child association
      * 
-     * @param context
+     * @param parserContext
+     * @param parent
      */
     private void processEndAssoc(ParserContext parserContext, ParentContext parent)
     {

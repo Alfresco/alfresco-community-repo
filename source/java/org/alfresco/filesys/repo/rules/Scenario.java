@@ -31,7 +31,7 @@ public interface Scenario
      * <p>
      * If the scenario is interested in the specified operation then 
      * return a new scenario instance.
-     * @param currentInstances the current instances of all scenarios. 
+     * @param ctx EvaluatorContext.
      * @param operation the operation to be performed
      * @return the scenario instance or null if a new instance is not required.
      */

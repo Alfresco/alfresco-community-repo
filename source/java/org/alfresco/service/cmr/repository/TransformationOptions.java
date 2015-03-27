@@ -344,7 +344,7 @@ public class TransformationOptions implements Cloneable
      * Sets a limit in terms of the amount of data read (by time) to limit transformations where
      * only the start of the content is needed. After this limit is reached the InputStream reports
      * end of file.
-     * @param readLimitBytes if less than or equal to zero (the default) there is no limit.
+     * @param readLimitTimeMs if less than or equal to zero (the default) there is no limit.
      *                       If greater than zero the {@code timeoutMs} must not be set.
      */
     public void setReadLimitTimeMs(long readLimitTimeMs)
@@ -525,7 +525,7 @@ public class TransformationOptions implements Cloneable
     /**
      * Gets the appropriate source options for the given mimetype if available.
      * 
-     * @param sourceMimetype
+     * @param clazz
      * @return the source options for the mimetype
      */
     @SuppressWarnings("unchecked")
@@ -549,7 +549,7 @@ public class TransformationOptions implements Cloneable
      *   <li>{@link #OPT_USE}</li>
      *   <li>{@link TransformationOptionLimits#OPT_TIMEOUT_MS}</li>
      *   <li>{@link TransformationOptionLimits#OPT_READ_LIMIT_TIME_MS}</li>
-     *   <li>{@link TransformationOptionLimits#OPT_MAX_SOURCE_SIZE_K_BYTES</li>
+     *   <li>{@link TransformationOptionLimits#OPT_MAX_SOURCE_SIZE_K_BYTES}</li>
      *   <li>{@link TransformationOptionLimits#OPT_READ_LIMIT_K_BYTES}</li>
      *   <li>{@link TransformationOptionLimits#OPT_MAX_PAGES}</li>
      *   <li>{@link TransformationOptionLimits#OPT_PAGE_LIMIT}</li>

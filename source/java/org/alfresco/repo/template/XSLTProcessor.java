@@ -123,7 +123,7 @@ public class XSLTProcessor extends BaseProcessor implements TemplateProcessor
 
     /**
      * @param templateSource
-     * @param xsltModel
+     * @param model
      * @param out
      */
     private void process(TemplateSource templateSource, Object model, Writer out)

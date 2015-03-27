@@ -153,7 +153,7 @@ public class PoiOOXMLContentTransformerTest extends AbstractContentTransformerTe
     /**
      * Configures timeout for given <code>transformer</code>
      * 
-     * @param extractor - {@link PoiOOXMLContentTransformer} instance
+     * @param transformer - {@link PoiOOXMLContentTransformer} instance
      * @param timeout - {@link Long} value which specifies timeout for <code>transformer</code>
      */
     private void configureExtractorLimits(PoiOOXMLContentTransformer transformer, final long timeout)

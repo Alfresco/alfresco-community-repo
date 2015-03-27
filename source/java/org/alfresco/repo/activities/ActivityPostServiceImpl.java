@@ -374,7 +374,7 @@ public class ActivityPostServiceImpl implements ActivityPostService
      * Validate that the nodeRef property - if present in the activity data - is valid
      * on a basic level (it can be used to construct a NodeRef object).
      * 
-     * @param activityPost
+     * @param jo
      * @throws JSONException 
      */
     private NodeRef checkNodeRef(JSONObject jo) throws JSONException

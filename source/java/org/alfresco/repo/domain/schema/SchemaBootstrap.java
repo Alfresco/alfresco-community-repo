@@ -178,7 +178,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
 
     /**
-     * @see PropertyValue#DEFAULT_MAX_STRING_LENGTH
+     * @see #DEFAULT_MAX_STRING_LENGTH
      */
     private static final void setMaxStringLength(int length)
     {
@@ -467,7 +467,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * Register a new script for execution after the Hibernate schema creation phase.  The order of registration
      * determines the order of execution.
      * 
-     * @param postCreateScriptUrl           the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
+     * @param postUpdateScriptUrl           the script URL, possibly containing the <b>${db.script.dialect}</b> placeholder
      */
     public void addPostCreateScriptUrl(String postUpdateScriptUrl)
     {

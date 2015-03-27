@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
        xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 	<bean id="rmSqlSessionFactory" class="org.alfresco.ibatis.HierarchicalSqlSessionFactoryBean">
+        <property name="useLocalCaches" value="${mybatis.useLocalCaches}"/>
         <property name="resourceLoader" ref="dialectResourceLoader"/>
         <property name="dataSource" ref="dataSource"/>
         <property name="configLocation">
@@ -16,9 +17,9 @@
         <constructor-arg index="0" ref="rmSqlSessionFactory"/>
     </bean>
 
-	<bean id="recordsManagementQueryDAO" class="org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAOImpl">
+	<bean id="recordsManagementQueryDAO" class="org.alfresco.module.org_alfresco_module_rm.query.RecordsManagementQueryDAOImpl">	
 		<property name="sqlSessionTemplate" ref="rmSqlSessionTemplate"/>
-		<property name="qnameDAO" ref="qnameDAO"/>
+		<property name="qnameDAO" ref="qnameDAO"/>	
 	</bean>
 
 </beans>

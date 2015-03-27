@@ -33,11 +33,32 @@
             <ref bean="rmCreateRecordFolderCapability"/>
             <ref bean="rmModifyRecordFolderCapability"/>
             <ref bean="rmDeleteRecordFolderCapability"/>
+            <!-- FIXME: Move to separate capability -->
+            <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
          </list>
       </property>
       <property name="group"><ref bean="folderControlGroup"/></property>
       <property name="index" value="20" />
    </bean>
+
+   <!-- FIXME: Will be added as a separate capability
+   <bean id="rmCreateModifyDestroyUnfiledRecordsContainerFolderCapability"
+         parent="compositeCapability">
+      <property name="name" value="CreateModifyDestroyUnfiledRecordsContainer"/>
+      <property name="permission" value="CreateModifyDestroyFolders"/>
+      <property name="capabilities">
+         <list>
+            <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
+            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
+         </list>
+      </property>
+      <property name="group"><ref bean="folderControlGroup"/></property>
+      <property name="index" value="30" />
+   </bean>
+   -->
 
    <bean id="rmReOpenFoldersCapability"
       parent="declarativeCapability">
@@ -204,21 +225,6 @@
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
             <entry key="capabilityCondition.cutoff" value="false"/>
-            <entry key="capabilityCondition.frozen" value="false"/>
-            <entry key="capabilityCondition.closed" value="false"/>
-         </map>
-      </property>
-   </bean>
-
-   <bean id="rmUnlinkFromRecordFolderCapability"
-         parent="declarativeCapability">
-      <property name="name" value="UnlinkFromRecordFolder" />
-      <property name="permission" value="DeleteLinks" />
-      <property name="private" value="true" />
-      <property name="kind" value="RECORD_FOLDER" />
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
             <entry key="capabilityCondition.frozen" value="false"/>
             <entry key="capabilityCondition.closed" value="false"/>
          </map>

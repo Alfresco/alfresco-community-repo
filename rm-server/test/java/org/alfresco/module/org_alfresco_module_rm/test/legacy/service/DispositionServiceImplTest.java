@@ -981,15 +981,9 @@ public class DispositionServiceImplTest extends BaseRMTestCase
             @Override
             public void test(DispositionActionDefinition result) throws Exception
             {
-                DispositionActionDefinition actionDefinition = testRM386DispositionSchedule.getDispositionActionDefinitionByName("cutoff");
-                assertNotNull(actionDefinition);
-                assertTrue(nodeService.hasAspect(actionDefinition.getNodeRef(), ASPECT_UNPUBLISHED_UPDATE));
-
                 // Publish the updates
                 PublishUpdatesJobExecuter updater = (PublishUpdatesJobExecuter)applicationContext.getBean("publishUpdatesJobExecuter");
                 updater.executeImpl();
-
-                assertFalse(nodeService.hasAspect(actionDefinition.getNodeRef(), ASPECT_UNPUBLISHED_UPDATE));
 
                 // Check the record has been updated
                 DispositionAction dispositionAction = dispositionService.getNextDispositionAction(testRM386Record);

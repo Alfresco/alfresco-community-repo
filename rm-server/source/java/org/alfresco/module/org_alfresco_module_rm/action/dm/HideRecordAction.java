@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.action.AuditableActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
  * @since 2.1
  */
 public class HideRecordAction extends AuditableActionExecuterAbstractBase
-                              implements RecordsManagementModel
+							  implements RecordsManagementModel
 {
 
     /** Logger */
@@ -51,8 +51,8 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     /** Node service */
     private NodeService nodeService;
 
-    /** Inplace record service */
-    private InplaceRecordService inplaceRecordService;
+    /** Record service */
+    private RecordService recordService;
 
     /**
      * @param nodeService node service
@@ -63,11 +63,11 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
     }
 
     /**
-     * @param inplaceRecordService inplace record service
+     * @param recordService record service
      */
-    public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
+    public void setRecordService(RecordService recordService)
     {
-        this.inplaceRecordService = inplaceRecordService;
+        this.recordService = recordService;
     }
 
     /**
@@ -87,7 +87,7 @@ public class HideRecordAction extends AuditableActionExecuterAbstractBase
         else
         {
             // hide the record from the collaboration site
-            inplaceRecordService.hideRecord(actionedUponNodeRef);
+            recordService.hideRecord(actionedUponNodeRef);
         }
     }
 

@@ -23,7 +23,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * RM v2.2 patch to add new hold releated capabilities.
+ * RM v2.2 patch to update capabilities.
  *
  * @author Roy Wetherall
  * @since 2.2

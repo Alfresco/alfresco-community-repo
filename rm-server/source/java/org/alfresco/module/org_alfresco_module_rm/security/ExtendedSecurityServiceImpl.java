@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -238,24 +236,18 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             // get the reference count
             Map<String, Integer> referenceCountMap = (Map<String, Integer>)nodeService.getProperty(filePlan, propertyName);
 
-            // set of assigned authorities
-            Set<String> assignedAuthorities = new HashSet<String>(authorities.size());
-            
             for (String authority : authorities)
             {
-                if ((!authority.equals(PermissionService.ALL_AUTHORITIES) && 
-                     !authority.equals(PermissionService.OWNER_AUTHORITY)) &&
-                     !AuthorityType.ROLE.equals(AuthorityType.getAuthorityType(authority)) &&
+                if ((!authority.equals(PermissionService.ALL_AUTHORITIES) && !authority.equals(PermissionService.OWNER_AUTHORITY)) &&
                     (referenceCountMap == null || !referenceCountMap.containsKey(authority)))
                 {
                     // add the authority to the role
                     filePlanRoleService.assignRoleToAuthority(filePlan, roleName, authority);
-                    assignedAuthorities.add(authority);
                 }
             }
 
             // update the reference count
-            nodeService.setProperty(filePlan, propertyName, (Serializable)addToMap(referenceCountMap, assignedAuthorities));
+            nodeService.setProperty(filePlan, propertyName, (Serializable)addToMap(referenceCountMap, authorities));
         }
     }
 

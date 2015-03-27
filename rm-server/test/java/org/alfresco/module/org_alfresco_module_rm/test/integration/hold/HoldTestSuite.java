@@ -32,8 +32,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(
 {
     DeleteHoldTest.class,
-    AddRemoveFromHoldTest.class,
-    CreateHoldTest.class
+    AddRemoveFromHoldTest.class
 })
 public class HoldTestSuite
 {

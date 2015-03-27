@@ -265,7 +265,7 @@
    </bean>
 
    <!-- retain -->
-   <!-- No permissoin?? : allow -->
+   <!-- No permission?? : allow -->
 
    <bean id="retain_proxy" parent="rmProxyAction" >
       <property name="target">
@@ -384,6 +384,7 @@
 
    <bean id="declareRecord" class="org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction" parent="rmAction">
       <property name="publicAction" value="true"/>
+      <property name="checkMandatoryPropertiesEnabled" value="${rm.completerecord.mandatorypropertiescheck.enabled}"/>
    </bean>
 
    <!-- undeclare record -->
@@ -678,7 +679,6 @@
    </bean>
 
    <bean id="splitEmail" class="org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction" parent="rmAction">
-      <property name="RelationshipService" ref="RelationshipService"/>
    </bean>
 
    <!--  Create disposition schedule -->
@@ -817,7 +817,7 @@
       <property name="allowParameterSubstitutions" value="true"/>
    </bean>
 
-   <!--  Link Record -->
+   <!--  Link To -->
 
    <bean id="linkTo_proxy" parent="rmProxyAction">
       <property name="target" ref="linkTo"/>
@@ -843,30 +843,6 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
-   </bean>
-
-   <!--  Unlink Record -->
-
-   <bean id="unlinkFrom_proxy" parent="rmProxyAction">
-      <property name="target" ref="unlinkFrom"/>
-        <property name="interceptorNames">
-            <list>
-               <idref bean="unlinkFrom_security"/>
-            </list>
-         </property>
-   </bean>
-
-   <bean id="unlinkFrom_security"   parent="actionSecurity">
-      <property name="objectDefinitionSource">
-         <value>
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.execute=RM_CAP.0.rma:filePlanComponent.DeleteLinks
-            org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction.*=RM_ALLOW
-            org.alfresco.repo.action.executer.ActionExecuter.*=RM_ALLOW
-         </value>
-      </property>
-   </bean>
-
-   <bean id="unlinkFrom" class="org.alfresco.module.org_alfresco_module_rm.action.impl.UnlinkFromAction" parent="rmAction">
    </bean>
 
     <!-- RequestInfo action -->

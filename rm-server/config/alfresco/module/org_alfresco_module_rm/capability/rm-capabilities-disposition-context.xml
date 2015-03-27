@@ -157,30 +157,6 @@
       <property name="index" value="120" />
    </bean>
 
-
-   <!--  End Rentention -->
-   <bean id="rmEndRetentionCapability"
-      parent="declarativeCapability">
-      <property name="name" value="EndRetention"/>
-      <property name="permission" value="EndRetention" />
-      <property name="kinds">
-         <list>
-            <value>RECORD_FOLDER</value>
-            <value>RECORD</value>
-         </list>
-      </property>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
-            <entry key="capabilityCondition.retentionIsScheduled" value="true" />
-         </map>
-      </property>
-      <property name="group"><ref bean="dispositionAndTransfersGroup"/></property>
-      <property name="index" value="70" />
-   </bean>
-
-
    <!--  Non-assignable Capabilities -->
 
    <bean id="rmInitiateAllTransfersCapability"
@@ -210,7 +186,6 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.isTransferAccession" value="false"/>
-            <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>
    </bean>
@@ -242,7 +217,6 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.isTransferAccession" value="true"/>
-            <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>
    </bean>
@@ -312,5 +286,24 @@
       </property>
    </bean>
 
+   <!--  End Rentention -->
+   <bean id="rmEndRetentionCapability"
+      parent="declarativeCapability">
+      <property name="name" value="EndRetention"/>
+      <property name="private" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+            <value>RECORD</value>
+         </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+            <entry key="capabilityCondition.frozenOrFrozenChildren" value="false"/>
+            <entry key="capabilityCondition.retentionIsScheduled" value="true" />
+         </map>
+      </property>
+   </bean>
 
 </beans>

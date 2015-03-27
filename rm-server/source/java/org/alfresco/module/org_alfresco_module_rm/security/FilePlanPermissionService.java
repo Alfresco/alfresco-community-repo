@@ -29,9 +29,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface FilePlanPermissionService
 {
     /**
-     * Setup permissions for a record category
      * 
-     * @param nodeRef   record category node reference
+     * @param nodeRef
      */
     void setupRecordCategoryPermissions(NodeRef recordCategory);
     

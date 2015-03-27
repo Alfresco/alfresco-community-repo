@@ -221,8 +221,7 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         String namePrefix = this.getName() + ".";
         if(StringUtils.isBlank(substitutionFragment)  || this.getName().toLowerCase().contains(substitutionFragment.toLowerCase()))
         {
-            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) 
-            {
+            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) {
                 suggestions.add(namePrefix + field);
                 if(suggestions.size() >= maximumNumberSuggestions)
                 {
@@ -232,8 +231,7 @@ public class DateParameterProcessor extends ParameterProcessor implements Parame
         }
         else
         {
-            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) 
-            {
+            for(String field: ALL_FIELDS_FOR_SUBSTITUTION_QUERY) {
                 String prefixFieldName = namePrefix + field;
                 if(prefixFieldName.toLowerCase().contains(substitutionFragment.toLowerCase()))
                 {

@@ -45,10 +45,10 @@ public class UndoEventAction extends RMActionExecuterAbstractBase
     {
         String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
 
-        if (this.getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
+        if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             // Get the next disposition action
-            DispositionAction da = this.getDispositionService().getNextDispositionAction(actionedUponNodeRef);
+            DispositionAction da = this.dispositionService.getNextDispositionAction(actionedUponNodeRef);
             if (da != null)
             {
                 // undo completed event

@@ -36,9 +36,6 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
     /** I18N */
     private static final String MSG_NODE_NOT_TRANSFER = "rm.action.node-not-transfer";
 
-    /** Action name */
-    public static final String NAME = "transferComplete";
-
     /** Transfer service */
     private TransferService transferService;
 
@@ -76,8 +73,8 @@ public class TransferCompleteAction extends RMActionExecuterAbstractBase
      */
     private void checkTransferSubClass(NodeRef actionedUponNodeRef)
     {
-        QName type = getNodeService().getType(actionedUponNodeRef);
-        if (!getDictionaryService().isSubClass(type, TYPE_TRANSFER))
+        QName type = nodeService.getType(actionedUponNodeRef);
+        if (!dictionaryService.isSubClass(type, TYPE_TRANSFER))
         {
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NODE_NOT_TRANSFER));
         }

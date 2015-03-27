@@ -74,7 +74,7 @@
          <associations>
             
             <child-association name="rmc:supersedes">
-                <title>Superseded By__Supersedes</title>
+                <title>SupersededBy__Supersedes</title>
                 <source>
                     <mandatory>false</mandatory>
                     <many>true</many>
@@ -87,7 +87,7 @@
             </child-association>
             
             <child-association name="rmc:obsoletes">
-                <title>Obsoleted By__Obsoletes</title>
+                <title>ObsoletedBy__Obsoletes</title>
                 <source>
                     <mandatory>false</mandatory>
                     <many>true</many>
@@ -100,7 +100,7 @@
             </child-association>
             
             <child-association name="rmc:versions">
-                <title>Next Version__Previous Version</title>
+                <title>VersionedBy__Versions</title>
                 <source>
                     <mandatory>false</mandatory>
                     <many>true</many>

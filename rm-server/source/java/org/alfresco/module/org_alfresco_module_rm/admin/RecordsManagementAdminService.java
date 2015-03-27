@@ -24,16 +24,13 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 
 /**
  * Records management custom model service interface. Implementations of this class are responsible
@@ -234,7 +231,6 @@ public interface RecordsManagementAdminService
      * in the results.
      *
      * @return The Map of custom references (both parent-child and standard).
-     * @deprecated as of RM 2.3, please use {@link RelationshipService#getRelationshipDefinitions()} instead.
      */
     Map<QName, AssociationDefinition> getCustomReferenceDefinitions();
 
@@ -243,7 +239,6 @@ public interface RecordsManagementAdminService
      *
      * @param node the node from which the associations start.
      * @return a List of associations.
-     * @deprecated as of RM 2.3, please use {@link NodeService#getTargetAssocs(NodeRef, RegexQNamePattern.MATCH_ALL)} instead.
      */
     List<AssociationRef> getCustomReferencesFrom(NodeRef node);
 
@@ -253,7 +248,6 @@ public interface RecordsManagementAdminService
      *
      * @param node
      * @return
-     * @deprecated as of RM 2.3, please use {@link NodeService#getChildAssocs(NodeRef)} instead.
      */
     List<ChildAssociationRef> getCustomChildReferences(NodeRef node);
 
@@ -262,7 +256,6 @@ public interface RecordsManagementAdminService
      *
      * @param node the node to which the associations point.
      * @return a List of associations.
-     * @deprecated as of RM 2.3, please use {@link NodeService#getSourceAssocs(NodeRef, RegexQNamePattern.MATCH_ALL)} instead.
      */
     List<AssociationRef> getCustomReferencesTo(NodeRef node);
 
@@ -271,7 +264,6 @@ public interface RecordsManagementAdminService
      *
      * @param node
      * @return
-     * @deprecated as of RM 2.3, please use {@link NodeService#getParentAssocs(NodeRef)} instead.
      */
     List<ChildAssociationRef> getCustomParentReferences(NodeRef node);
 
@@ -285,7 +277,6 @@ public interface RecordsManagementAdminService
      * @param assocId the server-side qname e.g. {http://www.alfresco.org/model/rmcustom/1.0}abcd-12-efgh-4567
      * @throws AlfrescoRuntimeException if an instance of the specified reference type
      *                                  already exists from fromNode to toNode.
-     * @deprecated as of RM 2.3, please use {@link RelationshipService#addRelationship(String, NodeRef, NodeRef)} instead.
      */
     void addCustomReference(NodeRef fromNode, NodeRef toNode, QName assocId);
 
@@ -295,7 +286,6 @@ public interface RecordsManagementAdminService
      * @param fromNode
      * @param toNode
      * @param assocId the server-side qname e.g. {http://www.alfresco.org/model/rmcustom/1.0}abcd-12-efgh-4567
-     * @deprecated as of RM 2.3, please use {@link RelationshipService#removeRelationship(String, NodeRef, NodeRef)} instead.
      */
     void removeCustomReference(NodeRef fromNode, NodeRef toNode, QName assocId);
 
@@ -304,7 +294,6 @@ public interface RecordsManagementAdminService
      *
      * @param label the title of the association definition
      * @return the QName of the newly-created association.
-     * @deprecated as of RM 2.3, please use {@link RelationshipService#createRelationshipDefinition(org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName)} instead.
      */
     QName addCustomAssocDefinition(String label);
 
@@ -315,7 +304,6 @@ public interface RecordsManagementAdminService
      * @param source
      * @param target
      * @return the QName of the newly-created association.
-     * @deprecated as of RM 2.3, please use {@link RelationshipService#createRelationshipDefinition(org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName)} instead.
      */
     QName addCustomChildAssocDefinition(String source, String target);
 
@@ -329,7 +317,6 @@ public interface RecordsManagementAdminService
      * @param newTarget the new value for the target field.
      * @see #getCompoundIdFor(String, String)
      * @see #splitSourceTargetId(String)
-     * @deprecated as of RM 2.3, please use {@link RelationshipService#updateRelationshipDefinition(String, org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName)} instead.
      */
     QName updateCustomChildAssocDefinition(QName refQName, String newSource, String newTarget);
 
@@ -340,7 +327,6 @@ public interface RecordsManagementAdminService
      *
      * @param refQName qname of the child association.
      * @param newLabel the new value for the label field.
-     * @deprecated as of RM 2.3, please use {@link RelationshipService#updateRelationshipDefinition(String, org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName)} instead.
      */
     QName updateCustomAssocDefinition(QName refQName, String newLabel);
 

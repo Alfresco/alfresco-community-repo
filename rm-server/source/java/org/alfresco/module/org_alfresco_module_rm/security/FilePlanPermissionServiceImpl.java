@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
@@ -77,12 +76,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     /** Authority service */
     private AuthorityService authorityService;
-
-    /** File plan role service */
-    private FilePlanRoleService filePlanRoleService;
-
-    /** File plan service */
-    private FilePlanService filePlanService;
 
     /** Logger */
     private static final Log LOGGER = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
@@ -181,46 +174,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * Gets the file plan role service
-     *
-     * @return The file plan role service
-     */
-    public FilePlanRoleService getFilePlanRoleService()
-    {
-        return this.filePlanRoleService;
-    }
-
-    /**
-     * Sets the file plan role service
-     *
-     * @param filePlanRoleService The file plan role service to set
-     */
-    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
-    {
-        this.filePlanRoleService = filePlanRoleService;
-    }
-
-    /**
-     * Gets the file plan service
-     *
-     * @return The file plan service
-     */
-    public FilePlanService getFilePlanService()
-    {
-        return this.filePlanService;
-    }
-
-    /**
-     * Sets the file plan service
-     *
-     * @param filePlanService The file plan service to set
-     */
-    public void setFilePlanService(FilePlanService filePlanService)
-    {
-        this.filePlanService = filePlanService;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.FilePlanPermissionService#setupRecordCategoryPermissions(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -289,7 +242,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     )
     public void onCreateHold(final ChildAssociationRef childAssocRef)
     {
-        createContainerElement(childAssocRef);
+        mandatory("childAssocRef", childAssocRef);
+        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
     }
 
     /**
@@ -306,50 +260,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     )
     public void onCreateTransfer(final ChildAssociationRef childAssocRef)
     {
-        createContainerElement(childAssocRef);
-    }
-
-    /**
-     * Helper method to create a container element, e.g. transfer folder or hold
-     *
-     * @param childAssocRef
-     */
-    private void createContainerElement(final ChildAssociationRef childAssocRef)
-    {
         mandatory("childAssocRef", childAssocRef);
-        NodeRef childRef = childAssocRef.getChildRef();
-        setupPermissions(childAssocRef.getParentRef(), childRef);
-        grantFilingPermissionToCreator(childRef);
-    }
-
-    /**
-     * Helper method to give filing permissions to the currently logged in user who creates the node (transfer folder, hold, etc.)
-     *
-     * @param nodeRef The node reference of the created object
-     */
-    private void grantFilingPermissionToCreator(final NodeRef nodeRef)
-    {
-        final String user = AuthenticationUtil.getFullyAuthenticatedUser();
-
-        final boolean hasUserPermission = authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Boolean>()
-        {
-            public Boolean doWork()
-            {
-                return getPermissionService().hasPermission(nodeRef, RMPermissionModel.FILING) == AccessStatus.ALLOWED;
-            }
-        }, user);
-
-        if (!hasUserPermission)
-        {
-            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
-            {
-                public Void doWork()
-                {
-                    getPermissionService().setPermission(nodeRef, user, RMPermissionModel.FILING, true);
-                    return null;
-                }
-            });
-        }
+        setupPermissions(childAssocRef.getParentRef(), childAssocRef.getChildRef());
     }
 
     /**
@@ -365,7 +277,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
         if (nodeService.exists(nodeRef) && nodeService.exists(parent))
         {
-            authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+            runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
@@ -444,7 +356,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         mandatory("childAssocRef", record);
         mandatory("childAssocRef", aspectTypeQName);
 
-        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Object doWork()
             {
@@ -470,7 +382,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         mandatory("sourceAssocRef", sourceAssocRef);
         mandatory("destinationAssocRef", destinationAssocRef);
 
-        authenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        runAs(new AuthenticationUtil.RunAsWork<Void>()
         {
             public Void doWork()
             {
@@ -525,7 +437,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("authority", authority);
         ParameterCheck.mandatory("permission", permission);
 
-        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Void doWork()
             {
@@ -556,7 +468,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         ParameterCheck.mandatory("authority", authority);
         ParameterCheck.mandatory("permission", permission);
 
-        authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
+        runAsSystem(new AuthenticationUtil.RunAsWork<Object>()
         {
             public Void doWork()
             {
@@ -580,7 +492,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     private boolean canPerformPermissionAction(NodeRef nodeRef)
     {
-        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef) || isTransfer(nodeRef);
+        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef);
     }
 
     /**

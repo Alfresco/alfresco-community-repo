@@ -30,7 +30,6 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
-import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -75,9 +74,6 @@ public class TransferServiceImpl extends ServiceBaseImpl
     /** Record folder service */
     protected RecordFolderService recordFolderService;
 
-    /** Freeze Service */
-    protected FreezeService freezeService;
-
     /**
      * @param filePlanService file plan service
      */
@@ -108,14 +104,6 @@ public class TransferServiceImpl extends ServiceBaseImpl
     public void setRecordFolderService(RecordFolderService recordFolderService)
     {
         this.recordFolderService = recordFolderService;
-    }
-
-    /**
-     * @param freezeService freeze service
-     */
-    public void setFreezeService(FreezeService freezeService)
-    {
-        this.freezeService = freezeService;
     }
 
     /**
@@ -240,16 +228,6 @@ public class TransferServiceImpl extends ServiceBaseImpl
         List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_TRANSFERRED, RegexQNamePattern.MATCH_ALL);
         for (ChildAssociationRef assoc : assocs)
         {
-            if(freezeService.isFrozen(assoc.getChildRef()))
-            {
-                throw new AlfrescoRuntimeException("Could not complete a transfer that contains held folders");
-            }
-            
-            if(freezeService.hasFrozenChildren(assoc.getChildRef()))
-            {
-                throw new AlfrescoRuntimeException("Cound not complete a transfer that contains folders with held children");
-            }
-            
             markComplete(assoc.getChildRef(), accessionIndicator, transferLocation);
         }
 

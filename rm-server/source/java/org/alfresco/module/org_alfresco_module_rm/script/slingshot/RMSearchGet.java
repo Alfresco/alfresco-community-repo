@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearch
 import org.alfresco.module.org_alfresco_module_rm.search.SavedSearchDetailsCompatibility;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -83,6 +84,9 @@ public class RMSearchGet extends DeclarativeWebScript
 
     /** Person service */
     protected PersonService personService;
+
+    /** Content service */
+    protected ContentService contentService;
 
     /** Person data cache */
     private Map<String, String> personDataCache = null;
@@ -141,6 +145,14 @@ public class RMSearchGet extends DeclarativeWebScript
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+
+    /**
+     * @param contentService content service
+     */
+    public void setContentService(ContentService contentService)
+    {
+        this.contentService = contentService;
     }
 
     /*

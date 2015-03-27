@@ -23,7 +23,6 @@ import java.util.List;
 import org.activiti.engine.delegate.DelegateTask;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.context.Context;
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
@@ -62,7 +61,7 @@ public final class RequestInfoUtils
             ServiceRegistry registry = (ServiceRegistry) config.getBeans().get(ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
             if (registry == null)
             {
-                throw new AlfrescoRuntimeException(
+                throw new RuntimeException(
                         "Service-registry not present in ProcessEngineConfiguration beans, expected ServiceRegistry with key" +
                                 ActivitiConstants.SERVICE_REGISTRY_BEAN_KEY);
             }

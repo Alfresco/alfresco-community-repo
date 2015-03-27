@@ -69,7 +69,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (!RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION.equals(getNodeService().getType(actionedUponNodeRef)))
+        if (!RecordsManagementModel.TYPE_DISPOSITION_ACTION_DEFINITION.equals(nodeService.getType(actionedUponNodeRef)))
         {
             return;
         }
@@ -77,14 +77,14 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
         List<QName> changedProps = (List<QName>)action.getParameterValue(CHANGED_PROPERTIES);
 
         // Navigate up the containment hierarchy to get the record category grandparent and schedule.
-        NodeRef dispositionScheduleNode = getNodeService().getPrimaryParent(actionedUponNodeRef).getParentRef();
-        NodeRef rmContainer = getNodeService().getPrimaryParent(dispositionScheduleNode).getParentRef();
-        DispositionSchedule dispositionSchedule = getDispositionService().getAssociatedDispositionSchedule(rmContainer);
+        NodeRef dispositionScheduleNode = nodeService.getPrimaryParent(actionedUponNodeRef).getParentRef();
+        NodeRef rmContainer = nodeService.getPrimaryParent(dispositionScheduleNode).getParentRef();
+        DispositionSchedule dispositionSchedule = dispositionService.getAssociatedDispositionSchedule(rmContainer);
 
         behaviourFilter.disableBehaviour();
         try
         {
-            List<NodeRef> disposableItems = getDispositionService().getDisposableItems(dispositionSchedule);
+            List<NodeRef> disposableItems = dispositionService.getDisposableItems(dispositionSchedule);
             for (NodeRef disposableItem : disposableItems)
             {
                 updateDisposableItem(dispositionSchedule, disposableItem, actionedUponNodeRef, changedProps);
@@ -107,11 +107,11 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     {
         // We need to check that this folder is under the management of the disposition schedule that
         // has been updated
-        DispositionSchedule itemDs = getDispositionService().getDispositionSchedule(disposableItem);
+        DispositionSchedule itemDs = dispositionService.getDispositionSchedule(disposableItem);
         if (itemDs != null &&
             itemDs.getNodeRef().equals(ds.getNodeRef()))
         {
-            if (getNodeService().hasAspect(disposableItem, ASPECT_DISPOSITION_LIFECYCLE))
+            if (nodeService.hasAspect(disposableItem, ASPECT_DISPOSITION_LIFECYCLE))
             {
                 // disposition lifecycle already exists for node so process changes
                 processActionDefinitionChanges(dispositionActionDefinition, changedProps, disposableItem);
@@ -119,7 +119,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             else
             {
                 // disposition lifecycle does not exist on the node so setup disposition
-                getDispositionService().updateNextDispositionAction(disposableItem);
+                dispositionService.updateNextDispositionAction(disposableItem);
             }
 
             // update rolled up search information
@@ -134,14 +134,14 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
      */
     private void rollupSearchProperties(NodeRef disposableItem)
     {
-        DispositionAction da = getDispositionService().getNextDispositionAction(disposableItem);
+        DispositionAction da = dispositionService.getNextDispositionAction(disposableItem);
         if (da != null)
         {
-            Map<QName, Serializable> props = getNodeService().getProperties(disposableItem);
+            Map<QName, Serializable> props = nodeService.getProperties(disposableItem);
 
             props.put(PROP_RS_DISPOSITION_ACTION_NAME, da.getName());
             props.put(PROP_RS_DISPOSITION_ACTION_AS_OF, da.getAsOfDate());
-            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, getNodeService().getProperty(da.getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE));
+            props.put(PROP_RS_DISPOSITION_EVENTS_ELIGIBLE, nodeService.getProperty(da.getNodeRef(), PROP_DISPOSITION_EVENTS_ELIGIBLE));
 
             DispositionActionDefinition daDefinition = da.getDispositionActionDefinition();
             Period period = daDefinition.getPeriod();
@@ -164,7 +164,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
             }
             props.put(PROP_RS_DISPOSITION_EVENTS, (Serializable)list);
 
-            getNodeService().setProperties(disposableItem, props);
+            nodeService.setProperties(disposableItem, props);
         }
     }
 
@@ -180,7 +180,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     {
         // check that the step being edited is the current step for the folder,
         // if not, the change has no effect on the current step so ignore
-        DispositionAction nextAction = getDispositionService().getNextDispositionAction(recordOrFolder);
+        DispositionAction nextAction = dispositionService.getNextDispositionAction(recordOrFolder);
         if (doesChangedStepAffectNextAction(dispositionActionDef, nextAction))
         {
             // the change does effect the nextAction for this node
@@ -197,8 +197,8 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
 
             if (changedProps.contains(PROP_DISPOSITION_ACTION_NAME))
             {
-                String action = (String)getNodeService().getProperty(dispositionActionDef, PROP_DISPOSITION_ACTION_NAME);
-                getNodeService().setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_ACTION, action);
+                String action = (String)nodeService.getProperty(dispositionActionDef, PROP_DISPOSITION_ACTION_NAME);
+                nodeService.setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_ACTION, action);
             }
         }
     }
@@ -240,7 +240,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
     private void persistPeriodChanges(NodeRef dispositionActionDef, DispositionAction nextAction)
     {
         Date newAsOfDate = null;
-        Period dispositionPeriod = (Period) getNodeService().getProperty(dispositionActionDef, PROP_DISPOSITION_PERIOD);
+        Period dispositionPeriod = (Period) nodeService.getProperty(dispositionActionDef, PROP_DISPOSITION_PERIOD);
 
         if (dispositionPeriod != null)
         {
@@ -255,7 +255,7 @@ public class BroadcastDispositionActionDefinitionUpdateAction extends RMActionEx
                         "' (" + nextAction.getNodeRef() + ") to: " + newAsOfDate);
         }
 
-        getNodeService().setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_AS_OF, newAsOfDate);
+        nodeService.setProperty(nextAction.getNodeRef(), PROP_DISPOSITION_AS_OF, newAsOfDate);
     }
 
     @Override

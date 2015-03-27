@@ -65,7 +65,7 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
         {
             for (String type : getRecordTypes(action))
             {
-                getRecordService().addRecordType(actionedUponNodeRef, QName.createQName(type, getNamespaceService()));
+                recordService.addRecordType(actionedUponNodeRef, QName.createQName(type, namespaceService));
             }
         }
         else if (logger.isWarnEnabled())
@@ -88,10 +88,10 @@ public class AddRecordTypeAction extends RMActionExecuterAbstractBase
     private boolean eligibleForAction(NodeRef actionedUponNodeRef)
     {
         boolean result = false;
-        if (getNodeService().exists(actionedUponNodeRef) &&
-                !getFreezeService().isFrozen(actionedUponNodeRef) &&
-                getRecordService().isRecord(actionedUponNodeRef) &&
-                !getRecordService().isDeclared(actionedUponNodeRef))
+        if (nodeService.exists(actionedUponNodeRef) &&
+                !freezeService.isFrozen(actionedUponNodeRef) &&
+                recordService.isRecord(actionedUponNodeRef) &&
+                !recordService.isDeclared(actionedUponNodeRef))
         {
             result = true;
         }

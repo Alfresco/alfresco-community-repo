@@ -117,28 +117,28 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         {
             // Check the eligibility of the action
             if (!checkEligibility(actionedUponNodeRef) ||
-                    getDispositionService().isNextDispositionActionEligible(actionedUponNodeRef))
+                dispositionService.isNextDispositionActionEligible(actionedUponNodeRef))
             {
                 if (di.isRecordLevelDisposition())
                 {
                     // Check that we do indeed have a record
-                    if (getRecordService().isRecord(actionedUponNodeRef))
+                    if (recordService.isRecord(actionedUponNodeRef))
                     {
                         // Can only execute disposition action on record if declared
-                        if (getRecordService().isDeclared(actionedUponNodeRef))
+                        if (recordService.isDeclared(actionedUponNodeRef))
                         {
                             // Indicate that the disposition action is underway
-                            getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
-                            getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
 
                             // Execute record level disposition
                             executeRecordLevelDisposition(action, actionedUponNodeRef);
 
-                            if (getNodeService().exists(nextDispositionActionNodeRef) &&
+                            if (nodeService.exists(nextDispositionActionNodeRef) &&
                                 getSetDispositionActionComplete())
                             {
-                                getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
-                                getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
                             }
                         }
                         else
@@ -153,22 +153,22 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                 }
                 else
                 {
-                    if (getRecordFolderService().isRecordFolder(actionedUponNodeRef))
+                    if (recordFolderService.isRecordFolder(actionedUponNodeRef))
                     {
-                        if (getRecordFolderService().isRecordFolderDeclared(actionedUponNodeRef))
+                        if (recordFolderService.isRecordFolderDeclared(actionedUponNodeRef))
                         {
                             // Indicate that the disposition action is underway
-                            getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
-                            getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_AT, new Date());
+                            nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_STARTED_BY, AuthenticationUtil.getRunAsUser());
 
                             executeRecordFolderLevelDisposition(action, actionedUponNodeRef);
 
                             // Indicate that the disposition action is compelte
-                            if (getNodeService().exists(nextDispositionActionNodeRef) &&
+                            if (nodeService.exists(nextDispositionActionNodeRef) &&
                                 getSetDispositionActionComplete())
                             {
-                                getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
-                                getNodeService().setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_AT, new Date());
+                                nodeService.setProperty(nextDispositionActionNodeRef, PROP_DISPOSITION_ACTION_COMPLETED_BY, AuthenticationUtil.getRunAsUser());
                             }
 
                         }
@@ -184,10 +184,10 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
 
                 }
 
-                if (getNodeService().exists(actionedUponNodeRef) && getSetDispositionActionComplete())
+                if (nodeService.exists(actionedUponNodeRef) && getSetDispositionActionComplete())
                 {
                     // Update the disposition schedule
-                    getDispositionService().updateNextDispositionAction(actionedUponNodeRef);
+                    dispositionService.updateNextDispositionAction(actionedUponNodeRef);
                 }
             }
             else
@@ -225,7 +225,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     protected DispositionSchedule checkDispositionActionExecutionValidity(NodeRef nodeRef, NodeRef nextDispositionActionNodeRef, boolean throwError)
     {
         // Check the node has associated disposition instructions
-        DispositionSchedule di = getDispositionService().getDispositionSchedule(nodeRef);
+        DispositionSchedule di = dispositionService.getDispositionSchedule(nodeRef);
         if (di == null)
         {
             if (throwError)
@@ -239,7 +239,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
         }
 
         // Check the node has the disposition schedule aspect applied
-        if (!getNodeService().hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
+        if (!nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE))
         {
             if (throwError)
             {
@@ -266,7 +266,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
                     return null;
                 }
             }
-            String actionName = (String) getNodeService().getProperty(nextDispositionAction, PROP_DISPOSITION_ACTION);
+            String actionName = (String) nodeService.getProperty(nextDispositionAction, PROP_DISPOSITION_ACTION);
             if (actionName == null || !actionName.equals(getName()))
             {
                 if (throwError)
@@ -293,7 +293,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     private NodeRef getNextDispostionAction(NodeRef nodeRef)
     {
         NodeRef result = null;
-        List<ChildAssociationRef> assocs = getNodeService().getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
         if (assocs.size() != 0)
         {
             result = assocs.get(0).getChildRef();

@@ -114,8 +114,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.append("TYPE:\"rma:dispositionAction\" + ");
-            sb.append("(@rma\\:dispositionAction:(");
+            sb.append("+TYPE:\"rma:dispositionAction\" ");
+            sb.append("+(@rma\\:dispositionAction:(");
 
             boolean bFirst = true;
             for (String dispositionAction : dispositionActions)
@@ -133,8 +133,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             }
 
             sb.append("))");
-            sb.append(" AND ISNULL:\"rma:dispositionActionCompletedAt\" ");
-            sb.append(" + ( ");
+            sb.append("+ISNULL:\"rma:dispositionActionCompletedAt\" ");
+            sb.append("+( ");
             sb.append("@rma\\:dispositionEventsEligible:true ");
             sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
             sb.append(") ");
@@ -157,7 +157,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             if (dispositionActions != null && !dispositionActions.isEmpty())
             {
                 // execute search
-                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, getQuery());
+                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_LUCENE, getQuery());
                 List<NodeRef> resultNodes = results.getNodeRefs();
                 results.close();
 

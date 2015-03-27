@@ -54,6 +54,17 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
 
     /** Logger */
     private static Log logger = LogFactory.getLog(DeclareRecordAction.class);
+    
+    /** check mandatory properties */
+    private boolean checkMandatoryPropertiesEnabled = true;
+    
+    /**
+     * @param checkMandatoryPropertiesEnabled true if check mandatory properties is enabled, false otherwise
+     */
+    public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled) 
+    {
+		this.checkMandatoryPropertiesEnabled = checkMandatoryPropertiesEnabled;
+	}
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -61,24 +72,25 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
-        if (getNodeService().exists(actionedUponNodeRef) &&
-                getRecordService().isRecord(actionedUponNodeRef) &&
-                !getFreezeService().isFrozen(actionedUponNodeRef))
+        if (nodeService.exists(actionedUponNodeRef) &&
+                recordService.isRecord(actionedUponNodeRef) &&
+                !freezeService.isFrozen(actionedUponNodeRef))
         {
-            if (!getRecordService().isDeclared(actionedUponNodeRef))
+            if (!recordService.isDeclared(actionedUponNodeRef))
             {
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add
-                if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
+                if (!checkMandatoryPropertiesEnabled || 
+                    mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
                 {
-                    getRecordService().disablePropertyEditableCheck();
+                    recordService.disablePropertyEditableCheck();
                     try
                     {
                         // Add the declared aspect
                         Map<QName, Serializable> declaredProps = new HashMap<QName, Serializable>(2);
                         declaredProps.put(PROP_DECLARED_AT, new Date());
                         declaredProps.put(PROP_DECLARED_BY, AuthenticationUtil.getRunAsUser());
-                        this.getNodeService().addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
+                        this.nodeService.addAspect(actionedUponNodeRef, ASPECT_DECLARED_RECORD, declaredProps);
 
                         AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
                         {
@@ -86,14 +98,14 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
                             public Void doWork()
                             {
                                 // remove all owner related rights
-                                getOwnableService().setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
+                                ownableService.setOwner(actionedUponNodeRef, OwnableService.NO_OWNER);
                                 return null;
                             }
                         });
                     }
                     finally
                     {
-                        getRecordService().enablePropertyEditableCheck();
+                        recordService.enablePropertyEditableCheck();
                     }
                 }
                 else
@@ -134,11 +146,11 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
     {
         boolean result = true;
 
-        Map<QName, Serializable> nodeRefProps = this.getNodeService().getProperties(nodeRef);
+        Map<QName, Serializable> nodeRefProps = this.nodeService.getProperties(nodeRef);
 
-        QName nodeRefType = this.getNodeService().getType(nodeRef);
+        QName nodeRefType = this.nodeService.getType(nodeRef);
 
-        TypeDefinition typeDef = this.getDictionaryService().getType(nodeRefType);
+        TypeDefinition typeDef = this.dictionaryService.getType(nodeRefType);
         for (PropertyDefinition propDef : typeDef.getProperties().values())
         {
             if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)
@@ -152,10 +164,10 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
 
         if (result)
         {
-            Set<QName> aspects = this.getNodeService().getAspects(nodeRef);
+            Set<QName> aspects = this.nodeService.getAspects(nodeRef);
             for (QName aspect : aspects)
             {
-                AspectDefinition aspectDef = this.getDictionaryService().getAspect(aspect);
+                AspectDefinition aspectDef = this.dictionaryService.getAspect(aspect);
                 for (PropertyDefinition propDef : aspectDef.getProperties().values())
                 {
                     if (propDef.isMandatory() && nodeRefProps.get(propDef.getName()) == null)

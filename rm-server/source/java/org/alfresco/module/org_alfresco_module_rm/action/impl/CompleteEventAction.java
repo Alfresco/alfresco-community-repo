@@ -39,7 +39,7 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
 {
     /** action name */
     public static final String NAME = "completeEvent";
-
+    
     /** action parameter names */
 	public static final String PARAM_EVENT_NAME = "eventName";
     public static final String PARAM_EVENT_COMPLETED_BY = "eventCompletedBy";
@@ -51,11 +51,11 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     @Override
     protected void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        paramList.add(new ParameterDefinitionImpl(PARAM_EVENT_NAME,
-                                                  DataTypeDefinition.TEXT,
+        paramList.add(new ParameterDefinitionImpl(PARAM_EVENT_NAME, 
+                                                  DataTypeDefinition.TEXT, 
                                                   true,
-                                                  getParamDisplayLabel(PARAM_EVENT_NAME),
-                                                  false,
+                                                  getParamDisplayLabel(PARAM_EVENT_NAME), 
+                                                  false, 
                                                   "rm-ac-manual-events"));
     }
 
@@ -66,18 +66,18 @@ public class CompleteEventAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (getNodeService().exists(actionedUponNodeRef) &&
-            !getFreezeService().isFrozen(actionedUponNodeRef))
+        if (nodeService.exists(actionedUponNodeRef) &&
+            !freezeService.isFrozen(actionedUponNodeRef))
         {
             /** get parameter values */
             String eventName = (String)action.getParameterValue(PARAM_EVENT_NAME);
             String eventCompletedBy = (String)action.getParameterValue(PARAM_EVENT_COMPLETED_BY);
             Date eventCompletedAt = (Date)action.getParameterValue(PARAM_EVENT_COMPLETED_AT);
 
-            if (this.getNodeService().hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
+            if (this.nodeService.hasAspect(actionedUponNodeRef, ASPECT_DISPOSITION_LIFECYCLE))
             {
                 // Get the next disposition action
-                DispositionAction da = this.getDispositionService().getNextDispositionAction(actionedUponNodeRef);
+                DispositionAction da = this.dispositionService.getNextDispositionAction(actionedUponNodeRef);
                 if (da != null)
                 {
                     // complete event

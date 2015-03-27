@@ -17,14 +17,6 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="35" />
       <property name="permission" value="CreateRecords"/>
-      <property name="kinds">
-         <list>
-            <value>RECORD</value>
-            <value>RECORD_FOLDER</value>
-            <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_FOLDER</value>
-         </list>
-      </property>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
@@ -116,11 +108,6 @@
       parent="declarativeCapability">
       <property name="name" value="LinkToRecords"/>
       <property name="permission" value="LinkToRecords" />
-      <property name="kinds">
-         <list>
-            <value>RECORD</value>
-         </list>
-      </property>
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
@@ -131,25 +118,6 @@
       <property name="targetCapability" ref="rmFilePermissionOnly" />
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="45" />
-   </bean>
-
-   <bean id="rmDeleteLinksCapability"
-         parent="declarativeCapability">
-      <property name="name" value="DeleteLinks"/>
-      <property name="permission" value="DeleteLinks"/>
-      <property name="kinds">
-         <list>
-            <value>RECORD</value>
-         </list>
-      </property>
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.frozen" value="false"/>
-         </map>
-      </property>
-      <property name="group"><ref bean="recordsGroup"/></property>
-      <property name="index" value="46" />
    </bean>
 
    <bean id="rmFileUnfiledRecordsCapability"
@@ -243,10 +211,9 @@
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="10" />
    </bean>
-
+   
    <bean id="rmEditNonRecordMetadataCapability"
-      parent="declarativeCapability"
-      class="org.alfresco.module.org_alfresco_module_rm.capability.impl.EditNonRecordMetadataCapability">
+      parent="declarativeCapability">
       <property name="name" value="EditNonRecordMetadata"/>
       <property name="permission" value="EditNonRecordMetadata"/>
       <property name="kinds">
@@ -264,7 +231,6 @@
       </property>
       <property name="group"><ref bean="recordsGroup"/></property>
       <property name="index" value="20" />
-      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper"/>
    </bean>
 
    <bean id="rmEditRecordMetadataCapability"
@@ -372,18 +338,6 @@
       </property>
       <property name="group"><ref bean="recordsGroup"/></property>      <!--  Part of the records group of capabilities -->
       <property name="index" value="100" />
-   </bean>
-
-   <bean id="rmMoveDmRecordsCapability"
-         parent="declarativeCapability">
-      <property name="name" value="MoveDmRecords" />
-      <property name="private" value="true" />
-      <property name="kind" value="RECORD" />
-      <property name="conditions">
-         <map>
-            <entry key="capabilityCondition.filling" value="true"/>
-         </map>
-      </property>
    </bean>
 
 </beans>

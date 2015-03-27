@@ -3,15 +3,21 @@
 
 <beans>
 
-   <!--  Authentication Helper -->
-   <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>
-   
-   <!-- Transactional Resouce Helper -->
-   <bean name="rm.transactionalResourceHelper" class="org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper" />
-   
-   <!--  Alfresco Transaction Support Helper -->
-   <bean name="rm.alfrescoTransactionSupport" class="org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport" />
+   <!-- Custom property editors -->	
 
+   <bean class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+      <property name="propertyEditorRegistrars">
+         <list>
+            <ref bean="customPropertyEditorRegistrar"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="customPropertyEditorRegistrar"
+         class="org.alfresco.module.org_alfresco_module_rm.util.CustomPropertyEditorRegistrar">
+      <property name="namespaceService" ref="NamespaceService"/>
+   </bean>
+   
    <!-- Import extended repository context -->
 
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/extended-repository-context.xml"/>
@@ -22,7 +28,6 @@
       parent="module.baseComponent">
       <property name="nodeService" ref="nodeService" />
       <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
-      <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
       <property name="description" value="Bootstrap records management data"/>
@@ -38,13 +43,6 @@
          </list>
       </property>
    </bean>
-
-	<!-- Record contributors group bootstrap component -->
-	<bean id="recordContributorsGroupBootstrapComponent"
-          class="org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponent">
-       <property name="authorityService" ref="AuthorityService" />
-       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
-    </bean>
 
    <!--  Bootstap the message property files -->
    <bean id="org_alfresco_module_rm_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
@@ -63,8 +61,7 @@
          </list>
       </property>
    </bean>
-   
-   <!-- Import RM model -->
+
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-model-context.xml"/>
 
    <!-- Import RM Audit -->
@@ -105,7 +102,32 @@
 
    <!--  Import the deprecated beans -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-deprecated-context.xml"/>
-   
+
+   <!--  Import the RM module patches -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-context.xml"/>
+
+   <!-- Import RM UI evaluators -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-ui-evaluators-context.xml"/>
+
+   <!--  Import disposition properties -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-disposition-properties-context.xml"/>
+
+   <!--  Import workflows -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-workflow-context.xml"/>
+
+   <!--  Import record service -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-report-context.xml"/>
+
+   <!-- RM Script API -->
+
+   <bean id="scriptRecordsManagementService" parent="baseJavaScriptExtension" class="org.alfresco.module.org_alfresco_module_rm.jscript.ScriptRecordsManagmentService">
+      <property name="extensionName">
+         <value>rmService</value>
+      </property>
+      <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
+      <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
+   </bean>
+
    <!-- Event types -->
    <bean id="rmEventType" init-method="init" abstract="true">
       <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
@@ -124,51 +146,18 @@
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
    </bean>
-   
-   <bean id="rmEventType.versioned" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
-      <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}versions"/>
-      <property name="dispositionService" ref="dispositionService"/>
-      <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
-   </bean>
 
    <bean id="rmEventType.crossReferencedRecordTransfered" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferencedRecordActionedUpon" parent="rmEventType">
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}crossreference"/>
       <property name="actionName" value="transferComplete"/>
       <property name="nodeService" ref="nodeService"/>
       <property name="dispositionService" ref="dispositionService"/>
+      <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
       <property name="recordService" ref="recordService" />
       <property name="recordFolderService" ref="RecordFolderService"/>
    </bean>
 
-   <!--  Import the RM module patches -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-context.xml"/>
-
-   <!-- Import RM UI evaluators -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-ui-evaluators-context.xml"/>
-
-   <!--  Import disposition properties -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-disposition-properties-context.xml"/>
-
-   <!--  Import workflows -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-workflow-context.xml"/>
-
-   <!--  Import report service -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-report-context.xml"/>
-
-   <!--  Import recordable version services -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-version-context.xml"/>
-
-   <!-- RM Script API -->
-
-   <bean id="scriptRecordsManagementService" parent="baseJavaScriptExtension" class="org.alfresco.module.org_alfresco_module_rm.jscript.ScriptRecordsManagmentService">
-      <property name="extensionName">
-         <value>rmService</value>
-      </property>
-      <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
-      <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
-   </bean>
-   
    <!--  Job context -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-job-context.xml"/>
 
@@ -180,7 +169,6 @@
       <property name="caveatConfigService" ref="caveatConfigService"/>
       <property name="customEmailMappingService" ref="customEmailMappingService"/>
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
-      <property name="suggesterBootstrap" ref="nodeParameterSuggesterBootstrap"/>
    </bean>
 
    <!-- Java script interface for rm caveat config-->
@@ -239,4 +227,11 @@
 
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
+
+   <!--  Annotated behaviour bean post processor -->
+   <bean id="annotatedBehaviourBeanPostProcessor" class="org.alfresco.repo.policy.annotation.AnnotatedBehaviourPostProcessor">
+      <property name="policyComponent" ref="policyComponent" />
+      <property name="namespaceService" ref="namespaceService" />
+   </bean>
+
 </beans>

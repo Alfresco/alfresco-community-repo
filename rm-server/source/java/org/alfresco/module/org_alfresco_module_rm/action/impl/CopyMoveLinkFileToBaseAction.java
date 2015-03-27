@@ -108,7 +108,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
         String actionName = action.getActionDefinitionName();
         if (isOkToProceedWithAction(actionedUponNodeRef, actionName))
         {
-            QName actionedUponType = getNodeService().getType(actionedUponNodeRef);
+            QName actionedUponType = nodeService.getType(actionedUponNodeRef);
 
             boolean targetIsUnfiledRecords;
             if (ACTION_FILETO.equals(action.getActionDefinitionName()))
@@ -117,7 +117,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             }
             else
             {
-                targetIsUnfiledRecords = (getDictionaryService().isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && !getRecordService().isFiled(actionedUponNodeRef))
+                targetIsUnfiledRecords = (dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && !recordService.isFiled(actionedUponNodeRef))
                         || TYPE_UNFILED_RECORD_FOLDER.equals(actionedUponType);
             }
 
@@ -150,7 +150,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                         }
                         else if(getMode() == CopyMoveLinkFileToActionMode.LINK)
                         {
-                            getRecordService().link(actionedUponNodeRef, finalRecordFolder);
+                            recordService.link(actionedUponNodeRef, finalRecordFolder);
                         }
                     }
                     catch (FileNotFoundException fileNotFound)
@@ -178,13 +178,13 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     {
         // Check that the incoming parameters are valid prior to performing any action
         boolean okToProceed = false;
-        if(getNodeService().exists(actionedUponNodeRef) && !getFreezeService().isFrozen(actionedUponNodeRef))
+        if(nodeService.exists(actionedUponNodeRef) && !freezeService.isFrozen(actionedUponNodeRef))
         {
-            QName actionedUponType = getNodeService().getType(actionedUponNodeRef);
+            QName actionedUponType = nodeService.getType(actionedUponNodeRef);
             if(ACTION_FILETO.equals(actionName))
             {
                 // file to action can only be performed on unfiled records
-                okToProceed = !getRecordService().isFiled(actionedUponNodeRef) && getDictionaryService().isSubClass(actionedUponType, ContentModel.TYPE_CONTENT);
+                okToProceed = !recordService.isFiled(actionedUponNodeRef) && dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT);
                 if(!okToProceed && logger.isDebugEnabled())
                 {
                     logger.debug("Unable to run " + actionName + " action on a node that isn't unfiled and a sub-class of content type");
@@ -193,7 +193,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             else if(ACTION_LINKTO.equals(actionName))
             {
                 // link to action can only be performed on filed records
-                okToProceed = getRecordService().isFiled(actionedUponNodeRef) && getDictionaryService().isSubClass(actionedUponType, ContentModel.TYPE_CONTENT);
+                okToProceed = recordService.isFiled(actionedUponNodeRef) && dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT);
                 if(!okToProceed && logger.isDebugEnabled())
                 {
                     logger.debug("Unable to run " + actionName + " action on a node that isn't filed and a sub-class of content type");
@@ -217,7 +217,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      */
     private void validateActionPostPathResolution(NodeRef actionedUponNodeRef, NodeRef target, String actionName, boolean targetIsUnfiledRecords)
     {
-        QName actionedUponType = getNodeService().getType(actionedUponNodeRef);
+        QName actionedUponType = nodeService.getType(actionedUponNodeRef);
         // now we have the reference to the target folder we can do some final checks to see if the action is valid
         if (target == null)
         {
@@ -225,7 +225,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
         }
         if(targetIsUnfiledRecords)
         {
-            QName targetFolderType = getNodeService().getType(target);
+            QName targetFolderType = nodeService.getType(target);
             if(!TYPE_UNFILED_RECORD_CONTAINER.equals(targetFolderType) && !TYPE_UNFILED_RECORD_FOLDER.equals(targetFolderType))
             {
                 throw new AlfrescoRuntimeException("Unable to run " + actionName + " action, because the destination record folder is an inappropriate type.");
@@ -233,11 +233,11 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
         }
         else
         {
-            if(getRecordFolderService().isRecordFolder(target) && !getDictionaryService().isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && (getRecordFolderService().isRecordFolder(actionedUponNodeRef) || filePlanService.isRecordCategory(actionedUponNodeRef)))
+            if(recordFolderService.isRecordFolder(target) && !dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT) && (recordFolderService.isRecordFolder(actionedUponNodeRef) || filePlanService.isRecordCategory(actionedUponNodeRef)))
             {
                 throw new AlfrescoRuntimeException("Unable to run " + actionName + " action, because the destination record folder is an inappropriate type. A record folder cannot contain another folder or a category");
             }
-            else if(filePlanService.isRecordCategory(target) && getDictionaryService().isSubClass(actionedUponType, ContentModel.TYPE_CONTENT))
+            else if(filePlanService.isRecordCategory(target) && dictionaryService.isSubClass(actionedUponType, ContentModel.TYPE_CONTENT))
             {
                 throw new AlfrescoRuntimeException("Unable to run " + actionName + " action, because the destination record folder is an inappropriate type. A record category cannot contain a record");
             }
@@ -299,7 +299,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             if(create)
             {
                 creating = true;
-                boolean lastAsFolder = lastPathElement && (getDictionaryService().isSubClass(getNodeService().getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(getNodeService().getType(actionedUponNodeRef)));
+                boolean lastAsFolder = lastPathElement && (dictionaryService.isSubClass(nodeService.getType(actionedUponNodeRef), ContentModel.TYPE_CONTENT) || RecordsManagementModel.TYPE_NON_ELECTRONIC_DOCUMENT.equals(nodeService.getType(actionedUponNodeRef)));
                 nodeRef = createChild(action, parent, childName, targetisUnfiledRecords, lastAsFolder);
             }
             else
@@ -309,7 +309,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
         }
         else
         {
-            QName nodeType = getNodeService().getType(nodeRef);
+            QName nodeType = nodeService.getType(nodeRef);
             if(nodeType.equals(RecordsManagementModel.TYPE_HOLD_CONTAINER) ||
                     nodeType.equals(RecordsManagementModel.TYPE_TRANSFER_CONTAINER) ||
                     nodeType.equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER))
@@ -334,11 +334,10 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     private NodeRef getChild(NodeRef parent, String childName)
     {
         NodeRef child = null;
-        List<ChildAssociationRef> children = getNodeService().getChildAssocs(parent);
-        for (ChildAssociationRef childAssoc : children) 
-        {
+        List<ChildAssociationRef> children = nodeService.getChildAssocs(parent);
+        for (ChildAssociationRef childAssoc : children) {
             NodeRef childNodeRef = childAssoc.getChildRef();
-            String existingChildName = (String)getNodeService().getProperty(childNodeRef, ContentModel.PROP_NAME);
+            String existingChildName = (String)nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
             if(existingChildName.equals(childName))
             {
                 child = childNodeRef;
@@ -372,11 +371,11 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                 }
                 else if(lastAsFolder)
                 {
-                    child = getRecordFolderService().createRecordFolder(parent, childName);
+                    child = recordFolderService.createRecordFolder(parent, childName);
                 }
                 else
                 {
-                    if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(getNodeService().getType(parent)))
+                    if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(parent)))
                     {
                         throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be created.");
                     }
@@ -398,11 +397,11 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     private NodeRef getContext(Action action, NodeRef actionedUponNodeRef, boolean targetisUnfiledRecords)
     {
         NodeRef context = filePlanService.getFilePlan(actionedUponNodeRef);
-        if(targetisUnfiledRecords && (context != null) && getNodeService().exists(context))
+        if(targetisUnfiledRecords && (context != null) && nodeService.exists(context))
         {
             context = filePlanService.getUnfiledContainer(context);
         }
-        if((context == null) || (!getNodeService().exists(context)))
+        if((context == null) || (!nodeService.exists(context)))
         {
             throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the path resolution context could not be determined.");
         }

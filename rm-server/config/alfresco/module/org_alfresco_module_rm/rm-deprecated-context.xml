@@ -115,14 +115,14 @@
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getNodeRefPath=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlan=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getFilePlans=RM_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createFilePlan=RM.Create.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createFilePlan=RM.WRITE.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getAllContained=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getContainedRecordCategories=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getContainedRecordFolders=RM.Read.0,AFTER_RM.FilterNode
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordCategory=RM.Create.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordCategory=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolderDeclared=RM.Read.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.isRecordFolderClosed=RM.Read.0
-                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordFolder=RM.Create.0
+                org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.createRecordFolder=RM.Write.0
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecords=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordFolders=RM.Read.0,AFTER_RM.FilterNode
                 org.alfresco.module.org_alfresco_module_rm.RecordsManagementService.getRecordMetaDataAspects=RM_ALLOW

@@ -11,13 +11,12 @@
       <property name="permission" value="CreateHold"/>
       <property name="kinds">
          <list>
-            <value>FILE_PLAN</value>      <!-- required because the create hold method is parameterized by file plan -->
             <value>HOLD_CONTAINER</value>
          </list>
       </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.hasFillingOnHoldContainer" value="true"/>
+            <entry key="capabilityCondition.filling" value="true"/>
          </map>
       </property>
       <property name="group"><ref bean="holdControlsGroup"/></property>

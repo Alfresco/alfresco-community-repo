@@ -18,8 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +26,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -41,12 +38,10 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -80,52 +75,25 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     /** Logger */
     private static Log logger = LogFactory.getLog(SplitEmailAction.class);
 
-    /** Relationship service */
-    private RelationshipService relationshipService;
-
-    /**
-     * Gets the relationship service instance
-     *
-     * @return The relationship service instance
-     */
-    protected RelationshipService getRelationshipService()
-    {
-        return this.relationshipService;
-    }
-
-    /**
-     * Sets the relationship service instance
-     *
-     * @param relationshipService The relationship service instance
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
-    }
-
-    /** Unique name of the relationship definition */
-    private String relationshipUniqueName;
+    private QName relationshipQName;
 
     public void bootstrap()
     {
-        Set<RelationshipDefinition> relationshipDefinitions = getRelationshipService().getRelationshipDefinitions();
-        for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)
-        {
-            RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
-            String sourceText = displayName.getSourceText();
-            String targetText = displayName.getTargetText();
+        String compoundId = recordsManagementAdminService.getCompoundIdFor(REL_FROM, REL_TO);
 
-            if (sourceText.equals(REL_FROM) && targetText.equals(REL_TO))
+        Map<QName, AssociationDefinition> map = recordsManagementAdminService.getCustomReferenceDefinitions();
+        for (Map.Entry<QName, AssociationDefinition> entry : map.entrySet())
+        {
+            if (compoundId.equals(entry.getValue().getTitle(dictionaryService)))
             {
-                relationshipUniqueName = relationshipDefinition.getUniqueName();
+                relationshipQName = entry.getKey();
+                break;
             }
         }
 
-        if (isBlank(relationshipUniqueName))
+        if (relationshipQName == null)
         {
-            RelationshipDisplayName displayName = new RelationshipDisplayName(REL_FROM, REL_TO);
-            RelationshipDefinition relationshipDefinition = getRelationshipService().createRelationshipDefinition(displayName);
-            relationshipUniqueName = relationshipDefinition.getUniqueName();
+            relationshipQName = recordsManagementAdminService.addCustomChildAssocDefinition(REL_FROM, REL_TO);
         }
     }
 
@@ -137,23 +105,23 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
         // get node type
-        getNodeService().getType(actionedUponNodeRef);
+        nodeService.getType(actionedUponNodeRef);
 
         if (logger.isDebugEnabled())
         {
             logger.debug("split email:" + actionedUponNodeRef);
         }
 
-        if (getRecordService().isRecord(actionedUponNodeRef))
+        if (recordService.isRecord(actionedUponNodeRef))
         {
-            if (!getRecordService().isDeclared(actionedUponNodeRef))
+            if (!recordService.isDeclared(actionedUponNodeRef))
             {
-                ChildAssociationRef parent = getNodeService().getPrimaryParent(actionedUponNodeRef);
+                ChildAssociationRef parent = nodeService.getPrimaryParent(actionedUponNodeRef);
 
                 /**
                  * Check whether the email message has already been split - do nothing if it has already been split
                  */
-                List<AssociationRef> refs = getNodeService().getTargetAssocs(actionedUponNodeRef, ImapModel.ASSOC_IMAP_ATTACHMENT);
+                List<AssociationRef> refs = nodeService.getTargetAssocs(actionedUponNodeRef, ImapModel.ASSOC_IMAP_ATTACHMENT);
                 if(refs.size() > 0)
                 {
                     if (logger.isDebugEnabled())
@@ -168,7 +136,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
                  */
                 try
                 {
-                    ContentReader reader = getContentService().getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
+                    ContentReader reader = contentService.getReader(actionedUponNodeRef, ContentModel.PROP_CONTENT);
                     InputStream is = reader.getContentInputStream();
                     MimeMessage mimeMessage = new MimeMessage(null, is);
                     Object content = mimeMessage.getContent();
@@ -225,7 +193,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             }
         }
 
-        Map<QName, Serializable> messageProperties = getNodeService().getProperties(messageNodeRef);
+        Map<QName, Serializable> messageProperties = nodeService.getProperties(messageNodeRef);
         String messageTitle = (String)messageProperties.get(ContentModel.PROP_NAME);
         if(messageTitle == null)
         {
@@ -245,7 +213,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         /**
          * Create an attachment node in the same folder as the message
          */
-        ChildAssociationRef attachmentRef = getNodeService().createNode(parentNodeRef,
+        ChildAssociationRef attachmentRef = nodeService.createNode(parentNodeRef,
                         ContentModel.ASSOC_CONTAINS,
                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
                         ContentModel.TYPE_CONTENT,
@@ -254,7 +222,7 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
         /**
          * Write the content into the new attachment node
          */
-        ContentWriter writer = getContentService().getWriter(attachmentRef.getChildRef(), ContentModel.PROP_CONTENT, true);
+        ContentWriter writer = contentService.getWriter(attachmentRef.getChildRef(), ContentModel.PROP_CONTENT, true);
         writer.setMimetype(contentType.getBaseType());
         OutputStream os = writer.getContentOutputStream();
         FileCopyUtils.copy(part.getInputStream(), os);
@@ -278,10 +246,10 @@ public class SplitEmailAction extends RMActionExecuterAbstractBase
             public Void doWork()
             {
                 // add the relationship
-                getRelationshipService().addRelationship(relationshipUniqueName, parentRef, childRef);
+                recordsManagementAdminService.addCustomReference(parentRef, childRef, relationshipQName);
 
                 // add the IMAP attachment aspect
-                getNodeService().createAssociation(
+                nodeService.createAssociation(
                         parentRef,
                         childRef,
                         ImapModel.ASSOC_IMAP_ATTACHMENT);

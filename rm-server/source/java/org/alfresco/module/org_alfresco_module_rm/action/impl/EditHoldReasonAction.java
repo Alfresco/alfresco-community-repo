@@ -27,7 +27,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Edit freeze reason Action
- *
+ * 
  * @author Roy Wetherall
  */
 public class EditHoldReasonAction extends RMActionExecuterAbstractBase
@@ -45,7 +45,7 @@ public class EditHoldReasonAction extends RMActionExecuterAbstractBase
    @Override
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
    {
-      if (getFreezeService().isHold(actionedUponNodeRef))
+      if (freezeService.isHold(actionedUponNodeRef))
       {
          // Get the property values
          String reason = (String) action.getParameterValue(PARAM_REASON);
@@ -55,7 +55,7 @@ public class EditHoldReasonAction extends RMActionExecuterAbstractBase
          }
 
          // Update hold reason
-         getFreezeService().updateReason(actionedUponNodeRef, reason);
+         freezeService.updateReason(actionedUponNodeRef, reason);
       }
       else
       {

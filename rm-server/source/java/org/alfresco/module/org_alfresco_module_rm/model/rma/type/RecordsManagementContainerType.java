@@ -48,9 +48,6 @@ import org.alfresco.service.namespace.QName;
 public class RecordsManagementContainerType extends    BaseBehaviourBean
                                             implements NodeServicePolicies.OnCreateChildAssociationPolicy
 {
-	/** behaviour name */
-	private static final String BEHAVIOUR_NAME = "onCreateContainerType";
-	
     /** identifier service */
     protected IdentifierService identifierService;
 
@@ -83,26 +80,6 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     {
         this.recordFolderService = recordFolderService;
     }
-    
-    /**
-     * Disable the behaviours for this transaction
-     * 
-     * @since 2.3
-     */
-    public void disable()
-    {
-    	getBehaviour(BEHAVIOUR_NAME).disable();
-    }
-    
-    /**
-     * Enable behaviours for this transaction
-     * 
-     * @since 2.3
-     */
-    public void enable()
-    {
-    	getBehaviour(BEHAVIOUR_NAME).enable();    
-    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.model.BaseTypeBehaviour#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
@@ -110,8 +87,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     @Behaviour
     (
        kind = BehaviourKind.ASSOCIATION,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT,
-       name = BEHAVIOUR_NAME
+       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean isNewNode)
     {
@@ -189,9 +165,8 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
     }
 
     /**
-     * Set the identifier property
      *
-     * @param nodeRef	node reference
+     * @param nodeRef
      */
     protected void setIdenifierProperty(final NodeRef nodeRef)
     {

@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.workflow.RMWorkflowModel;
-import org.apache.commons.lang.StringUtils;
+import org.apache.axis.utils.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -79,10 +79,10 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
     @Override
     protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
     {
-        if (getNodeService().exists(actionedUponNodeRef) &&
-            !getNodeService().hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
-            getRecordService().isRecord(actionedUponNodeRef) &&
-            !getRecordService().isDeclared(actionedUponNodeRef))
+        if (nodeService.exists(actionedUponNodeRef) &&
+            !nodeService.hasAspect(actionedUponNodeRef, ContentModel.ASPECT_PENDING_DELETE) &&
+            recordService.isRecord(actionedUponNodeRef) &&
+            !recordService.isDeclared(actionedUponNodeRef))
         {
             String workflowDefinitionId = workflowService.getDefinitionByName(REQUEST_INFO_WORKFLOW_DEFINITION_NAME).getId();
             Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
@@ -120,10 +120,10 @@ public class RequestInfoAction extends RMActionExecuterAbstractBase
      */
     private NodeRef getWorkflowPackage(Action action, NodeRef actionedUponNodeRef)
     {
-        NodeRef workflowPackage = (NodeRef) action.getParameterValue(WorkflowModel.ASSOC_PACKAGE.toPrefixString(getNamespaceService()));
+        NodeRef workflowPackage = (NodeRef) action.getParameterValue(WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService));
         workflowPackage = workflowService.createPackage(workflowPackage);
-        ChildAssociationRef childAssoc = getNodeService().getPrimaryParent(actionedUponNodeRef);
-        getNodeService().addChild(workflowPackage, actionedUponNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, childAssoc.getQName());
+        ChildAssociationRef childAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
+        nodeService.addChild(workflowPackage, actionedUponNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, childAssoc.getQName());
         return workflowPackage;
     }
 

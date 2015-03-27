@@ -62,23 +62,16 @@ public class HoldCapabilityCondition extends AbstractCapabilityCondition
     {
         boolean result = false;
       
-        if (holdService.isHold(nodeRef))
+        List<NodeRef> holds = holdService.heldBy(nodeRef, includedInHold);
+        for (NodeRef hold : holds)
         {
-            result = AccessStatus.ALLOWED.equals(permissionService.hasPermission(nodeRef, RMPermissionModel.FILING));
-        }
-        else
-        {
-            List<NodeRef> holds = holdService.heldBy(nodeRef, includedInHold);
-            for (NodeRef hold : holds)
+            // return true as soon as we find one hold we have filling permission on
+            if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(hold, RMPermissionModel.FILING)))
             {
-                // return true as soon as we find one hold we have filling permission on
-                if (AccessStatus.ALLOWED.equals(permissionService.hasPermission(hold, RMPermissionModel.FILING)))
-                {
-                    result = true;
-                    break;
-                }
+                result = true;
+                break;
             }
-        }
+        }        
         
         return result;
     }

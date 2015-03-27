@@ -57,17 +57,17 @@ public class HoldCapabilityConditionUnitTest extends BaseUnitTest
     private List<NodeRef> holds;
     
     /** mocked objects */
-    private @Mock(name="kinds") Set<FilePlanComponentKind> mockedKinds;
+    @Mock(name="kinds") Set<FilePlanComponentKind> mockedKinds;
     
     /** evaluator */
-    private @Spy @InjectMocks HoldCapabilityCondition evaluator;
+    @Spy @InjectMocks HoldCapabilityCondition evaluator;
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
     @Before
     @Override
-    public void before() throws Exception
+    public void before()
     {
         super.before();
         

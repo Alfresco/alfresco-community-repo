@@ -16,14 +16,12 @@
       <property name="registry" ref="auditModel.extractorRegistry" />
       <property name="nodeService" ref="nodeService" />
       <property name="filePlanService" ref="filePlanService" />
-      <property name="ruleService" ref="RuleService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_nodeRefPathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanNodeRefPathDataExtractor">
       <property name="registry" ref="auditModel.extractorRegistry" />
       <property name="nodeService" ref="nodeService" />
       <property name="filePlanService" ref="filePlanService" />
-      <property name="ruleService" ref="RuleService" />
    </bean>
 
    <bean id="org_alfresco_module_rm_identifierExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanIdentifierDataExtractor">
@@ -85,11 +83,6 @@
    <bean id="audit-event.fileTo" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.FileToAuditEvent">
       <property name="name" value="fileTo"/>
       <property name="label" value="rm.audit.fileTo"/>
-   </bean>
-
-   <bean id="audit-event.recordableVersionConfig" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.RecordableVersionPolicyAuditEvent">
-      <property name="name" value="recordableVersionConfig"/>
-      <property name="label" value="recordable-version-config"/>
    </bean>
 
 </beans>

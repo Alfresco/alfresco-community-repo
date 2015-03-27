@@ -43,16 +43,16 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
 	@Override
 	protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
 	{
-	    VitalRecordDefinition vrDef = getVitalRecordService().getVitalRecordDefinition(actionedUponNodeRef);
+	    VitalRecordDefinition vrDef = vitalRecordService.getVitalRecordDefinition(actionedUponNodeRef);
         if (vrDef != null && vrDef.isEnabled())
         {
-    	    if (getRecordService().isRecord(actionedUponNodeRef))
+    	    if (recordService.isRecord(actionedUponNodeRef))
     	    {
     	        reviewRecord(actionedUponNodeRef, vrDef);
 	        }
-    	    else if (getRecordFolderService().isRecordFolder(actionedUponNodeRef))
+    	    else if (recordFolderService.isRecordFolder(actionedUponNodeRef))
     	    {
-    	        for (NodeRef record : getRecordService().getRecords(actionedUponNodeRef))
+    	        for (NodeRef record : recordService.getRecords(actionedUponNodeRef))
                 {
                     reviewRecord(record, vrDef);
                 }
@@ -83,7 +83,7 @@ public class ReviewedAction extends RMActionExecuterAbstractBase
                  logger.debug(msg.toString());
             }
 
-            this.getNodeService().setProperty(nodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
+            this.nodeService.setProperty(nodeRef, PROP_REVIEW_AS_OF, reviewAsOf);
             //TODO And record previous review date, time, user
         }
 	}

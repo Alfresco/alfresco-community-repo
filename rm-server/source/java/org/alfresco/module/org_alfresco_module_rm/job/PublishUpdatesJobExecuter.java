@@ -34,9 +34,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -99,12 +97,12 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
     }
 
     /**
-     * @param dictionaryService dictionary service
+     * @param dictionaryService	dictionary service
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
-        this.dictionaryService = dictionaryService;
-    }
+		this.dictionaryService = dictionaryService;
+	}
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJobExecuter#executeImpl()
@@ -130,40 +128,36 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     {
                         if (nodeService.exists(nodeRef))
                         {
-                            boolean publishing = ((Boolean)nodeService.getProperty(nodeRef, PROP_PUBLISH_IN_PROGRESS)).booleanValue();
-                            if (!publishing)
+                            // Mark the update node as publishing in progress
+                            markPublishInProgress(nodeRef);
+                            try
                             {
-                                // Mark the update node as publishing in progress
-                                markPublishInProgress(nodeRef);
-                                try
+                                Date start = new Date();
+                                if (logger.isDebugEnabled())
                                 {
-                                    Date start = new Date();
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        logger.debug("Starting publish of updates ...");
-                                        logger.debug("   - for " + nodeRef.toString());
-                                        logger.debug("   - at " + start.toString());
-                                    }
-
-                                    // Publish updates
-                                    publishUpdates(nodeRef);
-
-
-                                    if (logger.isDebugEnabled())
-                                    {
-                                        Date end = new Date();
-                                        long duration = end.getTime() - start.getTime();
-                                        logger.debug("Completed publish of updates ...");
-                                        logger.debug("   - for " + nodeRef.toString());
-                                        logger.debug("   - at " + end.toString());
-                                        logger.debug("   - duration " + Long.toString(duration));
-                                    }
+                                    logger.debug("Starting publish of updates ...");
+                                    logger.debug("   - for " + nodeRef.toString());
+                                    logger.debug("   - at " + start.toString());
                                 }
-                                finally
+
+                                // Publish updates
+                                publishUpdates(nodeRef);
+
+
+                                if (logger.isDebugEnabled())
                                 {
-                                    // Ensure the update node has either completed the publish or is marked as no longer in progress
-                                    unmarkPublishInProgress(nodeRef);
+                                    Date end = new Date();
+                                    long duration = end.getTime() - start.getTime();
+                                    logger.debug("Completed publish of updates ...");
+                                    logger.debug("   - for " + nodeRef.toString());
+                                    logger.debug("   - at " + end.toString());
+                                    logger.debug("   - duration " + Long.toString(duration));
                                 }
+                            }
+                            finally
+                            {
+                                // Ensure the update node has either completed the publish or is marked as no longer in progress
+                                unmarkPublishInProgress(nodeRef);
                             }
                         }
                     }
@@ -189,7 +183,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
         // ensure that the rm content model has been loaded
         if (dictionaryService != null &&
-            dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
+        	dictionaryService.getAspect(ASPECT_UNPUBLISHED_UPDATE) != null)
         {
             result = true;
         }
@@ -211,7 +205,8 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                 {
                     // Build the query string
                     StringBuilder sb = new StringBuilder();
-                    sb.append("ASPECT:\"rma:").append(ASPECT_UNPUBLISHED_UPDATE.getLocalName()).append("\"");
+                    sb.append("+ASPECT:\"rma:").append(ASPECT_UNPUBLISHED_UPDATE.getLocalName()).append("\" ");
+                    sb.append("@rma\\:").append(PROP_PUBLISH_IN_PROGRESS.getLocalName()).append(":false ");
                     String query = sb.toString();
 
                     if (logger.isDebugEnabled())
@@ -221,16 +216,10 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
 
                     // Execute query to find updates awaiting publishing
                     List<NodeRef> resultNodes = null;
-
-                    SearchParameters searchParameters = new SearchParameters();
-                    searchParameters.setQueryConsistency(QueryConsistency.TRANSACTIONAL);
-                    searchParameters.setQuery(query);
-                    searchParameters.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-                    searchParameters.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
-
-                    try
-                    {
-                        ResultSet results = searchService.query(searchParameters);
+                    ResultSet results = searchService.query(
+                                                        StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+                                                        SearchService.LANGUAGE_LUCENE,
+                                                        query);
                     try
                     {
                         resultNodes = results.getNodeRefs();
@@ -238,15 +227,6 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     finally
                     {
                         results.close();
-                    }
-                    }
-                    catch (AlfrescoRuntimeException exception)
-                    {
-                        if (logger.isDebugEnabled())
-                        {
-                            logger.debug("Error executing query, " + exception.getMessage());
-                        }
-                        throw exception;
                     }
 
                     if (logger.isDebugEnabled())
@@ -294,7 +274,7 @@ public class PublishUpdatesJobExecuter extends RecordsManagementJobExecuter
                     return null;
                 }
             };
-        retryingTransactionHelper.doInTransaction(execution);
+        retryingTransactionHelper.doInTransaction(execution, false, true);
     }
 
     /**

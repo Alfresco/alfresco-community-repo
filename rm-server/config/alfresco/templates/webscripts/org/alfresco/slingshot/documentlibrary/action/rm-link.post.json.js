@@ -48,7 +48,7 @@ function runAction(p_params)
          if (!rmService.getRecordsManagementNode(destNode).hasCapability("FillingPermissionOnly"))
          {
             result.name = fileNode.name;
-            result.error = "You don't have filing permission on the destination or the destination is either frozen, closed or cut off!";
+            result.error = "The destination is either frozen, closed or cut off!";
             results.push(result);
             continue;
          }

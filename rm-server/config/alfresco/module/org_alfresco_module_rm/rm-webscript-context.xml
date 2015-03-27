@@ -62,32 +62,34 @@
       <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
    </bean>
 
-   <!-- Base bean for custom reference definition web scripts -->
-   <bean id="rmCustomReferenceDefinitionBase" parent="rmBaseWebscript" abstract="true">
-      <property name="relationshipService" ref="RelationshipService" />
-   </bean>
-
    <!-- REST impl for GET Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinitions.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionsGet"
-      parent="rmCustomReferenceDefinitionBase">
+      parent="webscript">
+      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
 
    <!-- REST impl for PUT Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinition.put"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPut"
-      parent="rmCustomReferenceDefinitionBase" />
+      parent="rmBaseWebscript">
+      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+   </bean>
 
    <!-- REST impl for POST Custom Reference Definitions -->
    <bean id="webscript.org.alfresco.rma.customrefdefinition.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceDefinitionPost"
-      parent="rmCustomReferenceDefinitionBase" />
+      parent="rmBaseWebscript">
+      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+   </bean>
 
    <!-- REST impl for GET Custom Reference Instances -->
    <bean id="webscript.org.alfresco.rma.customrefs.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefsGet"
       parent="rmBaseWebscript">
-      <property name="relationshipService" ref="RelationshipService" />
+      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
+      <property name="dictionaryService" ref="DictionaryService" />
       <property name="capabilityService" ref="CapabilityService" />
    </bean>
 
@@ -95,7 +97,7 @@
    <bean id="webscript.org.alfresco.rma.customref.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefPost"
       parent="rmBaseWebscript">
-      <property name="relationshipService" ref="RelationshipService" />
+      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
       <property name="ruleService" ref="RuleService" />
    </bean>
 
@@ -103,7 +105,7 @@
    <bean id="webscript.org.alfresco.rma.customref.delete"
       class="org.alfresco.module.org_alfresco_module_rm.script.CustomRefDelete"
       parent="rmBaseWebscript">
-      <property name="relationshipService" ref="RelationshipService" />
+      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService" />
       <property name="ruleService" ref="RuleService" />
    </bean>
 
@@ -420,7 +422,6 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.ApplyDodCertModelFixesGet"
       parent="webscript">
       <property name="contentService" ref="ContentService" />
-      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
 
    <!-- REST impl for GET applyfixmob1573 -->
@@ -429,7 +430,6 @@
       class="org.alfresco.module.org_alfresco_module_rm.script.ApplyFixMob1573Get"
       parent="webscript">
       <property name="contentService" ref="ContentService" />
-      <property name="namespaceService" ref="NamespaceService"/>
    </bean>
 
    <!--  RM search web script -->
@@ -466,6 +466,7 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="permissionService" ref="PermissionService" />
       <property name="personService" ref="PersonService" />
+      <property name="contentService" ref="ContentService" />
    </bean>
 
    <bean
@@ -612,40 +613,4 @@
    <bean id="webscript.org.alfresco.rma.hold.put"
          class="org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPut"
          parent="rmBaseHold" />
-
-   <!-- REST impl for POST recorded version config -->
-   <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.post"
-      class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost"
-      parent="rmBaseWebscript">
-      <property name="RecordableVersionConfigService" ref="RecordableVersionConfigService" />
-   </bean>
-
-   <!-- REST impl for GET recorded version config -->
-   <bean id="webscript.org.alfresco.slingshot.documentlibrary.action.recorded-version-config.get"
-      class="org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigGet"
-      parent="rmBaseWebscript">
-      <property name="RecordableVersionConfigService" ref="RecordableVersionConfigService" />
-   </bean>
-
-   <!-- REST impl for GET Relationships -->
-   <bean id="webscript.org.alfresco.rma.relationships.get"
-      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipsGet"
-      parent="rmBaseWebscript">
-      <property name="relationshipService" ref="RelationshipService" />
-      <property name="jsonConversionComponent" ref="jsonConversionComponent" />
-   </bean>
-
-   <!-- REST impl for GET Relationship labels -->
-   <bean id="webscript.org.alfresco.rma.relationshiplabels.get"
-      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipLabelsGet"
-      parent="rmBaseWebscript">
-      <property name="relationshipService" ref="RelationshipService" />
-   </bean>
-
-   <!-- REST impl for DELETE Relationship -->
-   <bean id="webscript.org.alfresco.rma.relationship.delete"
-      class="org.alfresco.module.org_alfresco_module_rm.script.RelationshipDelete"
-      parent="rmBaseWebscript">
-      <property name="relationshipService" ref="RelationshipService" />
-   </bean>
 </beans>

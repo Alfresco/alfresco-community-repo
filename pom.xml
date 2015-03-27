@@ -241,12 +241,9 @@
                 </executions>
             </plugin>
 
-            <!-- CLOUD-2182 Bring activity-list*.properties from slingshot -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <executions>
-                    <!-- TODO: Airwolf temp... removing fetch-slingshot-messages. Does this move to the cloud build? -->
-                    
+                <executions> 
                     <!-- ACE-2318 Bring alfresco-jmxrmi.* from repository -->
                     <execution>
                         <id>fetch-jmxrmi-properties</id>

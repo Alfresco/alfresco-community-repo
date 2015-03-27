@@ -292,12 +292,14 @@ public class NodeBrowserPost extends NodeBrowserScript implements Serializable
         
         public String getTypeQName()
         {
-            return typeqname != null ? typeqname : (typeqname = ref.getTypeQName().toPrefixString(getNamespaceService()));
+            return typeqname != null ? typeqname : (
+                    typeqname = ref.getTypeQName() != null ? ref.getTypeQName().toPrefixString(getNamespaceService()) : "");
         }
     
         public String getQName()
         {
-            return qname != null ? qname : (qname = ref.getQName().toPrefixString(getNamespaceService()));
+            return qname != null ? qname : (
+                    qname = ref.getQName() != null ? ref.getQName().toPrefixString(getNamespaceService()) : "");
         }
     
         public NodeRef getChildRef()

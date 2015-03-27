@@ -215,6 +215,12 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         // Does a corresponding node exist in this repo?
         if (resolvedNodes.resolvedChild != null)
         {
+            if (log.isTraceEnabled())
+            {
+                log.trace("REPO_PRIMARY_MANIFEST_PROCESSOR - node DOES exist!");
+                logInvasionHierarchy(resolvedNodes.resolvedParent, resolvedNodes.resolvedChild, nodeService, log);
+            }
+
             // Yes, the corresponding node does exist. Update it.
             if (log.isDebugEnabled())
             {
@@ -222,6 +228,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                         + resolvedNodes.resolvedChild);
             }
             update(node, resolvedNodes, primaryParentAssoc);
+
+            if (log.isTraceEnabled())
+            {
+                log.trace("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+            }
         }
         else
         {
@@ -245,7 +256,19 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             {
                 log.debug("Incoming noderef has no corresponding local noderef: " + node.getNodeRef());
             }
+
+            if (log.isTraceEnabled())
+            {
+                log.trace("REPO_PRIMARY_MANIFEST_PROCESSOR - node DOES NOT esist yet! Name: '" + node.getProperties().get(ContentModel.PROP_NAME) + "', parentPath: '"
+                        + node.getParentPath() + "'");
+            }
+
             create(node, resolvedNodes, primaryParentAssoc);
+
+            if (log.isTraceEnabled())
+            {
+                log.trace("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,9 +19,13 @@
 package org.alfresco.repo.transfer;
 
 import java.io.File;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transfer.manifest.TransferManifestDeletedNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestHeader;
@@ -30,6 +34,7 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.transfer.TransferException;
 import org.alfresco.service.cmr.transfer.TransferProgress;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
@@ -269,5 +274,41 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
     protected void logMoved(NodeRef sourceNode, NodeRef destNode, String oldPath, NodeRef newParent, String newPath)
     {
         receiver.getProgressMonitor().logMoved(transferId, sourceNode, destNode, oldPath, newParent, newPath);
+    }
+
+    /**
+     * Puts information about current <code>childRef</code> and its <code>parentRef</code> into log in TRACE level. Information includes 'name', 'fromRepositoryId', 'aliened' and
+     * 'invadedBy' properties. Additionally, collects the same information for children of <code>childRef</code>
+     * 
+     * @param parentRef - {@link NodeRef} instance of child node
+     * @param childRef - {@link NodeRef} instance of parent of the <code>childRef</code>
+     * @param nodeService - {@link NodeService} instance to get properties and checking other states
+     * @param log - {@link Log} instance to put log for appropriate class
+     */
+    protected void logInvasionHierarchy(NodeRef parentRef, NodeRef childRef, NodeService nodeService, Log log)
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(childRef);
+        Map<QName, Serializable> parentProperties = nodeService.getProperties(parentRef);
+        StringBuilder message = new StringBuilder("Information about '").append(properties.get(ContentModel.PROP_NAME)).append("' node:\n    fromRepositoryId: ").append(
+                properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append("\n").append("    invadedBy: ").append(properties.get(TransferModel.PROP_INVADED_BY)).append("\n")
+                .append("    alien: ").append(nodeService.hasAspect(childRef, TransferModel.ASPECT_ALIEN)).append("\n").append("    repositoryId: ").append(
+                        properties.get(TransferModel.PROP_REPOSITORY_ID)).append("\n").append("    parent: ").append(parentProperties.get(ContentModel.PROP_NAME)).append("(")
+                .append(parentProperties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append(")").append(parentProperties.get(TransferModel.PROP_INVADED_BY)).append(": ").append(
+                        nodeService.hasAspect(parentRef, TransferModel.ASPECT_ALIEN)).append("\n").append("    children:\n");
+
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(childRef);
+
+        if ((null != childAssocs) && !childAssocs.isEmpty())
+        {
+            for (ChildAssociationRef child : childAssocs)
+            {
+                properties = nodeService.getProperties(child.getChildRef());
+                message.append("        ").append(properties.get(ContentModel.PROP_NAME)).append("(").append(properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append(")")
+                        .append(properties.get(TransferModel.PROP_INVADED_BY)).append(": ").append(nodeService.hasAspect(child.getChildRef(), TransferModel.ASPECT_ALIEN)).append(
+                                "\n");
+            }
+        }
+
+        log.trace(message.toString());
     }
 }

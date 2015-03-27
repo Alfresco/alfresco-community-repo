@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.transfer;
 
 import java.io.Serializable;
@@ -5,14 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.policy.JavaBehaviour;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -148,7 +164,46 @@ public class AlienProcessorImpl implements AlienProcessor
                 currentAssoc = null;
             }
         }            
-    }   
+
+        if (log.isTraceEnabled())
+        {
+            logInvasionHierarchy(childAssocRef.getParentRef(), childAssocRef.getChildRef());
+        }
+    }
+
+    /**
+     * Puts information about current <code>childRef</code> and its <code>parentRef</code> into log in TRACE level. Information includes 'name', 'fromRepositoryId', 'aliened' and
+     * 'invadedBy' properties. Additionally, collects the same information for children of <code>childRef</code>
+     * 
+     * @param parentRef - {@link NodeRef} instance of child node
+     * @param childRef - {@link NodeRef} instance of parent of the <code>childRef</code>
+     */
+    protected void logInvasionHierarchy(NodeRef parentRef, NodeRef childRef)
+    {
+        Map<QName, Serializable> properties = nodeService.getProperties(childRef);
+        Map<QName, Serializable> parentProperties = nodeService.getProperties(parentRef);
+        StringBuilder message = new StringBuilder("Information about '").append(properties.get(ContentModel.PROP_NAME)).append("' node:\n    fromRepositoryId: ").append(
+                properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append("\n").append("    invadedBy: ").append(properties.get(TransferModel.PROP_INVADED_BY)).append("\n")
+                .append("    alien: ").append(nodeService.hasAspect(childRef, TransferModel.ASPECT_ALIEN)).append("\n").append("    repositoryId: ").append(
+                        properties.get(TransferModel.PROP_REPOSITORY_ID)).append("\n").append("    parent: ").append(parentProperties.get(ContentModel.PROP_NAME)).append("(")
+                .append(parentProperties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append(")").append(parentProperties.get(TransferModel.PROP_INVADED_BY)).append(": ").append(
+                        nodeService.hasAspect(parentRef, TransferModel.ASPECT_ALIEN)).append("\n").append("    children:\n");
+
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(childRef);
+
+        if ((null != childAssocs) && !childAssocs.isEmpty())
+        {
+            for (ChildAssociationRef child : childAssocs)
+            {
+                properties = nodeService.getProperties(child.getChildRef());
+                message.append("        ").append(properties.get(ContentModel.PROP_NAME)).append("(").append(properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)).append(")")
+                        .append(properties.get(TransferModel.PROP_INVADED_BY)).append(": ").append(nodeService.hasAspect(child.getChildRef(), TransferModel.ASPECT_ALIEN)).append(
+                                "\n");
+            }
+        }
+
+        log.trace(message.toString());
+    }
  
     public void beforeDeleteAlien(NodeRef deletedNodeRef, ChildAssociationRef oldAssoc)
     {
@@ -540,7 +595,7 @@ public class AlienProcessorImpl implements AlienProcessor
         ChildAssociationRef startingParent = nodeService.getPrimaryParent(nodeToPrune);
         
         Stack<NodeRef> foldersToRecalculate = new Stack<NodeRef>();
-        
+
         /**
          * Now go and do the pruning.        
          */
@@ -554,25 +609,72 @@ public class AlienProcessorImpl implements AlienProcessor
              *  if from the repo with multiple alien invasions - leave alone but process children
              */
             NodeRef currentNodeRef = nodesToPrune.pop();
-            
+
+            Map<QName, Serializable> properties = null;
+            if (log.isDebugEnabled())
+            {
+                properties = nodeService.getProperties(currentNodeRef);
+            }
+
+            if (log.isDebugEnabled())
+            {
+                log.debug("Current nodeRef (name: \"" + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \"" + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)
+                        + "\", manifestId: \"" + fromRepositoryId + "\")" + currentNodeRef);
+            }
+
             log.debug("pruneNode:" + currentNodeRef);
-            
+
             if(getNodeService().hasAspect(currentNodeRef, TransferModel.ASPECT_ALIEN))
             {
-                // Yes this is an alien node
-                List<String>invadedBy = (List<String>)getNodeService().getProperty(currentNodeRef, TransferModel.PROP_INVADED_BY);
-                if(invadedBy.contains(fromRepositoryId))
+                if (log.isDebugEnabled())
                 {
-                    // Yes we are invaded by fromRepositoryId
-                    if(invadedBy.size() == 1)
+                    log.debug("Current nodeRef has ASPECT_ALIEN (name: \"" + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \""
+                            + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID) + "\", manifestId: \"" + fromRepositoryId + "\")");
+                }
+
+                // Yes this is an alien node
+                List<String> invadedBy = (List<String>)getNodeService().getProperty(currentNodeRef, TransferModel.PROP_INVADED_BY);
+                String initialRepoId = (String) getNodeService().getProperty(currentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
+
+                if (log.isDebugEnabled())
+                {
+                    log.debug("Current nodeRef has PROP_INVADED_BY (name: \"" + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \""
+                            + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID) + "\", manifestId: \"" + fromRepositoryId + "\"): " + invadedBy);
+                }
+
+                if ((null != invadedBy) && invadedBy.contains(fromRepositoryId))
+                {
+                    if (log.isDebugEnabled())
                     {
+                        log.debug("Current nodeRef's PROP_INVADED_BY contains current manifestId (name: \"" + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \""
+                                + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID) + "\", manifestId: \"" + fromRepositoryId + "\")");
+                    }
+
+                    // Yes we are invaded by fromRepositoryId
+                    if ((1 == invadedBy.size()) && fromRepositoryId.equalsIgnoreCase(initialRepoId))
+                    {
+                        if (log.isDebugEnabled())
+                        {
+                            log
+                                    .debug("Current nodeRef has only 1 element in PROP_INVADED_BY. Also MANIFEST_ID and INITIAL_REPOSITORY_ID are the same. Deleting the node... (name: \""
+                                            + properties.get(ContentModel.PROP_NAME)
+                                            + "\", fromRepositoryId: \""
+                                            + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)
+                                            + "\", manifestId: \"" + fromRepositoryId + "\")");
+                        }
+
                         // we are invaded by a single repository which must be fromRepositoryId
-                        log.debug("pruned - deleted node:" + currentNodeRef);
                         getNodeService().deleteNode(currentNodeRef);
                     }
                     else
                     {
-                        log.debug("folder has multiple invaders");
+                        if (log.isDebugEnabled())
+                        {
+                            log.debug("Current 'nodeRef' has more than 1 element in PROP_INVADED_BY. Adding its children to 'nodesToPrune' list... (name: \""
+                                    + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \"" + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)
+                                    + "\", manifestId: \"" + fromRepositoryId + "\")");
+                        }
+
                         // multiple invasion - so it must be a folder
                         List<ChildAssociationRef> refs = nodeService.getChildAssocsByPropertyValue(currentNodeRef, TransferModel.PROP_INVADED_BY, fromRepositoryId);
                         for(ChildAssociationRef ref : refs)
@@ -589,12 +691,24 @@ public class AlienProcessorImpl implements AlienProcessor
                          */
                         if(!foldersToRecalculate.contains(currentNodeRef))
                         {
+                            if (log.isDebugEnabled())
+                            {
+                                log.debug("Current 'nodeRef' is not in 'foldersToRecalculate' list. Adding it to the list... (name: \"" + properties.get(ContentModel.PROP_NAME)
+                                        + "\", fromRepositoryId: \"" + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID) + "\", manifestId: \"" + fromRepositoryId + "\")");
+                            }
+
                             foldersToRecalculate.push(currentNodeRef);
                         }
                     }
                 }
                 else
                 {
+                    if (log.isDebugEnabled())
+                    {
+                        log.debug("Current \"nodeRef\"'s PROP_INVADED_BY does not contain current 'manifestId' (name: \"" + properties.get(ContentModel.PROP_NAME)
+                                + "\", fromRepositoryId: \"" + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID) + "\", manifestId: \"" + fromRepositoryId + "\")");
+                    }
+
                     /**
                      * Current node has been invaded by another repository  
                      *
@@ -602,10 +716,15 @@ public class AlienProcessorImpl implements AlienProcessor
                      */
                     getNodeService().hasAspect(currentNodeRef, TransferModel.ASPECT_TRANSFERRED);
                     {
-                        String fromRepoId = (String)getNodeService().getProperty(currentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
-                        if(fromRepositoryId.equalsIgnoreCase(fromRepoId))
+                        if(fromRepositoryId.equalsIgnoreCase(initialRepoId))
                         {
-                            log.debug("folder is from the transferring repository");
+                            if (log.isDebugEnabled())
+                            {
+                                log.debug("folder is from the transferring repository");
+                                log.debug("Current nodeRef has more than 1 element in PROP_INVADED_BY. Adding its children to 'nodesToPrune' list... (name: \""
+                                        + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \"" + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)
+                                        + "\", manifestId: \"" + fromRepositoryId + "\")");
+                            }
                             // invaded from somewhere else - so it must be a folder
                             List<ChildAssociationRef> refs = getNodeService().getChildAssocs(currentNodeRef);
                             for(ChildAssociationRef ref : refs)
@@ -621,6 +740,13 @@ public class AlienProcessorImpl implements AlienProcessor
                                  */
                                 if(!foldersToRecalculate.contains(currentNodeRef))
                                 {
+                                    if (log.isDebugEnabled())
+                                    {
+                                        log.debug("Current 'nodeRef' is not in 'foldersToRecalculate' list. Adding it to the list... (name: \""
+                                                + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \"" + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)
+                                                + "\", manifestId: \"" + fromRepositoryId + "\")");
+                                    }
+
                                     foldersToRecalculate.push(currentNodeRef);
                                 }
                             }
@@ -633,11 +759,24 @@ public class AlienProcessorImpl implements AlienProcessor
                 // Current node does not contain alien nodes so it can be deleted.
                 getNodeService().hasAspect(currentNodeRef, TransferModel.ASPECT_TRANSFERRED);
                 {
-                    String fromRepoId = (String)getNodeService().getProperty(currentNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
-                    if(fromRepositoryId.equalsIgnoreCase(fromRepoId))
+                    if (log.isDebugEnabled())
                     {
-                        // we are invaded by a single repository
-                        log.debug("pruned - deleted non alien node:" + currentNodeRef);
+                        log.debug("Current 'nodeRef' does not have ASPECT_ALIEN (name: \"" + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \""
+                                + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID) + "\", manifestId: \"" + fromRepositoryId + "\")");
+                    }
+
+                    String initialRepoId = (String) getNodeService().getProperty(currentNodeRef, TransferModel.PROP_REPOSITORY_ID);
+                    if(fromRepositoryId.equalsIgnoreCase(initialRepoId))
+                    {
+                        if (log.isDebugEnabled())
+                        {
+                            log.debug("Current \"nodeRef\"'s has PROP_FROM_REPOSITORY_ID equal to current 'manifestId'. Deleting the node... (name: \""
+                                    + properties.get(ContentModel.PROP_NAME) + "\", fromRepositoryId: \"" + properties.get(TransferModel.PROP_FROM_REPOSITORY_ID)
+                                    + "\", manifestId: \"" + fromRepositoryId + "\")");
+                            // we are invaded by a single repository
+                            log.debug("pruned - deleted non alien node:" + currentNodeRef);
+                        }
+
                         getNodeService().deleteNode(currentNodeRef);
                     }
                 }
@@ -745,44 +884,97 @@ public class AlienProcessorImpl implements AlienProcessor
      */
     private boolean recalcInvasion(NodeRef folderNodeRef, String fromRepositoryId)
     {
-        List<String>folderInvadedBy = (List<String>)nodeService.getProperty(folderNodeRef, TransferModel.PROP_INVADED_BY);
-             
+        if (log.isTraceEnabled())
+        {
+            log.trace("#################");
+            log.trace("#RECALC INVASION#");
+            log.trace("#################");
+        }
+
+        List<String> folderInvadedBy = (List<String>)nodeService.getProperty(folderNodeRef, TransferModel.PROP_INVADED_BY);
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("Node(" + nodeService.getProperty(folderNodeRef, ContentModel.PROP_NAME) + ")" + folderInvadedBy + ": checking '" + fromRepositoryId + "' id...");
+        }
+
         boolean stillInvaded = false;
-        
+        boolean hasAlienChild = false;
+
         //TODO need a more efficient query here
         List<ChildAssociationRef> refs = nodeService.getChildAssocs(folderNodeRef);
-        for(ChildAssociationRef ref : refs)
+
+        if (log.isDebugEnabled())
+        {
+            log.debug("Children count: " + refs.size());
+            log.debug("Is alien: " + nodeService.hasAspect(folderNodeRef, TransferModel.ASPECT_ALIEN));
+        }
+
+        String parentRepositoryId = (String) nodeService.getProperty(folderNodeRef, TransferModel.PROP_FROM_REPOSITORY_ID);
+        for (ChildAssociationRef ref : refs)
         {
             NodeRef childNode = ref.getChildRef();
-            List<String>childInvadedBy = (List<String>)getNodeService().getProperty(childNode, TransferModel.PROP_INVADED_BY);
-            
-            if(childInvadedBy != null && childInvadedBy.contains(fromRepositoryId))
+
+            if (log.isTraceEnabled())
             {
-                log.debug("folder is still invaded");
+                logInvasionHierarchy(folderNodeRef, childNode);
+            }
+
+            Map<QName, Serializable> properties = nodeService.getProperties(childNode);
+            List<String> childInvadedBy = (List<String>) properties.get(TransferModel.PROP_INVADED_BY);
+            String childRepositoryId = (String) properties.get(TransferModel.PROP_FROM_REPOSITORY_ID);
+
+            hasAlienChild = hasAlienChild || parentRepositoryId.equalsIgnoreCase(childRepositoryId);
+
+            if (!stillInvaded && (null != childInvadedBy) && (childInvadedBy.contains(fromRepositoryId) || fromRepositoryId.equalsIgnoreCase(childRepositoryId)))
+            {
+                if (log.isDebugEnabled())
+                {
+                    log.debug("This child contains current 'fromRepositoryId'. Current folder is still invaded by this repository");
+                }
+
                 stillInvaded = true;
-                break;
             }
         }
-        
-        if(!stillInvaded)
+
+        if (!stillInvaded)
         {
-            log.debug("folder is no longer invaded by this repo:" + folderNodeRef);
-            folderInvadedBy.remove(fromRepositoryId);
-            if(folderInvadedBy.size() > 0)
+            if (log.isDebugEnabled())
             {
-                if(log.isDebugEnabled())
+                log.debug("Current folder is not invaded by this repository. Updating 'invadedBy' property...");
+                log.debug("folder is no longer invaded by this repo:" + folderNodeRef);
+            }
+
+            folderInvadedBy.remove(fromRepositoryId);
+            if (folderInvadedBy.size() > 0)
+            {
+                if (log.isDebugEnabled())
                 {
+                    log.debug("Current folder HAS ANOTHER invasions. Updating the 'invadedBy' property...");
                     log.debug("still invaded by:" + folderInvadedBy);
                 }
-                getNodeService().setProperty(folderNodeRef, TransferModel.PROP_INVADED_BY, (Serializable)folderInvadedBy);
+
+                getNodeService().setProperty(folderNodeRef, TransferModel.PROP_INVADED_BY, (Serializable) folderInvadedBy);
             }
-            else
+            else if (!hasAlienChild)
             {
-                log.debug("no longer alien:" + folderNodeRef);
+                if (log.isDebugEnabled())
+                {
+                    log.debug("no longer alien:" + folderNodeRef);
+                    log.debug("This invasion was the last one for the current folder. Removing aspect 'ALIEN' completely...");
+                }
+
                 getNodeService().removeAspect(folderNodeRef, TransferModel.ASPECT_ALIEN);
             }
         }
-        
+
+        if (log.isTraceEnabled())
+        {
+            log.trace("#################");
+            log.trace("#   COMPLETED   #");
+            log.trace("#################");
+        }
+
         return stillInvaded;
     }
             

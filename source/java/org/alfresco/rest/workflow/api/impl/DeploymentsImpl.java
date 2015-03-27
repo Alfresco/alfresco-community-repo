@@ -65,7 +65,7 @@ public class DeploymentsImpl extends WorkflowRestImpl implements Deployments
             page.add(new Deployment(deployment));
         }
           
-        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
+        return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) < totalCount, totalCount);
     }
     
     @Override

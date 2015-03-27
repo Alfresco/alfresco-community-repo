@@ -596,7 +596,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
         
-        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
+        return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) < totalCount, totalCount);
     }
     
     protected void addVariables(Task task, Boolean includeProcessVariables, Boolean includeTaskVariables, 
@@ -705,7 +705,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             throw new InvalidArgumentException("Invalid status parameter: " + status);
         }
         
-        return CollectionWithPagingInfo.asPaged(paging, page, page.size() != totalCount, totalCount);
+        return CollectionWithPagingInfo.asPaged(paging, page, (page.size() + paging.getSkipCount()) < totalCount, totalCount);
     }
 
     @Override

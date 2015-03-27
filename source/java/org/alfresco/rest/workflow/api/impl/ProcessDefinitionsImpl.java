@@ -232,7 +232,7 @@ public class ProcessDefinitionsImpl extends WorkflowRestImpl implements ProcessD
             page.add(createProcessDefinitionRest((ProcessDefinitionEntity) processDefinition));
         }
         
-        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, page.size() != totalCount, totalCount);
+        return CollectionWithPagingInfo.asPaged(parameters.getPaging(), page, (page.size() + parameters.getPaging().getSkipCount()) < totalCount, totalCount);
     }
 
     @Override

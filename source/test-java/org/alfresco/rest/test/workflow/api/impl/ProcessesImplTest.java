@@ -171,6 +171,16 @@ public class ProcessesImplTest extends TestCase
         CollectionWithPagingInfo<ProcessInfo> actualProcesses = queryActiveProcessesAndAssertResult(5, ACTIVE_WORKFLOWS_INITIAL_AMOUNT);
         assertFalse(actualProcesses.hasMoreItems());
     }
+    
+    @Test
+    public void testHasMoreFalseAsPerMnt13567() throws Exception
+    {
+        CollectionWithPagingInfo<ProcessInfo> actualProcesses = queryActiveProcessesAndAssertResult(ACTIVE_WORKFLOWS_INITIAL_AMOUNT, ACTIVE_WORKFLOWS_INITIAL_AMOUNT);
+        assertFalse(actualProcesses.hasMoreItems());
+        
+        actualProcesses = queryActiveProcessesAndAssertResult(ACTIVE_WORKFLOWS_INITIAL_AMOUNT + 1, ACTIVE_WORKFLOWS_INITIAL_AMOUNT);
+        assertFalse(actualProcesses.hasMoreItems());
+    }
 
     private CollectionWithPagingInfo<ProcessInfo> queryActiveProcessesAndAssertResult(int skipCount, int maxItems)
     {
@@ -182,7 +192,7 @@ public class ProcessesImplTest extends TestCase
         assertNotNull(result);
         assertNotNull(result.getCollection());
 
-        int remainingProcessesAmount = ACTIVE_WORKFLOWS_INITIAL_AMOUNT - skipCount;
+        int remainingProcessesAmount = skipCount > ACTIVE_WORKFLOWS_INITIAL_AMOUNT ? 0 : ACTIVE_WORKFLOWS_INITIAL_AMOUNT - skipCount;
         if (maxItems >= remainingProcessesAmount)
         {
             assertEquals(remainingProcessesAmount, result.getCollection().size());

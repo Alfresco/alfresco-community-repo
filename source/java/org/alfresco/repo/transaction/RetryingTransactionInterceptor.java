@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -80,11 +80,13 @@ public class RetryingTransactionInterceptor extends TransactionAspectSupport imp
                                     }
                                     catch (RuntimeException e)
                                     {
+                                        RetryingTransactionHelper.setRollbackOnly();
                                         completeTransactionAfterThrowing(txInfo, e);
                                         throw e;
                                     }
                                     catch (Throwable e)
                                     {
+                                        RetryingTransactionHelper.setRollbackOnly();
                                         // Wrap non-runtime exceptions so that they can be preserved
                                         completeTransactionAfterThrowing(txInfo, e);
                                         throw new WrapperException(e);

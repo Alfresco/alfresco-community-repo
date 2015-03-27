@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -703,6 +703,61 @@ public class NodeServiceTest
         assertEquals("Expected exact number of reference assocs", 1, childAssocRefs.size());
     }
 
+    /**
+     * Test for MNT-12501
+     */
+    @Test public void testRollbackTransaction()
+    {
+        final NodeRef workspaceRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        final String name = GUID.generate();
+        final NodeRef[] nodes = new NodeRef[2];
+        // Now create 2 nodes with the same name and swallow the exception inside
+        RetryingTransactionCallback<Void> newNodeCallback = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(3);
+                props.put(ContentModel.PROP_NAME, name);
+                try
+                {
+                    NodeRef node1 = nodeService.createNode(
+                            workspaceRootNodeRef,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NAMESPACE, "duplicate"),
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
+                    nodes[0] = node1;
+                    NodeRef node2 = nodeService.createNode(
+                            workspaceRootNodeRef,
+                            ContentModel.ASSOC_CONTAINS,
+                            QName.createQName(NAMESPACE, "duplicate"),
+                            ContentModel.TYPE_FOLDER,
+                            props).getChildRef();
+                    nodes[1] = node2;
+                }
+                catch (Exception e)
+                {
+                    // swallow the exception
+                }
+                return null;
+            }
+        };
+        try
+        {
+            txnService.getRetryingTransactionHelper().doInTransaction(newNodeCallback);
+            // The exception is swallowed inside the callback
+            //fail("Duplicate child node name not detected.");
+        }
+        catch (DuplicateChildNodeNameException e)
+        {
+            // The exception is swallowed inside the callback
+        }
+        assertNotNull("The first node was not created.", nodes[0]);
+        assertFalse("The node creation should be rolled back.", nodeService.exists(nodes[0]));
+        assertNull("The duplicate node should not be created.", nodes[1]);
+    }
+    
     private NodeRef setupTestGetChildren(final NodeRef workspaceRootNodeRef, final int numberOfReferences)
     {
         RetryingTransactionCallback<NodeRef> setupCallback = new RetryingTransactionCallback<NodeRef>()

@@ -209,6 +209,12 @@ public class RetryingTransactionHelper
     private List<Class<?>> extraExceptions;
 
     /**
+     * A local variable holding the Rollback-only transaction flag which can be set by {@link #setRollbackOnly()}
+     * and is flushed by the 
+     */
+    private static ThreadLocal<Boolean> rollbackOnly = new ThreadLocal<Boolean>();
+    
+    /**
      * Callback interface
      * @author Derek Hulley
      */
@@ -458,7 +464,11 @@ public class RetryingTransactionHelper
                     // Only commit if we 'own' the transaction.
                     if (txn != null)
                     {
-                        if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+                        // Check if force rollback is on
+                        boolean mustRollBack = isRollbackOnly();
+                        // This method owns the transaction; make sure we don't leak the state
+                        rollbackOnly.set(null);
+                        if (txn.getStatus() == Status.STATUS_MARKED_ROLLBACK || mustRollBack)
                         {
                             if (logger.isDebugEnabled())
                             {
@@ -511,6 +521,10 @@ public class RetryingTransactionHelper
                                 "   Exception follows:",
                                 e);
                     }
+
+                    // make sure we don't leak the state
+                    rollbackOnly.set(null);
+
                     // Rollback if we can.
                     if (txn != null)
                     {
@@ -668,6 +682,29 @@ public class RetryingTransactionHelper
         }
         // A simple match
         return retryCause;
+    }
+    
+    /**
+     * @return      Returns <tt>true</tt> if the current thread transaction was marked as RollbackOnly
+     */
+    public static boolean isRollbackOnly()
+    {
+        if (rollbackOnly.get() == null)
+        {
+            return false;
+        }
+        else
+        {
+            return rollbackOnly.get();
+        }
+    }
+    
+    /**
+     * Helper method to set the RollbackOnly state of the transaction in the current thread
+     */
+    public static void setRollbackOnly()
+    {
+        rollbackOnly.set(true);
     }
     
     /**

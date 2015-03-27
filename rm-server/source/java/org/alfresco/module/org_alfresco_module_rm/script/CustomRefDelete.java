@@ -18,135 +18,124 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
- * Implementation for Java backed webscript to remove RM custom relationship from a node.
+ * Implementation for Java backed webscript to remove RM custom reference instances
+ * from a node.
  *
  * @author Neil McErlean
- * @author Tuna Aksoy
  */
 public class CustomRefDelete extends AbstractRmWebScript
 {
-    /** Constants */
-    private static final String REF_ID = "refId";
-    private static final String ST = "st";
-    private static final String SI = "si";
+    /** Logger */
+    private static Log logger = LogFactory.getLog(CustomRefDelete.class);
 
-    /** Relationship service */
-    private RelationshipService relationshipService;
+    /** RM Admin Service */
+    private RecordsManagementAdminService rmAdminService;
 
-    /** Rule service */
+    /** Rule Service */
     private RuleService ruleService;
 
     /**
-     * Gets the relationship service instance
-     *
-     * @return The relationship service instance
+     * @param rmAdminService    RM Admin Service
      */
-    protected RelationshipService getRelationshipService()
+    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
-        return this.relationshipService;
-    }
+		this.rmAdminService = rmAdminService;
+	}
 
     /**
-     * Sets the relationship service instance
-     *
-     * @param relationshipService The relationship service instance
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
-    }
-
-    /**
-     * Returns the rule service instance
-     *
-     * @return The rule service instance
-     */
-    protected RuleService getRuleService()
-    {
-        return this.ruleService;
-    }
-
-    /**
-     * Sets the rule service instance
-     *
-     * @param ruleService The rule service instance
+     * @param ruleService   Rule Service
      */
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+    /*
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> ftlModel;
+        ruleService.disableRuleType(RuleType.OUTBOUND);
+
         try
         {
-            getRuleService().disableRuleType(RuleType.OUTBOUND);
-            removeCustomRelationship(req);
-            model.put(SUCCESS, true);
+            ftlModel = removeCustomReferenceInstance(req);
         }
         finally
         {
-            getRuleService().enableRuleType(RuleType.OUTBOUND);
+            ruleService.enableRuleType(RuleType.OUTBOUND);
         }
-        return model;
+
+        return ftlModel;
     }
 
     /**
-     * Removes a custom relationship
-     *
-     * @param req The webscript request
+     * Removes custom reference.
      */
-    private void removeCustomRelationship(WebScriptRequest req)
+    protected Map<String, Object> removeCustomReferenceInstance(WebScriptRequest req)
     {
-        String uniqueName = getRequestParameterValue(req, REF_ID);
-        NodeRef source = parseRequestForNodeRef(req);
-        NodeRef target = getTargetNode(req);
+        NodeRef fromNodeRef = parseRequestForNodeRef(req);
 
-        getRelationshipService().removeRelationship(uniqueName, source, target);
-        getRelationshipService().removeRelationship(uniqueName, target, source);
-    }
+        // Get the toNode from the URL query string.
+        String storeType = req.getParameter("st");
+        String storeId = req.getParameter("si");
+        String nodeId = req.getParameter("id");
 
-    /**
-     * Gets the target node
-     *
-     * @param req The webscript request
-     * @return The target node
-     */
-    private NodeRef getTargetNode(WebScriptRequest req)
-    {
-        String storeType = req.getParameter(ST);
-        String storeId = req.getParameter(SI);
-        String nodeId = req.getParameter(ID);
+        // create the NodeRef and ensure it is valid
+        StoreRef storeRef = new StoreRef(storeType, storeId);
+        NodeRef toNodeRef = new NodeRef(storeRef, nodeId);
 
-        NodeRef targetNode = new NodeRef(storeType, storeId, nodeId);
-        if (!getNodeService().exists(targetNode))
+        if (!this.nodeService.exists(toNodeRef))
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find the target node: '" +
-                    targetNode.toString() + "'.");
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find to-node: " +
+            		toNodeRef.toString());
         }
 
-        return targetNode;
+        Map<String, Object> result = new HashMap<String, Object>();
+
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String clientsRefId = templateVars.get("refId");
+        QName qn = rmAdminService.getQNameForClientId(clientsRefId);
+        if (qn == null)
+        {
+            throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            		"Unable to find reference type: " + clientsRefId);
+        }
+
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Removing reference ").append(qn).append(" from ")
+                .append(fromNodeRef).append(" to ").append(toNodeRef);
+            logger.debug(msg.toString());
+        }
+
+        rmAdminService.removeCustomReference(fromNodeRef, toNodeRef, qn);
+        rmAdminService.removeCustomReference(toNodeRef, fromNodeRef, qn);
+
+        result.put("success", true);
+
+        return result;
     }
 }

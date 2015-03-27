@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.M2Aspect;
@@ -36,7 +37,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -58,16 +58,10 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
     private static final NodeRef RM_CUSTOM_MODEL_NODE_REF = new NodeRef("workspace://SpacesStore/records_management_custom_model");
 
     private ContentService contentService;
-    private NamespaceService namespaceService;
 
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
-    }
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
     }
 
     @Override
@@ -77,7 +71,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
 
         // Go through every custom reference defined in the custom model and make sure that it
         // has many-to-many multiplicity
-        String aspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(namespaceService);
+        String aspectName = RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
         M2Aspect customAssocsAspect = customModel.getAspect(aspectName);
 
         if (customAssocsAspect == null)
@@ -101,7 +95,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
 
     private M2Model readCustomContentModel()
     {
-        ContentReader reader = contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
+        ContentReader reader = this.contentService.getReader(RM_CUSTOM_MODEL_NODE_REF,
                                                              ContentModel.TYPE_CONTENT);
 
         if (!reader.exists()) {throw new AlfrescoRuntimeException("RM CustomModel has no content.");}
@@ -124,7 +118,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
             }
             catch (IOException ignored)
             {
-                // Intentionally empty.
+                // Intentionally empty.`
             }
         }
         return deserializedModel;
@@ -132,7 +126,7 @@ public class ApplyFixMob1573Get extends DeclarativeWebScript
 
     private void writeCustomContentModel(M2Model deserializedModel)
     {
-        ContentWriter writer = contentService.getWriter(RM_CUSTOM_MODEL_NODE_REF,
+        ContentWriter writer = this.contentService.getWriter(RM_CUSTOM_MODEL_NODE_REF,
                                                              ContentModel.TYPE_CONTENT, true);
         writer.setMimetype(MimetypeMap.MIMETYPE_XML);
         writer.setEncoding("UTF-8");

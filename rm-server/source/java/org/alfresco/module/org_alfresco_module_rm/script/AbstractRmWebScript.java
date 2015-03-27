@@ -18,8 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getTemplateVars;
-
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,96 +26,23 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
+import org.json.JSONObject;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Abstract base class for all RM webscript classes.
- * Includes utility methods for processing the webscript request.
  *
  * @author Neil McErlean
- * @author Tuna Aksoy
  */
 public abstract class AbstractRmWebScript extends DeclarativeWebScript
 {
-    /** Constants */
-    protected static final String PATH_SEPARATOR = "/";
-    protected static final String STORE_TYPE = "store_type";
-    protected static final String STORE_ID = "store_id";
-    protected static final String ID = "id";
-    protected static final String SUCCESS = "success";
-    protected static final String INVERT = "__invert";
-
-    /** Disposition service */
-    private DispositionService dispositionService;
-
-    /** Namespace service */
-    private NamespaceService namespaceService;
-
-    /** Node service */
-    private NodeService nodeService;
-
-    /**
-     * Gets the disposition service instance
-     *
-     * @return The disposition service instance
-     */
-    protected DispositionService getDispositionService()
-    {
-        return this.dispositionService;
-    }
-
-    /**
-     * Sets the disposition service instance
-     *
-     * @param dispositionService The disposition service instance
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
-
-    /**
-     * Gets the namespace service instance
-     *
-     * @return The namespace service instance
-     */
-    protected NamespaceService getNamespaceService()
-    {
-        return this.namespaceService;
-    }
-
-    /**
-     * Sets the namespace service instance
-     *
-     * @param namespaceService The namespace service instance
-     */
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
-    /**
-     * Gets the node service instance
-     *
-     * @return The node service instance
-     */
-    protected NodeService getNodeService()
-    {
-        return this.nodeService;
-    }
-
-    /**
-     * Sets the node service instance
-     *
-     * @param nodeService The node service instance
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
+    protected NodeService nodeService;
+    protected DispositionService dispositionService;
+    protected NamespaceService namespaceService;
 
     /**
      * Parses the request and providing it's valid returns the NodeRef.
@@ -130,20 +56,80 @@ public abstract class AbstractRmWebScript extends DeclarativeWebScript
     {
         // get the parameters that represent the NodeRef, we know they are present
         // otherwise this webscript would not have matched
-        Map<String, String> templateVars = getTemplateVars(req);
-        String storeType = templateVars.get(STORE_TYPE);
-        String storeId = templateVars.get(STORE_ID);
-        String nodeId = templateVars.get(ID);
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String storeType = templateVars.get("store_type");
+        String storeId = templateVars.get("store_id");
+        String nodeId = templateVars.get("id");
 
         // create the NodeRef and ensure it is valid
-        NodeRef nodeRef = new NodeRef(storeType, storeId, nodeId);
+        StoreRef storeRef = new StoreRef(storeType, storeId);
+        NodeRef nodeRef = new NodeRef(storeRef, nodeId);
 
-        if (!getNodeService().exists(nodeRef))
+        if (!this.nodeService.exists(nodeRef))
         {
-            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find node: '" +
-                        nodeRef.toString() + "'.");
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to find node: " +
+                        nodeRef.toString());
         }
 
         return nodeRef;
+    }
+
+    /**
+     * @param dispositionService    the disposition serviceS
+     */
+    public void setDispositionService(DispositionService dispositionService)
+    {
+        this.dispositionService = dispositionService;
+    }
+
+    /**
+     * Sets the NodeService instance
+     *
+     * @param nodeService The NodeService instance
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * Sets the NamespaceService instance
+     *
+     * @param namespaceService The NamespaceService instance
+     */
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
+    /**
+     * This method checks if the json object contains an entry with the specified name.
+     *
+     * @param json the json object.
+     * @param paramName the name to check for.
+     * @throws WebScriptException if the specified entry is missing.
+     */
+    protected void checkMandatoryJsonParam(JSONObject json, String paramName)
+    {
+        if (!json.has(paramName))
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Mandatory '" + paramName + "' parameter was not provided in request body");
+        }
+    }
+
+    /**
+     * This method checks if the json object contains entries with the specified names.
+     *
+     * @param json the json object.
+     * @param paramNames the names to check for.
+     * @throws WebScriptException if any of the specified entries are missing.
+     */
+    protected void checkMandatoryJsonParams(JSONObject json, List<String> paramNames)
+    {
+        for (String name : paramNames)
+        {
+            this.checkMandatoryJsonParam(json, name);
+        }
     }
 }

@@ -106,7 +106,7 @@ public class CustomPropertyDefinitionDelete extends AbstractRmWebScript
 
     	rmAdminService.removeCustomPropertyDefinition(propQName);
 
-        result.put("propertyqname", propQName.toPrefixString(getNamespaceService()));
+        result.put("propertyqname", propQName.toPrefixString(namespaceService));
 
         return result;
     }

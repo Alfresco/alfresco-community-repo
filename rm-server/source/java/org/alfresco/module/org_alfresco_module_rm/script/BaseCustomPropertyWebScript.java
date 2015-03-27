@@ -58,7 +58,7 @@ public class BaseCustomPropertyWebScript extends AbstractRmWebScript
         else
         {
             // Try and convert the string to a qname
-            return QName.createQName(elementName, getNamespaceService());
+            return QName.createQName(elementName, namespaceService);
         }
     }
 }

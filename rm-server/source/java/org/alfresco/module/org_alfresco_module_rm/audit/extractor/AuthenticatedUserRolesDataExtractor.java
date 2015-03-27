@@ -94,22 +94,18 @@ public final class AuthenticatedUserRolesDataExtractor extends AbstractDataExtra
             return null;
         }
 
-        StringBuilder sb = new StringBuilder(100);
-        
         // Get the rm root
         NodeRef rmRootNodeRef = filePlanService.getFilePlan(nodeRef);
 
-        if (rmRootNodeRef != null)
+        Set<Role> roles = filePlanRoleService.getRolesByUser(rmRootNodeRef, user);
+        StringBuilder sb = new StringBuilder(100);
+        for (Role role : roles)
         {
-            Set<Role> roles = filePlanRoleService.getRolesByUser(rmRootNodeRef, user);
-            for (Role role : roles)
+            if (sb.length() > 0)
             {
-                if (sb.length() > 0)
-                {
-                    sb.append(", ");
-                }
-                sb.append(role.getDisplayLabel());
+                sb.append(", ");
             }
+            sb.append(role.getDisplayLabel());
         }
 
         // Done

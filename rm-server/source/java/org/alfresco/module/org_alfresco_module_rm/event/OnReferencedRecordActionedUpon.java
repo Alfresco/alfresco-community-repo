@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeRMActionExecution;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -51,8 +51,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  */
 @BehaviourBean
 public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEventTypeImpl
-                                            implements RecordsManagementModel,
-                                            BeforeRMActionExecution
+                                            implements RecordsManagementModel
 
 {
     /** Disposition service */
@@ -60,6 +59,9 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
 
     /** Records management action service */
     private RecordsManagementActionService recordsManagementActionService;
+
+    /** Records management admin service */
+    private RecordsManagementAdminService recordsManagementAdminService;
 
     /** Node service */
     private NodeService nodeService;
@@ -90,6 +92,14 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
         this.recordsManagementActionService = recordsManagementActionService;
+    }
+
+    /**
+     * @param recordsManagementAdminService record management admin service
+     */
+    public void setRecordsManagementAdminService(RecordsManagementAdminService recordsManagementAdminService)
+    {
+        this.recordsManagementAdminService = recordsManagementAdminService;
     }
 
     /**
@@ -148,14 +158,13 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
      * @param name
      * @param parameters
      */
-    @Override
     @Behaviour
     (
             kind = BehaviourKind.CLASS,
             type = "rma:filePlanComponent",
             notificationFrequency = NotificationFrequency.FIRST_EVENT
     )
-    public void beforeRMActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
+    public void beforeActionExecution(final NodeRef nodeRef, final String name, final Map<String, Serializable> parameters)
     {
         AuthenticationUtil.RunAsWork<Object> work = new AuthenticationUtil.RunAsWork<Object>()
         {
@@ -203,7 +212,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
 
     private void processRecord(NodeRef record)
     {
-        List<AssociationRef> fromAssocs = nodeService.getTargetAssocs(record, RegexQNamePattern.MATCH_ALL);
+        List<AssociationRef> fromAssocs = recordsManagementAdminService.getCustomReferencesFrom(record);
         for (AssociationRef fromAssoc : fromAssocs)
         {
             if (reference.equals(fromAssoc.getTypeQName()))
@@ -213,7 +222,7 @@ public class OnReferencedRecordActionedUpon extends SimpleRecordsManagementEvent
             }
         }
 
-        List<AssociationRef> toAssocs = nodeService.getSourceAssocs(record, RegexQNamePattern.MATCH_ALL);
+        List<AssociationRef> toAssocs = recordsManagementAdminService.getCustomReferencesTo(record);
         for (AssociationRef toAssoc : toAssocs)
         {
             if (reference.equals(toAssoc.getTypeQName()))

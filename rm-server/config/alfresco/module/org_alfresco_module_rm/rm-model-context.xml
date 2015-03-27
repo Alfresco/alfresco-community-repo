@@ -56,9 +56,6 @@
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
    </bean>
 
-   <!-- dm model type -->
-   <bean id="cm.object" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.CmObjectType" parent="rm.baseBehaviour"/>
-
    <!--  rma model types -->
 
    <bean id="rma.recordsManagementContainer" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordsManagementContainerType" parent="rm.baseBehaviour">

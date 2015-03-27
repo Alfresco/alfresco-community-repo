@@ -26,8 +26,8 @@ import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -56,9 +56,6 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     protected FilePlanService filePlanService;
     protected DispositionService dispositionService;
     protected RecordFolderService recordFolderService;
-    
-    /** transaction resource helper */
-    private TransactionalResourceHelper transactionalResourceHelper;
 
     /**
      * @param recordService     record service
@@ -115,14 +112,6 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
     {
         this.recordFolderService = recordFolderService;
     }
-    
-    /**
-     * @param transactionalResourceHelper transactional resource helper
-     */
-    public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
-    {
-        this.transactionalResourceHelper = transactionalResourceHelper;
-    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#getName()
@@ -142,7 +131,7 @@ public abstract class AbstractCapabilityCondition implements CapabilityCondition
         boolean result = false;
         
         // check transaction cache
-        Map<String, Boolean> map = transactionalResourceHelper.getMap(KEY_EVALUATE);
+        Map<String, Boolean> map = TransactionalResourceHelper.getMap(KEY_EVALUATE);
         String key = getName() + "|" + nodeRef.toString() + "|" + AuthenticationUtil.getRunAsUser();
         if (map.containsKey(key))
         {

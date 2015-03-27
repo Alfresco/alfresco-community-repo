@@ -18,119 +18,141 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
-import static org.apache.commons.lang3.StringUtils.isBlank;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Implementation for Java backed webscript to get RM custom reference definitions.
+ * This class provides the implementation for the customrefdefinitions.get webscript.
  *
  * @author Neil McErlean
- * @author Tuna Aksoy
  */
-public class CustomReferenceDefinitionsGet extends CustomReferenceDefinitionBase
+public class CustomReferenceDefinitionsGet extends DeclarativeWebScript
 {
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
-     */
+    private static final String REFERENCE_TYPE = "referenceType";
+    private static final String REF_ID = "refId";
+    private static final String LABEL = "label";
+    private static final String SOURCE = "source";
+    private static final String TARGET = "target";
+    private static final String CUSTOM_REFS = "customRefs";
+    private static Log logger = LogFactory.getLog(CustomReferenceDefinitionsGet.class);
+
+    private RecordsManagementAdminService rmAdminService;
+    private DictionaryService dictionaryService;
+
+    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
+    {
+        this.rmAdminService = rmAdminService;
+    }
+
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     @Override
-    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
+    public Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String uniqueName = getRequestParameterValue(req, REF_ID, false);
-        Set<RelationshipDefinition> relationshipDefinitions = getRelationshipDefinitons(uniqueName);
-        List<Map<String, String>> relationshipDefinitionData = createRelationshipDefinitionData(relationshipDefinitions);
-
         Map<String, Object> model = new HashMap<String, Object>();
-        model.put(CUSTOM_REFS, relationshipDefinitionData);
-        return model;
-    }
 
-    /**
-     * Gets the relationship definition for the unique name. If the unique
-     * name is blank all relationship definitions will be retrieved
-     *
-     * @param uniqueName The unique name of the relationship definition
-     * @return Relationship definition for the given unique name or all
-     * relationship definitions if unique name is blank
-     */
-    private Set<RelationshipDefinition> getRelationshipDefinitons(String uniqueName)
-    {
-        Set<RelationshipDefinition> relationshipDefinitions = new HashSet<RelationshipDefinition>();
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String refId = templateVars.get(REF_ID);
 
-        if (isBlank(uniqueName))
+        if (logger.isDebugEnabled())
         {
-            relationshipDefinitions.addAll(getRelationshipService().getRelationshipDefinitions());
+            logger.debug("Getting custom reference definitions with refId: " + refId);
         }
-        else
+
+        Map<QName, AssociationDefinition> currentCustomRefs = rmAdminService.getCustomReferenceDefinitions();
+
+        // If refId has been provided then this is a request for a single custom-ref-defn.
+        // else it is a request for them all.
+        if (refId != null)
         {
-            RelationshipDefinition relationshipDefinition = getRelationshipService().getRelationshipDefinition(uniqueName);
-            if (relationshipDefinition != null)
+            QName qn = rmAdminService.getQNameForClientId(refId);
+
+            AssociationDefinition assDef = currentCustomRefs.get(qn);
+            if (assDef == null)
             {
-                relationshipDefinitions.add(relationshipDefinition);
+                StringBuilder msg = new StringBuilder();
+                msg.append("Unable to find reference: ").append(refId);
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(msg.toString());
+                }
+                throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND,
+                        msg.toString());
             }
+
+            currentCustomRefs = new HashMap<QName, AssociationDefinition>(1);
+            currentCustomRefs.put(qn, assDef);
         }
 
-        return relationshipDefinitions;
-    }
+        List<Map<String, String>> listOfReferenceData = new ArrayList<Map<String, String>>();
 
-    /**
-     * Creates relationship definition data for the ftl template
-     *
-     * @param relationshipDefinitions The relationship definitions
-     * @return The relationship definition data
-     */
-    private List<Map<String, String>> createRelationshipDefinitionData(Set<RelationshipDefinition> relationshipDefinitions)
-    {
-        List<Map<String, String>> relationshipDefinitionData = new ArrayList<Map<String, String>>();
-
-        for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)
+        for (Entry<QName, AssociationDefinition> entry : currentCustomRefs.entrySet())
         {
             Map<String, String> data = new HashMap<String, String>();
 
-            RelationshipType type = relationshipDefinition.getType();
-            RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
+            AssociationDefinition nextValue = entry.getValue();
 
-            if (RelationshipType.BIDIRECTIONAL.equals(type))
+            CustomReferenceType referenceType = nextValue instanceof ChildAssociationDefinition ?
+                    CustomReferenceType.PARENT_CHILD : CustomReferenceType.BIDIRECTIONAL;
+
+            data.put(REFERENCE_TYPE, referenceType.toString());
+
+            // It is the title which stores either the label, or the source and target.
+            String nextTitle = nextValue.getTitle(dictionaryService);
+            if (CustomReferenceType.PARENT_CHILD.equals(referenceType))
             {
-                data.put(LABEL, displayName.getSourceText());
+                if (nextTitle != null)
+                {
+                    String[] sourceAndTarget = rmAdminService.splitSourceTargetId(nextTitle);
+                    data.put(SOURCE, sourceAndTarget[0]);
+                    data.put(TARGET, sourceAndTarget[1]);
+                    data.put(REF_ID, entry.getKey().getLocalName());
+                }
             }
-            else if (RelationshipType.PARENTCHILD.equals(type))
+            else if (CustomReferenceType.BIDIRECTIONAL.equals(referenceType))
             {
-                data.put(SOURCE, displayName.getSourceText());
-                data.put(TARGET, displayName.getTargetText());
+                if (nextTitle != null)
+                {
+                    data.put(LABEL, nextTitle);
+                    data.put(REF_ID, entry.getKey().getLocalName());
+                }
             }
             else
             {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Unsupported relationship type '")
-                    .append(type)
-                    .append("'.");
-
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, sb.toString());
+                throw new WebScriptException("Unsupported custom reference type: " + referenceType);
             }
 
-            data.put(REF_ID, relationshipDefinition.getUniqueName());
-            data.put(REFERENCE_TYPE, type.toString().toLowerCase());
-
-            relationshipDefinitionData.add(data);
+            listOfReferenceData.add(data);
         }
 
-        return relationshipDefinitionData;
+        if (logger.isDebugEnabled())
+        {
+            logger.debug("Retrieved custom reference definitions: " + listOfReferenceData.size());
+        }
+
+        model.put(CUSTOM_REFS, listOfReferenceData);
+
+        return model;
     }
 }

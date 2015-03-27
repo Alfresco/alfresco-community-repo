@@ -18,34 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_FILE_PLAN;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY;
-import static org.alfresco.service.cmr.version.VersionType.MINOR;
-import static org.springframework.extensions.webscripts.GUID.generate;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.version.VersionModel;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
-import org.alfresco.util.PropertyMap;
-import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.GUID;
 
 /**
@@ -57,10 +38,8 @@ import org.springframework.extensions.webscripts.GUID;
 public class RejectRecordTest extends BaseRMTestCase
 {
     private VersionService versionService;
-    private CheckOutCheckInService checkOutCheckInService;
 
     private static final String REASON = GUID.generate();
-    private static final String FINAL_VERSION = "rm.service.final-version";
 
     @Override
     protected boolean isUserTest()
@@ -79,8 +58,7 @@ public class RejectRecordTest extends BaseRMTestCase
     {
         super.initServices();
 
-        versionService = (VersionService) applicationContext.getBean("VersionService");
-        checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("CheckOutCheckInService");
+        versionService = (VersionService)applicationContext.getBean("VersionService");
     }
 
     /**
@@ -113,7 +91,7 @@ public class RejectRecordTest extends BaseRMTestCase
                 assertTrue(recordService.isRecord(dmDocument));
                 assertTrue(permissionService.getInheritParentPermissions(dmDocument));
 
-                // reject record
+                // declare record
                 recordService.rejectRecord(dmDocument, REASON);
             }
 
@@ -136,7 +114,7 @@ public class RejectRecordTest extends BaseRMTestCase
     public void testRevertAfterReject() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
+        {;
             private NodeRef document;
 
             public void given()
@@ -208,85 +186,6 @@ public class RejectRecordTest extends BaseRMTestCase
 
                 // expected owner has be re-set
                 assertEquals(userName, ownableService.getOwner(document));
-            }
-        });
-    }
-
-    public void testRelationshipAfterRevertingRecord()
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            // Test document
-            private NodeRef document;
-
-            public void given()
-            {
-                // Create a test document
-                NodeRef folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                document = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
-
-                // Set Auto-Declare Versions to "For all major and minor versions"
-                PropertyMap recordableVersionProperties = new PropertyMap(2);
-                recordableVersionProperties.put(PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
-                recordableVersionProperties.put(PROP_FILE_PLAN, filePlan);
-                nodeService.addAspect(document, ASPECT_VERSIONABLE, recordableVersionProperties);
-
-                // Upload New Version
-                document = checkOutCheckInService.checkout(document);
-                Map<String, Serializable> props = new HashMap<String, Serializable>(2);
-                props.put(Version.PROP_DESCRIPTION, generate());
-                props.put(VersionModel.PROP_VERSION_TYPE, MINOR);
-                document = checkOutCheckInService.checkin(document, props);
-
-                // Check the declared version
-                List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(unfiledContainer);
-                assertEquals(1, childAssocs.size());
-
-                // Declare document as record
-                recordService.createRecord(filePlan, document);
-
-                // Check the declared versions
-                childAssocs = nodeService.getChildAssocs(unfiledContainer);
-                assertEquals(2, childAssocs.size());
-
-                // Check that the document is a file plan component
-                assertTrue(nodeService.hasAspect(document, ASPECT_FILE_PLAN_COMPONENT));
-
-                // Get the final version
-                NodeRef finalVersion = null;
-                for (ChildAssociationRef childAssociationRef : nodeService.getChildAssocs(unfiledContainer))
-                {
-                    NodeRef childRef = childAssociationRef.getChildRef();
-                    String label = (String) nodeService.getProperty(document, RecordableVersionModel.PROP_VERSION_LABEL);
-
-                    if (label.equals(I18NUtil.getMessage(FINAL_VERSION)))
-                    {
-                        finalVersion = childRef;
-                        break;
-                    }
-                }
-
-                // The final version should be the declared record
-                assertEquals(document, finalVersion);
-
-                // Check the relationship
-                Set<Relationship> relationships = relationshipService.getRelationshipsFrom(document);
-                assertEquals(1, relationships.size());
-                Relationship relationship = relationships.iterator().next();
-                assertEquals(CUSTOM_REF_VERSIONS.getLocalName(), relationship.getUniqueName());
-            }
-
-            public void when()
-            {
-                // Reject record
-                recordService.rejectRecord(document, generate());
-            }
-
-            public void then()
-            {
-                // Check the relationship
-                Set<Relationship> relationships = relationshipService.getRelationshipsFrom(document);
-                assertEquals(0, relationships.size());
             }
         });
     }

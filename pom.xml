@@ -4,13 +4,9 @@
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-rm-parent</artifactId>
    <packaging>pom</packaging>
-   <version>3.0-SNAPSHOT</version>
+   <version>2.2.1-SNAPSHOT</version>
    <name>Alfresco Records Management</name>
-   <parent>
-      <groupId>org.alfresco.maven</groupId>
-      <artifactId>alfresco-sdk-parent</artifactId>
-      <version>2.0.0</version>
-   </parent>
+
    <url>http://www.alfresco.org/</url>
    <inceptionYear>2005</inceptionYear>
    <organization>
@@ -64,27 +60,13 @@
       </snapshotRepository>
    </distributionManagement>
 
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-platform-distribution</artifactId>
-            <version>${alfresco.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
-
    <modules>
       <module>rm-server</module>
       <module>rm-share</module>
    </modules>
 
    <properties>
-      <alfresco.version>5.0</alfresco.version>
-      <app.war.location>${project.build.directory}/${webapp.id.name}.war</app.war.location>
-      <alfresco.base.version>${alfresco.version}</alfresco.base.version>
+      <alfresco.base.version>4.2.4.6</alfresco.base.version>
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>
@@ -96,9 +78,10 @@
       <!-- Maven specific build properties -->
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.7</maven.build.sourceVersion>
-      <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-      <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+
+      <!-- Sonar specific properties -->
+      <sonar.jacoco.reportPath>${project.build.directory}/jacoco.exec</sonar.jacoco.reportPath>
    </properties>
 
    <build>
@@ -116,7 +99,7 @@
                   <configuration>
                      <rules>
                         <requireJavaVersion>
-                           <version>1.8</version>
+                           <version>1.7.0</version>
                         </requireJavaVersion>
                      </rules>
                   </configuration>
@@ -130,9 +113,25 @@
             <configuration>
                <backup>true</backup>
                <ampLocation>${project.build.directory}/${project.build.finalName}-amp.amp</ampLocation>
-               <warLocation>${app.war.location}</warLocation>
+               <warLocation>${project.build.directory}/${webapp.id}.war</warLocation>
                <classifier>amp</classifier>
-               <includeDependencies>true</includeDependencies>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-war-plugin</artifactId>
+            <configuration>
+               <overlays>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>${webapp.id}</artifactId>
+                     <type>war</type>
+                  </overlay>
+                  <overlay>
+                     <groupId>org.alfresco</groupId>
+                     <artifactId>${project.artifactId}</artifactId>
+                     <type>amp</type>
+                  </overlay>
+               </overlays>
             </configuration>
          </plugin>
       </plugins>
@@ -146,24 +145,11 @@
             </plugin>
             <plugin>
                <artifactId>maven-compiler-plugin</artifactId>
-               <version>3.2</version>
+               <version>3.1</version>
                <configuration>
                   <source>${maven.build.sourceVersion}</source>
                   <target>${maven.build.sourceVersion}</target>
                </configuration>
-               <executions>
-                  <execution>
-                     <id>default-testCompile</id>
-                     <phase>process-test-sources</phase>
-                     <goals>
-                        <goal>testCompile</goal>
-                     </goals>
-                     <configuration>
-                        <source>${maven.build.testSourceVersion}</source>
-                        <target>${maven.build.testSourceVersion}</target>
-                     </configuration>
-                  </execution>
-               </executions>
             </plugin>
             <plugin>
                <artifactId>maven-deploy-plugin</artifactId>
@@ -212,6 +198,7 @@
                   <!-- To prevent tests alfresco.log to be created in project roots and bother while synchronizing with SCM -->
                   <redirectTestOutputToFile>true</redirectTestOutputToFile>
                   <runOrder>alphabetical</runOrder>
+                  <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
                   <systemPropertyVariables>
                      <!-- Database related properties -->
                      <db.url>${db.url}</db.url>

@@ -6,24 +6,19 @@
    <bean id="jsonConversionComponentCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
 
    <!-- extending bean definition -->
-   <bean id="rm.jsonConversionComponent"
-   		 class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
-         parent="baseJsonConversionComponent"
-         init-method="init">
-      <property name="recordContributorsGroupEnabled" value="${rm.record.contributors.group.enabled}"/>
-      <property name="recordContributorsGroupName" value="${rm.record.contributors.group.name}"/>
+   <bean id="rm.jsonConversionComponent" class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
+         parent="baseJsonConversionComponent" init-method="init">
       <property name="recordService" ref="RecordService"/>
       <property name="filePlanService" ref="FilePlanService"/>
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="siteService" ref="SiteService" />
-      <property name="authorityService" ref="AuthorityService" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="jsonConversionComponentCache" ref="jsonConversionComponentCache" />
    </bean>
 
    <!--  extends core bean with RM extensions -->
-   <bean class="org.alfresco.util.BeanExtender">
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
       <property name="beanName" value="jsonConversionComponent" />
       <property name="extendingBeanName" value="rm.jsonConversionComponent" />
    </bean>
@@ -364,17 +359,6 @@
       <property name="capability" value="LinkToRecords" />
    </bean>
 
-   <bean id="jsonConversionComponent.unlinkFromAction"
-         parent="jsonConversionComponent.baseAction">
-      <property name="name" value="unlinkFrom"/>
-      <property name="kinds">
-         <set>
-            <value>RECORD</value>
-         </set>
-      </property>
-      <property name="capability" value="DeleteLinks" />
-   </bean>
-
    <bean id="jsonConversionComponent.fileToAction"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="fileTo"/>
@@ -427,8 +411,6 @@
             <value>UNFILED_RECORD_FOLDER</value>
             <value>HOLD_CONTAINER</value>
             <value>HOLD</value>
-            <value>TRANSFER</value>
-            <value>TRANSFER_CONTAINER</value>
          </set>
       </property>
       <property name="capability" value ="ManageAccessRights"/>
@@ -634,21 +616,11 @@
       <property name="kinds">
          <set>
             <value>RECORD_CATEGORY</value>
-         </set>
-      </property>
-      <property name="capability" value ="CreateModifyDestroyFolders"/>
-   </bean>
-
-   <bean id="jsonConversionComponent.newUnfiledRecordsFolder"
-         parent="jsonConversionComponent.baseAction">
-      <property name="name" value="newUnfiledRecordsFolder"/>
-      <property name="kinds">
-         <set>
             <value>UNFILED_RECORD_CONTAINER</value>
             <value>UNFILED_RECORD_FOLDER</value>
          </set>
       </property>
-      <property name="capability" value ="CreateModifyDestroyUnfiledRecordContainer"/>
+      <property name="capability" value ="CreateModifyDestroyFolders"/>
    </bean>
 
    <bean id="jsonConversionComponent.import"
@@ -668,13 +640,6 @@
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="export"/>
       <property name="capability" value="ViewRecords"/>
-      <property name="kinds">
-         <set>
-            <value>FILE_PLAN</value>
-            <value>RECORD_CATEGORY</value>
-            <value>RECORD_FOLDER</value>
-         </set>
-      </property>
    </bean>
 
    <bean id="jsonConversionComponent.downloadZip"
@@ -911,16 +876,5 @@
          </set>
       </property>
       <property name="capability" value ="EditHold"/>
-   </bean>
-
-   <bean id="jsonConversionComponent.moveDmRecordAction"
-         parent="jsonConversionComponent.baseAction">
-      <property name="name" value="moveDmRecord"/>
-      <property name="kinds">
-         <set>
-            <value>RECORD</value>
-         </set>
-      </property>
-      <property name="capability" value="MoveDmRecords"/>
    </bean>
 </beans>

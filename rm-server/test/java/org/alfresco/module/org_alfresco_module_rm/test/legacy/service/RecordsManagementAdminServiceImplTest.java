@@ -25,25 +25,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.BeforeCreateReference;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;
-import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
+import org.alfresco.module.org_alfresco_module_rm.script.CustomReferenceType;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -532,16 +531,16 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
     public void testCreateAndUseCustomChildReference() throws Exception
     {
         long now = System.currentTimeMillis();
-        createAndUseCustomReference(RelationshipType.PARENTCHILD, null, "superseded" + now, "superseding" + now);
+        createAndUseCustomReference(CustomReferenceType.PARENT_CHILD, null, "superseded" + now, "superseding" + now);
     }
 
     public void testCreateAndUseCustomNonChildReference() throws Exception
     {
         long now = System.currentTimeMillis();
-        createAndUseCustomReference(RelationshipType.BIDIRECTIONAL, "supporting" + now, null, null);
+        createAndUseCustomReference(CustomReferenceType.BIDIRECTIONAL, "supporting" + now, null, null);
     }
 
-    private void createAndUseCustomReference(final RelationshipType refType, final String label, final String source, final String target) throws Exception
+    private void createAndUseCustomReference(final CustomReferenceType refType, final String label, final String source, final String target) throws Exception
     {
         final NodeRef testRecord1 = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
         {
@@ -573,25 +572,18 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         if (source != null) params.put("source", source);
                         if (target != null) params.put("target", target);
 
-                        // Create the relationship display name
-                        RelationshipDisplayName displayName;
+                        // Create the reference definition.
+                        QName qNameResult;
                         if (label != null)
                         {
                             // A bidirectional reference
-                            displayName = new RelationshipDisplayName(label, label);
+                            qNameResult = rmAdminService.addCustomAssocDefinition(label);
                         }
                         else
                         {
                             // A parent/child reference
-                            displayName = new RelationshipDisplayName(source, target);
+                            qNameResult = rmAdminService.addCustomChildAssocDefinition(source, target);
                         }
-
-                        // Create the relationship definition
-                        RelationshipDefinition relationshipDefinition = relationshipService.createRelationshipDefinition(displayName);
-
-                        // Get the qualified name
-                        QName qNameResult = QName.createQName(RM_CUSTOM_PREFIX, relationshipDefinition.getUniqueName(), namespaceService);;
-
                         System.out.println("Creating new " + refType + " reference definition: " + qNameResult);
                         System.out.println("  params- label: '" + label + "' source: '" + source + "' target: '" + target + "'");
 
@@ -603,16 +595,21 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                 {
                     public Void execute() throws Throwable
                     {
-                        RelationshipDefinition relationshipDefinition = relationshipService.getRelationshipDefinition(generatedQName.getLocalName());
-                        assertNotNull("Relationship definition from relationshipService was null.", relationshipDefinition);
-                        assertEquals(generatedQName.getLocalName(), relationshipDefinition.getUniqueName());
-                        assertTrue(refType.equals(relationshipDefinition.getType()));
+                        // Confirm the custom reference is included in the list from adminService.
+                        Map<QName, AssociationDefinition> customRefDefinitions = rmAdminService.getCustomReferenceDefinitions();
+                        AssociationDefinition retrievedRefDefn = customRefDefinitions.get(generatedQName);
+                        assertNotNull("Custom reference definition from adminService was null.", retrievedRefDefn);
+                        assertEquals(generatedQName, retrievedRefDefn.getName());
+                        assertEquals(refType.equals(CustomReferenceType.PARENT_CHILD), retrievedRefDefn.isChild());
 
                         // Now we need to use the custom reference.
                         // So we apply the aspect containing it to our test records.
                         nodeService.addAspect(testRecord1, ASPECT_CUSTOM_ASSOCIATIONS, null);
 
-                        if (RelationshipType.PARENTCHILD.equals(refType))
+                        QName assocsAspectQName = QName.createQName("rmc:customAssocs", namespaceService);
+                        nodeService.addAspect(testRecord1, assocsAspectQName, null);
+
+                        if (CustomReferenceType.PARENT_CHILD.equals(refType))
                         {
                             nodeService.addChild(testRecord1, testRecord2, generatedQName, generatedQName);
                         }
@@ -633,7 +630,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         List<AssociationRef> retrievedAssocs = nodeService.getTargetAssocs(testRecord1, RegexQNamePattern.MATCH_ALL);
 
                         Object newlyAddedRef = null;
-                        if (RelationshipType.PARENTCHILD.equals(refType))
+                        if (CustomReferenceType.PARENT_CHILD.equals(refType))
                         {
                             for (ChildAssociationRef caRef : childAssocs)
                             {
@@ -654,7 +651,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                         // Check that the reference has appeared in the data dictionary
                         AspectDefinition customAssocsAspect = dictionaryService.getAspect(ASPECT_CUSTOM_ASSOCIATIONS);
                         assertNotNull(customAssocsAspect);
-                        if (RelationshipType.PARENTCHILD.equals(refType))
+                        if (CustomReferenceType.PARENT_CHILD.equals(refType))
                         {
                             assertNotNull("The customReference is not returned from the dictionaryService.",
                                     customAssocsAspect.getChildAssociations().get(generatedQName));
@@ -699,17 +696,13 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                     public Void execute() throws Throwable
                     {
                         // Just dump them out for visual inspection
-                        System.out.println("Available relationship definitions:");
-                        Set<RelationshipDefinition> relationshipDefinitions = relationshipService.getRelationshipDefinitions();
-                        for (RelationshipDefinition relationshipDefinition : relationshipDefinitions)
+                        System.out.println("Available custom references:");
+                        Map<QName, AssociationDefinition> references = rmAdminService.getCustomReferenceDefinitions();
+                        for (QName reference : references.keySet())
                         {
-                            String uniqueName = relationshipDefinition.getUniqueName();
-                            RelationshipDisplayName displayName = relationshipDefinition.getDisplayName();
-
-                            System.out.println("    - " + uniqueName);
-                            System.out.println("      " + displayName.toString());
+                            System.out.println("    - " + reference.toString());
+                            System.out.println("      " + references.get(reference).getTitle(dictionaryService));
                         }
-
                         return null;
                     }
                 });
@@ -777,7 +770,7 @@ public class RecordsManagementAdminServiceImplTest extends    BaseRMTestCase
                             assertFalse(beforeMarker);
                             assertFalse(onMarker);
 
-                            relationshipService.addRelationship(CUSTOM_REF_VERSIONS.getLocalName(), testRecord1, testRecord2);
+                            rmAdminService.addCustomReference(testRecord1, testRecord2, CUSTOM_REF_VERSIONS);
 
                             assertTrue(beforeMarker);
                             assertTrue(onMarker);

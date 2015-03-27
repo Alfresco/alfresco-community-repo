@@ -35,6 +35,7 @@ import net.sf.acegisecurity.ConfigAttributeDefinition;
 import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
@@ -42,17 +43,19 @@ import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.PermissionCheckCollection;
 import org.alfresco.repo.security.permissions.PermissionCheckValue;
-import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.PermissionCheckedValue;
+import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.impl.acegi.ACLEntryVoterException;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -76,8 +79,13 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     public boolean supports(ConfigAttribute configAttribute)
     {
+        boolean supports = false;
         String attribute = configAttribute.getAttribute();
-        return (StringUtils.isNotBlank(attribute) && attribute.startsWith(AFTER_RM));
+        if (StringUtils.isNotBlank(attribute) && attribute.startsWith(AFTER_RM))
+        {
+            supports = true;
+        }
+        return supports;
     }
 
     @SuppressWarnings("rawtypes")
@@ -210,7 +218,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Access denied: " + ade.getMessage());
+                logger.debug("Access denied");
+                ade.printStackTrace();
             }
             throw ade;
         }
@@ -218,7 +227,8 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Access denied by runtime exception: " + re.getMessage());
+                logger.debug("Access denied by runtime exception");
+                re.printStackTrace();
             }
             throw re;
         }
@@ -287,10 +297,10 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
 
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes" })
     private List<ConfigAttributeDefintion> extractSupportedDefinitions(ConfigAttributeDefinition config)
     {
-        List<ConfigAttributeDefintion> definitions = new ArrayList<>();
+        List<ConfigAttributeDefintion> definitions = new ArrayList<ConfigAttributeDefintion>();
         Iterator iter = config.getConfigAttributes();
 
         while (iter.hasNext())
@@ -327,7 +337,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
         {
             NodeRef testNodeRef = null;
 
-            if (cad.parent)
+            if (cad.typeString.equals(cad.parent))
             {
                 testNodeRef = returnedObject.getParentRef();
             }
@@ -343,7 +353,7 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 continue;
             }
 
-            if (cad.parent && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
+            if (cad.typeString.equals(cad.parent) && parentReadCheck != AccessDecisionVoter.ACCESS_GRANTED)
             {
                 throw new AccessDeniedException("Access Denied");
             }

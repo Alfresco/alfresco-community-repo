@@ -83,9 +83,12 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
     @Override
-    public void before() throws Exception
+    public void before()
     {
         super.before();
+        
+        // mock up run as methods
+        mockRunAsMethods(filePlanPermissionService);
         
         // initialize node's        
         unfiledRecordContainer = generateContainerNodeRef(TYPE_UNFILED_RECORD_CONTAINER);

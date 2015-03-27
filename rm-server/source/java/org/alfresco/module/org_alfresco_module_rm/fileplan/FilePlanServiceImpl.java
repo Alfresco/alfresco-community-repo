@@ -65,6 +65,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
     private static final String MSG_DUP_ROOT = "rm.service.dup-root";
     private static final String MSG_ROOT_TYPE = "rm.service.root-type";
     private static final String MSG_PATH_NODE = "rm.service.path-node";
+    private static final String MSG_INVALID_RM_NODE = "rm.service.invalid-rm-node";
     private static final String MSG_NO_ROOT = "rm.service.no-root";
     private static final String MSG_CONTAINER_PARENT_TYPE= "rm.service.container-parent-type";
     private static final String MSG_CONTAINER_TYPE = "rm.service.container-type";
@@ -100,11 +101,17 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     public FilePlanRoleService getFilePlanRoleService()
     {
-        if (filePlanRoleService == null)
-        {
-            filePlanRoleService = (FilePlanRoleService) applicationContext.getBean("FilePlanRoleService");
-        }
-        return filePlanRoleService;
+        return this.filePlanRoleService;
+    }
+
+    /**
+     * Sets the file plan role service
+     *
+     * @param filePlanRoleService The file plan role service
+     */
+    public void setFilePlanRoleService(FilePlanRoleService filePlanRoleService)
+    {
+        this.filePlanRoleService = filePlanRoleService;
     }
 
     /**
@@ -114,11 +121,17 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     public PermissionService getPermissionService()
     {
-        if (permissionService == null)
-        {
-            permissionService = (PermissionService) applicationContext.getBean("permissionService");
-        }
-        return permissionService;
+        return this.permissionService;
+    }
+
+    /**
+     * Sets the permission service
+     *
+     * @param permissionService The permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     /**
@@ -128,11 +141,17 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     public NodeDAO getNodeDAO()
     {
-        if (nodeDAO == null)
-        {
-            nodeDAO = (NodeDAO) applicationContext.getBean("nodeDAO");
-        }
-        return nodeDAO;
+        return this.nodeDAO;
+    }
+
+    /**
+     * Sets the node DAO
+     *
+     * @param nodeDAO The node DAO
+     */
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
     }
 
     /**
@@ -142,11 +161,17 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     public SiteService getSiteService()
     {
-        if (siteService == null)
-        {
-            siteService = (SiteService) applicationContext.getBean("SiteService");
-        }
-        return siteService;
+        return this.siteService;
+    }
+
+    /**
+     * Sets the site service
+     *
+     * @param siteService The site service
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
     }
 
     /**
@@ -347,7 +372,7 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
                         containerType,
                         properties).getChildRef();
 
-   //     if (!inheritPermissions)
+   //     if (inheritPermissions == false)
    //     {
             // set inheritance to false
             getPermissionService().setInheritParentPermissions(container, false);
@@ -459,23 +484,24 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
      */
     private void getNodeRefPathRecursive(NodeRef nodeRef, Deque<NodeRef> nodeRefPath)
     {
-        if (isFilePlanComponent(nodeRef))
+        if (!isFilePlanComponent(nodeRef))
         {
-            // Prepend it to the path
-            nodeRefPath.addFirst(nodeRef);
-            // Are we not at the root
-            if (!isFilePlan(nodeRef))
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_INVALID_RM_NODE, ASPECT_FILE_PLAN_COMPONENT.toString()));
+        }
+        // Prepend it to the path
+        nodeRefPath.addFirst(nodeRef);
+        // Are we not at the root
+        if (!isFilePlan(nodeRef))
+        {
+            ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
+            if (assocRef == null)
             {
-                ChildAssociationRef assocRef = nodeService.getPrimaryParent(nodeRef);
-                if (assocRef == null)
-                {
-                    // We hit the top of the store
-                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_ROOT));
-                }
-                // Recurse
-                nodeRef = assocRef.getParentRef();
-                getNodeRefPathRecursive(nodeRef, nodeRefPath);
+                // We hit the top of the store
+                throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_NO_ROOT));
             }
+            // Recurse
+            nodeRef = assocRef.getParentRef();
+            getNodeRefPathRecursive(nodeRef, nodeRefPath);
         }
     }
 

@@ -59,7 +59,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      */
     public void testMoveRecordFolderBeforeCutOffFolderLevelDisposition() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(false)
         {            
             NodeRef recordFolder; 
             NodeRef destinationRecordCategory;
@@ -141,7 +141,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      */
     public void testMoveRecordFolderBeforeCutOffIntoAFolderWithNoDisposition() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(false)
         {            
             NodeRef recordFolder; 
             NodeRef destinationRecordCategory;
@@ -217,7 +217,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
      */
     public void testMoveRecordFolderWithRecordsBeforeCutOffRecordLevelDisposition() throws Exception
     {
-        doBehaviourDrivenTest(new BehaviourDrivenTest(null, false)
+        doBehaviourDrivenTest(new BehaviourDrivenTest(false)
         {            
             NodeRef record; 
             NodeRef recordFolder;

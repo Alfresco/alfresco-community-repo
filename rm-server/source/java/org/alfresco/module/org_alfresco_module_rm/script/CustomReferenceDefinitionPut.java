@@ -18,16 +18,22 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
-import static org.alfresco.util.WebScriptUtils.getRequestParameterValue;
-
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.service.cmr.dictionary.AssociationDefinition;
+import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
+import org.alfresco.service.namespace.QName;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -36,44 +42,113 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * the source/target (for parent/child references).
  *
  * @author Neil McErlean
- * @author Tuna Aksoy
  */
-public class CustomReferenceDefinitionPut extends CustomReferenceDefinitionBase
+public class CustomReferenceDefinitionPut extends AbstractRmWebScript
 {
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+    private static final String URL = "url";
+    private static final String REF_ID = "refId";
+    private static final String TARGET = "target";
+    private static final String SOURCE = "source";
+    private static final String LABEL = "label";
+
+    private RecordsManagementAdminService rmAdminService;
+
+    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
+    {
+        this.rmAdminService = rmAdminService;
+    }
+
+	/*
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String uniqueName = getRequestParameterValue(req, REF_ID);
-        JSONObject requestContent = getRequestContentAsJsonObject(req);
-        RelationshipDisplayName displayName = createDisplayName(requestContent);
-        getRelationshipService().updateRelationshipDefinition(uniqueName, displayName);
+        JSONObject json = null;
+        Map<String, Object> ftlModel = null;
+        try
+        {
+            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
 
-        Map<String, Object> model = new HashMap<String, Object>();
-        String servicePath = req.getServicePath();
-        Map<String, Object> customReferenceData = createRelationshipDefinitionData(servicePath, uniqueName);
-        model.putAll(customReferenceData);
+            ftlModel = updateCustomReference(req, json);
+        }
+        catch (IOException iox)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Could not read content from req.", iox);
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "Could not parse JSON from req.", je);
+        }
+        catch (IllegalArgumentException iae)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                  iae.getMessage(), iae);
+        }
 
-        return model;
+        return ftlModel;
     }
 
     /**
-     * Creates relationship definition data for the ftl template
-     *
-     * @param servicePath The service path
-     * @param String The relationship unique name
-     * @return The relationship definition data
+     * Applies custom properties.
      */
-    private Map<String, Object> createRelationshipDefinitionData(String servicePath, String uniqueName)
+    @SuppressWarnings("rawtypes")
+    protected Map<String, Object> updateCustomReference(WebScriptRequest req, JSONObject json) throws JSONException
     {
-        Map<String, Object> relationshipDefinitionData = new HashMap<String, Object>(3);
-        relationshipDefinitionData.put(URL, servicePath);
-        relationshipDefinitionData.put(REF_ID, uniqueName);
-        relationshipDefinitionData.put(SUCCESS, Boolean.TRUE);
-        return relationshipDefinitionData;
+        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Serializable> params = new HashMap<String, Serializable>();
+
+        for (Iterator iter = json.keys(); iter.hasNext(); )
+        {
+            String nextKeyString = (String)iter.next();
+            Serializable nextValue = (Serializable)json.get(nextKeyString);
+
+            params.put(nextKeyString, nextValue);
+        }
+
+        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
+        String refId = templateVars.get(REF_ID);
+        // refId cannot be null as it is defined within the URL
+        params.put(REF_ID, (Serializable)refId);
+
+        // Ensure that the reference actually exists.
+        QName refQName = rmAdminService.getQNameForClientId(refId);
+        if (refQName == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
+                    "Could not find reference definition for: " + refId);
+        }
+
+        String newLabel = (String)params.get(LABEL);
+        String newSource = (String)params.get(SOURCE);
+        String newTarget = (String)params.get(TARGET);
+
+        // Determine whether it's a bidi or a p/c ref
+        AssociationDefinition assocDef = rmAdminService.getCustomReferenceDefinitions().get(refQName);
+        if (assocDef == null)
+        {
+            throw new WebScriptException(Status.STATUS_NOT_FOUND,
+                    "Could not find reference definition for: " + refId);
+        }
+
+        if (assocDef instanceof ChildAssociationDefinition)
+        {
+            if (newSource != null || newTarget != null)
+            {
+                rmAdminService.updateCustomChildAssocDefinition(refQName, newSource, newTarget);
+            }
+        }
+        else if (newLabel != null)
+        {
+            rmAdminService.updateCustomAssocDefinition(refQName, newLabel);
+        }
+
+        result.put(URL, req.getServicePath());
+        result.put("refId", refQName.getLocalName());
+        result.put("success", Boolean.TRUE);
+
+        return result;
     }
 }

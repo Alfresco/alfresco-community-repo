@@ -68,7 +68,7 @@ public interface HoldService
     /**
      * Gets the list of item node references which are in the given hold 
      * 
-     * @param hold {@link NodeRef} of the hold
+     * @param ndoeRef {@link NodeRef} of the hold
      * @return Lost of item {@link NodeRef}s which are in the given hold
      */
     List<NodeRef> getHeld(NodeRef hold);

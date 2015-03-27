@@ -34,7 +34,7 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
             boolean bFirst = true;
             for (NodeRef nodeRef : nodeRefs)
             {
-                if (!bFirst)
+                if (bFirst == false)
                 {
                     builder.append(",");
                 }
@@ -61,7 +61,7 @@ public abstract class BaseHoldWebScriptWithContentUnitTest extends BaseHoldWebSc
             boolean bFirst = true;
             for (NodeRef hold : holds)
             {
-                if (!bFirst)
+                if (bFirst == false)
                 {
                     builder.append(",");
                 }

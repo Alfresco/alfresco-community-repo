@@ -42,7 +42,7 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
         if(checkUncutOffStatus(action, recordFolder))
         {
             // Mark the folder as cut off
-            getDispositionService().cutoffDisposableItem(recordFolder);
+            dispositionService.cutoffDisposableItem(recordFolder);
         }
     }
 
@@ -55,7 +55,7 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
         if(checkUncutOffStatus(action, record))
         {
             // Mark the record as cut off
-            getDispositionService().cutoffDisposableItem(record);
+            dispositionService.cutoffDisposableItem(record);
         }
     }
 
@@ -71,7 +71,7 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
     private boolean checkUncutOffStatus(Action action, NodeRef recordOrFolder)
     {
         boolean okToCutOff = true;
-        if(getNodeService().hasAspect(recordOrFolder, ASPECT_UNCUT_OFF))
+        if(nodeService.hasAspect(recordOrFolder, ASPECT_UNCUT_OFF))
         {
             if(action.getParameterValue(PARAM_NO_ERROR_CHECK) != null)
             {
@@ -81,7 +81,7 @@ public class CutOffAction extends RMDispositionActionExecuterAbstractBase
             }
             else
             {
-                getNodeService().removeAspect(recordOrFolder, ASPECT_UNCUT_OFF);
+                nodeService.removeAspect(recordOrFolder, ASPECT_UNCUT_OFF);
             }
         }
         return okToCutOff;

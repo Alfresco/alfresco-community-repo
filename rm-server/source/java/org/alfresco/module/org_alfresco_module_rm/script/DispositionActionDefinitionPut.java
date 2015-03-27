@@ -41,7 +41,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 /**
  * Implementation for Java backed webscript to update an existing dispositon
  * action definition.
- *
+ * 
  * @author Gavin Cornwell
  */
 public class DispositionActionDefinitionPut extends DispositionAbstractBase
@@ -84,7 +84,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
 
     /**
      * Updates a dispositionActionDefinition node in the repo.
-     *
+     * 
      * @param actionDef The action definition to update
      * @param json The JSON to use to create the action definition
      * @param schedule The DispositionSchedule the action definition belongs to
@@ -113,7 +113,7 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
 
         if (json.has("periodProperty"))
         {
-            QName periodProperty = QName.createQName(json.getString("periodProperty"), getNamespaceService());
+            QName periodProperty = QName.createQName(json.getString("periodProperty"), this.namespaceService);
             props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
         }
 
@@ -153,6 +153,6 @@ public class DispositionActionDefinitionPut extends DispositionAbstractBase
         }
 
         // update the action definition
-        return getDispositionService().updateDispositionActionDefinition(actionDef, props);
+        return this.dispositionService.updateDispositionActionDefinition(actionDef, props);
     }
 }

@@ -18,142 +18,116 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
-import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
-
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import javax.servlet.http.HttpServletResponse;
+
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.namespace.QName;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
- * Implementation for Java backed webscript to add RM custom relationship to a node.
+ * Implementation for Java backed webscript to add RM custom reference instances
+ * to a node.
  *
  * @author Neil McErlean
- * @author Tuna Aksoy
  */
 public class CustomRefPost extends AbstractRmWebScript
 {
-    /** Constants */
     private static final String TO_NODE = "toNode";
     private static final String REF_ID = "refId";
 
-    /** Relationship service */
-    private RelationshipService relationshipService;
+    /** RM Admin Service */
+    private RecordsManagementAdminService rmAdminService;
 
-    /** Rule service */
+    /** Rule Service */
     private RuleService ruleService;
 
     /**
-     * Gets the relationship service instance
-     *
-     * @return The relationship service instance
+     * @param rmAdminService    RM Admin Service
      */
-    protected RelationshipService getRelationshipService()
+    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
     {
-        return this.relationshipService;
+        this.rmAdminService = rmAdminService;
     }
 
     /**
-     * Sets the relationship service instance
-     *
-     * @param relationshipService The relationship service instance
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
-    }
-
-    /**
-     * Gets the rule service instance
-     *
-     * @return The rule service instance
-     */
-    protected RuleService getRuleService()
-    {
-        return this.ruleService;
-    }
-
-    /**
-     * Sets the rule service instance
-     *
-     * @param ruleService The rule service instance
+     * @param ruleService   Rule Service
      */
     public void setRuleService(RuleService ruleService)
     {
         this.ruleService = ruleService;
     }
 
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+    /*
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        JSONObject json = null;
+        Map<String, Object> ftlModel = null;
         try
         {
-            getRuleService().disableRuleType(RuleType.INBOUND);
-            addCustomRelationship(req);
-            model.put(SUCCESS, true);
+            ruleService.disableRuleType(RuleType.INBOUND);
+
+            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+
+            ftlModel = addCustomReferenceInstance(req, json);
+        }
+        catch (IOException iox)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Could not read content from req.", iox);
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "Could not parse JSON from req.", je);
         }
         finally
         {
-            getRuleService().enableRuleType(RuleType.INBOUND);
+            ruleService.enableRuleType(RuleType.INBOUND);
         }
-        return model;
+
+        return ftlModel;
     }
 
     /**
-     * Adds a custom relationship
-     *
-     * @param req The webscript request
+     * Applies custom reference.
      */
-    protected void addCustomRelationship(WebScriptRequest req)
+    protected Map<String, Object> addCustomReferenceInstance(WebScriptRequest req, JSONObject json) throws JSONException
     {
-        JSONObject json = getRequestContentAsJsonObject(req);
-        String uniqueName = getStringValueFromJSONObject(json, REF_ID);
-        NodeRef target = getTargetNode(json);
-        NodeRef source = parseRequestForNodeRef(req);
+        NodeRef fromNode = parseRequestForNodeRef(req);
 
-        if (uniqueName.endsWith(INVERT))
-        {
-            String uniqueNameStem = uniqueName.split(INVERT)[0];
-            getRelationshipService().addRelationship(uniqueNameStem, target, source);
-        }
-        else
-        {
-            getRelationshipService().addRelationship(uniqueName, source, target);
-        }
-    }
+        Map<String, Object> result = new HashMap<String, Object>();
 
-    /**
-     * Gets the target node
-     *
-     * @param json Request content as json object
-     * @return The target node
-     */
-    private NodeRef getTargetNode(JSONObject json)
-    {
-        String targetNodeString = getStringValueFromJSONObject(json, TO_NODE);
-        NodeRef targetNode = new NodeRef(targetNodeString);
+        String toNodeStg = json.getString(TO_NODE);
+        NodeRef toNode = new NodeRef(toNodeStg);
 
-        if (!getNodeService().exists(targetNode))
+        String clientsRefId = json.getString(REF_ID);
+        QName qn = rmAdminService.getQNameForClientId(clientsRefId);
+        if (qn == null)
         {
-            throw new WebScriptException(Status.STATUS_NOT_FOUND, "Unable to find the target node: '" +
-                    targetNode.toString() + "'.");
+            throw new WebScriptException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            		"Unable to find reference type: " + clientsRefId);
         }
 
-        return targetNode;
+        rmAdminService.addCustomReference(fromNode, toNode, qn);
+
+        result.put("success", true);
+
+        return result;
     }
 }

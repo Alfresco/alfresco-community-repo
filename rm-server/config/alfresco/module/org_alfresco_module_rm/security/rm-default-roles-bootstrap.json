@@ -73,7 +73,8 @@
           "RequestRecordInformation",
           "FileUnfiledRecords",
           "RejectRecords",
-          "LinkToRecords"
+          "LinkToRecords",
+          "ManageAccessControls"
       ]
    },
    {
@@ -124,7 +125,6 @@
           "DeleteRecords",
           "TriggerAnEvent",
           "CreateModifyDestroyRoles",
-          "CreateModifyDestroyUsersAndGroups",
           "PasswordControl",
           "EnableDisableAuditByTypes",
           "SelectAuditMetadata",
@@ -144,7 +144,7 @@
           "FileHoldReport",
           "DeleteHold",
           "EditHold",
-          "EndRetention"
+          "ManageAccessControls"
       ]
    },
    {
@@ -216,8 +216,7 @@
           "RemoveFromHold",
           "FileHoldReport",
           "DeleteHold",
-          "EditHold",
-          "EndRetention"
+          "EditHold"
       ]
    }
 ]

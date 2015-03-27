@@ -48,6 +48,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.audit.AuditQueryParameters;
 import org.alfresco.service.cmr.audit.AuditService;
@@ -68,7 +69,6 @@ import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
 import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.transaction.TransactionListenerAdapter;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.logging.Log;
@@ -1410,23 +1410,15 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                 json.put("fullName", entry.getFullName() == null ? "": entry.getFullName());
                 json.put("nodeRef", entry.getNodeRef() == null ? "": entry.getNodeRef());
 
-                // TODO: Find another way for checking the event
-                if (entry.getEvent().equals("Create Person") && entry.getNodeRef() != null)
+                if (entry.getEvent().equals("createPerson") && entry.getNodeRef() != null)
                 {
                     NodeRef nodeRef = entry.getNodeRef();
                     String userName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_USERNAME);
                     json.put("nodeName", userName == null ? "": userName);
-                    json.put("createPerson", true);
                 }
                 else
                 {
                     json.put("nodeName", entry.getNodeName() == null ? "": entry.getNodeName());
-                }
-
-                // TODO: Find another way for checking the event
-                if (entry.getEvent().equals("Delete RM Object"))
-                {
-                    json.put("deleteObject", true);
                 }
 
                 json.put("nodeType", entry.getNodeType() == null ? "": entry.getNodeType());

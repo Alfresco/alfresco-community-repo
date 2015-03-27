@@ -22,7 +22,6 @@ import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminSe
 import org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
-import org.alfresco.repo.action.parameter.NodeParameterSuggesterBootstrap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -42,17 +41,6 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     private RMCaveatConfigService caveatConfigService;
     private CustomEmailMappingService customEmailMappingService;
     private RecordsManagementAdminService adminService;
-    private NodeParameterSuggesterBootstrap suggesterBootstrap;
-
-    public NodeParameterSuggesterBootstrap getSuggesterBootstrap() 
-    {
-        return suggesterBootstrap;
-    }
-
-    public void setSuggesterBootstrap(NodeParameterSuggesterBootstrap suggesterBootstrap) 
-    {
-        this.suggesterBootstrap = suggesterBootstrap;
-    }
 
     public void setTransactionService(TransactionService transactionService)
     {
@@ -96,10 +84,6 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
 
                         // Initialise the custom model
                         adminService.initialiseCustomModel();
-                        
-                        // Initialize the suggester after the model
-                        // in case it contains namespaces from custom models
-                        suggesterBootstrap.init();
 
                         // Initialise the SplitEmailAction
                         SplitEmailAction action = (SplitEmailAction)getApplicationContext().getBean("splitEmail");

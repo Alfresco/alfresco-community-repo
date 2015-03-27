@@ -55,7 +55,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
 
     public void setCustomTypeAspect(String customTypeAspect)
     {
-        this.customTypeAspect = QName.createQName(customTypeAspect, getNamespaceService());
+        this.customTypeAspect = QName.createQName(customTypeAspect, namespaceService);
     }
 
     /**
@@ -69,11 +69,11 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
             logger.debug("Executing action [" + action.getActionDefinitionName() + "] on " + actionedUponNodeRef);
         }
 
-        if (getRecordService().isRecord(actionedUponNodeRef))
+        if (recordService.isRecord(actionedUponNodeRef))
         {
             // Apply the appropriate aspect and set the properties.
             Map<QName, Serializable> aspectProps = getPropertyValues(action);
-            this.getNodeService().addAspect(actionedUponNodeRef, customTypeAspect, aspectProps);
+            this.nodeService.addAspect(actionedUponNodeRef, customTypeAspect, aspectProps);
         }
         else if (logger.isWarnEnabled())
         {
@@ -88,7 +88,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
     @Override
     protected final void addParameterDefinitions(List<ParameterDefinition> paramList)
     {
-        AspectDefinition aspectDef = getDictionaryService().getAspect(customTypeAspect);
+        AspectDefinition aspectDef = dictionaryService.getAspect(customTypeAspect);
         for (PropertyDefinition propDef : aspectDef.getProperties().values())
         {
             QName propName = propDef.getName();
@@ -109,7 +109,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
         Map<QName, Serializable> result = new HashMap<QName, Serializable>(paramValues.size());
         for (Map.Entry<String, Serializable> entry : paramValues.entrySet())
         {
-            QName propQName = QName.createQName(entry.getKey(), this.getNamespaceService());
+            QName propQName = QName.createQName(entry.getKey(), this.namespaceService);
             result.put(propQName, entry.getValue());
         }
 
@@ -122,7 +122,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
         // We can take these parameter definitions from the properties defined in the dod model.
         if (this.parameterDefinitions == null)
         {
-            AspectDefinition aspectDefinition = getDictionaryService().getAspect(customTypeAspect);
+            AspectDefinition aspectDefinition = dictionaryService.getAspect(customTypeAspect);
             if (aspectDefinition == null)
             {
                 throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CUSTOM_ASPECT_NOT_RECOGNISED, customTypeAspect));
@@ -134,7 +134,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
 
             for (Map.Entry<QName, PropertyDefinition> entry : props.entrySet())
             {
-                String paramName = entry.getKey().toPrefixString(getNamespaceService());
+                String paramName = entry.getKey().toPrefixString(namespaceService);
                 PropertyDefinition value = entry.getValue();
                 QName paramType = value.getDataType().getName();
                 boolean paramIsMandatory = value.isMandatory();

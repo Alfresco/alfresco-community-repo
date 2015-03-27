@@ -29,13 +29,12 @@ import net.sf.acegisecurity.Authentication;
 import net.sf.acegisecurity.ConfigAttribute;
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.policy.ConfigAttributeDefinition;
 import org.alfresco.module.org_alfresco_module_rm.capability.policy.Policy;
 import org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor;
-import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
-import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.aopalliance.intercept.MethodInvocation;
@@ -60,15 +59,6 @@ public class RMEntryVoter extends RMSecurityCommon
 
     /** Capability Service */
     private CapabilityService capabilityService;
-    
-    /** Transactional Resource Helper */
-    private TransactionalResourceHelper transactionalResourceHelper;
-    
-    /** Alfresco transaction support */
-    private AlfrescoTransactionSupport alfrescoTransactionSupport;
-    
-    /** authentication util */
-    private AuthenticationUtil authenticationUtil;
 
     /** Policy map */
     private Map<String, Policy> policies = new HashMap<String, Policy>();
@@ -87,30 +77,6 @@ public class RMEntryVoter extends RMSecurityCommon
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
     {
         this.nspr = nspr;
-    }
-    
-    /**
-     * @param transactionalResourceHelper   transactional resource helper
-     */
-    public void setTransactionalResourceHelper(TransactionalResourceHelper transactionalResourceHelper)
-    {
-        this.transactionalResourceHelper = transactionalResourceHelper;
-    }
-    
-    /**
-     * @param alfrescoTransactionSupport    alfresco transaction support helper
-     */
-    public void setAlfrescoTransactionSupport(AlfrescoTransactionSupport alfrescoTransactionSupport)
-    {
-        this.alfrescoTransactionSupport = alfrescoTransactionSupport;
-    }
-    
-    /**
-     * @param authenticationUtil    authentication util
-     */
-    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
-    {
-        this.authenticationUtil = authenticationUtil;
     }
 
     /**
@@ -164,7 +130,7 @@ public class RMEntryVoter extends RMSecurityCommon
 
     	MethodInvocation mi = (MethodInvocation)object;
 
-    	if (transactionalResourceHelper.isResourcePresent("voting"))
+    	if (TransactionalResourceHelper.isResourcePresent("voting"))
     	{
     		if (logger.isDebugEnabled())
             {
@@ -178,11 +144,11 @@ public class RMEntryVoter extends RMSecurityCommon
             logger.debug("Method: " + mi.getMethod().getDeclaringClass().getName() + "." + mi.getMethod().getName());
         }
 
-    	alfrescoTransactionSupport.bindResource("voting", true);
+    	AlfrescoTransactionSupport.bindResource("voting", true);
     	try
     	{
 	        // The system user can do anything
-	        if (authenticationUtil.isRunAsUserTheSystemUser())
+	        if (AuthenticationUtil.isRunAsUserTheSystemUser())
 	        {
 	            if (logger.isDebugEnabled())
 	            {
@@ -199,15 +165,8 @@ public class RMEntryVoter extends RMSecurityCommon
 	            return AccessDecisionVoter.ACCESS_ABSTAIN;
 	        }
 
-	        // check we have an instance of a method invocation
-	        if (!(object instanceof MethodInvocation))
-	        {
-	            // we expect a method invocation
-	            throw new AlfrescoRuntimeException("Passed object is not an instance of MethodInvocation as expected.");
-	        }
-	        
-	        // get information about the method
 	        MethodInvocation invocation = (MethodInvocation) object;
+
 	        Method method = invocation.getMethod();
 	        Class[] params = method.getParameterTypes();
 
@@ -314,7 +273,7 @@ public class RMEntryVoter extends RMSecurityCommon
     	}
     	finally
     	{
-    		alfrescoTransactionSupport.unbindResource("voting");
+    		AlfrescoTransactionSupport.unbindResource("voting");
     	}
 
         // all voted to allow
@@ -322,12 +281,11 @@ public class RMEntryVoter extends RMSecurityCommon
     }
 
     /**
-     * Check the capability
      *
-     * @param invocation    method invocation
-     * @param params        parameters
-     * @param cad           config definition
-     * @return int          evaluation result
+     * @param invocation
+     * @param params
+     * @param cad
+     * @return
      */
     @SuppressWarnings("rawtypes")
 	private int checkCapability(MethodInvocation invocation, Class[] params, ConfigAttributeDefinition cad)
@@ -340,33 +298,29 @@ public class RMEntryVoter extends RMSecurityCommon
         Capability capability = capabilityService.getCapability(cad.getRequired().getName());
         if (capability == null)
         {
-            throw new AlfrescoRuntimeException("The capability '" + cad.getRequired().getName() + "' set on method '" + invocation.getMethod().getName() + "' does not exist.");
+            return AccessDecisionVoter.ACCESS_DENIED;
         }
         return capability.hasPermissionRaw(testNodeRef);
 
     }
 
     /**
-     * Evaluate policy to determine access
      *
-     * @param  invocation   invocation information
-     * @param  params       parameters
-     * @param  cad          configuration attribute definition
-     * @return int          policy evaluation
+     * @param invocation
+     * @param params
+     * @param cad
+     * @return
      */
     @SuppressWarnings("rawtypes")
 	private int checkPolicy(MethodInvocation invocation, Class[] params, ConfigAttributeDefinition cad)
     {
-        // try to get the policy
         Policy policy = policies.get(cad.getPolicyName());
         if (policy == null)
         {
-            // throw an exception if the policy is invalid
-            throw new AlfrescoRuntimeException("The policy '" + cad.getPolicyName() + "' set on the method '" + invocation.getMethod().getName() + "' does not exist.");
+            return AccessDecisionVoter.ACCESS_GRANTED;
         }
         else
         {
-            // evaluate the policy
             return policy.evaluate(invocation, params, cad);
         }
     }

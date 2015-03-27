@@ -29,6 +29,7 @@ import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -41,7 +42,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Cache;
@@ -75,16 +75,10 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
     private static Log logger = LogFactory.getLog(ApplyDodCertModelFixesGet.class);
 
     private ContentService contentService;
-    private NamespaceService namespaceService;
 
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
-    }
-
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
     }
 
     @Override
@@ -97,12 +91,11 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
 
         M2Model customModel = readCustomContentModel();
 
-        String customAspectName = ASPECT_CUSTOM_ASSOCIATIONS.toPrefixString(namespaceService);
-        M2Aspect customAssocsAspect = customModel.getAspect(customAspectName);
+        M2Aspect customAssocsAspect = customModel.getAspect(RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS);
 
         if (customAssocsAspect == null)
         {
-            final String msg = "Unknown aspect: " + customAspectName;
+            final String msg = "Unknown aspect: " + RecordsManagementAdminServiceImpl.RMC_CUSTOM_ASSOCS;
             if (logger.isErrorEnabled())
             {
                 logger.error(msg);
@@ -123,6 +116,8 @@ public class ApplyDodCertModelFixesGet extends DeclarativeWebScript
             classAssoc.setTargetMany(true);
 
         }
+
+
 
         //MOB-1621. Custom fields should be created as untokenized by default.
         if (logger.isInfoEnabled())

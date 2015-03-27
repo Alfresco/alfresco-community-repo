@@ -18,14 +18,17 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.action.BaseActionUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 
 /**
  * Unit test for file report action.
@@ -33,10 +36,13 @@ import org.mockito.InjectMocks;
  * @author Roy Wetherall
  * @since 2.2
  */
-public class FileReportActionUnitTest extends BaseActionUnitTest
+public class FileReportActionUnitTest extends BaseUnitTest
 {
     /** actioned upon node reference */
     private NodeRef actionedUponNodeRef;
+
+    /** mocked action */
+    private @Mock Action mockedAction;
 
     /** file report action */
     private @InjectMocks FileReportAction fileReportAction;
@@ -45,7 +51,7 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
      */
     @Override
-    public void before() throws Exception
+    public void before()
     {
         super.before();
 
@@ -54,6 +60,14 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
 
         // mocked action
         fileReportAction.setAuditable(false);
+    }
+
+    /**
+     * Helper to mock an action parameter value
+     */
+    private void mockActionParameterValue(String name, String value)
+    {
+        doReturn(value).when(mockedAction).getParameterValue(name);
     }
 
     /**
@@ -74,7 +88,7 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
         // == when ==
 
         // execute action
-        fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
+        fileReportAction.executeImpl(mockedAction, actionedUponNodeRef);
 
         // == then ==
         verifyZeroInteractions(mockedReportService, mockedNodeService);
@@ -98,7 +112,7 @@ public class FileReportActionUnitTest extends BaseActionUnitTest
         // == when ==
 
         // execute action
-        fileReportAction.executeImpl(getMockedAction(), actionedUponNodeRef);
+        fileReportAction.executeImpl(mockedAction, actionedUponNodeRef);
 
         // == then ==
         verifyZeroInteractions(mockedReportService, mockedNodeService);

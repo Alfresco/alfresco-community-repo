@@ -71,20 +71,12 @@
    </bean>
 
    <bean id="rmCreateModifyDestroyUnfiledRecordContainerCapability"
-      parent="compositeCapability">
+      parent="declarativeCapability">
       <property name="name" value="CreateModifyDestroyUnfiledRecordContainer"/>
       <property name="private" value="true"/>
       <property name="kinds">
          <list>
             <value>UNFILED_RECORD_CONTAINER</value>
-            <value>UNFILED_RECORD_FOLDER</value>
-         </list>
-      </property>
-      <property name="capabilities">
-         <list>
-            <ref bean="rmCreateUnfiledRecordsContainerFolderCapability"/>
-            <ref bean="rmModifyUnfiledRecordsContainerFolderCapability"/>
-            <ref bean="rmDeleteUnfiledRecordsContainerFolderCapability"/>
          </list>
       </property>
       <property name="conditions">

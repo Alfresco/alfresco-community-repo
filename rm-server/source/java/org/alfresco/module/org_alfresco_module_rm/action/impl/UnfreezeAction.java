@@ -24,7 +24,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Unfreeze Action
- *
+ * 
  * @author Roy Wetherall
  */
 public class UnfreezeAction extends RMActionExecuterAbstractBase
@@ -36,6 +36,6 @@ public class UnfreezeAction extends RMActionExecuterAbstractBase
    @Override
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
    {
-       getFreezeService().unFreeze(actionedUponNodeRef);
+      freezeService.unFreeze(actionedUponNodeRef);
    }
 }

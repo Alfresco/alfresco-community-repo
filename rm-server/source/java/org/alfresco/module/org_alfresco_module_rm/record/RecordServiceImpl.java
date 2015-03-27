@@ -18,13 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.record;
 
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSIONED_NODEREF;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSION_LABEL;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,25 +38,18 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFi
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
-import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
-import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RecordsManagementContainerType;
 import org.alfresco.module.org_alfresco_module_rm.model.security.ModelAccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.notification.RecordsManagementNotificationHelper;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
-import org.alfresco.module.org_alfresco_module_rm.report.ReportModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -74,14 +62,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -93,15 +80,11 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -122,21 +105,16 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                          NodeServicePolicies.BeforeDeleteNodePolicy
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
 
     /** transation data key */
-    private static final String KEY_IGNORE_ON_UPDATE = "ignoreOnUpdate";
-    private static final String KEY_PENDING_FILLING = "pendingFilling";
-    public static final String KEY_NEW_RECORDS = "newRecords";
+    private static final String IGNORE_ON_UPDATE = "ignoreOnUpdate";
 
     /** I18N */
     private static final String MSG_NODE_HAS_ASPECT = "rm.service.node-has-aspect";
-    private static final String FINAL_VERSION = "rm.service.final-version";
-    private static final String FINAL_DESCRIPTION = "rm.service.final-version-description";
 
     /** Always edit property array */
     private static final QName[] ALWAYS_EDIT_PROPERTIES = new QName[]
@@ -158,14 +136,12 @@ public class RecordServiceImpl extends BaseBehaviourBean
      };
 
     /** record model URI's */
-    public static final List<String> RECORD_MODEL_URIS = Collections.unmodifiableList(
-        Arrays.asList(
-            RM_URI,
-            RM_CUSTOM_URI,
-            ReportModel.RMR_URI,
-            RecordableVersionModel.RMV_URI,
-            DOD5015Model.DOD_URI
-    ));
+    private static final String[] RECORD_MODEL_URIS = new String[]
+    {
+       RM_URI,
+       RM_CUSTOM_URI,
+       DOD5015Model.DOD_URI
+    };
 
     /** non-record model URI's */
     private static final String[] NON_RECORD_MODEL_URIS = new String[]
@@ -217,18 +193,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** Permission service */
     private PermissionService permissionService;
-
-    /** Version service */
-    private VersionService versionService;
-
-    /** Relationship service */
-    private RelationshipService relationshipService;
-
-    /** Disposition service */
-    private DispositionService dispositionService;
-
-    /** records management container type */
-    private RecordsManagementContainerType recordsManagementContainerType;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
@@ -352,38 +316,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @param versionService version service
-     */
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
-    }
-
-    /**
-     * @param relationshipService   relationship service
-     */
-    public void setRelationshipService(RelationshipService relationshipService)
-    {
-        this.relationshipService = relationshipService;
-    }
-
-    /**
-     * @param dispositionService    disposition service
-     */
-    public void setDispositionService(DispositionService dispositionService)
-    {
-        this.dispositionService = dispositionService;
-    }
-
-    /**
-     * @param recordsManagementContainerType    records management container type
-     */
-    public void setRecordsManagementContainerType(RecordsManagementContainerType recordsManagementContainerType)
-    {
-		this.recordsManagementContainerType = recordsManagementContainerType;
-	}
-
-    /**
      * Init method
      */
     public void init()
@@ -430,7 +362,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // check whether filling is pending aspect removal
-            Set<NodeRef> pendingFilling = transactionalResourceHelper.getSet(KEY_PENDING_FILLING);
+            Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
             if (pendingFilling.contains(nodeRef))
             {
                 file(nodeRef);
@@ -521,46 +453,22 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_NO_CONTENT))
                         {
                             // we need to postpone filling until the NO_CONTENT aspect is removed
-                            Set<NodeRef> pendingFilling = transactionalResourceHelper.getSet(KEY_PENDING_FILLING);
+                            Set<NodeRef> pendingFilling = TransactionalResourceHelper.getSet("pendingFilling");
                             pendingFilling.add(nodeRef);
                         }
                         else
                         {
-                            // store information about the 'new' record in the transaction
-                            // @since 2.3
-                            // @see https://issues.alfresco.com/jira/browse/RM-1956
-                            if (bNew)
-                            {
-                                Set<NodeRef> newRecords = transactionalResourceHelper.getSet(KEY_NEW_RECORDS);
-                                newRecords.add(nodeRef);
-                            }
-                            else
-                            {
-                                // if we are linking a record
-                                NodeRef parentNodeRef = childAssocRef.getParentRef();
-                                if (isRecord(nodeRef) && isRecordFolder(parentNodeRef))
-                                {
-                                    // validate the link conditions
-                                    validateLinkConditions(nodeRef, parentNodeRef);
-                                }
-                            }
-
                             // create and file the content as a record
                             file(nodeRef);
                         }
                     }
                 }
-                catch (RecordLinkRuntimeException e)
-                {
-                    // rethrow exception
-                    throw e;
-                }
                 catch (AlfrescoRuntimeException e)
                 {
                     // do nothing but log error
-                    if (logger.isWarnEnabled())
+                    if (logger.isDebugEnabled())
                     {
-                        logger.warn("Unable to file pending record.", e);
+                        logger.debug("Unable to file pending record.", e);
                     }
                 }
                 finally
@@ -608,7 +516,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
      */
     public void disablePropertyEditableCheck(NodeRef nodeRef)
     {
-        Set<NodeRef> ignoreOnUpdate = transactionalResourceHelper.getSet(KEY_IGNORE_ON_UPDATE);
+        Set<NodeRef> ignoreOnUpdate = TransactionalResourceHelper.getSet(IGNORE_ON_UPDATE);
         ignoreOnUpdate.add(nodeRef);
     }
 
@@ -639,7 +547,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             !AuthenticationUtil.isRunAsUserTheSystemUser() &&
             nodeService.exists(nodeRef) &&
             isRecord(nodeRef) &&
-            !transactionalResourceHelper.getSet(KEY_IGNORE_ON_UPDATE).contains(nodeRef))
+            !TransactionalResourceHelper.getSet(IGNORE_ON_UPDATE).contains(nodeRef))
         {
             for (Map.Entry<QName, Serializable> entry : after.entrySet())
             {
@@ -666,7 +574,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 	afterCal.set(Calendar.MILLISECOND, 0);
                 	propertyUnchanged = (beforeCal.compareTo(afterCal) == 0);
                 }
-                else if ((afterValue instanceof Boolean) && (beforeValue == null) && (afterValue.equals(Boolean.FALSE)))
+                else if ((afterValue instanceof Boolean) && (beforeValue == null) && (afterValue == Boolean.FALSE))
                 {
             		propertyUnchanged = true;
                 }
@@ -775,35 +683,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     *  @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataAspect(org.alfresco.service.namespace.QName)
-     */
-    @Override
-    public boolean isRecordMetadataAspect(QName aspect)
-    {
-        return getRecordMetadataAspectsMap().containsKey(aspect);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#isRecordMetadataProperty(org.alfresco.service.namespace.QName)
-     */
-    @Override
-    public boolean isRecordMetadataProperty(QName property)
-    {
-        boolean result = false;
-        PropertyDefinition propertyDefinition = dictionaryService.getProperty(property);
-        if (propertyDefinition != null)
-        {
-            ClassDefinition classDefinition = propertyDefinition.getContainerClass();
-            if (classDefinition != null &&
-                getRecordMetadataAspectsMap().containsKey(classDefinition.getName()))
-            {
-                result = true;
-            }
-        }
-        return result;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#getRecordMetaDataAspects(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
@@ -895,11 +774,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // add the current owner to the list of extended writers
                         String owner = ownableService.getOwner(nodeRef);
 
+                        // remove the owner
+                        ownableService.setOwner(nodeRef, OwnableService.NO_OWNER);
+
                         // get the documents primary parent assoc
                         ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
-
-                        // get the latest version record, if there is one
-                        NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
 
                         behaviourFilter.disableBehaviour();
                         try
@@ -922,18 +801,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
                         // make the document a record
                         makeRecord(nodeRef);
 
-                        if (latestVersionRecord != null)
-                        {
-                            // indicate that this is the 'final' record version
-                            PropertyMap versionRecordProps = new PropertyMap(2);
-                            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL, I18NUtil.getMessage(FINAL_VERSION));
-                            versionRecordProps.put(RecordableVersionModel.PROP_VERSION_DESCRIPTION, I18NUtil.getMessage(FINAL_DESCRIPTION));
-                            nodeService.addAspect(nodeRef, RecordableVersionModel.ASPECT_VERSION_RECORD, versionRecordProps);
-
-                            // link to previous version
-                            relationshipService.addRelationship(CUSTOM_REF_VERSIONS.getLocalName(), nodeRef, latestVersionRecord);
-                        }
-
                         if (isLinked)
                         {
                             // turn off rules
@@ -945,11 +812,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                                 // set the extended security
                                 Set<String> combinedWriters = new HashSet<String>(writers);
-                                if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
-                                {
-                                    combinedWriters.add(owner);
-                                }
+                                combinedWriters.add(owner);
                                 combinedWriters.add(AuthenticationUtil.getFullyAuthenticatedUser());
+
                                 extendedSecurityService.addExtendedSecurity(nodeRef, readers, combinedWriters);
                             }
                             finally
@@ -970,130 +835,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createRecordFromCopy(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public NodeRef createRecordFromCopy(final NodeRef filePlan, final NodeRef nodeRef)
-    {
-        return authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-        {
-            public NodeRef doWork() throws Exception
-            {
-                // get the unfiled record folder
-                final NodeRef unfiledRecordFolder = filePlanService.getUnfiledContainer(filePlan);
-
-                // get the documents readers
-                Long aclId = nodeService.getNodeAclId(nodeRef);
-                Set<String> readers = extendedPermissionService.getReaders(aclId);
-                Set<String> writers = extendedPermissionService.getWriters(aclId);
-
-                // add the current owner to the list of extended writers
-                Set<String> modifiedWrtiers = new HashSet<String>(writers);
-                if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
-                {
-                    String owner = ownableService.getOwner(nodeRef);
-                    if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
-                    {
-                        modifiedWrtiers.add(owner);
-                    }
-                }
-
-                // add the current user as extended writer
-                modifiedWrtiers.add(authenticationUtil.getFullyAuthenticatedUser());
-
-                // copy version state and create record
-                NodeRef record = null;
-                try
-                {
-                    List<AssociationRef> originalAssocs = null;
-                    if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_COPIEDFROM))
-                    {
-                        // take a note of any copyFrom information already on the node
-                        originalAssocs = nodeService.getTargetAssocs(nodeRef, ContentModel.ASSOC_ORIGINAL);
-                    }
-
-                    recordsManagementContainerType.disable();
-                    try
-                    {
-	                    // create a copy of the original state and add it to the unfiled record container
-	                    FileInfo recordInfo = fileFolderService.copy(nodeRef, unfiledRecordFolder, null);
-	                    record = recordInfo.getNodeRef();
-                    }
-                    finally
-                    {
-                    	recordsManagementContainerType.enable();
-                    }
-
-                    // make record
-                    makeRecord(record);
-
-                    // remove added copy assocs
-                    List<AssociationRef> recordAssocs = nodeService.getTargetAssocs(record, ContentModel.ASSOC_ORIGINAL);
-                    for (AssociationRef recordAssoc : recordAssocs)
-                    {
-                        nodeService.removeAssociation(
-                                recordAssoc.getSourceRef(),
-                                recordAssoc.getTargetRef(),
-                                ContentModel.ASSOC_ORIGINAL);
-                    }
-
-                    // re-add origional assocs or remove aspect
-                    if (originalAssocs == null)
-                    {
-                        nodeService.removeAspect(record, ContentModel.ASPECT_COPIEDFROM);
-                    }
-                    else
-                    {
-                        for (AssociationRef originalAssoc : originalAssocs)
-                        {
-                            nodeService.createAssociation(originalAssoc.getSourceRef(), originalAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
-                        }
-                    }
-                }
-                catch (FileNotFoundException e)
-                {
-                    throw new AlfrescoRuntimeException("Can't create recorded version, because copy fails.", e);
-                }
-
-                // set extended security on record
-                extendedSecurityService.addExtendedSecurity(record, readers, writers);
-
-                return record;
-            }
-        });
-    }
-
-    /**
-     * Helper to get the latest version record for a given document (ie non-record)
-     *
-     * @param nodeRef   node reference
-     * @return NodeRef  latest version record, null otherwise
-     */
-    private NodeRef getLatestVersionRecord(NodeRef nodeRef)
-    {
-        NodeRef versionRecord = null;
-
-        // wire record up to previous record
-        VersionHistory versionHistory = versionService.getVersionHistory(nodeRef);
-        if (versionHistory != null)
-        {
-            Collection<Version> previousVersions = versionHistory.getAllVersions();
-            for (Version previousVersion : previousVersions)
-            {
-                // look for the associated record
-                final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
-                if (previousRecord != null)
-                {
-                    versionRecord = previousRecord;
-                    break;
-                }
-            }
-        }
-
-        return versionRecord;
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#createNewRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.namespace.QName, java.util.Map, org.alfresco.service.cmr.repository.ContentReader)
      */
     @Override
@@ -1102,7 +843,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         ParameterCheck.mandatory("nodeRef", parent);
         ParameterCheck.mandatory("name", name);
 
-        NodeRef result = null;
+        NodeRef record = null;
         NodeRef destination = parent;
 
         if (isFilePlan(parent))
@@ -1129,7 +870,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         try
         {
             // create the new record
-            final NodeRef record = fileFolderService.create(destination, name, type).getNodeRef();
+            record = fileFolderService.create(destination, name, type).getNodeRef();
 
             // set the properties
             if (properties != null)
@@ -1145,32 +886,23 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 writer.setMimetype(reader.getMimetype());
                 writer.putContent(reader);
             }
-
-            result = authenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
-            {
-    			public NodeRef doWork() throws Exception
-    			{
-    				// Check if the "record" aspect has been applied already.
-    		        // In case of filing a report the created node will be made
-    		        // a record within the "onCreateChildAssociation" method if
-    		        // a destination for the report has been selected.
-    		        if (!nodeService.hasAspect(record, ASPECT_RECORD))
-    		        {
-    		            // make record
-    		            makeRecord(record);
-    		        }
-
-    				return record;
-    			}
-
-            });
         }
         finally
         {
             enablePropertyEditableCheck();
         }
 
-        return result;
+        // Check if the "record" aspect has been applied already.
+        // In case of filing a report the created node will be made
+        // a record within the "onCreateChildAssociation" method if
+        // a destination for the report has been selected.
+        if (!nodeService.hasAspect(record, ASPECT_RECORD))
+        {
+            // make record
+            makeRecord(record);
+        }
+
+        return record;
     }
 
     /**
@@ -1224,12 +956,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
             props.put(PROP_IDENTIFIER, recordId);
             props.put(PROP_ORIGIONAL_NAME, name);
             nodeService.addAspect(document, RecordsManagementModel.ASPECT_RECORD, props);
-
-            // remove versionable aspect(s)
-            nodeService.removeAspect(document, RecordableVersionModel.ASPECT_VERSIONABLE);
-
-            // remove the owner
-            ownableService.setOwner(document, OwnableService.NO_OWNER);
         }
         catch (FileNotFoundException e)
         {
@@ -1255,7 +981,15 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         if (isRecord(nodeRef))
         {
-            result = (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
+            ChildAssociationRef childAssocRef = nodeService.getPrimaryParent(nodeRef);
+            if (childAssocRef != null)
+            {
+                NodeRef parent = childAssocRef.getParentRef();
+                if (parent != null && recordFolderService.isRecordFolder(parent))
+                {
+                    result = true;
+                }
+            }
         }
 
         return result;
@@ -1303,6 +1037,41 @@ public class RecordServiceImpl extends BaseBehaviourBean
     }
 
     /**
+     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#hideRecord(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void hideRecord(final NodeRef nodeRef)
+    {
+        ParameterCheck.mandatory("NodeRef", nodeRef);
+
+        // do the work of hiding the record as the system user
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork()
+            {
+                // remove the child association
+                NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
+                List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                for (ChildAssociationRef childAssociationRef : parentAssocs)
+                {
+                    if (!childAssociationRef.isPrimary() && childAssociationRef.getParentRef().equals(originatingLocation))
+                    {
+                        nodeService.removeChildAssociation(childAssociationRef);
+                        break;
+                    }
+                }
+
+                // remove the extended security from the node
+                // this prevents the users from continuing to see the record in searchs and other linked locations
+                extendedSecurityService.removeAllExtendedSecurity(nodeRef);
+
+                return null;
+            }
+        });
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#rejectRecord(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     @Override
@@ -1323,26 +1092,18 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 ruleService.disableRules();
                 try
                 {
-                    // get the latest version record, if there is one
-                    NodeRef latestVersionRecord = getLatestVersionRecord(nodeRef);
-
-                    if (latestVersionRecord != null)
-                    {
-                        relationshipService.removeRelationship(CUSTOM_REF_VERSIONS.getLocalName(), nodeRef, latestVersionRecord);
-                    }
-
                     // get record property values
-                    final Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-                    final String recordId = (String)properties.get(PROP_IDENTIFIER);
-                    final String documentOwner = (String)properties.get(PROP_RECORD_ORIGINATING_USER_ID);
-                    final String originalName = (String)properties.get(PROP_ORIGIONAL_NAME);
-                    final NodeRef originatingLocation = (NodeRef)properties.get(PROP_RECORD_ORIGINATING_LOCATION);
+                    Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+                    String recordId = (String)properties.get(PROP_IDENTIFIER);
+                    String documentOwner = (String)properties.get(PROP_RECORD_ORIGINATING_USER_ID);
+                    String origionalName = (String)properties.get(PROP_ORIGIONAL_NAME);
+                    NodeRef originatingLocation = (NodeRef)properties.get(PROP_RECORD_ORIGINATING_LOCATION);
 
                     // we can only reject if the originating location is present
                     if (originatingLocation != null)
                     {
                         // first remove the secondary link association
-                        final List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                        List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
                         for (ChildAssociationRef childAssociationRef : parentAssocs)
                         {
                             if (!childAssociationRef.isPrimary() && childAssociationRef.getParentRef().equals(originatingLocation))
@@ -1352,28 +1113,37 @@ public class RecordServiceImpl extends BaseBehaviourBean
                             }
                         }
 
-                        removeRmAspectsFrom(nodeRef);
+                        // remove all RM related aspects from the node
+                        Set<QName> aspects = nodeService.getAspects(nodeRef);
+                        for (QName aspect : aspects)
+                        {
+                            if (RM_URI.equals(aspect.getNamespaceURI()))
+                            {
+                                // remove the aspect
+                                nodeService.removeAspect(nodeRef, aspect);
+                            }
+                        }
 
                         // get the records primary parent association
-                        final ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
+                        ChildAssociationRef parentAssoc = nodeService.getPrimaryParent(nodeRef);
 
                         // move the record into the collaboration site
                         nodeService.moveNode(nodeRef, originatingLocation, ContentModel.ASSOC_CONTAINS, parentAssoc.getQName());
 
-                        // rename to the original name
-                        if (originalName != null)
+                        // rename to the origional name
+                        if (origionalName != null)
                         {
-                            fileFolderService.rename(nodeRef, originalName);
+                            fileFolderService.rename(nodeRef, origionalName);
 
                             if (logger.isDebugEnabled())
                             {
                                 String name = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-                                logger.debug("Rename " + name + " to " + originalName);
+                                logger.debug("Rename " + name + " to " + origionalName);
                             }
                         }
 
                         // save the information about the rejection details
-                        final Map<QName, Serializable> aspectProperties = new HashMap<>(3);
+                        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(3);
                         aspectProperties.put(PROP_RECORD_REJECTION_USER_ID, userId);
                         aspectProperties.put(PROP_RECORD_REJECTION_DATE, new Date());
                         aspectProperties.put(PROP_RECORD_REJECTION_REASON, reason);
@@ -1403,35 +1173,6 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
                 return null;
             }
-
-            /** Removes all RM related aspects from the specified node and any rendition children. */
-            private void removeRmAspectsFrom(NodeRef nodeRef)
-            {
-                // Note that when folder records are supported, we will need to recursively
-                // remove aspects from their descendants.
-                final Set<QName> aspects = nodeService.getAspects(nodeRef);
-                for (QName aspect : aspects)
-                {
-                    if (RM_URI.equals(aspect.getNamespaceURI()) ||
-                        RecordableVersionModel.RMV_URI.equals(aspect.getNamespaceURI()))
-                    {
-                        nodeService.removeAspect(nodeRef, aspect);
-                    }
-                }
-                for (ChildAssociationRef renditionAssoc : renditionService.getRenditions(nodeRef))
-                {
-                    final NodeRef renditionNode = renditionAssoc.getChildRef();
-
-                    // Do not attempt to clean up rendition nodes which are not children of their source node.
-                    final boolean renditionRequiresCleaning = nodeService.exists(renditionNode) &&
-                                                              renditionAssoc.isPrimary();
-
-                    if (renditionRequiresCleaning)
-                    {
-                        removeRmAspectsFrom(renditionNode);
-                    }
-                }
-            }
         });
     }
 
@@ -1449,51 +1190,63 @@ public class RecordServiceImpl extends BaseBehaviourBean
             throw new AlfrescoRuntimeException("Can not check if the property " + property.toString() + " is editable, because node reference is not a record.");
         }
 
-        NodeRef filePlan = getFilePlan(record);
-
-        // DEBUG ...
-        boolean debugEnabled = logger.isDebugEnabled();
-        if (debugEnabled)
+        if (logger.isDebugEnabled())
         {
             logger.debug("Checking whether property " + property.toString() + " is editable for user " + AuthenticationUtil.getRunAsUser());
+        }
 
-            Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
+        // DEBUG ...
+        NodeRef filePlan = getFilePlan(record);
+        Set<Role> roles = filePlanRoleService.getRolesByUser(filePlan, AuthenticationUtil.getRunAsUser());
 
+        if (logger.isDebugEnabled())
+        {
             logger.debug(" ... users roles");
+        }
 
-            for (Role role : roles)
+        for (Role role : roles)
+        {
+            if (logger.isDebugEnabled())
             {
                 logger.debug("     ... user has role " + role.getName() + " with capabilities ");
+            }
 
-                for (Capability cap : role.getCapabilities())
+            for (Capability cap : role.getCapabilities())
+            {
+                if (logger.isDebugEnabled())
                 {
                     logger.debug("         ... " + cap.getName());
                 }
             }
+        }
 
+        if (logger.isDebugEnabled())
+        {
             logger.debug(" ... user has the following set permissions on the file plan");
-
-            Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
-            for (AccessPermission perm : perms)
+        }
+        Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
+        for (AccessPermission perm : perms)
+        {
+            if (logger.isDebugEnabled()  &&
+                (perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
+                 perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
             {
-                if ((perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA) ||
-                     perm.getPermission().contains(RMPermissionModel.EDIT_RECORD_METADATA)))
-                {
-                    logger.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
-                }
-            }
-
-            if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED))
-            {
-                logger.debug(" ... user has the edit non record metadata permission on the file plan");
+                logger.debug("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
             }
         }
+
+        if (permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA).equals(AccessStatus.ALLOWED) &&
+                logger.isDebugEnabled())
+        {
+            logger.debug(" ... user has the edit non record metadata permission on the file plan");
+        }
+
         // END DEBUG ...
 
         boolean result = alwaysEditProperty(property);
         if (result)
         {
-            if (debugEnabled)
+            if (logger.isDebugEnabled())
             {
                 logger.debug(" ... property marked as always editable.");
             }
@@ -1509,7 +1262,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (AccessStatus.ALLOWED.equals(accessNonRecord))
             {
-                if (debugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(" ... user has edit nonrecord metadata capability");
                 }
@@ -1520,7 +1273,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             if (AccessStatus.ALLOWED.equals(accessRecord)  ||
                 AccessStatus.ALLOWED.equals(accessDeclaredRecord))
             {
-                if (debugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(" ... user has edit record or declared metadata capability");
                 }
@@ -1530,7 +1283,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
             if (allowNonRecordEdit && allowRecordEdit)
             {
-                if (debugEnabled)
+                if (logger.isDebugEnabled())
                 {
                     logger.debug(" ... so all properties can be edited.");
                 }
@@ -1542,7 +1295,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // can only edit non record properties
                 if (!isRecordMetadata(filePlan, property))
                 {
-                    if (debugEnabled)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is not considered record metadata so editable.");
                     }
@@ -1551,7 +1304,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
                 else
                 {
-                    if (debugEnabled)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is considered record metadata so not editable.");
                     }
@@ -1562,7 +1315,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 // can only edit record properties
                 if (isRecordMetadata(filePlan, property))
                 {
-                    if (debugEnabled)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is considered record metadata so editable.");
                     }
@@ -1571,7 +1324,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
                 else
                 {
-                    if (debugEnabled)
+                    if (logger.isDebugEnabled())
                     {
                         logger.debug(" ... property is not considered record metadata so not editable.");
                     }
@@ -1609,7 +1362,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         else
         {
             // check the URI's
-            result = RECORD_MODEL_URIS.contains(property.getNamespaceURI());
+            result = ArrayUtils.contains(RECORD_MODEL_URIS, property.getNamespaceURI());
 
             // check the custom model
             if (!result && !ArrayUtils.contains(NON_RECORD_MODEL_URIS, property.getNamespaceURI()))
@@ -1712,128 +1465,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#link(NodeRef, NodeRef)
      */
     @Override
-    public void link(NodeRef record, NodeRef recordFolder)
+    public void link(NodeRef nodeRef, NodeRef folder)
     {
-        ParameterCheck.mandatory("record", record);
-        ParameterCheck.mandatory("recordFolder", recordFolder);
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("folder", folder);
 
-        // ensure we are linking a record to a record folder
-        if(isRecord(record) && isRecordFolder(recordFolder))
+        if(isRecord(nodeRef) && isRecordFolder(folder))
         {
-            // ensure that we are not linking a record to an exisiting location
-            List<ChildAssociationRef> parents = nodeService.getParentAssocs(record);
-            for (ChildAssociationRef parent : parents)
-            {
-                if (parent.getParentRef().equals(recordFolder))
-                {
-                    // we can not link a record to the same location more than once
-                    throw new RecordLinkRuntimeException("Can not link a record to the same record folder more than once");
-                }
-            }
-
-            // validate link conditions
-            validateLinkConditions(record, recordFolder);
-
-            // get the current name of the record
-            String name = nodeService.getProperty(record, ContentModel.PROP_NAME).toString();
-
-            // create a secondary link to the record folder
-            nodeService.addChild(
-                recordFolder,
-                record,
-                ContentModel.ASSOC_CONTAINS,
-                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name));
-        }
-        else
-        {
-            // can only link a record to a record folder
-            throw new RecordLinkRuntimeException("Can only link a record to a record folder.");
-        }
-    }
-
-    /**
-     *
-     * @param record
-     * @param recordFolder
-     */
-    private void validateLinkConditions(NodeRef record, NodeRef recordFolder)
-    {
-        // ensure that the linking record folders have compatible disposition schedules
-        DispositionSchedule recordDispositionSchedule = dispositionService.getDispositionSchedule(record);
-        if (recordDispositionSchedule != null)
-        {
-            DispositionSchedule recordFolderDispositionSchedule = dispositionService.getDispositionSchedule(recordFolder);
-            if (recordFolderDispositionSchedule != null)
-            {
-                if (recordDispositionSchedule.isRecordLevelDisposition() != recordFolderDispositionSchedule.isRecordLevelDisposition())
-                {
-                    // we can't link a record to an incompatible disposition schedule
-                    throw new RecordLinkRuntimeException("Can not link a record to a record folder with an incompatible disposition schedule.  "
-                                                     + "They must either both be record level or record folder level dispositions.");
-                }
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.record.RecordService#unlink(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public void unlink(NodeRef record, NodeRef recordFolder)
-    {
-        ParameterCheck.mandatory("record", record);
-        ParameterCheck.mandatory("recordFolder", recordFolder);
-
-        // ensure we are unlinking a record from a record folder
-        if(isRecord(record) && isRecordFolder(recordFolder))
-        {
-            // check that we are not trying to unlink the primary parent
-            NodeRef primaryParent = nodeService.getPrimaryParent(record).getParentRef();
-            if (primaryParent.equals(recordFolder))
-            {
-                throw new RecordLinkRuntimeException("Can't unlink a record from it's owning record folder.");
-            }
-
-            // remove the link
-            nodeService.removeChild(recordFolder, record);
-        }
-        else
-        {
-            // can only unlink a record from a record folder
-            throw new RecordLinkRuntimeException("Can only unlink a record from a record folder.");
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "rma:record"
-    )
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        final NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF);
-        if (versionedNodeRef != null)
-        {
-            String versionLabel = (String) nodeService.getProperty(nodeRef, PROP_VERSION_LABEL);
-            if (isNotBlank(versionLabel))
-            {
-                final Version version = versionService.getVersionHistory(versionedNodeRef).getVersion(versionLabel);
-
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
-                    @Override
-                    public Void doWork()
-                    {
-                        versionService.deleteVersion(versionedNodeRef, version);
-
-                        return null;
-                    }
-                });
-            }
+            nodeService.addChild(folder, nodeRef, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, nodeService.getProperty(nodeRef, ContentModel.PROP_NAME).toString()));
         }
     }
 }

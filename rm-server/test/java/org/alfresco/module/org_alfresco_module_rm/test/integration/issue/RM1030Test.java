@@ -19,9 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import java.util.List;
-import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -47,12 +45,6 @@ public class RM1030Test extends BaseRMTestCase
             @Override
             public NodeRef run()
             {
-                Set<String> auths = filePlanRoleService.getAllAssignedToRole(filePlan, FilePlanRoleService.ROLE_ADMIN);
-                for (String auth : auths)
-                {
-                    System.out.println(auth);
-                }
-                
                 // show there are no holds when we start
                 List<NodeRef> holds = holdService.getHolds(filePlan);
                 assertNotNull(holds);

@@ -32,4 +32,5 @@ public class UpdatePropertiesPolicy extends AbstractBasePolicy
         NodeRef nodeRef = getTestNode(invocation, params, cad.getParameters().get(0), cad.isParent());
         return getCapabilityService().getCapability("UpdateProperties").evaluate(nodeRef);
     }
+
 }

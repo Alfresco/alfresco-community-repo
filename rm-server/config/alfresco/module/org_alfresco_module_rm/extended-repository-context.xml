@@ -5,7 +5,7 @@
 
    <!-- extend node service security to report capability details on failure -->
    <bean id="rm.NodeService_security" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor"/>
-   <bean class="org.alfresco.util.BeanExtender">
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
       <property name="beanName" value="NodeService_security" />
       <property name="extendingBeanName" value="rm.NodeService_security" />
    </bean>
@@ -14,14 +14,14 @@
    <bean id="rm.fileFolderService" abstract="true" class="org.alfresco.repo.model.filefolder.ExtendedFileFolderServiceImpl">
       <property name="recordService" ref="RecordService" />
    </bean>
-   <bean class="org.alfresco.util.BeanExtender">
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
       <property name="beanName" value="fileFolderService" />
       <property name="extendingBeanName" value="rm.fileFolderService" />
    </bean>
 
    <!-- extend file folder service security to report capability details on failure -->
    <bean id="rm.FileFolderService_security" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor"/>
-   <bean class="org.alfresco.util.BeanExtender">
+   <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
       <property name="beanName" value="FileFolderService_security" />
       <property name="extendingBeanName" value="rm.FileFolderService_security" />
    </bean>
@@ -42,7 +42,6 @@
             </list>
         </property>
     </bean>
-
     <bean id="ExtendedPermissionService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
@@ -201,7 +200,7 @@
     </bean>
 
     <!-- Bootstrap node parameter processor  -->
-    <bean id="nodeParameterSuggesterBootstrap" class="org.alfresco.repo.action.parameter.NodeParameterSuggesterBootstrap" >
+    <bean id="nodeParameterSuggesterBootstrap" class="org.alfresco.repo.action.parameter.NodeParameterSuggesterBootstrap" init-method="init">
        <property name="namespaceService" ref="namespaceService"/>
        <property name="nodeParameterProcessor" ref="nodeParameterProcessor"/>
        <property name="nodeParameterProcessorAspects">

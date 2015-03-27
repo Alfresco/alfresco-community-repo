@@ -18,62 +18,162 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
-
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDisplayName;
-import org.json.JSONObject;
+import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
+import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 /**
  * Implementation for Java backed webscript to add RM custom reference definitions
  * to the custom model.
- *
+ * 
  * @author Neil McErlean
- * @author Tuna Aksoy
  */
-public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
+public class CustomReferenceDefinitionPost extends AbstractRmWebScript
 {
-    /**
-     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
-     *      org.springframework.extensions.webscripts.Status,
-     *      org.springframework.extensions.webscripts.Cache)
+    private static final String URL = "url";
+    private static final String REF_ID = "refId";
+    private static final String TARGET = "target";
+    private static final String SOURCE = "source";
+    private static final String LABEL = "label";
+    private static final String REFERENCE_TYPE = "referenceType";
+
+    private static Log logger = LogFactory.getLog(CustomReferenceDefinitionPost.class);
+    
+    private RecordsManagementAdminService rmAdminService;
+    
+    public void setRecordsManagementAdminService(RecordsManagementAdminService rmAdminService)
+    {
+        this.rmAdminService = rmAdminService;
+    }
+
+	/*
+     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        JSONObject requestContent = getRequestContentAsJsonObject(req);
-        RelationshipDisplayName displayName = createDisplayName(requestContent);
-        RelationshipDefinition relationshipDefinition =  getRelationshipService().createRelationshipDefinition(displayName);
-
-        Map<String, Object> model = new HashMap<String, Object>();
-        String servicePath = req.getServicePath();
-        Map<String, Object> customRelationshipData = createRelationshipDefinitionData(relationshipDefinition, servicePath);
-        model.putAll(customRelationshipData);
-
-        return model;
+        JSONObject json = null;
+        Map<String, Object> ftlModel = null;
+        try
+        {
+            json = new JSONObject(new JSONTokener(req.getContent().getContent()));
+            
+            ftlModel = addCustomReference(req, json);
+        }
+        catch (IOException iox)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                    "Could not read content from req.", iox);
+        }
+        catch (JSONException je)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                        "Could not parse JSON from req.", je);
+        }
+        catch (IllegalArgumentException iae)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST,
+                  iae.getMessage(), iae);
+        }
+        
+        return ftlModel;
     }
-
+    
     /**
-     * Creates relationship definition data for the ftl template
-     *
-     * @param relationshipDefinition The relationship definition
-     * @param servicePath The service path
-     * @return The relationship definition data
+     * Applies custom properties.
      */
-    private Map<String, Object> createRelationshipDefinitionData(RelationshipDefinition relationshipDefinition, String servicePath)
+    @SuppressWarnings("rawtypes")
+    protected Map<String, Object> addCustomReference(WebScriptRequest req, JSONObject json) throws JSONException
     {
-        Map<String, Object> relationshipDefinitionData = new HashMap<String, Object>(4);
-        String uniqueName = relationshipDefinition.getUniqueName();
-        relationshipDefinitionData.put(REFERENCE_TYPE, relationshipDefinition.getType().toString());
-        relationshipDefinitionData.put(REF_ID, uniqueName);
-        relationshipDefinitionData.put(URL, servicePath + PATH_SEPARATOR + uniqueName);
-        relationshipDefinitionData.put(SUCCESS, Boolean.TRUE);
-        return relationshipDefinitionData;
+        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Serializable> params = new HashMap<String, Serializable>();
+        
+        for (Iterator iter = json.keys(); iter.hasNext(); )
+        {
+            String nextKeyString = (String)iter.next();
+            Serializable nextValue = (Serializable)json.get(nextKeyString);
+            
+            params.put(nextKeyString, nextValue);
+        }
+        String refTypeParam = (String)params.get(REFERENCE_TYPE);
+        ParameterCheck.mandatory(REFERENCE_TYPE, refTypeParam);
+        CustomReferenceType refTypeEnum = CustomReferenceType.getEnumFromString(refTypeParam);
+        
+        boolean isChildAssoc = refTypeEnum.equals(CustomReferenceType.PARENT_CHILD);
+        
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder msg = new StringBuilder();
+            msg.append("Creating custom ");
+            if (isChildAssoc)
+            {
+                msg.append("child ");
+            }
+            msg.append("assoc");
+            logger.debug(msg.toString());
+        }
+
+        QName generatedQName;
+        if (isChildAssoc)
+        {
+            String source = (String)params.get(SOURCE);
+            String target = (String)params.get(TARGET);
+            
+            generatedQName = rmAdminService.addCustomChildAssocDefinition(source, target);
+        }
+        else
+        {
+            String label = (String)params.get(LABEL);
+            
+            generatedQName = rmAdminService.addCustomAssocDefinition(label);
+        }
+
+        result.put(REFERENCE_TYPE, refTypeParam);
+
+        String qnameLocalName;
+        if (refTypeParam.equals(CustomReferenceType.BIDIRECTIONAL.toString()))
+        {
+            Serializable labelParam = params.get(LABEL);
+            // label is mandatory for bidirectional refs only
+            ParameterCheck.mandatory(LABEL, labelParam);
+
+            qnameLocalName = generatedQName.getLocalName();
+            result.put(REF_ID, qnameLocalName);
+        }
+        else if (refTypeParam.equals(CustomReferenceType.PARENT_CHILD.toString()))
+        {
+            Serializable sourceParam = params.get(SOURCE);
+            Serializable targetParam = params.get(TARGET);
+            // source,target mandatory for parent/child refs only
+            ParameterCheck.mandatory(SOURCE, sourceParam);
+            ParameterCheck.mandatory(TARGET, targetParam);
+
+            qnameLocalName = generatedQName.getLocalName();
+            result.put(REF_ID, qnameLocalName);
+        }
+        else
+        {
+            throw new WebScriptException("Unsupported reference type: " + refTypeParam);
+        }
+        result.put(URL, req.getServicePath() + "/" + qnameLocalName);
+        
+        result.put("success", Boolean.TRUE);
+        
+        return result;
     }
 }

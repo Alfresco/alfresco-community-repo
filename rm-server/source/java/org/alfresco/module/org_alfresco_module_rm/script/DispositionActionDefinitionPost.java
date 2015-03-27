@@ -114,7 +114,7 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
 
         if (json.has("periodProperty"))
         {
-            QName periodProperty = QName.createQName(json.getString("periodProperty"), getNamespaceService());
+            QName periodProperty = QName.createQName(json.getString("periodProperty"), this.namespaceService);
             props.put(RecordsManagementModel.PROP_DISPOSITION_PERIOD_PROPERTY, periodProperty);
         }
 
@@ -154,6 +154,6 @@ public class DispositionActionDefinitionPost extends DispositionAbstractBase
         }
 
         // add the action definition to the schedule
-        return getDispositionService().addDispositionActionDefinition(schedule, props);
+        return this.dispositionService.addDispositionActionDefinition(schedule, props);
     }
 }

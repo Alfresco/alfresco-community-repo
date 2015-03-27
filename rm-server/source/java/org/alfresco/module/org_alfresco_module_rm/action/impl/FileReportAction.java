@@ -132,7 +132,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
         });
 
         // return the report name
-        String filedReportName = (String) getNodeService().getProperty(filedReport, ContentModel.PROP_NAME);
+        String filedReportName = (String) nodeService.getProperty(filedReport, ContentModel.PROP_NAME);
         action.setParameterValue(ActionExecuterAbstractBase.PARAM_RESULT, filedReportName);
     }
 
@@ -145,7 +145,7 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     {
         if (AccessStatus.DENIED.equals(capabilityService.getCapability("FillingPermissionOnly").hasPermission(nodeRef)))
         {
-            throw new AlfrescoRuntimeException("You don't have filing permission on the destination or the destination is either frozen, closed or cut off!");
+            throw new AlfrescoRuntimeException("The destination is either frozen, closed or cut off!");
         }
     }
 
@@ -186,6 +186,6 @@ public class FileReportAction extends RMActionExecuterAbstractBase implements Re
     private QName getReportType(Action action)
     {
         String reportType = getParameterValue(action, REPORT_TYPE);
-        return QName.createQName(reportType, getNamespaceService());
+        return QName.createQName(reportType, namespaceService);
     }
 }

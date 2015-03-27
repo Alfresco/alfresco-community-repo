@@ -26,7 +26,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Relinquish Hold Action
- *
+ * 
  * @author Roy Wetherall
  */
 public class RelinquishHoldAction extends RMActionExecuterAbstractBase
@@ -41,9 +41,9 @@ public class RelinquishHoldAction extends RMActionExecuterAbstractBase
    @Override
    protected void executeImpl(Action action, NodeRef actionedUponNodeRef)
    {
-      if (getFreezeService().isHold(actionedUponNodeRef))
+      if (freezeService.isHold(actionedUponNodeRef))
       {
-          getFreezeService().relinquish(actionedUponNodeRef);
+         freezeService.relinquish(actionedUponNodeRef);
       }
       else
       {

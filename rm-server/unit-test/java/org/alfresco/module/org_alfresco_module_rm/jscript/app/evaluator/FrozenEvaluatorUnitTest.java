@@ -50,7 +50,7 @@ public class FrozenEvaluatorUnitTest extends BaseUnitTest
     
     @Before
     @Override
-    public void before() throws Exception
+    public void before()
     {
         super.before();
         

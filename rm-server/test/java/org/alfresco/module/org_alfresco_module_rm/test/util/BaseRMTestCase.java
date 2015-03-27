@@ -39,10 +39,8 @@ import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
-import org.alfresco.module.org_alfresco_module_rm.record.InplaceRecordService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
-import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.module.org_alfresco_module_rm.report.ReportService;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService;
@@ -74,7 +72,6 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.tagging.TaggingService;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -109,9 +106,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected QName ASPECT_CUSTOM_ASPECT = QName.createQName(URI, "customAspect");
     protected QName ASPECT_RECORD_META_DATA = QName.createQName(URI, "recordMetaData");
 
-    /** test data */
-    protected String NAME_DM_DOCUMENT = "collabDocument.txt";
-
     /** admin user */
     protected static final String ADMIN_USER = "admin";
 
@@ -136,7 +130,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected TaggingService taggingService;
     protected ActionService actionService;
     protected OwnableService ownableService;
-    protected VersionService versionService;
 
     /** RM Services */
     protected DispositionService dispositionService;
@@ -158,8 +151,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected RecordsManagementAuditService rmAuditService;
     protected IdentifierService identifierService;
     protected HoldService holdService;
-    protected InplaceRecordService inplaceRecordService;
-    protected RelationshipService relationshipService;
 
     /** test data */
     protected String siteId;
@@ -375,7 +366,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         taggingService = (TaggingService)applicationContext.getBean("TaggingService");
         actionService = (ActionService)applicationContext.getBean("ActionService");
         ownableService = (OwnableService)applicationContext.getBean("OwnableService");
-        versionService = (VersionService)applicationContext.getBean("VersionService");
 
         // Get RM services
         dispositionService = (DispositionService)applicationContext.getBean("DispositionService");
@@ -397,8 +387,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         rmAuditService = (RecordsManagementAuditService) applicationContext.getBean("RecordsManagementAuditService");
         identifierService = (IdentifierService) applicationContext.getBean("recordsManagementIdentifierService");
         holdService = (HoldService) applicationContext.getBean("HoldService");
-        inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
-        relationshipService = (RelationshipService) applicationContext.getBean("RelationshipService");
     }
 
     /**
@@ -442,6 +430,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             }
 
             if (folder != null && nodeService.exists(folder))
+
             {
                 // Delete the folder
                 nodeService.deleteNode(folder);
@@ -745,7 +734,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     {
         // create collaboration site
         collabSiteId = GUID.generate();
-        collaborationSite = siteService.createSite("site-dashboard", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
+        collaborationSite = siteService.createSite("preset", collabSiteId, "title", "description", SiteVisibility.PRIVATE);
         documentLibrary = SiteServiceImpl.getSiteContainer(
                 collabSiteId,
                 SiteService.DOCUMENT_LIBRARY,
@@ -758,7 +747,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
         // create a folder and documents
         dmFolder = fileFolderService.create(documentLibrary, "collabFolder", ContentModel.TYPE_FOLDER).getNodeRef();
-        dmDocument = fileFolderService.create(dmFolder, NAME_DM_DOCUMENT, ContentModel.TYPE_CONTENT).getNodeRef();
+        dmDocument = fileFolderService.create(dmFolder, "collabDocument.txt", ContentModel.TYPE_CONTENT).getNodeRef();
 
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);
@@ -839,18 +828,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected abstract class BehaviourDrivenTest
     {
-        /** run in transaction */
         protected boolean runInTransactionTests = true;
 
-        /** run as user */
-        protected String runAsUser = AuthenticationUtil.getAdminUserName();
-
-        /** expected exception */
         protected Class<?> expectedException;
 
-        /**
-         * Default constructor
-         */
         public BehaviourDrivenTest()
         {
         }
@@ -860,24 +841,9 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             this.expectedException = expectedException;
         }
 
-        public BehaviourDrivenTest(Class<?> expectedException, String runAsUser)
-        {
-            this.expectedException = expectedException;
-            this.runAsUser = runAsUser;
-        }
-
-        public BehaviourDrivenTest(String runAsUser)
-        {
-            this.runAsUser = runAsUser;
-        }
-
-        public BehaviourDrivenTest(String runAsUser, boolean runInTransactionTests)
+        public BehaviourDrivenTest(boolean runInTransactionTests)
         {
             this.runInTransactionTests = runInTransactionTests;
-            if (runAsUser != null)
-            {
-                this.runAsUser = runAsUser;
-            }
         }
 
         public void given() throws Exception { /** empty implementation */ }
@@ -901,7 +867,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         {
                            given();
                         }
-                    }, runAsUser);
+                    });
                 }
                 else
                 {
@@ -919,7 +885,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                             {
                                 when();
                             }
-                        }, runAsUser);
+                        });
 
                         doTestInTransaction(new VoidTest()
                         {
@@ -928,7 +894,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                             {
                                 then();
                             }
-                        }, runAsUser);
+                        });
                     }
                     else
                     {
@@ -945,7 +911,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         {
                             when();
                         }
-                    }, runAsUser);
+                    });
                 }
             }
             finally
@@ -959,7 +925,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
                         {
                            after();
                         }
-                    }, runAsUser);
+                    });
                 }
                 else
                 {

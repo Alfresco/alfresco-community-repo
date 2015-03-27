@@ -924,7 +924,7 @@ public class AlienProcessorImpl implements AlienProcessor
             List<String> childInvadedBy = (List<String>) properties.get(TransferModel.PROP_INVADED_BY);
             String childRepositoryId = (String) properties.get(TransferModel.PROP_FROM_REPOSITORY_ID);
 
-            hasAlienChild = hasAlienChild || parentRepositoryId.equalsIgnoreCase(childRepositoryId);
+            hasAlienChild = hasAlienChild || !parentRepositoryId.equalsIgnoreCase(childRepositoryId);
 
             if (!stillInvaded && (null != childInvadedBy) && (childInvadedBy.contains(fromRepositoryId) || fromRepositoryId.equalsIgnoreCase(childRepositoryId)))
             {

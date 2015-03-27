@@ -127,6 +127,12 @@
                <value>${ldap.authentication.java.naming.provider.url}</value>
             </entry>
 
+            <!-- Custom Socket factory -->
+            <entry key="java.naming.ldap.factory.socket">
+               <value>${ldap.java.naming.ldap.factory.socket:#{null}}</value>
+            </entry>
+            
+
             <!-- The authentication mechanism to use for password validation -->
             <!-- Some sasl authentication mechanisms may require a realm to be set -->
             <!--                java.naming.security.sasl.realm -->
@@ -164,6 +170,13 @@
             <entry key="java.naming.provider.url">
                <value>${ldap.authentication.java.naming.provider.url}</value>
             </entry>
+
+
+            <!-- Custom Socket factory -->
+            <entry key="java.naming.ldap.factory.socket">
+               <value>${ldap.java.naming.ldap.factory.socket:#{null}}</value>
+            </entry>
+
 
             <!-- The authentication mechanism to use for SYNCHRONIZATION -->
             <!-- Some sasl authentication mechanisms may require a realm to be set -->

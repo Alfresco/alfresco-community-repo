@@ -123,6 +123,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     public void setInitialDirContextEnvironment(Map<String, String> initialDirContextEnvironment)
     {
         this.authenticatedEnvironment = initialDirContextEnvironment;
+        this.authenticatedEnvironment.values().removeAll(Collections.singleton(null));
     }
 
     public Map<String, String> getInitialDirContextEnvironment()
@@ -133,6 +134,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     public void setDefaultIntialDirContextEnvironment(Map<String, String> defaultEnvironment)
     {
         this.defaultEnvironment = defaultEnvironment;
+        this.defaultEnvironment.values().removeAll(Collections.singleton(null));
     }    
 
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException

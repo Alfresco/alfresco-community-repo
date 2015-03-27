@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Delete Disposition Action Definition</shortname>
+  <description>Deletes a disposition action definition from the collection.</description>
+  <url>/api/node/{store_type}/{store_id}/{id}/dispositionschedule/dispositionactiondefinitions/{action_def_id}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

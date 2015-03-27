@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- audit extractors -->
+
+   <bean id="org_alfresco_module_rm_userRolesExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.AuthenticatedUserRolesDataExtractor">
+      <property name="registry" ref="auditModel.extractorRegistry" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="filePlanService" ref="filePlanService" />
+      <property name="filePlanRoleService" ref="filePlanRoleService" />
+   </bean>
+
+   <bean id="org_alfresco_module_rm_namePathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanNamePathDataExtractor">
+      <property name="registry" ref="auditModel.extractorRegistry" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="filePlanService" ref="filePlanService" />
+      <property name="ruleService" ref="RuleService" />
+   </bean>
+
+   <bean id="org_alfresco_module_rm_nodeRefPathExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanNodeRefPathDataExtractor">
+      <property name="registry" ref="auditModel.extractorRegistry" />
+      <property name="nodeService" ref="nodeService" />
+      <property name="filePlanService" ref="filePlanService" />
+      <property name="ruleService" ref="RuleService" />
+   </bean>
+
+   <bean id="org_alfresco_module_rm_identifierExtractor" class="org.alfresco.module.org_alfresco_module_rm.audit.extractor.FilePlanIdentifierDataExtractor">
+      <property name="registry" ref="auditModel.extractorRegistry" />
+      <property name="nodeService" ref="nodeService" />
+   </bean>
+
+   <!-- audit events -->
+
+   <bean id="audit-event" abstract="true" init-method="init">
+      <property name="recordsManagementAuditService" ref="recordsManagementAuditService"/>
+   </bean>
+
+   <bean id="audit-event.create-object" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreateObjectAuditEvent">
+      <property name="name" value="Create RM Object"/>
+      <property name="label" value="rm.audit.created-object"/>
+   </bean>
+
+   <bean id="audit-event.update-object" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.UpdateObjectAuditEvent">
+      <property name="name" value="Update RM Object"/>
+      <property name="label" value="rm.audit.updated-metadata"/>
+   </bean>
+
+   <bean id="audit-event.delete-object" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.DeleteObjectAuditEvent">
+      <property name="name" value="Delete RM Object"/>
+      <property name="label" value="rm.audit.delete-object"/>
+   </bean>
+
+   <bean id="audit-event.create-person" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CreatePersonAuditEvent">
+      <property name="name" value="Create Person"/>
+      <property name="label" value="rm.audit.create-person"/>
+   </bean>
+
+   <bean id="audit-event.login-success" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent">
+      <property name="name" value="Login.Success"/>
+      <property name="label" value="rm.audit.login-succeeded"/>
+   </bean>
+
+   <bean id="audit-event.login-fail" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent">
+      <property name="name" value="Login.Failure"/>
+      <property name="label" value="rm.audit.login-failed"/>
+   </bean>
+
+   <bean id="audit-event.linkTo" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.LinkToAuditEvent">
+      <property name="name" value="linkTo"/>
+      <property name="label" value="rm.audit.linkTo"/>
+   </bean>
+
+   <bean id="audit-event.moveTo" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.MoveToAuditEvent">
+      <property name="name" value="moveTo"/>
+      <property name="label" value="rm.audit.moveTo"/>
+   </bean>
+
+   <bean id="audit-event.copyTo" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.CopyToAuditEvent">
+      <property name="name" value="copyTo"/>
+      <property name="label" value="rm.audit.copyTo"/>
+   </bean>
+
+   <bean id="audit-event.fileTo" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.FileToAuditEvent">
+      <property name="name" value="fileTo"/>
+      <property name="label" value="rm.audit.fileTo"/>
+   </bean>
+
+   <bean id="audit-event.recordableVersionConfig" parent="audit-event" class="org.alfresco.module.org_alfresco_module_rm.audit.event.RecordableVersionPolicyAuditEvent">
+      <property name="name" value="recordableVersionConfig"/>
+      <property name="label" value="recordable-version-config"/>
+   </bean>
+
+</beans>

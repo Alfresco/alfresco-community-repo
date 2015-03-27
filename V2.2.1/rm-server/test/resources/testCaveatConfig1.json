@@ -1,0 +1,8 @@
+{
+   "rmc:prjList": {
+        "admin"    : ["Project A", "Project B", "Project C"]
+   },
+   "rmc:smList": {
+        "admin"    : ["NOFORN", "NOCONTRACT", "FOUO", "FGI"]
+    }
+}

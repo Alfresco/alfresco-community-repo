@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>rmsearchproperties</shortname>
+  <description>RM Search Properties</description>
+  <url>/slingshot/rmsearchproperties</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

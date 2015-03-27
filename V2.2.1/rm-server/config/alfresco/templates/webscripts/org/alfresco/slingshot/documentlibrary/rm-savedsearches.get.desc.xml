@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>doclist</shortname>
+  <description>Document List Component - rm saved searches data webscript</description>
+  <url>/slingshot/doclib/rm/savedsearches/site/{site}?p={public?}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

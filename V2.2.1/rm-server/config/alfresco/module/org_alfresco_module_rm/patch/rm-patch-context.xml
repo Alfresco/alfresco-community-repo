@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--  rm module patch executer -->
+   <bean id="rm.modulePatchExecuter" parent="module.baseComponent" class="org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl">   
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="description" value="RM patch executer"/>
+      <property name="sinceVersion" value="2.2"/>
+      <property name="executeOnceOnly" value="false"/>
+      <property name="moduleSchema" value="1012"/>      
+      <property name="attributeService" ref="AttributeService" />   
+      <property name="dependsOn">
+      	<list>
+      	   <ref bean="org_alfresco_module_rm_bootstrapData" />
+      	</list>
+      </property> 
+   </bean>
+   
+   <!-- rm module patch parent bean -->
+   <bean id="rm.parentModulePatch" abstract="true" init-method="init">
+      <property name="moduleId" value="org_alfresco_module_rm"/>
+      <property name="fixesFromSchema" value="0"/>
+      <property name="modulePatchExecuter" ref="rm.modulePatchExecuter"/>
+      <property name="transactionService" ref="transactionService"/>     
+   </bean>
+   
+   <!-- import patch implementations -->
+   
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v20-context.xml"/>
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v21-context.xml"/>
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v22-context.xml"/>
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v23-context.xml"/>
+
+   <!-- compatibility beans -->
+
+   <!-- @deprecated since 2.2 -->
+   <bean id="rm.baseModulePatch" abstract="true" parent="module.baseComponent" init-method="init">
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper"/>
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
+   </bean>
+
+</beans>

@@ -1,0 +1,14 @@
+<webscript>
+  <shortname>Update a records management event</shortname>
+  <description>
+  <![CDATA[
+
+
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmevents/{eventname}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

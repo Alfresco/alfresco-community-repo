@@ -231,7 +231,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <ant antfile="extract-binaries.xml" />
+                                <ant antfile="src/main/resources/extract-binaries.xml" />
                             </target>
                         </configuration>
                     </execution>
@@ -377,7 +377,7 @@
                                 <configuration>
                                     <skip>${skipWinInstaller}</skip>
                                     <target>
-                                        <ant antfile="sign.xml" />
+                                        <ant antfile="src/main/resources/sign.xml" />
                                     </target>
                                 </configuration>
                             </execution>

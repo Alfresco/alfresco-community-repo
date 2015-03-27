@@ -1,0 +1,16 @@
+<webscript>
+  <shortname>Deletes a records management role</shortname>
+  <description>
+  <![CDATA[
+
+
+  ]]>
+  </description>
+  <url>/api/rma/admin/rmroles/{rolename}</url>  <!-- Deprecated URL -->
+  <url>/api/rma/admin/{siteid}/rmroles/{rolename}</url>
+  <url>/api/rma/admin/{store_type}/{store_id}/{id}/rmroles/{rolename}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

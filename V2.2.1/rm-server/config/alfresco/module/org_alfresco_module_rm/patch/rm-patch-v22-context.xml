@@ -1,0 +1,106 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- RM v2.2 Patches -->
+
+   <bean id="org_alfresco_module_rm_RMv22ReportTemplatePatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22ReportTemplatePatch">
+      <property name="description" value="Patches new versions of the report templates."/>
+      <property name="fixesToSchema" value="1000"/>
+      <property name="targetSchema" value="1001"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+   </bean>
+
+   <bean id="org_alfresco_module_rm_RMv22CapabilityPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22CapabilityPatch">
+      <property name="description" value="Patches the existing RM data for the RM v2.2 updated capabilities."/>
+      <property name="fixesToSchema" value="1001"/>
+      <property name="targetSchema" value="1002"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
+   </bean>
+
+   <bean id="rm.dodModelSeparationModulePatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22DODModelSeparationModulePatch">
+      <property name="description" value="DOD model separation module patch"/>
+      <property name="fixesToSchema" value="1002"/>
+      <property name="targetSchema" value="1003"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="patchDAO" ref="patchDAO"/>
+      <property name="nodeDAO" ref="nodeDAO"/>
+   </bean>
+
+   <bean id="rm.dodCompliantSitePatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22DODCompliantSitePatch">
+      <property name="description" value="DOD compliant module patch"/>
+      <property name="fixesToSchema" value="1003"/>
+      <property name="targetSchema" value="1004"/>
+      <property name="qnameDAO" ref="qnameDAO"/>
+   </bean>
+
+   <bean id="rm.ghostOnDestroyDispositionActionPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22GhostOnDestroyDispositionActionPatch">
+      <property name="description" value="Patches the existing RM destroy disposition actions to add the RM v2.2 ghost on destroy property"/>
+      <property name="fixesToSchema" value="1004"/>
+      <property name="targetSchema" value="1005"/>
+      <property name="dispositionService" ref="DispositionService"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="ghostingEnabled">
+         <value>${rm.ghosting.enabled}</value>
+      </property>
+   </bean>
+   
+   <bean id="rm.holdReportPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22HoldReportPatch">
+      <property name="description" value="Patches the hold report template."/>
+      <property name="fixesToSchema" value="1005"/>
+      <property name="targetSchema" value="1006"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="contentService" ref="ContentService"/>
+   </bean>
+   
+	<bean id="rm.fileHoldReportCapabilityPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22FileHoldReportCapabilityPatch">
+      <property name="description" value="Add FileHoldReport capability."/>
+      <property name="fixesToSchema" value="1006"/>
+      <property name="targetSchema" value="1007"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
+   </bean>
+   
+   <bean id="rm.removeInPlaceRolesFromAllPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22RemoveInPlaceRolesFromAllPatch">
+      <property name="description" value="Remove in-place roles from 'all roles' group."/>
+      <property name="fixesToSchema" value="1007"/>
+      <property name="targetSchema" value="1008"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="filePlanRoleService" ref="FilePlanRoleService"/>
+      <property name="authorityService" ref="AuthorityService"/>
+   </bean>
+
+   <bean id="rm.holdCapabilityPatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22HoldCapabilityPatch">
+      <property name="description" value="Add hold capabilities."/>
+      <property name="fixesToSchema" value="1008"/>
+      <property name="targetSchema" value="1009"/>
+      <property name="filePlanService" ref="FilePlanService"/>
+      <property name="permissionService" ref="permissionService"/>
+      <property name="authorityService" ref="authorityService"/>
+   </bean>
+
+</beans>

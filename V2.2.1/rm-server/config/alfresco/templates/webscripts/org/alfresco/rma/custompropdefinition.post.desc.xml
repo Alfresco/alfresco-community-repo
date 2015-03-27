@@ -1,0 +1,29 @@
+<webscript>
+  <shortname>Add a Custom Property Definition to the custom model</shortname>
+  <description><![CDATA[
+  Adds a custom property definition to the custom model.<br/>
+  <br/>
+  The URL query parameter 'element' defines which RM type will be able to have the property added.<br/>
+  It should be a the customisable types short qname type (eg rma:recordCategory) <br/>
+  <br/>
+  The JSON parameter 'propId' is optional. If a value is provided it must only contain characters<br/>
+  which are legal within URLs and within QNames.<br/>
+  It is also the responsibility of the calling code to ensure the propId is unique across all custom properties.<br/>
+  If a value is not provided, one will be generated.<br/>
+  <br/>
+  The body of the post should be in the form, e.g.<br/>
+  {<br/>
+  &nbsp;&nbsp;&nbsp;"label": "sample Custom Property",<br/>
+  &nbsp;&nbsp;&nbsp;"dataType": "d:boolean",<br/>
+  &nbsp;&nbsp;&nbsp;"mandatory": false<br/>,
+  &nbsp;&nbsp;&nbsp;"constraintRef": "rmc:constraintName",<br/>
+  &nbsp;&nbsp;&nbsp;"propId": "myPropId"<br/>
+  }<br/>
+  ]]>
+  </description>
+  <url>/api/rma/admin/custompropertydefinitions?element={element}</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

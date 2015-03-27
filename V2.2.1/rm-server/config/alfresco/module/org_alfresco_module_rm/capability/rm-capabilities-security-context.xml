@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!--  Assignable Capabilities -->
+   
+   <!-- controls user and group creation/destruction -->
+   <bean id="rmCreateModifyDestroyUsersAndGroupsCapability"
+      parent="declarativeCapability">
+      <property name="name" value="CreateModifyDestroyUsersAndGroups" />
+      <property name="permission" value="CreateModifyDestroyUsersAndGroups" />
+      <property name="group"><ref bean="securityGroup"/></property>
+      <property name="index" value="20" />
+   </bean>
+   
+   <bean id="rmDisplayRightsReportCapability"
+      parent="declarativeCapability">
+      <property name="name" value="DisplayRightsReport" />
+      <property name="permission" value="DisplayRightsReport" />
+      <property name="group"><ref bean="securityGroup"/></property>
+      <property name="index" value="30" />
+   </bean>
+
+   <!-- controls user and gropus role assignments -->
+   <bean id="rmManageAccessControlsCapability"
+      parent="declarativeCapability">
+      <property name="name" value="ManageAccessControls" />
+      <property name="permission" value="ManageAccessControls" />
+      <property name="group"><ref bean="securityGroup"/></property>
+      <property name="index" value="40" />
+   </bean>
+
+   <!-- controls an entities permissions -->
+   <bean id="rmManageAccessRightsCapability"
+      parent="declarativeCapability">
+      <property name="name" value="ManageAccessRights"/>
+      <property name="permission" value="ManageAccessRights"/>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.filling" value="true"/>
+         </map>
+      </property>
+      <property name="group"><ref bean="securityGroup"/></property>
+      <property name="index" value="50" />
+   </bean>
+
+   <bean id="rmPasswordControlCapability"
+      parent="declarativeCapability">
+      <property name="name" value="PasswordControl" />
+      <property name="permission" value="PasswordControl" />
+      <property name="group"><ref bean="securityGroup"/></property>
+      <property name="index" value="60" />
+   </bean>
+   
+
+   <!--  Non-Assignable Capabilities -->
+
+
+
+</beans>

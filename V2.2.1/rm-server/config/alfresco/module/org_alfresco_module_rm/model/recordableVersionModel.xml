@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Recordable Version Model 						-->
+<!-- 												-->
+<!-- @since 2.3 									-->
+<!-- @author Roy Wetherall							-->
+
+<!-- Note: the rma: namespace is defined further on in the document -->
+<model name="rmv:recordableVersion" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Recordable Version Model</description>
+   <author>Roy Wetherall</author>
+   <version>1.0</version>
+
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+      <!--  Import Alfresco Site Model Definitions -->
+      <import uri="http://www.alfresco.org/model/site/1.0" prefix="st"/>
+      <!--  Import Alfresco RM Model Definitions -->
+      <import uri="http://www.alfresco.org/model/recordsmanagement/1.0" prefix="rma"/>
+   </imports>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/recordableversion/1.0" prefix="rmv"/>
+   </namespaces>
+   
+   <constraints>
+   
+      <!-- recordable version policy list -->
+      <!--  -->
+      <!-- contains the following recordable version policy options: -->
+      <!--   * none - business as usual -->
+      <!--   * major only - only major revisions will be recorded -->
+      <!--   * all - all revisions will be recorded -->
+      <constraint name="rmv:recordableVersionPolicyList" type="LIST">
+         <title>Recordable Version Policy List</title>
+         <parameter name="allowedValues">
+            <list>
+               <value>NONE</value>
+               <value>MAJOR_ONLY</value>
+               <value>ALL</value>
+            </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>false</value></parameter>
+      </constraint>
+   </constraints>
+
+   <aspects>
+   
+      <!--  versionsable aspsect -->
+      <!--  -->
+      <!--  defines the recordable version policy -->
+      <aspect name="rmv:versionable">
+         <properties>
+            <!--  destination file plan, defaults if not set -->
+            <property name="rmv:filePlan">
+               <title>File Plan</title>
+               <type>d:noderef</type>
+               <index enabled="false"/>
+            </property>
+            <!--  recordable version policy -->
+            <property name="rmv:recordableVersionPolicy">
+               <title>Recordable Version Policy</title>
+               <type>d:text</type>
+               <default>NONE</default>
+               <index enabled="false"/>
+               <constraints>
+                  <constraint ref="rmv:recordableVersionPolicyList" />
+               </constraints>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!--  recorded version aspect -->
+      <!--  -->
+      <!--  applied to version and contains additional information required for a recorded -->
+      <!--  version -->
+      <aspect name="rmv:recordedVersion">
+         <properties>
+            <!-- reference to record that records frozen state for this version -->
+            <property name="rmv:recordNodeRef">
+               <title>Record Node Reference</title>
+               <type>d:noderef</type>
+               <index enabled="false"/>
+            </property>
+            <!-- frozen owner details -->
+            <property name="rmv:frozenOwner">
+               <title>Frozen Owner</title>
+               <type>d:text</type>
+               <index enabled="false"/>
+            </property>
+         </properties>
+      </aspect>
+      
+      <!--  version record aspect -->
+      <!--  -->
+      <!-- applied to records and contains additional version record information -->
+      <aspect name="rmv:versionRecord">
+      	<properties>
+      		<!--  reference to the node that this record is a version of -->
+      		<property name="rmv:versionedNodeRef">
+               <type>d:noderef</type>
+               <index enabled="false"/>
+      		</property>
+      		<!-- version label -->
+      		<property name="rmv:versionLabel">
+      			<type>d:text</type>
+      		</property>
+      		<!-- version description -->
+      		<property name="rmv:versionDescription">
+      			<type>d:text</type>
+      		</property>
+      	</properties>      
+      </aspect>
+      
+   </aspects>
+
+</model>

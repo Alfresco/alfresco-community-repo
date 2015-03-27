@@ -1,0 +1,1 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary-v2/node.get.js">

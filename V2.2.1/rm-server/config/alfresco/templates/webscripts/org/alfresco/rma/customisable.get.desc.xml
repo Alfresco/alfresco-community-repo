@@ -1,0 +1,12 @@
+<webscript>
+   <shortname>Records Management Customisable Types and Aspects</shortname>
+   <description><![CDATA[
+   Gets the list of the customisable types and aspects.
+   ]]>
+   </description>
+   <url>/api/rma/admin/customisable</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
+</webscript>

@@ -139,7 +139,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <ant antfile="${highest.basedir}/packaging/installer/extract-binaries.xml" />
+                                <ant antfile="${project.build.directory}/extract-binaries.xml" />
                             </target>
                         </configuration>
                     </execution>
@@ -285,7 +285,7 @@
                                 <configuration>
                                     <skip>${skipWinInstaller}</skip>
                                     <target>
-                                        <ant antfile="${highest.basedir}/packaging/installer/sign.xml">
+                                        <ant antfile="${project.build.directory}/sign.xml">
                                              <property name="installer.name" value="alfresco-enterprise" />
                                         </ant>
                                     </target>

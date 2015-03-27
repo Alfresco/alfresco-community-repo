@@ -1,9 +1,0 @@
-<webscript>
-  <shortname>Clears Records Management Audit Log</shortname>
-  <description>Clears the Records Management audit log</description>
-  <url>/api/rma/admin/rmauditlog</url>
-  <format default="json">argument</format>
-  <authentication>user</authentication>
-  <transaction>required</transaction>
-  <lifecycle>internal</lifecycle>
-</webscript>

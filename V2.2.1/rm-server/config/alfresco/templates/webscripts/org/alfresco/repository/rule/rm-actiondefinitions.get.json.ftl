@@ -1,1 +1,0 @@
-<#include "actiondefinitions.get.json.ftl">

@@ -19,30 +19,27 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.eq;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 import static java.util.Arrays.asList;
 
 /**
@@ -91,31 +88,13 @@ public class ClassificationServiceImplUnitTest
     private ClassificationServiceImpl classificationService;
 
     private AttributeService   mockedAttributeService   = mock(AttributeService.class);
-    private AuthenticationUtil mockedAuthenticationUtil = mock(AuthenticationUtil.class);
+    private AuthenticationUtil mockedAuthenticationUtil;
     private Configuration      mockConfig               = mock(Configuration.class);
 
     @Before public void setUp()
     {
         reset(mockConfig, mockedAttributeService);
-
-        // FIXME This should be out of here (and BaseUnitTest) and into a common utility class.
-        // We don't care about authentication here.
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork work
-                        = (org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork)invocation.getArguments()[0];
-                return work.doWork();
-            }
-
-        }).when(mockedAuthenticationUtil).<Object>runAs(any(org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork.class), anyString());
-
-        // Use the admin user
-        doReturn("admin").when(mockedAuthenticationUtil).getAdminUserName();
-        doReturn("admin").when(mockedAuthenticationUtil).getFullyAuthenticatedUser();
+        mockedAuthenticationUtil = MockAuthenticationUtilHelper.create();
 
         classificationService = new ClassificationServiceImpl(mockConfig);
         classificationService.setAttributeService(mockedAttributeService);

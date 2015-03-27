@@ -170,7 +170,7 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         doAnswer(doInTransactionAnswer).when(mockedRetryingTransactionHelper).<Object>doInTransaction(any(RetryingTransactionCallback.class));
 
         // setup mocked authentication util
-        setupAuthenticationUtilMock();
+        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil);
 
         // setup file plan
         filePlan = generateNodeRef(TYPE_FILE_PLAN);
@@ -196,43 +196,6 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
         doReturn(result).when(mockedNodeService).getParentAssocs(record);
         doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
         doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);
-    }
-
-    /**
-     * Setup authentication util mock
-     */
-    @SuppressWarnings("unchecked")
-    private void setupAuthenticationUtilMock()
-    {
-        // just do the work
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
-                return work.doWork();
-            }
-
-        }).when(mockedAuthenticationUtil).<Object>runAsSystem(any(RunAsWork.class));
-
-        // just do the work
-        doAnswer(new Answer<Object>()
-        {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable
-            {
-                RunAsWork work = (RunAsWork)invocation.getArguments()[0];
-                return work.doWork();
-            }
-
-        }).when(mockedAuthenticationUtil).<Object>runAs(any(RunAsWork.class), anyString());
-
-        // assume admin
-        doReturn("admin").when(mockedAuthenticationUtil).getAdminUserName();
-        doReturn("admin").when(mockedAuthenticationUtil).getFullyAuthenticatedUser();
     }
 
     /**

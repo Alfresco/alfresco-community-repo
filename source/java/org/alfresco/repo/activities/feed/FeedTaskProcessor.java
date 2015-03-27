@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -386,6 +386,15 @@ public abstract class FeedTaskProcessor
         {
             for (String followerUser : followerUsers)
             {
+                // MNT-13234
+                // avoid duplicate activities in activities feed
+                boolean caseSensitive = ctx.isUserNamesAreCaseSensitive();
+                if ((caseSensitive && recipients.contains(followerUser))
+                        || (!caseSensitive && (recipients.contains(followerUser) || recipients.contains(followerUser.toLowerCase()))))
+                {
+                    continue;
+                }
+                
                 Pair<String, String> userSiteKey = new Pair<String, String>(followerUser, siteId);
                 Boolean canRead = canUserReadSite.get(userSiteKey);
                 if (canRead == null)

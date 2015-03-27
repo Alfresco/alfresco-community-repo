@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -306,7 +306,7 @@ public class SubscriptionServiceActivitiesTest
         log.debug("And " + USER_TWO_NAME + " is now following " + USER_ONE_NAME);
         
         
-        // userId1 + 5, userId2 + 2
+        // userId1 + 2, userId2 + 2
         generateFeed();
         doWorkAs(ADMIN, new RetryingTransactionCallback<Void>()
                 {
@@ -371,7 +371,7 @@ public class SubscriptionServiceActivitiesTest
                     {
                         List <String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
                         log.debug(USER_ONE_NAME + "'s feed: " + prettyJson(feed));
-                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", 16, feed.size());
+                        assertEquals(USER_ONE_NAME + "'s feed was wrong size", 14, feed.size());
                         
                         // note: userId2 should not see activities from followers in moderated sites that they do not belong do (ALF-16460)
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
@@ -404,11 +404,11 @@ public class SubscriptionServiceActivitiesTest
                     @Override public Void execute() throws Throwable
                     {
                         List<String> feed = activityService.getUserFeedEntries(USER_ONE_NAME, null, false, false, null, null);
-                        assertEquals("User's feed was wrong size", 21, feed.size());
+                        assertEquals("User's feed was wrong size", 19, feed.size());
                         
                         // note: userId2 should not see activities from followers in moderated sites that they do not belong to (ALF-16460)
                         feed = activityService.getUserFeedEntries(USER_TWO_NAME, null, false, false, null, null);
-                        assertEquals("User's feed was wrong size", 10, feed.size());
+                        assertEquals("User's feed was wrong size", 8, feed.size());
                         
                         return null;
                     }

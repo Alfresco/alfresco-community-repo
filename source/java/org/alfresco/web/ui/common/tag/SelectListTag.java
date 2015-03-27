@@ -138,7 +138,7 @@ public class SelectListTag extends HtmlComponentTag
    /**
     * Set the onchange handler
     *
-    * @param value the onchange handler.
+    * @param onchange the onchange handler.
     */
    public void setOnchange(final String onchange)
    {

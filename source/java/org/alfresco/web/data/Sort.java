@@ -319,7 +319,7 @@ public abstract class Sort
    private static class SimpleComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -333,7 +333,7 @@ public abstract class Sort
    private static class SimpleStringComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -347,7 +347,7 @@ public abstract class Sort
    private static class StringComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -361,7 +361,7 @@ public abstract class Sort
    private static class IntegerComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -375,7 +375,7 @@ public abstract class Sort
    private static class FloatComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -389,7 +389,7 @@ public abstract class Sort
    private static class LongComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -403,7 +403,7 @@ public abstract class Sort
    private static class BooleanComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -417,7 +417,7 @@ public abstract class Sort
    private static class DateComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {
@@ -431,7 +431,7 @@ public abstract class Sort
    private static class TimestampComparator implements Comparator
    {
       /**
-       * @see org.alfresco.web.data.IDataComparator#compare(java.lang.Object, java.lang.Object)
+       * @see Comparator#compare(java.lang.Object, java.lang.Object)
        */
       public int compare(final Object obj1, final Object obj2)
       {

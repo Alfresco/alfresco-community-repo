@@ -60,7 +60,6 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
         /**
          * Construct
          * 
-         * @param authenticationService
          * @param req
          * @param res
          */

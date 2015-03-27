@@ -178,7 +178,7 @@ public class UsersBeanProperties implements Serializable
    }
 
    /**
-    * @param searchServiceq     the search service
+    * @param searchService     the search service
     */
    public void setSearchService(SearchService searchService)
    {
@@ -306,7 +306,7 @@ public class UsersBeanProperties implements Serializable
    }
 
    /**
-    * @param person         The person context to set.
+    * @param p         The person context to set.
     */
    public void setPerson(final Node p)
    {

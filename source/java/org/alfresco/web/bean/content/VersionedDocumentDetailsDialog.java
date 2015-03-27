@@ -577,7 +577,7 @@ public class VersionedDocumentDetailsDialog implements Serializable
    }
 
    /**
-    * @param Multilingual Content Service the Multilingual Content Service to set
+    * @param multilingualContentService Content Service the Multilingual Content Service to set
     */
    public void setMultilingualContentService(MultilingualContentService multilingualContentService)
    {

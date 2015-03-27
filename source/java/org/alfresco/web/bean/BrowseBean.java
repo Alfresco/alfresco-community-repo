@@ -2304,7 +2304,7 @@ public class BrowseBean implements IContextListener, Serializable
       /**
        * Constructor
        *
-       * @param NodeRef    The NodeRef for this browse navigation element
+       * @param nodeRef    The NodeRef for this browse navigation element
        * @param label      Element label
        */
       public BrowseBreadcrumbHandler(NodeRef nodeRef, String label)

@@ -380,7 +380,7 @@ public class NewEditionWizard extends BaseWizardBean
     }
 
     /**
-     * @param language the language to set
+     * @param locale the language to set
      */
     public void setLanguage(Locale locale)
     {
@@ -468,7 +468,7 @@ public class NewEditionWizard extends BaseWizardBean
     }
 
     /**
-     * @param selectedTranslationLanguage the selectedTranslationLanguage to set
+     * @param language the selectedTranslationLanguage to set
      */
     public void setSelectedTranslationLanguage(String language)
     {

@@ -60,7 +60,7 @@ public class DialogsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * @see org.alfresco.config.ConfigElement#getChildren()
+    * @see ConfigElement#getChildren()
     */
    public List<ConfigElement> getChildren()
    {
@@ -68,7 +68,7 @@ public class DialogsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * @see org.alfresco.config.ConfigElement#combine(org.alfresco.config.ConfigElement)
+    * @see ConfigElement#combine(org.springframework.extensions.config.ConfigElement)
     */
    public ConfigElement combine(ConfigElement configElement)
    {

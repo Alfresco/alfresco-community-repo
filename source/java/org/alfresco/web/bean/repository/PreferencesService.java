@@ -56,7 +56,7 @@ public final class PreferencesService
    }
    
    /**
-    * @param user User instance
+    * @param session Http session
     * @return The Preferences for the current User instance.
     */
    public static Preferences getPreferences(HttpSession session)

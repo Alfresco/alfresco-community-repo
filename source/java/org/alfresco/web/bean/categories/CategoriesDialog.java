@@ -577,7 +577,7 @@ public class CategoriesDialog extends BaseDialogBean implements IContextListener
       /**
        * Constructor
        * 
-       * @param NodeRef The NodeRef for this browse navigation element
+       * @param nodeRef The NodeRef for this browse navigation element
        * @param label Element label
        */
       public CategoryBreadcrumbHandler(NodeRef nodeRef, String label)

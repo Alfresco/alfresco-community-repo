@@ -133,7 +133,7 @@ public class UserPreferencesBean implements Serializable
    }
 
    /**
-    * @param languageStr   A valid locale string or {@link #MSG_CONTENTALLLANGUAGES}
+    * @param contentFilterLanguage   A valid locale string or {@link #MSG_CONTENTALLLANGUAGES}
     */
    public void setContentFilterLanguage(String contentFilterLanguage)
    {
@@ -233,7 +233,6 @@ public class UserPreferencesBean implements Serializable
    /**
     * Helper to return the available language items
     * 
-    * @param includeAllLanguages    True to include a marker item for "All Languages"
     * @return Array of SelectItem objects
     */
    private static SelectItem[] getLanguageItems()

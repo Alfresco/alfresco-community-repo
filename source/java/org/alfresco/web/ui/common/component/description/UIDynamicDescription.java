@@ -210,7 +210,7 @@ public class UIDynamicDescription extends SelfRenderingComponent
     * 
     * @param context The faces context
     * @param controlId The id of the control the description is for
-    * @param test The description text 
+    * @param text The description text
     */
    private void renderDescription(FacesContext context, String controlId, String text)
       throws IOException

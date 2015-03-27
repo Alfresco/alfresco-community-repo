@@ -89,7 +89,6 @@ public class WebClientAuthenticatorFactory implements ServletAuthenticatorFactor
         /**
          * Construct
          * 
-         * @param authenticationService
          * @param req
          * @param res
          */

@@ -273,7 +273,7 @@ public class ActionLinkRenderer extends BaseRenderer
 
    /**
     * @param link
-    * @param linkBuf
+    * @param out
     * @param href
     */
    private void renderHrefParams(UIActionLink link, Writer out, String href)

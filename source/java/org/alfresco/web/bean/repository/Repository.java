@@ -729,7 +729,7 @@ public final class Repository
     * 
     * @param context Faces Context
     * @param nodeService The node service
-    * @param searchService used to perform the search
+    * @param personService PersonService
     * @return List of Person node objects
     */
    public static List<Node> getUsers(FacesContext context, NodeService nodeService, PersonService personService)

@@ -966,7 +966,7 @@ public class DocumentDetailsDialog extends BaseDetailsBean implements  Navigatio
    }
 
    /**
-    * @param EditionService The Edition Service to set.
+    * @param editionService The Edition Service to set.
     */
    public void setEditionService(EditionService editionService)
    {

@@ -136,7 +136,7 @@ public class MultilingualManageDialog extends BaseDialogBean
    }
 
    /**
-    * @param EditionService The Edition Service to set.
+    * @param editionService The Edition Service to set.
     */
    public void setEditionService(EditionService editionService)
    {

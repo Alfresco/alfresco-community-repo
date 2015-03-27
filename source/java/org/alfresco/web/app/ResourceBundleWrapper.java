@@ -272,7 +272,6 @@ public final class ResourceBundleWrapper extends ResourceBundle implements Seria
    /**
     * Factory method to get a named wrapped resource bundle for a particular locale.
     * 
-    * @param servletContext     ServletContext
     * @param name               Bundle name
     * @param locale             Locale to retrieve bundle for
     * 

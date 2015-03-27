@@ -382,7 +382,7 @@ public abstract class BaseServlet extends HttpServlet
    /**
     * Resolves the given path elements to a NodeRef in the current repository
     * 
-    * @param WebApplicationContext Context
+    * @param wc WebApplicationContext Context
     * @param args    The elements of the path to lookup
     * @param decode  True to decode the arg from UTF-8 format, false for no decoding
     */

@@ -105,7 +105,7 @@ public class GlobalLocalizationFilter implements Filter
     /**
      * Apply Client and Repository language locale based on the 'Accept-Language' request header
      *
-     * @param request HttpServletRequest
+     * @param req HttpServletRequest
      */
     public void setLanguageFromRequestHeader(HttpServletRequest req)
     {

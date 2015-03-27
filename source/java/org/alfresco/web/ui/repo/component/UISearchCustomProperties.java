@@ -240,8 +240,8 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
     * Generates a JSF OutputText component/renderer
     * 
     * @param context JSF context
-    * @param displayLabel The display label text
-    * @param parent The parent component for the label
+    * @param propDef PropertyDefinition
+    * @param beanBinding String
     * 
     * @return UIComponent
     */
@@ -442,7 +442,7 @@ public class UISearchCustomProperties extends SelfRenderingComponent implements 
    /**
     * Retrieves the list of values constraint for the item, if it has one
     * 
-    * @param PropertyDefinition The property definition for the constraint
+    * @param propertyDef The property definition for the constraint
     * @return The constraint if the item has one, null otherwise
     */
    protected ListOfValuesConstraint getListOfValuesConstraint(PropertyDefinition propertyDef)

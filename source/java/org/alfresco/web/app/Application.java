@@ -688,7 +688,7 @@ public class Application
    /**
     * Return the language Locale for the current user context
     * 
-    * @param context        FacesContext for the current user
+    * @param fc        FacesContext for the current user
     * 
     * @return Current language Locale set or the VM default if none set - never null
     */

@@ -758,7 +758,7 @@ public class CreateRuleWizard extends BaseActionWizard
    /**
     * Sets the rulesDialog instance to be used by the wizard in edit mode
     * 
-    * @param rulesDialog The rulesDialog
+    * @param RulesDialog The rulesDialog
     */
    public void setRulesDialog(RulesDialog RulesDialog)
    {

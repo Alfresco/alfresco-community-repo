@@ -67,7 +67,7 @@ public class LanguagesConfigElement extends ConfigElementAdapter
    }
 
    /**
-    * @see org.springframework.extensions.config.element.ConfigElementAdapter#combine(org.alfresco.config.ConfigElement)
+    * @see org.springframework.extensions.config.element.ConfigElementAdapter#combine(org.springframework.extensions.config.ConfigElement)
     */
    public ConfigElement combine(ConfigElement configElement)
    {

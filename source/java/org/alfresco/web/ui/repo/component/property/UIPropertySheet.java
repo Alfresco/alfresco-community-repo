@@ -797,7 +797,7 @@ public class UIPropertySheet extends UIPanel implements NamingContainer
     * in an external config file.
     * 
     * @param context JSF context
-    * @param properties Collection of properties to render (driven from configuration) 
+    * @param items Collection of properties to render (driven from configuration)
     * @throws IOException
     */
    @SuppressWarnings("unchecked")

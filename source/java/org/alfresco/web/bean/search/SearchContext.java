@@ -507,8 +507,8 @@ public class SearchContext implements Serializable
     * 
     * @param qname      QName.toString() of the attribute
     * @param value      Non-null value of the attribute
-    * @param attrBuf    Attribute search buffer to append lucene terms to
-    * @param textBuf    Text search buffer to append lucene terms to
+    * @param appendText    Attribute search buffer to append lucene terms to
+    * @param mnBuf    Text search buffer to append lucene terms to
     */
    private static void processSearchTextAttribute(String qname, String value, boolean appendText, StringBuilder mnBuf) 
    { 
@@ -555,7 +555,7 @@ public class SearchContext implements Serializable
     * Generate a search XPATH pointing to the specified node, optionally return an XPATH
     * that includes the child nodes.
     *  
-    * @param id         Of the node to generate path too
+    * @param ref         Of the node to generate path too
     * @param children   Whether to include children of the node
     * 
     * @return the path
@@ -756,7 +756,6 @@ public class SearchContext implements Serializable
     * Add an additional attribute to search against for simple searches
     * 
     * @param qname      QName of the attribute to search against
-    * @param value      Value of the attribute to use
     */
    public void addSimpleAttributeQuery(QName qname)
    {

@@ -161,9 +161,29 @@
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>
-                        <descriptor>src/assembly/distribution.xml</descriptor>
+                        <descriptor>src/assemblies/distribution.xml</descriptor>
                     </descriptors>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <!-- Package distribution assembly descriptor, to be reused by Enterprise -->
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>create-assembly-descriptor</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>assembly</classifier>
+                            <classesDirectory>${basedir}/src</classesDirectory>
+                            <includes>
+                                <include>assemblies/*</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -25,9 +25,9 @@ public class CollectionWithPagingInfo<T>
         
     /**
      * Constructs a new CollectionWithPagingInfo.
-     * @param aCollection - the collection that needs to be paged.
-     * @param hasMoreItems - Are there more items after this Collection?
+     * @param collection - the collection that needs to be paged.
      * @param paging - Paging request info
+     * @param hasMoreItems - Are there more items after this Collection?
      * @param totalItems - The total number of items available.
      * @return CollectionWithPagingInfo
      */
@@ -103,8 +103,6 @@ public class CollectionWithPagingInfo<T>
 
     /**
      * Indicates if the returned collection has more items after the current returned list.
-     * 
-     * @param hasMoreItems
      */
     public boolean hasMoreItems()
     {

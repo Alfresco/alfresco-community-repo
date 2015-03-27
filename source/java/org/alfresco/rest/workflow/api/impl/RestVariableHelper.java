@@ -83,8 +83,9 @@ public class RestVariableHelper
     
     /**
      * @param localVariables raw local task variables, can be null.
-     * @param globalvariables raw global taks variables, can be null.
-     * @param typeDefinition the typê definition for this task, used to extract types.
+     * @param globalVariables raw global taks variables, can be null.
+     * @param startFormTypeDefinition TypeDefinition
+     * @param taskTypeDefinition the typê definition for this task, used to extract types.
      * @return list of {@link TaskVariable}, representing the given raw variables
      */
     public List<TaskVariable> getTaskVariables(Map<String, Object> localVariables, Map<String, Object> globalVariables, 

@@ -385,7 +385,9 @@ public class ADMRemoteStore extends BaseRemoteStore
     /**
      * Creates multiple XML documents encapsulated in a single one. 
      * 
-     * @param content       XML document containing multiple document contents to write
+     * @param res       WebScriptResponse
+     * @param store       String
+     * @param in       XML document containing multiple document contents to write
      */
     @Override
     protected void createDocuments(WebScriptResponse res, String store, InputStream in)

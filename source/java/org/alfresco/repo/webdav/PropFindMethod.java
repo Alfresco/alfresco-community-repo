@@ -388,7 +388,7 @@ public class PropFindMethod extends WebDAVMethod
      * Generates the required response XML for the current node
      * 
      * @param xml XMLWriter
-     * @param node NodeRef
+     * @param nodeInfo FileInfo
      * @param path String
      */
     protected void generateResponseForNode(XMLWriter xml, FileInfo nodeInfo, String path) throws Exception
@@ -431,7 +431,7 @@ public class PropFindMethod extends WebDAVMethod
      * specific set of properties
      * 
      * @param xml XMLWriter
-     * @param node NodeRef
+     * @param nodeInfo FileInfo
      * @param isDir boolean
      */
     private void generateNamedPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
@@ -706,7 +706,7 @@ public class PropFindMethod extends WebDAVMethod
      * properties
      * 
      * @param xml XMLWriter
-     * @param node NodeRef
+     * @param nodeInfo FileInfo
      * @param isDir boolean
      */
     protected void generateAllPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception
@@ -857,7 +857,7 @@ public class PropFindMethod extends WebDAVMethod
      * all known properties
      * 
      * @param xml XMLWriter
-     * @param node NodeRef
+     * @param nodeInfo FileInfo
      * @param isDir boolean
      */
     protected void generateFindPropertiesResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir)
@@ -915,7 +915,7 @@ public class PropFindMethod extends WebDAVMethod
      * given path
      * 
      * @param xml XMLWriter
-     * @param node NodeRef
+     * @param nodeInfo FileInfo
      * @param isDir boolean
      */
     protected void generateLockDiscoveryResponse(XMLWriter xml, FileInfo nodeInfo, boolean isDir) throws Exception

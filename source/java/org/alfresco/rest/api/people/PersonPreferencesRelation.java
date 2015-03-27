@@ -67,7 +67,7 @@ public class PersonPreferencesRelation implements RelationshipResourceAction.Rea
 	 * 
 	 * If personId does not exist, NotFoundException (status 404).
 	 * 
-	 * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById#readById(java.lang.String, java.lang.String)
+	 * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById#readById(String, String, org.alfresco.rest.framework.resource.parameters.Parameters)
 	 */
     @Override
     @WebApiDescription(title = "Preference value for preference 'preferenceName' for person 'personId'.")

@@ -55,7 +55,7 @@ public abstract class QueryHelper
 		
 		/**
 		 * Called any time a MATCHES clause is encountered.
-		 * @param propertyName Name of the property
+		 * @param property Name of the property
 		 * @param propertyValue
          * @param negated returns true if "NOT MATCHES" was used
 		 */

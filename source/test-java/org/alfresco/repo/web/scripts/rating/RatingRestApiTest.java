@@ -43,7 +43,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
- * This class tests the ReST API of the {@link RatingService}.
+ * This class tests the ReST API of the {@link org.alfresco.service.cmr.rating.RatingService}.
  * 
  * @author Neil McErlean
  * @since 3.4

@@ -1021,7 +1021,8 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         /**
          * Construct
          * 
-         * @param location
+         * @param path
+         * @param nodeRef
          */
         public RepoScriptContent(String path, NodeRef nodeRef)
         {

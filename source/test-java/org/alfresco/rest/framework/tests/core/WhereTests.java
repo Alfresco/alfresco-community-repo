@@ -444,10 +444,11 @@ public class WhereTests {
 	
 	/**
 	 * Used by ComparisonClauseTest, validates the clause
-	 * @param theQuery
-	 * @param tree
+	 * @param theQuery Query
 	 * @param comparisonOperator One of EQUALS LESSTHAN GREATERTHAN LESSTHANOREQUALS GREATERTHANOREQUALS
-	 */
+     * @param propName String
+     * @param propVal String
+     */
 	private void comparisonChecks(Query theQuery, final int comparisonOperator, final String propName, final String propVal) {
 	    assertNotNull(theQuery);
 	    CommonTree tree = theQuery.getTree();

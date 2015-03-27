@@ -120,7 +120,8 @@ public abstract class AbstractAssociationsGet extends DictionaryWebServiceBase
     protected abstract QName getClassQname(WebScriptRequest req);
     
     /**
-     * @param req - webscript request
+     * @param namespacePrefix - namespace prefix
+     * @param name - name
      * @return  qualified name for association
      */
     protected abstract QName getAssociationQname(String namespacePrefix, String name);

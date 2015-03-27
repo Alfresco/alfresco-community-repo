@@ -154,7 +154,7 @@ public class UserCSVUploadPost extends DeclarativeWebScript
     
     
     /**
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status)
+     * @see DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)

@@ -41,7 +41,8 @@ public interface AuthenticationDetailsProvider
     
     /**
      * Update the value of the ticket for the given user.
-     * @param username
+     * @param userName
+     * @param ticket
      * @throws IllegalArgumentException when the user does not exist.
      */
     void updateTicketForUser(String userName, String ticket) throws IllegalArgumentException;

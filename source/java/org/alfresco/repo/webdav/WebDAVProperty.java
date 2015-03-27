@@ -52,7 +52,6 @@ public class WebDAVProperty
     * @param strName
     * @param strNamespaceUri
     * @param strNamespaceName
-    * @param strValue
     */
    public WebDAVProperty(String strName, String strNamespaceUri, String strNamespaceName)
    {

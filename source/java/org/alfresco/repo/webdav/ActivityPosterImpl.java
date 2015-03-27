@@ -54,7 +54,7 @@ public class ActivityPosterImpl implements WebDAVActivityPoster
      * Constructor
      *
      * @param appTool
-     * @param activityPoster
+     * @param poster
      */
     public ActivityPosterImpl(String appTool, ActivityPoster poster)
     {

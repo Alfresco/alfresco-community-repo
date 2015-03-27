@@ -39,7 +39,6 @@ public class ExecutionResult
     
     /**
      * Adds embeddeds object to the enclosing root object
-     * @param key
      * @param embedded objects to add
      */
     public void addEmbedded(Map<String,Object> embedded)
@@ -49,7 +48,6 @@ public class ExecutionResult
     
     /**
      * Adds related object to the enclosing root object
-     * @param key
      * @param related objects to add
      */
     public void addRelated(Map<String,Object> related)

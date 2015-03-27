@@ -60,7 +60,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     /**
      * Set the namespaceService property.
      * 
-     * @param namespaceService The namespace service instance to set
+     * @param namespaceservice The namespace service instance to set
      */
     public void setNamespaceService(NamespaceService namespaceservice)
     {
@@ -131,7 +131,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     }
 	
     /**
-     * @param className     the class name as cm_person
+     * @param classname     the class name as cm_person
      * @return String       the full name in the following format {namespaceuri}shorname
      */
     public String getFullNamespaceURI(String classname)
@@ -212,7 +212,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     }
     
     /**
-     * @param namespaceprefix - gets a valid namespaceprefix as input
+     * @param modelname String
      * @return modelname from namespaceprefix - returns null if invalid namespaceprefix is given
      */
     public String getPrefixFromModelName(String modelname)

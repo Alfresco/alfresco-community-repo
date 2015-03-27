@@ -113,7 +113,6 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
         /**
          * Construct
          * 
-         * @param authenticationService
          * @param req
          * @param res
          * @param listener

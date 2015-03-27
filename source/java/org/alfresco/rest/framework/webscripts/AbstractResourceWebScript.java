@@ -128,7 +128,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
      * Renders the result of an execution.
      * 
      * @param res WebScriptResponse
-     * @param respons result of an execution
+     * @param toSerialize result of an execution
      * @throws IOException
      */
     protected void renderJsonResponse(final WebScriptResponse res, final Object toSerialize)

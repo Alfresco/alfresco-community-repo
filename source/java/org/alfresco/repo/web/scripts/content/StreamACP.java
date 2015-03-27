@@ -79,7 +79,7 @@ public class StreamACP extends StreamContent
     }
     
     /**
-     * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
+     * @see org.springframework.extensions.webscripts.WebScript#execute(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.WebScriptResponse)
      */
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {
@@ -168,7 +168,7 @@ public class StreamACP extends StreamContent
      * NodeRefs from the given JSON object. If the nodeRefs
      * property is not present a WebScriptException is thrown.
      * 
-     * @param nodeRefs Comma delimited string of NodeRefs
+     * @param json JSONObject
      * @return Array of NodeRef objects
      */
     protected NodeRef[] getNodeRefs(JSONObject json) throws JSONException

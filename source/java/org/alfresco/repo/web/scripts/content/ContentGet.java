@@ -92,7 +92,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
     }
 
     /**
-     * @see org.alfresco.web.scripts.WebScript#execute(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.WebScriptResponse)
+     * @see org.springframework.extensions.webscripts.WebScript#execute(WebScriptRequest, WebScriptResponse)
      */
     public void execute(WebScriptRequest req, WebScriptResponse res)
         throws IOException

@@ -5,7 +5,7 @@ public interface TenantAuthentication
     /**
      * Authenticate user against tenant
      * 
-     * @param email
+     * @param username
      * @param tenant
      * @return  true => authenticated, false => not authenticated
      */

@@ -40,9 +40,9 @@ public interface Sites
 	/**
 	 * people/<personId>/sites/<siteId>
 	 * 
-	 * @param siteId
 	 * @param personId
-	 * @return
+     * @param siteShortName
+     * @return
 	 */
 	MemberOfSite getMemberOfSite(String personId, String siteShortName);
 	SiteMember getSiteMember(String personId, String siteShortName);

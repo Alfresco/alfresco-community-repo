@@ -261,7 +261,7 @@ public class WebDAV
     /**
      * Formats the given date so that it conforms with the Last-Modified HTTP header
      * 
-     * @param date long
+     * @param ldate long
      * @return The formatted date string
      */
     public static String formatModifiedDate(long ldate)
@@ -283,7 +283,7 @@ public class WebDAV
     /**
      * Formats the given date so that it conforms with the WebDAV creation date/time format
      * 
-     * @param date long
+     * @param ldate long
      * @return The formatted date string
      */
     public static String formatCreationDate(long ldate)
@@ -308,7 +308,7 @@ public class WebDAV
     /**
      * Formats the given date for use in the HTTP header
      * 
-     * @param date long
+     * @param ldate long
      * @return String
      */
     public static String formatHeaderDate(long ldate)

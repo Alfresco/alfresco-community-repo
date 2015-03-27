@@ -202,7 +202,7 @@ public class ResourceInspector
     /**
      * Determines if the resources supports the resource action specified by resourceInterfaceWithOneMethod 
      * @param resourceInterfaceWithOneMethod The resource action
-     * @param method http method the action supports.
+     * @param httpMethod http method the action supports.
      * @param helper Holder of simple meta data
      */
     private static void findOperation(Class<? extends ResourceAction> resourceInterfaceWithOneMethod, HttpMethod httpMethod, MetaHelperCallback helper)
@@ -228,7 +228,6 @@ public class ResourceInspector
      * @param resource
      * @param aMethod
      * @param httpMethod
-     * @param defaultParams
      * @return ResourceOperation
      */
     public static ResourceOperation inspectOperation(Class<?> resource, Method aMethod, HttpMethod httpMethod)
@@ -356,7 +355,7 @@ public class ResourceInspector
     /**
      * Indicates the number of params of the Kind specified
      * @param params
-     * @param KIND kind of parameter eg. URL_PATH
+     * @param kind kind of parameter eg. URL_PATH
      * @return int count
      */
     private static int paramsCount(List<ResourceParameter> params, KIND kind)
@@ -450,7 +449,7 @@ public class ResourceInspector
 
     /**
      * Finds the name of the entity collection using the meta information.
-     * @param entityAnnot
+     * @param meta ResourceMetadata
      * @return the entity name/path
      */
     public static String findEntityCollectionNameName(ResourceMetadata meta)
@@ -570,7 +569,7 @@ public class ResourceInspector
     /**
      * Finds a single method with the @UniqueId annotation.
      * 
-     * @param obj any object
+     * @param objClass any object class
      * @return the Method
      * @throws IllegalArgumentException if there is is more than 1 method annotated with @UniqueId
      */
@@ -592,7 +591,7 @@ public class ResourceInspector
 
     /**
      * Finds the property name that is used as the unique id.
-     * @param Method uniqueIdMethod
+     * @param uniqueIdMethod Method
      * @return String the property name that is used as the unique id.
      */
     public static String findUniqueIdName(Method uniqueIdMethod)

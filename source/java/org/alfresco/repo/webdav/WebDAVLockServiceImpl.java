@@ -106,7 +106,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Caches current session to the thread local variable
      * 
-     * @param currentSession
+     * @param session HttpSession
      */
     @Override
     public void setCurrentSession(HttpSession session)
@@ -282,7 +282,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
      * to the current session locked resources list.
      * 
      * @param nodeRef the node to lock
-     * @param lockType the lock type
+     * @param userName userName
      * @param timeout the number of seconds before the locks expires
      */
     @Override
@@ -330,7 +330,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Gets the lock status for the node reference relative to the current user.
      * 
-     * @see LockService#getLockStatus(NodeRef, NodeRef)
+     * @see LockService#getLockStatus(org.alfresco.service.cmr.repository.NodeRef, String)
      * 
      * @param nodeRef    the node reference
      * @return           the lock status
@@ -434,8 +434,10 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Create a new lock
      * 
-     * @param lockNode NodeRef
+     * @param nodeRef NodeRef
      * @param userName String
+     * @param createExclusive boolean
+     * @param timeoutSecs int
      * @exception WebDAVServerException
      */
     private LockInfo createLock(NodeRef nodeRef, String userName, boolean createExclusive, int timeoutSecs)

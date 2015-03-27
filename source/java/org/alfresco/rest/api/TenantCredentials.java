@@ -4,7 +4,7 @@ import org.alfresco.repo.web.auth.WebCredentials;
 import org.alfresco.repo.web.scripts.servlet.BasicHttpAuthenticatorFactory.BasicHttpAuthenticator;
 
 /**
- * {@link WebScriptCrednetials} class which wraps the credentials from the {@link BasicHttpAuthenticator} and adds
+ * {@link WebCredentials} class which wraps the credentials from the {@link BasicHttpAuthenticator} and adds
  * additional information related to TenantBased logins.
  *
  * @author Alex Miller

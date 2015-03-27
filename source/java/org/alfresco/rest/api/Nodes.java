@@ -36,7 +36,7 @@ public interface Nodes
 	
     /**
      * Get the node representation for the given node.
-     * @param nodeRef
+     * @param nodeId
      * @return
      */
     Node getNode(String nodeId);

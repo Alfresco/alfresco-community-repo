@@ -20,7 +20,7 @@ package org.alfresco.repo.web.auth;
 
 
 /**
- * {@link WebScriptCrednetials} class for holding Alfresco tickets.
+ * {@link WebCredentials} class for holding Alfresco tickets.
  *
  * @author Alex Miller
  */

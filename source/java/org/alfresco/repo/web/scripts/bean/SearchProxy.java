@@ -192,7 +192,9 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         /**
          * Construct
          * 
-         * @param requestUrl
+         * @param rootPath
+         * @param engine
+         * @param engineUrl
          * @param response
          * @param headers request headers
          * @throws MalformedURLException

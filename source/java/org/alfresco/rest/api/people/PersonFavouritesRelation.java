@@ -50,7 +50,7 @@ RelationshipResourceAction.Create<Favourite>,  RelationshipResourceAction.Delete
 	/**
      * Adds the given site as a favourite site for the user.
      * 
-     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(java.lang.String, org.alfresco.rest.api.model.FavouriteSite)
+     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(String, java.util.List, org.alfresco.rest.framework.resource.parameters.Parameters)
 	 */
 	@Override
     @WebApiDescription(title = "Add Person Favorite", description = "Favorite something")

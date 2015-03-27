@@ -288,8 +288,8 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
     /**
      * Get the property value, converted to the requested type.
      * 
-     * @param parameters used to extract parameter value from
      * @param propertyName name of the parameter
+     * @param type int
      * @param returnType type of object to return
      * @return the converted parameter value. Null, if the property has no
      *         value.

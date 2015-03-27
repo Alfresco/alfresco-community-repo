@@ -37,7 +37,7 @@ public class AuthenticatedHttp extends AbstractHttp
     
     /**
      * @param httpProvider provider class for http-client
-     * @param authDetailProvider provider for authentication details
+     * @param authenticationDetailsProvider provider for authentication details
      */
     public AuthenticatedHttp(HttpClientProvider httpProvider, AuthenticationDetailsProvider authenticationDetailsProvider)
     {

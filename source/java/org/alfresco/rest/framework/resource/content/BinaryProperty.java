@@ -39,7 +39,7 @@ public class BinaryProperty implements ContentInfo, Serializable
     
     /**
      * This is the preferred constructor to use. Takes the properties from content reader that it needs.
-     * @param ContentReader
+     * @param reader ContentReader
      */
     public BinaryProperty(ContentReader reader)
     {

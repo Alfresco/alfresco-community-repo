@@ -330,8 +330,9 @@ public class PropPatchMethod extends PropFindMethod
      * all known properties
      * 
      * @param xml XMLWriter
-     * @param node NodeRef
-     * @param isDir boolean
+     * @param property WebDAVProperty
+     * @param status int
+     * @param description String
      */
     protected void generatePropertyResponse(XMLWriter xml, WebDAVProperty property, int status, String description)
     {

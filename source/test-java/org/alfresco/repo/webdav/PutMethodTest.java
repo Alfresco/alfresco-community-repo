@@ -831,7 +831,7 @@ public class PutMethodTest
      * <p>
      * Sets content to request from a test file
      * 
-     * @param method Method to prepare, should be initialized (PUT, LOCK, UNLOCK are supported)
+     * @param methodName Method to prepare, should be initialized (PUT, LOCK, UNLOCK are supported)
      * @param fileName the name of the file set to the context, can be used with path, i.e. "path/to/file/fileName.txt"
      * @param content If <b>not null</b> adds test content to the request
      * @param headers to set to request, can be null

@@ -65,7 +65,7 @@ RelationshipResourceAction.Create<SiteMember>, RelationshipResourceAction.Update
      * @throws If siteId does not exist, NotFoundException (status 404).
 	 * 
 	 * (non-Javadoc)
-     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipCollectionResourceAction.Read#readAll(java.lang.String, org.alfresco.rest.framework.resource.parameters.Paging)
+     * @see org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.Read#readAll(org.alfresco.rest.framework.resource.parameters.Parameters)
      */
     @Override
     @WebApiDescription(title="A paged list of all the members of the site 'siteId'.")
@@ -83,7 +83,7 @@ RelationshipResourceAction.Create<SiteMember>, RelationshipResourceAction.Update
 	 * @throws If personId does not exist, NotFoundException (status 404).
 	 * @throws If siteMember. does not exist, NotFoundException (status 404).
 	 * 
-     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(java.io.Serializable)
+     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(String, java.util.List, org.alfresco.rest.framework.resource.parameters.Parameters)
      */
 	@Override
     @WebApiDescription(title="Adds personId as a member of site siteId.")

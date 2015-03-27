@@ -292,7 +292,7 @@ public class Paging
     /**
      * Create a Paged Result Set
      * 
-     * @param results  the results for the page within the cursor
+     * @param result  the results for the page within the cursor
      * @param cursor  the cursor
      * @return  the paged result set
      */

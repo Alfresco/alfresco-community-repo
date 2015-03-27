@@ -20,7 +20,7 @@ package org.alfresco.repo.web.auth;
 
 
 /**
- * {@link AuthenticationEventListener} that does nothing.
+ * {@link AuthenticationListener} that does nothing.
  *
  * @author Alex Miller
  */

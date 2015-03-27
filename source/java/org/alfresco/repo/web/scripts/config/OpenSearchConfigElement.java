@@ -62,7 +62,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     }
 
     /**
-     * @see org.alfresco.config.ConfigElement#getChildren()
+     * @see ConfigElement#getChildren()
      */
     public List<ConfigElement> getChildren()
     {
@@ -70,7 +70,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     }
 
     /**
-     * @see org.alfresco.config.ConfigElement#combine(org.alfresco.config.ConfigElement)
+     * @see ConfigElement#combine(ConfigElement)
      */
     public ConfigElement combine(ConfigElement configElement)
     {
@@ -139,7 +139,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     /**
      * Adds an engine
      * 
-     * @param pluginConfig  A pre-configured engine config object
+     * @param engineConfig  A pre-configured engine config object
      */
     /*package*/ void addEngine(EngineConfig engineConfig)
     {
@@ -231,7 +231,8 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         /**
          * Adds a url
          * 
-         * @param pluginConfig  A pre-configured plugin config object
+         * @param mimetype  mime type
+         * @param uri  uri
          */
         /*package*/ void addUrl(String mimetype, String uri)
         {

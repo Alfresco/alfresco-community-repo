@@ -86,7 +86,7 @@ public class ResourceWebScriptHelper
      * filter param is set then a default BeanFilter is returned that will never
      * filter properties (ie. Returns all bean properties).
      * 
-     * @param req
+     * @param filterParams
      * @return BeanPropertyFilter - if no parameter then returns a new
      *         ReturnAllBeanProperties class
      */
@@ -114,7 +114,7 @@ public class ResourceWebScriptHelper
      * filter param is set then a default BeanFilter is returned that will never
      * filter properties (ie. Returns all bean properties).
      * 
-     * @param req
+     * @param filterParams
      * @return BeanPropertiesFilter - if no parameter then returns a new
      *         ReturnAllBeanProperties class
      */
@@ -397,8 +397,10 @@ public class ResourceWebScriptHelper
      * 
      * Either returns a ExecutionResult object or a CollectionWithPagingInfo containing a collection of ExecutionResult objects.
      * 
-     * @param objectToWrap
-     * @param result 
+     * @param api Api
+     * @param entityCollectionName String
+     * @param params  Params
+     * @param objectToWrap Object
      * @return Object - Either ExecutionResult or CollectionWithPagingInfo<ExecutionResult>
      */
     public Object postProcessResponse(Api api, String entityCollectionName, Params params, Object objectToWrap)

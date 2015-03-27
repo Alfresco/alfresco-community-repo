@@ -147,9 +147,9 @@ public class PublicApiAuthenticatorFactory extends RemoteUserAuthenticatorFactor
         /**
          * Construct
          * 
-         * @param authenticationService
          * @param req
          * @param res
+         * @param proxyListener ProxyListener
          */
         public PublicApiAuthenticator(WebScriptServletRequest req, WebScriptServletResponse res, ProxyListener proxyListener)
         {

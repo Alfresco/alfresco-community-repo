@@ -88,7 +88,6 @@ public class JSR168PortletAuthenticatorFactory implements PortletAuthenticatorFa
         /**
          * Construct
          * 
-         * @param authenticationService
          * @param req
          * @param res
          */

@@ -169,8 +169,8 @@ public abstract class WebDAVMethod
      *            HttpServletRequest
      * @param resp
      *            HttpServletResponse
-     * @param registry
-     *            ServiceRegistry
+     * @param davHelper
+     *            WebDAVHelper
      * @param rootNode
      *            NodeRef
      */

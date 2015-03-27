@@ -51,7 +51,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
- * <p>A simple extensibility {@link Container} for processing WebScripts. This extends the {@link RepositoryContainer} and
+ * <p>A simple extensibility {@link org.springframework.extensions.webscripts.Container} for processing WebScripts. This extends the {@link RepositoryContainer} and
  * implements the {@link HandlesExtensibility} interface to provide extensibility capabilities.</p>
  * 
  * @author David Draper
@@ -114,7 +114,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     private WebScriptExtensibilityModuleHandler extensibilityModuleHandler = null;
     
     /**
-     * <p>Sets the {@link WebScriptExtensibilityModuleHandler} for this {@link Container}.</p>
+     * <p>Sets the {@link WebScriptExtensibilityModuleHandler} for this {@link org.springframework.extensions.webscripts.Container}.</p>
      * @param extensibilityModuleHandler
      */
     public void setExtensibilityModuleHandler(WebScriptExtensibilityModuleHandler extensibilityModuleHandler)
@@ -218,7 +218,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
      * for the lifetime of the request as different modules may be applied to the same WebScript for different requests.</p>
      * 
      * @param webScriptId The id of the WebScript to cache the extended bundle against.
-     * @param extensionBUndle The extended bundle to cache.
+     * @param extensionBundle The extended bundle to cache.
      */
     public void addExtensionBundleToCache(String webScriptId, WebScriptPropertyResourceBundle extensionBundle)
     {
@@ -273,7 +273,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     }
 
     /**
-     * <p>The list of {@link ExtensionModule} instances that have been evaluated as applicable to
+     * <p>The list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that have been evaluated as applicable to
      * this RequestContext. This is set to <code>null</code> when during instantiation and is only
      * properly set the first time the <code>getEvaluatedModules</code> method is invoked. This ensures
      * that module evaluation only occurs once per request.</p>
@@ -281,11 +281,11 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     private ThreadLocal<List<BasicExtensionModule>> evaluatedModules = new ThreadLocal<List<BasicExtensionModule>>();
     
     /**
-     * <p>Retrieve the list of {@link ExtensionModule} instances that have been evaluated as applicable
-     * for the current request. If this list has not yet been populated then use the {@link ExtensibilityModuleHandler}
+     * <p>Retrieve the list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that have been evaluated as applicable
+     * for the current request. If this list has not yet been populated then use the {@link org.springframework.extensions.surf.extensibility.ExtensibilityModuleHandler}
      * configured in the Spring application context to evaluate them.</p>
      * 
-     * @return A list of {@link ExtensionModule} instances that are applicable to the current request.
+     * @return A list of {@link org.springframework.extensions.surf.types.ExtensionModule} instances that are applicable to the current request.
      */
     public List<BasicExtensionModule> getEvaluatedModules()
     {
@@ -313,7 +313,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     /**
      * <p>This is a local {@link ConfigImpl} instance that will only be used when extension modules are employed. It will
      * initially be populated with the default "static" global configuration taken from the {@link ConfigService} associated
-     * with this {@link RequestContext} but then updated to include global configuration provided by extension modules that
+     * with this {@link org.springframework.extensions.surf.RequestContext} but then updated to include global configuration provided by extension modules that
      * have been evaluated to be applied to the current request.</p>
      */
     private ThreadLocal<ConfigImpl> globalConfig = new ThreadLocal<ConfigImpl>();
@@ -321,7 +321,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     /**
      * <p>This map represents {@link ConfigSection} instances mapped by area. It  will only be used when extension modules are 
      * employed. It will initially be populated with the default "static" configuration taken from the {@link ConfigService} associated
-     * with this {@link RequestContext} but then updated to include configuration provided by extension modules that have been evaluated 
+     * with this {@link org.springframework.extensions.surf.RequestContext} but then updated to include configuration provided by extension modules that have been evaluated
      * to be applied to the current request.</p>
      */
     private ThreadLocal<Map<String, List<ConfigSection>>> sectionsByArea = new ThreadLocal<Map<String,List<ConfigSection>>>();
@@ -329,7 +329,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     /**
      * <p>A list of {@link ConfigSection} instances that are only applicable to the current request. It  will only be used when extension modules are 
      * employed. It will initially be populated with the default "static" configuration taken from the {@link ConfigService} associated
-     * with this {@link RequestContext} but then updated to include configuration provided by extension modules that have been evaluated 
+     * with this {@link org.springframework.extensions.surf.RequestContext} but then updated to include configuration provided by extension modules that have been evaluated
      * to be applied to the current request.</p>
      */
     private ThreadLocal<List<ConfigSection>> sections = new ThreadLocal<List<ConfigSection>>();

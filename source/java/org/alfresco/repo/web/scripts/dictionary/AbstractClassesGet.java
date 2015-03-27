@@ -177,7 +177,8 @@ public abstract class AbstractClassesGet extends DictionaryWebServiceBase
     protected abstract QName getQNameForModel(String namespacePrefix, String name);
 
     /**
-     * @param req - webscript request
+     * @param namespacePrefix namespace prefix
+     * @param name name
      * @return  qualified name for class
      */
     protected abstract QName getClassQname(String namespacePrefix, String name);

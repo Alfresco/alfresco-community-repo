@@ -51,7 +51,7 @@ public class PagedResults implements Serializable
     /**
      * Construct
      *  
-     * @param results  results for the page within cursor
+     * @param result  results for the page within cursor
      * @param cursor  the cursor
      */
     /*Package*/ PagedResults(Object result, Cursor cursor)

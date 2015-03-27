@@ -114,7 +114,7 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
     /**
      * Set the CSVStrategy
      * 
-     * @param strategy
+     * @param csvStrategy CSVStrategy
      */
     public void setCsvStrategy(CSVStrategy csvStrategy)
     {
@@ -139,7 +139,7 @@ public abstract class DeclarativeSpreadsheetWebScript extends DeclarativeWebScri
     }
     
     /**
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest, org.springframework.extensions.webscripts.Status)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)

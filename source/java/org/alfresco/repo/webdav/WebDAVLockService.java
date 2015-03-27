@@ -61,7 +61,7 @@ public interface WebDAVLockService
     /**
      * Gets the lock info for the node reference relative to the current user.
      * 
-     * @see LockService#getLockStatus(NodeRef, NodeRef)
+     * @see LockService#getLockStatus(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      * 
      * @param nodeRef    the node reference
      * @return           the lock status

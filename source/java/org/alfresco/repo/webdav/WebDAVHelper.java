@@ -1092,11 +1092,11 @@ public class WebDAVHelper
     
     /**
      * Notifies listeners that a read has taken place
-     * @param nodeRef
-     * @param propertyQName
-     * @param attach
+     * @param realNodeInfo
      * @param mimetype
      * @param size
+     * @param contentEncoding
+     * @param range
      */
     protected void publishReadEvent(final FileInfo realNodeInfo, final String mimetype, final Long size, final String contentEncoding, final String range)
     {
@@ -1182,7 +1182,7 @@ public class WebDAVHelper
     /**
      * Indicates if the node is unlocked or the current user has a WRITE_LOCK<p>
      * 
-     * @see LockService#isLockedAndReadOnly(NodeRef)
+     * @see LockUtils#isLockedAndReadOnly(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockService)
      * 
      * @param nodeRef    the node reference
      */

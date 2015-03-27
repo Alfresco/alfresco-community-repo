@@ -24,7 +24,7 @@ public class ResourceInspectorUtil
      * Determine the expected type as the returned type of the method.
      * If the return type is a List it will return the generic element type instead of a List.
      * @param resource - resource with methods
-     * @param methodName
+     * @param method Method
      * @return Class - type of class it needs.
      */
     @SuppressWarnings("rawtypes")

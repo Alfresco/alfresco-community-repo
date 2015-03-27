@@ -112,8 +112,12 @@ public abstract class AbstractBlogWebScript extends DeclarativeWebScript
     /**
      * Generates an activity entry for the discussion item
      * 
-     * @param thing Either post or reply
      * @param event One of created, updated, deleted
+     * @param blog Either post or reply
+     * @param site site
+     * @param req request
+     * @param json json
+     * @param nodeRef NodeRef
      */
     protected void addActivityEntry(String event, BlogPostInfo blog, 
           SiteInfo site, WebScriptRequest req, JSONObject json, NodeRef nodeRef)

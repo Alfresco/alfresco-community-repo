@@ -67,7 +67,7 @@ public class BulkFilesystemImportStatusWebScript extends DeclarativeWebScript
 	}
 
 	/**
-     * @see org.alfresco.web.scripts.DeclarativeWebScript#executeImpl(org.alfresco.web.scripts.WebScriptRequest, org.alfresco.web.scripts.Status, org.alfresco.web.scripts.Cache)
+     * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(WebScriptRequest, Status, Cache)
      */
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest request, Status status, Cache cache)

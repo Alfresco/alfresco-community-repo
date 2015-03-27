@@ -71,7 +71,7 @@ RelationshipResourceAction.Create<FavouriteSite>,  RelationshipResourceAction.De
     /**
      * List the favourite site information for a specific site.
      * 
-     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById#readById(java.lang.String, java.lang.String)
+     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.ReadById#readById(String, String, org.alfresco.rest.framework.resource.parameters.Parameters)
      */
 	@Override
     @WebApiDescription(title = "Get Person Favorite Site", description = "Get information on a person's specific favorite site")
@@ -83,7 +83,7 @@ RelationshipResourceAction.Create<FavouriteSite>,  RelationshipResourceAction.De
 	/**
      * Adds the given site as a favourite site for the user.
      * 
-     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(java.lang.String, org.alfresco.rest.api.model.FavouriteSite)
+     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(String, java.util.List, org.alfresco.rest.framework.resource.parameters.Parameters)
 	 */
 	@Override
     @WebApiDescription(title = "Add Person Favorite Site", description = "Favorite a site")

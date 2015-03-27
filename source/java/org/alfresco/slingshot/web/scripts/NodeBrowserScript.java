@@ -855,7 +855,7 @@ public class NodeBrowserScript extends DeclarativeWebScript implements Serializa
         /**
          * Construct
          * 
-         * @param name property name
+         * @param qname property name
          * @param value property values
          */
         @SuppressWarnings("unchecked")

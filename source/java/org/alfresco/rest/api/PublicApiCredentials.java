@@ -5,7 +5,7 @@ import java.util.Map;
 import org.alfresco.repo.web.auth.WebCredentials;
 
 /**
- * {@link WebScriptCrednetials} class for holding information related to authentication when using the public API..
+ * {@link WebCredentials} class for holding information related to authentication when using the public API..
  *
  * @author Alex Miller
  */

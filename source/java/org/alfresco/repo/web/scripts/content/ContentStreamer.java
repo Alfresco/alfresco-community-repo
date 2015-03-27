@@ -94,7 +94,7 @@ public class ContentStreamer implements ResourceLoaderAware
         }
         
         /**
-         * @param EventPublisher
+         * @param eventPublisher EventPublisher
          */
         public void setEventPublisher(EventPublisher eventPublisher)
         {
@@ -102,7 +102,7 @@ public class ContentStreamer implements ResourceLoaderAware
         }
         
         /**
-         * @param SiteService
+         * @param siteService SiteService
          */
         public void setSiteService(SiteService siteService)
         {

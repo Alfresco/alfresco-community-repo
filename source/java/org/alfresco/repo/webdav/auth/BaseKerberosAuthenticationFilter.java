@@ -118,8 +118,8 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     /**
      * Sets the HTTP service login configuration entry name. The default is <code>"AlfrescoHTTP"</code>.
      * 
-     * @param loginEntryName
-     *            the loginEntryName to set
+     * @param jaasConfigEntryName
+     *            the jaasConfigEntryName to set
      */
     public void setJaasConfigEntryName(String jaasConfigEntryName)
     {
@@ -612,8 +612,9 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
     /**
      * Restart the Kerberos logon process
      * 
+     * @param context ServletContext
+     * @param req HttpServletRequest
      * @param resp HttpServletResponse
-     * @param httpSess HttpSession
      * @throws IOException
      */
     public void restartLoginChallenge(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException

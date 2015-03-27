@@ -57,7 +57,7 @@ public class PeopleEntityResource implements EntityResourceAction.ReadById<Perso
     /**
      * Get a person by userName.
      * 
-     * @see org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById#readById(java.lang.String)
+     * @see org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById#readById(String, org.alfresco.rest.framework.resource.parameters.Parameters)
      */
     @Override
     @WebApiDescription(title = "Get Person Information", description = "Get information for the person with id 'personId'")

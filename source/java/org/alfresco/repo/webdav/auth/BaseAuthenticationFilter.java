@@ -271,8 +271,7 @@ public abstract class BaseAuthenticationFilter
     /**
      * Remove the user from the session and expire the session - after failed ticket auth.
      * 
-     * @param session
-     *            the session
+     * @param req HttpServletRequest
      */
     protected void invalidateSession(HttpServletRequest req)
     {

@@ -545,8 +545,8 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      * to be redirected to the login page.
      *
      * @param context ServletContext
+     * @param req HttpServletRequest
      * @param resp HttpServletResponse
-     * @param httpSess HttpSession
      * @throws IOException
      */
     protected void writeLoginPageLink(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException

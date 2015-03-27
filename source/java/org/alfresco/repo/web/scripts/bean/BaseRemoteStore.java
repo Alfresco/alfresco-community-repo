@@ -415,9 +415,9 @@ public abstract class BaseRemoteStore extends AbstractWebScript
     
     /**
      * Creates multiple XML documents encapsulated in a single one. 
-     * 
+     *
+     * @param res          WebScriptResponse
      * @param store         the store id
-     * @param path          document path
      * @param content       content of the document to write
      * 
      * @throws IOException if the create fails

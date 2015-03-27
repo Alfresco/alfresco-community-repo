@@ -32,8 +32,8 @@
         <setInstallerVariable name="alfresco_wcmqs_share_source_file" value="${wcmqs_folder.unix}/alfresco-wcmqs-share.amp" />
         <setInstallerVariable name="alfresco_wcmqs_war_source_file" value="${wcmqs_folder.unix}/wcmqs.war" />
         <setInstallerVariable name="alfresco_awe_war_source_file" value="${wcmqs_folder.unix}/awe.war" />
-        <setInstallerVariable name="alfresco_awe_config_source_file" value="${alfresco_svn_rootdir.unix}/modules/wcmquickstart/wcmquickstartwebsite/config/alfresco" />
-        <setInstallerVariable name="alfresco_wcmqs_config_source_file" value="${alfresco_svn_rootdir.unix}/modules/wcmquickstart/wcmquickstartclientapi/config/alfresco" />
+        <setInstallerVariable name="alfresco_awe_config_source_file" value="${wcmqs_folder.unix}/alfresco" />
+        <setInstallerVariable name="alfresco_wcmqs_config_source_file" value="${wcmqs_folder.unix}/alfresco" />
 
         <!-- Binaries -->
         <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}/manager" />
@@ -48,9 +48,6 @@
 
         <!-- END ALFRESCO BUILD SYSTEM-->
         </actionList>
-        <ruleList>
-            <stringTest text="${alfresco_svn_rootdir}" type="empty" negate="yes" />
-        </ruleList>
         </actionGroup>
 
         <setInstallerVariable name="component(alfresco).parameter(alfresco_rmi_port).ask" value="0">

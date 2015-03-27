@@ -78,7 +78,6 @@
 
 
     <parameterList>
-        <directoryParameter name="alfresco_svn_rootdir" ask="0" />
         <stringParameter name="alfresco_edition" ask="0" value="community" />
     </parameterList> 
 </component>

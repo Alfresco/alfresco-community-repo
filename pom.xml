@@ -5,7 +5,6 @@
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-packaging</artifactId>
         <version>5.1-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>alfresco-installer</artifactId>
     <packaging>jar</packaging>
@@ -22,7 +21,6 @@
            project.outputDirectory=${project.build.directory}
            project.version=${project.version}
            project.fullName='Alfresco Community'
-           alfresco_svn_rootdir=${basedir}/../..
            alfresco_edition=community
            distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}
            wcmqs_folder=${project.build.directory}/wcmqs
@@ -181,6 +179,23 @@
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
+                                </artifactItem>
+                                <!-- WCMQS War Config file -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-wcmqs-web</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>classes</classifier>
+                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
+                                    <includes>alfresco/web-extension/**</includes>
+                                </artifactItem>
+                                <!-- WCMQS Client Config file -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-wcmqs-client-api</artifactId>
+                                    <version>${project.version}</version>
+                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
+                                    <includes>alfresco/extension/**</includes>
                                 </artifactItem>
                                 <!-- Solr1 Distribution -->
                                 <artifactItem>

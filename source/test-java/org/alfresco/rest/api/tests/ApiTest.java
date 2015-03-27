@@ -27,8 +27,7 @@ import org.junit.runners.Suite;
     TestPersonSites.class,
     TestSiteMembershipRequests.class,
     TestFavourites.class,
-    TestPublicApi128.class,
-    TestRemovePermissions.class
+    TestPublicApi128.class
 })
 public class ApiTest
 {

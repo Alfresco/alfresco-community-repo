@@ -1,9 +1,0 @@
-<webscript>
-   <shortname>Get RM/DM property definitions</shortname>
-   <description>Gets the collection of RM/DM property definitions.</description>
-   <url>/api/rm/classes/{classname}/properties?nsp={namespacePrefix?}&amp;n={name?}</url>
-   <url>/api/rm/properties?nsp={namespacePrefix?}&amp;n={name?}</url>
-   <format default="json">argument</format>
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

@@ -1,8 +1,0 @@
-<webscript>
-  <shortname>Node Version Info</shortname>
-  <description>Node Version Info including some RM related information</description>
-  <url>/api/rm/rm-version</url>
-  <format default="json" />
-  <authentication>user</authentication>
-  <transaction allow="readonly">required</transaction>
-</webscript>

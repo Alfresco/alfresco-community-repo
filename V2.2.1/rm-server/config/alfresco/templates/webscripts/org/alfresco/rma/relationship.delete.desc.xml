@@ -1,8 +1,0 @@
-<webscript>
-   <shortname>Delete records management relationship</shortname>
-   <description>Deletes the specified relationship.</description>
-   <url>/api/node/{store_type}/{store_id}/{id}/targetnode/{target_store_type}/{target_store_id}/{target_id}/uniqueName/{uniqueName}</url>
-   <format default="json"/>
-   <authentication>user</authentication>
-   <transaction>required</transaction>
-</webscript>

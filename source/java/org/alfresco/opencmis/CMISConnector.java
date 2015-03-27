@@ -3921,7 +3921,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             params.setApplicationName(CMIS_CHANGELOG_AUDIT_APPLICATION);
             params.setForward(false);
             auditService.auditQuery(auditQueryCallback, params, 1);
-            latestChangeLogToken = auditQueryCallback.getEntryId();
+            String entryId = auditQueryCallback.getEntryId();
+            // MNT-13529
+            // add initial change log token
+            latestChangeLogToken = entryId == null ? "0" : entryId;
         }
 
         // compile repository info

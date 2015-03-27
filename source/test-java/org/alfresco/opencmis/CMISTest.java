@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -56,6 +56,7 @@ import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -155,6 +156,7 @@ public class CMISTest
     private PermissionService permissionService;
 	private DictionaryDAO dictionaryDAO;
     private CMISDictionaryService cmisDictionaryService;
+    private AuditDAO auditDAO;
 
 	private AlfrescoCmisServiceFactory factory;
 
@@ -326,6 +328,7 @@ public class CMISTest
         this.permissionService = (PermissionService) ctx.getBean("permissionService");
     	this.dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
     	this.cmisDictionaryService = (CMISDictionaryService)ctx.getBean("OpenCMISDictionaryService1.1");
+        this.auditDAO = (AuditDAO) ctx.getBean("auditDAO");
     }
     
     /**
@@ -2188,6 +2191,57 @@ public class CMISTest
 			}
 		}, "user2", "tenant2");
 	}
+
+    /**
+     * MNT-13529: Just-installed Alfresco does not return a CMIS latestChangeLogToken
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testMNT13529() throws Exception
+    {
+        setupAudit();
+
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        try
+        {
+            // Delete the entries, it simulates just installed Alfresco for reproduce the issue
+            final Long appId = auditSubsystem.getAuditApplicationByName("CMISChangeLog").getApplicationId();
+            RetryingTransactionCallback<Void> deletedCallback = new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    auditDAO.deleteAuditEntries(appId, null, null);
+                    return null;
+                }
+            };
+            transactionService.getRetryingTransactionHelper().doInTransaction(deletedCallback);
+
+            // Retrieve initial latestChangeLogToken
+            final String initialChangeLogToken = withCmisService(new CmisServiceCallback<String>()
+            {
+                @Override
+                public String execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertNotNull(repositories);
+                    assertTrue(repositories.size() > 0);
+                    RepositoryInfo repo = repositories.iterator().next();
+
+                    return repo.getLatestChangeLogToken();
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            assertNotNull(initialChangeLogToken);
+            assertEquals("0", initialChangeLogToken);
+        }
+        finally
+        {
+            auditSubsystem.destroy();
+            AuthenticationUtil.popAuthentication();
+        }
+    }
     
     /**
      * MNT-11726: Test that {@link CMISChangeEvent} contains objectId of node in short form (without StoreRef).

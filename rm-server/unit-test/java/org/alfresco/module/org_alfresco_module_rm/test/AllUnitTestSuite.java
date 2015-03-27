@@ -41,6 +41,7 @@ import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.Record
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGetUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtilsUsageExamplesTest;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImplUnitTest;
 import org.alfresco.repo.action.parameter.DateParameterProcessorUnitTest;
 import org.junit.runner.RunWith;
@@ -97,7 +98,10 @@ import org.junit.runners.Suite.SuiteClasses;
     // suites by package
     CapabilityDeclarativeConditionSuite.class,
     PatchV22Suite.class,
-    ClassificationSuite.class
+    ClassificationSuite.class,
+
+    // Utilities
+    ExceptionUtilsUsageExamplesTest.class
 
 })
 public class AllUnitTestSuite

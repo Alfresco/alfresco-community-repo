@@ -1807,7 +1807,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(4l, paginationJSON.get("count"));
             assertEquals(6l, paginationJSON.get("totalItems"));
             assertEquals(2l, paginationJSON.get("skipCount"));
-            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            assertEquals(false, paginationJSON.get("hasMoreItems"));
             jsonEntries = (JSONArray) taskListJSONObject.get("entries");
             assertEquals(4, jsonEntries.size());
             
@@ -1837,7 +1837,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(2l, paginationJSON.get("count"));
             assertEquals(6l, paginationJSON.get("totalItems"));
             assertEquals(4l, paginationJSON.get("skipCount"));
-            assertEquals(true, paginationJSON.get("hasMoreItems"));
+            assertEquals(false, paginationJSON.get("hasMoreItems"));
             jsonEntries = (JSONArray) taskListJSONObject.get("entries");
             assertEquals(2, jsonEntries.size());
         }

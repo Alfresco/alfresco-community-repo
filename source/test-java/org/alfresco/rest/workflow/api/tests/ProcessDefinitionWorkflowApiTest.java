@@ -128,7 +128,7 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(3l, paginationJSON.get("count"));
         assertEquals(5l, paginationJSON.get("totalItems"));
         assertEquals(2l, paginationJSON.get("skipCount"));
-        assertEquals(true, paginationJSON.get("hasMoreItems"));
+        assertEquals(false, paginationJSON.get("hasMoreItems"));
         
         params = new HashMap<String, String>();
         params.put("skipCount", "0");

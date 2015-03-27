@@ -114,18 +114,37 @@
                         <goals>
                             <goal>unpack</goal>
                         </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>alfresco-repository</artifactId>
+                                    <version>${project.version}</version>
+                                    <includes>alfresco/keystore/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>extract-jlan-dll</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>alfresco-jlan-embed</artifactId>
+                                    <version>${project.version}</version>
+                                    <classifier>windll</classifier>
+                                    <includes>*.dll</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <artifactItems>
-                        <artifactItem>
-                            <groupId>${project.groupId}</groupId>
-                            <artifactId>alfresco-repository</artifactId>
-                            <version>${project.version}</version>
-                            <includes>alfresco/keystore/**</includes>
-                        </artifactItem>
-                    </artifactItems>
-                </configuration>
             </plugin>
 
             <plugin>

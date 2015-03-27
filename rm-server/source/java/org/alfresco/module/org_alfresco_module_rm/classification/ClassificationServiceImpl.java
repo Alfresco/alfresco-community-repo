@@ -36,21 +36,17 @@ import org.slf4j.LoggerFactory;
 public class ClassificationServiceImpl extends ServiceBaseImpl
                                        implements ClassificationService
 {
-	private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class); 
-
     private static final String[] LEVELS_KEY = new String[] { "org.alfresco",
                                                               "module.org_alfresco_module_rm",
                                                               "classification.levels" };
     private static final String[] REASONS_KEY = new String[] { "org.alfresco",
-														       "module.org_alfresco_module_rm",
-														       "classification.reasons" };
+                                                               "module.org_alfresco_module_rm",
+                                                               "classification.reasons" };
+    private static Logger logger = LoggerFactory.getLogger(ClassificationServiceImpl.class); 
 
-
-	static final String DEFAULT_CONFIG_DIRECTORY = "/alfresco/module/org_alfresco_module_rm/classification/";
-	static final String DEFAULT_LEVELS_FILE = DEFAULT_CONFIG_DIRECTORY
-			+ "rm-classification-levels.json";
-	static final String DEFAULT_REASONS_FILE = DEFAULT_CONFIG_DIRECTORY
-			+ "rm-classification-reasons.json";
+    static final String DEFAULT_CONFIG_DIRECTORY = "/alfresco/module/org_alfresco_module_rm/classification/";
+    static final String DEFAULT_LEVELS_FILE = DEFAULT_CONFIG_DIRECTORY + "rm-classification-levels.json";
+    static final String DEFAULT_REASONS_FILE = DEFAULT_CONFIG_DIRECTORY + "rm-classification-reasons.json";
 
     private AttributeService attributeService; // TODO What about other code (e.g. REST API) accessing the AttrService?
 
@@ -66,9 +62,16 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         this.config = new Configuration(DEFAULT_LEVELS_FILE, DEFAULT_REASONS_FILE);
     }
 
-    ClassificationServiceImpl(Configuration config)
+    /**
+     * Package protected constructor, primarily for unit testing purposes.
+     * 
+     * @param config The object from which configuration options will be read.
+     * @param logger The class logger (note - this will be set statically).
+     */
+    ClassificationServiceImpl(Configuration config, Logger logger)
     {
         this.config = config;
+        ClassificationServiceImpl.logger = logger;
     }
 
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
@@ -78,9 +81,9 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         final List<ClassificationLevel> allPersistedLevels  = getPersistedLevels();
         final List<ClassificationLevel> configurationLevels = getConfigurationLevels();
 
-		// Note! We cannot log the level names or even the size of these lists for security reasons.
-		LOGGER.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
-		LOGGER.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
+        // Note! We cannot log the level names or even the size of these lists for security reasons.
+        logger.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
+        logger.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
 
         if (configurationLevels == null || configurationLevels.isEmpty())
         {
@@ -102,8 +105,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         final List<ClassificationReason> classpathReasons = getConfigurationReasons();
 
         // Note! We cannot log the reasons or even the size of these lists for security reasons.
-        LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
-        LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
+        logger.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
+        logger.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
 
         if (isEmpty(persistedReasons))
         {
@@ -118,7 +121,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         {
             if (isEmpty(classpathReasons) || !classpathReasons.equals(persistedReasons))
             {
-                LOGGER.warn("Classification reasons configured in classpath do not match those stored in Alfresco." +
+                logger.warn("Classification reasons configured in classpath do not match those stored in Alfresco." +
                         "Alfresco will use the unchanged values stored in the database.");
                 // RM-2073 says that we should log a warning and proceed normally.
             }
@@ -191,4 +194,5 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     {
         return configuredReasons == null ? Collections.<ClassificationReason>emptyList() :
                 Collections.unmodifiableList(configuredReasons);
-    }}
+    }
+}

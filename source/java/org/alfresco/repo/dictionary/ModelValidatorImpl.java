@@ -207,12 +207,44 @@ public class ModelValidatorImpl implements ModelValidator
         for (TypeDefinition type : typeDefs)
         {
             validateClass(tenantDomain, type);
+
+            // check if the type of the model being deleted/deactivated is the parent of another model's type
+            Collection<QName> subTypes = dictionaryDAO.getSubTypes(type.getName(), false);
+            if (subTypes.size() > 0)
+            {
+                QName ModelBeingValidated = type.getModel().getName();
+                for(QName typeName : subTypes)
+                {
+                    ModelDefinition dependantModel = dictionaryDAO.getType(typeName).getModel();
+                    // ignore type dependency check within the model itself
+                    if (!ModelBeingValidated.equals(dependantModel.getName()))
+                    {
+                        throw new AlfrescoRuntimeException("Failed to validate model delete/deactivate. Model's type '" + type.getName().toPrefixString() + "' is the parent of type '" + typeName.toPrefixString() + "' within model '" + dependantModel.getName().getLocalName() + "'.");
+                    }
+                }
+            }
         }
-        
+
         // check for aspect usages
         for (AspectDefinition aspect : aspectDefs)
         {
             validateClass(tenantDomain, aspect);
+
+            // check if the aspect of the model being deleted/deactivated is the parent of another model's aspect
+            Collection<QName> subAspects = dictionaryDAO.getSubAspects(aspect.getName(), false);
+            if (subAspects.size() > 0)
+            {
+                QName ModelBeingValidated = aspect.getModel().getName();
+                for(QName aspectName : subAspects)
+                {
+                    ModelDefinition dependantModel = dictionaryDAO.getAspect(aspectName).getModel();
+                    // ignore aspect dependency check within the model itself
+                    if (!ModelBeingValidated.equals(dependantModel.getName()))
+                    {
+                        throw new AlfrescoRuntimeException("Failed to validate model delete/deactivate. Model's aspect '" + aspect.getName().toPrefixString() + "' is the parent of aspect '" + aspectName.toPrefixString() + "' within model '" + dependantModel.getName().getLocalName() + "'.");
+                    }
+                }
+            }
         }
     }
     

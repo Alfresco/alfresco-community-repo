@@ -103,8 +103,9 @@ public class ClassificationServiceImplUnitTest
         reset(mockClassificationServiceDAO, mockedAttributeService, mockAppender);
         mockedAuthenticationUtil = MockAuthenticationUtilHelper.create();
 
-        classificationServiceImpl = new ClassificationServiceImpl(mockClassificationServiceDAO);
+        classificationServiceImpl = new ClassificationServiceImpl();
         classificationServiceImpl.setAttributeService(mockedAttributeService);
+        classificationServiceImpl.setClassificationServiceDAO(mockClassificationServiceDAO);
         classificationServiceImpl.setAuthenticationUtil(mockedAuthenticationUtil);
     }
 

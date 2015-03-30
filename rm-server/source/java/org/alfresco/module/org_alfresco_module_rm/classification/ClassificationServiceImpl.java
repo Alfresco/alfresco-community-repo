@@ -44,35 +44,18 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
                                                                "classification.reasons" };
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class); 
 
-    static final String DEFAULT_CONFIG_DIRECTORY = "/alfresco/module/org_alfresco_module_rm/classification/";
-    static final String DEFAULT_LEVELS_FILE = DEFAULT_CONFIG_DIRECTORY + "rm-classification-levels.json";
-    static final String DEFAULT_REASONS_FILE = DEFAULT_CONFIG_DIRECTORY + "rm-classification-reasons.json";
-
     private AttributeService attributeService; // TODO What about other code (e.g. REST API) accessing the AttrService?
+    private ClassificationServiceDAO classificationServiceDao;
 
     /** The classification levels currently configured in this server. */
     private List<ClassificationLevel> configuredLevels;
     /** The classification reasons currently configured in this server. */
     private List<ClassificationReason> configuredReasons;
 
-    private final ClassificationServiceDAO classificationServiceDao;
-
-    public ClassificationServiceImpl()
-    {
-        this.classificationServiceDao = new ClassificationServiceDAO(DEFAULT_LEVELS_FILE, DEFAULT_REASONS_FILE);
-    }
-
-    /**
-     * Package protected constructor, primarily for unit testing purposes.
-     * 
-     * @param classificationServiceDao The object from which configuration options will be read.
-     */
-    ClassificationServiceImpl(ClassificationServiceDAO classificationServiceDao)
-    {
-        this.classificationServiceDao = classificationServiceDao;
-    }
-
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
+
+    /** Set the object from which configuration options will be read. */
+    public void setClassificationServiceDAO(ClassificationServiceDAO classificationServiceDao) { this.classificationServiceDao = classificationServiceDao; }
 
     void initConfiguredClassificationLevels()
     {

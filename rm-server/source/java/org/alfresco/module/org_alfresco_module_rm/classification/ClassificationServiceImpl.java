@@ -55,22 +55,22 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     /** The classification reasons currently configured in this server. */
     private List<ClassificationReason> configuredReasons;
 
-    private final Configuration config;
+    private final ClassificationServiceDAO classificationServiceDao;
 
     public ClassificationServiceImpl()
     {
-        this.config = new Configuration(DEFAULT_LEVELS_FILE, DEFAULT_REASONS_FILE);
+        this.classificationServiceDao = new ClassificationServiceDAO(DEFAULT_LEVELS_FILE, DEFAULT_REASONS_FILE);
     }
 
     /**
      * Package protected constructor, primarily for unit testing purposes.
      * 
-     * @param config The object from which configuration options will be read.
+     * @param classificationServiceDao The object from which configuration options will be read.
      * @param logger The class logger (note - this will be set statically).
      */
-    ClassificationServiceImpl(Configuration config, Logger logger)
+    ClassificationServiceImpl(ClassificationServiceDAO classificationServiceDao, Logger logger)
     {
-        this.config = config;
+        this.classificationServiceDao = classificationServiceDao;
         ClassificationServiceImpl.logger = logger;
     }
 
@@ -89,7 +89,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         {
             throw new MissingConfiguration("Classification level configuration is missing.");
         }
-        else if ( !configurationLevels.equals(allPersistedLevels))
+        else if (!configurationLevels.equals(allPersistedLevels))
         {
             attributeService.setAttribute((Serializable) configurationLevels, LEVELS_KEY);
             this.configuredLevels = configurationLevels;
@@ -100,7 +100,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         }
     }
     
-    void initConfiguredClassificationReasons() {
+    void initConfiguredClassificationReasons()
+    {
         final List<ClassificationReason> persistedReasons = getPersistedReasons();
         final List<ClassificationReason> classpathReasons = getConfigurationReasons();
 
@@ -121,8 +122,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         {
             if (isEmpty(classpathReasons) || !classpathReasons.equals(persistedReasons))
             {
-                logger.warn("Classification reasons configured in classpath do not match those stored in Alfresco." +
-                        "Alfresco will use the unchanged values stored in the database.");
+                logger.warn("Classification reasons configured in classpath do not match those stored in Alfresco."
+                            + "Alfresco will use the unchanged values stored in the database.");
                 // RM-2073 says that we should log a warning and proceed normally.
             }
             this.configuredReasons = persistedReasons;
@@ -143,7 +144,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
      * Gets the list (in descending order) of classification levels - as persisted in the system.
      * @return the list of classification levels if they have been persisted, else {@code null}.
      */
-    List<ClassificationLevel> getPersistedLevels() {
+    List<ClassificationLevel> getPersistedLevels()
+    {
         return authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<ClassificationLevel>>()
         {
             @Override
@@ -158,14 +160,15 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     /** Gets the list (in descending order) of classification levels - as defined in the system configuration. */
     List<ClassificationLevel> getConfigurationLevels()
     {
-        return config.getConfiguredLevels();
+        return classificationServiceDao.getConfiguredLevels();
     }
     
     /**
      * Gets the list of classification reasons as persisted in the system.
      * @return the list of classification reasons if they have been persisted, else {@code null}.
      */
-    List<ClassificationReason> getPersistedReasons() {
+    List<ClassificationReason> getPersistedReasons()
+    {
         return authenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<List<ClassificationReason>>()
         {
             @Override
@@ -180,7 +183,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     /** Gets the list of classification reasons - as defined and ordered in the system configuration. */
     List<ClassificationReason> getConfigurationReasons()
     {
-        return config.getConfiguredReasons();
+        return classificationServiceDao.getConfiguredReasons();
     }
 
     @Override

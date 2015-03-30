@@ -29,7 +29,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses(
 {
     ClassificationServiceImplUnitTest.class,
-    ConfigurationUnitTest.class
+    ClassificationServiceDAOUnitTest.class
 })
 public class ClassificationSuite
 {

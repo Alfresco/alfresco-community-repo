@@ -87,25 +87,25 @@ public class ClassificationServiceImplUnitTest
 
     private ClassificationServiceImpl classificationService;
 
-    private AttributeService   mockedAttributeService   = mock(AttributeService.class);
-    private AuthenticationUtil mockedAuthenticationUtil;
-    private Configuration      mockConfig               = mock(Configuration.class);
+    private AttributeService         mockedAttributeService       = mock(AttributeService.class);
+    private AuthenticationUtil       mockedAuthenticationUtil;
+    private ClassificationServiceDAO mockClassificationServiceDAO = mock(ClassificationServiceDAO.class);
     /** Using a mock logger in the class so that we can verify some of the logging requirements. */
-    private Logger             mockLogger               = mock(Logger.class);
+    private Logger                   mockLogger                   = mock(Logger.class);
 
     @Before public void setUp()
     {
-        reset(mockConfig, mockedAttributeService, mockLogger);
+        reset(mockClassificationServiceDAO, mockedAttributeService, mockLogger);
         mockedAuthenticationUtil = MockAuthenticationUtilHelper.create();
 
-        classificationService = new ClassificationServiceImpl(mockConfig, mockLogger);
+        classificationService = new ClassificationServiceImpl(mockClassificationServiceDAO, mockLogger);
         classificationService.setAttributeService(mockedAttributeService);
         classificationService.setAuthenticationUtil(mockedAuthenticationUtil);
     }
 
     @Test public void defaultLevelsConfigurationVanillaSystem()
     {
-        when(mockConfig.getConfiguredLevels()).thenReturn(DEFAULT_CLASSIFICATION_LEVELS);
+        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(DEFAULT_CLASSIFICATION_LEVELS);
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         classificationService.initConfiguredClassificationLevels();
@@ -116,7 +116,7 @@ public class ClassificationServiceImplUnitTest
 
     @Test public void alternativeLevelsConfigurationPreviouslyStartedSystem()
     {
-        when(mockConfig.getConfiguredLevels()).thenReturn(ALT_CLASSIFICATION_LEVELS);
+        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(ALT_CLASSIFICATION_LEVELS);
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString()))
                                    .thenReturn((Serializable) DEFAULT_CLASSIFICATION_LEVELS);
 
@@ -140,7 +140,7 @@ public class ClassificationServiceImplUnitTest
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         // We'll use a small set of placeholder classification reasons.
-        when(mockConfig.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
         classificationService.initConfiguredClassificationReasons();
 
@@ -152,7 +152,7 @@ public class ClassificationServiceImplUnitTest
     {
         // The classification reasons stored are the same values that are found on the classpath.
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockConfig.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
         classificationService.initConfiguredClassificationReasons();
 
@@ -169,23 +169,23 @@ public class ClassificationServiceImplUnitTest
         // The classification reasons stored are different from those found on the classpath.
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(
                     (Serializable) PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockConfig.getConfiguredReasons()).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
 
         classificationService.initConfiguredClassificationReasons();
 
         verify(mockLogger).warn("Classification reasons configured in classpath do not match those stored in Alfresco."
                     + "Alfresco will use the unchanged values stored in the database.");
-        verify(mockedAttributeService, never()).setAttribute(any(Serializable.class), anyString(), anyString(),
-                    anyString());
+        verify(mockedAttributeService, never()).setAttribute(any(Serializable.class),
+                anyString(), anyString(), anyString());
     }
     
-    @Test(expected=MissingConfiguration.class)
+    @Test(expected = MissingConfiguration.class)
     public void noReasonsFoundCausesException()
     {
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(
-                    (Serializable) null);
-        when(mockConfig.getConfiguredReasons()).thenReturn(null);
-        
+        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString()))
+                    .thenReturn((Serializable) null);
+        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
+
         classificationService.initConfiguredClassificationReasons();
     }
 }

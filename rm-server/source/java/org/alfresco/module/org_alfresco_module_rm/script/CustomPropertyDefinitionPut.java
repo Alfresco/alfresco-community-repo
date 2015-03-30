@@ -134,7 +134,11 @@ public class CustomPropertyDefinitionPut extends BaseCustomPropertyWebScript
         String propId = (String)params.get(PROP_ID);
         ParameterCheck.mandatoryString("propId", propId);
 
-        QName propQName = rmAdminService.getQNameForClientId(URLEncoder.encode(propId));
+        QName propQName = rmAdminService.getQNameForClientId(propId);
+        if (propQName == null)
+        {
+            propQName = rmAdminService.getQNameForClientId(URLEncoder.encode(propId));
+        }        	
         if (propQName == null)
         {
             throw new WebScriptException(Status.STATUS_NOT_FOUND,

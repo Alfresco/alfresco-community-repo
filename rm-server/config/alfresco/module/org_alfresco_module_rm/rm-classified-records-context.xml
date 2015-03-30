@@ -3,12 +3,18 @@
 
 <beans>
 
+    <bean id="classificationServiceDAO">
+        <property name="levelConfigLocation" value="/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json" />
+        <property name="reasonConfigLocation" value="/alfresco/module/org_alfresco_module_rm/classification/rm-classification-reasons.json" />
+    </bean>
+
    <!--  Classification Service  -->
 
    <bean id="classificationService"
          class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl"
          parent="baseService">
       <property name="attributeService" ref="AttributeService"/>
+      <property name="classificationServiceDAO" ref="classificationServiceDAO"/>
    </bean>
 
    <bean id="ClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">

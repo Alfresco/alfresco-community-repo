@@ -40,14 +40,14 @@ import org.json.JSONTokener;
  */
 class ClassificationServiceDAO
 {
-    public final String levelConfigLocation;
-    public final String reasonConfigLocation;
+    private String levelConfigLocation;
+    private String reasonConfigLocation;
 
-    public ClassificationServiceDAO(String levelConfigLocation, String reasonConfigLocation)
-    {
-        this.levelConfigLocation = levelConfigLocation;
-        this.reasonConfigLocation = reasonConfigLocation;
-    }
+    /** Set the location of the level configuration file relative to the classpath. */
+    public void setLevelConfigLocation(String levelConfigLocation) { this.levelConfigLocation = levelConfigLocation; }
+
+    /** Set the location of the reasons configuration file relative to the classpath. */
+    public void setReasonConfigLocation(String reasonConfigLocation) { this.reasonConfigLocation = reasonConfigLocation; }
 
     /**
      * Gets the list (in descending order) of classification levels - as defined in the classpath.

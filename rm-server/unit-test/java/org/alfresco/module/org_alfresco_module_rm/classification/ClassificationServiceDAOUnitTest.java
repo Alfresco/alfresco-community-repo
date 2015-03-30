@@ -43,46 +43,47 @@ public class ClassificationServiceDAOUnitTest
 
     @Test public void getConfiguredLevels_readingDefaultConfigurationShouldWork()
     {
-        ClassificationServiceDAO c = new ClassificationServiceDAO(ClassificationServiceImpl.DEFAULT_LEVELS_FILE, ClassificationServiceImpl.DEFAULT_REASONS_FILE);
+        ClassificationServiceDAO c = new ClassificationServiceDAO();
+        c.setLevelConfigLocation("/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json");
         List<ClassificationLevel> config = c.getConfiguredLevels();
         assertEquals(DEFAULT_CLASSIFICATION_LEVELS, config);
     }
 
     @Test public void getConfiguredLevels_readingMissingConfigurationShouldProduceEmptyConfig() throws Exception
     {
-        ClassificationServiceDAO c = new ClassificationServiceDAO("/no/such/resource", "/no/such/resource");
+        ClassificationServiceDAO c = new ClassificationServiceDAO();
+        c.setLevelConfigLocation("/no/such/resource");
         assertTrue(c.getConfiguredLevels().isEmpty());
     }
 
     @Test (expected = MalformedConfiguration.class)
     public void getConfiguredLevels_readingMalformedConfigurationShouldFail()
     {
-        ClassificationServiceDAO c = new ClassificationServiceDAO(
-                    "/alfresco/classification/rm-classification-levels-malformed.json",
-                    "/alfresco/classification/rm-classification-levels-malformed.json");
+        ClassificationServiceDAO c = new ClassificationServiceDAO();
+        c.setLevelConfigLocation("/alfresco/classification/rm-classification-levels-malformed.json");
         c.getConfiguredLevels();
     }
 
     @Test public void getConfiguredReasons_readingDefaultConfigurationShouldWork()
     {
-        ClassificationServiceDAO c = new ClassificationServiceDAO(ClassificationServiceImpl.DEFAULT_LEVELS_FILE, 
-        		ClassificationServiceImpl.DEFAULT_REASONS_FILE);
+        ClassificationServiceDAO c = new ClassificationServiceDAO();
+        c.setReasonConfigLocation("/alfresco/module/org_alfresco_module_rm/classification/rm-classification-reasons.json");
         List<ClassificationReason> config = c.getConfiguredReasons();
         assertFalse(config.isEmpty());
     }
 
     @Test public void getConfiguredReasons_readingMissingConfigurationShouldProduceEmptyConfig() throws Exception
     {
-        ClassificationServiceDAO c = new ClassificationServiceDAO("/no/such/resource", "/no/such/resource");
+        ClassificationServiceDAO c = new ClassificationServiceDAO();
+        c.setReasonConfigLocation("/no/such/resource");
         assertTrue(c.getConfiguredReasons().isEmpty());
     }
     
     @Test (expected = MalformedConfiguration.class)
     public void getConfiguredReasons_readingMalformedConfigurationShouldFail()
     {
-        ClassificationServiceDAO c = new ClassificationServiceDAO(
-                    "/alfresco/classification/rm-classification-levels-malformed.json",
-                    "/alfresco/classification/rm-classification-levels-malformed.json");
+        ClassificationServiceDAO c = new ClassificationServiceDAO();
+        c.setReasonConfigLocation("/alfresco/classification/rm-classification-levels-malformed.json");
         c.getConfiguredReasons();
     }
 }

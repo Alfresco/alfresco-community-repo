@@ -3,7 +3,7 @@
 
 <beans>
 
-    <bean id="classificationServiceDAO">
+    <bean id="classificationServiceDAO" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceDAO">
         <property name="levelConfigLocation" value="/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json" />
         <property name="reasonConfigLocation" value="/alfresco/module/org_alfresco_module_rm/classification/rm-classification-reasons.json" />
     </bean>

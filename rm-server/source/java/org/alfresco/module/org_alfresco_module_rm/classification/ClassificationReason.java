@@ -16,11 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import org.springframework.extensions.surf.util.I18NUtil;
-
 import java.io.Serializable;
+
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * This class is a POJO data type for a classification reason.
@@ -28,66 +29,64 @@ import java.io.Serializable;
  * @author Tom Page
  * @since 3.0
  */
-public final class ClassificationReason implements Serializable {
-	private static final long serialVersionUID = 4876939094239038838L;
-	private final String id;
-	private final String displayLabelKey;
+public final class ClassificationReason implements Serializable
+{
+    private static final long serialVersionUID = 4876939094239038838L;
+    private final String id;
+    private final String displayLabelKey;
 
-	/**
-	 * Constructor to create a classification reason.
-	 * 
-	 * @param id
-	 *            The unique identifier that represents this classification
-	 *            reason.
-	 * @param displayLabelKey
-	 *            The I18N key for the display label for the reason.
-	 */
-	public ClassificationReason(final String id, final String displayLabelKey) {
-		if (id == null || id.trim().equals("")) {
-			throw new IllegalArgumentException("Illegal id: '" + id + "'");
-		}
-		this.id = id;
-		this.displayLabelKey = displayLabelKey;
-	}
+    /**
+     * Constructor to create a classification reason.
+     * 
+     * @param id The unique identifier that represents this classification reason.
+     * @param displayLabelKey The I18N key for the display label for the reason.
+     */
+    public ClassificationReason(final String id, final String displayLabelKey)
+    {
+        if (id == null || id.trim().equals("")) { throw new IllegalArgumentException("Illegal id: '" + id + "'"); }
+        this.id = id;
+        this.displayLabelKey = displayLabelKey;
+    }
 
-	/**
-	 * Returns the unique identifier that represents this classification reason.
-	 */
-	public String getId() {
-		return this.id;
-	}
+    /**
+     * Returns the unique identifier that represents this classification reason.
+     */
+    public String getId()
+    {
+        return this.id;
+    }
 
-	/**
-	 * Returns the localised (current locale) display label for this
-	 * classification reason.
-	 */
-	public String getDisplayLabel() {
-		return I18NUtil.getMessage(displayLabelKey);
-	}
+    /**
+     * Returns the localised (current locale) display label for this classification reason.
+     */
+    public String getDisplayLabel()
+    {
+        return I18NUtil.getMessage(displayLabelKey);
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder msg = new StringBuilder();
-		msg.append(ClassificationReason.class.getSimpleName()).append(":")
-				.append(id);
+    @Override
+    public String toString()
+    {
+        StringBuilder msg = new StringBuilder();
+        msg.append(ClassificationReason.class.getSimpleName()).append(":").append(id);
 
-		return msg.toString();
-	}
+        return msg.toString();
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o)
-			return true;
-		if (o == null || getClass() != o.getClass())
-			return false;
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-		ClassificationReason that = (ClassificationReason) o;
+        ClassificationReason that = (ClassificationReason) o;
 
-		return this.id.equals(that.id);
-	}
+        return this.id.equals(that.id);
+    }
 
-	@Override
-	public int hashCode() {
-		return id.hashCode();
-	}
+    @Override
+    public int hashCode()
+    {
+        return id.hashCode();
+    }
 }

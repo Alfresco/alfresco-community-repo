@@ -38,12 +38,12 @@ import org.json.JSONTokener;
  * @author Neil Mc Erlean
  * @since 3.0
  */
-class Configuration
+class ClassificationServiceDAO
 {
     public final String levelConfigLocation;
     public final String reasonConfigLocation;
 
-    public Configuration(String levelConfigLocation, String reasonConfigLocation)
+    public ClassificationServiceDAO(String levelConfigLocation, String reasonConfigLocation)
     {
         this.levelConfigLocation = levelConfigLocation;
         this.reasonConfigLocation = reasonConfigLocation;
@@ -88,7 +88,8 @@ class Configuration
      *
      * @return the configured classification reasons in descending order, or an empty list if there are none.
      */
-	public List<ClassificationReason> getConfiguredReasons() {
+    public List<ClassificationReason> getConfiguredReasons()
+    {
         List<ClassificationReason> result;
         try (final InputStream in = this.getClass().getResourceAsStream(reasonConfigLocation))
         {
@@ -114,5 +115,5 @@ class Configuration
             throw new MalformedConfiguration("Could not read classification reason configuration", e);
         }
         return result;
-	}
+    }
 }

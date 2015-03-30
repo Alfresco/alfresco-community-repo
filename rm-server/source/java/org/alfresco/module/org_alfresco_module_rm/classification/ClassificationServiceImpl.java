@@ -42,7 +42,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     private static final String[] REASONS_KEY = new String[] { "org.alfresco",
                                                                "module.org_alfresco_module_rm",
                                                                "classification.reasons" };
-    private static Logger logger = LoggerFactory.getLogger(ClassificationServiceImpl.class); 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class); 
 
     static final String DEFAULT_CONFIG_DIRECTORY = "/alfresco/module/org_alfresco_module_rm/classification/";
     static final String DEFAULT_LEVELS_FILE = DEFAULT_CONFIG_DIRECTORY + "rm-classification-levels.json";
@@ -66,12 +66,10 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
      * Package protected constructor, primarily for unit testing purposes.
      * 
      * @param classificationServiceDao The object from which configuration options will be read.
-     * @param logger The class logger (note - this will be set statically).
      */
-    ClassificationServiceImpl(ClassificationServiceDAO classificationServiceDao, Logger logger)
+    ClassificationServiceImpl(ClassificationServiceDAO classificationServiceDao)
     {
         this.classificationServiceDao = classificationServiceDao;
-        ClassificationServiceImpl.logger = logger;
     }
 
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
@@ -82,8 +80,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         final List<ClassificationLevel> configurationLevels = getConfigurationLevels();
 
         // Note! We cannot log the level names or even the size of these lists for security reasons.
-        logger.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
-        logger.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
+        LOGGER.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
+        LOGGER.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
 
         if (configurationLevels == null || configurationLevels.isEmpty())
         {
@@ -106,8 +104,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         final List<ClassificationReason> classpathReasons = getConfigurationReasons();
 
         // Note! We cannot log the reasons or even the size of these lists for security reasons.
-        logger.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
-        logger.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
+        LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
+        LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
 
         if (isEmpty(persistedReasons))
         {
@@ -122,7 +120,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         {
             if (isEmpty(classpathReasons) || !classpathReasons.equals(persistedReasons))
             {
-                logger.warn("Classification reasons configured in classpath do not match those stored in Alfresco."
+                LOGGER.warn("Classification reasons configured in classpath do not match those stored in Alfresco. "
                             + "Alfresco will use the unchanged values stored in the database.");
                 // RM-2073 says that we should log a warning and proceed normally.
             }

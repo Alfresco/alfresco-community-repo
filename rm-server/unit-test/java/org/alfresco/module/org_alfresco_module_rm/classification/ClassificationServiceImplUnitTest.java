@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -31,14 +32,18 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.apache.log4j.Appender;
+import org.apache.log4j.Level;
+import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
+import org.mockito.ArgumentCaptor;
 
 /**
  * Unit tests for {@link ClassificationServiceImpl}.
@@ -85,22 +90,22 @@ public class ClassificationServiceImplUnitTest
         return levels;
     }
 
-    private ClassificationServiceImpl classificationService;
+    private ClassificationServiceImpl classificationServiceImpl;
 
     private AttributeService         mockedAttributeService       = mock(AttributeService.class);
     private AuthenticationUtil       mockedAuthenticationUtil;
     private ClassificationServiceDAO mockClassificationServiceDAO = mock(ClassificationServiceDAO.class);
-    /** Using a mock logger in the class so that we can verify some of the logging requirements. */
-    private Logger                   mockLogger                   = mock(Logger.class);
+    /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
+    private Appender                 mockAppender                 = mock(Appender.class);
 
     @Before public void setUp()
     {
-        reset(mockClassificationServiceDAO, mockedAttributeService, mockLogger);
+        reset(mockClassificationServiceDAO, mockedAttributeService, mockAppender);
         mockedAuthenticationUtil = MockAuthenticationUtilHelper.create();
 
-        classificationService = new ClassificationServiceImpl(mockClassificationServiceDAO, mockLogger);
-        classificationService.setAttributeService(mockedAttributeService);
-        classificationService.setAuthenticationUtil(mockedAuthenticationUtil);
+        classificationServiceImpl = new ClassificationServiceImpl(mockClassificationServiceDAO);
+        classificationServiceImpl.setAttributeService(mockedAttributeService);
+        classificationServiceImpl.setAuthenticationUtil(mockedAuthenticationUtil);
     }
 
     @Test public void defaultLevelsConfigurationVanillaSystem()
@@ -108,7 +113,7 @@ public class ClassificationServiceImplUnitTest
         when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(DEFAULT_CLASSIFICATION_LEVELS);
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
-        classificationService.initConfiguredClassificationLevels();
+        classificationServiceImpl.initConfiguredClassificationLevels();
 
         verify(mockedAttributeService).setAttribute(eq((Serializable) DEFAULT_CLASSIFICATION_LEVELS),
                 anyString(), anyString(), anyString());
@@ -120,7 +125,7 @@ public class ClassificationServiceImplUnitTest
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString()))
                                    .thenReturn((Serializable) DEFAULT_CLASSIFICATION_LEVELS);
 
-        classificationService.initConfiguredClassificationLevels();
+        classificationServiceImpl.initConfiguredClassificationLevels();
 
         verify(mockedAttributeService).setAttribute(eq((Serializable) ALT_CLASSIFICATION_LEVELS),
                 anyString(), anyString(), anyString());
@@ -131,7 +136,7 @@ public class ClassificationServiceImplUnitTest
     {
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
-        classificationService.initConfiguredClassificationLevels();
+        classificationServiceImpl.initConfiguredClassificationLevels();
     }
 
     @Test public void pristineSystemShouldBootstrapReasonsConfiguration()
@@ -142,7 +147,7 @@ public class ClassificationServiceImplUnitTest
         // We'll use a small set of placeholder classification reasons.
         when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
-        classificationService.initConfiguredClassificationReasons();
+        classificationServiceImpl.initConfiguredClassificationReasons();
 
         verify(mockedAttributeService).setAttribute(eq((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS),
                 anyString(), anyString(), anyString());
@@ -154,7 +159,7 @@ public class ClassificationServiceImplUnitTest
         when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS);
         when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
-        classificationService.initConfiguredClassificationReasons();
+        classificationServiceImpl.initConfiguredClassificationReasons();
 
         verify(mockedAttributeService, never()).setAttribute(any(Serializable.class),
                 anyString(), anyString(), anyString());
@@ -163,6 +168,10 @@ public class ClassificationServiceImplUnitTest
     /**
      * Check that if the reasons supplied on the classpath differ from those already persisted then a warning is logged
      * and no change is made to the persisted reasons.
+     * <p>
+     * This test uses the underlying log4j implementation to insert a mock Appender, and tests this for the warning
+     * message. If the underlying logging framework is changed then this unit test will fail, and it may not be
+     * possible to/worth fixing.
      */
     @Test public void previouslyStartedSystemShouldWarnIfConfiguredReasonsHaveChanged()
     {
@@ -171,12 +180,29 @@ public class ClassificationServiceImplUnitTest
                     (Serializable) PLACEHOLDER_CLASSIFICATION_REASONS);
         when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
 
-        classificationService.initConfiguredClassificationReasons();
+        // Put the mock Appender into the log4j logger and allow warning messages to be received.
+        org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceImpl.class);
+        log4jLogger.addAppender(mockAppender);
+        Level normalLevel = log4jLogger.getLevel();
+        log4jLogger.setLevel(Level.WARN);
 
-        verify(mockLogger).warn("Classification reasons configured in classpath do not match those stored in Alfresco."
-                    + "Alfresco will use the unchanged values stored in the database.");
+        // Call the method under test.
+        classificationServiceImpl.initConfiguredClassificationReasons();
+
+        // Reset the logging level for other tests.
+        log4jLogger.setLevel(normalLevel);
+
+        // Check the persisted values weren't changed.
         verify(mockedAttributeService, never()).setAttribute(any(Serializable.class),
                 anyString(), anyString(), anyString());
+
+        // Check that the warning message was logged.
+        ArgumentCaptor<LoggingEvent> argumentCaptor = ArgumentCaptor.forClass(LoggingEvent.class);
+        verify(mockAppender).doAppend(argumentCaptor.capture());
+        List<LoggingEvent> loggingEvents = argumentCaptor.getAllValues();
+        Stream<String> messages = loggingEvents.stream().map(event -> event.getRenderedMessage());
+        String expectedMessage = "Classification reasons configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
+        assertTrue("Warning message not found in log.", messages.anyMatch(message -> message == expectedMessage));
     }
     
     @Test(expected = MissingConfiguration.class)
@@ -186,6 +212,6 @@ public class ClassificationServiceImplUnitTest
                     .thenReturn((Serializable) null);
         when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
 
-        classificationService.initConfiguredClassificationReasons();
+        classificationServiceImpl.initConfiguredClassificationReasons();
     }
 }

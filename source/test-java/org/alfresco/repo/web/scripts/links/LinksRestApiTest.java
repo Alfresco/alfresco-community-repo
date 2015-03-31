@@ -456,7 +456,7 @@ public class LinksRestApiTest extends BaseWebScriptTest
        
        // Check the created date
        assertEquals(
-             ISO8601DateFormat.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED)),
+             org.springframework.extensions.surf.util.ISO8601DateFormat.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED)),
              link.getJSONObject("createdOnDate").getString("iso8601"));
        
        // Edit

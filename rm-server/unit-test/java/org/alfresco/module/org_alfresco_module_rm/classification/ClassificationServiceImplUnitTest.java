@@ -23,9 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +42,9 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
  * Unit tests for {@link ClassificationServiceImpl}.
@@ -90,23 +91,18 @@ public class ClassificationServiceImplUnitTest
         return levels;
     }
 
-    private ClassificationServiceImpl classificationServiceImpl;
+    @InjectMocks private ClassificationServiceImpl classificationServiceImpl;
 
-    private AttributeService         mockedAttributeService       = mock(AttributeService.class);
-    private AuthenticationUtil       mockedAuthenticationUtil;
-    private ClassificationServiceDAO mockClassificationServiceDAO = mock(ClassificationServiceDAO.class);
+    @Mock private AttributeService         mockedAttributeService;
+    @Mock private AuthenticationUtil       mockedAuthenticationUtil;
+    @Mock private ClassificationServiceDAO mockClassificationServiceDAO;
     /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
-    private Appender                 mockAppender                 = mock(Appender.class);
+    @Mock private Appender                 mockAppender;
 
     @Before public void setUp()
     {
-        reset(mockClassificationServiceDAO, mockedAttributeService, mockAppender);
-        mockedAuthenticationUtil = MockAuthenticationUtilHelper.create();
-
-        classificationServiceImpl = new ClassificationServiceImpl();
-        classificationServiceImpl.setAttributeService(mockedAttributeService);
-        classificationServiceImpl.setClassificationServiceDAO(mockClassificationServiceDAO);
-        classificationServiceImpl.setAuthenticationUtil(mockedAuthenticationUtil);
+        MockitoAnnotations.initMocks(this);
+        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil);
     }
 
     @Test public void defaultLevelsConfigurationVanillaSystem()

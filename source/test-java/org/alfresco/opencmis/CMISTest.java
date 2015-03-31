@@ -157,12 +157,10 @@ public class CMISTest
 	private DictionaryDAO dictionaryDAO;
     private CMISDictionaryService cmisDictionaryService;
     private AuditDAO auditDAO;
+    private ActionService actionService;
+    private RuleService ruleService;
 
-	private AlfrescoCmisServiceFactory factory;
-
-	private ActionService actionService;
-	private RuleService ruleService;
-    private VersionService versionService;
+    private AlfrescoCmisServiceFactory factory;
 	
     private CMISConnector cmisConnector;
     
@@ -3066,6 +3064,8 @@ public class CMISTest
     @Test
     public void testLastVersionOfVersionSeries()
     {
+        CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_0);
+        
         AuthenticationUtil.pushAuthentication();
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         

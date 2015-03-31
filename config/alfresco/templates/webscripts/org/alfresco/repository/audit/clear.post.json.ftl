@@ -1,3 +1,3 @@
 {
-   "cleared" : ${cleared}
+   "cleared" : ${cleared?c}
 }

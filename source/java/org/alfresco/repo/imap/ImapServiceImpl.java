@@ -69,6 +69,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteDoesNotExistException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -1435,8 +1436,18 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
                 if (isImapFavourite != null && isImapFavourite)
                 {
                     String siteName = key.substring(AlfrescoImapConst.PREF_IMAP_FAVOURITE_SITES.length() + 1); // count the dot
-                    boolean siteExists = serviceRegistry.getSiteService().getSite(siteName) != null;
-                    if (siteExists && serviceRegistry.getSiteService().isMember(siteName, userName))
+                    boolean isMember = false;
+                    try
+                    {
+                        isMember = serviceRegistry.getSiteService().isMember(siteName, userName);
+                    }
+                    catch (SiteDoesNotExistException sdne)
+                    {
+                        // Ignore, see MNT-13579
+                        // The site might be archived. In this case it will still be in user's preferences.
+                    }
+                    
+                    if (isMember)
                     {
                         SiteInfo siteInfo = serviceRegistry.getSiteService().getSite(siteName);
                         if (siteInfo != null)

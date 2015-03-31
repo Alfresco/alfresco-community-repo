@@ -54,6 +54,23 @@ public class MockAuthenticationUtilHelper
     }
 
     /**
+     * Create a Mockito mock <code>AuthenticationUtil</code> that executes all methods assuming the user has permission.
+     * 
+     * @param adminUserName The name of the default admin user.
+     * @param fullyAuthenticatedUser The name of the user that last authenticated.
+     * @param systemUserName The name of the system user.
+     * @return The new mock.
+     */
+    public static AuthenticationUtil create(String adminUserName, String fullyAuthenticatedUser, String systemUserName)
+    {
+        AuthenticationUtil mockAuthenticationUtil = mock(AuthenticationUtil.class);
+
+        setup(mockAuthenticationUtil, adminUserName, fullyAuthenticatedUser, systemUserName);
+
+        return mockAuthenticationUtil;
+    }
+
+    /**
      * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
      * permissions. If the mock is asked for details about the user then it assumes the user is "admin".
      * <p>
@@ -63,6 +80,24 @@ public class MockAuthenticationUtilHelper
      */
     @SuppressWarnings("unchecked")
     protected static void setup(AuthenticationUtil mockAuthenticationUtil)
+    {
+        setup(mockAuthenticationUtil, "admin", "admin", "admin");
+    }
+
+    /**
+     * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
+     * permissions.
+     * <p>
+     * TODO: Change this method to private and this class to be a factory.
+     * 
+     * @param mockAuthenticationUtil The mock to initialise.
+     * @param adminUserName The name of the default admin user.
+     * @param fullyAuthenticatedUser The name of the user that last authenticated.
+     * @param systemUserName The name of the system user.
+     */
+    @SuppressWarnings("unchecked")
+    protected static void setup(AuthenticationUtil mockAuthenticationUtil, String adminUserName,
+                String fullyAuthenticatedUser, String systemUserName)
     {
         reset(mockAuthenticationUtil);
 
@@ -93,7 +128,8 @@ public class MockAuthenticationUtilHelper
         }).when(mockAuthenticationUtil).<Object> runAs(any(RunAsWork.class), anyString());
 
         // assume admin
-        doReturn("admin").when(mockAuthenticationUtil).getAdminUserName();
-        doReturn("admin").when(mockAuthenticationUtil).getFullyAuthenticatedUser();
+        doReturn(adminUserName).when(mockAuthenticationUtil).getAdminUserName();
+        doReturn(fullyAuthenticatedUser).when(mockAuthenticationUtil).getFullyAuthenticatedUser();
+        doReturn(systemUserName).when(mockAuthenticationUtil).getSystemUserName();
     }
 }

@@ -74,12 +74,14 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
 
     final String PREFIX = ManifestModel.MANIFEST_PREFIX;
 
+    private OutputFormat format;
+
     /**
      * Start the transfer manifest
      */
     public void startTransferManifest(Writer writer) throws SAXException
     {
-        OutputFormat format = OutputFormat.createPrettyPrint();
+        format = OutputFormat.createPrettyPrint();
         format.setNewLineAfterDeclaration(false);
         format.setIndentSize(3);
         format.setEncoding("UTF-8");
@@ -516,7 +518,17 @@ public class XMLTransferManifestWriter implements TransferManifestWriter
         if (value != null)
         {
             String strValue = (String) DefaultTypeConverter.INSTANCE.convert(String.class, value);
-            writer.characters(strValue.toCharArray(), 0, strValue.length());
+            
+            boolean oldValue = format.isTrimText();
+            format.setTrimText(false);
+            try
+            {
+               writer.characters(strValue.toCharArray(), 0, strValue.length());
+            }
+            finally
+            {
+               format.setTrimText(oldValue);
+            }
         }
         writer.endElement(TransferModel.TRANSFER_MODEL_1_0_URI,
                     ManifestModel.LOCALNAME_ELEMENT_MLVALUE, PREFIX + ":"

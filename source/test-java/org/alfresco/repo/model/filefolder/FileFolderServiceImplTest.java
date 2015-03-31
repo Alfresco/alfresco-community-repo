@@ -1734,5 +1734,57 @@ public class FileFolderServiceImplTest extends TestCase
         results = fileFolderService.list(parentTestRef, true, false, null, sortProps, pagingRequest);
         expectedNames = new String[] { "B-null", "A-foo", "A-bar", "B-baz", "A-null", "B-biz" };
         checkFileList(pageRes, 6, 0, expectedNames);
-    }    
+    }	
+    
+    public void testMoveCopy3000Files() throws FileNotFoundException
+    {
+        final String CONTAINING_FOLDER = "CONTAINING FOLDER " + GUID.generate(),
+                     FOLDER_1 = "FOLDER 1 " + GUID.generate(),
+                     FOLDER_2 = "FOLDER 2 " + GUID.generate();
+        
+        FileInfo containingFolder = fileFolderService.create(workingRootNodeRef, CONTAINING_FOLDER, ContentModel.TYPE_FOLDER),
+                 folder1 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_1, ContentModel.TYPE_FOLDER),
+                 folder2 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_2, ContentModel.TYPE_FOLDER);
+        
+        // create 3000 files within the folder
+        final int COUNT = 3000;
+        for (int index = 0; index < COUNT; index++)
+        {
+            fileFolderService.create(folder1.getNodeRef(), "Name " + index, ContentModel.TYPE_CONTENT);
+        }
+        
+        assertEquals(COUNT, fileFolderService.listFiles(folder1.getNodeRef()).size());
+        assertEquals(0, fileFolderService.list(folder2.getNodeRef()).size());
+        
+        // move the folder
+        fileFolderService.move(folder1.getNodeRef(), folder2.getNodeRef(), null);
+        
+        assertEquals(COUNT, fileFolderService.listFiles(folder1.getNodeRef()).size());
+        assertEquals(1, fileFolderService.list(folder2.getNodeRef()).size());
+        
+        // move it back
+        fileFolderService.move(folder1.getNodeRef(), containingFolder.getNodeRef(), null);
+        
+        assertEquals(0, fileFolderService.list(folder2.getNodeRef()).size());
+        assertEquals(2, fileFolderService.list(containingFolder.getNodeRef()).size());
+        
+        // lets copy it
+        fileFolderService.copy(folder1.getNodeRef(), folder2.getNodeRef(), null);
+        
+        assertEquals(2, fileFolderService.list(containingFolder.getNodeRef()).size());
+        
+        List<FileInfo> folders = fileFolderService.listFolders(folder2.getNodeRef());
+        assertEquals(1, folders.size());
+        assertEquals(COUNT, fileFolderService.listFiles(folders.get(0).getNodeRef()).size());
+        
+        fileFolderService.delete(folder1.getNodeRef());
+        assertEquals(1, fileFolderService.list(containingFolder.getNodeRef()).size());
+        
+        folder1 = folders.get(0);
+        // copy back
+        FileInfo newFolder = fileFolderService.copy(folder1.getNodeRef(), containingFolder.getNodeRef(), null);
+        assertEquals(2, fileFolderService.list(containingFolder.getNodeRef()).size());
+        assertEquals(COUNT, fileFolderService.list(newFolder.getNodeRef()).size());
+    }
+
 }

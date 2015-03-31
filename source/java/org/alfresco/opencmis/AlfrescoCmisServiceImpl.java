@@ -2265,7 +2265,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 // MNT-9557 fix. Replace head version with current node info
                 if (versionHistory.getHeadVersion().equals(version))
                 {
-                    versionInfo = createNodeInfo(nodeRef);
+                    versionInfo = createNodeInfo(info.getCurrentNodeNodeRef());
                 }
 
                 result.add(

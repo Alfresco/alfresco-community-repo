@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -131,16 +131,11 @@ public class TransformerDebugTest
 
         transformerDebug.popAvailable();
         
-        // Prior to the fix the following we returned:
-        //   "0             pdf  txt  1.5 MB ContentService.transform(...) NO transformers\n"+
-        //   "0             --b) [---] transformer1<<Component>> > 50 KB\n"+
-        //   "0             --c) [---] transformer3<<Component>> > 50 KB\n"+
-        //   "0             --d) [---] transformer4<<Component>> > 50 KB\n"+
-        //   "0             Finished in NN ms Transformer NOT called\n"
-        //   
-        //   "0 pdf  txt  WARN  1.5 MB NN ms No transformers as file is > 0 bytes"
+        //   "0             --c) [---] transformer4<<Component>> > 50 KB\n"+
+        //   "0             --d) [---] transformer3<<Component>> > 50 KB\n"+
         assertDebugEntriesEquals(new String[] {
         "0             pdf  txt  1.5 MB ContentService.transform(...) NO transformers\n"+
+        "0             \n"+
         "0             --a) [---] transformer1<<Component>> > 50 KB\n"+
         "0             --b) [---] transformer3<<Component>> > 50 KB\n"+
         "0             --c) [---] transformer4<<Component>> > 50 KB\n"+

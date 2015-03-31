@@ -309,6 +309,15 @@ public class TransformerDebug
             push(null, fromUrl, sourceMimetype, targetMimetype, -1, options, Call.AVAILABLE);
         }
     }
+
+    /**
+     * Called when a transformer has been ignored because of a blacklist entry.
+     */
+    public void blacklistTransform(ContentTransformer transformer, String sourceMimetype,
+            String targetMimetype, TransformationOptions options)
+    {
+        log("Blacklist "+getName(transformer)+" "+getMimetypeExt(sourceMimetype)+getMimetypeExt(targetMimetype));
+    }
     
     /**
      * Called prior to performing a transform.
@@ -541,6 +550,10 @@ public class TransformerDebug
                 ((fileName != null) ? fileName+' ' : "")+
                 ((sourceSize >= 0) ? fileSize(sourceSize)+' ' : "") +
                 (firstLevel && use != null ? "-- "+use+" -- " : "") + message);
+        if (firstLevel)
+        {
+            log(getNodeRef(frame.options, firstLevel, sourceSize));
+        }
     }
 
     /**
@@ -1213,31 +1226,43 @@ public class TransformerDebug
 
     public String getFileName(TransformationOptions options, boolean firstLevel, long sourceSize)
     {
-        String fileName = null;
+        return getFileNameOrNodeRef(options, firstLevel, sourceSize, true);
+    }
+    
+    private String getNodeRef(TransformationOptions options, boolean firstLevel, long sourceSize)
+    {
+        return getFileNameOrNodeRef(options, firstLevel, sourceSize, false);
+    }
+    
+    private String getFileNameOrNodeRef(TransformationOptions options, boolean firstLevel, long sourceSize, boolean getName)
+    {
+        String result = getName ? null : "";
         if (options != null)
         {
             try
             {
                 NodeRef sourceNodeRef = options.getSourceNodeRef();
-                fileName = (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME);
+                result = getName
+                        ? (String)nodeService.getProperty(sourceNodeRef, ContentModel.PROP_NAME)
+                        : sourceNodeRef.toString()+" ";
             }
             catch (RuntimeException e)
             {
                 ; // ignore (normally InvalidNodeRefException) but we should ignore other RuntimeExceptions too
             }
         }
-        if (fileName == null)
+        if (result == null)
         {
             if (!firstLevel)
             {
-                fileName = "<<TemporaryFile>>";
+                result = getName ? "<<TemporaryFile>>" : "";
             }
             else if (sourceSize < 0)
             {
                 // fileName = "<<AnyFile>>"; commented out as it does not add to debug readability
             }
         }
-        return fileName;
+        return result;
     }
 
     private String getMimetypeExt(String mimetype)

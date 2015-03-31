@@ -41,6 +41,9 @@
       <property name="contentTransformerRegistry">
          <ref bean="contentTransformerRegistry" />
       </property>
+      <property name="transformerDebug">
+         <ref bean="transformerDebug" />
+      </property>
    </bean>
 
    <!-- JMX bean (in addition to sub system properties) -->

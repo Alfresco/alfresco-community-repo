@@ -30,6 +30,7 @@ import static org.alfresco.repo.content.transform.TransformerConfig.MAX_SOURCE_S
 import static org.alfresco.repo.content.transform.TransformerConfig.PAGE_LIMIT;
 import static org.alfresco.repo.content.transform.TransformerConfig.PIPELINE;
 import static org.alfresco.repo.content.transform.TransformerConfig.PRIORITY;
+import static org.alfresco.repo.content.transform.TransformerConfig.BLACKLIST;
 import static org.alfresco.repo.content.transform.TransformerConfig.READ_LIMIT_K_BYTES;
 import static org.alfresco.repo.content.transform.TransformerConfig.READ_LIMIT_TIME_MS;
 import static org.alfresco.repo.content.transform.TransformerConfig.SUPPORTED;
@@ -48,6 +49,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
 
@@ -375,6 +377,10 @@ public class TransformerPropertySetter
                 checkFailoverValue(hasValue, line, i, transformerReferences);
             }
         }
+        else if (BLACKLIST.equals(suffix))
+        {
+            checkNodeRefList(hasValue, line, i);
+        }
     }
     
     private void checkInteger(boolean hasValue, String line, int i)
@@ -496,6 +502,23 @@ public class TransformerPropertySetter
                 if (transformerNames[j].length() > 0)
                 {
                     transformerReferences.put(transformerNames[j], line);
+                }
+            }
+        }
+    }
+
+    private void checkNodeRefList(boolean hasValue, String line, int i)
+    {
+        String value = checkValue(hasValue, line, i);
+
+        if (value != null)
+        {
+            for (String nodeRefString: line.split(", *"))
+            {
+                nodeRefString = nodeRefString.trim();
+                if (nodeRefString.length() != 0 && !NodeRef.isNodeRef(nodeRefString))
+                {
+                    throw unexpectedProperty("Expected NodeRef value "+nodeRefString, line);
                 }
             }
         }

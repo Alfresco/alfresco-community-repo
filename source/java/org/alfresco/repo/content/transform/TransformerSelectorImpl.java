@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
 /**
@@ -45,6 +46,7 @@ public class TransformerSelectorImpl implements TransformerSelector
 {
     private TransformerConfig transformerConfig;
     private ContentTransformerRegistry contentTransformerRegistry;
+    private TransformerDebug transformerDebug;
 
     public void setTransformerConfig(TransformerConfig transformerConfig)
     {
@@ -54,6 +56,11 @@ public class TransformerSelectorImpl implements TransformerSelector
     public void setContentTransformerRegistry(ContentTransformerRegistry contentTransformerRegistry)
     {
         this.contentTransformerRegistry = contentTransformerRegistry;
+    }
+
+    public void setTransformerDebug(TransformerDebug transformerDebug)
+    {
+        this.transformerDebug = transformerDebug;
     }
 
     @Override
@@ -66,6 +73,7 @@ public class TransformerSelectorImpl implements TransformerSelector
         
         List<ContentTransformer> transformers = contentTransformerRegistry.getTransformers();
         List<TransformerSortData> possibleTransformers = findTransformers(transformers, sourceMimetype, sourceSize, targetMimetype, options);
+        possibleTransformers = blacklistTransformers(possibleTransformers, sourceMimetype, sourceSize, targetMimetype, options);
         return sortTransformers(possibleTransformers);
     }
 
@@ -86,6 +94,52 @@ public class TransformerSelectorImpl implements TransformerSelector
                 transformers.add(new TransformerSortData(transformer, sourceMimetype, targetMimetype, priority));
             }
         }
+        return transformers;
+    }
+    
+    /**
+     * Removes transformers from the list if the source NodeRef is in their blacklist.
+     */
+    private List<TransformerSortData> blacklistTransformers(List<TransformerSortData> transformers,
+            String sourceMimetype, long sourceSize, String targetMimetype,
+            TransformationOptions options)
+    {
+        NodeRef nodeRef = options == null ? null : options.getSourceNodeRef();
+        if (nodeRef != null)
+        {
+            List<TransformerSortData> validTransformers = new ArrayList<>(transformers.size());
+            for (TransformerSortData transformer: transformers)
+            {
+                List<NodeRef> blacklist = transformerConfig.getBlacklist(transformer.transformer, sourceMimetype, targetMimetype);
+                
+                // Cannot just do if (blacklist == null || !blacklist.contains(nodeRef))
+                // as files get moved to different content stores and get reindexed.
+                // So must just check the id.
+                boolean onBlacklist = false;
+                if (blacklist != null)
+                {
+                    for (NodeRef blacklistNodeRef: blacklist)
+                    {
+                        if (blacklistNodeRef.getId().equals(nodeRef.getId()))
+                        {
+                            onBlacklist = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!onBlacklist)
+                {
+                    validTransformers.add(transformer);
+                }
+                else
+                {
+                    transformerDebug.blacklistTransform(transformer.transformer, sourceMimetype, targetMimetype, options);
+                }
+            }
+            transformers = validTransformers;
+        }
+
         return transformers;
     }
     

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -63,16 +63,24 @@ public class TransformerDebugLogTest
             int beginIndex = actual[i].indexOf('\n');
             actual[i] = actual[i].substring(beginIndex+1);
         }
-        assertArrayEquals(expected, actual);
+        assertStringArrayEquals(expected, actual);
     }
-
-
+    
     @Test
     public void noEntriesDisabledTest()
     {
-        assertArrayEquals(new String[] {"No entries are available. transformer.debug.entries must be set to a number between 1 and 100"}, log.getEntries(10));
+        assertStringArrayEquals(new String[] {"No entries are available. transformer.debug.entries must be set to a number between 1 and 100"}, log.getEntries(10));
     }
     
+    private static void assertStringArrayEquals(String[] expected, String[] actual)
+    {
+        for (int i=0; i<Math.min(expected.length, actual.length); i++)
+        {
+            assertEquals("path["+i+"]", expected[i].toString(), actual[i].toString());
+        }
+        assertEquals("Equal lengths", expected.length, actual.length);
+    }
+
     @Test
     public void oneTest()
     {

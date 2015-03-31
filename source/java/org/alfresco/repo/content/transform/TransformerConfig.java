@@ -21,8 +21,10 @@ package org.alfresco.repo.content.transform;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import org.alfresco.api.AlfrescoPublicApi;  
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 
@@ -124,6 +126,11 @@ public interface TransformerConfig
     static final String PRIORITY = ".priority";
     
     /**
+     * The suffix to property names for the blacklist.
+     */
+    static final String BLACKLIST = ".blacklist";
+    
+    /**
      * The suffix to property names to indicate which Alfresco version the transformer is
      * available with. If not specified it is not restricted. So if set to "Enterprise" it
      * is not available to Community.
@@ -219,6 +226,7 @@ public interface TransformerConfig
             SUPPORTED,
             AVAILABLE,
             PRIORITY,
+            BLACKLIST,
             ERROR_TIME,
             INITIAL_TIME,
             INITIAL_COUNT,
@@ -329,6 +337,17 @@ public interface TransformerConfig
     public int getPriority(ContentTransformer contentTransformerHelper,
             String sourceMimetype, String targetMimetype);
 
+
+    /**
+     * Returns a list of blacklisted NodeRefs of the specified transformer for the the combination of source and target mimetype.
+     * @param transformer
+     * @param sourceMimetype
+     * @param targetMimetype
+     * @return the blacklist or null is none.
+     */
+    List<NodeRef> getBlacklist(ContentTransformer transformer, String sourceMimetype,
+            String targetMimetype);
+    
     /**
      * Returns the threshold of the transformer. It is only after this number of transformation attempts
      * that the average time is used.

@@ -18,14 +18,16 @@
  */
 package org.alfresco.repo.content.transform;
 
+import java.util.List;
 import java.util.Properties;
 
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.MalformedNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
 import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.descriptor.DescriptorService;
@@ -66,6 +68,9 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
     
     // Priorities
     private TransformerConfigProperty priorities;
+    
+    // Blacklist
+    private TransformerConfigProperty blacklist;
     
     // Threshold counts - Initially there will only be the system wide value, but
     // having this structure provides flexibility.
@@ -161,6 +166,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         limits = new TransformerConfigLimits(transformerProperties, mimetypeService);
         supported = new TransformerConfigSupported(transformerProperties, mimetypeService);
         priorities = new TransformerConfigProperty(transformerProperties, mimetypeService, PRIORITY, Integer.toString(PRIORITY_DEFAULT));
+        blacklist = new TransformerConfigProperty(transformerProperties, mimetypeService, BLACKLIST, "");
         thresholdCounts = new TransformerConfigProperty(transformerProperties, mimetypeService, THRESHOLD_COUNT, "3");
         errorTimes = new TransformerConfigProperty(transformerProperties, mimetypeService, ERROR_TIME, "120000");
         initialAverageTimes = new TransformerConfigProperty(transformerProperties, mimetypeService, INITIAL_TIME, "0");
@@ -270,6 +276,29 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
             catch (NumberFormatException e2)
             {
                 return 0;
+            }
+        }
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<NodeRef> getBlacklist(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
+    {
+        try
+        {
+            return blacklist.getNodeRefs(transformer, stdMimetype(sourceMimetype), stdMimetype(targetMimetype));
+        }
+        catch (MalformedNodeRefException e1)
+        {
+            try
+            {
+                return priorities.getNodeRefs(null, null, null);
+            }
+            catch (MalformedNodeRefException e2)
+            {
+                return null;
             }
         }
     }

@@ -19,6 +19,7 @@
 package org.alfresco.repo.content.transform;
 
 import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
+import static org.alfresco.repo.content.transform.TransformerConfig.BLACKLIST;
 import static org.alfresco.repo.content.transform.TransformerConfig.PRIORITY;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockMimetypes;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockProperties;
@@ -26,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
 
+import org.alfresco.service.cmr.repository.MalformedNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.junit.Before;
 import org.junit.Test;
@@ -192,5 +194,36 @@ public class TransformerConfigPropertyTest
         
         extractor = new TransformerConfigProperty(transformerProperties, mimetypeService, PRIORITY, "55");
         extractor.getLong((ContentTransformer) new DummyContentTransformer("transformer.abc.xyz"), "application/pdf", "image/png");
+    }
+    
+    @Test
+    public void goodNodeRefTest()
+    {
+        // ".+://.+/.+"
+        mockProperties(transformerProperties, "content.transformer.abc.xyz.extensions.pdf.png.blacklist", "abc://mno/xyz");
+        
+        extractor = new TransformerConfigProperty(transformerProperties, mimetypeService, BLACKLIST, "abc/mno/xyz");
+        String actual = extractor.getNodeRefs((ContentTransformer) new DummyContentTransformer("transformer.abc.xyz"), "application/pdf", "image/png").toString();
+        assertEquals("blacklist", "[abc://mno/xyz]", actual);
+    }
+    
+    @Test
+    public void goodNodeRefListTest()
+    {
+        // ".+://.+/.+"
+        mockProperties(transformerProperties, "content.transformer.abc.xyz.extensions.pdf.png.blacklist", "abc://mno/xyz, ,a://m/x,b://n/y");
+        
+        extractor = new TransformerConfigProperty(transformerProperties, mimetypeService, BLACKLIST, "abc://mno/xyz, ,a://m/x,b://n/y");
+        String actual = extractor.getNodeRefs((ContentTransformer) new DummyContentTransformer("transformer.abc.xyz"), "application/pdf", "image/png").toString();
+        assertEquals("blacklist", "[abc://mno/xyz, a://m/x, b://n/y]", actual);
+    }
+    
+    @Test(expected=MalformedNodeRefException.class)
+    public void badNodeRefTest()
+    {
+        mockProperties(transformerProperties, "content.transformer.abc.xyz.extensions.pdf.png.blacklist", "abc");
+        
+        extractor = new TransformerConfigProperty(transformerProperties, mimetypeService, BLACKLIST, "abc");
+        extractor.getNodeRefs((ContentTransformer) new DummyContentTransformer("transformer.abc.xyz"), "application/pdf", "image/png");
     }
 }

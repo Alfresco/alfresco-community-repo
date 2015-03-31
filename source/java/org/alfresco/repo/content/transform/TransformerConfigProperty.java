@@ -21,11 +21,15 @@ package org.alfresco.repo.content.transform;
 import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
 import static org.alfresco.repo.content.transform.TransformerConfig.DEFAULT_TRANSFORMER;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.alfresco.service.cmr.repository.MalformedNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Provides access to a single transformer configuration property depending on the
@@ -116,5 +120,22 @@ public class TransformerConfigProperty  extends TransformerPropertyNameExtractor
         throws NumberFormatException
     {
         return Integer.parseInt(getString(transformer, sourceMimetype, targetMimetype));
+    }
+    
+    public List<NodeRef> getNodeRefs(ContentTransformer transformer, String sourceMimetype, String targetMimetype)
+        throws MalformedNodeRefException
+    {
+        List<NodeRef> nodeRefs = new ArrayList<>();
+        String[] nodeRefStrings = getString(transformer, sourceMimetype, targetMimetype).split(", *");
+        for (String nodeRefString: nodeRefStrings)
+        {
+            nodeRefString = nodeRefString.trim();
+            if (nodeRefString.length() > 0)
+            {
+                NodeRef nodeRef = new NodeRef(nodeRefString);
+                nodeRefs.add(nodeRef);
+            }
+        }
+        return nodeRefs;
     }
 }

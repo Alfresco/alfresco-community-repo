@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import junit.framework.TestCase;
 
@@ -33,7 +34,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.UnsupportedContentUrlException;
+import org.alfresco.repo.content.cleanup.ContentStoreCleaner.DeleteFailureAction;
+import org.alfresco.repo.content.filestore.FileContentStore;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.contentdata.ContentDataDAO.ContentUrlHandler;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -74,6 +78,7 @@ public class ContentStoreCleanerTest extends TestCase
     private ContentStore store;
     private ContentStoreCleanerListener listener;
     private List<String> deletedUrls;
+    private ContentDataDAO contentDataDAO;
     
     @Override
     public void setUp() throws Exception
@@ -87,7 +92,7 @@ public class ContentStoreCleanerTest extends TestCase
         jobLockService = serviceRegistry.getJobLockService();
         TransactionService transactionService = serviceRegistry.getTransactionService();
         DictionaryService dictionaryService = serviceRegistry.getDictionaryService();
-        ContentDataDAO contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
+        contentDataDAO = (ContentDataDAO) ctx.getBean("contentDataDAO");
         
         // we need a store
         store = (ContentStore) ctx.getBean("fileContentStore");
@@ -504,6 +509,96 @@ public class ContentStoreCleanerTest extends TestCase
         
         // It's orphaned now.  Fire the cleaner.
         cleaner.execute();
+    }
+
+    public void testMNT_12150()
+    {
+        eagerCleaner.setEagerOrphanCleanup(false);
+        
+        // create content with binary data and delete it in the same transaction
+        final StoreRef storeRef = nodeService.createStore("test", getName() + "-" + GUID.generate());
+        RetryingTransactionCallback<ContentData> prepareCallback = new RetryingTransactionCallback<ContentData>()
+        {
+            public ContentData execute() throws Throwable
+            {
+                // Create some content
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+                Map<QName, Serializable> properties = new HashMap<QName, Serializable>(13);
+                properties.put(ContentModel.PROP_NAME, (Serializable)"test.txt");
+                NodeRef contentNodeRef = nodeService.createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.ASSOC_CHILDREN,
+                        ContentModel.TYPE_CONTENT,
+                        properties).getChildRef();
+                ContentWriter writer = contentService.getWriter(contentNodeRef, ContentModel.PROP_CONTENT, true);
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.putContent("INITIAL CONTENT");
+                ContentData contentData = writer.getContentData();
+               
+                // Delete the first node, bypassing archive
+                nodeService.addAspect(contentNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+                nodeService.deleteNode(contentNodeRef);
+
+                // Done
+                return contentData;
+            }
+        };
+        ContentData contentData = transactionService.getRetryingTransactionHelper().doInTransaction(prepareCallback);
+        
+        List<ContentStore> stores = new ArrayList<ContentStore>(2);
+        stores.add(store);
+        
+        // add another store which doesn't support any content url format 
+        stores.add(new FileContentStore(ctx, store.getRootLocation())
+        {
+            @Override
+            public boolean isContentUrlSupported(String contentUrl)
+            {
+                return false;
+            }
+        });
+
+        // configure cleaner to keep failed orphaned content urls
+        eagerCleaner.setStores(stores);
+        eagerCleaner.setListeners(Collections.<ContentStoreCleanerListener>emptyList());
+        cleaner.setProtectDays(0);
+        cleaner.setDeletionFailureAction(DeleteFailureAction.KEEP_URL);
+        
+        // fire the cleaner
+        cleaner.execute();
+        
+        // Go through the orphaned urls again
+        final TreeMap<Long, String> keptUrlsById = new TreeMap<Long, String>();
+        final ContentUrlHandler contentUrlHandler = new ContentUrlHandler()
+        {
+            @Override
+            public void handle(Long id, String contentUrl, Long orphanTime)
+            {
+                keptUrlsById.put(id, contentUrl);
+            }
+        };
+        
+        // look for any kept urls in database
+        RetryingTransactionCallback<Void> testCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                contentDataDAO.getContentUrlsKeepOrphaned(contentUrlHandler, 1000);
+                return null;
+            }
+        };
+        
+        transactionService.getRetryingTransactionHelper().doInTransaction(testCallback);
+        
+        // check that orphaned url was deleted
+        for (String url : keptUrlsById.values())
+        {
+            if (url.equalsIgnoreCase(contentData.getContentUrl()))
+            {
+                fail("Failed to cleanup orphaned content: " + contentData.getContentUrl());
+            }
+        }
     }
 
     private class DummyCleanerListener implements ContentStoreCleanerListener

@@ -108,11 +108,20 @@ public interface ContentDataDAO
      * @param contentUrlHandler         the callback object to process the rows
      * @param maxOrphanTimeExclusive    the maximum orphan time (exclusive)
      * @param maxResults                the maximum number of results (1 or greater)
-     * @return                          Returns a list of orphaned content URLs ordered by ID
      */
     void getContentUrlsOrphaned(
             ContentUrlHandler contentUrlHandler,
             Long maxOrphanTimeExclusive,
+            int maxResults);
+    
+    /**
+     * Enumerate all available content URLs that were orphaned and cleanup for these urls failed
+     * 
+     * @param contentUrlHandler         the callback object to process the rows
+     * @param maxResults                the maximum number of results (1 or greater)
+     */
+    void getContentUrlsKeepOrphaned(
+            ContentUrlHandler contentUrlHandler,
             int maxResults);
     
     /**

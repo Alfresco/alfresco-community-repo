@@ -266,9 +266,15 @@ public class EagerContentStoreCleaner extends TransactionListenerAdapter
         int deleted = 0;
         for (ContentStore store : stores)
         {
-            // Bypass if the store is read-only or doesn't support the URL
-            if (!store.isWriteSupported() || !store.isContentUrlSupported(contentUrl))
+            // Bypass if the store is read-only
+            if (!store.isWriteSupported())
             {
+                continue;
+            }
+            // MNT-12150 fix, bypass if the store doesn't support the URL but mark as deleted
+            if (!store.isContentUrlSupported(contentUrl))
+            {
+                deleted++;
                 continue;
             }
             if (callListeners)

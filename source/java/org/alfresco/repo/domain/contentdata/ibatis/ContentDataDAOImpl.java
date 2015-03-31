@@ -57,6 +57,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
     private static final String SELECT_CONTENT_URL_BY_KEY = "alfresco.content.select_ContentUrlByKey";
     private static final String SELECT_CONTENT_URL_BY_KEY_UNREFERENCED = "alfresco.content.select_ContentUrlByKeyUnreferenced";
     private static final String SELECT_CONTENT_URLS_ORPHANED = "alfresco.content.select.select_ContentUrlsOrphaned";
+    private static final String SELECT_CONTENT_URLS_KEEP_ORPHANED = "alfresco.content.select_ContentUrlsKeepOrphaned";
     private static final String SELECT_CONTENT_DATA_BY_ID = "alfresco.content.select_ContentDataById";
     private static final String SELECT_CONTENT_DATA_BY_NODE_AND_QNAME = "alfresco.content.select_ContentDataByNodeAndQName";
     private static final String SELECT_CONTENT_DATA_BY_NODE_IDS = "alfresco.content.select_ContentDataByNodeIds";
@@ -149,6 +150,23 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
         query.setMaxOrphanTimeExclusive(maxOrphanTimeExclusive);
         List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_ORPHANED, 
                                                                                       query, 
+                                                                                      new RowBounds(0, maxResults));
+        // Pass the result to the callback
+        for (ContentUrlEntity result : results)
+        {
+            contentUrlHandler.handle(
+                    result.getId(),
+                    result.getContentUrl(),
+                    result.getOrphanTime());
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public void getContentUrlsKeepOrphaned(
+            final ContentUrlHandler contentUrlHandler,
+            final int maxResults)
+    {
+        List<ContentUrlEntity> results = (List<ContentUrlEntity>) template.selectList(SELECT_CONTENT_URLS_KEEP_ORPHANED,
                                                                                       new RowBounds(0, maxResults));
         // Pass the result to the callback
         for (ContentUrlEntity result : results)

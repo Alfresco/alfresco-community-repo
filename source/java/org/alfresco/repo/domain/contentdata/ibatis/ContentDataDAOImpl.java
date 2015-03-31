@@ -166,7 +166,7 @@ public class ContentDataDAOImpl extends AbstractContentDataDAOImpl
             final ContentUrlHandler contentUrlHandler,
             final int maxResults)
     {
-        List<ContentUrlEntity> results = (List<ContentUrlEntity>) template.selectList(SELECT_CONTENT_URLS_KEEP_ORPHANED,
+        List<ContentUrlEntity> results = template.selectList(SELECT_CONTENT_URLS_KEEP_ORPHANED,
                                                                                       new RowBounds(0, maxResults));
         // Pass the result to the callback
         for (ContentUrlEntity result : results)

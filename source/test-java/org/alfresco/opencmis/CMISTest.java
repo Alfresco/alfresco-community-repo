@@ -162,6 +162,7 @@ public class CMISTest
 
 	private ActionService actionService;
 	private RuleService ruleService;
+    private VersionService versionService;
 	
     private CMISConnector cmisConnector;
     
@@ -321,6 +322,7 @@ public class CMISTest
         this.namespaceService = (NamespaceService) ctx.getBean("namespaceService");
         this.repositoryHelper = (Repository)ctx.getBean("repositoryHelper");
     	this.factory = (AlfrescoCmisServiceFactory)ctx.getBean("CMISServiceFactory");
+        this.versionService = (VersionService) ctx.getBean("versionService");
     	this.cmisConnector = (CMISConnector) ctx.getBean("CMISConnector");
         this.nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
         this.authorityService = (AuthorityService)ctx.getBean("AuthorityService");
@@ -3053,5 +3055,129 @@ public class CMISTest
                 return null;
             }
         }, CmisVersion.CMIS_1_1);
+    }
+    
+    /**
+     * Test to ensure that set of aspect returned by cmisService#getAllVersions for latest version is the same 
+     * as for the object returned by cmisService#getObjectByPath.
+     * 
+     * See <a href="https://issues.alfresco.com/jira/browse/MNT-9557">MNT-9557</a>
+     */
+    @Test
+    public void testLastVersionOfVersionSeries()
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        final String FOLDER = "testUpdatePropertiesSetDeleteContentVersioning-" + GUID.generate(),
+                     DOC = "documentProperties-" + GUID.generate();
+        
+        try
+        {
+            final NodeRef nodeRef = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+            {
+                @Override
+                public NodeRef execute() throws Throwable
+                {
+                    // create folder
+                    FileInfo folderInfo = fileFolderService.create(repositoryHelper.getCompanyHome(), FOLDER, ContentModel.TYPE_FOLDER);
+                    nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, FOLDER);
+                    assertNotNull(folderInfo);
+
+                    // create documents
+                    FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), DOC, ContentModel.TYPE_CONTENT);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, DOC);
+                    nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_DESCRIPTION, "Initial doc");
+
+                    return document.getNodeRef();
+                }
+            });
+
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    // make sure that there is no version history yet
+                    assertNull(versionService.getVersionHistory(nodeRef));
+
+                    // create a version
+                    // turn off auto-versioning
+                    Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+                    props.put(ContentModel.PROP_INITIAL_VERSION, false);
+                    props.put(ContentModel.PROP_AUTO_VERSION, false);
+                    props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+
+                    versionService.ensureVersioningEnabled(nodeRef, props);
+
+                    return null;
+                }
+            });
+
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    assertNotNull(versionService.getVersionHistory(nodeRef));
+                    // create another one version
+                    versionService.createVersion(nodeRef, null);
+
+                    return null;
+                }
+            });
+
+            final String NEW_DOC_NAME = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
+            {
+                @Override
+                public String execute() throws Throwable
+                {
+                    // add aspect to the node
+                    String newDocName = DOC + GUID.generate();
+                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_AUTHOR, null);
+                    nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, newDocName);
+
+                    return newDocName;
+                }
+            });
+
+            CmisService cmisService = factory.getService(context);
+            String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+            
+            List<ObjectData> versions = 
+                cmisService.getAllVersions(repositoryId, nodeRef.toString(), null, null, null, null);
+            assertNotNull(versions);
+            // get the latest version
+            ObjectData latestVersion = versions.get(0);
+            // get the object
+            ObjectData object = 
+                // cmisService.getObjectOfLatestVersion(repositoryId, nodeRef.toString(), null, false, null, null, null, null, false, false, null);
+                cmisService.getObjectByPath(repositoryId, "/" + FOLDER + "/" + NEW_DOC_NAME, null, null, null, null, false, false, null);
+            
+            assertNotNull(latestVersion);
+            assertNotNull(object);
+            
+            Object objectDescriptionString = object.getProperties().getProperties().get("cmis:name").getValues().get(0);
+            Object latestVersionDescriptionString = latestVersion.getProperties().getProperties().get("cmis:name").getValues().get(0);
+            // ensure that node and latest version both have same description
+            assertEquals(objectDescriptionString, latestVersionDescriptionString);
+            
+            Set<String> documentAspects = new HashSet<String>();
+            for (CmisExtensionElement cmisEE : object.getProperties().getExtensions().get(0).getChildren())
+            {
+                documentAspects.add(cmisEE.getValue());
+            }
+            Set<String> latestVersionAspects = new HashSet<String>();
+            for (CmisExtensionElement cmisEE : latestVersion.getProperties().getExtensions().get(0).getChildren())
+            {
+                latestVersionAspects.add(cmisEE.getValue());
+            }
+            // ensure that node and latest version both have the same set of aspects 
+            assertEquals(latestVersionAspects, documentAspects);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
     }
 }

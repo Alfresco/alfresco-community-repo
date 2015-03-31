@@ -2262,6 +2262,11 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             for (Version version : versionHistory.getAllVersions())
             {
                 CMISNodeInfo versionInfo = createNodeInfo(version.getFrozenStateNodeRef(), versionHistory);
+                // MNT-9557 fix. Replace head version with current node info
+                if (versionHistory.getHeadVersion().equals(version))
+                {
+                    versionInfo = createNodeInfo(nodeRef);
+                }
 
                 result.add(
                         connector.createCMISObject(

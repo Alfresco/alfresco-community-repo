@@ -79,10 +79,10 @@ public class InviteResponse extends DeclarativeWebScript
     protected Map<String, Object> executeImpl(final WebScriptRequest req, final Status status)
     {
         String tenantDomain = TenantService.DEFAULT_DOMAIN;
+        final String inviteeUserName = req.getParameter(PARAM_INVITEE_USER_NAME);
         
         if (tenantService.isEnabled())
         {
-            String inviteeUserName = req.getParameter(PARAM_INVITEE_USER_NAME);
             if (inviteeUserName != null)
             {
                 tenantDomain = tenantService.getUserDomain(inviteeUserName);
@@ -94,7 +94,23 @@ public class InviteResponse extends DeclarativeWebScript
         {
             public Map<String, Object> doWork() throws Exception
             {
-                return execute(req, status);
+                String oldUser = null;
+                try
+                {
+                    if (inviteeUserName != null && !inviteeUserName.equals(oldUser))
+                    {
+                        oldUser = AuthenticationUtil.getFullyAuthenticatedUser();
+                        AuthenticationUtil.setFullyAuthenticatedUser(inviteeUserName);
+                    }
+                    return execute(req, status);
+                }
+                finally
+                {
+                    if (oldUser != null && !oldUser.equals(inviteeUserName))
+                    {
+                        AuthenticationUtil.setFullyAuthenticatedUser(oldUser);
+                    }
+                }
             }
         }, tenantDomain);
     }

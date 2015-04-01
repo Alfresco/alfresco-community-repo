@@ -1757,6 +1757,7 @@
         <property name="quickShareService" ref="QuickShareService"/>
         <property name="enabled" value="${system.quickshare.enabled}" />
         <property name="delegate" ref="webscript.content.streamer" />
+        <property name="contentService" ref="ContentService" />
     </bean>
     
     <!-- unauthenticated (note: equivalent to authenticated "thumbnail.get") -->

@@ -143,7 +143,11 @@ public class ContentGet extends StreamContent implements ServletContextAware
     {
         String userAgent = req.getHeader("User-Agent");
         userAgent = userAgent != null ? userAgent.toLowerCase() : "";
-        boolean rfc5987Supported = (userAgent.contains("msie") || userAgent.contains(" trident/") || userAgent.contains(" chrome/") || userAgent.contains(" firefox/"));
+        boolean rfc5987Supported = (userAgent.contains("msie") ||
+                userAgent.contains(" trident/") ||
+                userAgent.contains(" chrome/") ||
+                userAgent.contains(" firefox/") ||
+                userAgent.contains(" safari/"));
 
         if (attach && rfc5987Supported)
         {

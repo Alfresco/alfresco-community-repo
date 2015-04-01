@@ -44,7 +44,7 @@ function main()
       var logoConfig = new XML(config.script);
       var widthxheight = logoConfig.width + "x" + logoConfig.height;
       
-      var transformationOptions = "-resize " + widthxheight + " -background none -gravity center -extent " + widthxheight;
+      var transformationOptions = "-resize " + widthxheight + "> -background none -gravity center";
       
       // create the new image node
       var nodeName = new Date().getTime() + "_" + filename;

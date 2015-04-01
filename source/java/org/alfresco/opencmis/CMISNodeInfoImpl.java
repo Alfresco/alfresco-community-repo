@@ -36,7 +36,6 @@ import org.alfresco.opencmis.dictionary.RelationshipTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.Version2Model;
-import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -598,7 +597,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     public boolean isLatestVersion()
     {
-        return isCurrentVersion();
+        return (isCurrentVersion() && !hasPWC()) || isPWC();
     }
 
     public boolean isLatestMajorVersion()
@@ -899,16 +898,18 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     private NodeRef getLatestNonMajorVersionNodeRef()
     {
-//        if (isPWC())
-//        {
-//            return nodeRef;
-//        } else if (hasPWC())
-//        {
-//            return connector.getCheckOutCheckInService().getWorkingCopy(getCurrentNodeNodeRef());
-//        } else
-//        {
+        if (isPWC())
+        {
+            return nodeRef;
+        } 
+        else if (hasPWC())
+        {
+            return connector.getCheckOutCheckInService().getWorkingCopy(getCurrentNodeNodeRef());
+        } 
+        else
+        {
             return getCurrentNodeNodeRef();
-//        }
+        }
     }
 
     // TODO lock here??

@@ -149,7 +149,11 @@
                 </entry>
             </map>
         </property>
-        
+        <property name="ignoreChildren">
+            <set>
+                <value>cm:checkedOut</value>
+            </set>
+        </property>
         <property name="openHttpSession"        value="${opencmis.connector.default.openHttpSession}" />
 
         <property name="OpenCMISDictionaryService"   ref="OpenCMISDictionaryService" />
@@ -185,6 +189,7 @@
         <property name="dictionaryService"      ref="DictionaryService" />
         <property name="behaviourFilter"        ref="policyBehaviourFilter" />
         <property name="eventPublisher"         ref="eventPublisher" />
+        <property name="dictionaryDAO"          ref="dictionaryDAO" />
 
         <property name="bulkMaxItems"           value="${opencmis.bulkUpdateProperties.maxItemsSize}" />
         <property name="bulkBatchSize"          value="${opencmis.bulkUpdateProperties.batchSize}" />

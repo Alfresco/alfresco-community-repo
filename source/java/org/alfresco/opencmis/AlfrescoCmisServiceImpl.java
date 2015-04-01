@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2215,9 +2216,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         List<ObjectData> result = new ArrayList<ObjectData>();
 
         // what kind of object is it?
-        CMISNodeInfo info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
+        CMISNodeInfo info = getOrCreateNodeInfo(objectId);
 
-        if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION))
+        if (!EnumSet.of(CMISObjectVariant.CURRENT_VERSION, CMISObjectVariant.PWC, CMISObjectVariant.VERSION).contains(info.getObjectVariant()))
         {
             // the version series id is the id of current version, which is a
             // document
@@ -2228,7 +2229,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         NodeRef nodeRef = info.getNodeRef();
         VersionHistory versionHistory = ((CMISNodeInfoImpl) info).getVersionHistory();
 
-        if (versionHistory == null)
+        if (versionHistory == null || info.isPWC())
         {
             // add current version
             result.add(connector.createCMISObject(info, filter, includeAllowableActions, IncludeRelationships.NONE,
@@ -2251,7 +2252,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                                 pwcInfo, filter, includeAllowableActions,
                                 IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
 
-            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
                 if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, pwcInfo.getObjectId(), IncludeRelationships.NONE);

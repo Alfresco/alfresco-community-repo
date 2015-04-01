@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,17 +19,19 @@
 package org.alfresco.service.cmr.model;
 
 import org.alfresco.api.AlfrescoPublicApi;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Common, checked exception thrown when an operation fails because
- * of a name clash.
+ * Common exception thrown when an operation fails because of a name clash.
  * 
  * @author Derek Hulley
  */
 @AlfrescoPublicApi
-public class FileExistsException extends RuntimeException
+public class FileExistsException extends AlfrescoRuntimeException
 {
+    private static final String MESSAGE_ID = "file_folder_service.file_exists_message";
+
     private static final long serialVersionUID = -4133713912784624118L;
     
     private NodeRef parentNodeRef;
@@ -37,9 +39,7 @@ public class FileExistsException extends RuntimeException
 
     public FileExistsException(NodeRef parentNodeRef, String name)
     {
-        super("Existing file or folder " +
-                name +
-                " already exists");
+        super(MESSAGE_ID, new Object[] { name });
         this.parentNodeRef = parentNodeRef;
         this.name = name;
     }

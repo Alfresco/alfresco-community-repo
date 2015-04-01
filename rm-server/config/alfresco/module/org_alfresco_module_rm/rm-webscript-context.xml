@@ -648,4 +648,11 @@
       parent="rmBaseWebscript">
       <property name="relationshipService" ref="RelationshipService" />
    </bean>
+
+   <!-- REST impl for GET classied reasons -->
+   <bean id="webscript.org.alfresco.rma.classification.reasons.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.classification.ReasonsGet"
+      parent="rmBaseWebscript">
+      <property name="classificationService" ref="classificationService" /> <!-- TODO Change to "C" -->
+   </bean>
 </beans>

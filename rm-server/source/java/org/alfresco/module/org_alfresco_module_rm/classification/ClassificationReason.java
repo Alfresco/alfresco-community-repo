@@ -44,6 +44,7 @@ public final class ClassificationReason implements Serializable
     public ClassificationReason(final String id, final String displayLabelKey)
     {
         if (id == null || id.trim().equals("")) { throw new IllegalArgumentException("Illegal id: '" + id + "'"); }
+        if (displayLabelKey == null || displayLabelKey.trim().equals("")) { throw new IllegalArgumentException("Illegal displayLabelKey: '" + displayLabelKey + "'"); }
         this.id = id;
         this.displayLabelKey = displayLabelKey;
     }
@@ -57,11 +58,13 @@ public final class ClassificationReason implements Serializable
     }
 
     /**
-     * Returns the localised (current locale) display label for this classification reason.
+     * Returns the localised (current locale) display label for this classification reason. If no translation is found
+     * then return the key instead.
      */
     public String getDisplayLabel()
     {
-        return I18NUtil.getMessage(displayLabelKey);
+        String message = I18NUtil.getMessage(displayLabelKey);
+        return (message != null ? message : displayLabelKey);
     }
 
     @Override

@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Records Management Classification Reasons</shortname>
+   <description>Gets the list of classification reasons.</description>
+   <url>/api/classification/reasons</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

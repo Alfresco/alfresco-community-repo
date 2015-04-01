@@ -653,6 +653,6 @@
    <bean id="webscript.org.alfresco.rma.classification.reasons.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.classification.ReasonsGet"
       parent="rmBaseWebscript">
-      <property name="classificationService" ref="classificationService" /> <!-- TODO Change to "C" -->
+      <property name="classificationService" ref="ClassificationService" />
    </bean>
 </beans>

@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -42,19 +41,6 @@ public class ReasonsGet extends AbstractRmWebScript
     /** Classification service */
     private ClassificationService classificationService;
 
-    /** JSON conversion component */
-    private JSONConversionComponent jsonConversionComponent;
-
-    /**
-     * Gets the JSON conversion component
-     *
-     * @return The JSON conversion component
-     */
-    protected JSONConversionComponent getJsonConversionComponent()
-    {
-        return this.jsonConversionComponent;
-    }
-
     /**
      * Sets the classification service
      *
@@ -63,16 +49,6 @@ public class ReasonsGet extends AbstractRmWebScript
     public void setClassificationService(ClassificationService classificationService)
     {
         this.classificationService = classificationService;
-    }
-
-    /**
-     * Sets the JSON conversion component
-     *
-     * @param jsonConversionComponent The JSON conversion component
-     */
-    public void setJsonConversionComponent(JSONConversionComponent jsonConversionComponent)
-    {
-        this.jsonConversionComponent = jsonConversionComponent;
     }
 
     /**

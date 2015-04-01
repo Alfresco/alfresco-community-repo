@@ -44,10 +44,12 @@
       </property>
    </bean>
 
+   <!-- FIXME: We have to restrict methods in the classification service (with capabilities, etc.) -->
    <bean id="ClassificationService_security" parent="baseSecurity">
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasons=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=ACL_DENY
          </value>
       </property>

@@ -126,6 +126,13 @@
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>amp</goal>
+                  </goals>
+               </execution>
+            </executions>
             <extensions>true</extensions>
             <configuration>
                <backup>true</backup>

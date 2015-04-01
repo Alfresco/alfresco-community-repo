@@ -39,14 +39,14 @@ public class MockAuthenticationUtilHelper
 {
     /**
      * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
-     * permissions. If the mock is asked for details about the user then it assumes the user is "admin".
+     * permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is
+     * "admin".
      * 
      * @param mockAuthenticationUtil The mock to initialise.
      */
-    @SuppressWarnings("unchecked")
     public static void setup(AuthenticationUtil mockAuthenticationUtil)
     {
-        setup(mockAuthenticationUtil, "admin", "admin", "admin");
+        setup(mockAuthenticationUtil, "admin");
     }
 
     /**
@@ -54,13 +54,10 @@ public class MockAuthenticationUtilHelper
      * permissions.
      * 
      * @param mockAuthenticationUtil The mock to initialise.
-     * @param adminUserName The name of the default admin user.
      * @param fullyAuthenticatedUser The name of the user that last authenticated.
-     * @param systemUserName The name of the system user.
      */
     @SuppressWarnings("unchecked")
-    public static void setup(AuthenticationUtil mockAuthenticationUtil, String adminUserName,
-                String fullyAuthenticatedUser, String systemUserName)
+    public static void setup(AuthenticationUtil mockAuthenticationUtil, String fullyAuthenticatedUser)
     {
         reset(mockAuthenticationUtil);
 
@@ -90,9 +87,8 @@ public class MockAuthenticationUtilHelper
 
         }).when(mockAuthenticationUtil).<Object> runAs(any(RunAsWork.class), anyString());
 
-        // assume admin
-        doReturn(adminUserName).when(mockAuthenticationUtil).getAdminUserName();
+        doReturn("admin").when(mockAuthenticationUtil).getAdminUserName();
         doReturn(fullyAuthenticatedUser).when(mockAuthenticationUtil).getFullyAuthenticatedUser();
-        doReturn(systemUserName).when(mockAuthenticationUtil).getSystemUserName();
+        doReturn("system").when(mockAuthenticationUtil).getSystemUserName();
     }
 }

@@ -120,32 +120,6 @@
         </property>
     </bean>
 
-    <!-- Load models -->
-    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
-
-      <property name="dictionaryDAO" ref="dictionaryDAO"/>
-      <property name="contentService" ref="ContentService"/>
-      <property name="transactionService" ref="transactionService"/>
-      <property name="namespaceService" ref="namespaceService"/>
-      <property name="nodeService" ref="nodeService"/>
-      <property name="messageService" ref="messageService"/>
-      <property name="tenantAdminService" ref="tenantAdminService"/>
-      <property name="policyComponent" ref="policyComponent"/>
-
-      <property name="repositoryModelsLocations">
-         <list>
-            <ref bean="customModelsRepositoryLocation" />
-         </list>
-      </property>
-
-      <property name="repositoryMessagesLocations">
-         <list>
-            <ref bean="customMessagesRepositoryLocation" />
-         </list>
-      </property>
-
-   </bean>
-
     <bean id="bootstrapReEncryptor" class="org.alfresco.encryption.BootstrapReEncryptor">
         <property name="enabled" value="${encryption.bootstrap.reencrypt}"/>
         <property name="reEncryptor" ref="reEncryptor"/>
@@ -298,6 +272,32 @@
         <property name="repositoryWorkflowDefsLocations" ref="customWorkflowDefsRepositoryLocation"/>
     </bean>
 
+    <!-- Load models -->
+    <bean id="dictionaryRepositoryBootstrap" class="org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap">
+
+      <property name="dictionaryDAO" ref="dictionaryDAO"/>
+      <property name="contentService" ref="ContentService"/>
+      <property name="transactionService" ref="transactionService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="messageService" ref="messageService"/>
+      <property name="tenantAdminService" ref="tenantAdminService"/>
+      <property name="policyComponent" ref="policyComponent"/>
+      
+      <property name="repositoryModelsLocations">
+         <list>
+            <ref bean="customModelsRepositoryLocation" />
+         </list>
+      </property>
+      
+      <property name="repositoryMessagesLocations">
+         <list>
+            <ref bean="customMessagesRepositoryLocation" />
+         </list>
+      </property>
+      
+   </bean>
+    
     <!-- Descriptor Service -->
     <bean id="descriptorComponent" class="org.alfresco.repo.descriptor.DescriptorServiceImpl">
        <property name="serverDescriptorDAO">

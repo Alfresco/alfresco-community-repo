@@ -259,7 +259,7 @@ public void testImageVideo() throws Throwable {
       assertEquals("8 bits", p.get("Data Precision"));
       // Check regular Tika properties
       assertEquals(QUICK_TITLE, p.get(Metadata.COMMENT));
-      assertEquals("canon-55-250", p.get(Metadata.SUBJECT));
+      assertEquals("canon-55-250, moscow-birds, serbor", p.get(Metadata.SUBJECT));
       // Check namespace'd Tika properties
       assertEquals("12.54321", p.get("geo:lat"));
       assertEquals("-54.1234", p.get("geo:long"));

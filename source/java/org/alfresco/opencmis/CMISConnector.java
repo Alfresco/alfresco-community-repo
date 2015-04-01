@@ -833,7 +833,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     	{
     		throw new AlfrescoRuntimeException("Failed to create CMIS temporary directory");
     	}
-        dictionaryDAO.register(this);
+        dictionaryDAO.registerListener(this);
     }
     
     public void init()

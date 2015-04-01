@@ -212,7 +212,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
             }
             catch (Exception ex)
             {
-                throw new MessagingException("Unexpected exception borrwoing connection from pool", ex);
+                throw new MessagingException("Unexpected exception borrowing connection from pool", ex);
             }
         }
 

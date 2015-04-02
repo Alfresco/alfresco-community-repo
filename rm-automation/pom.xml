@@ -8,7 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-rm-automation</artifactId>
     <properties>
-        <selenium.version>2.43.1</selenium.version>
+        <selenium.version>2.45.0</selenium.version>
         <spring.version>4.0.5.RELEASE</spring.version>
     </properties>
     <build>

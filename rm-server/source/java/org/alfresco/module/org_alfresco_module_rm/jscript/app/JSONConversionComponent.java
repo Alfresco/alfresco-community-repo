@@ -52,6 +52,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -639,7 +640,11 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
             @SuppressWarnings("unchecked")
             Set<String> recordContributorsMembers = (Set<String>) getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS);
-            recordContributorsMembers.add((String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME));
+            String userName = (String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME);
+            if (StringUtils.isNotBlank(userName))
+            {
+                recordContributorsMembers.add(userName);
+            }
         }
     }
 

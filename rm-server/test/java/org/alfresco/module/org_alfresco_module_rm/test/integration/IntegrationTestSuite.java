@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration;
 
+import org.alfresco.module.org_alfresco_module_rm.test.integration.classification.ClassificationTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.disposition.DispositionTestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.dod.DoD5015TestSuite;
 import org.alfresco.module.org_alfresco_module_rm.test.integration.event.EventTestSuite;
@@ -55,7 +56,8 @@ import org.junit.runners.Suite.SuiteClasses;
     HoldTestSuite.class,
     VersionTestSuite.class,
     RelationshipTestSuite.class,
-    TransferTestSuite.class
+    TransferTestSuite.class,
+    ClassificationTestSuite.class
 })
 public class IntegrationTestSuite
 {

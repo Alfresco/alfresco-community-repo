@@ -1,4 +1,3 @@
-<#escape x as jsonUtils.encodeJSONString(x)>
 {
    "data":
    {
@@ -6,11 +5,10 @@
       [
          <#list reasons as reason>
          {
-            "id": "<#noescape>${reason.id}</#noescape>",
-            "displayLabel": "<#noescape>${reason.displayLabel}</#noescape>"
+            "id": "${reason.id?json_string}",
+            "displayLabel": "${reason.displayLabel?json_string}"
          }<#if reason_has_next>,</#if>
          </#list>
       ]
    }
 }
-</#escape>

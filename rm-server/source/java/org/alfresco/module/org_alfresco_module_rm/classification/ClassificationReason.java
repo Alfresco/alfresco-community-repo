@@ -21,7 +21,9 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.io.Serializable;
 
+import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
+
 
 /**
  * This class is a POJO data type for a classification reason.
@@ -43,8 +45,8 @@ public final class ClassificationReason implements Serializable
      */
     public ClassificationReason(final String id, final String displayLabelKey)
     {
-        if (id == null || id.trim().equals("")) { throw new IllegalArgumentException("Illegal id: '" + id + "'"); }
-        if (displayLabelKey == null || displayLabelKey.trim().equals("")) { throw new IllegalArgumentException("Illegal displayLabelKey: '" + displayLabelKey + "'"); }
+        RMParameterCheck.checkNotBlank("id", id);
+        RMParameterCheck.checkNotBlank("displayLabelKey", displayLabelKey);
         this.id = id;
         this.displayLabelKey = displayLabelKey;
     }

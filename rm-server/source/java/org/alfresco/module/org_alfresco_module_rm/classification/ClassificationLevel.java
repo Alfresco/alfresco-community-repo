@@ -18,9 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import org.springframework.extensions.surf.util.I18NUtil;
-
 import java.io.Serializable;
+
+import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * This class is a POJO data type for a Classification Level.
@@ -35,10 +36,8 @@ public final class ClassificationLevel implements Serializable
 
     public ClassificationLevel(final String id, final String displayLabelKey)
     {
-        if (id == null || id.trim().equals(""))
-        {
-            throw new IllegalArgumentException("Illegal id: '" + id + "'");
-        }
+        RMParameterCheck.checkNotBlank("id", id);
+        RMParameterCheck.checkNotBlank("displayLabelKey", displayLabelKey);
         this.id              = id;
         this.displayLabelKey = displayLabelKey;
     }

@@ -112,6 +112,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /** Constants for checking the cache */
     private static final String RM_SITE_EXISTS = "rmSiteExists";
     private static final String RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS = "rmRecordContributorsGroupMembers";
+    private static final String RM_RECORD_CONTRIBUTORS_GROUP_NODE_REF = "rmRecordContributorsGroupNodeRef";
     private static final String RM_SHOW_ACTIONS = "rmShowActions";
 
     /**
@@ -636,14 +637,20 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             {
                 Set<String> groupMembers = authorityService.getContainedAuthorities(AuthorityType.USER, AuthorityType.GROUP.getPrefixString() + recordContributorsGroupName, false);
                 getJsonConversionComponentCache().put(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS, groupMembers);
+
+                NodeRef recordContributorNodeRef = authorityService.getAuthorityNodeRef(AuthorityType.GROUP.getPrefixString() + recordContributorsGroupName);
+                getJsonConversionComponentCache().put(RM_RECORD_CONTRIBUTORS_GROUP_NODE_REF, recordContributorNodeRef);
             }
 
-            @SuppressWarnings("unchecked")
-            Set<String> recordContributorsMembers = (Set<String>) getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS);
-            String userName = (String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME);
-            if (StringUtils.isNotBlank(userName))
+            if (childAssocRef.getParentRef().equals(getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_NODE_REF)))
             {
-                recordContributorsMembers.add(userName);
+                @SuppressWarnings("unchecked")
+                Set<String> recordContributorsMembers = (Set<String>) getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS);
+                String userName = (String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME);
+                if (StringUtils.isNotBlank(userName))
+                {
+                    recordContributorsMembers.add(userName);
+                }
             }
         }
     }

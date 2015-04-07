@@ -46,7 +46,7 @@ public class ExceptionUtils
 
         @Override public String toString()
         {
-            return String.join("Expected ", expected.getSimpleName(), " but ",
+            return String.join("", "Expected ", expected.getSimpleName(), " but ",
                                actual.getClass().getSimpleName(), " was thrown.");
         }
     }
@@ -64,7 +64,7 @@ public class ExceptionUtils
         public Class<? extends Throwable> getExpected() { return this.expected; }
         @Override public String toString()
         {
-            return String.join("Expected ", expected.getSimpleName(), " but nothing was thrown.");
+            return String.join("", "Expected ", expected.getSimpleName(), " but nothing was thrown.");
         }
     }
 

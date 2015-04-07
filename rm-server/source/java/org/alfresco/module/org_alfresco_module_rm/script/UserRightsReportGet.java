@@ -133,7 +133,7 @@ public class UserRightsReportGet extends DeclarativeWebScript
 
             // get the users for the current RM role
             String group = role.getRoleGroupName();
-            Set<String> users = filePlanRoleService.getUsersAssignedToRole(filePlanNode, roleName);
+            Set<String> users = authorityService.getContainedAuthorities(AuthorityType.USER, group, false);
             roleModel.setUsers(users);
 
             // setup a user model object for each user

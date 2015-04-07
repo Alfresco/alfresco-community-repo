@@ -665,7 +665,11 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         {
             @SuppressWarnings("unchecked")
             Set<String> groupMembers = (Set<String>) getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS);
-            groupMembers.remove((String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME));
+            String userName = (String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME);
+            if (StringUtils.isNotBlank(userName));
+            {
+                groupMembers.remove(userName);
+            }
         }
     }
 }

@@ -20,14 +20,12 @@ package org.alfresco.util;
 
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
-import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -139,7 +137,7 @@ public final class WebScriptUtils
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not get content from the request.", error);
         }
 
-        if (StringUtils.isBlank(content))
+        if (isBlank(content))
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Content does not exist.");
         }
@@ -172,7 +170,7 @@ public final class WebScriptUtils
 
         if (!jsonObject.has(paramName))
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The json object does not contain en entry with parameter '" + paramName + "'.");
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The json object does not contain an entry with parameter '" + paramName + "'.");
         }
     }
 
@@ -234,7 +232,7 @@ public final class WebScriptUtils
             value = jsonObject.getString(key);
             if (checkValue && isBlank(value))
             {
-                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The vale is missing for the key '" + key + "'.");
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "The value is missing for the key '" + key + "'.");
             }
         }
         catch (JSONException error)

@@ -1046,7 +1046,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                         for (AssociationRef originalAssoc : originalAssocs)
                         {
-                            nodeService.createAssociation(originalAssoc.getSourceRef(), originalAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
+                            nodeService.createAssociation(record, originalAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
                         }
                     }
                 }

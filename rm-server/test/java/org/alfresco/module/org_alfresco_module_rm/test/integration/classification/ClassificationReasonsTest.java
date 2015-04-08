@@ -22,6 +22,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.classificati
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReason;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
 /**
@@ -36,6 +37,10 @@ public class ClassificationReasonsTest extends BaseRMTestCase
      * Given the default classification reasons config file is on the classpath
      * When the system has finished starting up
      * Then the classification service exposes the classification reasons.
+     * <p>
+     * Note that this test requires a clean db, as otherwise the classification service will use the persisted
+     * classification reasons in preference to those given on the classpath (see the logic in {@link
+     * ClassificationServiceImpl#initConfiguredClassificationReasons()}).
      */
     public void testLoadBootstrappedClassificationReasons() throws Exception
     {
@@ -56,8 +61,13 @@ public class ClassificationReasonsTest extends BaseRMTestCase
                 // Check the classification service exposes the classification reasons.
                 List<ClassificationReason> reasons = classificationService.getClassificationReasons();
                 assertNotNull(reasons);
-                assertEquals("The default classification reasons in rm-classification-levels.json contains three reasons.",
-                            3, reasons.size());
+                assertEquals("The default classification reasons in test/resources/alfresco/module/"
+                            + "org_alfresco_module_rm/classification/rm-classification-reasons.json "
+                            + "contains four reasons.", 4, reasons.size());
+                // Check a couple of fields in the loaded data.
+                assertEquals("Unexpected id for the first test reason.", "Test Reason 1", reasons.get(0).getId());
+                assertEquals("Unexpected displayLabelKey for the fourth test reason.",
+                             "rm.test.classification-reason.foreignRelations", reasons.get(3).getDisplayLabel());
             }
         });
     }

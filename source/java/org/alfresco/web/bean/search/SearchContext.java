@@ -44,7 +44,6 @@ import org.alfresco.web.app.Application;
 import org.alfresco.web.bean.repository.Repository;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.queryParser.QueryParser;
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;

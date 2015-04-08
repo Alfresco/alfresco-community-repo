@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>path</shortname>
+  <description>Document List Component - path resolver</description>
+  <url>/slingshot/doclib/node/{store_type}/{store_id}/{id}/location</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

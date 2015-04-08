@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Create Folder Templates</shortname>
+  <description>Document List Component - Create Folder Templates POST data webscript</description>
+  <url>/slingshot/doclib/folder-templates</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

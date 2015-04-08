@@ -14,6 +14,11 @@
             <value>alfresco/model/datalistModel.xml</value>
          </list>
       </property>
+      <property name="labels">
+         <list>
+            <value>alfresco/messages/data-list-model</value>
+         </list>
+      </property>
    </bean>
    
    <!-- Download a datalist as Excel XLS / XLSX -->

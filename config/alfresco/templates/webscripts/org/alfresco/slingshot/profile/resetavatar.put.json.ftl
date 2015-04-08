@@ -1,3 +1,0 @@
-{
-   "success": ${success?string}
-}

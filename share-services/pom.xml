@@ -13,13 +13,6 @@
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-repository</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-remote-api</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
@@ -52,8 +45,18 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
-
-    </dependencies>	
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${dependency.spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <resources>
@@ -67,13 +70,85 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.alfresco.maven.plugin</groupId>
                 <artifactId>alfresco-maven-plugin</artifactId>
                 <extensions>true</extensions>
             </plugin>
+
+            <plugin>
+               <artifactId>maven-surefire-plugin</artifactId>
+               <executions>
+                  <execution>
+                     <id>default-test</id>
+                     <!-- No unit tests in this project - all tests are integration tests -->
+                     <configuration>
+                          <includes>
+                              <include/>
+                          </includes>
+                     </configuration>
+                  </execution>
+               </executions>
+            </plugin>
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>integration-tests</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                               <id>integration-tests</id>
+                               <goals>
+                                  <goal>test</goal>
+                               </goals>
+                               <configuration>
+                                  <includes combine.self="override">
+                                     <include>**/*Test.java</include>
+                                  </includes>
+                               </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Wipe the database before starting tests -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>sql-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>wipe-database</id>
+                                <phase>pre-clean</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <sqlCommand>${db.drop.command}</sqlCommand>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-database</id>
+                                <phase>pre-clean</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <sqlCommand>${db.create.command}</sqlCommand>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+   </profiles>
 </project>

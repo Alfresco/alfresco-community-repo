@@ -568,12 +568,6 @@
       <property name="authenticationContextManager" ref="Authentication"/>
    </bean>
 
-   <bean id="webscript.org.alfresco.repository.site.site-share-view-url.get" class="org.alfresco.repo.web.scripts.site.SiteShareViewUrlGet" parent="webscript">
-      <property name="nodeService" ref="NodeService"/>
-      <property name="siteService" ref="SiteService"/>
-      <property name="sysAdminParams" ref="sysAdminParams" />
-      <property name="dictionaryService" ref="DictionaryService"/>
-   </bean>
    
    <!-- SiteAdmin only: Lists the sites (paged) -->
    <bean id="webscript.org.alfresco.repository.site.site-admin-sites.get" class="org.alfresco.repo.web.scripts.site.SiteAdminSitesGet" parent="webscript">

@@ -1,2 +1,0 @@
-abeecher=GROUP_site_swsdp_SiteCollaborator
-mjackson=GROUP_site_swsdp_SiteManager

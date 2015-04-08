@@ -39,6 +39,10 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.model.FileExistsException;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -53,7 +57,6 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyMap;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -74,8 +77,6 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     
     private static final String USER_ONE = "UserOne-"+RUN_ID;
     private static final String USER_TWO = "UserTwo-"+RUN_ID;
-    
-    private final static String COPY_URL = "/slingshot/doclib/action/copy-to/node/{copy_dest}";
 
     private final static String SHARE_URL = "/api/internal/shared/share/{node_ref_3}";
     
@@ -109,7 +110,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
     private SiteService siteService;
     private Repository repositoryHelper;
     private RetryingTransactionHelper transactionHelper;
-    
+    private FileFolderService fileFolderService;
     private NodeRef userOneHome;
     
     @Override
@@ -125,7 +126,7 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         siteService = (SiteService) getServer().getApplicationContext().getBean("SiteService"); 
         repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
         transactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");
-        
+        fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         createUser(USER_ONE);
@@ -315,13 +316,14 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
      * @throws IOException 
      * @throws UnsupportedEncodingException 
      * @throws JSONException 
+     * @throws FileNotFoundException 
+     * @throws FileExistsException 
      */
-    public void testCopy() throws UnsupportedEncodingException, IOException, JSONException 
+    public void testCopy() throws UnsupportedEncodingException, IOException, JSONException, FileExistsException, FileNotFoundException 
     {
         final int expectedStatusOK = 200;
         
         String testNodeRef = testNode.toString().replace("://", "/");
-        String userOneNodeRef = userOneHome.toString().replace("://", "/");
 
         // As user one ...
         
@@ -332,22 +334,11 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         assertNotNull(sharedId);
         assertEquals(22, sharedId.length()); // note: we may have to adjust/remove this check if we change length of id (or it becomes variable length)
 
-        JSONObject jsonReq = new JSONObject();
-        JSONArray nodeRefs = new JSONArray();
-        nodeRefs.put(testNode.toString());
-        jsonReq.put("nodeRefs", nodeRefs);
-        jsonReq.put("parentId", userOneHome);
-
-        rsp = sendRequest(new PostRequest(COPY_URL.replace("{copy_dest}", userOneNodeRef), jsonReq.toString(), APPLICATION_JSON), expectedStatusOK, USER_ONE);
-        jsonRsp = new JSONObject(new JSONTokener(rsp.getContentAsString()));
-        
-        JSONArray copyResults = jsonRsp.getJSONArray("results");
-        JSONObject copyResult = copyResults.getJSONObject(0);
-        
-        String copyNodeRef = copyResult.getString("nodeRef");
-        
         AuthenticationUtil.setFullyAuthenticatedUser(USER_ONE);
-        assertFalse(nodeService.hasAspect(new NodeRef(copyNodeRef), QuickShareModel.ASPECT_QSHARE));
+        FileInfo copyFileInfo = fileFolderService.copy(testNode, userOneHome, "Copied node");
+        NodeRef copyNodeRef = copyFileInfo.getNodeRef();
+        
+        assertFalse(nodeService.hasAspect(copyNodeRef, QuickShareModel.ASPECT_QSHARE));
     }
     
     private void createUser(String userName)

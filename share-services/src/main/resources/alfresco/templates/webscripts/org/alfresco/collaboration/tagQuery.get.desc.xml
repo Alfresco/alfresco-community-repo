@@ -1,0 +1,17 @@
+<webscript>
+   <shortname>Tagging Query</shortname>
+   <description><![CDATA[
+      Query tag usage.
+      <br />
+      The following properties may be updated.
+      <dl>
+         <dt>nodeRef</dt><dd>nodeRef to anchor tag query from. Defaults to Company Home</dd>
+         <dt>maxResults</dt><dd>maximum number of results to return. Defaults to all results (limited by Lucene)</dd>
+         <dt>sortOrder</dt><dd>sort order for results. Possible values are: "name" (default), "count"</dd>
+      </dl>
+   ]]></description>
+   <url>/collaboration/tagQuery?n={nodeRef?}&amp;m={maxResults?}&amp;s={sortOrder?}</url>
+   <format default="json">argument</format>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

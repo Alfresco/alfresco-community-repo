@@ -1,0 +1,8 @@
+<webscript>
+  <shortname>Tagging Actions</shortname>
+  <description>Add and remove tags to nodes</description>
+  <url>/collaboration/tagActions</url>
+  <format default="html"/>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+</webscript>

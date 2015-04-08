@@ -18,7 +18,6 @@
  */
 package org.alfresco.repo.web.scripts;
 
-import java.text.MessageFormat;
 import java.util.List;
 
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -56,19 +55,7 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
     private static final String URL_GET_SITE_LINKS = "/api/links/site/" + TEST_SITE_NAME + "/links?page=1&pageSize=10";
     private static final String URL_GET_SITE_LINK = "/api/links/link/site/" + TEST_SITE_NAME + "/links/123456789";
     private static final String URL_GET_SITE_TAGS = "/api/tagscopes/site/" + TEST_SITE_NAME + "/tags";
-    private static final String URL_GET_SITE_DATALISTS = "/slingshot/datalists/lists/site/" + TEST_SITE_NAME + "/dataLists";
-    private static final String URL_GET_SITE_WIKI = "/slingshot/wiki/pages/" + TEST_SITE_NAME;
-    private static final String URL_GET_SITE_WIKI_PAGE = "/slingshot/wiki/page/" + TEST_SITE_NAME + "/AWikiPage";
-    private static final String URL_GET_SITE_WIKI_PAGE_VERSION = "/slingshot/wiki/version/" + TEST_SITE_NAME + "/AWikiPage/123456789";
-    private static final String URL_GET_DOCLIB_CATEGORYNODE = "/slingshot/doclib/categorynode/node/{0}";
-    private static final String URL_GET_DOCLIB_TREENODE = "/slingshot/doclib/treenode/site/" + TEST_SITE_NAME + "/documentLibrary";
-    private static final String URL_GET_DOCLIB_NODE = "/slingshot/doclib/node/{0}";
-    private static final String URL_GET_DOCLIB2_NODE = "/slingshot/doclib2/node/{0}";
-    private static final String URL_GET_DOCLIB_LOCATION = "/slingshot/doclib/node/{0}/location";
-    private static final String URL_GET_DOCLIB_DOCLIST = "/slingshot/doclib/doclist/documents/site/" + TEST_SITE_NAME + "/documentLibrary";
-    private static final String URL_GET_DOCLIB2_DOCLIST = "/slingshot/doclib2/doclist/documents/site/" + TEST_SITE_NAME + "/documentLibrary";
-    private static final String URL_GET_DOCLIB_IMAGES = "/slingshot/doclib/images/site/" + TEST_SITE_NAME + "/documentLibrary";
-    
+
     private SiteService siteService;
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -172,104 +159,6 @@ public class ReadOnlyTransactionInGetRestApiTest extends BaseWebScriptTest
     public void testGetSiteTags() throws Exception
     {
         Response response = sendRequest(new GetRequest(URL_GET_SITE_TAGS), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetSiteDataLists() throws Exception
-    {
-        // TODO: Fixme - This REST API still requires a readwrite transaction to be successful
-        
-        Response response = sendRequest(new GetRequest(URL_GET_SITE_DATALISTS), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetSiteWiki() throws Exception
-    {
-        Response response = sendRequest(new GetRequest(URL_GET_SITE_WIKI), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetSiteWikiPage() throws Exception
-    {
-        Response response = sendRequest(new GetRequest(URL_GET_SITE_WIKI_PAGE), 404);
-        logResponse(response);
-        assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
-    }
-    
-    public void testGetSiteWikiPageVersion() throws Exception
-    {
-        Response response = sendRequest(new GetRequest(URL_GET_SITE_WIKI_PAGE_VERSION), 404);
-        logResponse(response);
-        assertEquals(Status.STATUS_NOT_FOUND, response.getStatus());
-    }
-    
-    public void testGetDoclibTreeNode() throws Exception
-    {
-        // TODO: Fixme - This REST API still requires a readwrite transaction to be successful
-        
-        Response response = sendRequest(new GetRequest(URL_GET_DOCLIB_TREENODE), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetDoclibDoclist() throws Exception
-    {
-        // TODO: Fixme - This REST API still requires a readwrite transaction to be successful
-        
-        Response response = sendRequest(new GetRequest(URL_GET_DOCLIB_DOCLIST), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetDoclib2Doclist() throws Exception
-    {
-        // TODO: Fixme - This REST API still requires a readwrite transaction to be successful
-        
-        Response response = sendRequest(new GetRequest(URL_GET_DOCLIB2_DOCLIST), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetDoclibImages() throws Exception
-    {
-        // TODO: Fixme - This REST API still requires a readwrite transaction to be successful
-        
-        Response response = sendRequest(new GetRequest(URL_GET_DOCLIB_IMAGES), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetDoclibCategoryNode() throws Exception
-    {
-        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_GET_DOCLIB_CATEGORYNODE,
-                    testSiteNodeRefString)), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetDoclibNode() throws Exception
-    {
-        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_GET_DOCLIB_NODE, 
-                    testSiteNodeRefString)), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetDoclib2Node() throws Exception
-    {
-        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_GET_DOCLIB2_NODE, 
-                    testSiteNodeRefString)), 200);
-        logResponse(response);
-        assertEquals(Status.STATUS_OK, response.getStatus());
-    }
-    
-    public void testGetDoclibNodeLocation() throws Exception
-    {
-        Response response = sendRequest(new GetRequest(MessageFormat.format(URL_GET_DOCLIB_LOCATION,
-                    testSiteNodeRefString)), 200);
         logResponse(response);
         assertEquals(Status.STATUS_OK, response.getStatus());
     }

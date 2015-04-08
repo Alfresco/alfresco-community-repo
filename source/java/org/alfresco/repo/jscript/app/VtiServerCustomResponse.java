@@ -107,9 +107,9 @@ public class VtiServerCustomResponse implements CustomResponse
     }
 
     /**
-     * Populates the DocLib webscript response with custom metadata
+     * Populates the CustomResponse with the vti metadata
      *
-     * @return JSONObject or null
+     * @return JSONObject or null if the vti module is not installed.
      */
     public Serializable populate()
     {

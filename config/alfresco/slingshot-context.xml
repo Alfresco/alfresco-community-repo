@@ -41,25 +41,12 @@
             <value>${vti.server.external.contextPath}</value>
         </property>
     </bean>
-    
-    <util:map id="slingshotDocLibCustomResponsesMap">
+   
+   <!-- Bean below used by share-enablement project and over-ridden by repository-enterprise -->  
+   <util:map id="slingshotDocLibCustomResponsesMap">
         <entry key="vtiServer">
             <ref bean="doclibCustomVtiServer"/>
         </entry>
-    </util:map>
-
-    <bean id="slingshotDocLibCustomResponse" parent="baseJavaScriptExtension" class="org.alfresco.repo.jscript.SlingshotDocLibCustomResponse">
-        <property name="extensionName">
-            <value>slingshotDocLib</value>
-       </property>
-       <property name="customResponses" ref="slingshotDocLibCustomResponsesMap" />
-    </bean>
-
-    <bean name="registerSlingshotCustomResponse" class="org.alfresco.repo.jscript.SlingshotDocLibCustomResponseRegistrar"
-           init-method="addCustomResponse" abstract="true">
-       <property name="responsesMap">
-           <ref bean="slingshotDocLibCustomResponsesMap" />
-       </property>
-    </bean>
+   </util:map>
 
 </beans>

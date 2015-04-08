@@ -99,7 +99,7 @@ public class DictionaryLoadDAOTest
         bootstrapModels.add("alfresco/model/remoteCredentialsModel.xml");
         bootstrapModels.add("alfresco/model/datalistModel.xml");
         bootstrapModels.add("alfresco/model/quickShareModel.xml");
-        bootstrapModels.add("alfresco/model/shareUiModel.xml");
+        bootstrapModels.add("alfresco/model/surfModel.xml");
         bootstrapModels.add("alfresco/model/siteModel.xml");
         bootstrapModels.add("alfresco/model/publishingModel.xml");
 

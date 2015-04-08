@@ -694,8 +694,8 @@
                 <!-- QuickShare (aka PublicView) -->
                 <value>alfresco/model/quickShareModel.xml</value>
 
-                <!-- Share UI model -->
-                <value>alfresco/model/shareUiModel.xml</value>
+                <!-- Surf model -->
+                <value>alfresco/model/surfModel.xml</value>
 
                 <!-- Site model -->
                 <value>alfresco/model/siteModel.xml</value>

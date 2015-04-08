@@ -1,0 +1,10 @@
+<webscript>
+   <shortname>Node Browser Repository support</shortname>
+   <description>Execute searches, return information on a node or return a list of stores</description>
+   <url>/slingshot/node/{protocol}/{store}/{id}</url>
+   <url>/slingshot/node/search</url>
+   <url>/slingshot/node/stores</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

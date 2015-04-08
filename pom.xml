@@ -6,7 +6,7 @@
         <version>5.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <artifactId>alfresco</artifactId>
+    <artifactId>alfresco-platform</artifactId>
     <packaging>war</packaging>
     <name>Alfresco Repository WAR Community</name>
     <description>Alfresco Web Client</description>

@@ -120,8 +120,6 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
-import org.alfresco.service.cmr.wiki.WikiPageInfo;
-import org.alfresco.service.cmr.wiki.WikiService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.FileFilterMode.Client;
@@ -191,7 +189,6 @@ public class RepoService
 	protected FavouritesService favouritesService;
 	protected InvitationService invitationService;
 	protected LockService lockService;
-	protected WikiService wikiService;
 	protected CMISConnector cmisConnector;
 	protected NodeIndexer nodeIndexer;
 	protected HiddenAspect hiddenAspect;
@@ -248,7 +245,6 @@ public class RepoService
     	this.dictionaryService =  (DictionaryService)applicationContext.getBean("dictionaryService");
     	this.invitationService = (InvitationService)applicationContext.getBean("InvitationService");
     	this.lockService = (LockService)applicationContext.getBean("LockService");
-    	this.wikiService = (WikiService)applicationContext.getBean("WikiService");
     	this.cmisConnector = (CMISConnector)applicationContext.getBean("CMISConnector");
     	this.nodeIndexer = (NodeIndexer)applicationContext.getBean("nodeIndexer");
     	this.activities = (Activities)applicationContext.getBean("activities");
@@ -367,12 +363,6 @@ public class RepoService
 	public void unlockNode(NodeRef nodeRef)
 	{
 		lockService.unlock(nodeRef);
-	}
-	
-	public WikiPageInfo createWiki(String siteId, String title, String contents)
-	{
-		WikiPageInfo info = wikiService.createWikiPage(siteId, title, contents);
-		return info;
 	}
 	
 	public TestPerson createUser(final PersonInfo personInfo, final String username, final TestNetwork network)
@@ -1086,7 +1076,7 @@ public class RepoService
     	nodeService.addAspect(nodeRef, aspectTypeQName, aspectProperties);
     }
     
-    public void createComment(NodeRef nodeRef, final Comment comment)
+    public NodeRef createComment(NodeRef nodeRef, final Comment comment)
     {
 		NodeRef commentNodeRef = commentService.createComment(nodeRef, comment.getTitle(), comment.getContent(), false);
 		comment.setId(commentNodeRef.getId());
@@ -1094,6 +1084,7 @@ public class RepoService
 		comment.setCreatedAt(PublicApiDateFormat.getDateFormat().format(created));
 		TestPerson person = getPerson((String)nodeService.getProperty(commentNodeRef, ContentModel.PROP_CREATOR));
 		comment.setCreatedBy(person);
+		return commentNodeRef;
     }
     
     public TestNetwork createNetworkWithAlias(String alias, boolean enabled)

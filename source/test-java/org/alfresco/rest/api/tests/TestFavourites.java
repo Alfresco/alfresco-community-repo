@@ -32,6 +32,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.SiteMembershipRequests;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Favourite;
 import org.alfresco.rest.api.tests.client.data.FavouritesTarget;
@@ -49,7 +50,6 @@ import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.service.cmr.wiki.WikiPageInfo;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.HttpStatus;
@@ -516,6 +516,8 @@ public class TestFavourites extends EnterpriseTestApi
 
 		// cloud-2468
 		// invalid type
+		// NOTE: The test below has swapped to attempt to favorite a comment rather than a
+		//       a wiki page as the WikiService has moved to the Share Services AMP in 5.1
 		
 		try
 		{
@@ -523,19 +525,19 @@ public class TestFavourites extends EnterpriseTestApi
 
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
 			
-			final TestSite site = personSites.get(0);
-			final WikiPageInfo wiki = TenantUtil.runAsUserTenant(new TenantRunAsWork<WikiPageInfo>()
+			final NodeRef document = personDocs.get(0);
+			final NodeRef comment = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
 			{
 				@Override
-				public WikiPageInfo doWork() throws Exception
+				public NodeRef doWork() throws Exception
 				{
-					WikiPageInfo wiki = repoService.createWiki(site.getSiteId(), GUID.generate(), GUID.generate());
-					return wiki;
+					NodeRef comment = repoService.createComment(document, new Comment("Title", "Content"));
+					return comment;
 				}
 			}, person10Id, network1.getId());
 
-			final String guid = wiki.getNodeRef().getId();
-			JSONAble wikiJSON = new JSONAble()
+			final String guid = comment.getId();
+			JSONAble commentJSON = new JSONAble()
 			{
 				@SuppressWarnings("unchecked")
 				@Override
@@ -547,7 +549,7 @@ public class TestFavourites extends EnterpriseTestApi
 				}
 			};
 
-			FavouritesTarget target = new InvalidFavouriteTarget("wiki", wikiJSON, guid);
+			FavouritesTarget target = new InvalidFavouriteTarget("comment", commentJSON, guid);
 			Favourite favourite = new Favourite(target);
 
 			favouritesProxy.createFavourite(person10Id, favourite);
@@ -557,7 +559,7 @@ public class TestFavourites extends EnterpriseTestApi
 		{
 			assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 		}
-
+		
 		try
 		{
 			log("cloud-2468");

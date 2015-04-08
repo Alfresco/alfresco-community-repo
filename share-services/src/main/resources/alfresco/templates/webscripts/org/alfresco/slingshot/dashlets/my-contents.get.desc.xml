@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>my-content</shortname>
+  <description>Content I'm Editing Dashlet Data Webscript</description>
+  <url>/slingshot/dashlets/my-contents</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -105,6 +105,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( XssVulnerabilityTest.class );
         suite.addTestSuite( LinksRestApiTest.class );
         suite.addTestSuite( RemoteFileFolderLoaderTest.class );
+        suite.addTestSuite( ReadOnlyTransactionInGetRestApiTest.class );
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,
         //  due to finalisers closing caches when we're not looking

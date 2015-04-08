@@ -454,10 +454,10 @@ public class LinksRestApiTest extends BaseWebScriptTest
              "/node/workspace/" + nodeRef.getStoreRef().getIdentifier() + "/" + nodeRef.getId() + "/comments",
              link.getString("commentsUrl"));
        
-       // Check the created date
+       // Check the created date: compare two java.util.Date objects.
        assertEquals(
-             org.springframework.extensions.surf.util.ISO8601DateFormat.format((Date)nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED)),
-             link.getJSONObject("createdOnDate").getString("iso8601"));
+             nodeService.getProperty(nodeRef, ContentModel.PROP_CREATED),
+             ISO8601DateFormat.parse(link.getJSONObject("createdOnDate").getString("iso8601")));
        
        // Edit
        // We should get a simple message

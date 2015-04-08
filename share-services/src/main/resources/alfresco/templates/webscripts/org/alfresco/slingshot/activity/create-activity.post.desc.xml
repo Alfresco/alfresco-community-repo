@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Create Activity</shortname>
+  <description>Share Generic Component - create activity data webscript</description>
+  <url>/slingshot/activity/create</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

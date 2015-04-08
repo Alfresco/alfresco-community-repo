@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>Reset Avatar image</shortname>
+  <description>User Profile - Reset Avatar image for a user</description>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <url>/slingshot/profile/resetavatar/{userName}</url>
+  <lifecycle>internal</lifecycle>
+</webscript>

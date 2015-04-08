@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>User Status</shortname>
+  <description>User Status POST for update</description>
+  <format default="json" />
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <url>/slingshot/profile/userstatus</url>
+  <lifecycle>internal</lifecycle>
+</webscript>

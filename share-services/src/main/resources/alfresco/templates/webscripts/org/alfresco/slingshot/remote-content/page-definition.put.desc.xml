@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Update a Page Definition</shortname>
+  <description>Updates an existing Page definition</description>
+  <family>Remote Share</family>
+  <url>/remote-share/page-definition/{pagename}</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readwrite">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

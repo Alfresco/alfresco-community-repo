@@ -1,0 +1,9 @@
+<webscript>
+  <shortname>my-tasks</shortname>
+  <description>My Tasks Dashlet Data Webscript</description>
+  <url>/slingshot/dashlets/my-tasks?filter={filter?}&amp;date={date?}</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

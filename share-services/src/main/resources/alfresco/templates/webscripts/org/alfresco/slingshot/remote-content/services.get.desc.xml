@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Remote Services</shortname>
+  <description>Returns available services</description>
+  <family>Remote Share</family>
+  <url>/remote-share/services</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -1,0 +1,10 @@
+<webscript>
+  <shortname>Create a Content Application Type</shortname>
+  <description>Creates a new Content Application Type</description>
+  <family>Content Applications</family>
+  <url>/remote-share/content-app-type</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readwrite">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

@@ -1,0 +1,11 @@
+<webscript>
+  <shortname>Remote Pages</shortname>
+  <description>Returns available page definitions</description>
+  <family>Remote Share</family>
+  <url>/remote-share/pages</url>
+  <url>/remote-share/pages/name/{pagename}</url>
+  <format default="json"></format>
+  <authentication>user</authentication>
+  <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

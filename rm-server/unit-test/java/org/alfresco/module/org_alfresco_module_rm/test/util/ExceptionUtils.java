@@ -81,13 +81,13 @@ public class ExceptionUtils
      *     <li>
      *         Calling a local method which throws a {@code RuntimeException}. (An expression lambda)
      *         <pre>
-     * intercept(RuntimeException.class, () -> badMethod() );
+     * expectedException(RuntimeException.class, () -> badMethod() );
      *         </pre>
      *     </li>
      *     <li>
      *         Executing a block of code. (Requires return statement)
      *         <pre>
-     * intercept(RuntimeException.class, () -> {
+     * expectedException(RuntimeException.class, () -> {
      *   for (int i = 0; i < 10; i++) {
      *     goodMethod();
      *   }
@@ -99,7 +99,7 @@ public class ExceptionUtils
      *     <li>
      *         Examining the expected exception e.g. to assert the root cause is correct.
      *         <pre>
-     * UnsupportedOperationException e = intercept(UnsupportedOperationException.class, () -> badMethod2() );
+     * UnsupportedOperationException e = expectedException(UnsupportedOperationException.class, () -> badMethod2() );
      * assertEquals(RuntimeException.class, e.getCause().getClass());
      *         </pre>
      *     </li>
@@ -107,8 +107,8 @@ public class ExceptionUtils
      *         Note that if your lambda expression returns 'void' then you cannot use an expression
      *         and must explicitly return null from a lambda block.
      *         <pre>
-     * intercept(Exception.class, () -> { methodReturningVoid(); return null; } );
-     * intercept(Exception.class, () -> { methodReturningVoid("parameter"); return null; } );
+     * expectedException(Exception.class, () -> { methodReturningVoid(); return null; } );
+     * expectedException(Exception.class, () -> { methodReturningVoid("parameter"); return null; } );
      *         </pre>
      *     </li>
      * </ul>
@@ -121,7 +121,7 @@ public class ExceptionUtils
      * @throws UnexpectedThrowableException if a non-matching throwable was thrown out of the code block.
      * @throws MissingThrowableException if the expected throwable was not thrown out of the code block.
      */
-    public static <R, T extends Throwable> T intercept(final Class<T> expected, final Supplier<R> code)
+    public static <R, T extends Throwable> T expectedException(final Class<T> expected, final Supplier<R> code)
     {
         // The code block may throw an exception or it may not.
         Optional<Throwable> maybeThrownByCode;

@@ -24,7 +24,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.intercept;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.junit.Assert.*;
 
 /**
@@ -44,10 +44,10 @@ public class ExceptionUtilsUsageExamplesTest
     @Test public void swallowExpectedExceptions()
     {
         // Calling a local method. (An expression lambda)
-        intercept(RuntimeException.class, () -> badMethod1() );
+        expectedException(RuntimeException.class, () -> badMethod1() );
 
         // Executing a block of code. (Requires return statement)
-        intercept(RuntimeException.class, () ->
+        expectedException(RuntimeException.class, () ->
         {
             for (int i = 0; i < 10; i++) {
                 goodMethod();
@@ -60,14 +60,14 @@ public class ExceptionUtilsUsageExamplesTest
 
     @Test public void examineTheExpectedException()
     {
-        UnsupportedOperationException e = intercept(UnsupportedOperationException.class, () -> badMethod2() );
+        UnsupportedOperationException e = expectedException(UnsupportedOperationException.class, () -> badMethod2() );
         assertEquals(RuntimeException.class, e.getCause().getClass());
     }
 
     @Test(expected=MissingThrowableException.class)
     public void expectedExceptionNotThrown()
     {
-        intercept(IOException.class, () ->
+        expectedException(IOException.class, () ->
         {
             // Do nothing
             return null;
@@ -77,7 +77,7 @@ public class ExceptionUtilsUsageExamplesTest
     @Test(expected=UnexpectedThrowableException.class)
     public void unexpectedExceptionThrown()
     {
-        intercept(IOException.class, () ->
+        expectedException(IOException.class, () ->
         {
             throw new UnsupportedOperationException();
         });
@@ -90,12 +90,12 @@ public class ExceptionUtilsUsageExamplesTest
     // If you use lambdas that return void, then they cannot be lambda expressions. They must be blocks.
     @Test public void usingVoidLambdas()
     {
-        intercept(IllegalStateException.class, () -> {
+        expectedException(IllegalStateException.class, () -> {
             onlySideEffectsHere();
             return null;
         });
 
-        intercept(IllegalStateException.class, () -> {
+        expectedException(IllegalStateException.class, () -> {
             onlySideEffectsHere("hello");
             return null;
         });

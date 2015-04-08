@@ -95,7 +95,7 @@ public class DataListDownloadWebScript extends DeclarativeSpreadsheetWebScript
     }
 
     /**
-     * @param nodeService
+     * @param siteService SiteService
      */
     public void setSiteService(SiteService siteService)
     {

@@ -7,6 +7,15 @@
    <!-- Slingshot Data List REST API -->
    <!-- -->
 
+   <bean parent="dictionaryModelBootstrap" depends-on="resourceBundles">
+      <property name="models">
+         <list>
+            <!-- Share Data Lists model -->
+            <value>alfresco/model/datalistModel.xml</value>
+         </list>
+      </property>
+   </bean>
+   
    <!-- Download a datalist as Excel XLS / XLSX -->
    <bean id="webscript.org.alfresco.slingshot.datalists.list.get"
       class="org.alfresco.repo.web.scripts.datalist.DataListDownloadWebScript"

@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -201,7 +203,7 @@ public class ClassificationServiceImplUnitTest
         String expectedMessage = "Classification reasons configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
         assertTrue("Warning message not found in log.", messages.anyMatch(message -> message == expectedMessage));
     }
-    
+
     @Test(expected = MissingConfiguration.class)
     public void noReasonsFoundCausesException()
     {
@@ -210,5 +212,35 @@ public class ClassificationServiceImplUnitTest
         when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
 
         classificationServiceImpl.initConfiguredClassificationReasons();
+    }
+
+    /**
+     * Check that restrictList returns the three lower security levels when supplied with "secret" (i.e. that it doesn't
+     * return "top secret").
+     */
+    @Test public void restrictList_filter()
+    {
+        ClassificationLevel targetLevel = new ClassificationLevel("Secret", "rm.classification.secret");
+
+        List<ClassificationLevel> actual = classificationServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
+
+        List<ClassificationLevel> expected = asLevelList("Secret",       "rm.classification.secret",
+                                                         "Confidential", "rm.classification.confidential",
+                                                         "No Clearance", "rm.classification.noClearance");
+        assertEquals(expected, actual);
+        // Check that the returned list can't be modified.
+        ExceptionUtils.expectedException(UnsupportedOperationException.class, () -> actual.remove(0));
+    }
+
+    /**
+     * Check that restrictList returns an empty list when the target is not contained in the list.
+     */
+    @Test public void restrictList_targetNotFound()
+    {
+        ClassificationLevel targetLevel = new ClassificationLevel("UnrecognisedLevel", "rm.classification.IMadeThisUp");
+
+        List<ClassificationLevel> actual = classificationServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
+
+        assertEquals("Expected an empty list when the target level is not found.", 0, actual.size());
     }
 }

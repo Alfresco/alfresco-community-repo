@@ -167,11 +167,31 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         return classificationServiceDao.getConfiguredReasons();
     }
 
+    /**
+     * Create a list containing all classification levels up to and including the supplied level.
+     * 
+     * @param allLevels The list of all the classification levels starting with the highest security.
+     * @param targetLevel The highest security classification level that should be returned. If this is not found then
+     *            an empty list will be returned.
+     * @return an immutable list of the levels that a user at the target level can see.
+     */
+    List<ClassificationLevel> restrictList(List<ClassificationLevel> allLevels, ClassificationLevel targetLevel)
+    {
+        int targetIndex = allLevels.indexOf(targetLevel);
+        if (targetIndex == -1) { return Collections.emptyList(); }
+        List<ClassificationLevel> subList = allLevels.subList(targetIndex, allLevels.size());
+        return Collections.unmodifiableList(subList);
+    }
+
     @Override
     public List<ClassificationLevel> getClassificationLevels()
     {
-        return configuredLevels == null ? Collections.<ClassificationLevel>emptyList() :
-                                          Collections.unmodifiableList(configuredLevels);
+        if (configuredLevels == null) {
+            return Collections.emptyList();
+        }
+        // FIXME Currently assume user has highest security clearance, this should be fixed as part of RM-2112.
+        ClassificationLevel usersLevel = configuredLevels.get(0);
+        return restrictList(configuredLevels, usersLevel);
     }
 
     @Override public List<ClassificationReason> getClassificationReasons()

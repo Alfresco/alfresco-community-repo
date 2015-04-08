@@ -46,6 +46,20 @@ public class ApplicationContextHelper extends BaseApplicationContextHelper
         return BaseApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
     }
     
+    /**
+     * Provides a static, single instance of an application context represented by the given
+     * array of config locations. This method can be called repeatedly.
+     * <p/>
+     * If the configuration requested differs from one used previously, then the previously-created
+     * context is shut down.
+     * 
+     * @return Returns an application context for the given config locations
+     */
+    public synchronized static ApplicationContext getApplicationContext(String[] configLocations)
+    {
+        return BaseApplicationContextHelper.getApplicationContext(configLocations);
+    }
+    
     public static void main(String ... args)
     {
         ClassPathXmlApplicationContext ctx = (ClassPathXmlApplicationContext) getApplicationContext();

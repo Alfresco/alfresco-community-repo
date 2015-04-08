@@ -383,11 +383,6 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(org.alfresco.repo.version.VersionTestSuite.suite());
     }
     
-    static void tests60(TestSuite suite)
-    {
-        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.wiki.WikiServiceImplTest.class));
-    }
-    
     static void tests61(TestSuite suite)
     {
         suite.addTest(org.alfresco.repo.workflow.WorkflowTestSuite.suite());

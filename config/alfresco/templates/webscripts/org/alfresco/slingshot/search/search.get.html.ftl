@@ -1,1 +1,0 @@
-<#include "search.get.json.ftl">

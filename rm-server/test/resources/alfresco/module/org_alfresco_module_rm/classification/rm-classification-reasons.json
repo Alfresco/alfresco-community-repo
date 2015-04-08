@@ -1,0 +1,18 @@
+[
+  {
+    "id" : "Test Reason 1",
+    "displayLabel" : "rm.test.classification-reason.militaryPlans"
+  },
+  {
+    "id" : "Test Reason 1.2",
+    "displayLabel" : "rm.test.classification-reason.foreignGovernments"
+  },
+  {
+    "id" : "Test Reason 1.2(c)",
+    "displayLabel" : "rm.test.classification-reason.intelligenceActivities"
+  },
+  {
+    "id" : "Test Reason 1.2(c) iv",
+    "displayLabel" : "rm.test.classification-reason.foreignRelations"
+  }
+]

@@ -75,6 +75,16 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <!-- AMP specific resources needs to be on the classpath for test runs -->
+            <testResource>
+                <directory>src/main/amp/config</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
 
         <plugins>
             <plugin>

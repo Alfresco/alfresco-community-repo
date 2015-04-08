@@ -710,7 +710,6 @@
                 <value>alfresco/messages/application-model</value>
                 <value>alfresco/messages/forum-model</value>
                 <value>alfresco/messages/email-server-model</value>
-                <value>alfresco/messages/data-list-model</value>
                 <value>alfresco/messages/transfer-model</value>
                 <value>alfresco/messages/publishing-model</value>
                 <value>alfresco/messages/site-model</value>

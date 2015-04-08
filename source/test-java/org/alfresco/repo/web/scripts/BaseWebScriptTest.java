@@ -158,8 +158,8 @@ public abstract class BaseWebScriptTest extends TestCase
     
     /**
      * Sets Test Listener
-     * 
-     * @param resultPrinter
+     *
+     * @param listener WebScriptTestListener
      */
     public void setListener(WebScriptTestListener listener)
     {
@@ -447,7 +447,6 @@ public abstract class BaseWebScriptTest extends TestCase
      * 
      * @param req
      * @param expectedStatus
-     * @param asUser
      * @return response
      * @throws IOException
      */

@@ -18,13 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
-import static org.alfresco.model.ContentModel.PROP_USERNAME;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
@@ -44,15 +41,12 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
-import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PathUtil;
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -63,15 +57,14 @@ import org.json.simple.JSONObject;
  */
 public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent
                                      implements NodeServicePolicies.OnDeleteNodePolicy,
-                                                NodeServicePolicies.OnCreateNodePolicy,
-                                                NodeServicePolicies.OnCreateChildAssociationPolicy,
-                                                NodeServicePolicies.OnDeleteChildAssociationPolicy
+                                                NodeServicePolicies.OnCreateNodePolicy
 {
     /** JSON values */
     private static final String IS_RM_NODE = "isRmNode";
     private static final String RM_NODE = "rmNode";
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
+    private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -94,9 +87,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /** site service */
     private SiteService siteService;
 
-    /** Authority service */
-    private AuthorityService authorityService;
-
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
 
@@ -111,9 +101,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /** Constants for checking the cache */
     private static final String RM_SITE_EXISTS = "rmSiteExists";
-    private static final String RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS = "rmRecordContributorsGroupMembers";
-    private static final String RM_RECORD_CONTRIBUTORS_GROUP_NODE_REF = "rmRecordContributorsGroupNodeRef";
-    private static final String RM_SHOW_ACTIONS = "rmShowActions";
 
     /**
      * @param enabled   true if enabled, false otherwise
@@ -169,14 +156,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
-    }
-
-    /**
-     * @param authorityService authority service
-     */
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-        this.authorityService = authorityService;
     }
 
     /**
@@ -237,16 +216,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateNode"),
                 RecordsManagementModel.TYPE_RM_SITE,
                 new JavaBehaviour(this, "onCreateNode"));
-
-        policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateChildAssociation"),
-                ContentModel.TYPE_AUTHORITY,
-                new JavaBehaviour(this, "onCreateChildAssociation"));
-
-        policyComponent.bindAssociationBehaviour(
-                QName.createQName(NamespaceService.ALFRESCO_URI, "onDeleteChildAssociation"),
-                ContentModel.TYPE_AUTHORITY,
-                new JavaBehaviour(this, "onDeleteChildAssociation"));
     }
 
     /**
@@ -267,10 +236,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
             // get the record contributor information
             rootJSONObject.put(IS_RECORD_CONTRIBUTOR_GROUP_ENABLED, isRecordContributorsGroupEnabled);
-            if (isRecordContributorsGroupEnabled)
-            {
-                rootJSONObject.put(RM_SHOW_ACTIONS, showRmActions());
-            }
+            rootJSONObject.put(RECORD_CONTRIBUTOR_GROUP_NAME, recordContributorsGroupName);
 
             // Get the node reference for convenience
             NodeRef nodeRef = nodeInfo.getNodeRef();
@@ -290,20 +256,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
         }
-    }
-
-    private boolean showRmActions()
-    {
-        if (!getJsonConversionComponentCache().contains(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS))
-        {
-            Set<String> groupMembers = authorityService.getContainedAuthorities(AuthorityType.USER, AuthorityType.GROUP.getPrefixString() + recordContributorsGroupName, false);
-            getJsonConversionComponentCache().put(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS, groupMembers);
-        }
-
-        @SuppressWarnings("unchecked")
-        Set<String> recordContributorsMembers = (Set<String>) getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS);
-
-        return recordContributorsMembers.contains(AuthenticationUtil.getFullyAuthenticatedUser());
     }
 
     /**
@@ -623,53 +575,5 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         getJsonConversionComponentCache().put(RM_SITE_EXISTS, true);
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
-     */
-    @Override
-    public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
-    {
-        if (isRecordContributorsGroupEnabled)
-        {
-            if (!getJsonConversionComponentCache().contains(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS))
-            {
-                Set<String> groupMembers = authorityService.getContainedAuthorities(AuthorityType.USER, AuthorityType.GROUP.getPrefixString() + recordContributorsGroupName, false);
-                getJsonConversionComponentCache().put(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS, groupMembers);
-
-                NodeRef recordContributorNodeRef = authorityService.getAuthorityNodeRef(AuthorityType.GROUP.getPrefixString() + recordContributorsGroupName);
-                getJsonConversionComponentCache().put(RM_RECORD_CONTRIBUTORS_GROUP_NODE_REF, recordContributorNodeRef);
-            }
-
-            if (childAssocRef.getParentRef().equals(getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_NODE_REF)))
-            {
-                @SuppressWarnings("unchecked")
-                Set<String> recordContributorsMembers = (Set<String>) getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS);
-                String userName = (String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME);
-                if (StringUtils.isNotBlank(userName))
-                {
-                    recordContributorsMembers.add(userName);
-                }
-            }
-        }
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy#onDeleteChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @Override
-    public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
-    {
-        if (isRecordContributorsGroupEnabled && getJsonConversionComponentCache().contains(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS))
-        {
-            @SuppressWarnings("unchecked")
-            Set<String> groupMembers = (Set<String>) getJsonConversionComponentCache().get(RM_RECORD_CONTRIBUTORS_GROUP_MEMBERS);
-            String userName = (String) nodeService.getProperty(childAssocRef.getChildRef(), PROP_USERNAME);
-            if (StringUtils.isNotBlank(userName));
-            {
-                groupMembers.remove(userName);
-            }
-        }
     }
 }

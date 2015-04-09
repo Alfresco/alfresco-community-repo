@@ -18,9 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
 import java.io.Serializable;
 
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -33,7 +36,7 @@ public final class ClassificationLevel implements Serializable
 {
     /** serial version uid */
     private static final long serialVersionUID = -3375064867090476422L;
-    
+
     private final String id;
     private final String displayLabelKey;
 
@@ -49,7 +52,11 @@ public final class ClassificationLevel implements Serializable
     public String getId() { return this.id; }
 
     /** Returns the localised (current locale) display label for this classification level. */
-    public String getDisplayLabel() { return I18NUtil.getMessage(displayLabelKey); }
+    public String getDisplayLabel()
+    {
+        String message = I18NUtil.getMessage(displayLabelKey);
+        return (isNotBlank(message) ? message : displayLabelKey);
+    }
 
     @Override public String toString()
     {

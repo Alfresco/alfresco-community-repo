@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Definition of Classified Content Model -->
+
+<model name="clf:classifiedcontent" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <!-- Meta-data about the model -->
+   <description>Classified Content Model</description>
+   <author>Roy Wetherall</author>
+   <version>1.0</version>
+
+   <!-- Imports are required to allow references to definitions in other models -->
+   <imports>
+      <!-- Import Alfresco Dictionary Definitions -->
+      <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+      <!-- Import Alfresco Content Domain Model Definitions -->
+      <import uri="http://www.alfresco.org/model/system/1.0" prefix="sys" />
+   </imports>
+
+   <!-- Classified Content Namespace -->
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/classifiedcontent/1.0" prefix="clf"/>
+   </namespaces>
+
+   <!-- Model Constraints -->
+   <constraints>
+   
+   </constraints>
+
+   <!-- Types -->
+   <types>
+     
+   </types>
+
+   <!-- Aspects -->
+   <aspects>
+   
+   </aspects>
+
+</model>

@@ -28,12 +28,18 @@ import org.alfresco.error.AlfrescoRuntimeException;
  */
 public class ClassificationServiceException extends AlfrescoRuntimeException
 {
+    /** serial version uid */
+    private static final long serialVersionUID = -7097573558438226725L;
+
     public ClassificationServiceException(String msgId) { super(msgId); }
     public ClassificationServiceException(String msgId, Throwable cause) { super(msgId, cause); }
 
     /** Represents a fatal error due to missing required configuration. */
     public static class MissingConfiguration extends ClassificationServiceException
     {
+        /** serial version uid */
+        private static final long serialVersionUID = -750162955179494445L;
+
         public MissingConfiguration(String msgId) { super(msgId); }
     }
 
@@ -41,6 +47,9 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
      *  The configuration was understood by the server, but was rejected as illegal. */
     public static class IllegalConfiguration extends ClassificationServiceException
     {
+        /** serial version uid */
+        private static final long serialVersionUID = -1139626996782741741L;
+
         public IllegalConfiguration(String msgId) { super(msgId); }
     }
 
@@ -48,6 +57,9 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
      *  The configuration could not be understood by the server. */
     public static class MalformedConfiguration extends ClassificationServiceException
     {
+        /** serial version uid */
+        private static final long serialVersionUID = 8191162359241035026L;
+        
         public MalformedConfiguration(String msgId) { super(msgId); }
         public MalformedConfiguration(String msgId, Throwable cause) { super(msgId, cause); }
     }

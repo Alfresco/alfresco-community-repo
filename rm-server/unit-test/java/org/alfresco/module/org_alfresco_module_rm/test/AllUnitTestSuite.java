@@ -38,6 +38,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrap
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigGetTest;
 import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigPostTest;
+import org.alfresco.module.org_alfresco_module_rm.script.classification.ClassificationLevelsGetTest;
 import org.alfresco.module.org_alfresco_module_rm.script.classification.ReasonsGetTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
@@ -74,7 +75,7 @@ import org.junit.runners.Suite.SuiteClasses;
     // evaluators
     TransferEvaluatorUnitTest.class,
     FrozenEvaluatorUnitTest.class,
-    
+
     // capabilities
     EditNonRecordsMetadataCapabilityUnitTest.class,
 
@@ -83,12 +84,13 @@ import org.junit.runners.Suite.SuiteClasses;
     HoldPostUnitTest.class,
     HoldPutUnitTest.class,
     ReasonsGetTest.class,
+    ClassificationLevelsGetTest.class,
 
     // action implementations
     FileReportActionUnitTest.class,
     UnlinkFromActionUnitTest.class,
     DeclareAsVersionRecordActionUnitTest.class,
-    
+
     // recorded version config
     RecordedVersionConfigGetTest.class,
     RecordedVersionConfigPostTest.class,

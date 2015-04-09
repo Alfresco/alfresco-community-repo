@@ -240,7 +240,7 @@
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
 
-   <!-- Import the Classified Records Services -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-classified-records-context.xml"/>
+   <!-- Import the Classified Content Services -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"/>
 
 </beans>

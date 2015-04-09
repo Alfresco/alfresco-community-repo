@@ -31,6 +31,9 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public final class ClassificationLevel implements Serializable
 {
+    /** serial version uid */
+    private static final long serialVersionUID = -3375064867090476422L;
+    
     private final String id;
     private final String displayLabelKey;
 

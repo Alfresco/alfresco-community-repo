@@ -36,10 +36,10 @@ import org.slf4j.LoggerFactory;
 public class ClassificationServiceImpl extends ServiceBaseImpl
                                        implements ClassificationService
 {
-    private static final String[] LEVELS_KEY = new String[] { "org.alfresco",
+    private static final Serializable[] LEVELS_KEY = new String[] { "org.alfresco",
                                                               "module.org_alfresco_module_rm",
                                                               "classification.levels" };
-    private static final String[] REASONS_KEY = new String[] { "org.alfresco",
+    private static final Serializable[] REASONS_KEY = new String[] { "org.alfresco",
                                                                "module.org_alfresco_module_rm",
                                                                "classification.reasons" };
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class); 

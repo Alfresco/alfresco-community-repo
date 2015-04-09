@@ -32,6 +32,9 @@ public class ExceptionUtils
     /** This represents a situation where a throwable of an unexpected type was thrown. */
     public static class UnexpectedThrowableException extends RuntimeException
     {
+        /** serial version uid */
+        private static final long serialVersionUID = 3900164716673246207L;
+        
         private final Class<? extends Throwable> expected;
         private final Throwable                  actual;
 
@@ -54,6 +57,9 @@ public class ExceptionUtils
     /** This represents a situation where an expected throwable was not thrown. */
     public static class MissingThrowableException extends RuntimeException
     {
+        /** serial version uid */
+        private static final long serialVersionUID = -988022536370047222L;
+        
         private final Class<? extends Throwable> expected;
 
         public MissingThrowableException(Class<? extends Throwable> expected)
@@ -121,6 +127,7 @@ public class ExceptionUtils
      * @throws UnexpectedThrowableException if a non-matching throwable was thrown out of the code block.
      * @throws MissingThrowableException if the expected throwable was not thrown out of the code block.
      */
+    @SuppressWarnings("unchecked")
     public static <R, T extends Throwable> T expectedException(final Class<T> expected, final Supplier<R> code)
     {
         // The code block may throw an exception or it may not.

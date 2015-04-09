@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -54,7 +53,6 @@ import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelp
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.ExtendedPermissionService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;

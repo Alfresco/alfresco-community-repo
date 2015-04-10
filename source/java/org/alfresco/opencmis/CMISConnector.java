@@ -2787,7 +2787,11 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         if (hasRemove)
         {
             Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
-            for (Ace ace : removeAces.getAces())
+
+            // get only direct ACE since only those can be removed
+            Acl onlyDirectAcl = excludeInheritedAces(nodeRef, removeAces);
+
+            for (Ace ace : onlyDirectAcl.getAces())
             {
                 String principalId = ace.getPrincipalId();
                 if (CMIS_USER.equals(principalId))
@@ -2827,6 +2831,91 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 }
             }
         }
+    }
+
+    /**
+     * Converts Acl to map and ignore the indirect ACEs
+     * 
+     * @param acl
+     * @return
+     */
+    private Map<String, Set<String>> convertAclToMap(Acl acl)
+    {
+        Map<String, Set<String>> result = new HashMap<String, Set<String>>();
+
+        if (acl == null || acl.getAces() == null)
+        {
+            return result;
+        }
+
+        for (Ace ace : acl.getAces())
+        {
+            // don't consider indirect ACEs - we can't change them
+            if (!ace.isDirect())
+            {
+                // ignore
+                continue;
+            }
+
+            // although a principal must not be null, check it
+            if (ace.getPrincipal() == null || ace.getPrincipal().getId() == null)
+            {
+                // ignore
+                continue;
+            }
+
+            Set<String> permissions = result.get(ace.getPrincipal().getId());
+            if (permissions == null)
+            {
+                permissions = new HashSet<String>();
+                result.put(ace.getPrincipal().getId(), permissions);
+            }
+
+            if (ace.getPermissions() != null)
+            {
+                permissions.addAll(ace.getPermissions());
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Filter acl to ignore inherited ACEs
+     * 
+     * @param nodeRef
+     * @param acl
+     * @return
+     */
+    protected Acl excludeInheritedAces(NodeRef nodeRef, Acl acl)
+    {
+
+        List<Ace> newAces = new ArrayList<Ace>();
+        Acl allACLs = getACL(nodeRef, false);
+
+        Map<String, Set<String>> originalsAcls = convertAclToMap(allACLs);
+        Map<String, Set<String>> newAcls = convertAclToMap(acl);
+
+        // iterate through the original ACEs
+        for (Map.Entry<String, Set<String>> ace : originalsAcls.entrySet())
+        {
+
+            // add permissions
+            Set<String> addPermissions = newAcls.get(ace.getKey());
+            if (addPermissions != null)
+            {
+                ace.getValue().addAll(addPermissions);
+            }
+
+            // create new ACE
+            if (!ace.getValue().isEmpty())
+            {
+                newAces.add(new AccessControlEntryImpl(new AccessControlPrincipalDataImpl(ace
+                        .getKey()), new ArrayList<String>(ace.getValue())));
+            }
+        }
+
+        return new AccessControlListImpl(newAces);
     }
 
     /**

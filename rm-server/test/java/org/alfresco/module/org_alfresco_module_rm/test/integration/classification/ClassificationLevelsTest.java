@@ -69,30 +69,15 @@ public class ClassificationLevelsTest extends BaseRMTestCase
                 assertNotNull(levels);
                 assertEquals(4, levels.size());
 
-                String topSecretDisplayLabel = getDisplayLabel(TOP_SECRET_DISPLAY_LABEL_KEY);
-                String secretDisplayLabel = getDisplayLabel(SECRET_DISPLAY_LABEL_KEY);
-                String confidentialDisplayLabel = getDisplayLabel(CONFIDENTIAL_DISPLAY_LABEL_KEY);
-                String noClearanceDisplayLabel = getDisplayLabel(NO_CLEARANCE_DISPLAY_LABEL_KEY);
-
-                assertTrue(containsId(levels, CONFIDENTIAL_ID));
-                assertTrue(containsId(levels, TOP_SECRET_ID));
-                assertTrue(containsId(levels, NO_CLEARANCE_ID));
-                assertTrue(containsId(levels, SECRET_ID));
-
-                assertTrue(containsDisplayLabel(levels, noClearanceDisplayLabel));
-                assertTrue(containsDisplayLabel(levels, secretDisplayLabel));
-                assertTrue(containsDisplayLabel(levels, topSecretDisplayLabel));
-                assertTrue(containsDisplayLabel(levels, confidentialDisplayLabel));
-
                 ClassificationLevel level0 = levels.get(0);
                 ClassificationLevel level1 = levels.get(1);
                 ClassificationLevel level2 = levels.get(2);
                 ClassificationLevel level3 = levels.get(3);
 
-                assertEquals(level3.getDisplayLabel(), noClearanceDisplayLabel);
-                assertEquals(level2.getDisplayLabel(), confidentialDisplayLabel);
-                assertEquals(level1.getDisplayLabel(), secretDisplayLabel);
-                assertEquals(level0.getDisplayLabel(), topSecretDisplayLabel);
+                assertEquals(level3.getDisplayLabel(), getDisplayLabel(NO_CLEARANCE_DISPLAY_LABEL_KEY));
+                assertEquals(level2.getDisplayLabel(), getDisplayLabel(CONFIDENTIAL_DISPLAY_LABEL_KEY));
+                assertEquals(level1.getDisplayLabel(), getDisplayLabel(SECRET_DISPLAY_LABEL_KEY));
+                assertEquals(level0.getDisplayLabel(), getDisplayLabel(TOP_SECRET_DISPLAY_LABEL_KEY));
 
                 assertEquals(level0.getId(), TOP_SECRET_ID);
                 assertEquals(level1.getId(), SECRET_ID);
@@ -119,33 +104,5 @@ public class ClassificationLevelsTest extends BaseRMTestCase
     {
         String message = I18NUtil.getMessage(displayLabelKey);
         return (isNotBlank(message) ? message : displayLabelKey);
-    }
-
-    private boolean containsId(List<ClassificationLevel> levels, String id)
-    {
-        boolean contains = false;
-        for (ClassificationLevel level : levels)
-        {
-            if (level.getId().equals(id))
-            {
-                contains = true;
-                break;
-            }
-        }
-        return contains;
-    }
-
-    private boolean containsDisplayLabel(List<ClassificationLevel> levels, String displayLabel)
-    {
-        boolean contains = false;
-        for (ClassificationLevel level : levels)
-        {
-            if (level.getDisplayLabel().equals(displayLabel))
-            {
-                contains = true;
-                break;
-            }
-        }
-        return contains;
     }
 }

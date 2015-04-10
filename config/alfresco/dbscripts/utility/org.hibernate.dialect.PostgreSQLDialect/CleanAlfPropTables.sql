@@ -111,7 +111,8 @@ delete from alf_prop_value apv using temp_prop_val_obs tpva where apv.id = tpva.
 
 -- find and clear obsoleted string values
 -- find the strings already deleted
-insert into temp_del_str1 select pva.long_value from temp_prop_val_obs pva where pva.persisted_type in (3, 5, 6);
+--FOREACH temp_prop_val_obs.id system.upgrade.clean_alf_prop_tables.batchsize
+insert into temp_del_str1 select distinct pva.long_value from temp_prop_val_obs pva where pva.persisted_type in (3, 5, 6) and pva.id >= ${LOWERBOUND} and pva.id <= ${UPPERBOUND};
 --FOREACH temp_del_str1.id system.upgrade.clean_alf_prop_tables.batchsize
 delete from alf_prop_string_value aps using temp_del_str1 tds where aps.id = tds.id and tds.id >= ${LOWERBOUND} and tds.id <= ${UPPERBOUND};
 
@@ -124,7 +125,8 @@ delete from alf_prop_string_value aps using temp_del_str1 tds where aps.id = tds
 
 -- find and clear obsoleted serialized values
 -- find the serialized values already deleted
-insert into temp_del_ser1 select pva.long_value from temp_prop_val_obs pva where pva.persisted_type = 4;
+--FOREACH temp_prop_val_obs.id system.upgrade.clean_alf_prop_tables.batchsize
+insert into temp_del_ser1 select distinct pva.long_value from temp_prop_val_obs pva where pva.persisted_type = 4 and pva.id >= ${LOWERBOUND} and pva.id <= ${UPPERBOUND};
 --FOREACH temp_del_ser1.id system.upgrade.clean_alf_prop_tables.batchsize
 delete from alf_prop_serializable_value aps using temp_del_ser1 tds where aps.id = tds.id and tds.id >= ${LOWERBOUND} and tds.id <= ${UPPERBOUND};
 
@@ -136,7 +138,8 @@ delete from alf_prop_serializable_value aps using temp_del_ser1 tds where aps.id
 
 -- find and clear obsoleted double values
 -- find the double values already deleted
-insert into temp_del_double1 select pva.long_value from temp_prop_val_obs pva where pva.persisted_type = 2;
+--FOREACH temp_prop_val_obs.id system.upgrade.clean_alf_prop_tables.batchsize
+insert into temp_del_double1 select distinct pva.long_value from temp_prop_val_obs pva where pva.persisted_type = 2 and pva.id >= ${LOWERBOUND} and pva.id <= ${UPPERBOUND};
 --FOREACH temp_del_double1.id system.upgrade.clean_alf_prop_tables.batchsize
 delete from alf_prop_double_value apd using temp_del_double1 tdd where apd.id = tdd.id and tdd.id >= ${LOWERBOUND} and tdd.id <= ${UPPERBOUND};
 

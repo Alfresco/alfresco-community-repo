@@ -242,7 +242,7 @@ public class PublicApiAuthenticatorFactory extends RemoteUserAuthenticatorFactor
             }
             else
             {
-                logger.error("Invalid authetnicator key:- " + authenticatorKey);
+                logger.error("Invalid authenticator key:- " + authenticatorKey);
                 proxyListener.authenticationFailed(new PublicApiCredentials(authenticatorKey, remoteUser, getOutboundHeaders(servletReq)));
                 return false;
             }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.email.EmailDelivery;
 import org.alfresco.service.cmr.email.EmailMessage;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -52,6 +53,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -293,7 +295,14 @@ public class EmailServiceImpl implements EmailService
                         targetNodeRef = nodeRef;
                     }
                     EmailMessageHandler messageHandler = getMessageHandler(targetNodeRef);
-                    messageHandler.processMessage(targetNodeRef, message);
+                    try
+                    {
+                        messageHandler.processMessage(targetNodeRef, message);
+                    }
+                    catch (DuplicateChildNodeNameException e)
+                    {
+                        throw new ConcurrencyFailureException(e.getMessage());
+                    }
                     return null;
                 }
             };

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.CountDownLatch;
 
 import javax.mail.Message;
 import javax.mail.Session;
@@ -41,6 +42,7 @@ import org.alfresco.model.ForumModel;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transfer.TransferModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.email.EmailDelivery;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
@@ -86,6 +88,7 @@ public class EmailServiceImplTest extends TestCase
     private SearchService searchService;
     private NamespaceService namespaceService;
     private FolderEmailMessageHandler folderEmailMessageHandler;
+    private RetryingTransactionHelper transactionHelper;
     
     String TEST_USER="EmailServiceImplTestUser";
     
@@ -110,6 +113,8 @@ public class EmailServiceImplTest extends TestCase
         assertNotNull("searchService", searchService);
         folderEmailMessageHandler = (FolderEmailMessageHandler) emailCtx.getBean("folderEmailMessageHandler");  
         assertNotNull("folderEmailMessageHandler", folderEmailMessageHandler);
+        transactionHelper = (RetryingTransactionHelper) emailCtx.getBean("retryingTransactionHelper");
+        assertNotNull("transactionHelper", transactionHelper);
     }
     
     public void tearDown() throws Exception
@@ -752,6 +757,65 @@ public class EmailServiceImplTest extends TestCase
        assertTrue("Blob(2).xls not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Blob(2).xls")));      
        assertTrue(TEST_SUBJECT + "not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, TEST_SUBJECT)));   
        assertTrue(TEST_SUBJECT+"(1) not found", assocNames.contains(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Practical Bee Keeping(1)")));      
+
+       /**
+        * Check concurrent deliver of the same message. Reuse message from the previous test.
+        */
+       logger.debug("Step 5: turn off Overwite Duplicates and check concurrent deliver of the same message");
+       folderEmailMessageHandler.setOverwriteDuplicates(false);
+       assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+       int numBeforeConcurrentDeliver = assocs.size();
+       deliverConcurrently(delivery, m);
+       assocs = nodeService.getChildAssocs(testUserHomeFolder, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
+       int numAfterConcurrentDeliver = assocs.size();
+       assertEquals("Two messages must be added", numBeforeConcurrentDeliver + 2, numAfterConcurrentDeliver);
+   }
+
+   private void deliverConcurrently(final EmailDelivery delivery, final SubethaEmailMessage m) throws Exception
+   {
+       final CountDownLatch cdl = new CountDownLatch(1);
+       class ConcurrentMessageImporter implements Runnable
+       {
+           private Throwable throwable;
+           @Override
+           public void run()
+           {
+                try
+                {
+                    transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                    {
+                        public Void execute() throws Throwable
+                        {
+                            cdl.countDown();
+                            emailService.importMessage(delivery, m);
+                            return null;
+                        }
+                    }, false, true);
+                }
+                catch (Throwable t)
+                {
+                    throwable = t;
+                }
+           }
+       }
+       ConcurrentMessageImporter messageImporter = new ConcurrentMessageImporter();
+       final Thread messageImporterThread = new Thread(messageImporter);
+       transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+               {
+                   public Void execute() throws Throwable
+                   {
+                       emailService.importMessage(delivery, m);
+                       messageImporterThread.start();
+                       // wait until concurrent transaction has started
+                       cdl.await();
+                       return null;
+                   }
+               }, false, true);
+       messageImporterThread.join();
+       if (null != messageImporter.throwable)
+       {
+           fail(messageImporter.throwable.getMessage());
+       }
    }
    
    /**

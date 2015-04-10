@@ -479,12 +479,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
         	typeqnames.add(type.getAlfrescoClass());
         }
-        PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(
-        		folderNodeRef, 
-        		typeqnames, 
-        		null, //ignoreAspectQNames, 
-        		sortProps, 
-        		pageRequest);
+        PagingResults<FileInfo> pageOfNodeInfos = connector.getChildren(folderNodeRef, typeqnames, sortProps, pageRequest);
 
         if (max > 0)
         {

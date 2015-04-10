@@ -4009,6 +4009,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return descriptorService.getCurrentRepositoryDescriptor().getId();
     }
 
+    public PagingResults<FileInfo> getChildren(NodeRef folderNodeRef, Set<QName> typeqnames, List<Pair<QName, Boolean>> sortProps, PagingRequest pageRequest)
+    {
+        return fileFolderService.list(folderNodeRef, typeqnames, ignoreChildrenQNames, sortProps, pageRequest);
+    }
     public PagingResults<FileInfo> getChildren(NodeRef folderNodeRef, List<Pair<QName, Boolean>> sortProps, PagingRequest pageRequest)
     {
         return fileFolderService.list(folderNodeRef, true, true, ignoreChildrenQNames, sortProps, pageRequest);

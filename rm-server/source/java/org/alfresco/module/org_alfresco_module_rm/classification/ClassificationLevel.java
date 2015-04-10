@@ -23,7 +23,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.io.Serializable;
 
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**

@@ -31,7 +31,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses(
 {
-    ClassificationReasonsTest.class
+    ClassificationReasonsTest.class,
+    ClassificationLevelsTest.class
 })
 public class ClassificationTestSuite
 {

@@ -20,6 +20,8 @@ package org.alfresco.repo.imap;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,9 +46,9 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     private class SecureImapServer extends ImapServer
     {
         
-        public SecureImapServer(ServerSetup setup, Managers managers)
+        public SecureImapServer(ServerSetup setup, Managers managers, AtomicReference<Exception> serverOpeningExceptionRef)
         {
-            super(setup, managers);
+            super(setup, managers,serverOpeningExceptionRef);
         }
 
         /**
@@ -97,9 +99,9 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
     private class DefaultImapServer extends ImapServer
     {
         
-        public DefaultImapServer(ServerSetup setup, Managers managers)
+        public DefaultImapServer(ServerSetup setup, Managers managers, AtomicReference<Exception> serverOpeningExceptionRef)
         {
-            super(setup, managers);
+            super(setup, managers, serverOpeningExceptionRef);
         }
 
         // same behavior as in overridden method, just added exception logging 
@@ -240,7 +242,7 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
                 {
                     return new AlfrescoImapHostManager(AlfrescoImapServer.this.imapService);
                 }
-    
+
                 public UserManager getUserManager()
                 {
                     return imapUserManager;
@@ -249,9 +251,11 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             
             if(isImapEnabled())
             {
-                serverImpl = new DefaultImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers);
+                AtomicReference<Exception> serverOpeningExceptionRef = new AtomicReference<Exception>();
+                serverImpl = new DefaultImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers, serverOpeningExceptionRef);
                 serverImpl.startService(null);
-            
+                checkForOpeningExceptions(serverOpeningExceptionRef);
+
                 if (logger.isInfoEnabled())
                 {
                     logger.info("IMAP service started on host:port " + host + ":" + this.port);
@@ -259,8 +263,11 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             }
             if(isImapsEnabled())
             {
-                secureServerImpl = new SecureImapServer(new ServerSetup(securePort, host, ServerSetup.PROTOCOL_IMAPS), imapManagers);
-                secureServerImpl.startService(null);    
+                AtomicReference<Exception> serverOpeningExceptionRef = new AtomicReference<Exception>();
+                secureServerImpl = new SecureImapServer(new ServerSetup(securePort, host, ServerSetup.PROTOCOL_IMAPS), imapManagers, serverOpeningExceptionRef);
+                secureServerImpl.startService(null);   
+                checkForOpeningExceptions(serverOpeningExceptionRef);
+                
                 if (logger.isInfoEnabled())
                 {
                     logger.info("IMAPS service started on host:port " + host + ":" + this.securePort );
@@ -273,6 +280,27 @@ public class AlfrescoImapServer extends AbstractLifecycleBean
             if (logger.isDebugEnabled())
             {
                 logger.debug("IMAP server already running.");
+            }
+        }
+    }
+    
+    public void checkForOpeningExceptions(AtomicReference<Exception> serverOpeningExceptionRef)
+    {
+        synchronized (serverOpeningExceptionRef) 
+        {
+            try 
+            {
+                //wait for openServerSocket() method to finish 
+                serverOpeningExceptionRef.wait();
+                if (serverOpeningExceptionRef.get() != null)
+                {
+                    throw new RuntimeException(serverOpeningExceptionRef.get());
+                }
+            } catch (InterruptedException e) {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug(e.getMessage(), e);
+                }
             }
         }
     }

@@ -82,7 +82,7 @@
    </modules>
 
    <properties>
-      <alfresco.version>5.0</alfresco.version>
+      <alfresco.version>5.0.1</alfresco.version>
       <app.war.location>${project.build.directory}/${webapp.id.name}.war</app.war.location>
       <alfresco.base.version>${alfresco.version}</alfresco.base.version>
 

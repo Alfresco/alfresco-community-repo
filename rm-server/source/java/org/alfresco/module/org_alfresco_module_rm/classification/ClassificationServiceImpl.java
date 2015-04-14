@@ -42,7 +42,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     private static final Serializable[] REASONS_KEY = new String[] { "org.alfresco",
                                                                "module.org_alfresco_module_rm",
                                                                "classification.reasons" };
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class); 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class);
 
     private AttributeService attributeService; // TODO What about other code (e.g. REST API) accessing the AttrService?
     private ClassificationServiceDAO classificationServiceDao;
@@ -80,7 +80,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
             this.configuredLevels = allPersistedLevels;
         }
     }
-    
+
     void initConfiguredClassificationReasons()
     {
         final List<ClassificationReason> persistedReasons = getPersistedReasons();
@@ -143,7 +143,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     {
         return classificationServiceDao.getConfiguredLevels();
     }
-    
+
     /**
      * Gets the list of classification reasons as persisted in the system.
      * @return the list of classification reasons if they have been persisted, else {@code null}.
@@ -186,7 +186,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     @Override
     public List<ClassificationLevel> getClassificationLevels()
     {
-        if (configuredLevels == null) {
+        if (configuredLevels == null)
+        {
             return Collections.emptyList();
         }
         // FIXME Currently assume user has highest security clearance, this should be fixed as part of RM-2112.

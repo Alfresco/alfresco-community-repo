@@ -16,23 +16,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.classification;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+package org.alfresco.module.org_alfresco_module_rm.caveat;
 
 /**
- * @author Neil Mc Erlean
- * @since 3.0
+ * A class to hold I18N keys for messages related to constraint validation.
+ * 
+ * @author tpage
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses(
+public class RMConstraintMessageKeys
 {
-    ClassificationLevelConstraintUnitTest.class,
-    ClassificationServiceDAOUnitTest.class,
-    ClassificationServiceImplUnitTest.class
-})
-public class ClassificationSuite
-{
-    // Intentionally empty.
+    public static final String ERR_NON_STRING = "d_dictionary.constraint.string_length.non_string";
+    public static final String ERR_INVALID_VALUE = "d_dictionary.constraint.list_of_values.invalid_value";
 }

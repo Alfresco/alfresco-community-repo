@@ -81,6 +81,10 @@
          </value>
       </property>
    </bean>
+   
+   <bean id="ClassificationServiceProvider" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceProvider">
+      <constructor-arg ref="ClassificationService" index="0" />
+   </bean>
 
    <bean id="classificationServiceBootstrap"
          class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap">

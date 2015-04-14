@@ -35,7 +35,7 @@ public final class ClassificationLevel implements Serializable
 {
     /** serial version uid */
     private static final long serialVersionUID = -3375064867090476422L;
-
+    
     private final String id;
     private final String displayLabelKey;
 
@@ -50,7 +50,10 @@ public final class ClassificationLevel implements Serializable
     /** Returns the unique identifier for this classification level. */
     public String getId() { return this.id; }
 
-    /** Returns the localised (current locale) display label for this classification level. */
+    /**
+     * Returns the localised (current locale) display label for this classification level. If no translation is found
+     * then return the key instead.
+     */
     public String getDisplayLabel()
     {
         String message = I18NUtil.getMessage(displayLabelKey);

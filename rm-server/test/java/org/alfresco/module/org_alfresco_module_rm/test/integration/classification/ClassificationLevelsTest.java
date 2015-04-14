@@ -18,16 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Properties;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Classification level integration test
@@ -37,16 +32,15 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class ClassificationLevelsTest extends BaseRMTestCase
 {
-    private static final String ALFRESCO_GLOBAL_PROPERTIES_FILE_LOCATION = "/alfresco/module/org_alfresco_module_rm/alfresco-global.properties";
-    private static final String CLASSIFICATION_LEVELS_PROPERTY_KEY = "rm.classification.levelsFile";
-    private static final String TOP_SECRET_ID = "TopSecret";
-    private static final String TOP_SECRET_DISPLAY_LABEL_KEY = "rm.classification.topSecret";
-    private static final String SECRET_ID = "Secret";
-    private static final String SECRET_DISPLAY_LABEL_KEY = "rm.classification.secret";
-    private static final String CONFIDENTIAL_ID = "Confidential";
-    private static final String CONFIDENTIAL_DISPLAY_LABEL_KEY = "rm.classification.confidential";
-    private static final String NO_CLEARANCE_ID = "NoClearance";
-    private static final String NO_CLEARANCE_DISPLAY_LABEL_KEY = "rm.classification.noClearance";
+    private static final String CLASSIFICATION_LEVELS_FILE_PATH = "/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json";
+    private static final String LEVEL1_ID = "level1";
+    private static final String LEVEL1_DISPLAY_LABEL = "Level 1";
+    private static final String LEVEL2_ID = "level2";
+    private static final String LEVEL2_DISPLAY_LABEL_KEY = "rm.classification.level2";
+    private static final String LEVEL3_ID = "level3";
+    private static final String LEVEL3_DISPLAY_LABEL_KEY = "rm.classification.level3";
+    private static final String LEVEL4_ID = "level4";
+    private static final String LEVEL4_DISPLAY_LABEL = "Level 4";
 
     public void testClassificationLevels() throws Exception
     {
@@ -54,10 +48,7 @@ public class ClassificationLevelsTest extends BaseRMTestCase
         {
             public void given() throws Exception
             {
-                String classificationLevelsConfigFilePath = getClassificationLevelsConfigFilePath();
-                assertNotNull(classificationLevelsConfigFilePath);
-
-                try (final InputStream in = getClass().getResourceAsStream(classificationLevelsConfigFilePath))
+                try (final InputStream in = getClass().getResourceAsStream(CLASSIFICATION_LEVELS_FILE_PATH))
                 {
                     assertNotNull(in);
                 }
@@ -65,44 +56,30 @@ public class ClassificationLevelsTest extends BaseRMTestCase
 
             public void when() throws Exception
             {
+                // Server is up and running
+            }
+
+            public void then() throws Exception
+            {
                 List<ClassificationLevel> levels = classificationService.getClassificationLevels();
                 assertNotNull(levels);
                 assertEquals(4, levels.size());
 
-                ClassificationLevel level0 = levels.get(0);
-                ClassificationLevel level1 = levels.get(1);
-                ClassificationLevel level2 = levels.get(2);
-                ClassificationLevel level3 = levels.get(3);
+                ClassificationLevel level1 = levels.get(0);
+                ClassificationLevel level2 = levels.get(1);
+                ClassificationLevel level3 = levels.get(2);
+                ClassificationLevel level4 = levels.get(3);
 
-                assertEquals(level3.getDisplayLabel(), getDisplayLabel(NO_CLEARANCE_DISPLAY_LABEL_KEY));
-                assertEquals(level2.getDisplayLabel(), getDisplayLabel(CONFIDENTIAL_DISPLAY_LABEL_KEY));
-                assertEquals(level1.getDisplayLabel(), getDisplayLabel(SECRET_DISPLAY_LABEL_KEY));
-                assertEquals(level0.getDisplayLabel(), getDisplayLabel(TOP_SECRET_DISPLAY_LABEL_KEY));
+                assertEquals(level4.getDisplayLabel(), LEVEL4_DISPLAY_LABEL);
+                assertEquals(level3.getDisplayLabel(), LEVEL3_DISPLAY_LABEL_KEY);
+                assertEquals(level2.getDisplayLabel(), LEVEL2_DISPLAY_LABEL_KEY);
+                assertEquals(level1.getDisplayLabel(), LEVEL1_DISPLAY_LABEL);
 
-                assertEquals(level0.getId(), TOP_SECRET_ID);
-                assertEquals(level1.getId(), SECRET_ID);
-                assertEquals(level2.getId(), CONFIDENTIAL_ID);
-                assertEquals(level3.getId(), NO_CLEARANCE_ID);
+                assertEquals(level1.getId(), LEVEL1_ID);
+                assertEquals(level2.getId(), LEVEL2_ID);
+                assertEquals(level3.getId(), LEVEL3_ID);
+                assertEquals(level4.getId(), LEVEL4_ID);
             }
         });
-    }
-
-    private String getClassificationLevelsConfigFilePath() throws IOException
-    {
-        Properties properties = new Properties();
-
-        try (final InputStream in = getClass().getResourceAsStream(ALFRESCO_GLOBAL_PROPERTIES_FILE_LOCATION))
-        {
-            assertNotNull(in);
-            properties.load(in);
-        }
-
-        return properties.getProperty(CLASSIFICATION_LEVELS_PROPERTY_KEY);
-    }
-
-    private String getDisplayLabel(String displayLabelKey)
-    {
-        String message = I18NUtil.getMessage(displayLabelKey);
-        return (isNotBlank(message) ? message : displayLabelKey);
     }
 }

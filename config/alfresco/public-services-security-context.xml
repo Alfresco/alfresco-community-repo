@@ -1011,6 +1011,7 @@
                org.alfresco.service.cmr.site.SiteService.listMembers=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listMembersInfo=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listMembersPaged=ACL_ALLOW
+               org.alfresco.service.cmr.site.SiteService.listSiteMemberships=ACL_ALLOW
                org.alfresco.service.cmr.site.SiteService.listSites=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.listSitesPaged=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
                org.alfresco.service.cmr.site.SiteService.removeMembership=ACL_ALLOW

@@ -44,8 +44,6 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class RMListOfValuesConstraint extends ListOfValuesConstraint
 {
-    private static final String ERR_NON_STRING = "d_dictionary.constraint.string_length.non_string";
-    private static final String ERR_INVALID_VALUE = "d_dictionary.constraint.list_of_values.invalid_value";
     private static final String LOV_CONSTRAINT_VALUE = "listconstraint";
     private List<String> allowedValues;
     private List<String> allowedValuesUpper;
@@ -76,7 +74,7 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         sb.append("RMListOfValuesConstraint")
           .append("[allowedValues=").append(getAllowedValues())
           .append(", caseSensitive=").append(isCaseSensitive())
-          .append(", sorted=").append(isCaseSensitive())
+          .append(", sorted=").append(isSorted())
           .append(", matchLogic=").append(getMatchLogic())
           .append("]");
         return sb.toString();
@@ -84,11 +82,11 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
 
     public RMListOfValuesConstraint()
     {
-    	super();
+        super();
 
-    	// Set RM list of value constraints to be sorted by default
-    	sorted = true;
-	}
+        // Set RM list of value constraints to be sorted by default
+        sorted = true;
+    }
 
     /**
      * Get the allowed values.  Note that these are <tt>String</tt> instances, but may
@@ -231,21 +229,21 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
         }
         catch (TypeConversionException e)
         {
-            throw new ConstraintException(ERR_NON_STRING, value, e);
+            throw new ConstraintException(RMConstraintMessageKeys.ERR_NON_STRING, value, e);
         }
         // check that the value is in the set of allowed values
         if (isCaseSensitive())
         {
             if (!getAllowedValues().contains(valueStr))
             {
-                throw new ConstraintException(ERR_INVALID_VALUE, value);
+                throw new ConstraintException(RMConstraintMessageKeys.ERR_INVALID_VALUE, value);
             }
         }
         else
         {
             if (!getAllowedValuesUpper().contains(valueStr.toUpperCase()))
             {
-                throw new ConstraintException(ERR_INVALID_VALUE, value);
+                throw new ConstraintException(RMConstraintMessageKeys.ERR_INVALID_VALUE, value);
             }
         }
     }

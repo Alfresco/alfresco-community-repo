@@ -731,9 +731,17 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                     // data by clearing the shared cache after the transaction.  Also, the
                     // shared cache needs to be ignored for the rest of the transaction.
                     txnData.isClearOn = true;
-                    if (!txnData.haveIssuedFullWarning && logger.isWarnEnabled())
+                    if (!txnData.haveIssuedFullWarning)
                     {
-                        logger.warn("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").");
+                    	if (logger.isInfoEnabled())
+                        {
+                             Exception e = new Exception("Stack: ");
+                             logger.info("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").", e);
+                        }
+                    	else if (logger.isWarnEnabled())
+                        {
+                            logger.warn("Transactional update cache '" + name + "' is full (" + maxCacheSize + ").");
+                        }
                         txnData.haveIssuedFullWarning = true;
                     }
                 }
@@ -833,9 +841,17 @@ public class TransactionalCache<K extends Serializable, V extends Object>
                         // data by clearing the shared cache after the transaction.  Also, the
                         // shared cache needs to be ignored for the rest of the transaction.
                         txnData.isClearOn = true;
-                        if (!txnData.haveIssuedFullWarning && logger.isWarnEnabled())
+                        if (!txnData.haveIssuedFullWarning)
                         {
-                            logger.warn("Transactional removal cache '" + name + "' is full (" + maxCacheSize + ").");
+                        	if (logger.isInfoEnabled())
+                            {
+                                 Exception e = new Exception("Stack: ");
+                                 logger.info("Transactional removal cache '" + name + "' is full (" + maxCacheSize + ").", e);
+                            }
+                            else if (logger.isWarnEnabled())
+                            {
+                            	logger.warn("Transactional removal cache '" + name + "' is full (" + maxCacheSize + ").");
+                            }
                             txnData.haveIssuedFullWarning = true;
                         }
                     }

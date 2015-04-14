@@ -1660,6 +1660,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 else
                 {
                     connector.getVersionService().deleteVersion(nodeRef, version);
+                    // MNT-10032 revert node version to predecessor
+                    connector.getVersionService().revert(nodeRef);
                 }
             }
         }

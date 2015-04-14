@@ -36,10 +36,10 @@ import org.junit.Test;
  */
 public class ClassificationServiceDAOUnitTest
 {
-    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("TopSecret",    "TS",
-                                                                                               "Secret",       "S",
-                                                                                               "Confidential", "C",
-                                                                                               "NoClearance",  "NC");
+    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("level1",    "l1",
+                                                                                               "level2",    "l2",
+                                                                                               "level3",    "l3",
+                                                                                               "level4",    "l4");
 
     @Test public void getConfiguredLevels_readingDefaultConfigurationShouldWork()
     {
@@ -78,7 +78,7 @@ public class ClassificationServiceDAOUnitTest
         c.setReasonConfigLocation("/no/such/resource");
         assertTrue(c.getConfiguredReasons().isEmpty());
     }
-    
+
     @Test (expected = MalformedConfiguration.class)
     public void getConfiguredReasons_readingMalformedConfigurationShouldFail()
     {

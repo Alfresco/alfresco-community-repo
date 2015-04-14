@@ -259,7 +259,14 @@ public class MoveMethod extends HierarchicalMethod
                fileFolderService.delete(destFileInfo.getNodeRef());
            }
            
-           fileFolderService.rename(sourceNodeRef, name);
+            fileFolderService.rename(sourceNodeRef, name);
+
+            // MNT-13144 WebDav does not correctly version CAD drawings correctly when saved using Windows mapped drive
+            if (!sourceFileInfo.isFolder() && getDAVHelper().isRenameShuffle(name))
+            {
+                fileFolderService.setHidden(sourceFileInfo.getNodeRef(), true);
+            }
+
            // As per the WebDAV spec, we make sure the node is unlocked once moved
            getDAVHelper().getLockService().unlock(sourceNodeRef);
         }

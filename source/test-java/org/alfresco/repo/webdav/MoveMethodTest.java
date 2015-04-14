@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,6 +21,7 @@ package org.alfresco.repo.webdav;
 import static org.junit.Assert.fail;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,9 +30,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -217,6 +220,128 @@ public class MoveMethodTest
         verify(mockFileFolderService, never()).create(destParentNodeRef, "dest.doc", ContentModel.TYPE_CONTENT);
     }
 
+    @Test
+    public void testMNT_13144() throws Exception
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                FileInfo dwgFI = null;
+                String fileName = "source-" + GUID.generate();
+                String sourceFileName = fileName + ".dwg";
+
+                FileInfo atmpFI = null;
+                String destFileName = "atmp1234";
+
+                FileInfo tmpFI = null;
+                String tmpFileName = fileName + ".tmp";
+
+                String bakFileName = fileName + ".bak";
+
+                String content = "Some dwg content.";
+                String tmpContent = "Change dwg content.";
+
+                try
+                {
+                    dwgFI = fileFolderService.create(companyHomeNodeRef, sourceFileName, ContentModel.TYPE_CONTENT);
+                    ContentWriter writer = contentService.getWriter(dwgFI.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_APP_DWG);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent(content);
+
+                    tmpFI = fileFolderService.create(companyHomeNodeRef, tmpFileName, ContentModel.TYPE_CONTENT);
+                    writer = contentService.getWriter(tmpFI.getNodeRef(), ContentModel.PROP_CONTENT, true);
+                    writer.setMimetype(MimetypeMap.MIMETYPE_APP_DWG);
+                    writer.setEncoding("UTF-8");
+                    writer.putContent(tmpContent);
+
+                    atmpFI = fileFolderService.create(companyHomeNodeRef, destFileName, ContentModel.TYPE_CONTENT);
+
+                    sourcePath = "/" + sourceFileName;
+                    moveMethod.m_strPath = sourcePath;
+
+                    destPath = "/" + destFileName;
+                    moveMethod.m_strDestinationPath = destPath;
+
+                    List<String> sourcePathSplit = Arrays.asList(sourceFileName);
+                    when(davHelper.splitAllPaths(sourcePath)).thenReturn(sourcePathSplit);
+
+                    when(mockFileFolderService.resolveNamePath(rootNode, sourcePathSplit)).thenReturn(dwgFI);
+                    when(davHelper.isRenameShuffle(destPath)).thenReturn(true);
+                    when(davHelper.isRenameShuffle(sourcePath)).thenReturn(false);
+
+                    when(mockFileFolderService.create(companyHomeNodeRef, destFileName, ContentModel.TYPE_CONTENT)).thenReturn(atmpFI);
+
+                    ServiceRegistry mockServiceRegistry = Mockito.mock(ServiceRegistry.class);
+                    when(davHelper.getServiceRegistry()).thenReturn(mockServiceRegistry);
+                    when(davHelper.getServiceRegistry().getContentService()).thenReturn(contentService);
+
+                    // move webdav method dwg copy to atmp1234
+                    moveMethod.moveOrCopy(dwgFI.getNodeRef(), companyHomeNodeRef, companyHomeNodeRef, destFileName);
+
+                    ContentReader reader = contentService.getReader(atmpFI.getNodeRef(), ContentModel.PROP_CONTENT);
+                    assertNotNull(reader);
+                    assertEquals(content, reader.getContentString());
+
+                    // move webdav method atmp1234 rename to bak
+                    sourcePath = "/" + destFileName;
+                    moveMethod.m_strPath = sourcePath;
+
+                    destPath = "/" + bakFileName;
+                    moveMethod.m_strDestinationPath = destPath;
+
+                    sourcePathSplit = Arrays.asList(destFileName);
+                    when(davHelper.splitAllPaths(sourcePath)).thenReturn(sourcePathSplit);
+
+                    when(mockFileFolderService.resolveNamePath(rootNode, sourcePathSplit)).thenReturn(atmpFI);
+                    when(davHelper.isRenameShuffle(destPath)).thenReturn(true);
+                    when(davHelper.isRenameShuffle(sourcePath)).thenReturn(true);
+
+                    moveMethod.moveOrCopy(atmpFI.getNodeRef(), companyHomeNodeRef, companyHomeNodeRef, bakFileName);
+
+                    verify(mockFileFolderService).rename(atmpFI.getNodeRef(), bakFileName);
+                    verify(davLockService).unlock(atmpFI.getNodeRef());
+                    verify(mockFileFolderService, never()).create(destParentNodeRef, bakFileName, ContentModel.TYPE_CONTENT);
+
+                    // move webdav method tmp copy content to dwg
+                    sourcePath = "/" + tmpFileName;
+                    moveMethod.m_strPath = sourcePath;
+
+                    destPath = "/" + sourceFileName;
+                    moveMethod.m_strDestinationPath = destPath;
+
+                    sourcePathSplit = Arrays.asList(tmpFileName);
+                    when(davHelper.splitAllPaths(sourcePath)).thenReturn(sourcePathSplit);
+
+                    when(mockFileFolderService.resolveNamePath(rootNode, sourcePathSplit)).thenReturn(tmpFI);
+                    when(davHelper.isRenameShuffle(destPath)).thenReturn(false);
+                    when(davHelper.isRenameShuffle(sourcePath)).thenReturn(true);
+
+                    moveMethod.moveOrCopy(atmpFI.getNodeRef(), companyHomeNodeRef, companyHomeNodeRef, bakFileName);
+
+                    reader = contentService.getReader(dwgFI.getNodeRef(), ContentModel.PROP_CONTENT);
+                    assertNotNull(reader);
+                    assertEquals(tmpContent, reader.getContentString());
+                }
+                finally
+                {
+                    if (dwgFI != null)
+                    {
+                        nodeService.deleteNode(dwgFI.getNodeRef());
+                    }
+
+                    if (atmpFI != null)
+                    {
+                        nodeService.deleteNode(atmpFI.getNodeRef());
+                    }
+                }
+
+                return null;
+            }
+        });
+    }
     
     @Test(expected=AccessDeniedException.class)
     public void testMNT_10380_ThrowAccessDeniedExceptionWhenUserLacksPermissions() throws Exception

@@ -21,11 +21,13 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,5 +201,12 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     {
         return configuredReasons == null ? Collections.<ClassificationReason>emptyList() :
                 Collections.unmodifiableList(configuredReasons);
+    }
+
+    @Override
+    public void addClassificationToDocument(ClassificationLevel classificationLevel, String classificationAuthority,
+                Set<ClassificationReason> classificationReasons, NodeRef document)
+    {
+        // TODO
     }
 }

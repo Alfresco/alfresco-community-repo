@@ -40,25 +40,33 @@
       <aspect name="clf:classified">
          <properties>
             <property name="clf:initialClassification">
-               <title>Initial Classification</title>
+               <title>clf_classified_aspect_initialClassification_title</title>
+               <description>clf_classified_aspect_initialClassification_desc</description>
                <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
                <constraints>
                   <constraint ref="clf:classificationLevelRestriction" />
                </constraints>
             </property>
             <property name="clf:currentClassification">
-               <title>Current Classification</title>
+               <title>clf_classified_aspect_currentClassification_title</title>
+               <description>clf_classified_aspect_currentClassification_desc</description>
                <type>d:text</type>
+               <protected>true</protected>
+               <mandatory>true</mandatory>
                <constraints>
                   <constraint ref="clf:classificationLevelRestriction" />
                </constraints>
             </property>
             <property name="clf:classificationAuthority">
-               <title>Classification Authority</title>
+               <title>clf_classified_aspect_classificationAuthority_title</title>
+               <description>clf_classified_aspect_classificationAuthority_desc</description>
                <type>d:text</type>
             </property>
             <property name="clf:classificationReasons">
-               <title>Classification Reasons</title>
+               <title>clf_classified_aspect_classificationReasons_title</title>
+               <description>clf_classified_aspect_classificationReasons_desc</description>
                <type>d:text</type>
                <multiple>true</multiple>
             </property>

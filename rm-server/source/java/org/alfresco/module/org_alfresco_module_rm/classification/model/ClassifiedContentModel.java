@@ -18,17 +18,26 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.model;
 
+import org.alfresco.service.namespace.QName;
+
 /**
  * Classified content model interface.
  * <p>
  * Helper containing reusable information about the classified content model.
- * 
+ *
  * @author Roy Wetherall
  * @since 3.0
  */
 public interface ClassifiedContentModel
 {
     /** Namespace details */
-    String RM_URI = "http://www.alfresco.org/model/classifiedcontent/1.0";
-    String RM_PREFIX = "clf";
+    String CLF_URI = "http://www.alfresco.org/model/classifiedcontent/1.0";
+    String CLF_PREFIX = "clf";
+
+    /** Classified aspect */
+    QName ASPECT_CLASSIFIED = QName.createQName(CLF_URI, "classified");
+    QName PROP_INITIAL_CLASSIFICATION = QName.createQName(CLF_URI, "initialClassification");
+    QName PROP_CURRENT_CLASSIFICATION = QName.createQName(CLF_URI, "currentClassification");
+    QName PROP_CLASSIFICATION_AUTHORITY = QName.createQName(CLF_URI, "classificationAuthority");
+    QName PROP_CLASSIFICATION_REASONS = QName.createQName(CLF_URI, "classificationReasons");
 }

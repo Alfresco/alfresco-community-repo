@@ -31,12 +31,34 @@
 
    <!-- Types -->
    <types>
-     
+
    </types>
 
    <!-- Aspects -->
    <aspects>
-   
+
+      <!--  Classified aspect -->
+      <aspect name="clf:classified">
+         <properties>
+            <property name="clf:initialClassification">
+               <title>Initial Classification</title>
+               <type>d:text</type>
+            </property>
+            <property name="clf:currentClassification">
+               <title>Current Classification</title>
+               <type>d:text</type>
+            </property>
+            <property name="clf:classificationAuthority">
+               <title>Classification Authority</title>
+               <type>d:text</type>
+            </property>
+            <property name="clf:classificationReasons">
+               <title>Classification Reasons</title>
+               <type>d:text</type>
+               <multiple>true</multiple>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
 
 </model>

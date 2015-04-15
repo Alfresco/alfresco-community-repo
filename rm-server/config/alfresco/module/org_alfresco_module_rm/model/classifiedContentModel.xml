@@ -36,17 +36,22 @@
 
    <!-- Aspects -->
    <aspects>
-
       <!--  Classified aspect -->
       <aspect name="clf:classified">
          <properties>
             <property name="clf:initialClassification">
                <title>Initial Classification</title>
                <type>d:text</type>
+               <constraints>
+                  <constraint ref="clf:classificationLevelRestriction" />
+               </constraints>
             </property>
             <property name="clf:currentClassification">
                <title>Current Classification</title>
                <type>d:text</type>
+               <constraints>
+                  <constraint ref="clf:classificationLevelRestriction" />
+               </constraints>
             </property>
             <property name="clf:classificationAuthority">
                <title>Classification Authority</title>
@@ -60,5 +65,4 @@
          </properties>
       </aspect>
    </aspects>
-
 </model>

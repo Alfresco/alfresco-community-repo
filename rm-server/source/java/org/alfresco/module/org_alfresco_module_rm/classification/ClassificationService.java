@@ -19,6 +19,9 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.util.List;
+import java.util.Set;
+
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * The Classification Service supports the 'Classified Records' feature, whereby Alfresco
@@ -43,4 +46,15 @@ public interface ClassificationService
      * @return classification reasons in the order that they are defined.
      */
     List<ClassificationReason> getClassificationReasons();
+
+    /**
+     * Classify a document.
+     * 
+     * @param classificationLevel The security clearance needed to access the document.
+     * @param classificationAuthority The name of the authority responsible for the classification of this document.
+     * @param classificationReasons A non-empty set of reasons for classifying the document in this way.
+     * @param document The node to classify.
+     */
+    void addClassificationToDocument(ClassificationLevel classificationLevel, String classificationAuthority,
+                Set<ClassificationReason> classificationReasons, NodeRef document);
 }

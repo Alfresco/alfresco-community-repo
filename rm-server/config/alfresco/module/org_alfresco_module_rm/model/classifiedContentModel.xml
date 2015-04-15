@@ -40,8 +40,8 @@
       <aspect name="clf:classified">
          <properties>
             <property name="clf:initialClassification">
-               <title>clf_classified_aspect_initialClassification_title</title>
-               <description>clf_classified_aspect_initialClassification_desc</description>
+               <title>Initial Classification</title>
+               <description>The initial classification</description>
                <type>d:text</type>
                <protected>true</protected>
                <mandatory>true</mandatory>
@@ -50,8 +50,8 @@
                </constraints>
             </property>
             <property name="clf:currentClassification">
-               <title>clf_classified_aspect_currentClassification_title</title>
-               <description>clf_classified_aspect_currentClassification_desc</description>
+               <title>Current Classification</title>
+               <description>The current classification. Set to the same as initial classification</description>
                <type>d:text</type>
                <protected>true</protected>
                <mandatory>true</mandatory>
@@ -60,13 +60,13 @@
                </constraints>
             </property>
             <property name="clf:classificationAuthority">
-               <title>clf_classified_aspect_classificationAuthority_title</title>
-               <description>clf_classified_aspect_classificationAuthority_desc</description>
+               <title>Classification Authority</title>
+               <description>The classification authority</description>
                <type>d:text</type>
             </property>
             <property name="clf:classificationReasons">
-               <title>clf_classified_aspect_classificationReasons_title</title>
-               <description>clf_classified_aspect_classificationReasons_desc</description>
+               <title>Classification Reasons</title>
+               <description>Holds the id's of classification reasons</description>
                <type>d:text</type>
                <multiple>true</multiple>
             </property>

@@ -24,26 +24,36 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Sets;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -95,11 +105,16 @@ public class ClassificationServiceImplUnitTest
 
     @InjectMocks private ClassificationServiceImpl classificationServiceImpl;
 
-    @Mock private AttributeService         mockedAttributeService;
-    @Mock private AuthenticationUtil       mockedAuthenticationUtil;
-    @Mock private ClassificationServiceDAO mockClassificationServiceDAO;
+    @Mock private AttributeService            mockedAttributeService;
+    @Mock private AuthenticationUtil          mockedAuthenticationUtil;
+    @Mock private ClassificationServiceDAO    mockClassificationServiceDAO;
+    @Mock private NodeService                 mockNodeService;
     /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
-    @Mock private Appender                 mockAppender;
+    @Mock private Appender                    mockAppender;
+    @Mock private ClassificationLevelManager  mockLevelManager;
+    @Mock private ClassificationReasonManager mockReasonManager;
+    @Captor private ArgumentCaptor<LoggingEvent>             loggingEventCaptor;
+    @Captor private ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
 
     @Before public void setUp()
     {
@@ -196,9 +211,8 @@ public class ClassificationServiceImplUnitTest
                 anyString(), anyString(), anyString());
 
         // Check that the warning message was logged.
-        ArgumentCaptor<LoggingEvent> argumentCaptor = ArgumentCaptor.forClass(LoggingEvent.class);
-        verify(mockAppender).doAppend(argumentCaptor.capture());
-        List<LoggingEvent> loggingEvents = argumentCaptor.getAllValues();
+        verify(mockAppender).doAppend(loggingEventCaptor.capture());
+        List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
         Stream<String> messages = loggingEvents.stream().map(event -> event.getRenderedMessage());
         String expectedMessage = "Classification reasons configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
         assertTrue("Warning message not found in log.", messages.anyMatch(message -> message == expectedMessage));
@@ -242,5 +256,38 @@ public class ClassificationServiceImplUnitTest
         List<ClassificationLevel> actual = classificationServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
 
         assertEquals("Expected an empty list when the target level is not found.", 0, actual.size());
+    }
+
+    /** Classify a document with a couple of reasons and check the NodeService is called correctly. */
+    @Test public void addClassificationToDocument()
+    {
+        // Create a level and two reasons.
+        ClassificationLevel level = new ClassificationLevel("levelId1", "displayLabelKey");
+        ClassificationReason reason1 = new ClassificationReason("reasonId1", "displayLabelKey1");
+        ClassificationReason reason2 = new ClassificationReason("reasonId2", "displayLabelKey2");
+        Set<ClassificationReason> reasons = Sets.newHashSet(reason1, reason2);
+        NodeRef document = new NodeRef("fake://document/");
+        // Set up the managers to return these objects when the ids are provided.
+        doReturn(level).when(mockLevelManager).findLevelById("levelId1");
+        doReturn(reason1).when(mockReasonManager).findReasonById("reasonId1");
+        doReturn(reason2).when(mockReasonManager).findReasonById("reasonId2");
+
+        // Call the method under test.
+        classificationServiceImpl.addClassificationToDocument("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), document);
+
+        verify(mockNodeService).addAspect(eq(document), eq(ClassifiedContentModel.ASPECT_CLASSIFIED),
+                    propertiesCaptor.capture());
+        // Check the properties that were received.
+        Map<QName, Serializable> properties = propertiesCaptor.getValue();
+        HashSet<QName> expectedPropertyKeys = Sets.newHashSet(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION,
+                    ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION,
+                    ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY,
+                    ClassifiedContentModel.PROP_CLASSIFICATION_REASONS);
+        assertEquals("Aspect created with unexpected set of keys.", expectedPropertyKeys, properties.keySet());
+        assertEquals("Unexpected initial classification.", level, properties.get(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
+        assertEquals("Unexpected current classification.", level, properties.get(ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
+        assertEquals("Unexpected authority.", "classificationAuthority", properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
+        assertEquals("Unexpected set of reasons.", reasons, properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
     }
 }

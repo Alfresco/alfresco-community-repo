@@ -20,14 +20,22 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @since 3.0
  */
 public class ClassificationServiceImpl extends ServiceBaseImpl
-                                       implements ClassificationService
+                                       implements ClassificationService, ClassifiedContentModel
 {
     private static final Serializable[] LEVELS_KEY = new String[] { "org.alfresco",
                                                               "module.org_alfresco_module_rm",
@@ -47,14 +55,16 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceImpl.class);
 
     private AttributeService attributeService; // TODO What about other code (e.g. REST API) accessing the AttrService?
+    private NodeService nodeService;
     private ClassificationServiceDAO classificationServiceDao;
 
     /** The classification levels currently configured in this server. */
-    private List<ClassificationLevel> configuredLevels;
+    private ClassificationLevelManager levelManager;
     /** The classification reasons currently configured in this server. */
-    private List<ClassificationReason> configuredReasons;
+    private ClassificationReasonManager reasonManager;
 
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
+    public void setNodeService(NodeService service) { this.nodeService = service; }
 
     /** Set the object from which configuration options will be read. */
     public void setClassificationServiceDAO(ClassificationServiceDAO classificationServiceDao) { this.classificationServiceDao = classificationServiceDao; }
@@ -75,11 +85,11 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         else if (!configurationLevels.equals(allPersistedLevels))
         {
             attributeService.setAttribute((Serializable) configurationLevels, LEVELS_KEY);
-            this.configuredLevels = configurationLevels;
+            this.levelManager = new ClassificationLevelManager(configurationLevels);
         }
         else
         {
-            this.configuredLevels = allPersistedLevels;
+            this.levelManager = new ClassificationLevelManager(allPersistedLevels);
         }
     }
 
@@ -99,7 +109,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
                 throw new MissingConfiguration("Classification reason configuration is missing.");
             }
             attributeService.setAttribute((Serializable) classpathReasons, REASONS_KEY);
-            this.configuredReasons = classpathReasons;
+            this.reasonManager = new ClassificationReasonManager(classpathReasons);
         }
         else
         {
@@ -109,7 +119,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
                             + "Alfresco will use the unchanged values stored in the database.");
                 // RM-2073 says that we should log a warning and proceed normally.
             }
-            this.configuredReasons = persistedReasons;
+            this.reasonManager = new ClassificationReasonManager(persistedReasons);
         }
     }
 
@@ -188,25 +198,41 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     @Override
     public List<ClassificationLevel> getClassificationLevels()
     {
-        if (configuredLevels == null)
+        if (levelManager == null)
         {
             return Collections.emptyList();
         }
         // FIXME Currently assume user has highest security clearance, this should be fixed as part of RM-2112.
-        ClassificationLevel usersLevel = configuredLevels.get(0);
-        return restrictList(configuredLevels, usersLevel);
+        ClassificationLevel usersLevel = levelManager.getMostSecureLevel();
+        return restrictList(levelManager.getClassificationLevels(), usersLevel);
     }
 
     @Override public List<ClassificationReason> getClassificationReasons()
     {
-        return configuredReasons == null ? Collections.<ClassificationReason>emptyList() :
-                Collections.unmodifiableList(configuredReasons);
+        return reasonManager == null ? Collections.<ClassificationReason>emptyList() :
+                Collections.unmodifiableList(reasonManager.getClassificationReasons());
     }
 
     @Override
-    public void addClassificationToDocument(ClassificationLevel classificationLevel, String classificationAuthority,
-                Set<ClassificationReason> classificationReasons, NodeRef document)
+    public void addClassificationToDocument(String classificationLevelId, String classificationAuthority,
+                Set<String> classificationReasonIds, NodeRef document) throws LevelIdNotFound, ReasonIdNotFound
     {
-        // TODO
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+
+        ClassificationLevel classificationLevel = levelManager.findLevelById(classificationLevelId);
+        properties.put(PROP_INITIAL_CLASSIFICATION, classificationLevel);
+        properties.put(PROP_CURRENT_CLASSIFICATION, classificationLevel);
+
+        properties.put(PROP_CLASSIFICATION_AUTHORITY, classificationAuthority);
+
+        HashSet<ClassificationReason> classificationReasons = new HashSet<>();
+        for (String classificationReasonId : classificationReasonIds)
+        {
+            ClassificationReason classificationReason = reasonManager.findReasonById(classificationReasonId);
+            classificationReasons.add(classificationReason);
+        }
+        properties.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
+
+        nodeService.addAspect(document, ASPECT_CLASSIFIED, properties);
     }
 }

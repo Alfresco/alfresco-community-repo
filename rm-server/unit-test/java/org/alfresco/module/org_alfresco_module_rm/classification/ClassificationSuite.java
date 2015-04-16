@@ -29,6 +29,8 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses(
 {
     ClassificationLevelConstraintUnitTest.class,
+    ClassificationLevelManagerUnitTest.class,
+    ClassificationReasonManagerUnitTest.class,
     ClassificationServiceDAOUnitTest.class,
     ClassificationServiceImplUnitTest.class
 })

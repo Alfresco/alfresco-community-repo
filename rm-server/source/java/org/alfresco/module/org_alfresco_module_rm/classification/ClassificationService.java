@@ -21,6 +21,8 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -50,11 +52,13 @@ public interface ClassificationService
     /**
      * Classify a document.
      * 
-     * @param classificationLevel The security clearance needed to access the document.
+     * @param classificationLevelId The security clearance needed to access the document.
      * @param classificationAuthority The name of the authority responsible for the classification of this document.
-     * @param classificationReasons A non-empty set of reasons for classifying the document in this way.
+     * @param classificationReasonIds A non-empty set of ids of reasons for classifying the document in this way.
      * @param document The node to classify.
+     * @throws LevelIdNotFound If the supplied level id is not found.
+     * @throws ReasonIdNotFound If any of the supplied reason ids are not found.
      */
-    void addClassificationToDocument(ClassificationLevel classificationLevel, String classificationAuthority,
-                Set<ClassificationReason> classificationReasons, NodeRef document);
+    void addClassificationToDocument(String classificationLevelId, String classificationAuthority,
+                Set<String> classificationReasonIds, NodeRef document) throws LevelIdNotFound, ReasonIdNotFound;
 }

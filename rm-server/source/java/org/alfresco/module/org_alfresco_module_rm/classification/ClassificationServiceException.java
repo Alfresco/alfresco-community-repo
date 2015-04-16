@@ -59,8 +59,32 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
     {
         /** serial version uid */
         private static final long serialVersionUID = 8191162359241035026L;
-        
+
         public MalformedConfiguration(String msgId) { super(msgId); }
         public MalformedConfiguration(String msgId, Throwable cause) { super(msgId, cause); }
+    }
+
+    /** The supplied classification level id was not found in the configured list. */
+    public static class LevelIdNotFound extends ClassificationServiceException
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = -8507186704795004383L;
+
+        public LevelIdNotFound(String levelId)
+        {
+            super("Could not find classification level with id " + levelId);
+        }
+    }
+
+    /** The supplied classification reason id was not found in the configured list. */
+    public static class ReasonIdNotFound extends ClassificationServiceException
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = -643842413653375433L;
+
+        public ReasonIdNotFound(String reasonId)
+        {
+            super("Could not find classification reason with id " + reasonId);
+        }
     }
 }

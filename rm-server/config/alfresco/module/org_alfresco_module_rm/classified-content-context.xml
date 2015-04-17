@@ -4,7 +4,7 @@
 <beans>
 
    <!--  Classified content model bootstrap -->
-   
+
    <bean id="classifiedContentDictionaryBootstrap" parent="dictionaryModelBootstrap">
       <property name="models">
          <list>
@@ -17,9 +17,9 @@
          </list>
       </property>
    </bean>
-   
+
    <!--  I18N bootstrap -->
-   
+
    <bean id="classifiedContentResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">
       <property name="resourceBundles">
          <list>
@@ -27,9 +27,9 @@
          </list>
       </property>
    </bean>
-	
-   <!-- Classification service DAO -->  
-	
+
+   <!-- Classification service DAO -->
+
    <bean id="classificationServiceDAO" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceDAO">
         <property name="levelConfigLocation" value="${rm.classification.levelsFile}" />
         <property name="reasonConfigLocation" value="${rm.classification.reasonsFile}" />
@@ -77,11 +77,12 @@
          <value>
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasons=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.addClassificationToDocument=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=ACL_DENY
          </value>
       </property>
    </bean>
-   
+
    <bean id="ClassificationServiceProvider" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceProvider">
       <constructor-arg ref="ClassificationService" index="0" />
    </bean>
@@ -92,5 +93,5 @@
        <constructor-arg ref="classificationService"/> <!-- Intentionally using the small 'c' here -->
        <constructor-arg ref="TransactionService"/>
    </bean>
-   
+
 </beans>

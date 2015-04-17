@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import static org.alfresco.util.ParameterCheck.mandatory;
+
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,9 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -181,7 +181,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
 
     /**
      * Create a list containing all classification levels up to and including the supplied level.
-     * 
+     *
      * @param allLevels The list of all the classification levels starting with the highest security.
      * @param targetLevel The highest security classification level that should be returned. If this is not found then
      *            an empty list will be returned.
@@ -215,24 +215,36 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
 
     @Override
     public void addClassificationToDocument(String classificationLevelId, String classificationAuthority,
-                Set<String> classificationReasonIds, NodeRef document) throws LevelIdNotFound, ReasonIdNotFound
+                Set<String> classificationReasonIds, NodeRef document)
     {
+        mandatory("classificationLevelId", classificationLevelId);
+        mandatory("classificationAuthority", classificationAuthority);
+        mandatory("classificationReasonIds", classificationReasonIds);
+        mandatory("document", document);
+
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
 
-        ClassificationLevel classificationLevel = levelManager.findLevelById(classificationLevelId);
-        properties.put(PROP_INITIAL_CLASSIFICATION, classificationLevel);
-        properties.put(PROP_CURRENT_CLASSIFICATION, classificationLevel);
+        // Initial classification id
+        if (nodeService.getProperty(document, PROP_INITIAL_CLASSIFICATION) == null)
+        {
+            properties.put(PROP_INITIAL_CLASSIFICATION, classificationLevelId);
+        }
 
+        // Current classification id
+        properties.put(PROP_CURRENT_CLASSIFICATION, classificationLevelId);
+
+        // Classification authority
         properties.put(PROP_CLASSIFICATION_AUTHORITY, classificationAuthority);
 
-        HashSet<ClassificationReason> classificationReasons = new HashSet<>();
+        // Classification reason ids
+        HashSet<String> classificationReasons = new HashSet<>();
         for (String classificationReasonId : classificationReasonIds)
         {
-            ClassificationReason classificationReason = reasonManager.findReasonById(classificationReasonId);
-            classificationReasons.add(classificationReason);
+            classificationReasons.add(classificationReasonId);
         }
         properties.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
 
+        // Add aspect
         nodeService.addAspect(document, ASPECT_CLASSIFIED, properties);
     }
 }

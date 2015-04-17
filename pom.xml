@@ -29,6 +29,16 @@
         </bitrock.arguments>
     </properties>
 
+    <dependencies>
+        <!-- Import the dependencies from the Community installer -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-installer</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

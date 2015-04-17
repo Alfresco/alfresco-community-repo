@@ -32,7 +32,6 @@
 			{
 				"type": "${row.item.typeShort}",
 				"parentType": "${row.item.parentTypeShort!""}",
-				<#if row.item.parent??>"parentName": "${row.item.parent.name!""}",</#if>
 				"isContainer": ${row.item.isContainer?string},
 				<#if row.container??>"container": "${row.container!""}",</#if>
 				"name": "${row.item.properties.name!""}",

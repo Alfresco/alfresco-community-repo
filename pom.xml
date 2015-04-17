@@ -31,6 +31,22 @@
     <dependencies>
         <!-- These binaries are extracted using tar, to preserve symlinks -->
 
+        <!-- Common -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>installer-common</artifactId>
+            <version>${installer.common.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>installer-common</artifactId>
+            <version>${installer.common.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+
         <!-- Tomcat -->
         <dependency>
             <groupId>org.apache.tomcat</groupId>

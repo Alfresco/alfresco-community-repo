@@ -28,12 +28,16 @@
             </condition>
 
             <!-- LibreOffice is the same for win32 and win64 -->
-            <local name="libreoffice.platform"/>
-            <condition property="libreoffice.platform" value="windows" else="@{platform}">
+            <local name="isPlatformWindows"/>
+            <condition property="isPlatformWindows">
                 <or>
                     <equals arg1="@{platform}" arg2="win32" />
                     <equals arg1="@{platform}" arg2="win64" />
                 </or>
+            </condition>
+            <local name="libreoffice.platform"/>
+            <condition property="libreoffice.platform" value="windows" else="@{platform}">
+                <isset property="isPlatformWindows"/>
             </condition>
 
             <!-- Accommodate poor Cygwin users -->
@@ -45,6 +49,12 @@
             </pathconvert>
 
             <mkdir dir="${bin.folder}" />
+
+            <echo>  Extracting Common...</echo>
+            <exec failonerror="true" executable="tar" dir="${bin.folder}" unless:set="isPlatformWindows">
+                <arg value="xf" />
+                <arg value="${maven.localrepo}/org/alfresco/installer-common/${installer.common.version}/installer-common-${installer.common.version}-@{platform}.tgz" />
+            </exec>
 
             <echo>  Extracting Tomcat...</echo>
             <exec failonerror="true" executable="tar" dir="${bin.folder}">

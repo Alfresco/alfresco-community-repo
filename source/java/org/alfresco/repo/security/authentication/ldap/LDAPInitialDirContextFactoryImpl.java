@@ -28,7 +28,9 @@ import java.security.cert.CertificateException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.naming.AuthenticationNotSupportedException;
@@ -67,6 +69,7 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
 
     private Map<String, String> defaultEnvironment = Collections.<String, String> emptyMap();
     private Map<String, String> authenticatedEnvironment = Collections.<String, String> emptyMap();
+    private Map<String, String> poolSystemProperties = Collections.<String, String> emptyMap();	
     private String trustStorePath;
     private String trustStoreType;
     private String trustStorePassPhrase;
@@ -133,13 +136,35 @@ public class LDAPInitialDirContextFactoryImpl implements LDAPInitialDirContextFa
     
     public void setDefaultIntialDirContextEnvironment(Map<String, String> defaultEnvironment)
     {
-        this.defaultEnvironment = defaultEnvironment;
+        this.defaultEnvironment = new LinkedHashMap<String, String>(defaultEnvironment.size());
+        this.defaultEnvironment.putAll(defaultEnvironment);
+        
+        // filter out empty values, as this usually means that property should be omitted.
+        for (Entry<String, String> entry : defaultEnvironment.entrySet())
+        {
+            if (entry.getValue() == null || entry.getValue().trim().length() == 0)
+            {
+                this.defaultEnvironment.remove(entry.getKey());
+            }
+        }
         this.defaultEnvironment.values().removeAll(Collections.singleton(null));
     }    
 
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException
     {
         return getDefaultIntialDirContext(0, new AuthenticationDiagnostic());
+    }
+    
+    public void setPoolSystemProperties(Map<String, String> poolSystemProperties)
+    {
+        this.poolSystemProperties = poolSystemProperties;
+        for (Entry<String, String> entry : this.poolSystemProperties.entrySet())
+        {
+            if (entry.getValue() != null && entry.getValue().trim().length() > 0)
+            {
+                System.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
     }
     
     public InitialDirContext getDefaultIntialDirContext(int pageSize) throws AuthenticationException

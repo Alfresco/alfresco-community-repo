@@ -202,11 +202,6 @@
                <value>false</value>
             </entry>
 
-            <!-- Pool the default connection -->
-            <entry key="com.sun.jndi.ldap.connect.pool">
-               <value>true</value>
-            </entry>
-
             <!-- Requests timeout, in miliseconds, use 0 for none (default) -->
             <entry key="com.sun.jndi.ldap.read.timeout">
                <value>${ldap.authentication.java.naming.read.timeout}</value>
@@ -217,9 +212,42 @@
                <value>follow</value>
             </entry>
 
-            <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
+           <!-- Set to 'ssl' to enable LDAPS configuration via subsystem's properties -->
             <entry key="java.naming.security.protocol">
                <value>${ldap.authentication.java.naming.security.protocol}</value>
+            </entry>
+	    
+            <!-- Connection pool configuration -->
+            <entry key="com.sun.jndi.ldap.connect.pool">
+               <value>${ldap.synchronization.com.sun.jndi.ldap.connect.pool}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.timeout">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.timeout}</value>
+            </entry>
+         </map>
+      </property>
+      <property name="poolSystemProperties">
+         <map>
+            <entry key="com.sun.jndi.ldap.connect.pool.authentication">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.authentication}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.debug">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.debug}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.initsize">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.initsize}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.maxsize">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.maxsize}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.prefsize">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.prefsize}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.protocol">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.protocol}</value>
+            </entry>
+            <entry key="com.sun.jndi.ldap.connect.pool.timeout">
+               <value>${ldap.pooling.com.sun.jndi.ldap.connect.pool.timeout}</value>
             </entry>
          </map>
       </property>

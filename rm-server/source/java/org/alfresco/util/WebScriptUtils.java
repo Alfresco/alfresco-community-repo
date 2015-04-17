@@ -317,4 +317,30 @@ public final class WebScriptUtils
 
         return jsonObject;
     }
+
+    /**
+     * Gets the {@link JSONArray} value of a given key from a json object
+     *
+     * @param jsonObject The json object
+     * @param key The key
+     * @return The {@link JSONArray} value of the given key from the json object
+     */
+    public static JSONArray getJSONArrayFromJSONObject(JSONObject jsonObject, String key)
+    {
+        JSONArray jsonArray;
+
+        mandatory("jsonObject", jsonObject);
+        mandatory("key", key);
+
+        try
+        {
+            jsonArray = jsonObject.getJSONArray(key);
+        }
+        catch (JSONException error)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not get the json array for the key '" + key + "'.", error);
+        }
+
+        return jsonArray;
+    }
 }

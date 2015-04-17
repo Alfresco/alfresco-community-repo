@@ -1,0 +1,27 @@
+<webscript>
+  <shortname>Classifies a content</shortname>
+  <description><![CDATA[
+  Classifies the specified content.<br/>
+  <br/>
+  The body of the post should be in the form, e.g.<br/>
+  {<br/>
+    "nodeRef": "workspace://SpacesStore/aNodeRefId",<br/>
+    "classificationLevelId": "aLevelId",<br/>
+    "classificationAuthority": "anAuthority",<br/>
+    "classificationReasons": [<br/>
+      {<br/>
+        "id": "reason1Id"<br/>
+      },<br/>
+      {<br/>
+        "id": "reason2Id"<br/>
+      }<br/>
+    ]<br/>
+  }<br/>
+  ]]>
+  </description>
+  <url>/api/node/{store_type}/{store_id}/{id}/classify</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
+</webscript>

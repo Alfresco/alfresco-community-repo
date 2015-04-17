@@ -662,4 +662,11 @@
       parent="rmBaseWebscript">
       <property name="classificationService" ref="ClassificationService" />
    </bean>
+
+   <!-- REST impl for POST classify content -->
+   <bean id="webscript.org.alfresco.rma.classification.classifycontent.post"
+      class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost"
+      parent="rmBaseWebscript">
+      <property name="classificationService" ref="ClassificationService" />
+   </bean>
 </beans>

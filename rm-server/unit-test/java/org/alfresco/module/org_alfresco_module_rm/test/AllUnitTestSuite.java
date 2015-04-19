@@ -39,6 +39,7 @@ import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTe
 import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigGetTest;
 import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigPostTest;
 import org.alfresco.module.org_alfresco_module_rm.script.classification.ClassificationLevelsGetTest;
+import org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost;
 import org.alfresco.module.org_alfresco_module_rm.script.classification.ReasonsGetTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
 import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
@@ -85,6 +86,7 @@ import org.junit.runners.Suite.SuiteClasses;
     HoldPutUnitTest.class,
     ReasonsGetTest.class,
     ClassificationLevelsGetTest.class,
+    ClassifyContentPost.class,
 
     // action implementations
     FileReportActionUnitTest.class,

@@ -46,9 +46,9 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 public class ClassifyContentPost extends AbstractRmWebScript
 {
     /** Constants */
-    private static final String CLASSIFICATION_LEVEL_ID = "classificationLevelId";
-    private static final String CLASSIFICATION_AUTHORITY = "classificationAuthority";
-    private static final String CLASSIFICATION_REASONS = "classificationReasons";
+    public static final String CLASSIFICATION_LEVEL_ID = "classificationLevelId";
+    public static final String CLASSIFICATION_AUTHORITY = "classificationAuthority";
+    public static final String CLASSIFICATION_REASONS = "classificationReasons";
 
     /** Classification service */
     private ClassificationService classificationService;
@@ -77,8 +77,6 @@ public class ClassifyContentPost extends AbstractRmWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        Map<String, Object> model = new HashMap<String, Object>(1);
-
         JSONObject jsonObject = getRequestContentAsJsonObject(req);
         String classificationLevelId = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_LEVEL_ID);
         String classificationAuthority = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_AUTHORITY);
@@ -86,6 +84,8 @@ public class ClassifyContentPost extends AbstractRmWebScript
         NodeRef document = parseRequestForNodeRef(req);
 
         getClassificationService().addClassificationToDocument(classificationLevelId, classificationAuthority, classificationReasonIds, document);
+
+        Map<String, Object> model = new HashMap<String, Object>(1);
         model.put(SUCCESS, true);
 
         return model;

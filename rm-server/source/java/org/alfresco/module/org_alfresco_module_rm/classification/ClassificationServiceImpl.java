@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
@@ -223,6 +225,11 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         mandatory("classificationAuthority", classificationAuthority);
         mandatory("classificationReasonIds", classificationReasonIds);
         mandatory("document", document);
+
+        if (!nodeService.getType(document).equals(ContentModel.TYPE_CONTENT))
+        {
+            throw new InvalidNode(document, "The supplied node is not a content node.");
+        }
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         checkClassificationLevelId(classificationLevelId);

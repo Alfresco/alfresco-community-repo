@@ -34,6 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Sets;
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
@@ -253,20 +256,20 @@ public class ClassificationServiceImplUnitTest
     }
 
     /** Classify a document with a couple of reasons and check the NodeService is called correctly. */
-    @Test public void addClassificationToDocument()
+    @Test public void addClassificationToDocument_success()
     {
-        // FIXME: Needs to be changed
-        /*
         // Create a level and two reasons.
         ClassificationLevel level = new ClassificationLevel("levelId1", "displayLabelKey");
         ClassificationReason reason1 = new ClassificationReason("reasonId1", "displayLabelKey1");
         ClassificationReason reason2 = new ClassificationReason("reasonId2", "displayLabelKey2");
         Set<ClassificationReason> reasons = Sets.newHashSet(reason1, reason2);
-        NodeRef document = new NodeRef("fake://document/");
         // Set up the managers to return these objects when the ids are provided.
         doReturn(level).when(mockLevelManager).findLevelById("levelId1");
         doReturn(reason1).when(mockReasonManager).findReasonById("reasonId1");
         doReturn(reason2).when(mockReasonManager).findReasonById("reasonId2");
+        // Create a document node.
+        NodeRef document = new NodeRef("fake://document/");
+        doReturn(ContentModel.TYPE_CONTENT).when(mockNodeService).getType(document);
 
         // Call the method under test.
         classificationServiceImpl.addClassificationToDocument("levelId1", "classificationAuthority",
@@ -285,6 +288,21 @@ public class ClassificationServiceImplUnitTest
         assertEquals("Unexpected current classification.", level, properties.get(ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
         assertEquals("Unexpected authority.", "classificationAuthority", properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
         assertEquals("Unexpected set of reasons.", reasons, properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
-        */
+    }
+
+    /**
+     * Classify a folder using the <code>addClassificationToDocument</code> method and check that an exception is
+     * raised.
+     */
+    @Test(expected = InvalidNode.class)
+    public void addClassificationToDocument_notDocument()
+    {
+        // Create a folder node.
+        NodeRef notADocument = new NodeRef("not://a/document/");
+        doReturn(ContentModel.TYPE_FOLDER).when(mockNodeService).getType(notADocument);
+
+        // Call the method under test.
+        classificationServiceImpl.addClassificationToDocument("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), notADocument);
     }
 }

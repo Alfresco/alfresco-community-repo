@@ -21,8 +21,10 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -58,7 +60,10 @@ public interface ClassificationService
      * @param document The node to classify.
      * @throws LevelIdNotFound If the supplied level id is not found.
      * @throws ReasonIdNotFound If any of the supplied reason ids are not found.
+     * @throws InvalidNodeRefException If the node could not be found.
+     * @throws InvalidNode If the supplied node is not a document node.
      */
     void addClassificationToDocument(String classificationLevelId, String classificationAuthority,
-                Set<String> classificationReasonIds, NodeRef document) throws LevelIdNotFound, ReasonIdNotFound;
+                Set<String> classificationReasonIds, NodeRef document) throws LevelIdNotFound, ReasonIdNotFound,
+                InvalidNodeRefException, InvalidNode;
 }

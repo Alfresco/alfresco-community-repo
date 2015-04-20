@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Generic class for any runtime exception thrown within the {@link ClassificationService}.
@@ -85,6 +86,17 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
         public ReasonIdNotFound(String reasonId)
         {
             super("Could not find classification reason with id " + reasonId);
+        }
+    }
+
+    public static class InvalidNode extends ClassificationServiceException
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = -4485335425932302477L;
+
+        public InvalidNode(NodeRef nodeRef, String message)
+        {
+            super("Operation not permitted on node " + nodeRef + ", error message: " + message);
         }
     }
 }

@@ -50,23 +50,14 @@ public class CustomStringVariableType extends StringType
     {
         if(value != null && ((String) value).length() > MAX_TEXT_LENGTH) 
         {
-            ByteArrayEntity byteArray = valueFields.getByteArrayValue();
             byte[] bytes = ((String) value).getBytes();
-            if (byteArray==null) 
-            {
-                valueFields.setByteArrayValue(bytes);
-            } 
-            else 
-            {
-                // Reuse the existing byte-array entity on an update instead of creating a new one each time
-                byteArray.setBytes(bytes);
-            }
-        } 
+            valueFields.setBytes(bytes);
+        }
         else {
             // Make sure NO byte-array is present anymore in case this variable exceeded the 
             // length before this update, but is shorter now
-            valueFields.setByteArrayValue(null);
-            
+            valueFields.setBytes(null);
+
             // Revert to storing regular string
             super.setValue(value, valueFields);
         }
@@ -77,8 +68,8 @@ public class CustomStringVariableType extends StringType
     {
         // In case the string is stored as a byte-array, create a string from the stored bytes
         // using platform encoding and return this instead of the text-value
-        if(valueFields.getByteArrayValueId() != null && valueFields.getByteArrayValue() != null) {
-            return new String(valueFields.getByteArrayValue().getBytes());
+        if(valueFields.getBytes() != null) {
+            return new String(valueFields.getBytes());
         }
         return super.getValue(valueFields);
     }

@@ -218,24 +218,24 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     }
 
     @Override
-    public void addClassificationToDocument(String classificationLevelId, String classificationAuthority,
-                Set<String> classificationReasonIds, NodeRef document)
+    public void classifyContent(String classificationLevelId, String classificationAuthority,
+                Set<String> classificationReasonIds, NodeRef content)
     {
         mandatory("classificationLevelId", classificationLevelId);
         mandatory("classificationAuthority", classificationAuthority);
         mandatory("classificationReasonIds", classificationReasonIds);
-        mandatory("document", document);
+        mandatory("content", content);
 
-        if (!nodeService.getType(document).equals(ContentModel.TYPE_CONTENT))
+        if (!nodeService.getType(content).equals(ContentModel.TYPE_CONTENT))
         {
-            throw new InvalidNode(document, "The supplied node is not a content node.");
+            throw new InvalidNode(content, "The supplied node is not a content node.");
         }
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         checkClassificationLevelId(classificationLevelId);
 
         // Initial classification id
-        if (nodeService.getProperty(document, PROP_INITIAL_CLASSIFICATION) == null)
+        if (nodeService.getProperty(content, PROP_INITIAL_CLASSIFICATION) == null)
         {
             properties.put(PROP_INITIAL_CLASSIFICATION, classificationLevelId);
         }
@@ -256,7 +256,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         properties.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
 
         // Add aspect
-        nodeService.addAspect(document, ASPECT_CLASSIFIED, properties);
+        nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
     }
 
     /**

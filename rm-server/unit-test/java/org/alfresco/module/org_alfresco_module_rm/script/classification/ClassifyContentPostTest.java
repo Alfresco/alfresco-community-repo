@@ -116,7 +116,7 @@ public class ClassifyContentPostTest extends BaseWebScriptUnitTest
         assertEquals(getStringValueFromJSONObject(json, SUCCESS), Boolean.TRUE.toString());
 
         // Verify that the classify content method was called
-        verify(mockedClassificationService, times(1)).addClassificationToDocument(LEVEL_ID, AUTHORITY, newHashSet(REASON1_ID, REASON2_ID), record);
+        verify(mockedClassificationService, times(1)).classifyContent(LEVEL_ID, AUTHORITY, newHashSet(REASON1_ID, REASON2_ID), record);
     }
 
     /**

@@ -77,7 +77,7 @@
          <value>
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasons=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.addClassificationToDocument=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.classifyContent=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=ACL_DENY
          </value>
       </property>

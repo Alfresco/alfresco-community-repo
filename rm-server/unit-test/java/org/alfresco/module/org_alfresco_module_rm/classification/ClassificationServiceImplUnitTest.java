@@ -260,8 +260,8 @@ public class ClassificationServiceImplUnitTest
         assertEquals("Expected an empty list when the target level is not found.", 0, actual.size());
     }
 
-    /** Classify a document with a couple of reasons and check the NodeService is called correctly. */
-    @Test public void addClassificationToDocument_success()
+    /** Classify a piece of content with a couple of reasons and check the NodeService is called correctly. */
+    @Test public void classifyContent_success()
     {
         // Create a level and two reasons.
         ClassificationLevel level = new ClassificationLevel("levelId1", "displayLabelKey");
@@ -271,15 +271,15 @@ public class ClassificationServiceImplUnitTest
         doReturn(level).when(mockLevelManager).findLevelById("levelId1");
         doReturn(reason1).when(mockReasonManager).findReasonById("reasonId1");
         doReturn(reason2).when(mockReasonManager).findReasonById("reasonId2");
-        // Create a document node.
-        NodeRef document = new NodeRef("fake://document/");
-        doReturn(ContentModel.TYPE_CONTENT).when(mockNodeService).getType(document);
+        // Create a content node.
+        NodeRef content = new NodeRef("fake://content/");
+        doReturn(ContentModel.TYPE_CONTENT).when(mockNodeService).getType(content);
 
         // Call the method under test.
-        classificationServiceImpl.addClassificationToDocument("levelId1", "classificationAuthority",
-                    Sets.newHashSet("reasonId1", "reasonId2"), document);
+        classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), content);
 
-        verify(mockNodeService).addAspect(eq(document), eq(ClassifiedContentModel.ASPECT_CLASSIFIED),
+        verify(mockNodeService).addAspect(eq(content), eq(ClassifiedContentModel.ASPECT_CLASSIFIED),
                     propertiesCaptor.capture());
         // Check the properties that were received.
         Map<QName, Serializable> properties = propertiesCaptor.getValue();
@@ -295,19 +295,16 @@ public class ClassificationServiceImplUnitTest
         assertEquals("Unexpected set of reasons.", expectedReasonIds, properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
     }
 
-    /**
-     * Classify a folder using the <code>addClassificationToDocument</code> method and check that an exception is
-     * raised.
-     */
+    /** Classify a folder using the <code>classifyContent</code> method and check that an exception is raised. */
     @Test(expected = InvalidNode.class)
-    public void addClassificationToDocument_notDocument()
+    public void classifyContent_notContent()
     {
         // Create a folder node.
-        NodeRef notADocument = new NodeRef("not://a/document/");
-        doReturn(ContentModel.TYPE_FOLDER).when(mockNodeService).getType(notADocument);
+        NodeRef notAPieceOfContent = new NodeRef("not://a/piece/of/content/");
+        doReturn(ContentModel.TYPE_FOLDER).when(mockNodeService).getType(notAPieceOfContent);
 
         // Call the method under test.
-        classificationServiceImpl.addClassificationToDocument("levelId1", "classificationAuthority",
-                    Sets.newHashSet("reasonId1", "reasonId2"), notADocument);
+        classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), notAPieceOfContent);
     }
 }

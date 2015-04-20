@@ -83,7 +83,7 @@ public class ClassifyContentPost extends AbstractRmWebScript
         Set<String> classificationReasonIds = getClassificationReasonIds(jsonObject);
         NodeRef document = parseRequestForNodeRef(req);
 
-        getClassificationService().addClassificationToDocument(classificationLevelId, classificationAuthority, classificationReasonIds, document);
+        getClassificationService().classifyContent(classificationLevelId, classificationAuthority, classificationReasonIds, document);
 
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put(SUCCESS, true);

@@ -52,18 +52,18 @@ public interface ClassificationService
     List<ClassificationReason> getClassificationReasons();
 
     /**
-     * Classify a document.
+     * Classify a piece of content.
      * 
-     * @param classificationLevelId The security clearance needed to access the document.
-     * @param classificationAuthority The name of the authority responsible for the classification of this document.
-     * @param classificationReasonIds A non-empty set of ids of reasons for classifying the document in this way.
-     * @param document The node to classify.
+     * @param classificationLevelId The security clearance needed to access the content.
+     * @param classificationAuthority The name of the authority responsible for the classification of this content.
+     * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
+     * @param content The node to classify.
      * @throws LevelIdNotFound If the supplied level id is not found.
      * @throws ReasonIdNotFound If any of the supplied reason ids are not found.
      * @throws InvalidNodeRefException If the node could not be found.
-     * @throws InvalidNode If the supplied node is not a document node.
+     * @throws InvalidNode If the supplied node is not a content node.
      */
-    void addClassificationToDocument(String classificationLevelId, String classificationAuthority,
-                Set<String> classificationReasonIds, NodeRef document) throws LevelIdNotFound, ReasonIdNotFound,
+    void classifyContent(String classificationLevelId, String classificationAuthority,
+                Set<String> classificationReasonIds, NodeRef content) throws LevelIdNotFound, ReasonIdNotFound,
                 InvalidNodeRefException, InvalidNode;
 }

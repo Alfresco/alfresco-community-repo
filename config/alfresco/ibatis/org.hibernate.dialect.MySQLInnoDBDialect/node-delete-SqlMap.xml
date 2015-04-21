@@ -4,30 +4,25 @@
 
 <mapper namespace="alfresco.node.delete">
 
+    <!-- Does nothing on the assumption that the property clean cleaned the nodes as well (ACE-3942) -->
     <delete id="delete_NodesByTxnCommitTime" parameterType="TransactionQuery">
         <![CDATA[
-        delete node from alf_node node
-        inner join alf_transaction txn on (txn.id = node.transaction_id)
+        delete n from alf_node n
+        join alf_transaction txn on (txn.id = n.transaction_id)
         where
-            node.type_qname_id = #{typeQNameId} and
+            n.type_qname_id = #{typeQNameId} and
             txn.commit_time_ms < #{maxCommitTime}
         ]]>
     </delete>
     
     <delete id="delete_NodePropsByTxnCommitTime" parameterType="TransactionQuery">
         <![CDATA[
-        delete from alf_node_properties
-        where 
-             node_id IN
-        (
-            select node.id
-            from
-                alf_node node
-                join alf_transaction txn on (txn.id = node.transaction_id)
-            where
-                node.type_qname_id = #{typeQNameId} and
-                txn.commit_time_ms < #{maxCommitTime}
-        )
+        delete np from alf_node_properties np
+        join alf_node n on (np.node_id = n.id)
+        join alf_transaction txn on (txn.id = n.transaction_id)
+        where
+            n.type_qname_id = #{typeQNameId} and
+            txn.commit_time_ms < #{maxCommitTime}
         ]]>
     </delete>
     

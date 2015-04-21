@@ -11,6 +11,7 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -32,6 +33,9 @@ import org.springframework.util.StringUtils;
 public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(CopyMoveLinkFileToBaseAction.class);
+
+    /** Retrying transaction helper */
+    private RetryingTransactionHelper retryingTransactionHelper;
 
     /** action parameters */
     public static final String PARAM_DESTINATION_RECORD_FOLDER = "destinationRecordFolder";
@@ -87,6 +91,14 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
+    }
+
+    /**
+     * @param retryingTransactionHelper retrying transaction helper
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
     }
 
     /**
@@ -359,29 +371,34 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      */
     private NodeRef createChild(final Action action, final NodeRef parent, final String childName, final boolean targetisUnfiledRecords, final boolean lastAsFolder)
     {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+    	return AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
-            @Override
-            public NodeRef doWork()
+    		public NodeRef doWork()
             {
-                NodeRef child = null;
-                if(targetisUnfiledRecords)
-                {
-                    child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
-                }
-                else if(lastAsFolder)
-                {
-                    child = recordFolderService.createRecordFolder(parent, childName);
-                }
-                else
-                {
-                    if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(parent)))
+    			return retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+				{
+                	public NodeRef execute() throws Throwable
                     {
-                        throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be created.");
+                        NodeRef child = null;
+                        if (targetisUnfiledRecords)
+                        {
+                            child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
+                        }
+                        else if (lastAsFolder)
+                        {
+                            child = recordFolderService.createRecordFolder(parent, childName);
+                        }
+                        else
+                        {
+                            if (RecordsManagementModel.TYPE_RECORD_FOLDER.equals(nodeService.getType(parent)))
+                            {
+                                throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be created.");
+                            }
+                            child = filePlanService.createRecordCategory(parent, childName);
+                        }
+                        return child;
                     }
-                    child = filePlanService.createRecordCategory(parent, childName);
-                }
-                return child;
+                });
             }
         });
     }

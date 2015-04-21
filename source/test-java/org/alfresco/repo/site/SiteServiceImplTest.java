@@ -18,13 +18,11 @@
  */
 package org.alfresco.repo.site;
 
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,6 +71,10 @@ import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.junit.experimental.categories.Category;
+import org.springframework.extensions.surf.util.I18NUtil;
+
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 /**
  * Site service implementation unit test
@@ -220,9 +222,27 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         name = "Ã©Ã­Ã³ÃºÃ�Ã‰Ã�Ã“Ãš";
         siteInfo = this.siteService.createSite(TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
-        checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        
         siteInfo = this.siteService.getSite(name);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
+        
+        // Localize the title and description
+        NodeRef siteNodeRef = siteInfo.getNodeRef();
+        Locale locale = Locale.getDefault();
+        try
+        {
+            I18NUtil.setLocale(Locale.FRENCH);
+            nodeService.setProperty(siteNodeRef, ContentModel.PROP_TITLE, "Localized-title");
+            nodeService.setProperty(siteNodeRef, ContentModel.PROP_DESCRIPTION, "Localized-description");
+            
+            siteInfo = this.siteService.getSite(name);
+            checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, "Localized-title", "Localized-description", SiteVisibility.PUBLIC); 
+        }
+        finally
+        {
+            I18NUtil.setLocale(locale);
+        }
         
         // Test for duplicate site error
         try

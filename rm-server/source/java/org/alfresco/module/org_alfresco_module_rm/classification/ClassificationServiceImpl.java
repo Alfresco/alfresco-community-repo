@@ -230,6 +230,11 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         {
             throw new InvalidNode(content, "The supplied node is not a content node.");
         }
+        if (nodeService.hasAspect(content, ASPECT_CLASSIFIED))
+        {
+            throw new UnsupportedOperationException(
+                        "The content has already been classified. Reclassification is currently not supported.");
+        }
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         checkClassificationLevelId(classificationLevelId);

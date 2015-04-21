@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -268,12 +267,13 @@ public class ClassificationServiceImplUnitTest
         ClassificationReason reason1 = new ClassificationReason("reasonId1", "displayLabelKey1");
         ClassificationReason reason2 = new ClassificationReason("reasonId2", "displayLabelKey2");
         // Set up the managers to return these objects when the ids are provided.
-        doReturn(level).when(mockLevelManager).findLevelById("levelId1");
-        doReturn(reason1).when(mockReasonManager).findReasonById("reasonId1");
-        doReturn(reason2).when(mockReasonManager).findReasonById("reasonId2");
+        when(mockLevelManager.findLevelById("levelId1")).thenReturn(level);
+        when(mockReasonManager.findReasonById("reasonId1")).thenReturn(reason1);
+        when(mockReasonManager.findReasonById("reasonId2")).thenReturn(reason2);
         // Create a content node.
         NodeRef content = new NodeRef("fake://content/");
-        doReturn(ContentModel.TYPE_CONTENT).when(mockNodeService).getType(content);
+        when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
 
         // Call the method under test.
         classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
@@ -301,10 +301,24 @@ public class ClassificationServiceImplUnitTest
     {
         // Create a folder node.
         NodeRef notAPieceOfContent = new NodeRef("not://a/piece/of/content/");
-        doReturn(ContentModel.TYPE_FOLDER).when(mockNodeService).getType(notAPieceOfContent);
+        when(mockNodeService.getType(notAPieceOfContent)).thenReturn(ContentModel.TYPE_FOLDER);
 
         // Call the method under test.
         classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
                     Sets.newHashSet("reasonId1", "reasonId2"), notAPieceOfContent);
+    }
+
+    /** Classify a piece of content that has already been classified. */
+    @Test(expected = UnsupportedOperationException.class)
+    public void classifyContent_alreadyClassified()
+    {
+        // Create a classified piece of content.
+        NodeRef classifiedContent = new NodeRef("classified://content/");
+        when(mockNodeService.getType(classifiedContent)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(true);
+
+        // Call the method under test.
+        classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
     }
 }

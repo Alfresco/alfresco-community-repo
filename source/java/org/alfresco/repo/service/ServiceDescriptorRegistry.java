@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -413,12 +414,18 @@ public class ServiceDescriptorRegistry
         return (PublicServiceAccessService)getService(PUBLIC_SERVICE_ACCESS_SERVICE);
     }
 
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getRepoAdminService()
+     */
     @Override
     public RepoAdminService getRepoAdminService()
     {
         return (RepoAdminService)getService(REPO_ADMIN_SERVICE);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getSysAdminParams()
+     */
     @Override
     public SysAdminParams getSysAdminParams()
     {
@@ -426,10 +433,22 @@ public class ServiceDescriptorRegistry
         return (SysAdminParams) beanFactory.getBean(beanName);
     }
     
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getWebDavService()
+     */
     @Override
     public WebDavService getWebDavService()
     {
         return (WebDavService)getService(WEBDAV_SERVICE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.service.ServiceRegistry#getModelService()
+     */
+    @Override
+    public ModuleService getModuleService()
+    {
+        return (ModuleService) getService(MODULE_SERVICE);
     }
     
     @Override

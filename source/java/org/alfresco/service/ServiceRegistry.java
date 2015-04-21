@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,6 +45,7 @@ import org.alfresco.service.cmr.ml.ContentFilterLanguagesService;
 import org.alfresco.service.cmr.ml.EditionService;
 import org.alfresco.service.cmr.ml.MultilingualContentService;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.cmr.notification.NotificationService;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rendition.RenditionService;
@@ -149,6 +150,8 @@ public interface ServiceRegistry
     static final QName PUBLIC_SERVICE_ACCESS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PublicServiceAccessService");
     
     static final QName WEBDAV_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "webdavService");
+    
+    static final QName MODULE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService");
 
     /**
      * Get the list of services provided by the Repository
@@ -468,15 +471,15 @@ public interface ServiceRegistry
     ImapService getImapService();
     
     /**
-     * Get the IMAP service (or null if one is not provided)
-     * @return the IMAP service
+     * Get the Public Service Access service (or null if one is not provided)
+     * @return the Public Service Access service
      */
     @NotAuditable
     PublicServiceAccessService getPublicServiceAccessService();
     
     /**
      * Get the repo admin service (or null if one is not provided)
-     * @return the invitation service
+     * @return the repo admin service
      */
     @NotAuditable
     RepoAdminService getRepoAdminService();
@@ -494,6 +497,13 @@ public interface ServiceRegistry
      */
     @NotAuditable
     WebDavService getWebDavService();
+    
+    /**
+     * Get the module service bean.
+     * @return the module service bean
+     */
+    @NotAuditable
+    ModuleService getModuleService();
     
     /**
      * Get the Solr facet helper bean

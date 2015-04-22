@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -491,93 +492,132 @@ public class AuditComponentImpl implements AuditComponent
         return recordAuditValuesWithUserFilter(rootPath, values, true);
     }
     
-    private void trimStringsIfNecessary(Object values)
+    protected <T> T trimStringsIfNecessary (T values)
     {
-        if (values instanceof Map<?, ?>)
+        T processed;
+        
+        if (values instanceof MLText)
         {
-            // trim string audited value
-            Map<String, Object> map = ((Map<String, Object>) values);
-            for (Map.Entry<String, Object> entry : map.entrySet())
+            // need to treat MLText first because it is actually a HashMap
+            Map<Locale, String> localizedStrings = trimStringsIfNecessary((MLText)values);
+            if (localizedStrings != values)
             {
-                Object auditValue = entry.getValue();
-                // Trim strings
-                if (auditValue == null)
-                {
-                    // nothing to do
-                }
-                else if (auditValue instanceof String)
-                {
-                    entry.setValue(SchemaBootstrap.trimStringForTextFields((String) auditValue));
-                }
-                else if (auditValue instanceof MLText)
-                {
-                    MLText mltext = (MLText) auditValue;
-                    Set<Locale> locales = mltext.getLocales();
-                    for (Locale locale : locales)
-                    {
-                        mltext.put(locale, SchemaBootstrap.trimStringForTextFields(mltext.getValue(locale)));
-                    }
-                    entry.setValue(mltext);
-                }
-                else if ((auditValue instanceof Map<?, ?>) || (auditValue instanceof Collection<?>))
-                {
-                    trimStringsIfNecessary(auditValue);
-                }
+                // processed so far is only defensive copy of a Map, not a MLText
+                processed = (T)new MLText();
+                ((MLText)processed).putAll(localizedStrings);
             }
+            else
+            {
+                // no changes
+                processed = values;
+            }
+        }
+        else if (values instanceof Map<?, ?>)
+        {
+            processed = (T)trimStringsIfNecessary((Map<?, ?>)values);
+        }
+        else if (values instanceof List<?>)
+        {
+            // need to treat list specially to preserve order
+            processed = (T)trimStringsIfNecessary((List<?>)values);
         }
         else if (values instanceof Collection<?>)
         {
-            Collection<Object> collection = (Collection<Object>) values;
-            Iterator<Object> iterator = collection.iterator();
-            Set<String> strings = new HashSet<String>();
-            while (iterator.hasNext())
+            // any other collection treated as unordered with no guarantee processed data will be in same order
+            processed = (T)trimStringsIfNecessary((Collection<?>)values);
+        }
+        else if (values instanceof String)
+        {
+            processed = (T)SchemaBootstrap.trimStringForTextFields((String) values);
+        }
+        else 
+        {
+            // don't know how to process
+            processed = values;
+        }
+        
+        return processed;
+    }
+    
+    private <V> List<V> trimStringsIfNecessary (List<V> values)
+    {
+        List<V> processed = values;
+        
+        int idx = 0;
+        for (V auditValue : values)
+        {
+            if (auditValue != null )
             {
-                Object auditValue = iterator.next();
-                // Trim strings
-                if (auditValue == null)
+                V processedAuditValue = trimStringsIfNecessary(auditValue);
+                
+                if (processedAuditValue != auditValue && !auditValue.equals(processedAuditValue))
                 {
-                    // nothing to do
-                }
-                else if (auditValue instanceof String)
-                {
-                    String trimmed = SchemaBootstrap.trimStringForTextFields((String) auditValue);
-                    if (!trimmed.equals(auditValue))
+                    if (processed == values)
                     {
-                        strings.add(trimmed);
-                        try
-                        {
-                            iterator.remove();
-                        }
-                        catch (UnsupportedOperationException e)
-                        {
-                            // nothing to do in the case of unmodifiable collection
-                        }
+                        // defensive copy
+                        processed = new ArrayList<V>(values);
                     }
-                }
-                else if (auditValue instanceof MLText)
-                {
-                    MLText mltext = (MLText) auditValue;
-                    Set<Locale> locales = mltext.getLocales();
-                    for (Locale locale : locales)
-                    {
-                        mltext.put(locale, SchemaBootstrap.trimStringForTextFields(mltext.getValue(locale)));
-                    }
-                }
-                else if ((auditValue instanceof Map<?, ?>) || (auditValue instanceof Collection<?>))
-                {
-                    trimStringsIfNecessary(auditValue);
+                    processed.set(idx, processedAuditValue);
                 }
             }
             
-            try
+            idx++;
+        }
+        
+        return processed;
+    }
+    
+    private <V> Collection<V> trimStringsIfNecessary (Collection<V> values)
+    {
+        Collection<V> processed = values;
+        
+        for (V auditValue : values)
+        {
+            if (auditValue != null )
             {
-                collection.addAll(strings);
-            }
-            catch (UnsupportedOperationException e)
-            {
-                // nothing to do in the case of unmodifiable collection
+                V processedAuditValue = trimStringsIfNecessary(auditValue);
+                
+                if (processedAuditValue != auditValue && !auditValue.equals(processedAuditValue))
+                {
+                    if (processed == values)
+                    {
+                        // defensive copy
+                        processed = new HashSet<V>(values);
+                    }
+                    processed.remove(auditValue);
+                    processed.add(processedAuditValue);
+                }
             }
         }
+        
+        return processed;
+    }
+    
+    private <K, V> Map<K, V> trimStringsIfNecessary (Map<K, V> values)
+    {
+        Map<K, V> processed = values;
+        
+        for (Map.Entry<K, V> entry : values.entrySet())
+        {
+            V auditValue = entry.getValue();
+            
+            if (auditValue != null )
+            {
+                V processedAuditValue = trimStringsIfNecessary(auditValue);
+                
+                if (processedAuditValue != auditValue && !auditValue.equals(processedAuditValue))
+                {
+                    if (processed == values)
+                    {
+                        // defensive copy
+                        processed = new HashMap<K, V>(values);
+                    }
+                    processed.put(entry.getKey(), processedAuditValue);
+                }
+            }
+        }
+        
+        return processed;
     }
     
     @Override
@@ -594,7 +634,7 @@ public class AuditComponentImpl implements AuditComponent
         }
         
         // MNT-12196
-        trimStringsIfNecessary(values);
+        values = trimStringsIfNecessary(values);
         
         // Log inbound values
         if (loggerInbound.isDebugEnabled())

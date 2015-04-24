@@ -329,38 +329,44 @@ public class JSONConversionComponent extends org.alfresco.repo.jscript.app.JSONC
      * @return
      */
     @SuppressWarnings("unchecked")
-    private JSONObject setRmNodeValues(NodeRef nodeRef, boolean useShortQName)
-    {
-        JSONObject rmNodeValues = new JSONObject();
-
-        // UI convenience type
-        rmNodeValues.put("uiType", getUIType(nodeRef));
-
-        // Get the 'kind' of the file plan component
-        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
-        rmNodeValues.put("kind", kind.toString());
-
-        // File plan node reference
-        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-        rmNodeValues.put("filePlan", filePlan.toString());
-
-        // Unfiled container node reference
-        NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-        if (unfiledRecordContainer != null)
+    private JSONObject setRmNodeValues(final NodeRef nodeRef, final boolean useShortQName)
+    {        
+        return AuthenticationUtil.runAsSystem(new RunAsWork<JSONObject>()
         {
-            rmNodeValues.put("unfiledRecordContainer", unfiledRecordContainer.toString());
-            rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
-            QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
-            rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
-        }
+            public JSONObject doWork()
+            {
+            	JSONObject rmNodeValues = new JSONObject();
 
-        // Set the indicators array
-        setIndicators(rmNodeValues, nodeRef);
+                // UI convenience type
+                rmNodeValues.put("uiType", getUIType(nodeRef));
 
-        // Set the actions array
-        setActions(rmNodeValues, nodeRef);
-
-        return rmNodeValues;
+		        // Get the 'kind' of the file plan component
+		        FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
+		        rmNodeValues.put("kind", kind.toString());
+		
+		        // File plan node reference
+		        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+		        rmNodeValues.put("filePlan", filePlan.toString());
+		
+		        // Unfiled container node reference
+		        NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
+		        if (unfiledRecordContainer != null)
+		        {
+		            rmNodeValues.put("unfiledRecordContainer", unfiledRecordContainer.toString());
+		            rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
+		            QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
+		            rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
+		        }
+		
+		        // Set the indicators array
+		        setIndicators(rmNodeValues, nodeRef);
+		
+		        // Set the actions array
+		        setActions(rmNodeValues, nodeRef);
+		
+		        return rmNodeValues;
+            }
+        });
     }
 
     @SuppressWarnings("unchecked")

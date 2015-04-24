@@ -46,8 +46,7 @@ import org.alfresco.service.namespace.QName;
 (
    defaultType = "rma:extendedSecurity"
 )
-public class ExtendedSecurityAspect extends    BaseBehaviourBean
-                                    implements NodeServicePolicies.OnMoveNodePolicy
+public class ExtendedSecurityAspect extends BaseBehaviourBean
 {
     /** extended security service */
     protected ExtendedSecurityService extendedSecurityService;
@@ -74,40 +73,4 @@ public class ExtendedSecurityAspect extends    BaseBehaviourBean
     {
         return new DoNothingCopyBehaviourCallback();
     }
-
-    /**
-     * Update extended security when moving a node.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onMoveNode(final ChildAssociationRef origAssoc, final ChildAssociationRef newAssoc)
-    {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                NodeRef record = newAssoc.getChildRef();
-                NodeRef newParent = newAssoc.getParentRef();
-                NodeRef oldParent = origAssoc.getParentRef();
-
-                Set<String> readers = extendedSecurityService.getExtendedReaders(record);
-                Set<String> writers = extendedSecurityService.getExtendedWriters(record);
-
-                extendedSecurityService.addExtendedSecurity(newParent, readers, writers);
-                extendedSecurityService.removeExtendedSecurity(oldParent, readers, writers);
-
-                return null;
-            }
-        });
-    }
-
-
-
 }

@@ -28,7 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
@@ -38,7 +37,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
@@ -304,14 +302,11 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
             public void test(Void result)
             {
-                checkPermissions(READ_RECORDS, AccessStatus.ALLOWED, // file
-                                                                     // plan
-                        AccessStatus.ALLOWED, // unfiled container
+                checkPermissions(READ_RECORDS, AccessStatus.DENIED, // file plan
+                        AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
                         AccessStatus.DENIED, // record folder
                         AccessStatus.ALLOWED); // doc/record
-
-                permissionReport();
 
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan,
                         RMPermissionModel.VIEW_RECORDS));
@@ -362,9 +357,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                checkPermissions(READ_RECORDS, AccessStatus.ALLOWED, // file
-                                                                     // plan
-                        AccessStatus.ALLOWED, // unfiled container
+                checkPermissions(READ_RECORDS, AccessStatus.DENIED, // file plan
+                        AccessStatus.DENIED, // unfiled container
                         AccessStatus.DENIED, // record category
                         AccessStatus.DENIED, // record folder
                         AccessStatus.ALLOWED); // doc/record
@@ -392,38 +386,6 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 return null;
             }
         }, dmConsumer);
-    }
-
-    private void permissionReport()
-    {
-        Set<String> writers = extendedSecurityService.getExtendedWriters(dmDocument);
-        for (String writer : writers)
-        {
-            System.out.println("writer: " + writer);
-        }
-
-        System.out.println("Users assigned to extended writers role:");
-        Set<String> assignedUsers = filePlanRoleService.getUsersAssignedToRole(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
-        for (String assignedUser : assignedUsers)
-        {
-           System.out.println(" ... " + assignedUser);
-        }
-
-        Set<AccessPermission> perms = permissionService.getAllSetPermissions(filePlan);
-        for (AccessPermission perm : perms)
-        {
-            if (perm.getPermission().contains(RMPermissionModel.EDIT_NON_RECORD_METADATA))
-            {
-                System.out.println("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
-            }
-        }
-        for (AccessPermission perm : perms)
-        {
-            if (perm.getPermission().contains(RMPermissionModel.VIEW_RECORDS))
-            {
-                System.out.println("     ... " + perm.getAuthority() + " - " + perm.getPermission() + " - " + perm.getAccessStatus().toString());
-            }
-        }
     }
 
     public void testCreateRecordNoLink() throws Exception

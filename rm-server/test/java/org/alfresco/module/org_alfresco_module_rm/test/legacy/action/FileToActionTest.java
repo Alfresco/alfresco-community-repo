@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -113,9 +114,17 @@ public class FileToActionTest extends BaseRMTestCase
                 assertTrue(recordService.isRecord(dmDocument));
                 assertFalse(recordService.isFiled(dmDocument));
 
-                // is the unfiled container the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+                AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+                {
+					public Void doWork() throws Exception 
+					{					
+						// is the unfiled container the primary parent of the filed record
+						NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
+						assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+						
+						// TODO Auto-generated method stub
+						return null;
+					}});
 
                 return null;
             }

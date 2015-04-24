@@ -105,9 +105,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMap.put(monkey, Integer.valueOf(1));
                 testMap.put(elephant, Integer.valueOf(1));
 
-                checkExtendedReaders(filePlan, testMap);
-                checkExtendedReaders(rmContainer, testMap);
-                checkExtendedReaders(rmFolder, testMap);
                 checkExtendedReaders(record, testMap);
 
                 Set<String> extendedReadersToo = new HashSet<String>(2);
@@ -125,9 +122,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMapThree.put(elephant, Integer.valueOf(1));
                 testMapThree.put(snake, Integer.valueOf(1));
 
-                checkExtendedReaders(filePlan, testMapThree);
-                checkExtendedReaders(rmContainer, testMapThree);
-                checkExtendedReaders(rmFolder, testMapThree);
                 checkExtendedReaders(recordToo, testMapToo);
 
                 // test remove (with no parent inheritance)
@@ -142,9 +136,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMapFour.put(monkey, Integer.valueOf(1));
                 testMapFour.put(snake, Integer.valueOf(1));
 
-                checkExtendedReaders(filePlan, testMapThree);
-                checkExtendedReaders(rmContainer, testMapThree);
-                checkExtendedReaders(rmFolder, testMapFour);
                 checkExtendedReaders(recordToo, testMapToo);
 
                 // test remove (apply to parents)
@@ -158,9 +149,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 testMapFour.remove(snake);
                 testMapToo.remove(snake);
 
-                checkExtendedReaders(filePlan, testMapThree);
-                checkExtendedReaders(rmContainer, testMapThree);
-                checkExtendedReaders(rmFolder, testMapFour);
                 checkExtendedReaders(recordToo, testMapToo);
 
                 return null;
@@ -197,9 +185,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 
                 extendedSecurityService.addExtendedSecurity(record, extendedReaders, null);
 
-                checkExtendedReaders(filePlan, testMap);
-                checkExtendedReaders(rmContainer, testMap);
-                checkExtendedReaders(rmFolder, testMap);
                 checkExtendedReaders(record, testMap);
                 assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordCategory));
                 assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordFolder));
@@ -212,11 +197,6 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
             @Override
             public void test(Void result) throws Exception
             {
-                checkExtendedReaders(filePlan, testMap);
-                assertFalse(extendedSecurityService.hasExtendedSecurity(rmContainer));
-              //  assertEquals(0, extendedSecurityService.getExtendedReaders(rmFolder).size());
-                checkExtendedReaders(moveRecordCategory, testMap);
-                checkExtendedReaders(moveRecordFolder, testMap);
                 checkExtendedReaders(record, testMap);
             }
         });

@@ -40,6 +40,7 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamic
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.RMAuthority;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -835,7 +836,14 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                 if (!getAllAssignedToRole(filePlan, role).contains(authorityName))
                 {
                     String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
-                    authorityService.addAuthority(roleAuthority, authorityName);
+                    try
+                    {
+                    	authorityService.addAuthority(roleAuthority, authorityName);
+                    }
+                    catch (DuplicateChildNodeNameException exception)
+                	{
+                    	// ignore, because the work has already been performed
+                	}
                 }
                 return null;
 

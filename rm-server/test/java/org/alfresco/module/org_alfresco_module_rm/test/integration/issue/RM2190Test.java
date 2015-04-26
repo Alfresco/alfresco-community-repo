@@ -127,8 +127,8 @@ public class RM2190Test extends BaseRMTestCase
                 thread1.start();
                 thread2.start();
 
-                thread1.join(120000);
-                thread2.join(120000);
+                thread1.join(300000);
+                thread2.join(300000);
 
                 return null;
             }

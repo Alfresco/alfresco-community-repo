@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.google.common.collect.Sets;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
@@ -45,6 +46,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -110,6 +112,7 @@ public class ClassificationServiceImplUnitTest
     @Mock private AuthenticationUtil          mockedAuthenticationUtil;
     @Mock private ClassificationServiceDAO    mockClassificationServiceDAO;
     @Mock private NodeService                 mockNodeService;
+    @Mock private DictionaryService           mockDictionaryService;
     /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
     @Mock private Appender                    mockAppender;
     @Mock private ClassificationLevelManager  mockLevelManager;
@@ -272,7 +275,7 @@ public class ClassificationServiceImplUnitTest
         when(mockReasonManager.findReasonById("reasonId2")).thenReturn(reason2);
         // Create a content node.
         NodeRef content = new NodeRef("fake://content/");
-        when(mockNodeService.getType(content)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockDictionaryService.isSubClass(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
 
         // Call the method under test.
@@ -314,7 +317,7 @@ public class ClassificationServiceImplUnitTest
     {
         // Create a classified piece of content.
         NodeRef classifiedContent = new NodeRef("classified://content/");
-        when(mockNodeService.getType(classifiedContent)).thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockDictionaryService.isSubClass(mockNodeService.getType(classifiedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(true);
 
         // Call the method under test.

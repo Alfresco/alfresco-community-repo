@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.io.Serializable;
@@ -221,12 +222,12 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     public void classifyContent(String classificationLevelId, String classificationAuthority,
                 Set<String> classificationReasonIds, NodeRef content)
     {
-        mandatory("classificationLevelId", classificationLevelId);
-        mandatory("classificationAuthority", classificationAuthority);
+        checkNotBlank("classificationLevelId", classificationLevelId);
+        checkNotBlank("classificationAuthority", classificationAuthority);
         mandatory("classificationReasonIds", classificationReasonIds);
         mandatory("content", content);
 
-        if (!nodeService.getType(content).equals(ContentModel.TYPE_CONTENT))
+        if (!dictionaryService.isSubClass(nodeService.getType(content), ContentModel.TYPE_CONTENT))
         {
             throw new InvalidNode(content, "The supplied node is not a content node.");
         }

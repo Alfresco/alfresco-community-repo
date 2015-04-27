@@ -53,7 +53,7 @@ public interface ClassificationService
 
     /**
      * Classify a piece of content.
-     * 
+     *
      * @param classificationLevelId The security clearance needed to access the content.
      * @param classificationAuthority The name of the authority responsible for the classification of this content.
      * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
@@ -66,4 +66,22 @@ public interface ClassificationService
     void classifyContent(String classificationLevelId, String classificationAuthority,
                 Set<String> classificationReasonIds, NodeRef content) throws LevelIdNotFound, ReasonIdNotFound,
                 InvalidNodeRefException, InvalidNode;
+
+    /**
+     * Gets the classification level for the given classification level id
+     *
+     * @param classificationLevelId {@link String} The classification level id for which the classification level should be retrieved.
+     * @return The classification level for the given classification level id
+     * @throws LevelIdNotFound If the given classification level id is not found
+     */
+    ClassificationLevel getClassificationLevelById(String classificationLevelId) throws LevelIdNotFound;
+
+    /**
+     * Gets the classification reason for the given classification reason id
+     *
+     * @param classificationReasonId {@link String} The classification reason id for which the classification reason should be retrieved.
+     * @return The classification reason for the given classification reason id
+     * @throws ReasonIdNotFound If the given classification reason id is not found
+     */
+    ClassificationReason getClassificationReasonById(String classificationReasonId) throws ReasonIdNotFound;
 }

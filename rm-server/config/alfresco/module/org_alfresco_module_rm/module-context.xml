@@ -5,10 +5,10 @@
 
    <!--  Authentication Helper -->
    <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>
-   
+
    <!-- Transactional Resouce Helper -->
    <bean name="rm.transactionalResourceHelper" class="org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper" />
-   
+
    <!--  Alfresco Transaction Support Helper -->
    <bean name="rm.alfrescoTransactionSupport" class="org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport" />
 
@@ -63,7 +63,7 @@
          </list>
       </property>
    </bean>
-   
+
    <!-- Import RM model -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-model-context.xml"/>
 
@@ -105,7 +105,7 @@
 
    <!--  Import the deprecated beans -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-deprecated-context.xml"/>
-   
+
    <!-- Event types -->
    <bean id="rmEventType" init-method="init" abstract="true">
       <property name="recordsManagementEventService" ref="recordsManagementEventService"/>
@@ -124,7 +124,7 @@
       <property name="dispositionService" ref="dispositionService"/>
       <property name="recordsManagementActionService" ref="recordsManagementActionService"/>
    </bean>
-   
+
    <bean id="rmEventType.versioned" class="org.alfresco.module.org_alfresco_module_rm.event.OnReferenceCreateEventType" parent="rmEventType">
       <property name="referenceName" value="{http://www.alfresco.org/model/rmcustom/1.0}versions"/>
       <property name="dispositionService" ref="dispositionService"/>
@@ -168,7 +168,7 @@
       <property name="recordsManagementServiceRegistry" ref="RecordsManagementServiceRegistry"/>
       <property name="notificationHelper" ref="recordsManagementNotificationHelper"/>
    </bean>
-   
+
    <!--  Job context -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-job-context.xml"/>
 
@@ -209,6 +209,7 @@
       <property name="filterRegistry" ref="nodeFilterRegistry" />
       <property name="dispositionService" ref="dispositionService"/>
       <property name="filePlanService" ref="FilePlanService" />
+      <property name="classificationService" ref="ClassificationService" />
    </bean>
 
    <bean id="rmTypeFormFilter"

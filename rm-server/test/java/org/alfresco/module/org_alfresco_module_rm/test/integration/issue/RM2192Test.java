@@ -1,5 +1,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
+import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_RECORDS_MANAGER;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
 import static org.alfresco.repo.site.SiteServiceImpl.getSiteContainer;
 import static org.alfresco.service.cmr.rule.RuleType.INBOUND;
@@ -10,6 +11,7 @@ import static org.alfresco.util.GUID.generate;
 
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.jscript.app.JSONConversionComponent;
 import org.alfresco.service.cmr.action.Action;
@@ -82,6 +84,8 @@ public class RM2192Test extends BaseRMTestCase
         createPerson(user);
 
         siteService.setMembership(collabSiteId2, user, SITE_MANAGER);
+
+        filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_RECORDS_MANAGER, user);
     }
 
     public void testAccessToRecordAfterDeclaring()

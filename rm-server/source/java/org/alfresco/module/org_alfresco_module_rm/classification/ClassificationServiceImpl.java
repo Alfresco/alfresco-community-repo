@@ -238,7 +238,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         }
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        checkClassificationLevelId(classificationLevelId);
+        // Check the classification level id - an exception will be thrown if the id cannot be found
+        getClassificationLevelById(classificationLevelId);
 
         // Initial classification id
         if (nodeService.getProperty(content, PROP_INITIAL_CLASSIFICATION) == null)
@@ -256,7 +257,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         HashSet<String> classificationReasons = new HashSet<>();
         for (String classificationReasonId : classificationReasonIds)
         {
-            checkClassificationReasonId(classificationReasonId);
+            // Check the classification reason id - an exception will be thrown if the id cannot be found
+            getClassificationReasonById(classificationReasonId);
             classificationReasons.add(classificationReasonId);
         }
         properties.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
@@ -266,24 +268,22 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * Helper method to check if a classification level with the given id exists
-     *
-     * @param classificationLevelId {@link String} The id of the classification level
-     * @throws {@link LevelIdNotFound} throws an exception if a classification level with given id does not exist
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService#getClassificationLevelById(java.lang.String)
      */
-    private void checkClassificationLevelId(String classificationLevelId) throws LevelIdNotFound
+    @Override
+    public ClassificationLevel getClassificationLevelById(String classificationLevelId) throws LevelIdNotFound
     {
-        levelManager.findLevelById(classificationLevelId);
+        checkNotBlank("classificationLevelId", classificationLevelId);
+        return levelManager.findLevelById(classificationLevelId);
     }
 
     /**
-     * Helper method to check if a classification reason with the given id exists
-     *
-     * @param classificationReasonId {@String} The id of the classification reason
-     * @throws {@link ReasonIdNotFound} throws an exception if a classification reason with the given id does not exist
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService#getClassificationReasonById(java.lang.String)
      */
-    private void checkClassificationReasonId(String classificationReasonId) throws ReasonIdNotFound
+    @Override
+    public ClassificationReason getClassificationReasonById(String classificationReasonId) throws ReasonIdNotFound
     {
-        reasonManager.findReasonById(classificationReasonId);
+        checkNotBlank("classificationReasonId", classificationReasonId);
+        return reasonManager.findReasonById(classificationReasonId);
     }
 }

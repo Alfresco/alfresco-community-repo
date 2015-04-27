@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,11 +37,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.Sets;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
@@ -60,6 +61,8 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import com.google.common.collect.Sets;
 
 /**
  * Unit tests for {@link ClassificationServiceImpl}.
@@ -323,5 +326,41 @@ public class ClassificationServiceImplUnitTest
         // Call the method under test.
         classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
                     Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
+    }
+
+    @Test
+    public void getClassificationLevelById()
+    {
+        String levelId = "classificationLevelId1";
+        ClassificationLevel classificationLevel = new ClassificationLevel(levelId, "displayLabelKey");
+        when(mockLevelManager.findLevelById(levelId)).thenReturn(classificationLevel);
+        ClassificationLevel classificationLevelById = classificationServiceImpl.getClassificationLevelById(levelId);
+        assertEquals(classificationLevel, classificationLevelById);
+    }
+
+    @Test(expected = LevelIdNotFound.class)
+    public void getClassificationLevelById_nonExisting()
+    {
+        String classificationLevelId = "aRandomId";
+        doThrow(new LevelIdNotFound("Id not found!")).when(mockLevelManager).findLevelById(classificationLevelId);
+        classificationServiceImpl.getClassificationLevelById(classificationLevelId);
+    }
+
+    @Test
+    public void getClassificationReasonById()
+    {
+        String reasonId = "classificationReasonId1";
+        ClassificationReason classificationReason = new ClassificationReason(reasonId, "displayLabelKey");
+        when(mockReasonManager.findReasonById(reasonId)).thenReturn(classificationReason);
+        ClassificationReason classificationReasonById = classificationServiceImpl.getClassificationReasonById(reasonId);
+        assertEquals(classificationReason, classificationReasonById);
+    }
+
+    @Test(expected = ReasonIdNotFound.class)
+    public void getClassificationReasonById_nonExisting()
+    {
+        String classificationReasonId = "aRandomId";
+        doThrow(new ReasonIdNotFound("Id not found!")).when(mockReasonManager).findReasonById(classificationReasonId);
+        classificationServiceImpl.getClassificationReasonById(classificationReasonId);
     }
 }

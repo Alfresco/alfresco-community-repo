@@ -19,13 +19,17 @@
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
@@ -70,12 +74,17 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected static final String TRANSIENT_DECLARED = "rmDeclared";
     protected static final String TRANSIENT_CATEGORY_ID = "rmCategoryIdentifier";
     protected static final String TRANSIENT_DISPOSITION_INSTRUCTIONS = "rmDispositionInstructions";
+    protected static final String TRANSIENT_CURRENT_CLASSIFICATION = "clfCurrentClassification";
+    protected static final String TRANSIENT_INITIAL_CLASSIFICATION = "clfInitialClassification";
 
     /** Disposition service */
     private DispositionService dispositionService;
 
     /** File Plan Service */
     private FilePlanService filePlanService;
+
+    /** Classification Service */
+    private ClassificationService classificationService;
 
     /**
      * Returns the disposition service
@@ -98,6 +107,16 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     }
 
     /**
+     * Returns the classification service
+     *
+     * @return Classification service
+     */
+    protected ClassificationService getClassificationService()
+    {
+        return this.classificationService;
+    }
+
+    /**
      * Sets the disposition service
      *
      * @param dispositionService    disposition service
@@ -114,6 +133,14 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     {
 		this.filePlanService = filePlanService;
 	}
+
+    /**
+     * @param classificationService classification service
+     */
+    public void setClassificationService(ClassificationService classificationService)
+    {
+        this.classificationService = classificationService;
+    }
 
     /**
      * @see org.alfresco.repo.forms.processor.Filter#afterGenerate(java.lang.Object, java.util.List, java.util.List, org.alfresco.repo.forms.Form, java.util.Map)
@@ -171,7 +198,23 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                      protectRecordLevelDispositionPropertyField(form);
                  }
             }
+        }
 
+        if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
+        {
+            String initialClassificationId = (String) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION);
+            if (isNotBlank(initialClassificationId))
+            {
+                String initialClassificationDisplayLabel = getClassificationService().getClassificationLevelById(initialClassificationId).getDisplayLabel();
+                addTransientPropertyField(form, TRANSIENT_INITIAL_CLASSIFICATION, DataTypeDefinition.TEXT, initialClassificationDisplayLabel);
+            }
+
+            String currentClassificationId = (String) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION);
+            if (isNotBlank(currentClassificationId))
+            {
+                String currentClassificationDisplayLabel = getClassificationService().getClassificationLevelById(currentClassificationId).getDisplayLabel();
+                addTransientPropertyField(form, TRANSIENT_CURRENT_CLASSIFICATION, DataTypeDefinition.TEXT, currentClassificationDisplayLabel);
+            }
         }
     }
 

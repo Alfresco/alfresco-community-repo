@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -113,9 +114,17 @@ public class FileToActionTest extends BaseRMTestCase
                 assertTrue(recordService.isRecord(dmDocument));
                 assertFalse(recordService.isFiled(dmDocument));
 
-                // is the unfiled container the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+                AuthenticationUtil.runAsSystem(new AuthenticationUtil.RunAsWork<Void>()
+                {
+					public Void doWork() throws Exception 
+					{					
+						// is the unfiled container the primary parent of the filed record
+						NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
+						assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+						
+						// TODO Auto-generated method stub
+						return null;
+					}});
 
                 return null;
             }
@@ -203,12 +212,17 @@ public class FileToActionTest extends BaseRMTestCase
 
     private void createRecord(final String path, final String name, final String resolvedPath)
     {
+        final String[] pathValues = StringUtils.tokenizeToStringArray(resolvedPath, "/");
+
+        // set parameters
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put(FileToAction.PARAM_PATH, path);
+        params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
+
         doTestInTransaction(new Test<Void>()
         {
             public Void run() throws Exception
             {
-                String[] pathValues = StringUtils.tokenizeToStringArray(resolvedPath, "/");
-
                 // show the folder doesn't exist to begin with
                 FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
                 assertNull(createdRecordFolder);
@@ -218,11 +232,19 @@ public class FileToActionTest extends BaseRMTestCase
                 params.put(FileToAction.PARAM_PATH, path);
                 params.put(FileToAction.PARAM_CREATE_RECORD_PATH, true);
 
-                // execute file-to action
-                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                return null;
+            }
+        }, ADMIN_USER);
 
+        // execute file-to action
+        rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+
+        doTestInTransaction(new Test<Void>()
+        {
+            public Void run() throws Exception
+            {
                 // show the folder has now been created
-                createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
+            	FileInfo createdRecordFolder = fileFolderService.resolveNamePath(filePlan, new ArrayList<String>(Arrays.asList(pathValues)), false);
                 assertNotNull(createdRecordFolder);
                 assertEquals(name, createdRecordFolder.getName());
                 NodeRef createdRecordFolderNodeRef = createdRecordFolder.getNodeRef();

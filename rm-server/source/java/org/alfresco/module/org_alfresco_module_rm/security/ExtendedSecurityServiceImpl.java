@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +31,6 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -48,10 +46,6 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                                          implements ExtendedSecurityService,
                                                     RecordsManagementModel
 {
-    /** Ad hoc properties used for reference counting */
-    private static final QName PROP_EXTENDED_READER_ROLE = QName.createQName(RM_URI, "extendedReaderRole");
-    private static final QName PROP_EXTENDED_WRITER_ROLE = QName.createQName(RM_URI, "extendedWriterRole");
-
     /** File plan service */
     private FilePlanService filePlanService;
 
@@ -74,7 +68,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         this.filePlanRoleService = filePlanRoleService;
     }
 
-    /**
+	/**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#hasExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean hasExtendedSecurity(NodeRef nodeRef)
@@ -139,6 +133,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         if (nodeRef != null)
         {
             addExtendedSecurityImpl(nodeRef, readers, writers, applyToParents);
+
+            // add to the extended security roles
+	        addExtendedSecurityRoles(nodeRef, readers, writers);
         }
     }
 
@@ -151,36 +148,36 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @param applyToParents
      */
     @SuppressWarnings("unchecked")
-    private void addExtendedSecurityImpl(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
+    private void addExtendedSecurityImpl(final NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         ParameterCheck.mandatory("applyToParents", applyToParents);
 
-        // add the aspect if missing
-        if (!nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY))
-        {
-            nodeService.addAspect(nodeRef, ASPECT_EXTENDED_SECURITY, null);
-        }
+        // get the properties
+        final Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
         // update the readers map
         if (readers != null && readers.size() != 0)
         {
             // get reader map
-            Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
+            Map<String, Integer> readersMap = (Map<String, Integer>)properties.get(PROP_READERS);
 
             // set the readers property (this will in turn apply the aspect if required)
-            nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)addToMap(readersMap, readers));
+            properties.put(PROP_READERS, (Serializable)addToMap(readersMap, readers));
         }
 
         // update the writers map
-        if (writers != null && writers.size() != 0)
-        {
-            // get writer map
-            Map<String, Integer> writersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
+	    if (writers != null && writers.size() != 0)
+	    {
+	    	// get writer map
+	        Map<String, Integer> writersMap = (Map<String, Integer>)properties.get(PROP_WRITERS);
 
-            // set the writers property (this will in turn apply the aspect if required)
-            nodeService.setProperty(nodeRef, PROP_WRITERS, (Serializable)addToMap(writersMap, writers));
-        }
+	        // set the writers property (this will in turn apply the aspect if required)
+	        properties.put(PROP_WRITERS, (Serializable)addToMap(writersMap, writers));
+	    }
+
+	    // set properties
+	    nodeService.setProperties(nodeRef, properties);
 
         // apply the readers to any renditions of the content
         if (isRecord(nodeRef))
@@ -190,21 +187,6 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             {
                 NodeRef child = assoc.getChildRef();
                 addExtendedSecurityImpl(child, readers, writers, false);
-            }
-        }
-
-        // add to the extended security roles
-        addExtendedSecurityRoles(nodeRef, readers, writers);
-
-        if (applyToParents)
-        {
-            // apply the extended readers up the file plan primary hierarchy
-            NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-            if (parent != null &&
-                filePlanService.isFilePlanComponent(parent))
-            {
-                addExtendedSecurityImpl(parent, readers, null, applyToParents);
-                addExtendedSecurityImpl(parent, writers, null, applyToParents);
             }
         }
     }
@@ -219,43 +201,29 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
 
-        addExtendedSecurityRolesImpl(filePlan, readers, PROP_EXTENDED_READER_ROLE, FilePlanRoleService.ROLE_EXTENDED_READERS);
-        addExtendedSecurityRolesImpl(filePlan, writers, PROP_EXTENDED_WRITER_ROLE, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
+        addExtendedSecurityRolesImpl(filePlan, readers, FilePlanRoleService.ROLE_EXTENDED_READERS);
+        addExtendedSecurityRolesImpl(filePlan, writers, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
     }
 
     /**
+     * Add extended security roles implementation
      *
-     * @param filePlan
-     * @param authorities
-     * @param propertyName
-     * @param roleName
+     * @param filePlan      file plan
+     * @param authorities   authorities
+     * @param roleName      role name
      */
-    @SuppressWarnings("unchecked")
-    private void addExtendedSecurityRolesImpl(NodeRef filePlan, Set<String> authorities, QName propertyName, String roleName)
+    private void addExtendedSecurityRolesImpl(NodeRef filePlan, Set<String> authorities, String roleName)
     {
         if (authorities != null)
         {
-            // get the reference count
-            Map<String, Integer> referenceCountMap = (Map<String, Integer>)nodeService.getProperty(filePlan, propertyName);
-
-            // set of assigned authorities
-            Set<String> assignedAuthorities = new HashSet<String>(authorities.size());
-            
             for (String authority : authorities)
             {
-                if ((!authority.equals(PermissionService.ALL_AUTHORITIES) && 
-                     !authority.equals(PermissionService.OWNER_AUTHORITY)) &&
-                     !AuthorityType.ROLE.equals(AuthorityType.getAuthorityType(authority)) &&
-                    (referenceCountMap == null || !referenceCountMap.containsKey(authority)))
+                if ((!authority.equals(PermissionService.ALL_AUTHORITIES) && !authority.equals(PermissionService.OWNER_AUTHORITY)))
                 {
                     // add the authority to the role
                     filePlanRoleService.assignRoleToAuthority(filePlan, roleName, authority);
-                    assignedAuthorities.add(authority);
                 }
             }
-
-            // update the reference count
-            nodeService.setProperty(filePlan, propertyName, (Serializable)addToMap(referenceCountMap, assignedAuthorities));
         }
     }
 

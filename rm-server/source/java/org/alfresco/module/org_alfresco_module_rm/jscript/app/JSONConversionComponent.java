@@ -18,10 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
-import static org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel.READ_RECORDS;
-import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
-import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -395,23 +391,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             rmNodeValues.put("primaryParentNodeRef", assoc.getParentRef().toString());
         }
 
-        // File plan node reference
-        NodeRef filePlan = getFilePlan(nodeRef);
-        if (permissionService.hasPermission(filePlan, READ_RECORDS).equals(ALLOWED))
-        {
-            rmNodeValues.put("filePlan", filePlan.toString());
-
-            // Unfiled container node reference
-            NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-            if (unfiledRecordContainer != null)
-            {
-                rmNodeValues.put("unfiledRecordContainer", unfiledRecordContainer.toString());
-                rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
-                QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
-                rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
-            }
-        }
-
         Map<String, Object> values = AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, Object>>()
         {
             public Map<String, Object> doWork() throws Exception
@@ -445,23 +424,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         setActions(rmNodeValues, nodeRef);
 
         return rmNodeValues;
-    }
-
-    /**
-     * Helper method to get the file plan as a system user for the given node
-     *
-     * @param nodeRef The node reference
-     * @return The file plan where the node is in
-     */
-    private NodeRef getFilePlan(final NodeRef nodeRef)
-    {
-        return runAsSystem(new RunAsWork<NodeRef>()
-        {
-            public NodeRef doWork()
-            {
-                return filePlanService.getFilePlan(nodeRef);
-            }
-        });
     }
 
     @SuppressWarnings("unchecked")

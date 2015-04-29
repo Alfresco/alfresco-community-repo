@@ -32,6 +32,8 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -146,7 +148,7 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService#isRecordFolderClosed(NodeRef)
      */
     @Override
-    public boolean isRecordFolderClosed(NodeRef nodeRef)
+    public boolean isRecordFolderClosed(final NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
@@ -156,7 +158,13 @@ public class RecordFolderServiceImpl extends    ServiceBaseImpl
             throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_RECORD_FOLDER_EXPECTED));
         }
 
-        return ((Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED)).booleanValue();
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
+        {
+            public Boolean doWork() throws Exception
+            {
+                return ((Boolean) nodeService.getProperty(nodeRef, PROP_IS_CLOSED));
+            }
+        });
     }
 
     @Override

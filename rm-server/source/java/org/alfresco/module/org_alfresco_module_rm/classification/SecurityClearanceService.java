@@ -21,8 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PersonService.PersonInfo;
-import org.alfresco.util.Pair;
 
 /**
  * This service offers access to users' security clearance levels.
@@ -35,10 +33,10 @@ public interface SecurityClearanceService
     /**
      * Get the currently authenticated user's security clearance.
      *
-     * @return a {@link PersonInfo}, {@link ClassificationLevel} pair for the currently authenticated user.
+     * @return the security clearance for the currently authenticated user.
      * @throws NoSuchPersonException if the current user's person node cannot be found.
      */
-    Pair<PersonInfo, ClassificationLevel> getUserSecurityClearance();
+    SecurityClearance getUserSecurityClearance();
 
     /**
      * Get users' security clearances.
@@ -46,9 +44,9 @@ public interface SecurityClearanceService
      * @param userNameFragment A username fragment which will be used to apply a 'starts with' query.
      * @param sortAscending if @code true} returns data sorted in ascending order by username.
      * @param req paging request definition.
-     * @return {@link PersonInfo}, {@link ClassificationLevel} pairs for the specified page of users.
+     * @return security clearances for the specified page of users.
      */
-    PagingResults<Pair<PersonInfo, ClassificationLevel>> getUsersSecurityClearance(String userNameFragment,
-                                                                                   boolean sortAscending,
-                                                                                   PagingRequest req);
+    PagingResults<SecurityClearance> getUsersSecurityClearance(String userNameFragment,
+                                                               boolean sortAscending,
+                                                               PagingRequest req);
 }

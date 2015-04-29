@@ -25,12 +25,10 @@ import static org.alfresco.model.ContentModel.PROP_USERNAME;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_SECURITY_CLEARANCE;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CLEARANCE_LEVEL;
 
-import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
@@ -52,7 +50,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
     public void setClassificationService(ClassificationService service) { this.classificationService = service; }
     public void setPersonService        (PersonService service)         { this.personService = service; }
 
-    public Pair<PersonInfo, ClassificationLevel> getUserSecurityClearance()
+    public SecurityClearance getUserSecurityClearance()
     {
         final String currentUser = authenticationUtil.getFullyAuthenticatedUser();
         Objects.requireNonNull(currentUser, "Fully authenticated user is null, which is not allowed.");
@@ -60,7 +58,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         return getUserSecurityClearance(currentUser);
     }
 
-    private Pair<PersonInfo, ClassificationLevel> getUserSecurityClearance(final String userName)
+    private SecurityClearance getUserSecurityClearance(final String userName)
     {
         final NodeRef    personNode = personService.getPerson(userName, false);
         final PersonInfo personInfo = personService.getPerson(personNode);
@@ -76,23 +74,23 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         }
         else { classificationLevel = classificationService.getDefaultClassificationLevel(); }
 
-        return new Pair<>(personInfo, classificationLevel);
+        return new SecurityClearance(personInfo, classificationLevel);
     }
 
-    public PagingResults<Pair<PersonInfo, ClassificationLevel>> getUsersSecurityClearance(String userNameFragment,
-                                                                                          boolean sortAscending,
-                                                                                          PagingRequest req)
+    public PagingResults<SecurityClearance> getUsersSecurityClearance(String userNameFragment,
+                                                                      boolean sortAscending,
+                                                                      PagingRequest req)
     {
         final List<QName> filterProps = asList(PROP_USERNAME, PROP_FIRSTNAME, PROP_LASTNAME);
         final List<Pair<QName, Boolean>> sortProps = asList(new Pair<>(PROP_USERNAME, sortAscending));
 
         final PagingResults<PersonInfo> p = personService.getPeople(userNameFragment, filterProps, sortProps, req);
 
-        return new PagingResults<Pair<PersonInfo, ClassificationLevel>>()
+        return new PagingResults<SecurityClearance>()
         {
-            @Override public List<Pair<PersonInfo, ClassificationLevel>> getPage()
+            @Override public List<SecurityClearance> getPage()
             {
-                List<Pair<PersonInfo, ClassificationLevel>> pcPage= new ArrayList<>(p.getPage().size());
+                List<SecurityClearance> pcPage= new ArrayList<>(p.getPage().size());
                 for (PersonInfo pi : p.getPage())
                 {
                     pcPage.add(getUserSecurityClearance(pi.getUserName()));

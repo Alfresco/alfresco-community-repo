@@ -759,6 +759,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Copy To -->

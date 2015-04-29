@@ -25,6 +25,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -39,6 +41,8 @@ import org.quartz.JobExecutionException;
  */
 public class RecordsManagementJob implements Job
 {
+	private static Log logger = LogFactory.getLog(RecordsManagementJob.class);
+
     private static final long DEFAULT_TIME = 30000L;
 
     private JobLockService jobLockService;
@@ -108,7 +112,18 @@ public class RecordsManagementJob implements Job
                     }
                     finally
                     {
-                        jobLockService.releaseLock(lockToken, getLockQName());
+                    	try
+                    	{
+                    		jobLockService.releaseLock(lockToken, getLockQName());
+                    	}
+                        catch (LockAcquisitionException e)
+                        {
+                            // Ignore
+                            if (logger.isDebugEnabled())
+                            {
+                                logger.debug("Lock release failed: " + getLockQName() + ": " + lockToken + "(" + e.getMessage() + ")");
+                            }
+                        }
                     }
                 }
 

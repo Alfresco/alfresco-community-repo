@@ -211,8 +211,11 @@ public class CreateRecordAction extends AuditableActionExecuterAbstractBase
                 hideRecord = hideRecordValue.booleanValue();
             }
 
-            // create record from existing document
-            recordService.createRecord(filePlan, actionedUponNodeRef, !hideRecord);
+            synchronized (this) 
+        	{
+        		// create record from existing document
+        		recordService.createRecord(filePlan, actionedUponNodeRef, !hideRecord);
+        	}            
         }
     }
 

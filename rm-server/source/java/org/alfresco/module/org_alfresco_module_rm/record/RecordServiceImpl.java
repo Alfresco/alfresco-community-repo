@@ -1247,7 +1247,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
      * @see org.alfresco.module.org_alfresco_module_rm.disposableitem.RecordService#isFiled(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean isFiled(NodeRef nodeRef)
+    public boolean isFiled(final NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 
@@ -1255,7 +1255,13 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
         if (isRecord(nodeRef))
         {
-            result = (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
+        	result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
+        	{
+				public Boolean doWork() throws Exception 
+				{
+		            return (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
+				}
+        	});
         }
 
         return result;

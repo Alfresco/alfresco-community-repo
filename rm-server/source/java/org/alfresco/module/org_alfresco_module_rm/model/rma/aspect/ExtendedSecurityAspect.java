@@ -18,22 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.DoNothingCopyBehaviourCallback;
-import org.alfresco.repo.node.NodeServicePolicies;
-import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -46,8 +38,7 @@ import org.alfresco.service.namespace.QName;
 (
    defaultType = "rma:extendedSecurity"
 )
-public class ExtendedSecurityAspect extends    BaseBehaviourBean
-                                    implements NodeServicePolicies.OnMoveNodePolicy
+public class ExtendedSecurityAspect extends BaseBehaviourBean
 {
     /** extended security service */
     protected ExtendedSecurityService extendedSecurityService;
@@ -74,40 +65,4 @@ public class ExtendedSecurityAspect extends    BaseBehaviourBean
     {
         return new DoNothingCopyBehaviourCallback();
     }
-
-    /**
-     * Update extended security when moving a node.
-     *
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
-    @Override
-    @Behaviour
-    (
-       kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
-    )
-    public void onMoveNode(final ChildAssociationRef origAssoc, final ChildAssociationRef newAssoc)
-    {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
-            {
-                NodeRef record = newAssoc.getChildRef();
-                NodeRef newParent = newAssoc.getParentRef();
-                NodeRef oldParent = origAssoc.getParentRef();
-
-                Set<String> readers = extendedSecurityService.getExtendedReaders(record);
-                Set<String> writers = extendedSecurityService.getExtendedWriters(record);
-
-                extendedSecurityService.addExtendedSecurity(newParent, readers, writers);
-                extendedSecurityService.removeExtendedSecurity(oldParent, readers, writers);
-
-                return null;
-            }
-        });
-    }
-
-
-
 }

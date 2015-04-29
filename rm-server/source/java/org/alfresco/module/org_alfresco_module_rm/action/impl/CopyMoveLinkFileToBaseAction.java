@@ -11,16 +11,18 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.util.StringUtils;
 
 /**
@@ -32,6 +34,9 @@ import org.springframework.util.StringUtils;
 public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstractBase
 {
     private static Log logger = LogFactory.getLog(CopyMoveLinkFileToBaseAction.class);
+
+    /** Retrying transaction helper */
+    private RetryingTransactionHelper retryingTransactionHelper;
 
     /** action parameters */
     public static final String PARAM_DESTINATION_RECORD_FOLDER = "destinationRecordFolder";
@@ -90,6 +95,14 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
     }
 
     /**
+     * @param retryingTransactionHelper retrying transaction helper
+     */
+    public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
+    {
+        this.retryingTransactionHelper = retryingTransactionHelper;
+    }
+
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
@@ -103,7 +116,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
+    protected synchronized void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
     {
         String actionName = action.getActionDefinitionName();
         if (isOkToProceedWithAction(actionedUponNodeRef, actionName))
@@ -125,8 +138,25 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             NodeRef recordFolder = (NodeRef)action.getParameterValue(PARAM_DESTINATION_RECORD_FOLDER);
             if (recordFolder == null)
             {
-                // get the reference to the record folder based on the relative path
-                recordFolder = createOrResolvePath(action, actionedUponNodeRef, targetIsUnfiledRecords);
+            	final boolean finaltargetIsUnfiledRecords = targetIsUnfiledRecords;
+            	recordFolder = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+				{
+                	public NodeRef execute() throws Throwable
+                    {
+                		NodeRef result = null;
+                		try
+                		{
+                		    // get the reference to the record folder based on the relative path
+                			result = createOrResolvePath(action, actionedUponNodeRef, finaltargetIsUnfiledRecords);
+                		}
+                		catch (DuplicateChildNodeNameException ex)
+                		{
+                			throw new ConcurrencyFailureException("Cannot create or resolve path.", ex);
+                		}
+
+                		return result;
+                    }
+                }, false, true);
             }
 
             // now we have the reference to the target folder we can do some final checks to see if the action is valid
@@ -140,18 +170,21 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                 {
                     try
                     {
-                        if(getMode() == CopyMoveLinkFileToActionMode.MOVE)
-                        {
-                            fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
-                        }
-                        else if(getMode() == CopyMoveLinkFileToActionMode.COPY)
-                        {
-                            fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
-                        }
-                        else if(getMode() == CopyMoveLinkFileToActionMode.LINK)
-                        {
-                            getRecordService().link(actionedUponNodeRef, finalRecordFolder);
-                        }
+        				synchronized (this)
+        				{
+	                        if(getMode() == CopyMoveLinkFileToActionMode.MOVE)
+	                        {
+	                            fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
+	                        }
+	                        else if(getMode() == CopyMoveLinkFileToActionMode.COPY)
+	                        {
+	                            fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
+	                        }
+	                        else if(getMode() == CopyMoveLinkFileToActionMode.LINK)
+	                        {
+	                            getRecordService().link(actionedUponNodeRef, finalRecordFolder);
+	                        }
+        				}
                     }
                     catch (FileNotFoundException fileNotFound)
                     {
@@ -333,19 +366,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      */
     private NodeRef getChild(NodeRef parent, String childName)
     {
-        NodeRef child = null;
-        List<ChildAssociationRef> children = getNodeService().getChildAssocs(parent);
-        for (ChildAssociationRef childAssoc : children) 
-        {
-            NodeRef childNodeRef = childAssoc.getChildRef();
-            String existingChildName = (String)getNodeService().getProperty(childNodeRef, ContentModel.PROP_NAME);
-            if(existingChildName.equals(childName))
-            {
-                child = childNodeRef;
-                break;
-            }
-        }
-        return child;
+    	return getNodeService().getChildByName(parent, ContentModel.ASSOC_CONTAINS, childName);
     }
 
     /**
@@ -365,22 +386,31 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             @Override
             public NodeRef doWork()
             {
-                NodeRef child = null;
-                if(targetisUnfiledRecords)
+                // double check that the child hasn't been created by another thread
+                NodeRef child = getChild(parent, childName);
+                if (child == null)
                 {
-                    child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
-                }
-                else if(lastAsFolder)
-                {
-                    child = getRecordFolderService().createRecordFolder(parent, childName);
-                }
-                else
-                {
-                    if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(getNodeService().getType(parent)))
+                    if(targetisUnfiledRecords)
                     {
-                        throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path could not be created.");
+                        // create unfiled folder
+                        child = fileFolderService.create(parent, childName, RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER).getNodeRef();
                     }
-                    child = filePlanService.createRecordCategory(parent, childName);
+                    else if(lastAsFolder)
+                    {
+                        // create record folder
+                        child = getRecordFolderService().createRecordFolder(parent, childName);
+                    }
+                    else
+                    {
+                        // ensure we are not trying to create a record categtory in a record folder
+                        if(RecordsManagementModel.TYPE_RECORD_FOLDER.equals(getNodeService().getType(parent)))
+                        {
+                            throw new AlfrescoRuntimeException("Unable to execute " + action.getActionDefinitionName() + " action, because the destination path has a record category within a record folder.");
+                        }
+
+                        // create record category
+                        child = filePlanService.createRecordCategory(parent, childName);
+                    }
                 }
                 return child;
             }

@@ -18,10 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
-import static org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel.READ_RECORDS;
-import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
-import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +55,7 @@ import org.json.simple.JSONObject;
  *
  * @author Roy Wetherall
  */
-public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent 
+public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JSONConversionComponent
                                      implements NodeServicePolicies.OnDeleteNodePolicy,
                                                 NodeServicePolicies.OnCreateNodePolicy
 {
@@ -69,13 +65,13 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
-    
+
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
-    
+
     /** record contributors group */
     private String recordContributorsGroupName = "RECORD_CONTRIBUTORS";
-    
+
     /** Record service */
     private RecordService recordService;
 
@@ -113,7 +109,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     {
         isRecordContributorsGroupEnabled = enabled;
     }
-    
+
     /**
      * @param recordContributorsGroupName   record contributors group name
      */
@@ -121,7 +117,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     {
         this.recordContributorsGroupName = recordContributorsGroupName;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -237,7 +233,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
             // check the exisitance of the RM site
             checkRmSiteExistence(rootJSONObject);
-            
+
             // get the record contributor information
             rootJSONObject.put(IS_RECORD_CONTRIBUTOR_GROUP_ENABLED, isRecordContributorsGroupEnabled);
             rootJSONObject.put(RECORD_CONTRIBUTOR_GROUP_NAME, recordContributorsGroupName);
@@ -264,7 +260,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /**
      * Checks for the existance of the RM site
-     * 
+     *
      * @param rootJSONObject    the root JSON object
      */
     @SuppressWarnings("unchecked")
@@ -371,7 +367,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /**
      * Helper method to set the RM node values
-     * 
+     *
      * @param nodeRef               node reference
      * @param useShortQName         indicates whether the short QName are used or not
      * @return {@link JSONObject}   JSON object containing values
@@ -387,7 +383,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         // Get the 'kind' of the file plan component
         FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
         rmNodeValues.put("kind", kind.toString());
-        
+
         // set the primary parent node reference
         ChildAssociationRef assoc = nodeService.getPrimaryParent(nodeRef);
         if (assoc != null)
@@ -395,29 +391,12 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             rmNodeValues.put("primaryParentNodeRef", assoc.getParentRef().toString());
         }
 
-        // File plan node reference
-        NodeRef filePlan = getFilePlan(nodeRef);
-        if (permissionService.hasPermission(filePlan, READ_RECORDS).equals(ALLOWED))
-        {
-            rmNodeValues.put("filePlan", filePlan.toString());
-
-            // Unfiled container node reference
-            NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-            if (unfiledRecordContainer != null)
-            {
-                rmNodeValues.put("unfiledRecordContainer", unfiledRecordContainer.toString());
-                rmNodeValues.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
-                QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
-                rmNodeValues.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
-            }
-        }
-        
         Map<String, Object> values = AuthenticationUtil.runAsSystem(new RunAsWork<Map<String, Object>>()
         {
             public Map<String, Object> doWork() throws Exception
             {
                 Map<String, Object> result = new HashMap<String, Object>();
-                
+
                 // File plan node reference
                 NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
                 result.put("filePlan", filePlan.toString());
@@ -431,11 +410,11 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                     QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
                     result.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
                 }
-                
+
                 return result;
             }
          });
-        
+
         rmNodeValues.putAll(values);
 
         // Set the indicators array
@@ -445,23 +424,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
         setActions(rmNodeValues, nodeRef);
 
         return rmNodeValues;
-    }
-
-    /**
-     * Helper method to get the file plan as a system user for the given node
-     *
-     * @param nodeRef The node reference
-     * @return The file plan where the node is in
-     */
-    private NodeRef getFilePlan(final NodeRef nodeRef)
-    {
-        return runAsSystem(new RunAsWork<NodeRef>()
-        {
-            public NodeRef doWork()
-            {
-                return filePlanService.getFilePlan(nodeRef);
-            }
-        });
     }
 
     @SuppressWarnings("unchecked")

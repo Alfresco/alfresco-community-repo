@@ -68,6 +68,11 @@ public interface ClassificationService
                 InvalidNodeRefException, InvalidNode;
 
     /**
+     * Gets the default {@link ClassificationLevel}, which will usually be the level with the lowest security clearance.
+     */
+    ClassificationLevel getDefaultClassificationLevel();
+
+    /**
      * Gets the classification level for the given classification level id
      *
      * @param classificationLevelId {@link String} The classification level id for which the classification level should be retrieved.

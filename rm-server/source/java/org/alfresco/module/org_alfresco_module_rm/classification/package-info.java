@@ -19,6 +19,13 @@
 
 /**
  * This package contains the various types required for the 'Classified Records' feature.
+ * Nodes within Alfresco can be given a {@link org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel}
+ * which then restricts access to them to users having the appropriate clearance.
+ * <p/>
+ * The {@link org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService} is responsible
+ * for the management of those levels and it is the
+ * {@link org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService} which deals
+ * wth users and their clearances.
  *
  * @since 3.0
  */

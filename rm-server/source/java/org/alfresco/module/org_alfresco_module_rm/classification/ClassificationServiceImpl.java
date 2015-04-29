@@ -267,6 +267,12 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
     }
 
+    @Override public ClassificationLevel getDefaultClassificationLevel()
+    {
+        List<ClassificationLevel> classificationLevels = getClassificationLevels();
+        return classificationLevels.isEmpty() ? null : classificationLevels.get(classificationLevels.size() - 1);
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService#getClassificationLevelById(java.lang.String)
      */

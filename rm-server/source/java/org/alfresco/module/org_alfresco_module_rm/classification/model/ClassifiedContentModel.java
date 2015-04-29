@@ -40,4 +40,8 @@ public interface ClassifiedContentModel
     QName PROP_CURRENT_CLASSIFICATION = QName.createQName(CLF_URI, "currentClassification");
     QName PROP_CLASSIFICATION_AUTHORITY = QName.createQName(CLF_URI, "classificationAuthority");
     QName PROP_CLASSIFICATION_REASONS = QName.createQName(CLF_URI, "classificationReasons");
+
+    /** Security Clearance aspect. */
+    QName ASPECT_SECURITY_CLEARANCE = QName.createQName(CLF_URI, "securityClearance");
+    QName PROP_CLEARANCE_LEVEL = QName.createQName(CLF_URI, "clearanceLevel");
 }

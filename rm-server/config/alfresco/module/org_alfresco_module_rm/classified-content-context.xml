@@ -96,4 +96,51 @@
        <constructor-arg ref="TransactionService"/>
    </bean>
 
+
+   <!--  Security Clearance Service  -->
+
+   <bean id="securityClearanceService"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceServiceImpl"
+         parent="baseService">
+      <property name="classificationService" ref="ClassificationService"/> <!-- Intentionally using capital 'C' -->
+      <property name="personService" ref="PersonService"/>
+   </bean>
+
+   <bean id="SecurityClearanceService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService</value>
+      </property>
+      <property name="target">
+         <ref bean="securityClearanceService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="SecurityClearanceService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="SecurityClearanceService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="SecurityClearanceService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- FIXME: We have to restrict methods in the security clearance service (with capabilities, etc.) -->
+   <bean id="SecurityClearanceService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUserSecurityClearance=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUsersSecurityClearance=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.*=ACL_DENY
+         </value>
+      </property>
+   </bean>
 </beans>

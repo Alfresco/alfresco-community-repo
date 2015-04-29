@@ -80,6 +80,7 @@
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.classifyContent=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevelById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasonById=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getDefaultClassificationLevel=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=ACL_DENY
          </value>
       </property>

@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
@@ -51,8 +52,8 @@ public class CalendarHelpersTest
    private final static long ONE_HOUR_MS = 1 * 60 * 60 * 1000L;
    private final static long TWO_DAYS_MS = 2 * 24 * ONE_HOUR_MS;
    
-   private static SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd");
-   private static SimpleDateFormat fullDayFmt = new SimpleDateFormat("EEEE");
+   private static SimpleDateFormat dateFmt = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
+   private static SimpleDateFormat fullDayFmt = new SimpleDateFormat("EEEE", Locale.ENGLISH);
    
    /**
     * UTC+10, no daylight savings

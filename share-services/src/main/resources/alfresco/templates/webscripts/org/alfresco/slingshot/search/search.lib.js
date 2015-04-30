@@ -324,6 +324,7 @@ function getCalendarItem(siteId, containerId, pathParts, node, populate)
       modifiedByUser: node.properties["cm:modifier"],
       createdOn: node.properties["cm:created"],
       createdByUser: node.properties["cm:creator"],
+      fromDate: node.properties["ia:fromDate"],
       size: -1,
       displayName: node.properties["ia:whatEvent"]
    };

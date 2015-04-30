@@ -35,6 +35,7 @@
 			"modifiedOn": "${xmldate(item.modifiedOn)}",
 			"modifiedByUser": "${item.modifiedByUser}",
 			"modifiedBy": "${item.modifiedBy}",
+			"fromDate": "${xmldate(item.fromDate)}",
 			"size": ${item.size?c},
 			"mimetype": "${item.mimetype!''}",
 			<#if item.site??>

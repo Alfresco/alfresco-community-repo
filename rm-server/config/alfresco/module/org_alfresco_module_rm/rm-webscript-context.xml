@@ -669,4 +669,11 @@
       parent="rmBaseWebscript">
       <property name="classificationService" ref="ClassificationService" />
    </bean>
+
+   <!-- REST impl for GET user security clearance -->
+   <bean id="webscript.org.alfresco.rma.classification.usersecurityclearance.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.classification.UserSecurityClearanceGet"
+      parent="rmBaseWebscript">
+      <property name="securityClearanceService" ref="SecurityClearanceService" />
+   </bean>
 </beans>

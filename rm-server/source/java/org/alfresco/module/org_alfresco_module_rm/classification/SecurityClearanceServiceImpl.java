@@ -74,11 +74,16 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
 
     public PagingResults<SecurityClearance> getUsersSecurityClearance(UserQueryParams queryParams)
     {
+        final PagingRequest pagingRequest = new PagingRequest(queryParams.getSkipCount(),
+                                                              queryParams.getMaxItems());
+        // We want an accurate count of how many users there are in the system (in this query).
+        // Else paging in the UI won't work properly.
+        pagingRequest.setRequestTotalCountMax(Integer.MAX_VALUE);
+
         final PagingResults<PersonInfo> p = personService.getPeople(queryParams.getSearchTerm(),
                                                                     queryParams.getFilterProps(),
                                                                     queryParams.getSortProps(),
-                                                                    new PagingRequest(queryParams.getSkipCount(),
-                                                                                      queryParams.getMaxItems()));
+                                                                    pagingRequest);
 
         return new PagingResults<SecurityClearance>()
         {

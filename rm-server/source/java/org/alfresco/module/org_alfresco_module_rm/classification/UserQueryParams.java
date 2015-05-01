@@ -76,6 +76,7 @@ public final class UserQueryParams
     }
 
     /** Sets the sort properties required for the query. */
+    @SuppressWarnings("unchecked")
     public UserQueryParams withSortProps(Pair<QName, Boolean> firstSortProp, Pair<QName, Boolean>... otherSortProps)
     {
         this.sortProps = Collections.unmodifiableList(toList(firstSortProp, otherSortProps));
@@ -89,6 +90,7 @@ public final class UserQueryParams
     public int                        getMaxItems()    { return this.maxItems; }
 
     /** Helper method to turn a varargs into a List, ensuring at least one element is present. */
+    @SuppressWarnings("unchecked")
     private <T> List<T> toList(T firstElem, T... otherElems)
     {
         // At least one element is required.

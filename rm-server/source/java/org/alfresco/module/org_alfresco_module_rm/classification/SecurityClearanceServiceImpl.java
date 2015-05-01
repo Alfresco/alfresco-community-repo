@@ -18,10 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import static java.util.Arrays.asList;
-import static org.alfresco.model.ContentModel.PROP_FIRSTNAME;
-import static org.alfresco.model.ContentModel.PROP_LASTNAME;
-import static org.alfresco.model.ContentModel.PROP_USERNAME;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_SECURITY_CLEARANCE;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CLEARANCE_LEVEL;
 
@@ -31,12 +27,11 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Neil Mc Erlean
@@ -53,7 +48,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
     public SecurityClearance getUserSecurityClearance()
     {
         final String currentUser = authenticationUtil.getFullyAuthenticatedUser();
-        Objects.requireNonNull(currentUser, "Fully authenticated user is null, which is not allowed.");
+        ParameterCheck.mandatoryString("currentUser", currentUser);
 
         return getUserSecurityClearance(currentUser);
     }
@@ -77,14 +72,13 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         return new SecurityClearance(personInfo, classificationLevel);
     }
 
-    public PagingResults<SecurityClearance> getUsersSecurityClearance(String userNameFragment,
-                                                                      boolean sortAscending,
-                                                                      PagingRequest req)
+    public PagingResults<SecurityClearance> getUsersSecurityClearance(UserQueryParams queryParams)
     {
-        final List<QName> filterProps = asList(PROP_USERNAME, PROP_FIRSTNAME, PROP_LASTNAME);
-        final List<Pair<QName, Boolean>> sortProps = asList(new Pair<>(PROP_USERNAME, sortAscending));
-
-        final PagingResults<PersonInfo> p = personService.getPeople(userNameFragment, filterProps, sortProps, req);
+        final PagingResults<PersonInfo> p = personService.getPeople(queryParams.getSearchTerm(),
+                                                                    queryParams.getFilterProps(),
+                                                                    queryParams.getSortProps(),
+                                                                    new PagingRequest(queryParams.getSkipCount(),
+                                                                                      queryParams.getMaxItems()));
 
         return new PagingResults<SecurityClearance>()
         {

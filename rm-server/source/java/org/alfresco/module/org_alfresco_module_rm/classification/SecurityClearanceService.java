@@ -41,12 +41,8 @@ public interface SecurityClearanceService
     /**
      * Get users' security clearances.
      *
-     * @param userNameFragment A username fragment which will be used to apply a 'starts with' query.
-     * @param sortAscending if @code true} returns data sorted in ascending order by username.
-     * @param req paging request definition.
+     * @param queryParams parameters for the query.
      * @return security clearances for the specified page of users.
      */
-    PagingResults<SecurityClearance> getUsersSecurityClearance(String userNameFragment,
-                                                               boolean sortAscending,
-                                                               PagingRequest req);
+    PagingResults<SecurityClearance> getUsersSecurityClearance(UserQueryParams queryParams);
 }

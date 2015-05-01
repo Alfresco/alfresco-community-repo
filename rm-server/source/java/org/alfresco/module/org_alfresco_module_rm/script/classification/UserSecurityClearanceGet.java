@@ -18,9 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
-import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.springframework.extensions.webscripts.Status.STATUS_INTERNAL_SERVER_ERROR;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,12 +28,13 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
+import org.alfresco.module.org_alfresco_module_rm.classification.UserQueryParams;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -46,17 +47,12 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
 {
     /** Constants */
     private static final String TOTAL = "total";
-    private static final String SORT_BY = "sortBy";
-    private static final String START_INDEX = "startIndex";
-    private static final String PAGE_SIZE = "pageSize";
+    private static final String SKIP_COUNT = "startIndex";
+    private static final String MAX_ITEMS = "pageSize";
     private static final String ITEM_COUNT = "itemCount";
     private static final String ITEMS = "items";
     private static final String DATA = "data";
-    private static final String FILTER = "filter";
-    private static final int TOTAL_INT = -1;
-    private static final int START_INDEX_INT = 0;
-    private static final int PAGE_SIZE_INT = 10;
-    private static final boolean SORT_BY_ASC_BOOL = true;
+    private static final String NAME_FILTER = "nameFilter";
 
     /** Security clearance service */
     private SecurityClearanceService securityClearanceService;
@@ -85,17 +81,18 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String filter = getFilter(req);
-        boolean sortAscending = isSortAscending(req);
-        PagingRequest pagingRequest = getPagingRequest(req);
+        String nameFilter = getNameFilter(req);
+        UserQueryParams userQueryParams = new UserQueryParams(nameFilter);
+        setMaxItems(userQueryParams, req);
+        setSkipCount(userQueryParams, req);
 
-        PagingResults<SecurityClearance> usersSecurityClearance = getSecurityClearanceService().getUsersSecurityClearance(filter, sortAscending, pagingRequest);
+        PagingResults<SecurityClearance> usersSecurityClearance = getSecurityClearanceService().getUsersSecurityClearance(userQueryParams);
         List<SecurityClearance> securityClearanceItems = getSecurityClearanceItems(usersSecurityClearance);
 
         Map<String, Object> securityClearanceData = new HashMap<>();
         securityClearanceData.put(TOTAL, getTotal(usersSecurityClearance));
-        securityClearanceData.put(PAGE_SIZE, pagingRequest.getMaxItems());
-        securityClearanceData.put(START_INDEX, pagingRequest.getSkipCount());
+        securityClearanceData.put(MAX_ITEMS, userQueryParams.getMaxItems());
+        securityClearanceData.put(SKIP_COUNT, userQueryParams.getSkipCount());
         securityClearanceData.put(ITEM_COUNT, securityClearanceItems.size());
         securityClearanceData.put(ITEMS, securityClearanceItems);
 
@@ -111,10 +108,14 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
      * @param usersSecurityClearance {@link PagingResults} The security clearance results
      * @return The total number of security clearance items
      */
-    private int getTotal(PagingResults<SecurityClearance> usersSecurityClearance)
+    private Integer getTotal(PagingResults<SecurityClearance> usersSecurityClearance)
     {
         Pair<Integer, Integer> totalResultCount = usersSecurityClearance.getTotalResultCount();
-        return totalResultCount != null ? totalResultCount.getFirst() : TOTAL_INT;
+        if (totalResultCount == null)
+        {
+            throw new WebScriptException(STATUS_INTERNAL_SERVER_ERROR, "Total result count cannot be determined.");
+        }
+        return totalResultCount.getFirst();
     }
 
     /**
@@ -129,42 +130,43 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
     }
 
     /**
-     * Gets the sort direction from the webscript request
+     * Gets the name filter from the webscript request
      *
      * @param req {@link WebScriptRequest} The webscript request
-     * @return <code>true</code> if the sort direction is ascending, <code>false</code> otherwise
+     * @return {@link String} The name filter (can be null)
      */
-    private boolean isSortAscending(WebScriptRequest req)
+    private String getNameFilter(WebScriptRequest req)
     {
-        String sortBy = req.getParameter(SORT_BY);
-        return isNotBlank(sortBy) ? parseBoolean(sortBy) : SORT_BY_ASC_BOOL;
+        return req.getParameter(NAME_FILTER);
     }
 
     /**
-     * Gets the filter from the webscript request
+     * Helper method to set the max index for the request query object
      *
+     * @param userQueryParams {@link UserQueryParams} The request query object
      * @param req {@link WebScriptRequest} The webscript request
-     * @return {@link String} The filter
      */
-    private String getFilter(WebScriptRequest req)
+    private void setMaxItems(UserQueryParams userQueryParams, WebScriptRequest req)
     {
-        return req.getParameter(FILTER);
+        String maxItems = req.getParameter(MAX_ITEMS);
+        if (isNotBlank(maxItems))
+        {
+            userQueryParams.withMaxItems(parseInt(maxItems));
+        }
     }
 
     /**
-     * Helper method to create the paging request from the webscript request
+     * Helper method to set the skip count for the query object
      *
+     * @param userQueryParams {@link UserQueryParams} The request query object
      * @param req {@link WebScriptRequest} The webscript request
-     * @return {@link PagingRequest} The paging request
      */
-    private PagingRequest getPagingRequest(WebScriptRequest req)
+    private void setSkipCount(UserQueryParams userQueryParams, WebScriptRequest req)
     {
-        String startIndexAsString = req.getParameter(START_INDEX);
-        String pageSizeAsString = req.getParameter(PAGE_SIZE);
-
-        int startIndex = isNotBlank(startIndexAsString) ? parseInt(startIndexAsString) : START_INDEX_INT;
-        int pageSize = isNotBlank(pageSizeAsString) ? parseInt(pageSizeAsString) : PAGE_SIZE_INT;
-
-        return new PagingRequest(startIndex, pageSize, null);
+        String skipCount = req.getParameter(SKIP_COUNT);
+        if (isNotBlank(skipCount))
+        {
+            userQueryParams.withSkipCount(parseInt(skipCount));
+        }
     }
 }

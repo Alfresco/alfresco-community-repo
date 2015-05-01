@@ -50,7 +50,7 @@ public final class UserQueryParams
 
     public UserQueryParams(final String searchTerm)
     {
-        ParameterCheck.mandatoryString("searchTerm", searchTerm);
+        // A 'null' value here is allowed.
         this.searchTerm = searchTerm;
     }
 

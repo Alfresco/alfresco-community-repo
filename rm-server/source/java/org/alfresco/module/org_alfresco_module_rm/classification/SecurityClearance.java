@@ -31,6 +31,8 @@ import java.util.Objects;
  */
 public final class SecurityClearance implements Serializable
 {
+    /** Serial version uid */
+    private static final long serialVersionUID = 8410664575120817707L;
     private final PersonInfo          personInfo;
     private final ClassificationLevel classificationLevel;
 

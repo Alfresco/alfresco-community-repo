@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 

@@ -3,195 +3,195 @@
            xmlns:cm="http://www.alfresco.org/model/content/1.0">
    
 	<cm:category_root view:childName="cm:categoryRoot">
-		<cm:name>categories</cm:name>
+		<cm:name>${bootstrap.categories.name}</cm:name>
 		<cm:categories>
          
 			<!-- Software Document Classification -->
 			<cm:category view:childName="cm:generalclassifiable">
-                <cm:name>General</cm:name>
+                <cm:name>${bootstrap.categories.cm_generalclassifiable.name}</cm:name>
 				<cm:subcategories>
                 <cm:category>
-				<cm:name>Software Document Classification</cm:name>
+				<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.name}</cm:name>
 				<cm:subcategories>
 					<cm:category>
-						<cm:name>Software Descriptions</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Main Software Descriptions</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.main_software_descriptions.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Short System Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.main_software_descriptions.short_system_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Requirement Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.main_software_descriptions.requirement_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Architecture Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.main_software_descriptions.architecture_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Implementation Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.main_software_descriptions.implementation_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Configuration Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.main_software_descriptions.configuration_description.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Software Description Appendices</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Terminology Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.terminology_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Internal Message Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.internal_message_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>External Message Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.external_message_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Record Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.record_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>User Interface Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.user_interface_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Process Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.process_description.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Initialization Description</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.software_descriptions.software_description_appendices.initialization_description.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>Utilization Documents</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>User's Manual</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.users_manual.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Operator's Manual</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.operators_manual.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Installation Manual</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.installation_manual.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Service Manual</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.service_manual.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>User's Help</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.users_help.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Operator's Help</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.operators_help.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Installations Help</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.installations_help.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Service Help</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.utilization_documents.service_help.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>Development Plans</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Responsibility Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.responsibility_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Work Breakdown Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.work_breakdown_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Schedule Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.schedule_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Expense Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.expense_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Phase Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.phase_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Risk Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.risk_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Test Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.test_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Acceptance Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.acceptance_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Manual Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.manual_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Method Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.method_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Quality Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.quality_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Documentation Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.documentation_plan.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Version Control Plan</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.development_plans.version_control_plan.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>Quality Documents</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Change Request</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.change_request.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Analysis Request</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.analysis_request.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Information Request</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.information_request.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Reader's Report</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.readers_report.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Review Report</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.review_report.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Inspection Report</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.inspection_report.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Test Report</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.test_report.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Review Call</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.review_call.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Inspection Call</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.inspection_call.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Test Call</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.quality_documents.test_call.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>Administrative Documents</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.administrative_documents.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Preliminary Contract</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.administrative_documents.preliminary_contract.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Development Contract</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.administrative_documents.development_contract.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Extended Contract</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.administrative_documents.extended_contract.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Maintenance Contract</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.administrative_documents.maintenance_contract.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Contract Review Minutes</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.administrative_documents.contract_review_minutes.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Project Meeting Minutes</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.software_document_classification.administrative_documents.project_meeting_minutes.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
@@ -201,64 +201,64 @@
 
 			    <!-- Languages -->
 			    <cm:category>
-				<cm:name>Languages</cm:name>
+				<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.name}</cm:name>
 				<cm:subcategories>
 					<cm:category>
-						<cm:name>English</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.english.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>British English</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.english.british_english.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>American English</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.english.american_english.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Australian English</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.english.australian_english.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Canadian English</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.english.canadian_english.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Indian English</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.english.indian_english.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>French</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.french.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>French French</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.french.french_french.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Canadian French</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.french.canadian_french.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>German</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.german.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>German German</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.german.german_german.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Austrian German</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.german.austrian_german.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Swiss German</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.german.swiss_german.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>Spanish</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.Spanish.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Spanish</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.Spanish.spanish.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Mexican Spanish</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.Spanish.mexican_spanish.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>American Spanish</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.languages.Spanish.american_spanish.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
@@ -268,823 +268,823 @@
 
 			    <!-- Regions -->
 			    <cm:category>
-				<cm:name>Regions</cm:name>
+				<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.name}</cm:name>
 				<cm:subcategories>
 					<cm:category>
-						<cm:name>AFRICA</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Eastern Africa</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Burundi</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.burundi.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Comoros</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.comoros.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Djibouti</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.djibouti.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Eritrea</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.eritrea.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Ethiopia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.ethiopia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Kenya</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.kenya.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Madagascar</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.madagascar.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Malawi</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.malawi.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Mauritius</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.mauritius.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Mozambique</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.mozambique.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Reunion</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.reunion.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Rwanda</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.rwanda.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Seychelles</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.seychelles.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Somalia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.somalia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Uganda</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.uganda.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>United Rep. of Tanzania</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.tanzania.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Zambia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.zambia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Zimbabwe</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.eastern_africa.zimbabwe.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Middle Africa</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Angola</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.angola.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cameroon</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.cameroon.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Central African Republic</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.central_african_republic.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Chad</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.chad.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Congo</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.congo.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Dem. Republic of the Congo</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.rep_congo.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Equatorial Guinea</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.guinea.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Gabon</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.gabon.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Sao Tome and Principe</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.middle_africa.sao_tome.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Northern Africa</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Algeria</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.algeria.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Egypt</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.egypt.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Libyan Arab Jamahiriya</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.libyan_arab_jamahiriya.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Morocco</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.morocco.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Sudan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.sudan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Tunisia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.tunisia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Western Sahara</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.northern_africa.western_sahara.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Southern Africa</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.southern_africa.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Botswana</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.southern_africa.botswana.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Lesotho</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.southern_africa.lesotho.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Namibia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.southern_africa.namibia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>South Africa</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.southern_africa.south_africa.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Swaziland</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.southern_africa.swaziland.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Western Africa</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Benin</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.benin.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Burkina Faso</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.burkina_faso.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cape Verde</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.cape_verde.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cote d'Ivoire</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.cote_divoire.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Gambia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.gambia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Ghana</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.ghana.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Guinea</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.guinea.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Guinea-Bissau</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.guinea_bissau.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Liberia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.liberia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Mali</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.mali.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Mauritania</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.mauritania.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Niger</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.niger.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Nigeria</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.nigeria.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Saint Helena</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.saint_helena.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Senegal</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.senegal.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Sierra Leone</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.sierra_leone.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Togo</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.africa.western_africa.togo.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>ASIA</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Eastern Asia</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>China</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.china.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Dem. People's Rep. of Korea</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.peoples_republic_korea.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Hong Kong SAR</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.hong_kong.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Japan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.japan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Macao, China</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.macao.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Mongolia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.mongolia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Republic of Korea</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.eastern_asia.korea.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>South-central Asia</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Afghanistan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.afghanistan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Bangladesh</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.bangladesh.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Bhutan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.bhutan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>India</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.india.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Iran (Islamic Republic of)</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.iran.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Kazakhstan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.kazakhstan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Kyrgyzstan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.kyrgyzstan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Maldives</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.maldives.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Nepal</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.nepal.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Pakistan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.pakistan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Sri Lanka</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.sri_lanka.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Tajikistan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.tajikistan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Turkmenistan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.turkmenistan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Uzbekistan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_central_asia.uzbekistan.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>South-eastern Asia</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Brunei Darussalam</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.brunei_darussalam.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cambodia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.cambodia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Indonesia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.indonesia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Lao People's Dem. Republic</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.lao.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Malaysia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.malaysia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Myanmar</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.myanmar.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Philippines</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.philippines.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Singapore</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.singapore.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Thailand</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.thailand.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Timor-Leste</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.timor_leste.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Viet Nam</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.viet_nam.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Western Asia</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.western_asia.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Armenia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.armenia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Azerbaijan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.azerbaijan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Bahrain</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.bahrain.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cyprus</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.cyprus.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Georgia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.georgia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Iraq</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.iraq.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Israel</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.israel.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Jordan</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.jordan.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Kuwait</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.kuwait.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Lebanon</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.lebanon.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Occupied Palestinian Territory</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.occupied_palestinian_territory.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Oman</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.oman.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Qatar</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.qatar.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Saudi Arabia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.saudi_arabia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Syrian Arab Republic</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.syrian_arab_republic.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Turkey</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.turkey.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>United Arab Emirates</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.united_arab_emirates.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Yemen</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.asia.south_eastern_asia.yemen.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>EUROPE</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Eastern Europe</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Belarus</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.belarus.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Bulgaria</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.bulgaria.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Czech Republic</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.czech_republic.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Hungary</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.hungary.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Poland</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.poland.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Republic of Moldova</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.republic_of_moldova.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Romania</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.romania.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Russian Federation</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.russian_federation.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Slovakia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.slovakia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Ukraine</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.eastern_europe.ukraine.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Northern Europe</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Channel Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.channel_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Denmark</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.denmark.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Estonia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.estonia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Faeroe Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.faeroe_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Finland</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.finland.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Iceland</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.iceland.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Ireland</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.ireland.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Isle of Man</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.isle_of_man.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Latvia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.latvia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Lithuania</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.lithuania.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Norway</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.norway.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Sweden</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.sweden.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>United Kingdom</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.northern_europe.united_kingdom.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Southern Europe</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Albania</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.albania.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Andorra</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.andorra.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Bosnia and Herzegovina</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.bosnia_and_herzegovina.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Croatia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.croatia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Gibraltar</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.gibraltar.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Greece</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.greece.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Holy See</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.holy_see.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Italy</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.italy.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Malta</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.malta.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Portugal</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.portugal.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>San Marino</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.san_marino.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Slovenia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.slovenia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Spain</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.spain.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>The Former Yugoslav Republic of Macedonia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.macedonia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Yugoslavia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.southern_europe.yugoslavia.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Western Europe</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Austria</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.austria.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Belgium</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.belgium.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>France</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.france.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Germany</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.germany.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Liechtenstein</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.liechtenstein.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Luxembourg</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.luxembourg.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Monaco</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.monaco.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Netherlands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.netherlands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Switzerland</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.europe.western_europe.switzerland.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>LATIN AMERICA</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Caribbean</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Anguilla</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.anguilla.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Antigua and Barbuda</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.antigua_and_barbuda.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Aruba</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.aruba.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Bahamas</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.bahamas.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Barbados</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.barbados.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>British Virgin Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.british_virgin_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cayman Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.cayman_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cuba</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.cuba.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Dominica</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.dominica.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Dominican Republic</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.dominican_republic.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Grenada</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.grenada.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Guadeloupe</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.guadeloupe.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Haiti</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.haiti.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Jamaica</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.jamaica.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Martinique</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.martinique.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Montserrat</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.montserrat.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Netherlands Antilles</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.netherlands_antilles.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Puerto Rico</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.puerto_rico.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Saint Kitts and Nevis</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.saint_kitts_and_nevis.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Saint Lucia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.saint_lucia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Saint Vincent and Grenadines</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.saint_vincent_and_grenadines.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Trinidad and Tobago</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.trinidad_and_tobago.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Turks and Caicos Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.turks_and_caicos_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>United States Virgin Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.caribbean.united_states_virgin_islands.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Central America</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Belize</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.belize.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Costa Rica</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.costa_rica.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>El Salvador</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.el_salvador.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Guatemala</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.guatemala.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Honduras</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.honduras.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Mexico</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.mexico.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Nicaragua</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.nicaragua.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Panama</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.central_america.panama.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>South America</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Argentina</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.argentina.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Bolivia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.bolivia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Brazil</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.brazil.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Chile</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.chile.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Colombia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.colombia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Ecuador</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.ecuador.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Falkland Islands (Malvinas)</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.falkland_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>French Guiana</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.french_guiana.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Guyana</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.guyana.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Paraguay</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.paraguay.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Peru</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.peru.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Suriname</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.suriname.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Uruguay</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.uruguay.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Venezuela</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.latin_america.south_america.venezuela.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>NORTHERN AMERICA</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.northern_america.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Bermuda</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.northern_america.bermuda.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Canada</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.northern_america.canada.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Greenland</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.northern_america.greenland.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>Saint Pierre and Miquelon</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.northern_america.saint_pierre_and_miquelon.name}</cm:name>
 							</cm:category>
 							<cm:category>
-								<cm:name>United States of America</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.northern_america.usa.name}</cm:name>
 							</cm:category>
 						</cm:subcategories>
 					</cm:category>
 					<cm:category>
-						<cm:name>OCEANIA</cm:name>
+						<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.name}</cm:name>
 						<cm:subcategories>
 							<cm:category>
-								<cm:name>Australia and New Zealand</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.australia_and_new_zealand.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Australia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.australia_and_new_zealand.australia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>New Zealand</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.australia_and_new_zealand.new_zealand.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Norfolk Island</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.australia_and_new_zealand.norfolk_island.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Melanesia</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.melanesia.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Fiji</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.melanesia.fiji.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>New Caledonia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.melanesia.new_caledonia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Papua New Guinea</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.melanesia.papua_new_guinea.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Solomon Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.melanesia.solomon_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Vanuatu</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.melanesia.vanuatu.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Micronesia</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>Fed. States of Micronesia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.states_of_micronesia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Guam</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.guam.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Johnston Island</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.johnston_island.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Kiribati</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.kiribati.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Marshall Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.marshall_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Nauru</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.nauru.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Northern Mariana Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.northern_mariana_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Palau</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.micronesia.palau.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
 							<cm:category>
-								<cm:name>Polynesia</cm:name>
+								<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.name}</cm:name>
 								<cm:subcategories>
 									<cm:category>
-										<cm:name>American Samoa</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.american_samoa.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Cook Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.cook_islands.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>French Polynesia</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.french_polynesia.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Niue</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.niue.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Pitcairn</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.pitcairn.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Samoa</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.samoa.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Tokelau</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.tokelau.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Tonga</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.tonga.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Tuvalu</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.tuvalu.name}</cm:name>
 									</cm:category>
 									<cm:category>
-										<cm:name>Wallis and Futuna Islands</cm:name>
+										<cm:name>${bootstrap.categories.cm_generalclassifiable.regions.oceania.polynesia.wallis_and_futuna_islands.name}</cm:name>
 									</cm:category>
 								</cm:subcategories>
 							</cm:category>
@@ -1102,7 +1102,7 @@
                         <view:permission>Contributor</view:permission>
                      </view:ace>
                   </view:acl>
-                  <cm:name>Tags</cm:name>
+                  <cm:name>${bootstrap.categories.cm_generalclassifiable.tags.name}</cm:name>
                </cm:category>
 
              </cm:subcategories>

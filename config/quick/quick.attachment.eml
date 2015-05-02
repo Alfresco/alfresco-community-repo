@@ -1,0 +1,44 @@
+MIME-Version: 1.0
+Received: by 10.000.0.000 with HTTP; Thu, 16 Aug 2012 08:13:29 -0700 (PDT)
+Date: Thu, 16 Aug 2012 16:13:29 +0100
+Delivered-To: jane.doe@alfresco.com
+Message-ID: <CAL0uq1f9vPczLRinL3xB5U_oSSd5U0ob=408nBgosCY0OVFyBw@mail.alfresco.com>
+Subject: Attachment test
+From: <john.doe@alfresco.com>
+To: <jane.doe@alfresco.com>
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0000_01D06C6A.D04F3750"
+
+This is a multipart message in MIME format.
+
+------=_NextPart_000_0000_01D06C6A.D04F3750
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_001_0001_01D06C6A.D04F3750"
+
+
+------=_NextPart_001_0001_01D06C6A.D04F3750
+Content-Type: text/plain;
+	charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Mail with attachment content
+
+------=_NextPart_001_0001_01D06C6A.D04F3750
+Content-Type: text/html;
+	charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Mail with attachment content</div>
+
+------=_NextPart_001_0001_01D06C6A.D04F3750--
+
+------=_NextPart_000_0000_01D06C6A.D04F3750
+Content-Type: text/plain;
+	name="alt.txt"
+Content-Transfer-Encoding: quoted-printable
+Content-ID: <796B1E07B04ACC41A78199F35721150F@eurprd04.prod.outlook.com>
+Content-Disposition: attachment;
+	filename="alt.txt"
+
+File attachment content
+------=_NextPart_000_0000_01D06C6A.D04F3750--

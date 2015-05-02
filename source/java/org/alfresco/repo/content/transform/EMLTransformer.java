@@ -20,9 +20,10 @@
 package org.alfresco.repo.content.transform;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.io.InputStream;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -34,9 +35,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.apache.tika.io.TikaInputStream;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.txt.Icu4jEncodingDetector;
+
 
 /**
  * Uses javax.mail.MimeMessage to generate plain text versions of RFC822 email
@@ -47,7 +46,12 @@ import org.apache.tika.parser.txt.Icu4jEncodingDetector;
  * related parsers.
  */
 public class EMLTransformer extends AbstractContentTransformer2
+
 {
+    private static final Pattern TAG_PATTERN = Pattern.compile("<[^>]*>");
+    private static final String BR_TAG_PATTERN = "<[bB][rR].?\\/?>";
+    private static final String NEW_LINE_PATTERN = "\n";
+
     @Override
     public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
     {
@@ -70,29 +74,18 @@ public class EMLTransformer extends AbstractContentTransformer2
     }
 
     @Override
-    protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options)
-            throws Exception
+    protected void transformInternal(ContentReader reader, ContentWriter writer, TransformationOptions options) throws Exception
     {
-        TikaInputStream tikaInputStream = null;
-        try
-        {
-            // wrap the given stream to a TikaInputStream instance
-            tikaInputStream = TikaInputStream.get(reader.getContentInputStream());
+        InputStream contentInputStream = null;
+        try{
+            contentInputStream = reader.getContentInputStream();
+            MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()), contentInputStream);
 
-            final Icu4jEncodingDetector encodingDetector = new Icu4jEncodingDetector();
-            final Charset charset = encodingDetector.detect(tikaInputStream, new Metadata());
-
-            MimeMessage mimeMessage = new MimeMessage(Session.getDefaultInstance(new Properties()), tikaInputStream);
-            if (charset != null)
-            {
-                mimeMessage.setHeader("Content-Type", "text/plain; charset=" + charset.name());
-                mimeMessage.setHeader("Content-Transfer-Encoding", "quoted-printable");
-            }
             final StringBuilder sb = new StringBuilder();
             Object content = mimeMessage.getContent();
             if (content instanceof Multipart)
             {
-                sb.append(processMultiPart((Multipart) content));
+                processMultiPart((Multipart) content,sb);
             }
             else
             {
@@ -102,49 +95,113 @@ public class EMLTransformer extends AbstractContentTransformer2
         }
         finally
         {
-            if (tikaInputStream != null)
+            if (contentInputStream != null)
             {
                 try
                 {
-                    // it closes any other resources associated with it
-                    tikaInputStream.close();
+                contentInputStream.close();
                 }
-                catch (IOException e)
+                catch ( IOException e)
                 {
-                    e.printStackTrace();
+                    //stop exception propagation
                 }
             }
         }
     }
 
     /**
-     * Find "text" parts of message recursively
+     * Find "text" parts of message recursively and appends it to sb StringBuilder
      * 
      * @param multipart Multipart to process
-     * @return "text" parts of message
+     * @param sb StringBuilder 
      * @throws MessagingException
      * @throws IOException
      */
-    private StringBuilder processMultiPart(Multipart multipart) throws MessagingException, IOException
+    private void processMultiPart(Multipart multipart, StringBuilder sb) throws MessagingException, IOException
     {
-        StringBuilder sb = new StringBuilder();
+        boolean isAlternativeMultipart = multipart.getContentType().contains(MimetypeMap.MIMETYPE_MULTIPART_ALTERNATIVE);
+        if (isAlternativeMultipart)
+        {
+            processAlternativeMultipart(multipart, sb);
+        }
+        else
+        {
+            for (int i = 0, n = multipart.getCount(); i < n; i++)
+            {
+                Part part = multipart.getBodyPart(i);
+                if (part.getContent() instanceof Multipart)
+                {
+                    processMultiPart((Multipart) part.getContent(), sb);
+                }
+                else
+                {
+                    processPart(part, sb);
+                }
+            }
+        }
+    }
+    
+    
+    /**
+     * Finds the suitable part from an multipart/alternative and appends it's text content to StringBuilder sb
+     * Html parts have higher priority than text parts
+     * 
+     * @param multipart
+     * @param sb
+     * @throws IOException
+     * @throws MessagingException
+     */
+    private void processAlternativeMultipart(Multipart multipart, StringBuilder sb) throws IOException, MessagingException
+    {
+        Part partToUse = null;
         for (int i = 0, n = multipart.getCount(); i < n; i++)
         {
             Part part = multipart.getBodyPart(i);
-            if (part.getContent() instanceof Multipart)
+            if (part.getContentType().contains(MimetypeMap.MIMETYPE_TEXT_PLAIN))
             {
-                sb.append(processMultiPart((Multipart) part.getContent()));
-
+                partToUse = part;
             }
-            else if (part.getContentType().contains("text"))
-            {
-                sb.append(part.getContent().toString()).append("\n");
-
+            else if  (part.getContentType().contains(MimetypeMap.MIMETYPE_HTML)){
+                partToUse = part;
+                break;
             }
-
         }
+        if (partToUse != null)
+        {
+            processPart(partToUse, sb);
+        }
+    }
 
-        return sb;
+    /**
+     * Finds text on a given mail part. Accepted parts types are text/html and text/plain.
+     * Attachments are ignored
+     * 
+     * @param part
+     * @param sb
+     * @throws IOException
+     * @throws MessagingException
+     */
+    private void processPart(Part part, StringBuilder sb) throws IOException, MessagingException
+    {
+        boolean isAttachment = Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition());
+        if (isAttachment)
+        {
+        	return;
+        }
+        if (part.getContentType().contains(MimetypeMap.MIMETYPE_TEXT_PLAIN))
+        {
+            sb.append(part.getContent().toString());
+        }
+        else if (part.getContentType().contains(MimetypeMap.MIMETYPE_HTML))
+        {
+            String content = part.getContent().toString();
+            //replace line breaks with new lines
+            content = content.replaceAll(BR_TAG_PATTERN, NEW_LINE_PATTERN);
+            Matcher tagMatcher = TAG_PATTERN.matcher(content);
+            //remove html tags
+            content = tagMatcher.replaceAll("");
+            sb.append(content);
+        }
     }
 
 }

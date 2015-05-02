@@ -39,6 +39,12 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
     private static final String QUICK_EML_CONTENT = "Gym class featuring a brown fox and lazy dog";
 
     private static final String QUICK_EML_CONTENT_SPANISH_UNICODE = "El r\u00E1pido zorro marr\u00F3n salta sobre el perro perezoso";
+    
+    private static final String QUICK_EML_WITH_ATTACHMENT_CONTENT =  "Mail with attachment content";
+    
+    private static final String QUICK_EML_ATTACHMENT_CONTENT =  "File attachment content";
+    
+    private static final String QUICK_EML_ALTERNATIVE_CONTENT =  "alternative html text";
 
     private EMLTransformer transformer;
 
@@ -102,6 +108,48 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
 
         ContentReader reader2 = new FileContentReader(txtTargetFile);
         reader2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        assertTrue(reader2.getContentString().contains(new String(QUICK_EML_CONTENT_SPANISH_UNICODE.getBytes("UTF-8"))));
+        String contentStr = reader2.getContentString();
+        assertTrue(contentStr.contains(QUICK_EML_CONTENT_SPANISH_UNICODE));
+    }
+    
+    /**
+     * Test transforming a valid eml with an attachment to text; attachment should be ingnored
+     */
+    public void testRFC822WithAttachmentToText() throws Exception
+    {
+        File emlSourceFile = loadQuickTestFile("attachment.eml");
+        File txtTargetFile = TempFileProvider.createTempFile("test3", ".txt");
+        ContentReader reader = new FileContentReader(emlSourceFile);
+        reader.setMimetype(MimetypeMap.MIMETYPE_RFC822);
+        ContentWriter writer = new FileContentWriter(txtTargetFile);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        transformer.transform(reader, writer);
+
+        ContentReader reader2 = new FileContentReader(txtTargetFile);
+        reader2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        String contentStr = reader2.getContentString();
+        assertTrue(contentStr.contains(QUICK_EML_WITH_ATTACHMENT_CONTENT));
+        assertTrue(!contentStr.contains(QUICK_EML_ATTACHMENT_CONTENT));
+    }
+    
+    /**
+     * Test transforming a valid eml with minetype multipart/alternative to text
+     */
+    public void testRFC822AlternativeToText() throws Exception
+    {
+        File emlSourceFile = loadQuickTestFile("alternative.eml");
+        File txtTargetFile = TempFileProvider.createTempFile("test4", ".txt");
+        ContentReader reader = new FileContentReader(emlSourceFile);
+        reader.setMimetype(MimetypeMap.MIMETYPE_RFC822);
+        ContentWriter writer = new FileContentWriter(txtTargetFile);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        transformer.transform(reader, writer);
+
+        ContentReader reader2 = new FileContentReader(txtTargetFile);
+        reader2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        String contentStr = reader2.getContentString();
+        assertTrue(contentStr.contains(QUICK_EML_ALTERNATIVE_CONTENT));
     }
 }

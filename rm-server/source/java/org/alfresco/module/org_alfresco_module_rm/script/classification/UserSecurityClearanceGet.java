@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
+import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.springframework.extensions.webscripts.Status.STATUS_INTERNAL_SERVER_ERROR;
@@ -31,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearan
 import org.alfresco.module.org_alfresco_module_rm.classification.UserQueryParams;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.query.PagingResults;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -49,6 +51,8 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
     private static final String TOTAL = "total";
     private static final String SKIP_COUNT = "startIndex";
     private static final String MAX_ITEMS = "pageSize";
+    private static final String SORT_FIELD = "sortField";
+    private static final String SORT_ASCENDING = "sortAscending";
     private static final String ITEM_COUNT = "itemCount";
     private static final String ITEMS = "items";
     private static final String DATA = "data";
@@ -85,6 +89,7 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
         UserQueryParams userQueryParams = new UserQueryParams(nameFilter);
         setMaxItems(userQueryParams, req);
         setSkipCount(userQueryParams, req);
+        setSortProps(userQueryParams, req);
 
         PagingResults<SecurityClearance> usersSecurityClearance = getSecurityClearanceService().getUsersSecurityClearance(userQueryParams);
         List<SecurityClearance> securityClearanceItems = getSecurityClearanceItems(usersSecurityClearance);
@@ -167,6 +172,24 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
         if (isNotBlank(skipCount))
         {
             userQueryParams.withSkipCount(parseInt(skipCount));
+        }
+    }
+
+    /**
+     * Helper method to set sort properties for the query object
+     *
+     * @param userQueryParams {@link UserQueryParams} The request query object
+     * @param req {@link WebScriptRequest} The webscript request
+     */
+    @SuppressWarnings("unchecked")
+    private void setSortProps(UserQueryParams userQueryParams, WebScriptRequest req)
+    {
+        String sortField = req.getParameter(SORT_FIELD);
+        String sortAscending = req.getParameter(SORT_ASCENDING);
+
+        if (isNotBlank(sortField) && isNotBlank(sortAscending))
+        {
+            userQueryParams.withSortProps(new Pair<>(QName.createQName(sortField, getNamespaceService()), parseBoolean(sortAscending)));
         }
     }
 }

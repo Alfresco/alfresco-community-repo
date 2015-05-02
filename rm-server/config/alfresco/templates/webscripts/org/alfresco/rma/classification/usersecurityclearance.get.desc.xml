@@ -1,7 +1,7 @@
 <webscript>
    <shortname>Users security clearance</shortname>
    <description>REST API to GET users security clearance</description>
-   <url>/api/classification/clearance?nameFilter={nameFilter?}&amp;startIndex={startIndex?}&amp;pageSize={pageSize?}</url>
+   <url>/api/classification/clearance?nameFilter={nameFilter?}&amp;startIndex={startIndex?}&amp;pageSize={pageSize?}&amp;sortField={sortField?}&amp;sortAscending={sortAscending?}</url>
    <format default="json">argument</format>
    <authentication>admin</authentication>
    <transaction allow="readonly">required</transaction>

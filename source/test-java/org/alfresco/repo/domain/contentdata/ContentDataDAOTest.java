@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.junit.experimental.categories.Category;
@@ -225,6 +226,18 @@ public class ContentDataDAOTest extends TestCase
         {
             // Expected
         }
+    }
+    
+    public void testContentUrlCrud() throws Exception
+    {
+        assertNull("Expect null return fetching a URL by ID", contentDataDAO.getContentUrl(0L));
+        assertNull("Expect null return fetching a URL", contentDataDAO.getContentUrl("store://someURL"));
+        // Update and create
+        ContentUrlEntity contentUrlEntity = contentDataDAO.getOrCreateContentUrl("store://" + GUID.generate());
+        // Check that it exists, now
+        contentUrlEntity = contentDataDAO.getContentUrl(contentUrlEntity.getContentUrl());
+        assertNotNull(contentUrlEntity);
+        assertNotNull(contentDataDAO.getContentUrl(contentUrlEntity.getId()));
     }
     
     /**

@@ -129,9 +129,11 @@ public interface ContentDataDAO
      * Delete a batch of content URL entities.
      */
     int deleteContentUrls(List<Long> ids);
-
+    
     /**
      * Get a content url entity by contentUrl
+     * 
+     * @return                          <tt>null</tt> if the url does not exist
      * 
      * @since 5.0
      */
@@ -140,16 +142,18 @@ public interface ContentDataDAO
     /**
      * Get a content url entity by contentUrlId
      * 
+     * @return                          <tt>null</tt> if the url does not exist
+     * 
      * @since 5.0
      */
     ContentUrlEntity getContentUrl(Long contentUrlId);
 
     /**
-     * Update a content url
+     * Get a content URL or create one if it does not exist
      * 
-     * @since 5.0
+     * @since 5.1
      */
-    void updateContentUrl(ContentUrlEntity contentUrlEntity);
+    ContentUrlEntity getOrCreateContentUrl(String contentUrl);
 
     /**
      * Updates the content key for the given content url

@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.cache.lookup;
 
+import java.sql.Savepoint;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -27,8 +28,11 @@ import junit.framework.TestCase;
 import org.alfresco.repo.cache.MemoryCache;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAO;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
+import org.mockito.Mockito;
+import org.springframework.dao.DuplicateKeyException;
 
 /**
  * A cache for two-way lookups of database entities.  These are characterized by having a unique
@@ -46,6 +50,7 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
     private EntityLookupCache<Long, Object, String> entityLookupCacheA;
     private EntityLookupCache<Long, Object, String> entityLookupCacheB;
     private TreeMap<Long, String> database;
+    private ControlDAO controlDAO;
 
     @Override
     protected void setUp() throws Exception
@@ -54,6 +59,9 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         entityLookupCacheA = new EntityLookupCache<Long, Object, String>(cache, "A", this);
         entityLookupCacheB = new EntityLookupCache<Long, Object, String>(cache, "B", this);
         database = new TreeMap<Long, String>();
+        
+        controlDAO = Mockito.mock(ControlDAO.class);
+        Mockito.when(controlDAO.createSavepoint(Mockito.anyString())).thenReturn(Mockito.mock(Savepoint.class));
     }
     
     public void testLookupsUsingIncorrectValue() throws Exception
@@ -157,6 +165,34 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
         assertTrue(database.containsKey(entityPairNull.getFirst()));
         assertNull(database.get(entityPairNull.getFirst()));
         assertEquals(entityPairNull, entityPairCheck);
+    }
+    
+    public void testGetOrCreate() throws Exception
+    {
+        TestValue valueOne = new TestValue(getName() + "-ONE");
+        Pair<Long, Object> entityPairOne = entityLookupCacheA.getOrCreateByValue(valueOne);
+        assertNotNull(entityPairOne);
+        Long id = entityPairOne.getFirst();
+        assertEquals(valueOne.val, database.get(id));
+        assertEquals(2, cache.getKeys().size());
+        
+        Pair<Long, Object> entityPairOneCheck = entityLookupCacheA.getOrCreateByValue(valueOne);
+        assertNotNull(entityPairOneCheck);
+        assertEquals(id, entityPairOneCheck.getFirst());
+    }
+    
+    public void testCreateOrGet() throws Exception
+    {
+        TestValue valueOne = new TestValue(getName() + "-ONE");
+        Pair<Long, Object> entityPairOne = entityLookupCacheA.createOrGetByValue(valueOne, controlDAO);
+        assertNotNull(entityPairOne);
+        Long id = entityPairOne.getFirst();
+        assertEquals(valueOne.val, database.get(id));
+        assertEquals(1, cache.getKeys().size());
+        
+        Pair<Long, Object> entityPairOneCheck = entityLookupCacheA.createOrGetByValue(valueOne, controlDAO);
+        assertNotNull(entityPairOneCheck);
+        assertEquals(id, entityPairOneCheck.getFirst());
     }
     
     public void testUpdate() throws Exception
@@ -294,6 +330,12 @@ public class EntityLookupCacheTest extends TestCase implements EntityLookupCallb
     {
         assertTrue(value == null || value instanceof TestValue);
         String dbValue = (value == null) ? null : ((TestValue)value).val;
+        
+        // Kick out any duplicate values
+        if (database.containsValue(dbValue))
+        {
+            throw new DuplicateKeyException("Value is duplicated: " + value);
+        }
         
         // Get the last key
         Long lastKey = database.isEmpty() ? null : database.lastKey();

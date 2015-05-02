@@ -19,12 +19,14 @@
 package org.alfresco.repo.cache.lookup;
 
 import java.io.Serializable;
+import java.sql.Savepoint;
 
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.util.Pair;
-import org.springframework.extensions.surf.util.ParameterCheck;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * A cache for two-way lookups of database entities.  These are characterized by having a unique
@@ -410,6 +412,48 @@ public class EntityLookupCache<K extends Serializable, V extends Object, VK exte
         }
         // Done
         return entityPair;
+    }
+    
+    /**
+     * Attempt to create the entity and, failing that, look it up.<br/>
+     * This method takes the opposite approach to {@link #getOrCreateByValue(Object)}, which assumes the entity's
+     * existence: in this case the entity is assumed to NOT exist.
+     * The {@link EntityLookupCallbackDAO#createValue(Object)} and {@link EntityLookupCallbackDAO#findByValue(Object)}
+     * will be used if necessary.<br/>
+     * <p/>
+     * Use this method when the data involved is seldom reused.
+     * 
+     * @param value                 The entity value (<tt>null</tt> is allowed)
+     * @param controlDAO            an essential DAO required in order to ensure a transactionally-safe attempt at data creation
+     * @return                      Returns the key-value pair (new or existing and never <tt>null</tt>)
+     */
+    public Pair<K, V> createOrGetByValue(V value, ControlDAO controlDAO)
+    {
+        if (controlDAO == null)
+        {
+            throw new IllegalArgumentException("The ControlDAO is required in order to perform a safe attempted insert.");
+        }
+        Savepoint savepoint = controlDAO.createSavepoint("EntityLookupCache.createOrGetByValue");
+        try
+        {
+            Pair<K, V> entityPair = entityLookup.createValue(value);
+            controlDAO.releaseSavepoint(savepoint);
+            // Cache it
+            if (cache != null)
+            {
+                cache.put(
+                        new CacheRegionKey(cacheRegion, entityPair.getFirst()),
+                        (entityPair.getSecond() == null ? VALUE_NULL : entityPair.getSecond()));
+            }
+            // It's been created and cached
+            return entityPair;
+        }
+        catch (Exception e)
+        {
+            controlDAO.rollbackToSavepoint(savepoint);
+            // Fall through to the usual way, which should find it if the failure cause was a duplicate key
+            return getOrCreateByValue(value);
+        }
     }
     
     /**

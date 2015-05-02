@@ -248,6 +248,24 @@ public class FeedNotifierTest
             maxSequence = postDAO.getMaxActivitySeq();
         }
     }
+    
+    /**
+     * MNT-13625 test
+     */
+    @Test
+    public void testNumThread() throws Exception
+    {
+    	AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
+        generateActivities();
+        // set activities.feedNotifier.numThreads property to 1
+        feedNotifier.setNumThreads(1);
+        feedNotifier.execute(1);
+        assertTrue(errorProneActionExecutor.getNumSuccess() > 0);
+        // set activities.feedNotifier.numThreads property to 4
+        feedNotifier.setNumThreads(4);
+        feedNotifier.execute(1);
+        assertTrue(errorProneActionExecutor.getNumSuccess() > 0);
+    }
 
     /**
      * ALF-16155 test

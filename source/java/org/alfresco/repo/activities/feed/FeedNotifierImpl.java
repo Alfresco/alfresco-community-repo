@@ -346,12 +346,13 @@ public class FeedNotifierImpl implements FeedNotifier, ApplicationContextAware
 
                 public void beforeProcess() throws Throwable
                 {
+                    AuthenticationUtil.pushAuthentication();
                     AuthenticationUtil.setFullyAuthenticatedUser(currentUser);
                 }
 
                 public void afterProcess() throws Throwable
                 {
-                    AuthenticationUtil.clearCurrentSecurityContext();
+                    AuthenticationUtil.popAuthentication();
                 }
 
                 public void process(final PersonInfo person) throws Throwable

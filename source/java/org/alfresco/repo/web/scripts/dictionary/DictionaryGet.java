@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
+import org.alfresco.service.cmr.dictionary.ModelDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Status;
@@ -74,7 +75,7 @@ public class DictionaryGet extends DictionaryWebServiceBase
         Map<QName, Collection<PropertyDefinition>> propdef = new HashMap<QName, Collection<PropertyDefinition>>();
         Map<QName, Collection<AssociationDefinition>> assocdef = new HashMap<QName, Collection<AssociationDefinition>>();
         
-        // check configured list of model namespaces to ignore
+        // check configured list of model namespaces to ignore when retrieving all models
         for (String ns : this.namespaceService.getURIs())
         {
             if (!ignoreNamespaces.contains(ns))
@@ -82,21 +83,38 @@ public class DictionaryGet extends DictionaryWebServiceBase
                 namespaces.add(ns);
             }
         }
-        // walk the models and extract the aspects and types
-        for (QName qname : this.dictionaryservice.getAllModels())
+        // specific model qname provided or will process all available models
+        String strModel = req.getParameter("model");
+        if (strModel != null && strModel.length() != 0)
         {
-            if (namespaces.contains(qname.getNamespaceURI()))
+            // handle full QName and prefixed shortname of a model 
+            QName modelQName = (strModel.charAt(0) == QName.NAMESPACE_BEGIN ? QName.createQName(strModel) : QName.createQName(strModel, this.namespaceService));
+            ModelDefinition modelDef = this.dictionaryservice.getModel(modelQName);
+            if (modelDef != null)
             {
-                qnames.addAll(this.dictionaryservice.getAspects(qname));
-                qnames.addAll(this.dictionaryservice.getTypes(qname));
+                qnames.addAll(this.dictionaryservice.getAspects(modelQName));
+                qnames.addAll(this.dictionaryservice.getTypes(modelQName));
+            }
+        }
+        else
+        {
+            // walk all models and extract the aspects and types
+            for (QName qname : this.dictionaryservice.getAllModels())
+            {
+                if (namespaces.contains(qname.getNamespaceURI()))
+                {
+                    qnames.addAll(this.dictionaryservice.getAspects(qname));
+                    qnames.addAll(this.dictionaryservice.getTypes(qname));
+                }
             }
         }
         // get the class definitions and the properties and associations
         for (QName qname : qnames)
-        {   
-            classdef.put(qname, this.dictionaryservice.getClass(qname));
-            propdef.put(qname, this.dictionaryservice.getClass(qname).getProperties().values());
-            assocdef.put(qname, this.dictionaryservice.getClass(qname).getAssociations().values());
+        {
+            ClassDefinition classDef = this.dictionaryservice.getClass(qname);
+            classdef.put(qname, classDef);
+            propdef.put(qname, classDef.getProperties().values());
+            assocdef.put(qname, classDef.getAssociations().values());
         }
         
         Map<String, Object> model = new HashMap<String, Object>();

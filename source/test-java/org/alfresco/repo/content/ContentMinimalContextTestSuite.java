@@ -39,6 +39,7 @@ import org.alfresco.repo.content.transform.AppleIWorksContentTransformerTest;
 import org.alfresco.repo.content.transform.BinaryPassThroughContentTransformerTest;
 import org.alfresco.repo.content.transform.ComplexContentTransformerTest;
 import org.alfresco.repo.content.transform.ContentTransformerRegistryTest;
+import org.alfresco.repo.content.transform.EMLTransformerTest;
 import org.alfresco.repo.content.transform.HtmlParserContentTransformerTest;
 import org.alfresco.repo.content.transform.MailContentTransformerTest;
 import org.alfresco.repo.content.transform.MediaWikiContentTransformerTest;
@@ -123,6 +124,7 @@ public class ContentMinimalContextTestSuite extends TestSuite
        suite.addTestSuite(ContentTransformerRegistryTest.class);
        suite.addTestSuite(HtmlParserContentTransformerTest.class);
        suite.addTestSuite(MailContentTransformerTest.class);
+       suite.addTest(new JUnit4TestAdapter(EMLTransformerTest.class));
        suite.addTestSuite(MediaWikiContentTransformerTest.class);
        suite.addTestSuite(OpenOfficeContentTransformerTest.class);
        suite.addTestSuite(PdfBoxContentTransformerTest.class);

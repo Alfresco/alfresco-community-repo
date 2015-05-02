@@ -19,11 +19,11 @@
 
 package org.alfresco.repo.content.transform;
 
+import java.io.File;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
@@ -32,9 +32,11 @@ import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.util.TempFileProvider;
 
 
 /**
@@ -48,9 +50,8 @@ import org.alfresco.service.cmr.repository.TransformationOptions;
 public class EMLTransformer extends AbstractContentTransformer2
 
 {
-    private static final Pattern TAG_PATTERN = Pattern.compile("<[^>]*>");
-    private static final String BR_TAG_PATTERN = "<[bB][rR].?\\/?>";
-    private static final String NEW_LINE_PATTERN = "\n";
+    private static final String CHARSET = "charset";
+    private static final String DEFAULT_ENCODING = "UTF-8";
 
     @Override
     public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options)
@@ -144,7 +145,6 @@ public class EMLTransformer extends AbstractContentTransformer2
     
     /**
      * Finds the suitable part from an multipart/alternative and appends it's text content to StringBuilder sb
-     * Html parts have higher priority than text parts
      * 
      * @param multipart
      * @param sb
@@ -160,10 +160,10 @@ public class EMLTransformer extends AbstractContentTransformer2
             if (part.getContentType().contains(MimetypeMap.MIMETYPE_TEXT_PLAIN))
             {
                 partToUse = part;
+                break;
             }
             else if  (part.getContentType().contains(MimetypeMap.MIMETYPE_HTML)){
                 partToUse = part;
-                break;
             }
         }
         if (partToUse != null)
@@ -186,7 +186,7 @@ public class EMLTransformer extends AbstractContentTransformer2
         boolean isAttachment = Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition());
         if (isAttachment)
         {
-        	return;
+            return;
         }
         if (part.getContentType().contains(MimetypeMap.MIMETYPE_TEXT_PLAIN))
         {
@@ -194,14 +194,37 @@ public class EMLTransformer extends AbstractContentTransformer2
         }
         else if (part.getContentType().contains(MimetypeMap.MIMETYPE_HTML))
         {
-            String content = part.getContent().toString();
-            //replace line breaks with new lines
-            content = content.replaceAll(BR_TAG_PATTERN, NEW_LINE_PATTERN);
-            Matcher tagMatcher = TAG_PATTERN.matcher(content);
-            //remove html tags
-            content = tagMatcher.replaceAll("");
-            sb.append(content);
+            String mailPartContent = part.getContent().toString();
+            
+            //create a temporary html file with same mail part content and encoding
+            File tempHtmlFile = TempFileProvider.createTempFile("EMLTransformer_", ".html");
+            ContentWriter contentWriter = new FileContentWriter(tempHtmlFile);
+            contentWriter.setEncoding(getMailPartContentEncoding(part));
+            contentWriter.setMimetype(MimetypeMap.MIMETYPE_HTML);
+            contentWriter.putContent(mailPartContent);
+            
+            //transform html file's content to plain text
+            EncodingAwareStringBean extractor = new EncodingAwareStringBean();
+            extractor.setCollapse(false);
+            extractor.setLinks(false);
+            extractor.setReplaceNonBreakingSpaces(false);
+            extractor.setURL(tempHtmlFile, contentWriter.getEncoding());
+            sb.append(extractor.getStrings());
+            
+            tempHtmlFile.delete();
         }
+    }
+    
+    private String getMailPartContentEncoding(Part part) throws MessagingException
+    {
+        String encoding = DEFAULT_ENCODING;
+        String contentType = part.getContentType();
+        int startIndex = contentType.indexOf(CHARSET);
+        if (startIndex > 0)
+        {
+            encoding = contentType.substring(startIndex + CHARSET.length() + 1).replaceAll("\"", "");
+        }
+        return encoding;
     }
 
 }

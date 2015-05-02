@@ -44,7 +44,9 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
     
     private static final String QUICK_EML_ATTACHMENT_CONTENT =  "File attachment content";
     
-    private static final String QUICK_EML_ALTERNATIVE_CONTENT =  "alternative html text";
+    private static final String QUICK_EML_ALTERNATIVE_CONTENT =  "alternative plain text";
+    
+    private static final String HTML_SPACE_SPECIAL_CHAR = "&nbsp;";
 
     private EMLTransformer transformer;
 
@@ -113,7 +115,7 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
     }
     
     /**
-     * Test transforming a valid eml with an attachment to text; attachment should be ingnored
+     * Test transforming a valid eml with an attachment to text; attachment should be ignored
      */
     public void testRFC822WithAttachmentToText() throws Exception
     {
@@ -151,5 +153,25 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         reader2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         String contentStr = reader2.getContentString();
         assertTrue(contentStr.contains(QUICK_EML_ALTERNATIVE_CONTENT));
+    }
+    
+    /**
+     * Test transforming a valid eml with a html part containing html special characters to text
+     */
+    public void testHtmlSpecialCharsToText() throws Exception
+    {
+        File emlSourceFile = loadQuickTestFile("htmlChars.eml");
+        File txtTargetFile = TempFileProvider.createTempFile("test5", ".txt");
+        ContentReader reader = new FileContentReader(emlSourceFile);
+        reader.setMimetype(MimetypeMap.MIMETYPE_RFC822);
+        ContentWriter writer = new FileContentWriter(txtTargetFile);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        transformer.transform(reader, writer);
+
+        ContentReader reader2 = new FileContentReader(txtTargetFile);
+        reader2.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        String contentStr = reader2.getContentString();
+        assertTrue(!contentStr.contains(HTML_SPACE_SPECIAL_CHAR));
     }
 }

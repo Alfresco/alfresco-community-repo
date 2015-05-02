@@ -143,8 +143,8 @@ public interface ServiceRegistry
     
     // CMIS
     static final QName CMIS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISService");
-    static final QName CMIS_DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISDictionaryService");
-    static final QName CMIS_QUERY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISQueryService");
+    static final QName CMIS_DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "OpenCMISDictionaryService");
+    static final QName CMIS_QUERY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "OpenCMISQueryService");
     static final QName IMAP_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ImapService");
     
     static final QName PUBLIC_SERVICE_ACCESS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "PublicServiceAccessService");

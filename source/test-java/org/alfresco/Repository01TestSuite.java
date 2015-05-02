@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -412,6 +412,7 @@ public class Repository01TestSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class));
         suite.addTestSuite(org.alfresco.repo.dictionary.DictionaryModelTypeTest.class);
         suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.service.ServiceRegistryTest.class));
     }
 
     static void tests66(TestSuite suite)

@@ -19,6 +19,8 @@
 package org.alfresco.repo.site;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +69,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.BaseSpringTestsCategory;
+import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.BaseAlfrescoSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -657,6 +660,60 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 fail("The shortname " + shortName + " is not recognised");
             }
         }        
+    }
+    
+    @Override
+    protected String[] getConfigLocations()
+    {
+        String[] existingConfigLocations = ApplicationContextHelper.CONFIG_LOCATIONS;
+
+        List<String> locations = Arrays.asList(existingConfigLocations);
+        List<String> mutableLocationsList = new ArrayList<String>(locations);
+        mutableLocationsList.add("classpath:org/alfresco/repo/site/site-custom-context.xml");
+
+        String[] result = mutableLocationsList.toArray(new String[mutableLocationsList.size()]);
+        return result;
+    }
+    
+    public void testMNT_13710() throws Exception
+    {
+        final String user = "user";
+        
+        String siteName = "test" + System.currentTimeMillis();
+        
+        List<String> roleList = new ArrayList<String>();
+        roleList.add("test_customrole");
+        roleList.add("testCustomrole");
+        
+        try
+        {
+            authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        
+            SiteInfo siteInfo = this.siteService.createSite(siteName, siteName, siteName, siteName, SiteVisibility.PUBLIC);
+            
+            createUser(user, user);
+            
+            for(String role : roleList)
+            {
+                this.siteService.setMembership(siteInfo.getShortName(), user, role);
+                
+                List<String> list = this.siteServiceImpl.getMembersRoles(siteName, user);
+                
+                assertTrue(list.contains(role));
+            }
+        }
+        finally
+        {
+            if (siteService.getSite(siteName) != null)
+            {
+                siteService.deleteSite(siteName);
+            }
+            
+            if (this.personService.getPerson(user) != null)
+            {
+                this.personService.deletePerson(user);
+            }
+        }
     }
     
     /**

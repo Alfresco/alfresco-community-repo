@@ -36,6 +36,14 @@
          <includePermissionGroup permissionGroup="Coordinator" type="cm:cmobject" /> 
       </permissionGroup>
 
+      <permissionGroup name="test_customrole" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
+      </permissionGroup>
+
+      <permissionGroup name="testCustomrole" allowFullControl="false" expose="true">
+         <includePermissionGroup permissionGroup="Collaborator" type="cm:cmobject" />
+      </permissionGroup>
+
    </permissionSet>
 
 </permissions>

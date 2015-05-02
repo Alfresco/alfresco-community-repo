@@ -161,9 +161,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         contentUrls.add(contentUrl);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Pair<Long, ContentData> createContentData(ContentData contentData)
     {
         if (contentData == null)
@@ -174,9 +172,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         return entityPair;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public Pair<Long, ContentData> getContentData(Long id)
     {
         if (id == null)
@@ -191,8 +187,10 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         return entityPair;
     }
 
-    @Override
-    public void updateContentUrl(ContentUrlEntity contentUrl)
+    /**
+     * Internally update a URL or create a new one if it does not exist
+     */
+    private void updateContentUrl(ContentUrlEntity contentUrl)
     {
         if (contentUrl == null)
         {
@@ -242,9 +240,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         }        
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void updateContentData(Long id, ContentData contentData)
     {
         if (id == null)
@@ -262,9 +258,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    @Override
     public void deleteContentData(Long id)
     {
         if (id == null)
@@ -554,6 +548,64 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         return updateContentDataEntity(contentDataEntity);
     }
 
+    @Override
+    public boolean updateContentUrlKey(String contentUrl, ContentUrlKeyEntity contentUrlKey)
+    {
+        boolean success = true;
+
+        ContentUrlEntity existing = getContentUrl(contentUrl);
+        if(existing != null)
+        {
+            ContentUrlEntity entity = ContentUrlEntity.setContentUrlKey(existing, contentUrlKey);
+            updateContentUrl(entity);
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No content url, not updating symmetric key");
+            }
+            success = false;
+        }
+
+        return success;
+    }
+
+    @Override
+    public boolean updateContentUrlKey(long contentUrlId, ContentUrlKeyEntity contentUrlKey)
+    {
+        boolean success = true;
+
+        ContentUrlEntity existing = getContentUrl(contentUrlId);
+        if(existing != null)
+        {
+            ContentUrlEntity entity = ContentUrlEntity.setContentUrlKey(existing, contentUrlKey);
+            updateContentUrl(entity);
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("No content url, not updating symmetric key");
+            }
+            success = false;
+        }
+
+        return success;
+    }
+
+    @Override
+    public ContentUrlEntity getOrCreateContentUrl(String contentUrl)
+    {
+        ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
+        contentUrlEntity.setContentUrl(contentUrl);
+        Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
+        Long newContentUrlId = pair.getFirst();
+        contentUrlEntity.setId(newContentUrlId);
+        // Done
+        return contentUrlEntity;
+    }
+
     /**
      * @param contentUrl    the content URL to create or search for
      */
@@ -600,7 +652,6 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
      */
     protected abstract ContentDataEntity getContentDataEntity(Long id);
 
-    
     /**
      * @param nodeIds       the node ID
      * @return              Returns the associated entities or <tt>null</tt> if none exist
@@ -624,52 +675,6 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
 
     protected abstract int deleteContentUrlEntity(long id);
     protected abstract int updateContentUrlEntity(ContentUrlEntity existing, ContentUrlEntity entity);
-
-    @Override
-    public boolean updateContentUrlKey(String contentUrl, ContentUrlKeyEntity contentUrlKey)
-    {
-        boolean success = true;
-
-        ContentUrlEntity existing = getContentUrl(contentUrl);
-        if(existing != null)
-        {
-            ContentUrlEntity entity = ContentUrlEntity.setContentUrlKey(existing, contentUrlKey);
-            updateContentUrl(entity);
-        }
-        else
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("No content url, not updating symmetric key");
-            }
-            success = false;
-        }
-
-        return success;
-    }
-
-    @Override
-    public boolean updateContentUrlKey(long contentUrlId, ContentUrlKeyEntity contentUrlKey)
-    {
-        boolean success = true;
-
-        ContentUrlEntity existing = getContentUrl(contentUrlId);
-        if(existing != null)
-        {
-            ContentUrlEntity entity = ContentUrlEntity.setContentUrlKey(existing, contentUrlKey);
-            updateContentUrl(entity);
-        }
-        else
-        {
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("No content url, not updating symmetric key");
-            }
-            success = false;
-        }
-
-        return success;
-    }
 
     /**
      * Transactional listener that deletes unreferenced <b>content_url</b> entities.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -33,6 +33,7 @@ import org.springframework.dao.DataIntegrityViolationException;
  * DAO services for <b>alf_content_data</b> table
  * 
  * @author Derek Hulley
+ * @author Steven Glover
  * @since 3.2
  */
 public interface ContentDataDAO
@@ -133,8 +134,6 @@ public interface ContentDataDAO
      * Get a content url entity by contentUrl
      * 
      * @since 5.0
-     * @param contentUrl
-     * @return
      */
     ContentUrlEntity getContentUrl(String contentUrl);
 
@@ -142,8 +141,6 @@ public interface ContentDataDAO
      * Get a content url entity by contentUrlId
      * 
      * @since 5.0
-     * @param contentUrlId
-     * @return
      */
     ContentUrlEntity getContentUrl(Long contentUrlId);
 
@@ -151,8 +148,6 @@ public interface ContentDataDAO
      * Update a content url
      * 
      * @since 5.0
-     * @param contentUrlEntity
-     * @return
      */
     void updateContentUrl(ContentUrlEntity contentUrlEntity);
 
@@ -160,8 +155,6 @@ public interface ContentDataDAO
      * Updates the content key for the given content url
      * 
      * @since 5.0
-     * @param contentUrl
-     * @param contentUrlKeyEntity
      */
     boolean updateContentUrlKey(String contentUrl, ContentUrlKeyEntity contentUrlKeyEntity);
 
@@ -169,8 +162,6 @@ public interface ContentDataDAO
      * Updates the content key for the given content url
      * 
      * @since 5.0
-     * @param contentUrlId
-     * @param contentUrlKey url key
      */
     boolean updateContentUrlKey(long contentUrlId, ContentUrlKeyEntity contentUrlKey);
 
@@ -182,7 +173,6 @@ public interface ContentDataDAO
      * @param masterKeyAlias master key alias
      * @param fromId id
      * @param maxResults max results
-     * @return
      */
     List<ContentUrlKeyEntity> getSymmetricKeysByMasterKeyAlias(String masterKeyAlias, long fromId, int maxResults);
 
@@ -190,7 +180,6 @@ public interface ContentDataDAO
      * Count symmetric keys entities for symmetric keys for all master keys
      * 
      * @since 5.0
-     * @return
      */
     Map<String, Integer> countSymmetricKeysForMasterKeys();
 
@@ -199,8 +188,6 @@ public interface ContentDataDAO
      * master key
      * 
      * @since 5.0
-     * @param masterKeyAlias
-     * @return
      */
     int countSymmetricKeysForMasterKeyAlias(String masterKeyAlias);
 }

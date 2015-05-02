@@ -677,8 +677,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     
     public void testMNT_13710() throws Exception
     {
-        final String user = "user";
-        
         String siteName = "test" + System.currentTimeMillis();
         
         List<String> roleList = new ArrayList<String>();
@@ -690,14 +688,12 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
             SiteInfo siteInfo = this.siteService.createSite(siteName, siteName, siteName, siteName, SiteVisibility.PUBLIC);
-            
-            createUser(user, user);
-            
+
             for(String role : roleList)
             {
-                this.siteService.setMembership(siteInfo.getShortName(), user, role);
+                this.siteService.setMembership(siteInfo.getShortName(), USER_ONE, role);
                 
-                List<String> list = this.siteServiceImpl.getMembersRoles(siteName, user);
+                List<String> list = this.siteServiceImpl.getMembersRoles(siteName, USER_ONE);
                 
                 assertTrue(list.contains(role));
             }
@@ -707,11 +703,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             if (siteService.getSite(siteName) != null)
             {
                 siteService.deleteSite(siteName);
-            }
-            
-            if (this.personService.getPerson(user) != null)
-            {
-                this.personService.deletePerson(user);
             }
         }
     }
@@ -1381,8 +1372,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertNotNull(roles);
         assertFalse(roles.isEmpty());
 
-        // By default there are just the 4 roles
-        assertEquals(4, roles.size());
+        // By default there are just the 4 roles, but in classpath:org/alfresco/repo/site/site-custom-context.xml there are 7
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
@@ -1473,14 +1464,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         // Check the roles on it
         List<String> roles = siteService.getSiteRoles();
-        assertEquals(4, roles.size());
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
         
         roles = siteService.getSiteRoles(site.getShortName());
-        assertEquals(4, roles.size());
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
@@ -1492,14 +1483,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         // Check again 
         roles = siteService.getSiteRoles();
-        assertEquals(4, roles.size());
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
         
         roles = siteService.getSiteRoles(site.getShortName());
-        assertEquals(4, roles.size());
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
@@ -1522,7 +1513,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         siteServiceImpl.setPermissionService(testPermissionService);
         roles = siteService.getSiteRoles();
         
-        assertEquals(4, roles.size());
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
@@ -1536,14 +1527,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // Put the permissions back
         siteServiceImpl.setPermissionService(permissionService);
         roles = siteService.getSiteRoles();
-        assertEquals(4, roles.size());
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_MANAGER));
         
         roles = siteService.getSiteRoles(site.getShortName());
-        assertEquals(4, roles.size());
+        assertEquals(7, roles.size());
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONSUMER));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_CONTRIBUTOR));
         assertEquals(true, roles.contains(SiteServiceImpl.SITE_COLLABORATOR));

@@ -28,6 +28,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache;
 import org.alfresco.repo.cache.lookup.EntityLookupCache.EntityLookupCallbackDAOAdaptor;
 import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
+import org.alfresco.repo.domain.control.ControlDAO;
 import org.alfresco.repo.domain.encoding.EncodingDAO;
 import org.alfresco.repo.domain.locale.LocaleDAO;
 import org.alfresco.repo.domain.mimetype.MimetypeDAO;
@@ -69,6 +70,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     
     private final ContentDataCallbackDAO contentDataCallbackDAO;
     private final ContentUrlCallbackDAO contentUrlCallbackDAO;
+    protected ControlDAO controlDAO;
     protected MimetypeDAO mimetypeDAO;
     protected EncodingDAO encodingDAO;
     protected LocaleDAO localeDAO;
@@ -93,6 +95,11 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
         this.contentUrlCallbackDAO = new ContentUrlCallbackDAO();
         this.contentDataCache = new EntityLookupCache<Long, ContentData, Serializable>(contentDataCallbackDAO);
         this.contentUrlCache = new EntityLookupCache<Long, ContentUrlEntity, String>(contentUrlCallbackDAO);
+    }
+
+    public void setControlDAO(ControlDAO controlDAO)
+    {
+        this.controlDAO = controlDAO;
     }
 
     public void setMimetypeDAO(MimetypeDAO mimetypeDAO)
@@ -440,7 +447,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
             ContentUrlEntity contentUrlEntity = new ContentUrlEntity();
             contentUrlEntity.setContentUrl(contentUrl);
             contentUrlEntity.setSize(size);
-            Pair<Long, ContentUrlEntity> pair = contentUrlCache.getOrCreateByValue(contentUrlEntity);
+            Pair<Long, ContentUrlEntity> pair = contentUrlCache.createOrGetByValue(contentUrlEntity, controlDAO);
             contentUrlId = pair.getFirst();
         }
 

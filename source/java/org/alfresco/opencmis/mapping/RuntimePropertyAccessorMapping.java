@@ -136,9 +136,9 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
         registerPropertyAccessor(new AllowedChildObjectTypeIdsProperty(serviceRegistry, cmisConnector, cmisMapping));
         registerPropertyAccessor(new SourceIdProperty(serviceRegistry, cmisConnector));
         registerPropertyAccessor(new TargetIdProperty(serviceRegistry, cmisConnector));
+        registerPropertyAccessor(new DescriptionProperty(serviceRegistry, cmisConnector));
         if(cmisMapping.getCmisVersion().equals(CmisVersion.CMIS_1_1))
         {
-            registerPropertyAccessor(new DescriptionProperty(serviceRegistry, cmisConnector));
             registerPropertyAccessor(new SecondaryTypesProperty(serviceRegistry, cmisConnector, cmisMapping));
 
             // MNT-11631: 'cmis:isPrivateWorkingCopy' property accessor

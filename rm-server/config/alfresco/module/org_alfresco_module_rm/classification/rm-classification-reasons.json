@@ -1,14 +1,30 @@
 [
   {
     "id" : "1.4(a)",
-    "displayLabel" : "rm.classification-reason.militaryPlans"
+    "displayLabel" : "rm.classification-reason.14a"
   },
   {
     "id" : "1.4(b)",
-    "displayLabel" : "rm.classification-reason.foreignGovernment"
+    "displayLabel" : "rm.classification-reason.14b"
   },
   {
     "id" : "1.4(c)",
-    "displayLabel" : "rm.classification-reason.intelligenceActivities"
+    "displayLabel" : "rm.classification-reason.14c"
+  },
+  {
+    "id" : "1.4(d)",
+    "displayLabel" : "rm.classification-reason.14d"
+  },
+  {
+    "id" : "1.4(e)",
+    "displayLabel" : "rm.classification-reason.14e"
+  },
+  {
+    "id" : "1.4(f)",
+    "displayLabel" : "rm.classification-reason.14f"
+  },
+  {
+    "id" : "1.4(g)",
+    "displayLabel" : "rm.classification-reason.14g"
   }
 ]

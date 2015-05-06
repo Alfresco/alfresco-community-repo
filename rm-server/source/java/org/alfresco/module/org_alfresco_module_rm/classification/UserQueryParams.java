@@ -101,7 +101,14 @@ public final class UserQueryParams
 
         if (otherElems != null)
         {
-            elementList.addAll(asList(otherElems));
+            final List<T> tList = asList(otherElems);
+            final int firstNull = tList.indexOf(null);
+            if (firstNull != -1)
+            {
+                // "+ 2" so that position 1 points to 'firstElem' and so on through otherElems.
+                throw new IllegalArgumentException("Unexpected null element at position " + firstNull + 2);
+            }
+            elementList.addAll(tList);
         }
 
         return elementList;

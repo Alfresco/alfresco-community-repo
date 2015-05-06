@@ -23,8 +23,14 @@ import static org.alfresco.module.org_alfresco_module_rm.classification.model.Cl
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
+import java.util.Map;
+
+import com.google.common.collect.ImmutableMap;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -33,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -91,5 +98,63 @@ public class SecurityClearanceServiceImplUnitTest
         final SecurityClearance clearance = securityClearanceServiceImpl.getUserSecurityClearance();
 
         assertEquals("default", clearance.getClassificationLevel().getId());
+    }
+
+    /** Check that a user can have their clearance set for the first time. */
+    @Test public void setUserSecurityClearance_initialClearance()
+    {
+        // Create the user.
+        String userName = "User 1";
+        NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
+        when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
+        // The user has no previous clearance.
+        when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(false);
+        // Create the clearance.
+        String clearanceId = "ClearanceId";
+        ClassificationLevel level = new ClassificationLevel(clearanceId, "TopSecretKey");
+        when(mockClassificationService.getClassificationLevelById(clearanceId)).thenReturn(level);
+
+        // Call the method under test.
+        securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
+
+        Map<QName, Serializable> expectedProperties = ImmutableMap.of(PROP_CLEARANCE_LEVEL, clearanceId);
+        verify(mockNodeService).addAspect(personNode, ASPECT_SECURITY_CLEARANCE, expectedProperties);
+    }
+
+    /** Check that a user can have their clearance edited. */
+    @Test public void setUserSecurityClearance_updateClearance()
+    {
+        // Create the user.
+        String userName = "User 1";
+        NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
+        when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
+        // The user has a previous clearance.
+        when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(true);
+        // Create the clearance.
+        String clearanceId = "ClearanceId";
+        ClassificationLevel level = new ClassificationLevel(clearanceId, "TopSecretKey");
+        when(mockClassificationService.getClassificationLevelById(clearanceId)).thenReturn(level);
+
+        // Call the method under test.
+        securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
+
+        verify(mockNodeService).setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
+    }
+
+    /**
+     * Check that a user cannot raise someone's clearance above their own. Here we check that an exception thrown by the
+     * classification service is passed through.
+     */
+    @Test(expected = LevelIdNotFound.class)
+    public void setUserSecurityClearance_insufficientClearance()
+    {
+        String userName = "User 1";
+        NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
+        when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
+        String clearanceId = "ClearanceId";
+        // If the user has insufficient clearance then they cannot access the level.
+        when(mockClassificationService.getClassificationLevelById(clearanceId)).thenThrow(new LevelIdNotFound(clearanceId));
+
+        securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
     }
 }

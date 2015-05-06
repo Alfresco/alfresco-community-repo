@@ -44,4 +44,12 @@ public interface SecurityClearanceService
      * @return security clearances for the specified page of users.
      */
     PagingResults<SecurityClearance> getUsersSecurityClearance(UserQueryParams queryParams);
+
+    /**
+     * Set the clearance level for a user.
+     *
+     * @param userName The username of the user.
+     * @param clearanceId The identifier for the new clearance level.
+     */
+    void setUserSecurityClearance(String userName, String clearanceId);
 }

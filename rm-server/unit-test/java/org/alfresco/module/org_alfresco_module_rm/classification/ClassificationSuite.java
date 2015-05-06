@@ -32,7 +32,8 @@ import org.junit.runners.Suite;
     ClassificationLevelManagerUnitTest.class,
     ClassificationReasonManagerUnitTest.class,
     ClassificationServiceDAOUnitTest.class,
-    ClassificationServiceImplUnitTest.class
+    ClassificationServiceImplUnitTest.class,
+    SecurityClearanceServiceImplUnitTest.class
 })
 public class ClassificationSuite
 {

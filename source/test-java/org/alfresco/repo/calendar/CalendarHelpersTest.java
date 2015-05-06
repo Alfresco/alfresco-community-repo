@@ -2099,7 +2099,7 @@ public class CalendarHelpersTest
       assertEquals(1*60*60*1000, tz.getOffset(date(2007,3,26).getTime()));
       assertEquals(1*60*60*1000, tz.getOffset(date(2007,3,31).getTime()));
       assertEquals(1*60*60*1000, tz.getOffset(date(2007,9,1).getTime()));
-      assertEquals(1*60*60*1000, tz.getOffset(date(2007,10,28).getTime()));
+      assertEquals(1*60*60*1000, tz.getOffset(date(2007,10,27).getTime()));
       assertEquals(0*60*60*1000, tz.getOffset(date(2007,10,29).getTime()));
       assertEquals(0*60*60*1000, tz.getOffset(date(2007,11,1).getTime()));
       

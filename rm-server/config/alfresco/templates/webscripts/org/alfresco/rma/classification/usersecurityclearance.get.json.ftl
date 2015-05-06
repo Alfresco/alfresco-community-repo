@@ -1,7 +1,7 @@
 <#import "/org/alfresco/repository/generic-paged-results.lib.ftl" as gen/>
 
 <#macro usersecurityclearanceJSON item>
-   <#local cl=item.classificationLevel>
+   <#local cl=item.clearanceLevel>
    <#local pi=item.personInfo>
    <#escape x as jsonUtils.encodeJSONString(x)>
       "classificationId": "${cl.id}",

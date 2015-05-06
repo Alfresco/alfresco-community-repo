@@ -126,7 +126,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         }
         else
         {
-            Map<QName, Serializable> properties = ImmutableMap.of(PROP_CLEARANCE_LEVEL, clearanceId);
+            Map<QName, Serializable> properties = ImmutableMap.of(PROP_CLEARANCE_LEVEL, (Serializable) clearanceId);
             nodeService.addAspect(personNode, ASPECT_SECURITY_CLEARANCE, properties);
         }
     }

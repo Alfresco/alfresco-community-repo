@@ -26,9 +26,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.Serializable;
-import java.util.Map;
-
 import com.google.common.collect.ImmutableMap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
@@ -45,6 +42,9 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import java.io.Serializable;
+import java.util.Map;
 
 /**
  * Unit tests for {@link SecurityClearanceServiceImpl}.
@@ -97,7 +97,7 @@ public class SecurityClearanceServiceImplUnitTest
 
         final SecurityClearance clearance = securityClearanceServiceImpl.getUserSecurityClearance();
 
-        assertEquals("default", clearance.getClassificationLevel().getId());
+        assertEquals("default", clearance.getClearanceLevel().getId());
     }
 
     /** Check that a user can have their clearance set for the first time. */

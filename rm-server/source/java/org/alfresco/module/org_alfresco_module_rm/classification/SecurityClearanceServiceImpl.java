@@ -68,7 +68,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         if (nodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE))
         {
             final String clearanceLevel = (String)nodeService.getProperty(personNode, PROP_CLEARANCE_LEVEL);
-            // TODO Should we fall back to a default here or give an error?
+
             classificationLevel = clearanceLevel == null ? classificationService.getDefaultClassificationLevel() :
                                                            classificationService.getClassificationLevelById(clearanceLevel);
         }

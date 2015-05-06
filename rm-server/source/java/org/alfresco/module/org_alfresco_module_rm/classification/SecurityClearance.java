@@ -33,30 +33,31 @@ public final class SecurityClearance implements Serializable
 {
     /** Serial version uid */
     private static final long serialVersionUID = 8410664575120817707L;
-    private final PersonInfo          personInfo;
-    private final ClassificationLevel classificationLevel;
 
-    public SecurityClearance(final PersonInfo personInfo, final ClassificationLevel classificationLevel)
+    private final PersonInfo          personInfo;
+    private final ClassificationLevel clearanceLevel;
+
+    public SecurityClearance(final PersonInfo personInfo, final ClassificationLevel clearanceLevel)
     {
         Objects.requireNonNull(personInfo);
-        Objects.requireNonNull(classificationLevel);
+        Objects.requireNonNull(clearanceLevel);
 
-        this.personInfo          = personInfo;
-        this.classificationLevel = classificationLevel;
+        this.personInfo     = personInfo;
+        this.clearanceLevel = clearanceLevel;
     }
 
     /** Returns the {@link PersonInfo} for this security clearance. */
     public PersonInfo getPersonInfo() { return this.personInfo; }
 
     /** Returns the {@link ClassificationLevel} for this security clearance. */
-    public ClassificationLevel getClassificationLevel() { return this.classificationLevel; }
+    public ClassificationLevel getClearanceLevel() { return this.clearanceLevel; }
 
     @Override public String toString()
     {
         StringBuilder msg = new StringBuilder();
         msg.append(SecurityClearance.class.getSimpleName())
            .append(':').append(personInfo.getUserName())
-           .append(" [").append(classificationLevel).append(']');
+           .append(" [").append(clearanceLevel).append(']');
 
         return  msg.toString();
     }
@@ -69,8 +70,8 @@ public final class SecurityClearance implements Serializable
         SecurityClearance that = (SecurityClearance) o;
 
         return this.personInfo.equals(that.personInfo) &&
-               this.classificationLevel.equals(that.classificationLevel);
+               this.clearanceLevel.equals(that.clearanceLevel);
     }
 
-    @Override public int hashCode() { return Objects.hash(personInfo, classificationLevel); }
+    @Override public int hashCode() { return Objects.hash(personInfo, clearanceLevel); }
 }

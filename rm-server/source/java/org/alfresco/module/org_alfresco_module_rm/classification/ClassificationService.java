@@ -69,6 +69,7 @@ public interface ClassificationService
 
     /**
      * Gets the default {@link ClassificationLevel}, which will usually be the level with the lowest security clearance.
+     * @return the default classification level, or {@code null} if no security levels are configured.
      */
     ClassificationLevel getDefaultClassificationLevel();
 

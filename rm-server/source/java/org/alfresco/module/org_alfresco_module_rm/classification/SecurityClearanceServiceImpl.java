@@ -21,19 +21,15 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_SECURITY_CLEARANCE;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CLEARANCE_LEVEL;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 
@@ -120,14 +116,6 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         // LevelIdNotFound exception if not.
         classificationService.getClassificationLevelById(clearanceId);
 
-        if (nodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE))
-        {
-            nodeService.setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
-        }
-        else
-        {
-            Map<QName, Serializable> properties = ImmutableMap.of(PROP_CLEARANCE_LEVEL, (Serializable) clearanceId);
-            nodeService.addAspect(personNode, ASPECT_SECURITY_CLEARANCE, properties);
-        }
+        nodeService.setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
     }
 }

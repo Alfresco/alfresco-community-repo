@@ -106,7 +106,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
     }
 
     @Override
-    public void setUserSecurityClearance(String userName, String clearanceId)
+    public SecurityClearance setUserSecurityClearance(String userName, String clearanceId)
     {
         ParameterCheck.mandatoryString("userName", userName);
         ParameterCheck.mandatoryString("clearanceId", clearanceId);
@@ -117,5 +117,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         classificationService.getClassificationLevelById(clearanceId);
 
         nodeService.setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
+
+        return getUserSecurityClearance(userName);
     }
 }

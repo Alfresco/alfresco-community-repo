@@ -50,6 +50,7 @@ public interface SecurityClearanceService
      *
      * @param userName The username of the user.
      * @param clearanceId The identifier for the new clearance level.
+     * @return the user's security clearance
      */
-    void setUserSecurityClearance(String userName, String clearanceId);
+    SecurityClearance setUserSecurityClearance(String userName, String clearanceId);
 }

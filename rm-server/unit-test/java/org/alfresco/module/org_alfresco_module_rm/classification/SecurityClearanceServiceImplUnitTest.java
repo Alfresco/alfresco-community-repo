@@ -26,7 +26,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.ImmutableMap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -36,7 +35,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
-import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -100,36 +98,13 @@ public class SecurityClearanceServiceImplUnitTest
         assertEquals("default", clearance.getClearanceLevel().getId());
     }
 
-    /** Check that a user can have their clearance set for the first time. */
-    @Test public void setUserSecurityClearance_initialClearance()
-    {
-        // Create the user.
-        String userName = "User 1";
-        NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
-        when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
-        // The user has no previous clearance.
-        when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(false);
-        // Create the clearance.
-        String clearanceId = "ClearanceId";
-        ClassificationLevel level = new ClassificationLevel(clearanceId, "TopSecretKey");
-        when(mockClassificationService.getClassificationLevelById(clearanceId)).thenReturn(level);
-
-        // Call the method under test.
-        securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
-
-        Map<QName, Serializable> expectedProperties = ImmutableMap.of(PROP_CLEARANCE_LEVEL, clearanceId);
-        verify(mockNodeService).addAspect(personNode, ASPECT_SECURITY_CLEARANCE, expectedProperties);
-    }
-
-    /** Check that a user can have their clearance edited. */
+    /** Check that a user can have their clearance set. */
     @Test public void setUserSecurityClearance_updateClearance()
     {
         // Create the user.
         String userName = "User 1";
         NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
         when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
-        // The user has a previous clearance.
-        when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(true);
         // Create the clearance.
         String clearanceId = "ClearanceId";
         ClassificationLevel level = new ClassificationLevel(clearanceId, "TopSecretKey");

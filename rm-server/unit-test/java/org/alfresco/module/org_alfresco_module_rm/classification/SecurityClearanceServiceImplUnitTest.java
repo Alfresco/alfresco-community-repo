@@ -41,9 +41,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.io.Serializable;
-import java.util.Map;
-
 /**
  * Unit tests for {@link SecurityClearanceServiceImpl}.
  *
@@ -99,19 +96,31 @@ public class SecurityClearanceServiceImplUnitTest
     }
 
     /** Check that a user can have their clearance set. */
-    @Test public void setUserSecurityClearance_updateClearance()
+    @Test public void setUserSecurityClearance_setClearance()
     {
         // Create the user.
         String userName = "User 1";
+
         NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
+        PersonInfo personInfo = new PersonInfo(personNode, userName, "user", "two");
+
         when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
+        when(mockPersonService.getPerson(personNode)).thenReturn(personInfo);
+
         // Create the clearance.
         String clearanceId = "ClearanceId";
         ClassificationLevel level = new ClassificationLevel(clearanceId, "TopSecretKey");
         when(mockClassificationService.getClassificationLevelById(clearanceId)).thenReturn(level);
 
+        when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(true);
+        when(mockNodeService.getProperty(personNode, PROP_CLEARANCE_LEVEL)).thenReturn(clearanceId);
+
+
         // Call the method under test.
-        securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
+        SecurityClearance securityClearance = securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
+
+        assertEquals(personInfo, securityClearance.getPersonInfo());
+        assertEquals(level, securityClearance.getClearanceLevel());
 
         verify(mockNodeService).setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
     }

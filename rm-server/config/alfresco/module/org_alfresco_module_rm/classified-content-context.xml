@@ -140,6 +140,7 @@
          <value>
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUserSecurityClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUsersSecurityClearance=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.setUserSecurityClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.*=ACL_DENY
          </value>
       </property>

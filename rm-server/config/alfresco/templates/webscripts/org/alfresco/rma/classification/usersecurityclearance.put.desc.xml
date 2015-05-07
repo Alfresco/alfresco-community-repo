@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Users security clearance</shortname>
+   <description>REST API to set users security clearance</description>
+   <url>/api/classification/clearance?username={username}&amp;clearanceId={clearanceId}</url>
+   <format default="json">argument</format>
+   <authentication>admin</authentication>
+   <transaction>required</transaction>
+</webscript>

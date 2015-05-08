@@ -37,8 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
@@ -52,7 +50,6 @@ import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
@@ -65,6 +62,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.google.common.collect.Sets;
+
 /**
  * Unit tests for {@link ClassificationServiceImpl}.
  *
@@ -73,10 +72,10 @@ import org.mockito.MockitoAnnotations;
  */
 public class ClassificationServiceImplUnitTest
 {
-    private static final ImmutableList<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("Top Secret",   "rm.classification.topSecret",
-                                                                                                        "Secret",       "rm.classification.secret",
-                                                                                                        "Confidential", "rm.classification.confidential",
-                                                                                                        "No Clearance", "rm.classification.noClearance");
+    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("Top Secret",   "rm.classification.topSecret",
+                                                                                               "Secret",       "rm.classification.secret",
+                                                                                               "Confidential", "rm.classification.confidential",
+                                                                                               "No Clearance", "rm.classification.noClearance");
     private static final List<ClassificationLevel> ALT_CLASSIFICATION_LEVELS = asLevelList("Board",                "B",
                                                                                            "Executive Management", "EM",
                                                                                            "Employee",             "E",
@@ -92,7 +91,7 @@ public class ClassificationServiceImplUnitTest
      * @param idsAndLabels A varargs/array of Strings like so: [ id0, label0, id1, label1... ]
      * @throws IllegalArgumentException if {@code idsAndLabels} has a non-even length.
      */
-    public static ImmutableList<ClassificationLevel> asLevelList(String ... idsAndLabels)
+    public static List<ClassificationLevel> asLevelList(String ... idsAndLabels)
     {
         if (idsAndLabels.length % 2 != 0)
         {
@@ -107,7 +106,7 @@ public class ClassificationServiceImplUnitTest
             levels.add(new ClassificationLevel(idsAndLabels[i], idsAndLabels[i+1]));
         }
 
-        return ImmutableList.copyOf(levels);
+        return levels;
     }
 
     @InjectMocks private ClassificationServiceImpl classificationServiceImpl;
@@ -117,7 +116,6 @@ public class ClassificationServiceImplUnitTest
     @Mock private ClassificationServiceDAO    mockClassificationServiceDAO;
     @Mock private NodeService                 mockNodeService;
     @Mock private DictionaryService           mockDictionaryService;
-    @Mock private SecurityClearanceService    mockSecurityClearanceService;
     /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
     @Mock private Appender                    mockAppender;
     @Mock private ClassificationLevelManager  mockLevelManager;
@@ -265,25 +263,6 @@ public class ClassificationServiceImplUnitTest
         List<ClassificationLevel> actual = classificationServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
 
         assertEquals("Expected an empty list when the target level is not found.", 0, actual.size());
-    }
-
-    /**
-     * Check that a user with security clearance of "Secret" (index 1 in the default list) can use the
-     * {@link getClassificationLevels} method to find the three classification levels up to their own.
-     */
-    @Test public void getClassificationLevels()
-    {
-        PersonInfo personInfo = new PersonInfo(null, "userName", "firstName", "lastName");
-        ClassificationLevel clearanceLevel = DEFAULT_CLASSIFICATION_LEVELS.get(1);
-        SecurityClearance securityClearance = new SecurityClearance(personInfo , clearanceLevel);
-        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(securityClearance);
-        when(mockLevelManager.getClassificationLevels()).thenReturn(DEFAULT_CLASSIFICATION_LEVELS);
-
-        // Call the method under test.
-        List<ClassificationLevel> classificationLevels = classificationServiceImpl.getClassificationLevels();
-
-        List<ClassificationLevel> expectedLevels = DEFAULT_CLASSIFICATION_LEVELS.subList(1, 4);
-        assertEquals(expectedLevels , classificationLevels);
     }
 
     /** Classify a piece of content with a couple of reasons and check the NodeService is called correctly. */

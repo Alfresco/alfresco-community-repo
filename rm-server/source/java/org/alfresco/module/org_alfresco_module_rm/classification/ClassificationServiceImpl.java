@@ -61,7 +61,6 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
 
     private AttributeService attributeService; // TODO What about other code (e.g. REST API) accessing the AttrService?
     private NodeService nodeService;
-    private SecurityClearanceService securityClearanceService;
     private ClassificationServiceDAO classificationServiceDao;
 
     /** The classification levels currently configured in this server. */
@@ -71,7 +70,6 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
 
     public void setAttributeService(AttributeService service) { this.attributeService = service; }
     public void setNodeService(NodeService service) { this.nodeService = service; }
-    public void setSecurityClearanceService(SecurityClearanceService service) { this.securityClearanceService = service; }
 
     /** Set the object from which configuration options will be read. */
     public void setClassificationServiceDAO(ClassificationServiceDAO classificationServiceDao) { this.classificationServiceDao = classificationServiceDao; }
@@ -209,7 +207,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         {
             return Collections.emptyList();
         }
-        ClassificationLevel usersLevel = securityClearanceService.getUserSecurityClearance().getClearanceLevel();
+        // FIXME Currently assume user has highest security clearance, this should be fixed as part of RM-2112.
+        ClassificationLevel usersLevel = levelManager.getMostSecureLevel();
         return restrictList(levelManager.getClassificationLevels(), usersLevel);
     }
 

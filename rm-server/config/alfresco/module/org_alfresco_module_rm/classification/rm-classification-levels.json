@@ -12,7 +12,7 @@
     "displayLabel" : "rm.classification.confidential"
   },
   {
-    "name" : "NoClearance",
-    "displayLabel" : "rm.classification.noClearance"
+    "name" : "Unclassified",
+    "displayLabel" : "rm.classification.unclassified"
   }
 ]

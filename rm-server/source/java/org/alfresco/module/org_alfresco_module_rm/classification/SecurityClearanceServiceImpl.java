@@ -39,11 +39,39 @@ import org.alfresco.util.ParameterCheck;
  */
 public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements SecurityClearanceService
 {
+    /** The clearance levels currently configured in this server. */
+    private ClearanceLevelManager clearanceManager;
+
     private ClassificationService classificationService;
     private PersonService         personService;
 
+    public void setClearanceManager(ClearanceLevelManager clearanceManager) { this.clearanceManager = clearanceManager; }
     public void setClassificationService(ClassificationService service) { this.classificationService = service; }
-    public void setPersonService        (PersonService service)         { this.personService = service; }
+    public void setPersonService(PersonService service) { this.personService = service; }
+
+    /**
+     * Initialise and create a {@link ClearanceLevelManager}. This assumes that the {@link ClassificationService} has
+     * already been initialised.
+     */
+    void initialise()
+    {
+        ArrayList<ClearanceLevel> clearanceLevels = new ArrayList<ClearanceLevel>();
+        List<ClassificationLevel> classificationLevels = classificationService.getClassificationLevels();
+        ClassificationLevel unclassified = classificationLevels.get(classificationLevels.size() - 1);
+        for (ClassificationLevel classificationLevel : classificationLevels)
+        {
+            String displayLabelKey = classificationLevel.getDisplayLabelKey();
+            if (classificationLevel.equals(unclassified))
+            {
+                displayLabelKey = "rm.classification.noClearance";
+            }
+            clearanceLevels.add(new ClearanceLevel(classificationLevel, displayLabelKey));
+        }
+        this.clearanceManager = new ClearanceLevelManager(clearanceLevels);
+    }
+
+    /** Get the clearance manager (for use in unit testing). */
+    protected ClearanceLevelManager getClearanceManager() { return clearanceManager; }
 
     @Override
     public SecurityClearance getUserSecurityClearance()
@@ -70,7 +98,8 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         }
         else { classificationLevel = classificationService.getDefaultClassificationLevel(); }
 
-        return new SecurityClearance(personInfo, classificationLevel);
+        ClearanceLevel clearanceLevel = clearanceManager.findLevelByClassificationLevelId(classificationLevel.getId());
+        return new SecurityClearance(personInfo, clearanceLevel);
     }
 
     @Override

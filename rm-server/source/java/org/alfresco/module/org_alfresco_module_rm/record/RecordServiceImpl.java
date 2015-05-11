@@ -43,6 +43,7 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFi
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
@@ -154,7 +155,8 @@ public class RecordServiceImpl extends BaseBehaviourBean
         NamespaceService.DATALIST_MODEL_1_0_URI,
         NamespaceService.DICTIONARY_MODEL_1_0_URI,
         NamespaceService.BPM_MODEL_1_0_URI,
-        NamespaceService.RENDITION_MODEL_1_0_URI
+        NamespaceService.RENDITION_MODEL_1_0_URI,
+        ClassifiedContentModel.CLF_URI
      };
 
     /** record model URI's */
@@ -164,7 +166,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             RM_CUSTOM_URI,
             ReportModel.RMR_URI,
             RecordableVersionModel.RMV_URI,
-            DOD5015Model.DOD_URI
+            DOD5015Model.DOD_URI            
     ));
 
     /** non-record model URI's */

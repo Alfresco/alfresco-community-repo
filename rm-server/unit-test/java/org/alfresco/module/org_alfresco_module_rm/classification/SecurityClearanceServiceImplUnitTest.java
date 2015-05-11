@@ -26,6 +26,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -56,6 +59,7 @@ public class SecurityClearanceServiceImplUnitTest
     @Mock private DictionaryService           mockDictionaryService;
     @Mock private NodeService                 mockNodeService;
     @Mock private PersonService               mockPersonService;
+    @Mock private ClearanceLevelManager       mockClearanceLevelManager;
 
     @Before public void setUp()
     {
@@ -87,12 +91,14 @@ public class SecurityClearanceServiceImplUnitTest
         final PersonInfo user1 = createMockPerson("user1", "User", "One", null);
         MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil, user1.getUserName());
 
-        when(mockClassificationService.getDefaultClassificationLevel())
-                .thenReturn(new ClassificationLevel("default", "default"));
+        ClassificationLevel defaultClassificationLevel = new ClassificationLevel("default", "default");
+        when(mockClassificationService.getDefaultClassificationLevel()).thenReturn(defaultClassificationLevel);
+        ClearanceLevel defaultClearanceLevel = new ClearanceLevel(defaultClassificationLevel, "defaultClearanceMessageKey");
+        when(mockClearanceLevelManager.findLevelByClassificationLevelId("default")).thenReturn(defaultClearanceLevel);
 
         final SecurityClearance clearance = securityClearanceServiceImpl.getUserSecurityClearance();
 
-        assertEquals("default", clearance.getClearanceLevel().getId());
+        assertEquals(defaultClearanceLevel, clearance.getClearanceLevel());
     }
 
     /** Check that a user can have their clearance set. */
@@ -111,6 +117,8 @@ public class SecurityClearanceServiceImplUnitTest
         String clearanceId = "ClearanceId";
         ClassificationLevel level = new ClassificationLevel(clearanceId, "TopSecretKey");
         when(mockClassificationService.getClassificationLevelById(clearanceId)).thenReturn(level);
+        ClearanceLevel clearanceLevel = new ClearanceLevel(level, "TopSecretKey");
+        when(mockClearanceLevelManager.findLevelByClassificationLevelId(clearanceId)).thenReturn(clearanceLevel);
 
         when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(true);
         when(mockNodeService.getProperty(personNode, PROP_CLEARANCE_LEVEL)).thenReturn(clearanceId);
@@ -120,7 +128,7 @@ public class SecurityClearanceServiceImplUnitTest
         SecurityClearance securityClearance = securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
 
         assertEquals(personInfo, securityClearance.getPersonInfo());
-        assertEquals(level, securityClearance.getClearanceLevel());
+        assertEquals(clearanceLevel, securityClearance.getClearanceLevel());
 
         verify(mockNodeService).setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
     }
@@ -140,5 +148,27 @@ public class SecurityClearanceServiceImplUnitTest
         when(mockClassificationService.getClassificationLevelById(clearanceId)).thenThrow(new LevelIdNotFound(clearanceId));
 
         securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
+    }
+
+    /**
+     * Check that the initialise method creates a clearance level corresponding to each classification level and that
+     * the display label for the lowest clearance level is "No Clearance" (rather than "Unclassified").
+     */
+    @Test public void initialise()
+    {
+        ClassificationLevel topSecret = new ClassificationLevel("1", "TopSecret");
+        ClassificationLevel secret = new ClassificationLevel("2", "Secret");
+        ClassificationLevel unclassified = new ClassificationLevel("3", "Unclassified");
+        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, unclassified);
+        when(mockClassificationService.getClassificationLevels()).thenReturn(classificationLevels );
+
+        // Call the method under test.
+        securityClearanceServiceImpl.initialise();
+
+        List<ClearanceLevel> clearanceLevels = securityClearanceServiceImpl.getClearanceManager().getClearanceLevels();
+        assertEquals("There should be one clearance level for each classification level.", classificationLevels.size(), clearanceLevels.size());
+        assertEquals("TopSecret", clearanceLevels.get(0).getDisplayLabel());
+        assertEquals("Secret", clearanceLevels.get(1).getDisplayLabel());
+        assertEquals("rm.classification.noClearance", clearanceLevels.get(2).getDisplayLabel());
     }
 }

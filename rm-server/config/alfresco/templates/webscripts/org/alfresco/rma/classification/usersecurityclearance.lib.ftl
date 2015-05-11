@@ -3,8 +3,8 @@
     <#local pi=item.personInfo>
     {
         <#escape x as jsonUtils.encodeJSONString(x)>
-        "classificationId": "${cl.id}",
-        "classificationLabel": "${cl.displayLabel}",
+        "classificationId": "${cl.highestClassificationLevel.id}",
+        "clearanceLabel": "${cl.displayLabel}",
         "userName": <#if pi.userName??>"${pi.userName}"<#else>null</#if>,
         "firstName": <#if pi.firstName??>"${pi.firstName}"<#else>null</#if>,
         "lastName": <#if pi.lastName??>"${pi.lastName}"<#else>null</#if>,

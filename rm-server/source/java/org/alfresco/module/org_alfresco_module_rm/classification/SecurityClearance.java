@@ -18,10 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import org.alfresco.service.cmr.security.PersonService.PersonInfo;
-
 import java.io.Serializable;
 import java.util.Objects;
+
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 
 /**
  * A simple data type for a single user's security clearance.
@@ -34,10 +34,10 @@ public final class SecurityClearance implements Serializable
     /** Serial version uid */
     private static final long serialVersionUID = 8410664575120817707L;
 
-    private final PersonInfo          personInfo;
-    private final ClassificationLevel clearanceLevel;
+    private final PersonInfo     personInfo;
+    private final ClearanceLevel clearanceLevel;
 
-    public SecurityClearance(final PersonInfo personInfo, final ClassificationLevel clearanceLevel)
+    public SecurityClearance(final PersonInfo personInfo, final ClearanceLevel clearanceLevel)
     {
         Objects.requireNonNull(personInfo);
         Objects.requireNonNull(clearanceLevel);
@@ -49,8 +49,8 @@ public final class SecurityClearance implements Serializable
     /** Returns the {@link PersonInfo} for this security clearance. */
     public PersonInfo getPersonInfo() { return this.personInfo; }
 
-    /** Returns the {@link ClassificationLevel} for this security clearance. */
-    public ClassificationLevel getClearanceLevel() { return this.clearanceLevel; }
+    /** Returns the {@link ClearanceLevel} for this security clearance. */
+    public ClearanceLevel getClearanceLevel() { return this.clearanceLevel; }
 
     @Override public String toString()
     {

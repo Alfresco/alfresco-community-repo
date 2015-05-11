@@ -74,7 +74,13 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     /** Set the object from which configuration options will be read. */
     public void setClassificationServiceDAO(ClassificationServiceDAO classificationServiceDao) { this.classificationServiceDao = classificationServiceDao; }
 
-    void initConfiguredClassificationLevels()
+    void initialise()
+    {
+        initConfiguredClassificationLevels();
+        initConfiguredClassificationReasons();
+    }
+
+    protected void initConfiguredClassificationLevels()
     {
         final List<ClassificationLevel> allPersistedLevels  = getPersistedLevels();
         final List<ClassificationLevel> configurationLevels = getConfigurationLevels();
@@ -98,7 +104,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         }
     }
 
-    void initConfiguredClassificationReasons()
+    protected void initConfiguredClassificationReasons()
     {
         final List<ClassificationReason> persistedReasons = getPersistedReasons();
         final List<ClassificationReason> classpathReasons = getConfigurationReasons();

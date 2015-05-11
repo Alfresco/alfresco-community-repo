@@ -28,7 +28,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClearanceLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.classification.UserQueryParams;
@@ -44,9 +47,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Test for get user security clearance API
@@ -140,7 +140,7 @@ public class UserSecurityClearanceGetTest extends BaseWebScriptUnitTest
         assertEquals(firstName, securityClearance.getString("firstName"));
         assertEquals(lastName, securityClearance.getString("lastName"));
         assertEquals(classificationLevelId, securityClearance.getString("classificationId"));
-        assertEquals(classificationLevelDisplayLabel, securityClearance.getString("classificationLabel"));
+        assertEquals(classificationLevelDisplayLabel, securityClearance.getString("clearanceLabel"));
         String fullName = firstName + " " + lastName;
         assertEquals(fullName, securityClearance.getString("fullName"));
         assertEquals(fullName + " (" + userName + ")", securityClearance.getString("completeName"));
@@ -221,7 +221,7 @@ public class UserSecurityClearanceGetTest extends BaseWebScriptUnitTest
                     "\"lastName\": \"aLastName" + fromIndex + "\"," +
                     "\"completeName\": \"aFirstName" + fromIndex + " aLastName" + fromIndex + " (aUserName" + fromIndex + ")\"," +
                     "\"fullName\": \"aFirstName" + fromIndex + " aLastName" + fromIndex + "\"," +
-                    "\"classificationLabel\": \"displayLabel" + fromIndex + "\"," +
+                    "\"clearanceLabel\": \"displayLabel" + fromIndex + "\"," +
                     "\"userName\": \"aUserName" + fromIndex + "\"," +
                     "\"classificationId\": \"id" + fromIndex + "\"" +
                 "}";
@@ -240,7 +240,8 @@ public class UserSecurityClearanceGetTest extends BaseWebScriptUnitTest
         {
             PersonInfo personInfo = new PersonInfo(new NodeRef("a://noderef/" + i), "aUserName" + i, "aFirstName" + i, "aLastName" + i);
             ClassificationLevel classificationLevel = new ClassificationLevel("id" + i, "displayLabel" + i);
-            SecurityClearance securityClearance = new SecurityClearance(personInfo, classificationLevel);
+            ClearanceLevel clearanceLevel = new ClearanceLevel(classificationLevel, "displayLabel" + i);
+            SecurityClearance securityClearance = new SecurityClearance(personInfo, clearanceLevel);
             securityClearances.add(securityClearance);
         }
         return securityClearances;

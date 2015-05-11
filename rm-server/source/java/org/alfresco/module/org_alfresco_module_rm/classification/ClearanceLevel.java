@@ -20,41 +20,42 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import java.io.Serializable;
-
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
+import org.alfresco.util.ParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * This class is a POJO data type for a Classification Level.
+ * A POJO to represent a security clearance level. This wraps a {@link ClassificationLevel} and will often have the same
+ * display text as well. The main exception is that the clearance level corresponding to "Unclassified" is "No Clearance".
  *
- * @author Neil Mc Erlean
- * @since 3.0
+ * @author tpage
  */
-public final class ClassificationLevel implements Serializable
+public class ClearanceLevel
 {
-    /** serial version uid */
-    private static final long serialVersionUID = -3375064867090476422L;
-
-    private final String id;
+    /** The highest classification level that can be accessed by users with this clearance. */
+    private final ClassificationLevel highestClassificationLevel;
+    /** The key for the display label of this security clearance. */
     private final String displayLabelKey;
 
-    public ClassificationLevel(final String id, final String displayLabelKey)
+    /**
+     * Constructor.
+     *
+     * @param highestClassificationLevel The highest classification level that can be accessed by users with this clearance.
+     * @param displayLabelKey The key for the display label of this security clearance.
+     */
+    public ClearanceLevel(ClassificationLevel highestClassificationLevel, String displayLabelKey)
     {
-        RMParameterCheck.checkNotBlank("id", id);
+        ParameterCheck.mandatory("highestClassificationLevel", highestClassificationLevel);
         RMParameterCheck.checkNotBlank("displayLabelKey", displayLabelKey);
-        this.id              = id;
+        this.highestClassificationLevel = highestClassificationLevel;
         this.displayLabelKey = displayLabelKey;
     }
 
-    /** Returns the unique identifier for this classification level. */
-    public String getId() { return this.id; }
-
-    /** Returns the key for the display label. */
-    public String getDisplayLabelKey() { return displayLabelKey; }
+    /** Return the highest classification level that can be accessed by users with this clearance. */
+    public ClassificationLevel getHighestClassificationLevel() { return this.highestClassificationLevel; }
 
     /**
-     * Returns the localised (current locale) display label for this classification level. If no translation is found
+     * Returns the localised (current locale) display label for this clearance level. If no translation is found
      * then return the key instead.
      */
     public String getDisplayLabel()
@@ -67,7 +68,7 @@ public final class ClassificationLevel implements Serializable
     {
         StringBuilder msg = new StringBuilder();
         msg.append(ClassificationLevel.class.getSimpleName())
-           .append(":").append(id);
+           .append(":").append(highestClassificationLevel.getId());
 
         return  msg.toString();
     }
@@ -77,10 +78,10 @@ public final class ClassificationLevel implements Serializable
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        ClassificationLevel that = (ClassificationLevel) o;
+        ClearanceLevel that = (ClearanceLevel) o;
 
-        return this.id.equals(that.id);
+        return this.highestClassificationLevel.equals(that.highestClassificationLevel);
     }
 
-    @Override public int hashCode() { return id.hashCode(); }
+    @Override public int hashCode() { return highestClassificationLevel.hashCode(); }
 }

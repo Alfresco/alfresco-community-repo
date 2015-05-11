@@ -1,9 +1,16 @@
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.when;
+
+import java.util.Map;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClearanceLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
@@ -15,11 +22,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
-
-import java.util.Map;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 public class UserSecurityClearancePutTest extends BaseWebScriptUnitTest
 {
@@ -74,7 +76,8 @@ public class UserSecurityClearancePutTest extends BaseWebScriptUnitTest
         String firstName = "Firstname";
         String lastName = "Lastname";
         PersonService.PersonInfo personInfo = new PersonService.PersonInfo(generateNodeRef(), username, firstName, lastName);
-        ClassificationLevel clearanceLevel = new ClassificationLevel(clearanceId, clearanceDisplay);
+        ClassificationLevel classificationLevel = new ClassificationLevel(clearanceId, clearanceDisplay);
+        ClearanceLevel clearanceLevel = new ClearanceLevel(classificationLevel, clearanceDisplay);
 
         SecurityClearance securityClearance = new SecurityClearance(personInfo, clearanceLevel);
 
@@ -89,7 +92,7 @@ public class UserSecurityClearancePutTest extends BaseWebScriptUnitTest
 
         // check the JSON result using Jackson to allow easy equality testing.
         ObjectMapper mapper = new ObjectMapper();
-        String expectedJSONString = "{\"data\":{\"firstName\":\"Firstname\",\"lastName\":\"Lastname\",\"completeName\":\"Firstname Lastname (user1)\",\"fullName\":\"Firstname Lastname\",\"classificationLabel\":\"Don't tell anyone\",\"userName\":\"user1\",\"classificationId\":\"Top Secret\"}}";
+        String expectedJSONString = "{\"data\":{\"firstName\":\"Firstname\",\"lastName\":\"Lastname\",\"completeName\":\"Firstname Lastname (user1)\",\"fullName\":\"Firstname Lastname\",\"clearanceLabel\":\"Don't tell anyone\",\"userName\":\"user1\",\"classificationId\":\"Top Secret\"}}";
         JsonNode expected = mapper.readTree(expectedJSONString);
         assertEquals(expected, mapper.readTree(json.toString()));
     }

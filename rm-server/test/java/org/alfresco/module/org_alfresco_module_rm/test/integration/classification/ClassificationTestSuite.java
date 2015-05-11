@@ -32,7 +32,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses(
 {
     ClassificationReasonsTest.class,
-    ClassificationLevelsTest.class
+    ClassificationLevelsTest.class,
+    ClassifyTest.class
 })
 public class ClassificationTestSuite
 {

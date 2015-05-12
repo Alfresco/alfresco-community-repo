@@ -31,9 +31,9 @@ import org.junit.runner.RunWith;
 @RunWith(ClasspathSuite.class)
 @ClassnameFilters({
     // Execute all tests classes ending with "UnitTest"
-    ".*UnitTest"
+    ".*UnitTest",
     // Put the test classes you want to exclude here
-    ,"!.*FilePlanPermissionServiceImplUnitTest"
+    "!.*FilePlanPermissionServiceImplUnitTest"
 })
 public class AllUnitTestSuite
 {

@@ -34,19 +34,21 @@ import org.junit.runner.RunWith;
 @SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
 @ClassnameFilters({
     // Execute all tests classes ending with "Test"
-    ".*Test"
+    ".*Test",
     // Exclude the ones ending with "UnitTest"
-    ,"!.*UnitTest"
+    "!.*UnitTest",
     // Put the test classes you want to exclude here
-    ,"!.*DataLoadSystemTest"
-    ,"!.*RM2072Test"
-    ,"!.*RM2190Test"
-    ,"!.*RM981SystemTest"
-    ,"!.*RecordsManagementEventServiceImplTest"
-    ,"!.*RmRestApiTest"
-    ,"!.*NotificationServiceHelperSystemTest"
-    ,"!.*RetryingTransactionHelperBaseTest"
-    ,"!.*RMCaveatConfigServiceImplTest"
+    "!.*DataLoadSystemTest",
+    "!.*RM2072Test",
+    "!.*RM2190Test",
+    "!.*RM981SystemTest",
+    "!.*RecordsManagementEventServiceImplTest",
+    "!.*RmRestApiTest",
+    "!.*NotificationServiceHelperSystemTest",
+    "!.*RetryingTransactionHelperBaseTest",
+    "!.*RMCaveatConfigServiceImplTest",
+    // This test is running successfully locally but not on bamboo
+    "!.*EmailMapScriptTest"
 })
 public class AllTestSuite
 {

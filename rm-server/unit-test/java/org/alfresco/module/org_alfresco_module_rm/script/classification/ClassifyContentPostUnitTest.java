@@ -50,7 +50,7 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ClassifyContentPostTest extends BaseWebScriptUnitTest
+public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
 {
     /** Classpath location of ftl template for web script */
     private static final String WEBSCRIPT_TEMPLATE = WEBSCRIPT_ROOT_RM + "classification/classifycontent.post.json.ftl";

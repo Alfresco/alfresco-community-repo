@@ -46,7 +46,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @author tpage
  */
-public class ReasonsGetTest extends BaseWebScriptUnitTest
+public class ReasonsGetUnitTest extends BaseWebScriptUnitTest
 {
     /** Classpath location of ftl template for web script */
     private static final String WEBSCRIPT_TEMPLATE = WEBSCRIPT_ROOT_RM + "classification/reasons.get.json.ftl";

@@ -27,7 +27,7 @@ import org.junit.Test;
  * 
  * @author tpage
  */
-public class RMParameterCheckTest
+public class RMParameterCheckUnitTest
 {
     @Test
     public void checkNotBlank()

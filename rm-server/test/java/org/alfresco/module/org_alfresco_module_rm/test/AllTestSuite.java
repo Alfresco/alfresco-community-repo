@@ -18,12 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
-import org.alfresco.module.org_alfresco_module_rm.test.integration.IntegrationTestSuite;
-import org.alfresco.module.org_alfresco_module_rm.test.legacy.LegacyTestSuite;
+import org.junit.extensions.cpsuite.ClasspathSuite;
+import org.junit.extensions.cpsuite.ClasspathSuite.ClassnameFilters;
+import org.junit.extensions.cpsuite.ClasspathSuite.SuiteTypes;
+import org.junit.extensions.cpsuite.SuiteType;
 import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-
 
 /**
  * Convenience test suite that runs all the tests.
@@ -31,11 +30,23 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Roy Wetherall
  * @since 2.1
  */
-@RunWith(Suite.class)
-@SuiteClasses(
-{    
-    LegacyTestSuite.class,
-    IntegrationTestSuite.class
+@RunWith(ClasspathSuite.class)
+@SuiteTypes({SuiteType.TEST_CLASSES, SuiteType.RUN_WITH_CLASSES, SuiteType.JUNIT38_TEST_CLASSES})
+@ClassnameFilters({
+    // Execute all tests classes ending with "Test"
+    ".*Test"
+    // Exclude the ones ending with "UnitTest"
+    ,"!.*UnitTest"
+    // Put the test classes you want to exclude here
+    ,"!.*DataLoadSystemTest"
+    ,"!.*RM2072Test"
+    ,"!.*RM2190Test"
+    ,"!.*RM981SystemTest"
+    ,"!.*RecordsManagementEventServiceImplTest"
+    ,"!.*RmRestApiTest"
+    ,"!.*NotificationServiceHelperSystemTest"
+    ,"!.*RetryingTransactionHelperBaseTest"
+    ,"!.*RMCaveatConfigServiceImplTest"
 })
 public class AllTestSuite
 {

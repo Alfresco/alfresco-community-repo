@@ -46,7 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class CreateTransferFolderAsNonAdminUser extends BaseRMTestCase
+public class CreateTransferFolderAsNonAdminUserTest extends BaseRMTestCase
 {
     // Test user
     private String testUser = null;

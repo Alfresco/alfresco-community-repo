@@ -23,7 +23,7 @@ import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
 
-public class UserSecurityClearancePutTest extends BaseWebScriptUnitTest
+public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
 {
     /**
      * Classpath location of ftl template for web script

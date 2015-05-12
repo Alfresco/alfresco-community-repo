@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.evaluator.ActionConditionEvaluator;
 import org.alfresco.repo.action.executer.ActionExecuter;
+import org.alfresco.repo.action.executer.LoggingAwareExecuter;
 import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
@@ -1816,4 +1817,12 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
         ActionParameterTypeCopyBehaviourCallback.INSTANCE.repointNodeRefs(sourceNodeRef, targetNodeRef,
                     ActionModel.PROP_PARAMETER_VALUE, copyMap, nodeService);
     }
+    
+    @Override
+    public boolean onLogException(Action action, Log logger, Throwable t, String message)
+    {
+        LoggingAwareExecuter executer = (LoggingAwareExecuter) this.applicationContext.getBean(action.getActionDefinitionName());
+        return executer.onLogException(logger,t, message);
+    }
+    
 }

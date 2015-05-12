@@ -24,6 +24,8 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.content.transform.UnimportantTransformException;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
@@ -33,12 +35,12 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.CopyService.CopyInfo;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
-import org.alfresco.service.cmr.repository.CopyService.CopyInfo;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -399,5 +401,22 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     {
         return potentialExtensionString.length() > 0 && potentialExtensionString.indexOf(' ') == -1;
     }
+    
+    @Override
+    public boolean onLogException(Log logger, Throwable t, String message)
+    {
+        if (t instanceof UnimportantTransformException )
+        {
+            logger.debug(message);
+            return true;
+        }
+        else if (t instanceof UnsupportedTransformationException)
+        {
+            logger.error(message);
+            return true;
+        }
+        return false;
+    }
+    
     
 }

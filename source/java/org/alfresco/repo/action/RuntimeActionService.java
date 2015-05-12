@@ -26,6 +26,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.apache.commons.logging.Log;
 
 /**
  * Runtime action service.  This interface contains methods useful for integration with the action 
@@ -105,4 +106,16 @@ public interface RuntimeActionService
      * @param actionedUponNodeRef   the actioned upon node reference
      */
     public void directActionExecution(Action action, NodeRef actionedUponNodeRef);
+        
+    /**
+     * Optional logging of errors callback for the action executer
+     * for the cases when the error might be ignored 
+     * or shown in a different manner for the action
+     * @param action the action
+     * @param logger the logger
+     * @param t the exception thrown
+     * @param message the proposed message that will be logged
+     * @return true if it was handled, false for default handling
+     */
+    public boolean onLogException(Action action, Log logger, Throwable t, String message);
 }

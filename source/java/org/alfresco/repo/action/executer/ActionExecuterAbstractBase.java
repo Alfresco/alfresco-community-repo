@@ -41,7 +41,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Roy Wetherall
  */
-public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstractBase implements ActionExecuter
+public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstractBase implements ActionExecuter, LoggingAwareExecuter
 {
     private static Log logger = LogFactory.getLog(ActionExecuterAbstractBase.class);
     
@@ -295,5 +295,11 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
 
     public String getQueueName() {
         return queueName;
+    }
+    
+    @Override
+    public boolean onLogException(Log logger, Throwable t, String message)
+    {
+        return false;
     }
 }

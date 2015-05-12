@@ -370,6 +370,17 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
        }
    }
 
+   @Override
+   public boolean onLogException(Log logger, Throwable t, String message)
+   {
+       if(t instanceof ActionCancelledException)
+       {
+           logger.debug(message);
+           return true;
+       }
+       return false;
+   }
+
    /**
     * A {@link TransferCallback} which periodically renews the
     *  lock held against a {@link ReplicationDefinition} 

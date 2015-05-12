@@ -29,8 +29,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.error.StackTraceUtil;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
-import org.alfresco.repo.content.transform.UnimportantTransformException;
-import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.rule.RuleServiceImpl;
@@ -444,16 +442,9 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
                 Throwable rootCause = (e instanceof AlfrescoRuntimeException) ? ((AlfrescoRuntimeException)e).getRootCause() : null;
                 String message = (rootCause == null ? null : rootCause.getMessage());
                 message = "Failed to execute asynchronous action: " + action+ (message == null ? "" : ": "+message);
-                if (rootCause instanceof UnimportantTransformException)
+                if(!ActionExecutionWrapper.this.actionService.onLogException(action, logger, rootCause, message))
                 {
-                    logger.debug(message);
-                }
-                else if (rootCause instanceof UnsupportedTransformationException)
-                {
-                    logger.error(message);
-                }
-                else
-                {
+                    //if not handled by the executor just show in the log
                     logger.error(message, e);
                 }
             }

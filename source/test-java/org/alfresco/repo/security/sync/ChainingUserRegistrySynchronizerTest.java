@@ -432,8 +432,8 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
             public Object execute() throws Throwable
             {
-                // MNT-9711 fix. User U6 already exists in zone "Z0". According ChainingUserRegistrySynchronizercurrent
-                // implementation when allowDeletions==false person that exists in a different zone with higher
+                // MNT-13867 fix. User U6 already exists in zone "Z0". According ChainingUserRegistrySynchronizercurrent
+                // implementation when syncDelete==false person that exists in a different zone with higher
                 // precedence  will be ignored
                 assertExists("Z0", "U6");
                 assertExists("Z1", "U1");
@@ -797,8 +797,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         // Check in correct zone
         if (zone == null)
         {
-            assertEquals(Collections.singleton(AuthorityService.ZONE_APP_DEFAULT), this.authorityService
-                    .getAuthorityZones(longName));
+            Set<String> zones = new TreeSet<String>();
+            zones.add(AuthorityService.ZONE_APP_DEFAULT);
+            zones.add(AuthorityService.ZONE_AUTH_ALFRESCO);
+            assertEquals(zones, this.authorityService.getAuthorityZones(longName));
         }
         else
         {

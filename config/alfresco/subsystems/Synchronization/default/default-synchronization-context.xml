@@ -80,6 +80,9 @@
         <property name="allowDeletions">
             <value>${synchronization.allowDeletions}</value>
         </property>
+        <property name="syncDelete">
+            <value>${synchronization.syncDelete}</value>
+        </property>
         <property name="nameChecker" ref="nameChecker" />
     </bean>
 

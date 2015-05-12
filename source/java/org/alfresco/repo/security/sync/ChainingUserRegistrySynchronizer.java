@@ -180,6 +180,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
     /** Allow a full sync to perform deletions? */
     private boolean allowDeletions = true;
+    
+    /** Controls whether to query for users and groups that have been deleted in LDAP */
+    private boolean syncDelete = true;
 
     /** Validates person names over cm:filename constraint **/
     private NameChecker nameChecker;
@@ -350,13 +353,29 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     }
     
     /**
-     * Fullsync is run with deletions. By default is set to true.
+     * Controls how deleted users and groups are handled.
+     * By default is set to true.
      * 
      * @param allowDeletions
+     *            If <b>true</b> the entries are deleted from alfresco.
+     *            If <b>false</b> then they are unlinked from their LDAP authentication zone but remain within alfresco.
      */
     public void setAllowDeletions(boolean allowDeletions)
     {
         this.allowDeletions = allowDeletions;
+    }
+
+    /**
+     * Controls whether to query for users and groups that have been deleted in LDAP.
+     * For large LDAP directories the delete query is expensive and time consuming, needing to read the entire LDAP directory.
+     * By default is set to true.
+     * 
+     * @param syncDelete
+     *            If <b>false</b> then LDAP sync does not even attempt to search for deleted users. 
+     */
+    public void setSyncDelete(boolean syncDelete)
+    {
+        this.syncDelete = syncDelete;
     }
     
     @Override
@@ -1425,9 +1444,8 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
 
             private void processGroups(UserRegistry userRegistry, boolean isFullSync, boolean splitTxns)
             {
-               // If we got back some groups, we have to cross reference them with the set of known authorities
-                // MNT-9711 fix. If allowDeletions is false, there is no need to pull all users and all groups from LDAP during the full synchronization.
-               if ((allowDeletions || !groupsToCreate.isEmpty()) && (isFullSync || !this.groupParentAssocsToDelete.isEmpty()))
+               // MNT-12454 fix. If syncDelete is false, there is no need to pull all users and all groups from LDAP during the full synchronization.
+               if ((syncDelete || !groupsToCreate.isEmpty()) && (isFullSync || !this.groupParentAssocsToDelete.isEmpty()))
                {
                     final Set<String> allZonePersons = newPersonSet();
                     final Set<String> allZoneGroups = new TreeSet<String>();
@@ -1473,8 +1491,41 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                         this.deletionCandidates.addAll(personDeletionCandidates);
                         this.deletionCandidates.addAll(groupDeletionCandidates);
 
-                        allZonePersons.removeAll(personDeletionCandidates);
-                        allZoneGroups.removeAll(groupDeletionCandidates);
+                        if (allowDeletions)
+                        {
+                            allZonePersons.removeAll(personDeletionCandidates);
+                            allZoneGroups.removeAll(groupDeletionCandidates);
+                        }
+                        else
+                        {
+                            // Complete association deletion information by scanning deleted groups
+                            BatchProcessor<String> groupScanner = new BatchProcessor<String>(zone
+                                    + " Missing Authority Scanning",
+                                    ChainingUserRegistrySynchronizer.this.transactionService.getRetryingTransactionHelper(),
+                                    this.deletionCandidates,
+                                    ChainingUserRegistrySynchronizer.this.workerThreads, 20,
+                                    ChainingUserRegistrySynchronizer.this.applicationEventPublisher,
+                                    ChainingUserRegistrySynchronizer.logger,
+                                    ChainingUserRegistrySynchronizer.this.loggingInterval);
+                            groupScanner.process(new BaseBatchProcessWorker<String>()
+                            {
+
+                                @Override
+                                public String getIdentifier(String entry)
+                                {
+                                    return entry;
+                                }
+
+                                @Override
+                                public void process(String authority) throws Throwable
+                                {
+                                    //MNT-12454 fix. Modifies an authority's zone. Move authority from AUTH.EXT.LDAP1 to AUTH.ALF.
+                                    updateAuthorityZones(authority, Collections.singleton(zoneId),
+                                          Collections.singleton(AuthorityService.ZONE_AUTH_ALFRESCO));
+                                }
+                            }, splitTxns);
+                        }
+
                     }
 
                     // Prune the group associations now that we have complete information

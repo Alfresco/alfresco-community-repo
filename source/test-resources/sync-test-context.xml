@@ -64,6 +64,9 @@
         <property name="allowDeletions">
             <value>false</value>
         </property>
+        <property name="syncDelete">
+            <value>false</value>
+        </property>
         <property name="sysAdminParams">
             <ref bean="sysAdminParams" />
         </property>

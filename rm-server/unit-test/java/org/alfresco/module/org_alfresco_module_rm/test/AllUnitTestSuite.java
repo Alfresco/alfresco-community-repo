@@ -18,40 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test;
 
-import org.alfresco.module.org_alfresco_module_rm.action.dm.DeclareAsVersionRecordActionUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportActionUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.action.impl.UnlinkFromActionUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponentUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponentUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.capability.RMEntryVoterUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.CapabilityDeclarativeConditionSuite;
-import org.alfresco.module.org_alfresco_module_rm.capability.impl.EditNonRecordsMetadataCapabilityUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSuite;
-import org.alfresco.module.org_alfresco_module_rm.forms.RecordsManagementTypeFormFilterUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.hold.HoldServiceImplUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuterUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.FrozenEvaluatorUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator.TransferEvaluatorUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.model.compatibility.DictionaryBootstrapPostProcessorUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.patch.v22.PatchV22Suite;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordMetadataBootstrapUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImplUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigGetTest;
-import org.alfresco.module.org_alfresco_module_rm.recorded.version.config.RecordedVersionConfigPostTest;
-import org.alfresco.module.org_alfresco_module_rm.script.classification.ClassificationLevelsGetTest;
-import org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPostTest;
-import org.alfresco.module.org_alfresco_module_rm.script.classification.ReasonsGetTest;
-import org.alfresco.module.org_alfresco_module_rm.script.classification.UserSecurityClearanceGetTest;
-import org.alfresco.module.org_alfresco_module_rm.script.classification.UserSecurityClearancePutTest;
-import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPostUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldPutUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.script.hold.HoldsGetUnitTest;
-import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtilsUsageExamplesTest;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImplUnitTest;
-import org.alfresco.repo.action.parameter.DateParameterProcessorUnitTest;
+import org.junit.extensions.cpsuite.ClasspathSuite;
+import org.junit.extensions.cpsuite.ClasspathSuite.ClassnameFilters;
 import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * All unit test suite.
@@ -59,60 +28,12 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author Roy Wetherall
  * @since 2.2
  */
-@RunWith(Suite.class)
-@SuiteClasses(
-{
-    RecordMetadataBootstrapUnitTest.class,
-    RecordsManagementTypeFormFilterUnitTest.class,
-    DispositionLifecycleJobExecuterUnitTest.class,
-    DictionaryBootstrapPostProcessorUnitTest.class,
-    DateParameterProcessorUnitTest.class,
-    RMEntryVoterUnitTest.class,
-
-    // services
-    RecordServiceImplUnitTest.class,
-    HoldServiceImplUnitTest.class,
-   // FilePlanPermissionServiceImplUnitTest.class, // removed because test unreliable on Bamboo
-    RecordableVersionServiceImplUnitTest.class,
-
-    // evaluators
-    TransferEvaluatorUnitTest.class,
-    FrozenEvaluatorUnitTest.class,
-
-    // capabilities
-    EditNonRecordsMetadataCapabilityUnitTest.class,
-
-    // web scripts
-    HoldsGetUnitTest.class,
-    HoldPostUnitTest.class,
-    HoldPutUnitTest.class,
-    ReasonsGetTest.class,
-    ClassificationLevelsGetTest.class,
-    ClassifyContentPostTest.class,
-    UserSecurityClearanceGetTest.class,
-    UserSecurityClearancePutTest.class,
-
-    // action implementations
-    FileReportActionUnitTest.class,
-    UnlinkFromActionUnitTest.class,
-    DeclareAsVersionRecordActionUnitTest.class,
-
-    // recorded version config
-    RecordedVersionConfigGetTest.class,
-    RecordedVersionConfigPostTest.class,
-
-    // bootstrap
-    BootstrapImporterModuleComponentUnitTest.class,
-    RecordContributorsGroupBootstrapComponentUnitTest.class,
-
-    // suites by package
-    CapabilityDeclarativeConditionSuite.class,
-    PatchV22Suite.class,
-    ClassificationSuite.class,
-
-    // Utilities
-    ExceptionUtilsUsageExamplesTest.class
-
+@RunWith(ClasspathSuite.class)
+@ClassnameFilters({
+    // Execute all tests classes ending with "UnitTest"
+    ".*UnitTest"
+    // Put the test classes you want to exclude here
+    ,"!.*FilePlanPermissionServiceImplUnitTest"
 })
 public class AllUnitTestSuite
 {

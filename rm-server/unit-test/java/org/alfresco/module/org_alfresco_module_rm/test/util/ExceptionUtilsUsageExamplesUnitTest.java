@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @since 3.0
  * @author Neil Mc Erlean
  */
-public class ExceptionUtilsUsageExamplesTest
+public class ExceptionUtilsUsageExamplesUnitTest
 {
     private String goodMethod() { return "hello"; }
 

@@ -54,7 +54,7 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class UserSecurityClearanceGetTest extends BaseWebScriptUnitTest
+public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
 {
     /** Classpath location of ftl template for web script */
     private static final String WEBSCRIPT_TEMPLATE = WEBSCRIPT_ROOT_RM + "classification/usersecurityclearance.get.json.ftl";

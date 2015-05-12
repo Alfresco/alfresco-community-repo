@@ -32,7 +32,7 @@ import org.junit.Test;
  *
  * @author tpage
  */
-public class ClearanceLevelManagerTest
+public class ClearanceLevelManagerUnitTest
 {
     static final ClassificationLevel TOP_SECRET = new ClassificationLevel("TS", "Top Secret Classification");
     static final ClassificationLevel SECRET = new ClassificationLevel("S", "Secret Classification");

@@ -47,7 +47,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class NoPermissionsOnTransferFolder extends BaseRMTestCase
+public class NoPermissionsOnTransferFolderTest extends BaseRMTestCase
 {
     // Test users
     private String testUser1 = null;

@@ -46,7 +46,7 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RecordedVersionConfigGetTest extends BaseRecordedVersionConfigTest
+public class RecordedVersionConfigGetUnitTest extends BaseRecordedVersionConfigTest
 {
     /** RecordedVersionConfigGet webscript instance */
     protected @InjectMocks RecordedVersionConfigGet webScript;

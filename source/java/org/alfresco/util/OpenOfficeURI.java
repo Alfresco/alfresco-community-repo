@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -43,7 +43,7 @@ public class OpenOfficeURI
      */
     public OpenOfficeURI(String source) throws IOException
     {
-        this.source = new File(source).getCanonicalFile();
+        this.source = new File(source.replaceAll(" ", "%20")).getCanonicalFile();
     }
 
     /*

@@ -2215,6 +2215,18 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // what kind of object is it?
         CMISNodeInfo info = getOrCreateNodeInfo(objectId);
 
+        // when webservices binding is used, objectId points to null and versionSeriesId points to original node instead of PWC
+        // see MNT-13839
+        if (objectId == null)
+        {
+            info = getOrCreateNodeInfo(versionSeriesId);
+            if (info.hasPWC())
+            {
+                NodeRef nodeRef = info.getNodeRef();
+                info = getOrCreateNodeInfo(connector.getCheckOutCheckInService().getWorkingCopy(nodeRef).toString());
+            }
+        }
+
         if (!EnumSet.of(CMISObjectVariant.CURRENT_VERSION, CMISObjectVariant.PWC, CMISObjectVariant.VERSION).contains(info.getObjectVariant()))
         {
             // the version series id is the id of current version, which is a

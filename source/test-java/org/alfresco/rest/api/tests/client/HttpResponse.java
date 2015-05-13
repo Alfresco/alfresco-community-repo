@@ -1,5 +1,7 @@
 package org.alfresco.rest.api.tests.client;
 
+import java.util.Map;
+
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.methods.DeleteMethod;
@@ -16,14 +18,16 @@ public class HttpResponse
 	private HttpMethod method;
 	private String user;
 	private String response;
+	private Map<String,String> headers;
 	private long time;
 	
-	public HttpResponse(HttpMethod method, String user, String response, long time)
+	public HttpResponse(HttpMethod method, String user, String response, Map<String,String> headers, long time)
 	{
 		super();
 		this.method = method;
 		this.user = user;
 		this.time = time;
+		this.headers = headers;
 		this.response = response;
 	}
 
@@ -35,6 +39,11 @@ public class HttpResponse
 	public String getResponse()
 	{
 		return response;
+	}
+	
+	public Map<String,String> getHeaders()
+	{
+	    return headers;
 	}
 	
 	public String toString()
@@ -81,7 +90,7 @@ public class HttpResponse
 		sb.append(requestBody != null ? " \nbody = " + requestBody + "\n" : "");
 		sb.append("user " + user);
 		sb.append("\n");
-		sb.append("returned " + method.getStatusCode() + " and took " + time + "ms");
+		sb.append("returned " + method.getStatusCode() + " and took " + time + "ms");	
 		sb.append("\n");
 		sb.append("Response content " + response);
 		return sb.toString();

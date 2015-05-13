@@ -80,6 +80,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             Object toSerialize = respons.get("toSerialize");
             ContentInfo contentInfo = (ContentInfo) respons.get("contentInfo");
             
+            // set caching (MNT-13938)
+            res.setCache(ApiWebScript.CACHE_NEVER);
+            
+            // set content info
             setContentInfoOnResponse(res, contentInfo);
             
             if (toSerialize != null)

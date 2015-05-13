@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -37,6 +38,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.DeleteMethod;
@@ -227,7 +229,19 @@ public class PublicApiHttpClient
 				public HttpResponse onCallSuccess(HttpMethod method) throws Exception
 				{
 					long end = System.currentTimeMillis();
-					return new HttpResponse(method, rq.getRunAsUser(), method.getResponseBodyAsString(), (end - start));
+					
+					Map<String, String> headersMap = null;
+					Header[] headers = method.getResponseHeaders();
+					if (headers != null)
+					{
+					    headersMap = new HashMap<String, String>(headers.length);
+					    for (Header header : headers)
+                        {
+                            headersMap.put(header.getName(), header.getValue());
+                        }
+					}
+					
+					return new HttpResponse(method, rq.getRunAsUser(), method.getResponseBodyAsString(), headersMap, (end - start));
 				}
 
 				@Override

@@ -1090,7 +1090,6 @@
             <if test="pattern != null">
             and prop4.string_value like #{pattern} <include refid="alfresco.util.escape"/>
             </if>
-        <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
     </select>
     
     <select id="select_ChildAssocsOfParent" parameterType="ChildAssoc" resultMap="result_ChildAssoc">
@@ -1142,7 +1141,6 @@
             <if test="value.persistedType == 5">and prop.double_value = #{value.doubleValue}</if>
             <if test="value.persistedType == 3">and prop.long_value = #{value.longValue}</if>
             <if test="value.persistedType == 1">and prop.boolean_value = #{value.booleanValue}</if> 
-        <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
     </select>
 
     <select id="select_NodePrimaryChildAcls" parameterType="ChildAssoc" resultMap="result_NodeAcl">

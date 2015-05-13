@@ -29,6 +29,7 @@
       <property name="resourceBundles">
          <list>
              <value>alfresco.messages.repoadmin-interpreter-help</value>
+             <value>alfresco.messages.repoadmin-service</value>
          </list>
       </property>
    </bean>

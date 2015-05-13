@@ -59,6 +59,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.dao.ConcurrencyFailureException;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
@@ -87,8 +88,29 @@ public class RepoAdminServiceImpl implements RepoAdminService
    
     public final static String defaultSubtypeOfDictionaryModel = "subtypeOf('cm:dictionaryModel')";
     public final static String defaultSubtypeOfContent = "subtypeOf('cm:content')";
-    
-    
+
+    private static final String MODELS_LOCATION_NOT_FOUND = "repoadmin_service.models_location_not_found";
+    private static final String MODELS_LOCATION_MULTIPLE_FOUND = "repoadmin_service.models_location_multiple_found";
+    private static final String MODEL_EXISTS = "repoadmin_service.model_exists";
+    private static final String MODEL_DEPLOYMENT_FAILED = "repoadmin_service.model_deployment_failed";
+    private static final String MODEL_UNDEPLOYMENT_FAILED = "repoadmin_service.model_undeployment_failed";
+    private static final String MODEL_ACTIVATION_FAILED = "repoadmin_service.model_activation_failed";
+    private static final String MODEL_DEACTIVATION_FAILED = "repoadmin_service.model_deactivation_failed";
+    private static final String MODEL_NOT_FOUND = "repoadmin_service.model_not_found";
+    private static final String MODELS_MULTIPLE_FOUND = "repoadmin_service.models_multiple_found";
+    private static final String MODEL_ALREADY_ACTIVATED = "repoadmin_service.model_already_activated";
+    private static final String MODEL_ALREADY_DEACTIVATED = "repoadmin_service.model_already_deactivated";
+    private static final String MODEL_NO_LONGER_EXISTS = "repoadmin_service.model_no_longer_exists";
+    private static final String MSG_RESOURCES_NOT_FOUND = "repoadmin_service.msg_resource_not_found";
+    private static final String MSG_RESOURCES_DEPLOYMENT_FAILED = "repoadmin_service.msg_resource_deployment_failed";
+    private static final String MESSAGES_LOCATION_NOT_FOUND = "repoadmin_service.messages_location_not_found";
+    private static final String MESSAGES_LOCATION_MULTIPLE_FOUND = "repoadmin_service.messages_location_multiple_found";
+    private static final String MSG_RESOURCES_UNDEPLOYMENT_FAILED = "repoadmin_service.msg_resource_undeployment_failed";
+    private static final String MSG_RESOURCES_RELOAD_FAILED = "repoadmin_service.msg_resource_reload_failed";
+    private static final String MSG_MISSING_BUNDLE_BASE_NAME = "repoadmin_service.msg_missing_bundle_base_name";
+    private static final String MSG_BASE_NAME_CONTAIN_UNDERSCORE = "repoadmin_service.msg_base_name_contain_underscore";
+    private static final String MSG_BASE_NAME_CONTAIN_PERIOD = "repoadmin_service.msg_base_name_contain_period";
+
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
         this.dictionaryDAO = dictionaryDAO;
@@ -198,9 +220,10 @@ public class RepoAdminServiceImpl implements RepoAdminService
         
         return modelsInRepo;
     }
-        
-    public void deployModel(InputStream modelStream, String modelFileName)
-    {     
+
+    @Override
+    public NodeRef deployModel(InputStream modelStream, String modelFileName, boolean activate)
+    {
         try
         {   
             // Check that all the passed values are not null
@@ -217,12 +240,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
             
             if (nodeRefs.size() == 0)
             {
-                throw new AlfrescoRuntimeException("Could not find custom models location " + repoModelsLocation.getPath());
+                throw new AlfrescoRuntimeException(MODELS_LOCATION_NOT_FOUND, new Object[] { repoModelsLocation.getPath() });
             }
             else if (nodeRefs.size() > 1)
             {
                 // unexpected: should not find multiple nodes with same name
-                throw new AlfrescoRuntimeException("Found multiple custom models location " + repoModelsLocation.getPath());
+                throw new AlfrescoRuntimeException(MODELS_LOCATION_MULTIPLE_FOUND, new Object[] { repoModelsLocation.getPath() });
             }
             
             NodeRef customModelsSpaceNodeRef = nodeRefs.get(0);
@@ -230,11 +253,11 @@ public class RepoAdminServiceImpl implements RepoAdminService
             nodeRefs = searchService.selectNodes(customModelsSpaceNodeRef, "*[@cm:name='"+modelFileName+"' and "+defaultSubtypeOfDictionaryModel+"]", null, namespaceService, false);
             
             NodeRef modelNodeRef = null;
-            	
+                
             if (nodeRefs.size() == 1)
             {
                 // re-deploy existing model to the repository       
-            	
+                
                 modelNodeRef = nodeRefs.get(0);
             }
             else
@@ -256,8 +279,9 @@ public class RepoAdminServiceImpl implements RepoAdminService
                 {
                     String msg = "Model already exists: "+modelFileName+" - "+dcnne;
                     logger.warn(msg);
+
                     // for now, assume concurrency failure
-                    throw new ConcurrencyFailureException(msg);
+                    throw new ConcurrencyFailureException(getLocalisedMessage(MODEL_EXISTS, modelFileName));
                 }
                 
                 // add titled aspect (for Web Client display)
@@ -281,16 +305,23 @@ public class RepoAdminServiceImpl implements RepoAdminService
             modelStream.close();
             
             // activate the model
-            nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
+            nodeService.setProperty(modelNodeRef, ContentModel.PROP_MODEL_ACTIVE, Boolean.valueOf(activate));
             
             // note: model will be loaded as part of DictionaryModelType.beforeCommit()
+
+            return modelNodeRef;
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Model deployment failed ", e);
+            throw new AlfrescoRuntimeException(MODEL_DEPLOYMENT_FAILED, e);
         }     
     }
-    
+
+    public void deployModel(InputStream modelStream, String modelFileName)
+    {
+        deployModel(modelStream, modelFileName, true);
+    }
+
     public QName activateModel(String modelFileName)
     {     
         try
@@ -299,7 +330,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Model activation failed ", e);
+            throw new AlfrescoRuntimeException(MODEL_ACTIVATION_FAILED, e);
         }
     }  
     
@@ -311,8 +342,8 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Model deactivation failed ", e);
-        }	
+            throw new AlfrescoRuntimeException(MODEL_DEACTIVATION_FAILED, e);
+        }
     }
     
     private QName activateOrDeactivate(String modelFileName, boolean activate)
@@ -327,12 +358,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
         
         if (nodeRefs.size() == 0)
         {
-            throw new AlfrescoRuntimeException("Could not find custom model " + modelFileName);
+            throw new AlfrescoRuntimeException(MODEL_NOT_FOUND, new Object[] { modelFileName });
         }
         else if (nodeRefs.size() > 1)
         {
             // unexpected: should not find multiple nodes with same name
-            throw new AlfrescoRuntimeException("Found multiple custom models " + modelFileName);
+            throw new AlfrescoRuntimeException(MODELS_MULTIPLE_FOUND, new Object[] { modelFileName });
         }
         
         NodeRef modelNodeRef = nodeRefs.get(0);
@@ -367,7 +398,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
 	        	if (modelDef != null)
 	        	{
 	        		// model is already activated
-	        		throw new AlfrescoRuntimeException("Model activation failed - model '" + modelQName + "' is already activated");
+                    throw new AlfrescoRuntimeException(MODEL_ALREADY_ACTIVATED, new Object[] { modelQName });
 	        	}
 	        	else
 	        	{
@@ -390,7 +421,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
 	        	if (modelDef == null)
 	        	{
 	        		// model is already deactivated
-	        		throw new AlfrescoRuntimeException("Model deactivation failed - model '" + modelQName + "' is already deactivated");
+                    throw new AlfrescoRuntimeException(MODEL_ALREADY_DEACTIVATED, new Object[] { modelQName });
 	        	}
 	        	else
 	        	{
@@ -437,17 +468,17 @@ public class RepoAdminServiceImpl implements RepoAdminService
                 String msg = "Model no longer exists: "+modelFileName+" - "+inre;
                 logger.warn(msg);
                 // for now, assume concurrency failure
-                throw new ConcurrencyFailureException(msg);
+                throw new ConcurrencyFailureException(getLocalisedMessage(MODEL_NO_LONGER_EXISTS, modelFileName));
             }
             
             if (nodeRefs.size() == 0)
             {
-                throw new AlfrescoRuntimeException("Could not find custom model " + modelFileName);
+                throw new AlfrescoRuntimeException(MODEL_NOT_FOUND, new Object[] { modelFileName });
             }
             else if (nodeRefs.size() > 1)
             {
                 // unexpected: should not find multiple nodes with same name
-                throw new AlfrescoRuntimeException("Found multiple custom models " + modelFileName);
+                throw new AlfrescoRuntimeException(MODELS_MULTIPLE_FOUND, new Object[] { modelFileName });
             }
             
             NodeRef modelNodeRef = nodeRefs.get(0);
@@ -501,7 +532,7 @@ public class RepoAdminServiceImpl implements RepoAdminService
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Model undeployment failed ", e);
+            throw new AlfrescoRuntimeException(MODEL_UNDEPLOYMENT_FAILED, e);
         }
         
         return modelQName;
@@ -626,12 +657,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
             else
             {
                 logger.warn("No message resources found: " + resourceClasspath);
-                throw new AlfrescoRuntimeException("No message resources found: " + resourceClasspath);
+                throw new AlfrescoRuntimeException(MSG_RESOURCES_NOT_FOUND, new Object[] { resourceClasspath });
             }
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Message resource bundle deployment failed for resource classpath " + resourceClasspath, e);
+            throw new AlfrescoRuntimeException(MSG_RESOURCES_DEPLOYMENT_FAILED, new Object[] { resourceClasspath }, e);
         }
         
         return bundleBaseName;
@@ -659,12 +690,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
             
             if (nodeRefs.size() == 0)
             {
-                throw new AlfrescoRuntimeException("Could not find messages location " + repoMessagesLocation.getPath());
+                throw new AlfrescoRuntimeException(MESSAGES_LOCATION_NOT_FOUND, new Object[] { repoMessagesLocation.getPath() });
             }
             else if (nodeRefs.size() > 1)
             {
                 // unexpected: should not find multiple nodes with same name                
-                throw new AlfrescoRuntimeException("Found multiple messages location " + repoMessagesLocation.getPath());
+                throw new AlfrescoRuntimeException(MESSAGES_LOCATION_MULTIPLE_FOUND, new Object[] { repoMessagesLocation.getPath() });
             }
 
             NodeRef customLabelsNodeRef = nodeRefs.get(0);
@@ -756,12 +787,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
             }
             else
             {
-                throw new AlfrescoRuntimeException("Could not find message resource bundle " + repoBundlePath);
+                throw new AlfrescoRuntimeException(MSG_RESOURCES_NOT_FOUND, new Object[] { repoBundlePath });
             }
         }
         catch (Throwable t)
         {
-            throw new AlfrescoRuntimeException("Message resource bundle undeployment failed ", t);
+            throw new AlfrescoRuntimeException(MSG_RESOURCES_UNDEPLOYMENT_FAILED, t);
         }
     }
     
@@ -802,12 +833,12 @@ public class RepoAdminServiceImpl implements RepoAdminService
             }
             else
             {
-                throw new AlfrescoRuntimeException("Could not find message resource bundle " + repoBundlePath);
+                throw new AlfrescoRuntimeException(MSG_RESOURCES_NOT_FOUND, new Object[] { repoBundlePath });
             }
         }
         catch (Throwable e)
         {
-            throw new AlfrescoRuntimeException("Message resource re-load failed", e);
+            throw new AlfrescoRuntimeException(MSG_RESOURCES_RELOAD_FAILED, e);
         }      
     }
     
@@ -815,18 +846,18 @@ public class RepoAdminServiceImpl implements RepoAdminService
     {
         if ((bundleBaseName == null) || (bundleBaseName.equals("")))
         {
-            throw new AlfrescoRuntimeException("Message deployment failed - missing bundle base name");
+            throw new AlfrescoRuntimeException(MSG_MISSING_BUNDLE_BASE_NAME);
         }
         
         if (bundleBaseName.indexOf("_") != -1)
         {
             // currently limited due to parser in MessageServiceImpl.getBaseBundleName
-            throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '_' (underscore)");  
+            throw new AlfrescoRuntimeException(MSG_BASE_NAME_CONTAIN_UNDERSCORE, new Object[] { bundleBaseName });
         }
         
         if (bundleBaseName.indexOf(".") != -1)
         {
-            throw new AlfrescoRuntimeException("Message deployment failed - bundle base name '" + bundleBaseName + "' should not contain '.' (period)");           
+            throw new AlfrescoRuntimeException(MSG_BASE_NAME_CONTAIN_PERIOD, new Object[] { bundleBaseName });
         }
     }
 
@@ -852,5 +883,15 @@ public class RepoAdminServiceImpl implements RepoAdminService
     public RepoUsageStatus getUsageStatus()
     {
         return repoUsageComponent.getUsageStatus();
+    }
+
+    private String getLocalisedMessage(String msgId, Object... params)
+    {
+        String localisedMsg = I18NUtil.getMessage(msgId, params);
+        if (localisedMsg == null)
+        {
+            localisedMsg = msgId;
+        }
+        return localisedMsg;
     }
 }

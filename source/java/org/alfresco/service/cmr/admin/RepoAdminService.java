@@ -23,8 +23,8 @@ import java.util.List;
 
 import org.alfresco.repo.admin.RepoModelDefinition;
 import org.alfresco.service.Auditable;
-import org.alfresco.service.PublicService;
 import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 
@@ -53,6 +53,18 @@ public interface RepoAdminService
      */
     @Auditable(parameters = {"modelStream", "modelFileName"}, recordable = {false, true})
     public void deployModel(InputStream modelStream, String modelFileName);
+
+    /**
+     * Deploy custom model (to the 'Models' space). Allows creation of new
+     * models and incremental update of existing models.
+     * 
+     * @param modelStream the model input stream
+     * @param modelFileName modelFileName the model file name
+     * @param activate whether the model should be activated or not
+     * @return the nodeRef of the created model
+     */
+    @Auditable(parameters = { "modelStream", "modelFileName", "activate" }, recordable = { false, true, false })
+    public NodeRef deployModel(InputStream modelStream, String modelFileName, boolean activate);
 
     /**
      * Undeploy custom model (from the 'Models' space). 

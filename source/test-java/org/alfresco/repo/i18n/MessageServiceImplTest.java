@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -550,5 +550,17 @@ public class MessageServiceImplTest extends TestCase implements MessageDeployer
             ddt.interrupt();
             mst.interrupt();
         }
+    }
+    
+    public void testMNT13575()
+    {
+        Locale de = new Locale("de");
+        assertTrue(messageService.getLocale().equals(new Locale("en")));
+        assertFalse(messageService.getLocale().equals(de));
+        String key = "cm_contentmodel.property.cm_description.title";
+        String value_en = "Description";
+        String value_de = "Beschreibung";
+        assertEquals(value_en, messageService.getMessage(key));
+        assertEquals(value_de, messageService.getMessage(key, de));
     }
 }

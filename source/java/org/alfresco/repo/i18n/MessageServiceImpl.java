@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -254,7 +254,7 @@ public class MessageServiceImpl implements MessageService
             if (message == null)
             {
                 // get default static message (if it exists)
-                message = I18NUtil.getMessage(tenantService.getBaseName(messageKey));
+                message = I18NUtil.getMessage(tenantService.getBaseName(messageKey), locale);
             }
         }
         

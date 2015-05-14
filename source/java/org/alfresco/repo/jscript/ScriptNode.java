@@ -48,6 +48,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.UnimportantTransformException;
 import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
@@ -3908,7 +3909,18 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             ContentService contentService = services.getContentService();
             ContentReader reader = contentService.getReader(nodeRef, property); 
-            setMimetype(services.getMimetypeService().guessMimetype(filename, reader));
+            // MNT-12265 Browser sets a mimetype based on extension of file. But mimeType from browser can be
+            // different as mapped in Alfresco for current extension. Therefore we need to guess a mimetype based on
+            // map in Alfresco
+            String typeByExt = services.getMimetypeService().guessMimetype(filename);
+            if (reader != null && reader.getMimetype() != null && !typeByExt.equals(MimetypeMap.MIMETYPE_BINARY))
+            {
+                setMimetype(typeByExt);
+            }
+            else
+            {
+                setMimetype(services.getMimetypeService().guessMimetype(filename, reader));
+            }
         }
         
         /**

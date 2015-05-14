@@ -117,4 +117,25 @@ public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
         // Execute web script - this should throw the expected exception.
         executeJSONWebScript(parameters);
     }
+
+    /**
+     * Test the Security Clearance webscript can't be called by a user with insufficient clearance
+     *
+     * @throws Exception
+     */
+    @Test(expected = WebScriptException.class)
+    public void testIncorrectClearanceId() throws Exception
+    {
+        String username = "user1";
+        String clearanceId = "ThisClearanceDoesNotExist";
+
+        // Setup web script parameters
+        Map<String, String> parameters = buildParameters(USERNAME, username, CLEARANCE_ID, clearanceId);
+
+        when(mockSecurityClearanceService.setUserSecurityClearance(username, clearanceId)).thenThrow(
+            new ClassificationServiceException.LevelIdNotFound(clearanceId));
+
+        // Execute web script - this should throw the expected exception.
+        executeJSONWebScript(parameters);
+    }
 }

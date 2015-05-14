@@ -18,11 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import java.util.HashMap;
@@ -63,8 +65,17 @@ public class UserSecurityClearancePut extends AbstractRmWebScript
     {
         String username = req.getParameter(USERNAME);
         String clearanceId = req.getParameter(CLEARANCE_ID);
+        SecurityClearance securityClearance;
 
-        SecurityClearance securityClearance = securityClearanceService.setUserSecurityClearance(username, clearanceId);
+        try
+        {
+            securityClearance = securityClearanceService.setUserSecurityClearance(username,
+                clearanceId);
+        }
+        catch (ClassificationServiceException.LevelIdNotFound exception)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unable to find clearance level");
+        }
 
         Map<String, Object> model = new HashMap<>();
         model.put(ITEM, securityClearance);

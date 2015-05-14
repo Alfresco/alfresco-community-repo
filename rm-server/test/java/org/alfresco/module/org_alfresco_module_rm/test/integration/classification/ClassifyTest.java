@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -38,6 +39,37 @@ public class ClassifyTest extends BaseRMTestCase
 	private static final String CLASSIFICATION_REASON = "Test Reason 1";
 	private static final String CLASSIFICATION_AUTHORITY = "classification authority";
 	private static final String RECORD_NAME = "recordname.txt";
+	
+    /**
+     * Given that a record is frozen
+     * And unclassified
+     * When I set the initial classification
+     * Then a AccessDeniedException is raised
+     */
+    public void testClassifyFrozenRecord() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
+        {
+        	private NodeRef record;
+        	
+            public void given() throws Exception
+            {
+            	record = utils.createRecord(rmFolder, RECORD_NAME);
+            	
+            	NodeRef hold = holdService.createHold(filePlan, "my hold", "for test", "for test");
+            	holdService.addToHold(hold, record);
+            }
+
+            public void when() throws Exception
+            {
+            	classificationService.classifyContent(
+            			CLASSIFICATION_LEVEL, 
+            			CLASSIFICATION_AUTHORITY, 
+            			Collections.singleton(CLASSIFICATION_REASON), 
+            			record);
+            }
+        });
+    }
     
     /**
      * Given that a record is complete

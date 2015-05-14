@@ -123,6 +123,20 @@ var Evaluator =
          objData.displayValue = obj.displayPath.substring(companyhome.name.length() + 1);
          objData.metadata = "container";
       }
+      else if (type == "category")
+      {
+         var displayValue = "",
+             categoryNodeRefs = value.split(",");
+         for each (nodeRef in categoryNodeRefs)
+         {
+            if (displayValue !== "")
+            {
+               displayValue += ", "
+            }
+            displayValue += Evaluator.getContentObject(nodeRef).properties["cm:name"];
+         }
+         objData.displayValue = displayValue;
+      }
       else if (type.indexOf(":") > 0 && node.isSubType("cm:cmobject"))
       {
          obj = Evaluator.getContentObject(value);

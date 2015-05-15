@@ -663,7 +663,7 @@
       <property name="classificationService" ref="ClassificationService"/>
    </bean>
 
-    <!-- REST impl for GET classification levels -->
+    <!-- REST impl for GET clearance levels -->
    <bean id="webscript.org.alfresco.rma.classification.clearancelevels.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClearanceLevelsGet"
       parent="rmBaseWebscript">

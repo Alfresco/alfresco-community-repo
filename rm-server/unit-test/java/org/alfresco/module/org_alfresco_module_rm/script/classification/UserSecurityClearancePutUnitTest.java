@@ -2,6 +2,7 @@ package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 
 public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
@@ -119,11 +121,11 @@ public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
     }
 
     /**
-     * Test the Security Clearance webscript can't be called by a user with insufficient clearance
+     * Test the Security Clearance WebScript throws an appropriate error if the clearanceId isn't known.
      *
      * @throws Exception
      */
-    @Test(expected = WebScriptException.class)
+    @Test
     public void testIncorrectClearanceId() throws Exception
     {
         String username = "user1";
@@ -135,7 +137,16 @@ public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
         when(mockSecurityClearanceService.setUserSecurityClearance(username, clearanceId)).thenThrow(
             new ClassificationServiceException.LevelIdNotFound(clearanceId));
 
-        // Execute web script - this should throw the expected exception.
-        executeJSONWebScript(parameters);
+        try
+        {
+            // This should throw an exception because the clearanceId doesn't exist
+            executeJSONWebScript(parameters);
+
+            fail("WebScript didn't throw an error when this missing clearance ID was passed in: " + clearanceId);
+        }
+        catch (WebScriptException e)
+        {
+            assertEquals(e.getStatus(), Status.STATUS_BAD_REQUEST);
+        }
     }
 }

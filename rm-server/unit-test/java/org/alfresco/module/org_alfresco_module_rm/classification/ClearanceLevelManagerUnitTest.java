@@ -36,11 +36,9 @@ public class ClearanceLevelManagerUnitTest
 {
     static final ClassificationLevel TOP_SECRET = new ClassificationLevel("TS", "Top Secret Classification");
     static final ClassificationLevel SECRET = new ClassificationLevel("S", "Secret Classification");
-    static final ClassificationLevel UNCLASSIFIED = new ClassificationLevel("U", "Unclassified Classification");
 
     static final ClearanceLevel TOP_SECRET_CLEARANCE = new ClearanceLevel(TOP_SECRET , "Top Secret Clearance");
     static final ClearanceLevel SECRET_CLEARANCE = new ClearanceLevel(SECRET, "Secret Clearance");
-    static final ClearanceLevel NO_CLEARANCE = new ClearanceLevel(UNCLASSIFIED, "No Clearance");
 
     /** The class under test. */
     ClearanceLevelManager clearanceLevelManager;
@@ -49,7 +47,7 @@ public class ClearanceLevelManagerUnitTest
     @Before
     public void setup()
     {
-        List<ClearanceLevel> clearanceLevels = ImmutableList.of(TOP_SECRET_CLEARANCE, SECRET_CLEARANCE, NO_CLEARANCE);
+        List<ClearanceLevel> clearanceLevels = ImmutableList.of(TOP_SECRET_CLEARANCE, SECRET_CLEARANCE);
         clearanceLevelManager = new ClearanceLevelManager(clearanceLevels);
     }
 
@@ -58,7 +56,6 @@ public class ClearanceLevelManagerUnitTest
     public void findLevelByClassificationLevelId_found()
     {
         ClearanceLevel actual = clearanceLevelManager.findLevelByClassificationLevelId("S");
-
         assertEquals(SECRET_CLEARANCE, actual);
     }
 
@@ -67,5 +64,17 @@ public class ClearanceLevelManagerUnitTest
     public void findLevelByClassificationLevelId_notFound()
     {
         clearanceLevelManager.findLevelByClassificationLevelId("UNKNOWN ID");
+    }
+    
+    /**
+     * Given that I have created a clearance level manager from a list of clearance levels
+     * Then the no clearance level is available
+     */
+    @Test public void noClearanceLevel()
+    {
+    	assertEquals(3, clearanceLevelManager.getClearanceLevels().size());
+    	ClearanceLevel noClearance = clearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID);
+    	assertEquals(ClearanceLevelManager.NO_CLEARANCE, noClearance);
+    	assertEquals(ClassificationLevelManager.UNCLASSIFIED, noClearance.getHighestClassificationLevel());
     }
 }

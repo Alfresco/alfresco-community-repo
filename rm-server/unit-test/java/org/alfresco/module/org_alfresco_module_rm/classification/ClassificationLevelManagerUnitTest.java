@@ -43,7 +43,7 @@ public class ClassificationLevelManagerUnitTest
 
     @Before public void setup()
     {
-        classificationLevelManager = new ClassificationLevelManager(LEVELS);
+        classificationLevelManager = new ClassificationLevelManager(LEVELS);          
     }
 
     @Test public void findClassificationById_found()
@@ -62,4 +62,14 @@ public class ClassificationLevelManagerUnitTest
         ClassificationLevel actual = classificationLevelManager.getMostSecureLevel();
         assertEquals(LEVEL_1, actual);
     }
+    
+    /**
+     * Given that I have created the classification level manager with a list of classification levels
+     * Then the unclassified level is available
+     */
+    @Test public void getUnclassifiedLevel()
+    {
+        assertEquals(LEVELS.size() + 1, classificationLevelManager.getClassificationLevels().size());         	
+    	assertEquals(ClassificationLevelManager.UNCLASSIFIED, classificationLevelManager.findLevelById(ClassificationLevelManager.UNCLASSIFIED_ID));
+    }     
 }

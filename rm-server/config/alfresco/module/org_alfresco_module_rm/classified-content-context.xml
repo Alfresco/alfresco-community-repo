@@ -76,11 +76,12 @@
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getCurrentClassification=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasons=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.classifyContent=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevelById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasonById=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getDefaultClassificationLevel=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getUnclassifiedClassificationLevel=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=ACL_DENY
          </value>
       </property>
@@ -139,6 +140,7 @@
    <bean id="SecurityClearanceService_security" parent="baseSecurity">
       <property name="objectDefinitionSource">
          <value>
+         	org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.hasClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUserSecurityClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUsersSecurityClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.setUserSecurityClearance=ACL_ALLOW

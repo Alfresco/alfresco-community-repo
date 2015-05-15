@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyString;
@@ -56,7 +57,7 @@ import org.mockito.Spy;
  */
 public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
 {
-    private static final QName MY_CUSTOM_TYPE = generateQName();
+    private static final QName MY_CUSTOM_TYPE = generateQName(RM_URI);
     
     @Mock private Form mockForm;
     @Mock private TypeDefinition mockTypeDefinition;
@@ -163,7 +164,7 @@ public class RecordsManagementTypeFormFilterUnitTest extends BaseUnitTest
         Map<QName, PropertyDefinition> properties = new HashMap<QName, PropertyDefinition>(size);
         for (int i = 0; i < size; i++)
         {
-            QName name = generateQName();
+            QName name = generateQName(RM_URI);
             PropertyDefinition propDef = mock(PropertyDefinition.class);
             when(propDef.getName()).thenReturn(name);
             DataTypeDefinition mockDataTypeDefinition = mock(DataTypeDefinition.class);

@@ -27,9 +27,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -49,6 +51,7 @@ import org.mockito.MockitoAnnotations;
  * Unit tests for {@link SecurityClearanceServiceImpl}.
  *
  * @author Neil Mc Erlean
+ * @author David Webster
  * @since 3.0
  */
 public class SecurityClearanceServiceImplUnitTest
@@ -330,5 +333,55 @@ public class SecurityClearanceServiceImplUnitTest
         MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil, user1.getUserName());
         
         assertFalse(securityClearanceServiceImpl.hasClearance(nodeRef));    	
+    }
+
+    /**
+     * Check that all levels are returned
+     */
+    @Test public void getClearanceLevels()
+    {
+
+        // Create a list of clearance levels
+        ImmutableList<ClearanceLevel> mockClearanceLevels = ImmutableList.of(
+            new ClearanceLevel(new ClassificationLevel("level1", "Level One"), "Clearance One"),
+            new ClearanceLevel(new ClassificationLevel("level2", "Level Two"), "Clearance Two"),
+            new ClearanceLevel(new ClassificationLevel("level3", "Level Three"), "Clearance Three")
+        );
+
+        when(mockClearanceLevelManager.getClearanceLevels())
+            .thenReturn(mockClearanceLevels);
+        when(mockClearanceLevelManager.getMostSecureLevel())
+            .thenReturn(mockClearanceLevels.get(0));
+
+        List<ClearanceLevel> actualClearanceLevels = securityClearanceServiceImpl.getClearanceLevels();
+
+        assertEquals(mockClearanceLevels.size(), actualClearanceLevels.size());
+        assertEquals(mockClearanceLevels.get(0), actualClearanceLevels.get(0));
+        assertEquals(mockClearanceLevels.get(1), actualClearanceLevels.get(1));
+        assertEquals(mockClearanceLevels.get(2), actualClearanceLevels.get(2));
+    }
+
+    /**
+     * Check that a user with restricted access only gets some of the levels.
+     */
+    @Test
+    public void getRestrictedClearanceLevels()
+    {
+
+        // Create a list of clearance levels
+        ImmutableList<ClearanceLevel> mockClearanceLevels = ImmutableList.of(
+            new ClearanceLevel(new ClassificationLevel("level1", "Level One"), "Clearance One"),
+            new ClearanceLevel(new ClassificationLevel("level2", "Level Two"), "Clearance Two"),
+            new ClearanceLevel(new ClassificationLevel("level3", "Level Three"), "Clearance Three")
+        );
+
+        when(mockClearanceLevelManager.getClearanceLevels()).thenReturn(mockClearanceLevels);
+        when(mockClearanceLevelManager.getMostSecureLevel()).thenReturn(mockClearanceLevels.get(1));
+
+        List<ClearanceLevel> restrictedClearanceLevels = securityClearanceServiceImpl.getClearanceLevels();
+
+        assertEquals(2, restrictedClearanceLevels.size());
+        assertEquals(mockClearanceLevels.get(1), restrictedClearanceLevels.get(0));
+        assertEquals(mockClearanceLevels.get(2), restrictedClearanceLevels.get(1));
     }
 }

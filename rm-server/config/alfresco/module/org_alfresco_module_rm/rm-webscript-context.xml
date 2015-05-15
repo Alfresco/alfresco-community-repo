@@ -660,7 +660,14 @@
    <bean id="webscript.org.alfresco.rma.classification.classificationlevels.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClassificationLevelsGet"
       parent="rmBaseWebscript">
-      <property name="classificationService" ref="ClassificationService" />
+      <property name="classificationService" ref="ClassificationService"/>
+   </bean>
+
+    <!-- REST impl for GET classification levels -->
+   <bean id="webscript.org.alfresco.rma.classification.clearancelevels.get"
+      class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClearanceLevelsGet"
+      parent="rmBaseWebscript">
+      <property name="securityClearanceService" ref="SecurityClearanceService"/>
    </bean>
 
    <!-- REST impl for POST classify content -->

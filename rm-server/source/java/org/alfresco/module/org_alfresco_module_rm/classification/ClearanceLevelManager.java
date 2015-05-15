@@ -74,4 +74,12 @@ public class ClearanceLevelManager
         }
         throw new LevelIdNotFound(classificationLevelId);
     }
+
+    /**
+     * @return the highest security clearance level.
+     */
+    public ClearanceLevel getMostSecureLevel()
+    {
+        return clearanceLevels.get(0);
+    }
 }

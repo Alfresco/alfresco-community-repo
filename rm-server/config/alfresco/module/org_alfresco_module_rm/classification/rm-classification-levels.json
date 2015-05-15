@@ -10,9 +10,5 @@
   {
     "name" : "Confidential",
     "displayLabel" : "rm.classification.confidential"
-  },
-  {
-    "name" : "Unclassified",
-    "displayLabel" : "rm.classification.unclassified"
   }
 ]

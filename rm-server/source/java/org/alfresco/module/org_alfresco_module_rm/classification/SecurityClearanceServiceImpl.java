@@ -219,7 +219,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
      *                    an empty list will be returned.
      * @return an immutable list of the levels that a user at the target level can see.
      */
-    List<ClearanceLevel> restrictList(List<ClearanceLevel> allLevels, ClearanceLevel targetLevel)
+    private List<ClearanceLevel> restrictList(List<ClearanceLevel> allLevels, ClearanceLevel targetLevel)
     {
         int targetIndex = allLevels.indexOf(targetLevel);
         if (targetIndex == -1) { return Collections.emptyList(); }

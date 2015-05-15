@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.authentication.external;
 
 import java.io.UnsupportedEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -152,9 +153,40 @@ public class DefaultRemoteUserMapper implements RemoteUserMapper, ActivateableBe
         }
         else if (remoteUserId == null)
         {
+            String normalizedUserId = null;
+            // Try to extract the remote user from SSL certificate
+            // MNT-13989
+            X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+            if (request.getScheme().toLowerCase().equals("https") && certs != null && certs.length > 0)
+            {
+                if (logger.isDebugEnabled())
+                {
+                    logger.debug("Checking SSL certificate subject DN to match " + this.proxyUserName);
+                }
+                for (int i = 0; i < certs.length; i++)
+                {
+                    String subjectDN = certs[i].getSubjectX500Principal().getName();
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Found subject DN " + subjectDN);
+                    }
+                    if (subjectDN.equals(this.proxyUserName))
+                    {
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("The subject DN " + subjectDN + " matches " + this.proxyUserName);
+                        }
+                        // Found the subject distinguished name
+                        remoteUserId = subjectDN;
+                        // Normalize the user ID taking into account case sensitivity settings
+                        normalizedUserId = normalizeUserId(headerUserId != null ? headerUserId : remoteUserId);
+                        break;
+                    }
+                }
+            }
             if (logger.isDebugEnabled())
-                logger.debug("Returning null");
-            return null;
+                logger.debug("Returning " + normalizedUserId);
+            return normalizedUserId;
         }
         else
         {

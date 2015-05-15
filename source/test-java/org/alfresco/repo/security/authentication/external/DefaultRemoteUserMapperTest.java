@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -21,14 +21,16 @@ package org.alfresco.repo.security.authentication.external;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
 
 import org.alfresco.repo.management.subsystems.AbstractChainedSubsystemTest;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.DefaultChildApplicationContextManager;
-import org.alfresco.repo.security.authentication.external.RemoteUserMapper;
 import org.alfresco.util.ApplicationContextHelper;
 import org.springframework.context.ApplicationContext;
+
+import java.security.cert.X509Certificate;
 
 
 /**
@@ -82,7 +84,7 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         // Mock an unauthenticated request
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn(null);
         assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
-        "remoteUserMapper")).getRemoteUser(mockRequest)); 
+                "remoteUserMapper")).getRemoteUser(mockRequest));
 
         // Mock a remote user request
         when(mockRequest.getRemoteUser()).thenReturn("ADMIN");
@@ -99,6 +101,7 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
 
         // Mock a request with both a user and a header
         HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+        when(mockRequest.getScheme()).thenReturn("http");
         when(mockRequest.getRemoteUser()).thenReturn("bob");
         when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("AdMiN");
         assertEquals("admin", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
@@ -120,6 +123,48 @@ public class DefaultRemoteUserMapperTest extends AbstractChainedSubsystemTest
         when(mockRequest.getRemoteUser()).thenReturn(null);
         assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
                 "remoteUserMapper")).getRemoteUser(mockRequest));
-    }        
-    
+    }
+
+    /**
+     * MNT-13989
+     * Test simulates the extraction of subject distinguished name from a client SSL certificate
+     *
+     * @throws Exception
+     */
+    public void testRemoteUserFromCert() throws Exception
+    {
+        childApplicationContextFactory.stop();
+        childApplicationContextFactory.setProperty("external.authentication.proxyUserName", "CN=alfresco-system");
+        childApplicationContextFactory.setProperty("external.authentication.proxyHeader", "X-Alfresco-Remote-User");
+
+        X509Certificate cert = mock(X509Certificate.class);
+        X500Principal principal =  new X500Principal("CN=alfresco-system");
+        when(cert.getSubjectX500Principal()).thenReturn(principal);
+        X509Certificate[] certs = {cert};
+        HttpServletRequest mockRequest = mock(HttpServletRequest.class);
+
+        // Mock a request with a header and a cert
+        when(mockRequest.getRemoteUser()).thenReturn(null);
+        when(mockRequest.getScheme()).thenReturn("https");
+        when(mockRequest.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(certs);
+        when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("admin");
+        assertEquals("admin", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
+                "remoteUserMapper")).getRemoteUser(mockRequest));
+
+        // Mock a request with a cert and no header
+        when(mockRequest.getRemoteUser()).thenReturn(null);
+        when(mockRequest.getScheme()).thenReturn("https");
+        when(mockRequest.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(certs);
+        when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn(null);
+        assertEquals("CN=alfresco-system", ((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
+                "remoteUserMapper")).getRemoteUser(mockRequest));
+
+        // Mock a request with no cert and a header
+        when(mockRequest.getRemoteUser()).thenReturn(null);
+        when(mockRequest.getScheme()).thenReturn("http");
+        when(mockRequest.getAttribute("javax.servlet.request.X509Certificate")).thenReturn(null);
+        when(mockRequest.getHeader("X-Alfresco-Remote-User")).thenReturn("admin");
+        assertNull(((RemoteUserMapper) childApplicationContextFactory.getApplicationContext().getBean(
+                "remoteUserMapper")).getRemoteUser(mockRequest));
+    }
 }

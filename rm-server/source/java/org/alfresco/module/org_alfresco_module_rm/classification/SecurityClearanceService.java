@@ -22,10 +22,13 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 
+import java.util.List;
+
 /**
  * This service offers access to users' security clearance levels.
  *
  * @author Neil Mc Erlean
+ * @author David Webster
  * @since 3.0
  */
 public interface SecurityClearanceService
@@ -66,4 +69,13 @@ public interface SecurityClearanceService
      * @return the user's security clearance
      */
     SecurityClearance setUserSecurityClearance(String userName, String clearanceId);
+
+    /**
+     * Returns an immutable list of the defined clearance levels.
+     *
+     * @return clearance levels in descending order from highest to lowest
+     * (where fewer users have access to the highest clearance levels
+     * and therefore access to the most restricted documents).
+     */
+    List<ClearanceLevel> getClearanceLevels();
 }

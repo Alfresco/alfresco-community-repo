@@ -22,6 +22,7 @@ import static org.alfresco.module.org_alfresco_module_rm.classification.model.Cl
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CLEARANCE_LEVEL;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
@@ -35,6 +36,7 @@ import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Neil Mc Erlean
+ * @author David Webster
  * @since 3.0
  */
 public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements SecurityClearanceService
@@ -194,5 +196,34 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         nodeService.setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
 
         return getUserSecurityClearance(userName);
+    }
+
+    @Override
+    public List<ClearanceLevel> getClearanceLevels()
+    {
+        if (clearanceManager == null)
+        {
+            return Collections.emptyList();
+        }
+        // FIXME Currently assume user has highest security clearance, this should be fixed as part of RM-2112.
+        ClearanceLevel usersLevel = clearanceManager.getMostSecureLevel();
+
+        return restrictList(clearanceManager.getClearanceLevels(), usersLevel);
+    }
+
+    /**
+     * Create a list containing all clearance levels up to and including the supplied level.
+     *
+     * @param allLevels   The list of all the clearance levels starting with the highest security.
+     * @param targetLevel The highest security clearance level that should be returned. If this is not found then
+     *                    an empty list will be returned.
+     * @return an immutable list of the levels that a user at the target level can see.
+     */
+    List<ClearanceLevel> restrictList(List<ClearanceLevel> allLevels, ClearanceLevel targetLevel)
+    {
+        int targetIndex = allLevels.indexOf(targetLevel);
+        if (targetIndex == -1) { return Collections.emptyList(); }
+        List<ClearanceLevel> subList = allLevels.subList(targetIndex, allLevels.size());
+        return Collections.unmodifiableList(subList);
     }
 }

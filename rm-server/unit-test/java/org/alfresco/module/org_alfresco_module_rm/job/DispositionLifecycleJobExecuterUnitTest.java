@@ -18,16 +18,17 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.anyMap;
-import static org.mockito.Mockito.contains;
 
 import java.util.Collections;
 import java.util.List;

@@ -18,10 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Container for the configured {@link ClassificationLevel} objects.
@@ -30,6 +32,11 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
  */
 public class ClassificationLevelManager
 {
+	/** Unclassified classificaiton level */
+	public static final String UNCLASSIFIED_ID = "Unclassified";
+	private static final String UNCLASSIFIED_MSG = "rm.classification.unclassified";	
+	public static final ClassificationLevel UNCLASSIFIED = new ClassificationLevel(UNCLASSIFIED_ID, UNCLASSIFIED_MSG);
+	
     /** An immutable list of classification levels ordered from most to least secure. */
     private ImmutableList<ClassificationLevel> classificationLevels;
 
@@ -40,7 +47,9 @@ public class ClassificationLevelManager
      */
     public ClassificationLevelManager(List<ClassificationLevel> classificationLevels)
     {
-        this.classificationLevels = ImmutableList.copyOf(classificationLevels);
+    	List<ClassificationLevel> temp = new ArrayList<ClassificationLevel>(classificationLevels);
+    	temp.add(temp.size(), UNCLASSIFIED);    	
+        this.classificationLevels = ImmutableList.copyOf(temp);
     }
 
     /** @return the highest security classification level. */

@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

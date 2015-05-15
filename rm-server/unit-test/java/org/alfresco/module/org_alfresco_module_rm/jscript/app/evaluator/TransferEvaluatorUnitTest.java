@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;

@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -28,7 +29,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
@@ -189,30 +189,11 @@ public class BaseUnitTest implements RecordsManagementModel, ContentModel
 
         // set record as child of record folder
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>(1);
-        result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, recordFolder, generateQName(), record, true, 1));
+        result.add(new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, recordFolder, generateQName(RM_URI), record, true, 1));
         doReturn(result).when(mockedNodeService).getChildAssocs(eq(recordFolder), eq(ContentModel.ASSOC_CONTAINS), any(QNamePattern.class));
         doReturn(result).when(mockedNodeService).getParentAssocs(record);
         doReturn(Collections.singletonList(recordFolder)).when(mockedRecordFolderService).getRecordFolders(record);
         doReturn(Collections.singletonList(record)).when(mockedRecordService).getRecords(recordFolder);
-    }
-
-    /**
-     * Helper to generate random text value suitable for a property
-     * value or node name
-     */
-    protected String generateText()
-    {
-        return UUID.randomUUID().toString();
-    }
-
-    /**
-     * Helper method to generate a qname.
-     *
-     * @return  QName   qualified name
-     */
-    protected static QName generateQName()
-    {
-        return QName.createQName(RM_URI, GUID.generate());
     }
 
     /**

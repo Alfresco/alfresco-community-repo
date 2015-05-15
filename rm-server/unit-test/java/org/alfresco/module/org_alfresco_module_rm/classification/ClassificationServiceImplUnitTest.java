@@ -28,6 +28,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -84,6 +87,10 @@ public class ClassificationServiceImplUnitTest
                                                                                                 new ClassificationReason("id2", "label2"));
     private static final List<ClassificationReason> ALTERNATIVE_CLASSIFICATION_REASONS = asList(new ClassificationReason("id8", "label8"),
                                                                                                 new ClassificationReason("id9", "label9"));
+    
+    private static final String CLASSIFICATION_LEVEL_ID = "classificationLevelId";
+    private static final ClassificationLevel CLASSIFICATION_LEVEL = new ClassificationLevel(CLASSIFICATION_LEVEL_ID, generateText());
+    
     /**
      * A convenience method for turning lists of level id Strings into lists
      * of {@code ClassificationLevel} objects.
@@ -100,7 +107,6 @@ public class ClassificationServiceImplUnitTest
         }
 
         final List<ClassificationLevel> levels = new ArrayList<>(idsAndLabels.length / 2);
-
         for (int i = 0; i < idsAndLabels.length; i += 2)
         {
             levels.add(new ClassificationLevel(idsAndLabels[i], idsAndLabels[i+1]));
@@ -362,5 +368,49 @@ public class ClassificationServiceImplUnitTest
         String classificationReasonId = "aRandomId";
         doThrow(new ReasonIdNotFound("Id not found!")).when(mockReasonManager).findReasonById(classificationReasonId);
         classificationServiceImpl.getClassificationReasonById(classificationReasonId);
+    }
+    
+    /**
+     * Given that a node does not have the classify aspect applied
+     * When I ask for the nodes classification
+     * Then 'Unclassified' is returned
+     */
+    @Test
+    public void getCurrentClassificationWithoutAspectApplied()
+    {
+    	NodeRef nodeRef = generateNodeRef(mockNodeService);
+    	when(mockNodeService.hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED))
+    		.thenReturn(false);
+    	
+    	ClassificationLevel classificationLevel = classificationServiceImpl.getCurrentClassification(nodeRef);
+    	
+    	assertEquals(ClassificationLevelManager.UNCLASSIFIED, classificationLevel);
+    	verify(mockNodeService).hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED);
+    	verifyNoMoreInteractions(mockNodeService);
+    }
+    
+    /**
+     * Given that a node is classified
+     * When I ask for the node classification
+     * Then I get the correct classificationlevel
+     */
+    @Test
+    public void getCurrentClassification()
+    {
+    	NodeRef nodeRef = generateNodeRef(mockNodeService);
+    	when(mockNodeService.hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED))
+			.thenReturn(true);
+    	when(mockNodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION))
+    		.thenReturn(CLASSIFICATION_LEVEL_ID);
+    	when(mockLevelManager.findLevelById(CLASSIFICATION_LEVEL_ID))
+    		.thenReturn(CLASSIFICATION_LEVEL);
+    	
+    	ClassificationLevel classificationLevel = classificationServiceImpl.getCurrentClassification(nodeRef);
+    	
+    	assertEquals(CLASSIFICATION_LEVEL, classificationLevel);
+    	verify(mockNodeService).hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED);
+    	verify(mockNodeService).getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION);
+    	verify(mockLevelManager).findLevelById(CLASSIFICATION_LEVEL_ID);
+    	verifyNoMoreInteractions(mockNodeService, mockLevelManager);
     }
 }

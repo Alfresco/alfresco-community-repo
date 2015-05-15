@@ -18,10 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Container for the configured {@link ClearanceLevel} objects.
@@ -30,6 +32,9 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
  */
 public class ClearanceLevelManager
 {
+	private static String NO_CLEARANCE_MSG = "rm.classification.noClearance";	
+	public static final ClearanceLevel NO_CLEARANCE = new ClearanceLevel(ClassificationLevelManager.UNCLASSIFIED, NO_CLEARANCE_MSG);
+	
     /** An immutable list of clearance levels ordered from most to least secure. */
     private ImmutableList<ClearanceLevel> clearanceLevels;
 
@@ -40,7 +45,9 @@ public class ClearanceLevelManager
      */
     public ClearanceLevelManager(List<ClearanceLevel> clearanceLevels)
     {
-        this.clearanceLevels = ImmutableList.copyOf(clearanceLevels);
+    	List<ClearanceLevel> temp = new ArrayList<ClearanceLevel>(clearanceLevels);
+    	temp.add(temp.size(), NO_CLEARANCE);
+        this.clearanceLevels = ImmutableList.copyOf(temp);
     }
 
     /** @return An immutable list of clearance levels ordered from most to least secure. */

@@ -166,6 +166,23 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     {
         return classificationServiceDao.getConfiguredLevels();
     }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService#getCurrentClassification(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    public ClassificationLevel getCurrentClassification(NodeRef nodeRef) 
+    {
+    	// by default everything is unclassified
+    	ClassificationLevel result = ClassificationLevelManager.UNCLASSIFIED;
+    	
+    	if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED))
+    	{
+    		String classificationId = (String)nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+    		result = levelManager.findLevelById(classificationId);
+    	}
+    	
+    	return result;
+    };
 
     /**
      * Gets the list of classification reasons as persisted in the system.
@@ -272,11 +289,10 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         // Add aspect
         nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
     }
-
-    @Override public ClassificationLevel getDefaultClassificationLevel()
+    
+    @Override public ClassificationLevel getUnclassifiedClassificationLevel()
     {
-        List<ClassificationLevel> classificationLevels = getClassificationLevels();
-        return classificationLevels.isEmpty() ? null : classificationLevels.get(classificationLevels.size() - 1);
+    	return ClassificationLevelManager.UNCLASSIFIED;
     }
 
     /**

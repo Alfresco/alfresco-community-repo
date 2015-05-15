@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import org.alfresco.query.PagingResults;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 
 /**
@@ -29,6 +30,18 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
  */
 public interface SecurityClearanceService
 {
+	/**
+	 * Indicates whether the currently authenticated user has clearance to see the
+	 * provided node.
+	 * <p>
+	 * Note that users, regardless of their clearance level, are always cleared to see a node that has no classification 
+	 * applied.
+	 * 
+	 * @param  nodeRef	node reference
+	 * @return boolean	true if cleared to see node, false otherwise
+	 */
+	boolean hasClearance(NodeRef nodeRef);
+	
     /**
      * Get the currently authenticated user's security clearance.
      *

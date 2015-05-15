@@ -44,6 +44,14 @@ public interface ClassificationService
      *         and therefore access to the most restricted documents).
      */
     List<ClassificationLevel> getClassificationLevels();
+    
+    /**
+     * Returns the current classification level of a given node.
+     * 
+     * @param  nodeRef						node reference
+     * @return {@link ClassificationLevel}	classification level, unclassified if none
+     */
+    ClassificationLevel getCurrentClassification(NodeRef nodeRef);
 
     /**
      * Returns an immutable list of the defined classification reasons.
@@ -63,15 +71,14 @@ public interface ClassificationService
      * @throws InvalidNodeRefException If the node could not be found.
      * @throws InvalidNode If the supplied node is not a content node.
      */
-    void classifyContent(String classificationLevelId, String classificationAuthority,
-                Set<String> classificationReasonIds, NodeRef content) throws LevelIdNotFound, ReasonIdNotFound,
-                InvalidNodeRefException, InvalidNode;
+    void classifyContent(String classificationLevelId, String classificationAuthority, Set<String> classificationReasonIds, NodeRef content) 
+    		throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
 
     /**
-     * Gets the default {@link ClassificationLevel}, which will usually be the level with the lowest security clearance.
-     * @return the default classification level, or {@code null} if no security levels are configured.
+     * Gets the unclassified {@link ClassificationLevel}.
+     * @return the unclassified classification level
      */
-    ClassificationLevel getDefaultClassificationLevel();
+    ClassificationLevel getUnclassifiedClassificationLevel();
 
     /**
      * Gets the classification level for the given classification level id

@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
 /**
@@ -63,7 +64,7 @@ public class ClassificationLevelsTest extends BaseRMTestCase
             {
                 List<ClassificationLevel> levels = classificationService.getClassificationLevels();
                 assertNotNull(levels);
-                assertEquals(4, levels.size());
+                assertEquals(5, levels.size());
 
                 ClassificationLevel level1 = levels.get(0);
                 ClassificationLevel level2 = levels.get(1);
@@ -79,6 +80,8 @@ public class ClassificationLevelsTest extends BaseRMTestCase
                 assertEquals(level2.getId(), LEVEL2_ID);
                 assertEquals(level3.getId(), LEVEL3_ID);
                 assertEquals(level4.getId(), LEVEL4_ID);
+                
+                assertEquals(ClassificationLevelManager.UNCLASSIFIED, levels.get(4));
             }
         });
     }

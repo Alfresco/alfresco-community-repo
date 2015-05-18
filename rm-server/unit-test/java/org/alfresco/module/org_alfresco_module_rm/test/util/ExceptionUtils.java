@@ -75,12 +75,13 @@ public class ExceptionUtils
     }
 
     /**
-     * Utility method to help with expected exceptions in test code. This can be used in place of {@code try/catch}
-     * blocks within test code and can sometimes make code more readable.
+     * Utility method to help with expected exceptions (unchecked - see below) in test code. This can be used in place
+     * of {@code try/catch} blocks within test code and can sometimes make code more readable.
      * A single expected exception would usually be let escape from the test method and be handled e.g. by JUnit's
      * {@code @Test(expected="Exception.class")} pattern.
      * However if you have multiple expected exceptions in a sequence, you need to either add a sequence of
-     * {@code try/catch} or use this method.
+     * {@code try/catch} or use this method. Likewise if you need to make assertions about state within the expected
+     * exception, such as root cause or other internal state, this method will be useful.
      * <p/>
      * Examples:
      * <ul>
@@ -118,6 +119,12 @@ public class ExceptionUtils
      *         </pre>
      *     </li>
      * </ul>
+     *
+     * A note on checked exceptions: currently this method does not provide any support for working around the normal
+     * integration of Java 8 lambdas and checked exceptions. If your {@code code} block must deal with checked exceptions,
+     * you must add {@code try}/{@code catch} blocks within your lambda which obviously makes this method less useful.
+     * This may change in the future.
+     *
      *
      * @param expected the class of the expected throwable (subtypes will also match).
      * @param code     a lambda containing the code block which should throw the expected throwable.

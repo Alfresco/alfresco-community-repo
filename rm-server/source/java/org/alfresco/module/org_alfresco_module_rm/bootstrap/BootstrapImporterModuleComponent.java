@@ -40,9 +40,11 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 
     /** module patch executer */
     private ModulePatchExecuter modulePatchExecuter;
-    
+
     /** record contributors group bootstrap component */
     private RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent;
+    /** Clearances for special users bootstrap component. */
+    private ClearancesForSpecialUsersBootstrapComponent clearancesForSpecialUsersBootstrapComponent;
 
     /**
      * @param nodeService   node service
@@ -57,8 +59,8 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
      */
     public void setModulePatchExecuter(ModulePatchExecuter modulePatchExecuter)
     {
-		this.modulePatchExecuter = modulePatchExecuter;
-	}
+        this.modulePatchExecuter = modulePatchExecuter;
+    }
 
     /**
      * @param recordContributorsGroupBootstrapComponent record contributors group bootstrap component
@@ -67,7 +69,16 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     {
         this.recordContributorsGroupBootstrapComponent = recordContributorsGroupBootstrapComponent;
     }
-    
+
+    /**
+     * @param clearancesForSpecialUsersBootstrapComponent The bootstrap component that give the admin and system users
+     *            the maximum clearance.
+     */
+    public void setClearancesForSpecialUsersBootstrapComponent(ClearancesForSpecialUsersBootstrapComponent clearancesForSpecialUsersBootstrapComponent)
+    {
+        this.clearancesForSpecialUsersBootstrapComponent = clearancesForSpecialUsersBootstrapComponent;
+    }
+
     /**
      * Need to check whether this module has already been executed.
      *
@@ -80,9 +91,10 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
         if (!nodeService.exists(nodeRef))
         {
             super.executeInternal();
-            
-            // bootstrap the record contributors group
+
+            // Bootstrap creation of initial data.
             recordContributorsGroupBootstrapComponent.createRecordContributorsGroup();
+            clearancesForSpecialUsersBootstrapComponent.createClearancesForSpecialUsers();
 
             // init module schema number
             modulePatchExecuter.initSchemaVersion();

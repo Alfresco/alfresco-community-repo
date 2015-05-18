@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- RM v3.0 Patches -->
+
+   <bean id="rm.clearancesForSpecialUsers"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v30.RMv30ClearancesForSpecialUsers">
+      <property name="description" value="Provide security clearance to the admin and system users."/>
+      <property name="fixesToSchema" value="1012"/>
+      <property name="targetSchema" value="2001"/>
+      <property name="bootstrapComponent" ref="clearancesForSpecialUsersBootstrapComponent"/>
+   </bean>
+
+</beans>

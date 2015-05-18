@@ -31,6 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -163,6 +164,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected InplaceRecordService inplaceRecordService;
     protected RelationshipService relationshipService;
     protected ClassificationService classificationService;
+    protected SecurityClearanceService securityClearanceService;
     protected ContentClassificationService contentClassificationService;
 
     /** test data */
@@ -404,6 +406,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
         relationshipService = (RelationshipService) applicationContext.getBean("RelationshipService");
         classificationService = (ClassificationService) applicationContext.getBean("ClassificationService");
+        securityClearanceService = (SecurityClearanceService) applicationContext.getBean("SecurityClearanceService");
         contentClassificationService = (ContentClassificationService) applicationContext.getBean("ContentClassificationService");
     }
 

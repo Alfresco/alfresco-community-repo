@@ -41,6 +41,7 @@
          class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl"
          parent="baseService" init-method="init">
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
+      <property name="securityClearanceService" ref="securityClearanceService"/>
    </bean>
 
    <bean id="ClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -90,6 +90,15 @@
                     <property name="identifier">
                         <value>SpacesStore</value>
                     </property>
+                    <property name="nodeString">
+                        <value>${solr4.alfresco.nodeString}</value>
+                    </property>
+                    <property name="numShards">
+                        <value>${solr4.alfresco.numShards}</value>
+                    </property>
+                    <property name="replicationFactor">
+                        <value>${solr4.alfresco.replicationFactor}</value>
+                    </property>
                 </bean>
                 <bean class="org.alfresco.repo.search.impl.solr.SolrStoreMapping">
                     <property name="beanName">
@@ -106,6 +115,15 @@
                     </property>
                     <property name="identifier">
                         <value>SpacesStore</value>
+                    </property>
+                    <property name="nodeString">
+                        <value>${solr4.archive.nodeString}</value>
+                    </property>
+                    <property name="numShards">
+                        <value>${solr4.archive.numShards}</value>
+                    </property>
+                    <property name="replicationFactor">
+                        <value>${solr4.archive.replicationFactor}</value>
                     </property>
                 </bean>
             </list>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.search.SearchParameters.SortDefinition;
 import org.alfresco.service.cmr.search.StatsParameters;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.Header;
@@ -104,9 +105,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 
     private List<SolrStoreMapping> storeMappings;
 
-    private HashMap<StoreRef, HttpClient> httpClients = new HashMap<StoreRef, HttpClient>();
-    
-    private HashMap<StoreRef, List<SolrStoreMapping>> mappingLookup = new HashMap<StoreRef, List<SolrStoreMapping>>();
+    private HashMap<StoreRef, SolrStoreMappingWrapper> mappingLookup = new HashMap<StoreRef, SolrStoreMappingWrapper>();
 
 	private String alternativeDictionary = CMISStrictDictionaryService.DEFAULT;
 	
@@ -137,21 +136,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 
         for(SolrStoreMapping mapping : storeMappings)
         {
-            List<SolrStoreMapping> storeMappingList = mappingLookup.get(mapping.getStoreRef());
-            if(storeMappingList == null)
-            {
-                storeMappingList = new ArrayList<SolrStoreMapping>(50);
-                mappingLookup.put(mapping.getStoreRef(), storeMappingList);
-                
-                HttpClientFactory httpClientFactory = (HttpClientFactory)beanFactory.getBean(mapping.getHttpClientFactory());
-                HttpClient httpClient = httpClientFactory.getHttpClient();
-                HttpClientParams params = httpClient.getParams();
-                params.setBooleanParameter(HttpClientParams.PREEMPTIVE_AUTHENTICATION, true);
-                httpClient.getState().setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), new UsernamePasswordCredentials("admin", "admin"));
-                httpClients.put(mapping.getStoreRef(), httpClient);
-            }
-            
-            storeMappingList.add(mapping);
+            mappingLookup.put(mapping.getStoreRef(), new SolrStoreMappingWrapper(mapping, beanFactory));
         }
     }
 
@@ -245,13 +230,20 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         try 
         { 
             StoreRef store = extractStoreRef(searchParameters);            
-            List<SolrStoreMapping> mappings = extractMappings(store);
+            SolrStoreMappingWrapper mapping = extractMapping(store);
             Locale locale = extractLocale(searchParameters);
             
-            String url = buildStatsUrl(searchParameters, mappings.get(0).getBaseUrl(), locale);
+            Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
+            HttpClient httpClient = httpClientAndBaseUrl.getFirst();
+            String url = buildStatsUrl(searchParameters, httpClientAndBaseUrl.getSecond(), locale);
             JSONObject body = buildStatsBody(searchParameters, tenantService.getCurrentUserDomain(), locale);
             
-            return (SolrStatsResult) postSolrQuery(store, url, body, new SolrJsonProcessor<SolrStatsResult>() {
+            if(httpClient == null)
+            {
+                throw new AlfrescoRuntimeException("No http client for store " + store.toString());
+            }
+            
+            return (SolrStatsResult) postSolrQuery(httpClient, url, body, new SolrJsonProcessor<SolrStatsResult>() {
 
                 @Override
                 public SolrStatsResult getResult(JSONObject json)
@@ -335,12 +327,16 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         try
         {
             StoreRef store = extractStoreRef(searchParameters);            
-            List<SolrStoreMapping> mappings = extractMappings(store);
+            SolrStoreMappingWrapper mapping = extractMapping(store);
             Locale locale = extractLocale(searchParameters);
             
             URLCodec encoder = new URLCodec();
             StringBuilder url = new StringBuilder();
-            url.append(mappings.get(0).getBaseUrl());
+         
+            Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
+            HttpClient httpClient = httpClientAndBaseUrl.getFirst();
+            
+            url.append(httpClientAndBaseUrl.getSecond());
          
             String languageUrlFragment = extractLanguageFragment(language);
             url.append("/").append(languageUrlFragment);
@@ -351,29 +347,25 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             url.append("?wt=").append(encoder.encode("json", "UTF-8"));
             url.append("&fl=").append(encoder.encode("DBID,score", "UTF-8"));
             
-            if((searchParameters.getStores().size() > 1) || (mappings.size() > 1))
+            if((searchParameters.getStores().size() > 1) || (mapping.isSharded()))
             {
                 boolean requiresSeparator = false;
                 url.append("&shards=");
                 for(StoreRef storeRef : searchParameters.getStores())
                 {
-                    for(SolrStoreMapping shard : extractMappings(storeRef))
+                    SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
+
+                    if(requiresSeparator)
                     {
-                        if(requiresSeparator)
-                        {
-                            url.append(',');
-                        }
-                        else
-                        {
-                            requiresSeparator = true;
-                        }
-                        
-                        HttpClientFactory httpClientFactory = (HttpClientFactory)beanFactory.getBean(shard.getHttpClientFactory());
-                        url.append(httpClientFactory.getHost());
-                        url.append(':');
-                        url.append(httpClientFactory.getPort());
-                        url.append(encoder.encode(shard.getBaseUrl(), "UTF-8"));
+                        url.append(',');
                     }
+                    else
+                    {
+                        requiresSeparator = true;
+                    }
+
+                    url.append(storeMapping.getShards());
+                   
                 }
             }
             
@@ -551,7 +543,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             body.put("textAttributes", textAttributes);
 
             final int maximumResults = maxResults;  //just needed for the final parameter
-            return (ResultSet) postSolrQuery(store, url.toString(), body, new SolrJsonProcessor<SolrJSONResultSet>() {
+            
+           
+            
+            return (ResultSet) postSolrQuery(httpClient, url.toString(), body, new SolrJsonProcessor<SolrJSONResultSet>() {
 
                 @Override
                 public SolrJSONResultSet getResult(JSONObject json)
@@ -579,24 +574,24 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         }
     }
 
-    protected JSONResult postSolrQuery(StoreRef store, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor)
+    protected JSONResult postSolrQuery(HttpClient httpClient, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor)
                 throws UnsupportedEncodingException, IOException, HttpException, URIException,
                 JSONException
     {
-        return postSolrQuery(store, url, body, jsonProcessor, null);
+        return postSolrQuery(httpClient, url, body, jsonProcessor, null);
     }
 
-    protected JSONResult postSolrQuery(StoreRef store, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor, String spellCheckParams)
+    protected JSONResult postSolrQuery(HttpClient httpClient, String url, JSONObject body, SolrJsonProcessor<?> jsonProcessor, String spellCheckParams)
                 throws UnsupportedEncodingException, IOException, HttpException, URIException,
                 JSONException
     {
-        JSONObject json = postQuery(store, url, body);
+        JSONObject json = postQuery(httpClient, url, body);
         if (spellCheckParams != null)
         {
             SpellCheckDecisionManager manager = new SpellCheckDecisionManager(json, url, body, spellCheckParams);
             if (manager.isCollate())
             {
-                json = postQuery(store, manager.getUrl(), body);
+                json = postQuery(httpClient, manager.getUrl(), body);
             }
             json.put("spellcheck", manager.getSpellCheckJsonValue());
         }
@@ -613,7 +608,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
             return results;
     }
 
-    protected JSONObject postQuery(StoreRef store, String url, JSONObject body) throws UnsupportedEncodingException,
+    protected JSONObject postQuery(HttpClient httpClient, String url, JSONObject body) throws UnsupportedEncodingException,
                 IOException, HttpException, URIException, JSONException
     {
         PostMethod post = new PostMethod(url);
@@ -625,13 +620,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 
         try
         {
-            HttpClient httpClient = httpClients.get(store);
-            
-            if(httpClient == null)
-            {
-                throw new AlfrescoRuntimeException("No http client for store " + store.toString());
-            }
-            
             httpClient.executeMethod(post);
 
             if(post.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || post.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
@@ -719,11 +707,11 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         return languageUrlFragment;
     }
 
-    private List<SolrStoreMapping> extractMappings(StoreRef store)
+    private SolrStoreMappingWrapper extractMapping(StoreRef store)
     {
-        List<SolrStoreMapping> mappings = mappingLookup.get(store);
+        SolrStoreMappingWrapper mappings = mappingLookup.get(store);
         
-        if ((mappings == null) || (mappings.size() == 0))
+        if (mappings == null)
         {
             throw new AlfrescoRuntimeException("No solr query support for store " + store);
         }

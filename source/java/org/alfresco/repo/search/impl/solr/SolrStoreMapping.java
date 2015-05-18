@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,10 +18,10 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
+import java.util.LinkedHashSet;
+
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.BeanNameAware;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Andy
@@ -41,18 +41,24 @@ public class SolrStoreMapping implements BeanNameAware
 
     private String beanName;
     
+    private String[] nodes = new String[0];
+
+    private int numShards = 1;
+
+    private int replicationFactor = 1;
+    
     public SolrStoreMapping()
     {
         
     }
     
-    public SolrStoreMapping(String protocol, String identifier, String httpClientFactory, String baseUrl)
-    {
-        this.protocol = protocol;
-        this.identifier = identifier;
-        this.httpClientFactory = httpClientFactory;
-        this.baseUrl = baseUrl;
-    }
+//    public SolrStoreMapping(String protocol, String identifier, String httpClientFactory, String baseUrl)
+//    {
+//        this.protocol = protocol;
+//        this.identifier = identifier;
+//        this.httpClientFactory = httpClientFactory;
+//        this.baseUrl = baseUrl;
+//    }
 
     /**
      * @return the storeRef
@@ -146,5 +152,94 @@ public class SolrStoreMapping implements BeanNameAware
         }
     }
     
+    /**
+     * @return the nodes
+     */
+    public String getNodeString()
+    {
+        StringBuilder builder = new StringBuilder();
+        for(String node : nodes)
+        {
+            if(builder.length() > 0)
+            {
+                builder.append(',');
+            }
+            builder.append(node);
+        }
+        return builder.toString();
+    }
     
+    /**
+     * @return the nodes
+     */
+    public String[] getNodes()
+    {
+        return nodes;
+    }
+
+    /**
+     * @param nodes
+     *            the nodes to set
+     */
+//    public void setNodes(String[] nodes)
+//    {
+//        LinkedHashSet<String> unique = new LinkedHashSet<String>();
+//        for(String node : nodes)
+//        {
+//            for(String split : node.split(","))
+//            {
+//                unique.add(split.trim());
+//            }
+//        }
+//        
+//        this.nodes = unique.toArray(new String[0]);
+//    }
+    
+    public void setNodeString(String nodes)
+    {
+        LinkedHashSet<String> unique = new LinkedHashSet<String>();
+
+        for(String split : nodes.split(","))
+        {
+            unique.add(split.trim());
+        }
+
+
+        this.nodes = unique.toArray(new String[0]);
+    }
+    
+    /**
+     * @return the numShards
+     */
+    public int getNumShards()
+    {
+        return numShards;
+    }
+
+    /**
+     * @param numShards
+     *            the numShards to set
+     */
+    public void setNumShards(int numShards)
+    {
+        this.numShards = numShards;
+    }
+
+    /**
+     * @return the replicationFactor
+     */
+    public int getReplicationFactor()
+    {
+        return replicationFactor;
+    }
+
+    /**
+     * @param replicationFactor
+     *            the replicationFactor to set
+     */
+    public void setReplicationFactor(int replicationFactor)
+    {
+        this.replicationFactor = replicationFactor;
+    }
+
 }

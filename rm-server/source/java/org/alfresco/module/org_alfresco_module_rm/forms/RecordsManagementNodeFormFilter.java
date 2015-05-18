@@ -22,6 +22,7 @@ import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAs
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -76,6 +77,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected static final String TRANSIENT_DISPOSITION_INSTRUCTIONS = "rmDispositionInstructions";
     protected static final String TRANSIENT_CURRENT_CLASSIFICATION = "clfCurrentClassification";
     protected static final String TRANSIENT_INITIAL_CLASSIFICATION = "clfInitialClassification";
+    protected static final String TRANSIENT_CLASSIFICATION_REASON_LABELS = "clfClassificationReasonLabels";
 
     /** Disposition service */
     private DispositionService dispositionService;
@@ -214,6 +216,21 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             {
                 String currentClassificationDisplayLabel = getClassificationService().getClassificationLevelById(currentClassificationId).getDisplayLabel();
                 addTransientPropertyField(form, TRANSIENT_CURRENT_CLASSIFICATION, DataTypeDefinition.TEXT, currentClassificationDisplayLabel);
+            }
+
+            @SuppressWarnings("unchecked")
+            List<String> classificationReasons = (List<String>) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CLASSIFICATION_REASONS);
+            if (classificationReasons != null && !classificationReasons.isEmpty())
+            {
+                List<String> classificationReasonLabels = new ArrayList<>();
+                int size = classificationReasons.size();
+                for (int i = 0; i < size; i++)
+                {
+                    String id = classificationReasons.get(i);
+                    String displayLabel = getClassificationService().getClassificationReasonById(id).getDisplayLabel();
+                    classificationReasonLabels.add(id + ": " + displayLabel + (i < size - 1 ? "|": ""));
+                }
+                addTransientPropertyField(form, TRANSIENT_CLASSIFICATION_REASON_LABELS, DataTypeDefinition.TEXT, classificationReasonLabels);
             }
         }
     }

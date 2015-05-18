@@ -27,12 +27,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.*;
 
-import java.util.Arrays;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -47,6 +44,8 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Unit tests for {@link SecurityClearanceServiceImpl}.

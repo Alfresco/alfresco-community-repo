@@ -19,13 +19,9 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.util.List;
-import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * The Classification Service supports the 'Classified Records' feature, whereby Alfresco
@@ -44,35 +40,12 @@ public interface ClassificationService
      *         and therefore access to the most restricted documents).
      */
     List<ClassificationLevel> getClassificationLevels();
-    
-    /**
-     * Returns the current classification level of a given node.
-     * 
-     * @param  nodeRef						node reference
-     * @return {@link ClassificationLevel}	classification level, unclassified if none
-     */
-    ClassificationLevel getCurrentClassification(NodeRef nodeRef);
 
     /**
      * Returns an immutable list of the defined classification reasons.
      * @return classification reasons in the order that they are defined.
      */
     List<ClassificationReason> getClassificationReasons();
-
-    /**
-     * Classify a piece of content.
-     *
-     * @param classificationLevelId The security clearance needed to access the content.
-     * @param classificationAuthority The name of the authority responsible for the classification of this content.
-     * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
-     * @param content The node to classify.
-     * @throws LevelIdNotFound If the supplied level id is not found.
-     * @throws ReasonIdNotFound If any of the supplied reason ids are not found.
-     * @throws InvalidNodeRefException If the node could not be found.
-     * @throws InvalidNode If the supplied node is not a content node.
-     */
-    void classifyContent(String classificationLevelId, String classificationAuthority, Set<String> classificationReasonIds, NodeRef content) 
-    		throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
 
     /**
      * Gets the unclassified {@link ClassificationLevel}.

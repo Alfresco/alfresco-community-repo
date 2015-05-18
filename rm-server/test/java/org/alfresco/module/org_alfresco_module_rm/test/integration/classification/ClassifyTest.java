@@ -34,12 +34,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class ClassifyTest extends BaseRMTestCase
 {
-	/** test data */
-	private static final String CLASSIFICATION_LEVEL = "level1";
-	private static final String CLASSIFICATION_REASON = "Test Reason 1";
-	private static final String CLASSIFICATION_AUTHORITY = "classification authority";
-	private static final String RECORD_NAME = "recordname.txt";
-	
+    /** test data */
+    private static final String CLASSIFICATION_LEVEL = "level1";
+    private static final String CLASSIFICATION_REASON = "Test Reason 1";
+    private static final String CLASSIFICATION_AUTHORITY = "classification authority";
+    private static final String RECORD_NAME = "recordname.txt";
+
     /**
      * Given that a record is frozen
      * And unclassified
@@ -50,27 +50,27 @@ public class ClassifyTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest(AccessDeniedException.class)
         {
-        	private NodeRef record;
-        	
+            private NodeRef record;
+
             public void given() throws Exception
             {
-            	record = utils.createRecord(rmFolder, RECORD_NAME);
-            	
-            	NodeRef hold = holdService.createHold(filePlan, "my hold", "for test", "for test");
-            	holdService.addToHold(hold, record);
+                record = utils.createRecord(rmFolder, RECORD_NAME);
+
+                NodeRef hold = holdService.createHold(filePlan, "my hold", "for test", "for test");
+                holdService.addToHold(hold, record);
             }
 
             public void when() throws Exception
             {
-            	classificationService.classifyContent(
-            			CLASSIFICATION_LEVEL, 
-            			CLASSIFICATION_AUTHORITY, 
-            			Collections.singleton(CLASSIFICATION_REASON), 
-            			record);
+                contentClassificationService.classifyContent(
+                        CLASSIFICATION_LEVEL,
+                        CLASSIFICATION_AUTHORITY,
+                        Collections.singleton(CLASSIFICATION_REASON),
+                        record);
             }
         });
     }
-    
+
     /**
      * Given that a record is complete
      * And unclassified
@@ -80,31 +80,31 @@ public class ClassifyTest extends BaseRMTestCase
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-        	private NodeRef record;
-        	
+            private NodeRef record;
+
             public void given() throws Exception
             {
-            	record = utils.createRecord(rmFolder, RECORD_NAME);
-            	utils.completeRecord(record);
+                record = utils.createRecord(rmFolder, RECORD_NAME);
+                utils.completeRecord(record);
             }
 
             public void when() throws Exception
             {
-            	classificationService.classifyContent(
-            			CLASSIFICATION_LEVEL, 
-            			CLASSIFICATION_AUTHORITY, 
-            			Collections.singleton(CLASSIFICATION_REASON), 
-            			record);
+                contentClassificationService.classifyContent(
+                        CLASSIFICATION_LEVEL,
+                        CLASSIFICATION_AUTHORITY,
+                        Collections.singleton(CLASSIFICATION_REASON),
+                        record);
             }
 
             @SuppressWarnings("unchecked")
-			public void then() throws Exception
+            public void then() throws Exception
             {
-            	assertTrue(nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
-            	assertEquals(CLASSIFICATION_LEVEL, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
-            	assertEquals(CLASSIFICATION_LEVEL, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
-            	assertEquals(CLASSIFICATION_AUTHORITY, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
-            	assertEquals(Collections.singletonList(CLASSIFICATION_REASON), (List<String>)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));            
+                assertTrue(nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
+                assertEquals(CLASSIFICATION_LEVEL, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
+                assertEquals(CLASSIFICATION_LEVEL, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
+                assertEquals(CLASSIFICATION_AUTHORITY, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
+                assertEquals(Collections.singletonList(CLASSIFICATION_REASON), (List<String>)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
             }
         });
     }

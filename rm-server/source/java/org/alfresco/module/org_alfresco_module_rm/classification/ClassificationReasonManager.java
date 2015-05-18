@@ -25,7 +25,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
 
 /**
  * Container for the configured {@link ClassificationReason} objects.
- * 
+ *
  * @author tpage
  */
 public class ClassificationReasonManager
@@ -34,11 +34,11 @@ public class ClassificationReasonManager
     private ImmutableList<ClassificationReason> classificationReasons;
 
     /**
-     * Constructor that stores an immutable copy of the given reasons.
-     * 
+     * Store an immutable copy of the given reasons.
+     *
      * @param classificationReasons The classification reasons.
      */
-    public ClassificationReasonManager(Collection<ClassificationReason> classificationReasons)
+    public void setClassificationReasons(Collection<ClassificationReason> classificationReasons)
     {
         this.classificationReasons = ImmutableList.copyOf(classificationReasons);
     }
@@ -51,7 +51,7 @@ public class ClassificationReasonManager
 
     /**
      * Get a <code>ClassificationReason</code> using its id.
-     * 
+     *
      * @param id The id of a classification reason.
      * @return The classification reason.
      * @throws ReasonIdNotFound If the classification reason cannot be found.

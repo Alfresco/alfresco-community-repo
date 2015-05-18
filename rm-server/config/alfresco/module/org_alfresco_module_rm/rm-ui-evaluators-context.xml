@@ -7,7 +7,7 @@
 
    <!-- extending bean definition -->
    <bean id="rm.jsonConversionComponent"
-   		 class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent"
          parent="baseJsonConversionComponent"
          init-method="init">
       <property name="recordContributorsGroupEnabled" value="${rm.record.contributors.group.enabled}"/>

@@ -30,6 +30,7 @@ import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditSe
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -162,6 +163,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected InplaceRecordService inplaceRecordService;
     protected RelationshipService relationshipService;
     protected ClassificationService classificationService;
+    protected ContentClassificationService contentClassificationService;
 
     /** test data */
     protected String siteId;
@@ -273,7 +275,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected boolean isRMSiteTest()
     {
-    	return true;
+        return true;
     }
 
     /**
@@ -402,6 +404,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
         relationshipService = (RelationshipService) applicationContext.getBean("RelationshipService");
         classificationService = (ClassificationService) applicationContext.getBean("ClassificationService");
+        contentClassificationService = (ContentClassificationService) applicationContext.getBean("ContentClassificationService");
     }
 
     /**
@@ -482,44 +485,44 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
      */
     protected void setupTestData()
     {
-    	doTestInTransaction(new Test<Void>()
+        doTestInTransaction(new Test<Void>()
         {
             public Void run()
             {
-            	setupTestDataImpl();
+                setupTestDataImpl();
 
-            	if (isRecordTest() && isRMSiteTest())
-            	{
-            	    setupTestRecords();
-            	}
+                if (isRecordTest() && isRMSiteTest())
+                {
+                    setupTestRecords();
+                }
 
-            	return null;
+                return null;
             }
 
             @Override
             public void test(Void result) throws Exception
             {
-            	if (isRMSiteTest())
-            	{
-	                if (isRecordTest())
-	                {
-	                    // declare a record
-	                    utils.completeRecord(recordDeclaredOne);
-	                    utils.completeRecord(recordDeclaredTwo);
-	                }
+                if (isRMSiteTest())
+                {
+                    if (isRecordTest())
+                    {
+                        // declare a record
+                        utils.completeRecord(recordDeclaredOne);
+                        utils.completeRecord(recordDeclaredTwo);
+                    }
 
-	                // unfiled container
-	                unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
-	                assertNotNull(unfiledContainer);
+                    // unfiled container
+                    unfiledContainer = filePlanService.getUnfiledContainer(filePlan);
+                    assertNotNull(unfiledContainer);
 
-	                // holds container
-	                holdsContainer = filePlanService.getHoldContainer(filePlan);
-	                assertNotNull(holdsContainer);
+                    // holds container
+                    holdsContainer = filePlanService.getHoldContainer(filePlan);
+                    assertNotNull(holdsContainer);
 
-	                // transfers container
-	                transfersContainer = filePlanService.getTransferContainer(filePlan);
-	                assertNotNull(transfersContainer);
-            	}
+                    // transfers container
+                    transfersContainer = filePlanService.getTransferContainer(filePlan);
+                    assertNotNull(transfersContainer);
+                }
             }
         }, AuthenticationUtil.getSystemUserName());
     }
@@ -556,28 +559,28 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
         if (isRMSiteTest())
         {
-	        siteId = GUID.generate();
-	        siteInfo = siteService.createSite(
-	                        "rm-site-dashboard",
-	                        siteId,
-	                        "title",
-	                        "descrition",
-	                        SiteVisibility.PUBLIC,
-	                        RecordsManagementModel.TYPE_RM_SITE);
+            siteId = GUID.generate();
+            siteInfo = siteService.createSite(
+                            "rm-site-dashboard",
+                            siteId,
+                            "title",
+                            "descrition",
+                            SiteVisibility.PUBLIC,
+                            RecordsManagementModel.TYPE_RM_SITE);
 
-	        filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
-	        assertNotNull("Site document library container was not created successfully.", filePlan);
+            filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
+            assertNotNull("Site document library container was not created successfully.", filePlan);
 
-	        // Create RM container
-	        rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
-	        assertNotNull("Could not create rm container", rmContainer);
+            // Create RM container
+            rmContainer = filePlanService.createRecordCategory(filePlan, "rmContainer");
+            assertNotNull("Could not create rm container", rmContainer);
 
-	        // Create disposition schedule
-	        dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
+            // Create disposition schedule
+            dispositionSchedule = utils.createBasicDispositionSchedule(rmContainer);
 
-	        // Create RM folder
-	        rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
-	        assertNotNull("Could not create rm folder", rmFolder);
+            // Create RM folder
+            rmFolder = recordFolderService.createRecordFolder(rmContainer, "rmFolder");
+            assertNotNull("Could not create rm folder", rmFolder);
         }
     }
 

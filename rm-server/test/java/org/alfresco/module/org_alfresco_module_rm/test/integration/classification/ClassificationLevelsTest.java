@@ -64,7 +64,7 @@ public class ClassificationLevelsTest extends BaseRMTestCase
             {
                 List<ClassificationLevel> levels = classificationService.getClassificationLevels();
                 assertNotNull(levels);
-                assertEquals(5, levels.size());
+                assertEquals("Expected 5 levels to be configured (4 defined in the test plus Unclassified)", 5, levels.size());
 
                 ClassificationLevel level1 = levels.get(0);
                 ClassificationLevel level2 = levels.get(1);

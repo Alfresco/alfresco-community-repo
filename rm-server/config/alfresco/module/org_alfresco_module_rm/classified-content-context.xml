@@ -39,9 +39,8 @@
 
    <bean id="classificationService"
          class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl"
-         parent="baseService">
-      <property name="attributeService" ref="AttributeService"/>
-      <property name="classificationServiceDAO" ref="classificationServiceDAO"/>
+         parent="baseService" init-method="init">
+      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
    </bean>
 
    <bean id="ClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -76,9 +75,7 @@
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getCurrentClassification=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasons=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.classifyContent=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevelById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasonById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getUnclassifiedClassificationLevel=ACL_ALLOW
@@ -94,9 +91,9 @@
    <bean id="classificationServiceBootstrap"
          class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap">
        <constructor-arg ref="rm.authenticationUtil"/>
-       <constructor-arg ref="classificationService"/> <!-- Intentionally using the small 'c' here -->
-       <constructor-arg ref="securityClearanceService"/> <!-- Intentionally using the small 's' here -->
        <constructor-arg ref="TransactionService"/>
+       <constructor-arg ref="attributeService"/>
+       <constructor-arg ref="classificationServiceDAO"/>
    </bean>
 
 
@@ -104,9 +101,9 @@
 
    <bean id="securityClearanceService"
          class="org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceServiceImpl"
-         parent="baseService">
-      <property name="classificationService" ref="ClassificationService"/> <!-- Intentionally using capital 'C' -->
+         parent="baseService" init-method="init">
       <property name="personService" ref="PersonService"/>
+      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
    </bean>
 
    <bean id="SecurityClearanceService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -140,12 +137,59 @@
    <bean id="SecurityClearanceService_security" parent="baseSecurity">
       <property name="objectDefinitionSource">
          <value>
-         	org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.hasClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUserSecurityClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getUsersSecurityClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.setUserSecurityClearance=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.getClearanceLevels=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService.*=ACL_DENY
+         </value>
+      </property>
+   </bean>
+
+   <!--  Content Classification Service  -->
+
+   <bean id="contentClassificationService"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationServiceImpl"
+         parent="baseService" init-method="init">
+      <property name="securityClearanceService" ref="SecurityClearanceService"/>
+      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
+   </bean>
+
+   <bean id="ContentClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService</value>
+      </property>
+      <property name="target">
+         <ref bean="contentClassificationService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="ContentClassificationService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="ContentClassificationService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="ContentClassificationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <!-- FIXME: We have to restrict methods in the classification service (with capabilities, etc.) -->
+   <bean id="ContentClassificationService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+            org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.getCurrentClassification=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.classifyContent=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.hasClearance=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.*=ACL_DENY
          </value>
       </property>
    </bean>

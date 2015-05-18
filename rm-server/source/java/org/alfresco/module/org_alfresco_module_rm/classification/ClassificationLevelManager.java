@@ -21,34 +21,33 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
-
 import com.google.common.collect.ImmutableList;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 
 /**
  * Container for the configured {@link ClassificationLevel} objects.
- * 
+ *
  * @author tpage
  */
 public class ClassificationLevelManager
 {
-	/** Unclassified classificaiton level */
-	public static final String UNCLASSIFIED_ID = "Unclassified";
-	private static final String UNCLASSIFIED_MSG = "rm.classification.unclassified";	
-	public static final ClassificationLevel UNCLASSIFIED = new ClassificationLevel(UNCLASSIFIED_ID, UNCLASSIFIED_MSG);
-	
+    /** Unclassified classification level */
+    public static final String UNCLASSIFIED_ID = "Unclassified";
+    private static final String UNCLASSIFIED_MSG = "rm.classification.unclassified";
+    public static final ClassificationLevel UNCLASSIFIED = new ClassificationLevel(UNCLASSIFIED_ID, UNCLASSIFIED_MSG);
+
     /** An immutable list of classification levels ordered from most to least secure. */
     private ImmutableList<ClassificationLevel> classificationLevels;
 
     /**
-     * Constructor that stores an immutable copy of the given levels.
-     * 
+     * Store an immutable copy of the given classification levels.
+     *
      * @param classificationLevels A list of classification levels ordered from most to least secure.
      */
-    public ClassificationLevelManager(List<ClassificationLevel> classificationLevels)
+    public void setClassificationLevels(List<ClassificationLevel> classificationLevels)
     {
-    	List<ClassificationLevel> temp = new ArrayList<ClassificationLevel>(classificationLevels);
-    	temp.add(temp.size(), UNCLASSIFIED);    	
+        List<ClassificationLevel> temp = new ArrayList<ClassificationLevel>(classificationLevels);
+        temp.add(temp.size(), UNCLASSIFIED);
         this.classificationLevels = ImmutableList.copyOf(temp);
     }
 
@@ -66,7 +65,7 @@ public class ClassificationLevelManager
 
     /**
      * Get a <code>ClassificationLevel</code> using its id.
-     * 
+     *
      * @param id The id of a classification level.
      * @return The classification level.
      * @throws LevelIdNotFound If the classification level cannot be found.

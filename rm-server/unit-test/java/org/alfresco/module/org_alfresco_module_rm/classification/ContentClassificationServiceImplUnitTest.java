@@ -1,0 +1,313 @@
+/*
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.alfresco.module.org_alfresco_module_rm.classification;
+
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
+import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
+import org.alfresco.service.namespace.QName;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+/**
+ * Unit tests for {@link ContentClassificationServiceImpl}.
+ *
+ * @author tpage
+ */
+public class ContentClassificationServiceImplUnitTest implements ClassifiedContentModel
+{
+    private static final String CLASSIFICATION_LEVEL_ID = "classificationLevelId";
+    private static final ClassificationLevel CLASSIFICATION_LEVEL = new ClassificationLevel(CLASSIFICATION_LEVEL_ID, generateText());
+
+    @InjectMocks ContentClassificationServiceImpl contentClassificationServiceImpl;
+    @Mock ClassificationLevelManager mockLevelManager;
+    @Mock ClassificationReasonManager mockReasonManager;
+    @Mock NodeService mockNodeService;
+    @Mock DictionaryService mockDictionaryService;
+    @Mock SecurityClearanceService mockSecurityClearanceService;
+    @Captor ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
+
+    @Before public void setUp()
+    {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    /** Classify a piece of content with a couple of reasons and check the NodeService is called correctly. */
+    @Test public void classifyContent_success()
+    {
+        // Create a level and two reasons.
+        ClassificationLevel level = new ClassificationLevel("levelId1", "displayLabelKey");
+        ClassificationReason reason1 = new ClassificationReason("reasonId1", "displayLabelKey1");
+        ClassificationReason reason2 = new ClassificationReason("reasonId2", "displayLabelKey2");
+        // Set up the managers to return these objects when the ids are provided.
+        when(mockLevelManager.findLevelById("levelId1")).thenReturn(level);
+        when(mockReasonManager.findReasonById("reasonId1")).thenReturn(reason1);
+        when(mockReasonManager.findReasonById("reasonId2")).thenReturn(reason2);
+        // Create a content node.
+        NodeRef content = new NodeRef("fake://content/");
+        when(mockDictionaryService.isSubClass(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
+
+        // Call the method under test.
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), content);
+
+        verify(mockNodeService).addAspect(eq(content), eq(ClassifiedContentModel.ASPECT_CLASSIFIED),
+                    propertiesCaptor.capture());
+        // Check the properties that were received.
+        Map<QName, Serializable> properties = propertiesCaptor.getValue();
+        HashSet<QName> expectedPropertyKeys = Sets.newHashSet(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION,
+                    ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION,
+                    ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY,
+                    ClassifiedContentModel.PROP_CLASSIFICATION_REASONS);
+        assertEquals("Aspect created with unexpected set of keys.", expectedPropertyKeys, properties.keySet());
+        assertEquals("Unexpected initial classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
+        assertEquals("Unexpected current classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
+        assertEquals("Unexpected authority.", "classificationAuthority", properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
+        Set<String> expectedReasonIds = Sets.newHashSet("reasonId1", "reasonId2");
+        assertEquals("Unexpected set of reasons.", expectedReasonIds, properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
+    }
+
+    /** Classify a folder using the <code>classifyContent</code> method and check that an exception is raised. */
+    @Test(expected = InvalidNode.class)
+    public void classifyContent_notContent()
+    {
+        // Create a folder node.
+        NodeRef notAPieceOfContent = new NodeRef("not://a/piece/of/content/");
+        when(mockNodeService.getType(notAPieceOfContent)).thenReturn(ContentModel.TYPE_FOLDER);
+
+        // Call the method under test.
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), notAPieceOfContent);
+    }
+
+    /** Classify a piece of content that has already been classified. */
+    @Test(expected = UnsupportedOperationException.class)
+    public void classifyContent_alreadyClassified()
+    {
+        // Create a classified piece of content.
+        NodeRef classifiedContent = new NodeRef("classified://content/");
+        when(mockDictionaryService.isSubClass(mockNodeService.getType(classifiedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(true);
+
+        // Call the method under test.
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
+    }
+
+    /**
+     * Given that a node does not have the classify aspect applied
+     * When I ask for the nodes classification
+     * Then 'Unclassified' is returned
+     */
+    @Test
+    public void getCurrentClassificationWithoutAspectApplied()
+    {
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+        when(mockNodeService.hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED))
+            .thenReturn(false);
+
+        ClassificationLevel classificationLevel = contentClassificationServiceImpl.getCurrentClassification(nodeRef);
+
+        assertEquals(ClassificationLevelManager.UNCLASSIFIED, classificationLevel);
+        verify(mockNodeService).hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED);
+        verifyNoMoreInteractions(mockNodeService);
+    }
+
+    /**
+     * Given that a node is classified
+     * When I ask for the node classification
+     * Then I get the correct classificationlevel
+     */
+    @Test
+    public void getCurrentClassification()
+    {
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+        when(mockNodeService.hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED))
+            .thenReturn(true);
+        when(mockNodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION))
+            .thenReturn(CLASSIFICATION_LEVEL_ID);
+        when(mockLevelManager.findLevelById(CLASSIFICATION_LEVEL_ID))
+            .thenReturn(CLASSIFICATION_LEVEL);
+
+        ClassificationLevel classificationLevel = contentClassificationServiceImpl.getCurrentClassification(nodeRef);
+
+        assertEquals(CLASSIFICATION_LEVEL, classificationLevel);
+        verify(mockNodeService).hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED);
+        verify(mockNodeService).getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION);
+        verify(mockLevelManager).findLevelById(CLASSIFICATION_LEVEL_ID);
+        verifyNoMoreInteractions(mockNodeService, mockLevelManager);
+    }
+
+
+    /**
+     * Given that the node is unclassified
+     * When I ask if the current user has clearance
+     * Then true
+     */
+    @Test public void clearedForUnclassifiedNode()
+    {
+        // Content is unclassified by default.
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+
+        assertTrue(contentClassificationServiceImpl.hasClearance(nodeRef));
+    }
+
+    /**
+     * Given that the node is classified
+     * And the user has no security clearance
+     * When I ask if the current user has clearance
+     * Then false
+     */
+    @Test public void userWithNoClearanceIsntClearedOnClassifiedNode()
+    {
+        // assign test classification to node
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(true);
+        String classificationLevelId = generateText();
+        when(mockNodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION)).thenReturn(classificationLevelId);
+        ClassificationLevel classificationLevel = new ClassificationLevel(classificationLevelId, generateText());
+        when(mockLevelManager.findLevelById(classificationLevelId)).thenReturn(classificationLevel);
+
+        // create user with no clearance
+        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), ClearanceLevelManager.NO_CLEARANCE);
+        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(clearance);
+
+        assertFalse(contentClassificationServiceImpl.hasClearance(nodeRef));
+    }
+
+    /**
+     * Given that the node is classified
+     * And the user has clearance grater than the classification
+     * When I ask if the user has clearance
+     * Then true
+     */
+    @Test public void classifiedNodeUserClearanceGreater()
+    {
+        // init classification levels
+        ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
+        String secretId = "Secret";
+        ClassificationLevel secret = new ClassificationLevel(secretId, generateText());
+        ClassificationLevel confidential = new ClassificationLevel("Confidential", generateText());
+        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, confidential, ClassificationLevelManager.UNCLASSIFIED);
+        when(mockLevelManager.getClassificationLevels()).thenReturn(ImmutableList.copyOf(classificationLevels));
+
+        // set nodes classification
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(true);
+        when(mockNodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION)).thenReturn(secretId);
+        when(mockLevelManager.findLevelById(secretId)).thenReturn(secret);
+
+        // set users security clearance
+        ClearanceLevel topSecretClearance = new ClearanceLevel(topSecret, "Top Secret");
+        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), topSecretClearance);
+        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(clearance);
+
+        assertTrue(contentClassificationServiceImpl.hasClearance(nodeRef));
+    }
+
+    /**
+     * Given that the node is classified
+     * And the user has clearance equal to the the classification
+     * When I ask if the user has clearance
+     * Then true
+     */
+    @Test public void classifiedNodeUserClearanceEqual()
+    {
+        // init classification levels
+        ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
+        String secretId = "Secret";
+        ClassificationLevel secret = new ClassificationLevel(secretId, generateText());
+        ClassificationLevel confidential = new ClassificationLevel("Confidential", generateText());
+        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, confidential, ClassificationLevelManager.UNCLASSIFIED);
+        when(mockLevelManager.getClassificationLevels()).thenReturn(ImmutableList.copyOf(classificationLevels));
+
+        // set nodes classification
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(true);
+        when(mockNodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION)).thenReturn(secretId);
+        when(mockLevelManager.findLevelById(secretId)).thenReturn(secret);
+
+        // set users security clearance
+        ClearanceLevel secretClearance = new ClearanceLevel(secret, "Secret");
+        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), secretClearance);
+        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(clearance);
+
+        assertTrue(contentClassificationServiceImpl.hasClearance(nodeRef));
+    }
+
+    /**
+     * Given that the node is classified
+     * And the user has clearance less than the classification
+     * When I ask if the user has clearance
+     * Then true
+     */
+    @Test public void classifiedNodeUserClearanceLess()
+    {
+        // init classification levels
+        ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
+        String secretId = "Secret";
+        ClassificationLevel secret = new ClassificationLevel(secretId, generateText());
+        ClassificationLevel confidential = new ClassificationLevel("Confidential", generateText());
+        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, confidential, ClassificationLevelManager.UNCLASSIFIED);
+        when(mockLevelManager.getClassificationLevels()).thenReturn(ImmutableList.copyOf(classificationLevels));
+
+        // set nodes classification
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(true);
+        when(mockNodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION)).thenReturn(secretId);
+        when(mockLevelManager.findLevelById(secretId)).thenReturn(secret);
+
+        // set users security clearance
+        ClearanceLevel confidentialClearance = new ClearanceLevel(confidential, "Confidential");
+        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), confidentialClearance);
+        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(clearance);
+
+        assertFalse(contentClassificationServiceImpl.hasClearance(nodeRef));
+    }
+}

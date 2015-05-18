@@ -34,7 +34,7 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReasonManager;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -68,8 +68,8 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
     /** ClassifyContentPost webscript instance */
     private @Spy @InjectMocks ClassifyContentPost webScript;
 
-    /** Mocked classification service */
-    private @Mock ClassificationService mockedClassificationService;
+    /** Mocked content classification service */
+    private @Mock ContentClassificationService mockedContentClassificationService;
 
     /** Mocked classification level manager */
     private @Mock ClassificationLevelManager mockedClassificationLevelManager;
@@ -116,7 +116,7 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         assertEquals(getStringValueFromJSONObject(json, SUCCESS), Boolean.TRUE.toString());
 
         // Verify that the classify content method was called
-        verify(mockedClassificationService, times(1)).classifyContent(LEVEL_ID, AUTHORITY, newHashSet(REASON1_ID, REASON2_ID), record);
+        verify(mockedContentClassificationService, times(1)).classifyContent(LEVEL_ID, AUTHORITY, newHashSet(REASON1_ID, REASON2_ID), record);
     }
 
     /**

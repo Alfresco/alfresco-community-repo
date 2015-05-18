@@ -23,6 +23,7 @@
       <property name="nodeService" ref="nodeService" />
       <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
       <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
+      <property name="clearancesForSpecialUsersBootstrapComponent" ref="clearancesForSpecialUsersBootstrapComponent"/>
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
       <property name="description" value="Bootstrap records management data"/>
@@ -39,12 +40,21 @@
       </property>
    </bean>
 
-	<!-- Record contributors group bootstrap component -->
-	<bean id="recordContributorsGroupBootstrapComponent"
-          class="org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponent">
-       <property name="authorityService" ref="AuthorityService" />
-       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
-    </bean>
+   <!-- Record contributors group bootstrap component -->
+   <bean id="recordContributorsGroupBootstrapComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponent">
+      <property name="authorityService" ref="AuthorityService" />
+      <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+   </bean>
+
+   <!-- Clearances for special users bootstrap component -->
+   <bean id="clearancesForSpecialUsersBootstrapComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ClearancesForSpecialUsersBootstrapComponent">
+      <property name="authenticationUtil" ref="rm.authenticationUtil"/>
+      <property name="personService" ref="PersonService"/>
+      <property name="nodeService" ref="NodeService"/>
+      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
+   </bean>
 
    <!--  Bootstrap the message property files -->
    <bean id="org_alfresco_module_rm_resourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

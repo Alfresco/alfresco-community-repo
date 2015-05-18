@@ -34,7 +34,8 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
 public interface ClassificationService
 {
     /**
-     * Returns an immutable list of the defined classification levels.
+     * Returns an immutable list of the defined classification levels visible to the current user.
+     *
      * @return classification levels in descending order from highest to lowest
      *         (where fewer users have access to the highest classification levels
      *         and therefore access to the most restricted documents).

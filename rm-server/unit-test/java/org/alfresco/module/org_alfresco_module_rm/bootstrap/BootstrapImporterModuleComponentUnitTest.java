@@ -34,7 +34,7 @@ import org.mockito.Mock;
 
 /**
  * Bootstrap importer module component unit test
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3
  */
@@ -42,16 +42,17 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
 {
     /** RM config node */
     private static final NodeRef configNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "rm_config_folder");
-    
+
     /** mocks */
-    @Mock(name="importer")                                  private ImporterBootstrap                           mockedImporter;
-    @Mock(name="modulePatchExecuter")                       private ModulePatchExecuter                         mockedModulePatchExecuter;
-    @Mock(name="recordContributorsGroupBootstrapComponent") private RecordContributorsGroupBootstrapComponent   mockedRecordContributorsGroupBootstrapComponent;
-    
+    @Mock(name="importer")                                    private ImporterBootstrap                           mockedImporter;
+    @Mock(name="modulePatchExecuter")                         private ModulePatchExecuter                         mockedModulePatchExecuter;
+    @Mock(name="recordContributorsGroupBootstrapComponent")   private RecordContributorsGroupBootstrapComponent   mockedRecordContributorsGroupBootstrapComponent;
+    @Mock(name="clearancesForSpecialUsersBootstrapComponent") private ClearancesForSpecialUsersBootstrapComponent mockedClearancesForSpecialUsersBootstrapComponent;
+
     /** importer */
     @InjectMocks
     private BootstrapImporterModuleComponent importer;
-    
+
     /**
      * Given that the system has already been bootstraped
      * When I try and boostrap the system
@@ -62,16 +63,16 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
     {
         // config node exists
         doReturn(true).when(mockedNodeService).exists(configNodeRef);
-        
+
         // boostrap
         importer.executeInternal();
-        
+
         // not bootstraped
         verify(mockedImporter, never()).bootstrap();
         verify(mockedModulePatchExecuter, never()).initSchemaVersion();
         verify(mockedRecordContributorsGroupBootstrapComponent, never()).createRecordContributorsGroup();
     }
-    
+
     /**
      * Given that the system has not been bootstraped
      * When I try and bootstrap the system
@@ -82,13 +83,13 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
     {
         // config node does not exist
         doReturn(false).when(mockedNodeService).exists(configNodeRef);
-        
+
         // boostrap
         importer.executeInternal();
-        
+
         // not bootstraped
         verify(mockedImporter, times(1)).bootstrap();
         verify(mockedModulePatchExecuter, times(1)).initSchemaVersion();
-        verify(mockedRecordContributorsGroupBootstrapComponent, times(1)).createRecordContributorsGroup();        
+        verify(mockedRecordContributorsGroupBootstrapComponent, times(1)).createRecordContributorsGroup();
     }
 }

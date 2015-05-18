@@ -40,13 +40,12 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     private ClassificationLevelManager levelManager;
     /** The classification reasons currently configured in this server. */
     private ClassificationReasonManager reasonManager;
+    private SecurityClearanceService securityClearanceService;
     private ClassificationServiceBootstrap classificationServiceBootstrap;
 
     public void setNodeService(NodeService service) { this.nodeService = service; }
-    public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap)
-    {
-        this.classificationServiceBootstrap = classificationServiceBootstrap;
-    }
+    public void setSecurityClearanceService(SecurityClearanceService securityClearanceService) { this.securityClearanceService = securityClearanceService; }
+    public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap) { this.classificationServiceBootstrap = classificationServiceBootstrap; }
 
     /** Store the references to the classification level and reason managers in this class. */
     public void init()
@@ -78,8 +77,8 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
         {
             return Collections.emptyList();
         }
-        // FIXME Currently assume user has highest security clearance, this should be fixed as part of RM-2112.
-        ClassificationLevel usersLevel = levelManager.getMostSecureLevel();
+        SecurityClearance securityClearance = securityClearanceService.getUserSecurityClearance();
+        ClassificationLevel usersLevel = securityClearance.getClearanceLevel().getHighestClassificationLevel();
         return restrictList(levelManager.getClassificationLevels(), usersLevel);
     }
 

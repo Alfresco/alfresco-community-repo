@@ -47,8 +47,11 @@ public class ClearanceLevelManagerUnitTest
     @Before
     public void setup()
     {
-        List<ClearanceLevel> clearanceLevels = ImmutableList.of(TOP_SECRET_CLEARANCE, SECRET_CLEARANCE);
-        clearanceLevelManager = new ClearanceLevelManager(clearanceLevels);
+        List<ClearanceLevel> clearanceLevels = ImmutableList.of(TOP_SECRET_CLEARANCE,
+                                                                SECRET_CLEARANCE,
+                                                                ClearanceLevelManager.NO_CLEARANCE);
+        clearanceLevelManager = new ClearanceLevelManager();
+        clearanceLevelManager.setClearanceLevels(clearanceLevels);
     }
 
     /** Check that the secret clearance can be found from the classification level id "S". */
@@ -65,16 +68,17 @@ public class ClearanceLevelManagerUnitTest
     {
         clearanceLevelManager.findLevelByClassificationLevelId("UNKNOWN ID");
     }
-    
+
     /**
-     * Given that I have created a clearance level manager from a list of clearance levels
+     * Given that I have created a clearance level manager from a list of clearance levels (including the no clearance level)
      * Then the no clearance level is available
+     *
+     * ...(and not added in the same way as for {@link ClassificationLevelManager#setClassificationLevels(List)}).
      */
     @Test public void noClearanceLevel()
     {
-    	assertEquals(3, clearanceLevelManager.getClearanceLevels().size());
-    	ClearanceLevel noClearance = clearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID);
-    	assertEquals(ClearanceLevelManager.NO_CLEARANCE, noClearance);
-    	assertEquals(ClassificationLevelManager.UNCLASSIFIED, noClearance.getHighestClassificationLevel());
+        assertEquals("The three clearance levels should be available.", 3, clearanceLevelManager.getClearanceLevels().size());
+        ClearanceLevel noClearance = clearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID);
+        assertEquals("'No clearance' could not be found.", ClearanceLevelManager.NO_CLEARANCE, noClearance);
     }
 }

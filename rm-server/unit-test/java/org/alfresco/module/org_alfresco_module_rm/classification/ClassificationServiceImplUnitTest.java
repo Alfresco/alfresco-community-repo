@@ -18,45 +18,21 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
-import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
-import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
-import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
-import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
-import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -64,8 +40,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import com.google.common.collect.Sets;
 
 /**
  * Unit tests for {@link ClassificationServiceImpl}.
@@ -79,18 +53,7 @@ public class ClassificationServiceImplUnitTest
                                                                                                "Secret",       "rm.classification.secret",
                                                                                                "Confidential", "rm.classification.confidential",
                                                                                                "No Clearance", "rm.classification.noClearance");
-    private static final List<ClassificationLevel> ALT_CLASSIFICATION_LEVELS = asLevelList("Board",                "B",
-                                                                                           "Executive Management", "EM",
-                                                                                           "Employee",             "E",
-                                                                                           "Public",               "P");
-    private static final List<ClassificationReason> PLACEHOLDER_CLASSIFICATION_REASONS = asList(new ClassificationReason("id1", "label1"),
-                                                                                                new ClassificationReason("id2", "label2"));
-    private static final List<ClassificationReason> ALTERNATIVE_CLASSIFICATION_REASONS = asList(new ClassificationReason("id8", "label8"),
-                                                                                                new ClassificationReason("id9", "label9"));
-    
-    private static final String CLASSIFICATION_LEVEL_ID = "classificationLevelId";
-    private static final ClassificationLevel CLASSIFICATION_LEVEL = new ClassificationLevel(CLASSIFICATION_LEVEL_ID, generateText());
-    
+
     /**
      * A convenience method for turning lists of level id Strings into lists
      * of {@code ClassificationLevel} objects.
@@ -117,128 +80,15 @@ public class ClassificationServiceImplUnitTest
 
     @InjectMocks private ClassificationServiceImpl classificationServiceImpl;
 
-    @Mock private AttributeService            mockedAttributeService;
-    @Mock private AuthenticationUtil          mockedAuthenticationUtil;
-    @Mock private ClassificationServiceDAO    mockClassificationServiceDAO;
     @Mock private NodeService                 mockNodeService;
     @Mock private DictionaryService           mockDictionaryService;
-    /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
-    @Mock private Appender                    mockAppender;
     @Mock private ClassificationLevelManager  mockLevelManager;
     @Mock private ClassificationReasonManager mockReasonManager;
-    @Captor private ArgumentCaptor<LoggingEvent>             loggingEventCaptor;
     @Captor private ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
 
     @Before public void setUp()
     {
         MockitoAnnotations.initMocks(this);
-        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil);
-    }
-
-    @Test public void defaultLevelsConfigurationVanillaSystem()
-    {
-        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(DEFAULT_CLASSIFICATION_LEVELS);
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
-
-        classificationServiceImpl.initConfiguredClassificationLevels();
-
-        verify(mockedAttributeService).setAttribute(eq((Serializable) DEFAULT_CLASSIFICATION_LEVELS),
-                anyString(), anyString(), anyString());
-    }
-
-    @Test public void alternativeLevelsConfigurationPreviouslyStartedSystem()
-    {
-        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(ALT_CLASSIFICATION_LEVELS);
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString()))
-                                   .thenReturn((Serializable) DEFAULT_CLASSIFICATION_LEVELS);
-
-        classificationServiceImpl.initConfiguredClassificationLevels();
-
-        verify(mockedAttributeService).setAttribute(eq((Serializable) ALT_CLASSIFICATION_LEVELS),
-                anyString(), anyString(), anyString());
-    }
-
-    @Test (expected=MissingConfiguration.class)
-    public void missingLevelsConfigurationVanillaSystemShouldFail() throws Exception
-    {
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
-
-        classificationServiceImpl.initConfiguredClassificationLevels();
-    }
-
-    @Test public void pristineSystemShouldBootstrapReasonsConfiguration()
-    {
-        // There are no classification reasons stored in the AttributeService.
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
-
-        // We'll use a small set of placeholder classification reasons.
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
-
-        classificationServiceImpl.initConfiguredClassificationReasons();
-
-        verify(mockedAttributeService).setAttribute(eq((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS),
-                anyString(), anyString(), anyString());
-    }
-
-    @Test public void checkAttributesNotTouchedIfConfiguredReasonsHaveNotChanged()
-    {
-        // The classification reasons stored are the same values that are found on the classpath.
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
-
-        classificationServiceImpl.initConfiguredClassificationReasons();
-
-        verify(mockedAttributeService, never()).setAttribute(any(Serializable.class),
-                anyString(), anyString(), anyString());
-    }
-
-    /**
-     * Check that if the reasons supplied on the classpath differ from those already persisted then a warning is logged
-     * and no change is made to the persisted reasons.
-     * <p>
-     * This test uses the underlying log4j implementation to insert a mock Appender, and tests this for the warning
-     * message. If the underlying logging framework is changed then this unit test will fail, and it may not be
-     * possible to/worth fixing.
-     */
-    @Test public void previouslyStartedSystemShouldWarnIfConfiguredReasonsHaveChanged()
-    {
-        // The classification reasons stored are different from those found on the classpath.
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(
-                    (Serializable) PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
-
-        // Put the mock Appender into the log4j logger and allow warning messages to be received.
-        org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceImpl.class);
-        log4jLogger.addAppender(mockAppender);
-        Level normalLevel = log4jLogger.getLevel();
-        log4jLogger.setLevel(Level.WARN);
-
-        // Call the method under test.
-        classificationServiceImpl.initConfiguredClassificationReasons();
-
-        // Reset the logging level for other tests.
-        log4jLogger.setLevel(normalLevel);
-
-        // Check the persisted values weren't changed.
-        verify(mockedAttributeService, never()).setAttribute(any(Serializable.class),
-                anyString(), anyString(), anyString());
-
-        // Check that the warning message was logged.
-        verify(mockAppender).doAppend(loggingEventCaptor.capture());
-        List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
-        Stream<String> messages = loggingEvents.stream().map(event -> event.getRenderedMessage());
-        String expectedMessage = "Classification reasons configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
-        assertTrue("Warning message not found in log.", messages.anyMatch(message -> message == expectedMessage));
-    }
-
-    @Test(expected = MissingConfiguration.class)
-    public void noReasonsFoundCausesException()
-    {
-        when(mockedAttributeService.getAttribute(anyString(), anyString(), anyString()))
-                    .thenReturn((Serializable) null);
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
-
-        classificationServiceImpl.initConfiguredClassificationReasons();
     }
 
     /**
@@ -269,69 +119,6 @@ public class ClassificationServiceImplUnitTest
         List<ClassificationLevel> actual = classificationServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
 
         assertEquals("Expected an empty list when the target level is not found.", 0, actual.size());
-    }
-
-    /** Classify a piece of content with a couple of reasons and check the NodeService is called correctly. */
-    @Test public void classifyContent_success()
-    {
-        // Create a level and two reasons.
-        ClassificationLevel level = new ClassificationLevel("levelId1", "displayLabelKey");
-        ClassificationReason reason1 = new ClassificationReason("reasonId1", "displayLabelKey1");
-        ClassificationReason reason2 = new ClassificationReason("reasonId2", "displayLabelKey2");
-        // Set up the managers to return these objects when the ids are provided.
-        when(mockLevelManager.findLevelById("levelId1")).thenReturn(level);
-        when(mockReasonManager.findReasonById("reasonId1")).thenReturn(reason1);
-        when(mockReasonManager.findReasonById("reasonId2")).thenReturn(reason2);
-        // Create a content node.
-        NodeRef content = new NodeRef("fake://content/");
-        when(mockDictionaryService.isSubClass(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
-        when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
-
-        // Call the method under test.
-        classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
-                    Sets.newHashSet("reasonId1", "reasonId2"), content);
-
-        verify(mockNodeService).addAspect(eq(content), eq(ClassifiedContentModel.ASPECT_CLASSIFIED),
-                    propertiesCaptor.capture());
-        // Check the properties that were received.
-        Map<QName, Serializable> properties = propertiesCaptor.getValue();
-        HashSet<QName> expectedPropertyKeys = Sets.newHashSet(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION,
-                    ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION,
-                    ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY,
-                    ClassifiedContentModel.PROP_CLASSIFICATION_REASONS);
-        assertEquals("Aspect created with unexpected set of keys.", expectedPropertyKeys, properties.keySet());
-        assertEquals("Unexpected initial classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
-        assertEquals("Unexpected current classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
-        assertEquals("Unexpected authority.", "classificationAuthority", properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
-        Set<String> expectedReasonIds = Sets.newHashSet("reasonId1", "reasonId2");
-        assertEquals("Unexpected set of reasons.", expectedReasonIds, properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
-    }
-
-    /** Classify a folder using the <code>classifyContent</code> method and check that an exception is raised. */
-    @Test(expected = InvalidNode.class)
-    public void classifyContent_notContent()
-    {
-        // Create a folder node.
-        NodeRef notAPieceOfContent = new NodeRef("not://a/piece/of/content/");
-        when(mockNodeService.getType(notAPieceOfContent)).thenReturn(ContentModel.TYPE_FOLDER);
-
-        // Call the method under test.
-        classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
-                    Sets.newHashSet("reasonId1", "reasonId2"), notAPieceOfContent);
-    }
-
-    /** Classify a piece of content that has already been classified. */
-    @Test(expected = UnsupportedOperationException.class)
-    public void classifyContent_alreadyClassified()
-    {
-        // Create a classified piece of content.
-        NodeRef classifiedContent = new NodeRef("classified://content/");
-        when(mockDictionaryService.isSubClass(mockNodeService.getType(classifiedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
-        when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(true);
-
-        // Call the method under test.
-        classificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
-                    Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
     }
 
     @Test
@@ -368,49 +155,5 @@ public class ClassificationServiceImplUnitTest
         String classificationReasonId = "aRandomId";
         doThrow(new ReasonIdNotFound("Id not found!")).when(mockReasonManager).findReasonById(classificationReasonId);
         classificationServiceImpl.getClassificationReasonById(classificationReasonId);
-    }
-    
-    /**
-     * Given that a node does not have the classify aspect applied
-     * When I ask for the nodes classification
-     * Then 'Unclassified' is returned
-     */
-    @Test
-    public void getCurrentClassificationWithoutAspectApplied()
-    {
-    	NodeRef nodeRef = generateNodeRef(mockNodeService);
-    	when(mockNodeService.hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED))
-    		.thenReturn(false);
-    	
-    	ClassificationLevel classificationLevel = classificationServiceImpl.getCurrentClassification(nodeRef);
-    	
-    	assertEquals(ClassificationLevelManager.UNCLASSIFIED, classificationLevel);
-    	verify(mockNodeService).hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED);
-    	verifyNoMoreInteractions(mockNodeService);
-    }
-    
-    /**
-     * Given that a node is classified
-     * When I ask for the node classification
-     * Then I get the correct classificationlevel
-     */
-    @Test
-    public void getCurrentClassification()
-    {
-    	NodeRef nodeRef = generateNodeRef(mockNodeService);
-    	when(mockNodeService.hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED))
-			.thenReturn(true);
-    	when(mockNodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION))
-    		.thenReturn(CLASSIFICATION_LEVEL_ID);
-    	when(mockLevelManager.findLevelById(CLASSIFICATION_LEVEL_ID))
-    		.thenReturn(CLASSIFICATION_LEVEL);
-    	
-    	ClassificationLevel classificationLevel = classificationServiceImpl.getCurrentClassification(nodeRef);
-    	
-    	assertEquals(CLASSIFICATION_LEVEL, classificationLevel);
-    	verify(mockNodeService).hasAspect(nodeRef, ClassifiedContentModel.ASPECT_CLASSIFIED);
-    	verify(mockNodeService).getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION);
-    	verify(mockLevelManager).findLevelById(CLASSIFICATION_LEVEL_ID);
-    	verifyNoMoreInteractions(mockNodeService, mockLevelManager);
     }
 }

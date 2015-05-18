@@ -674,7 +674,7 @@
    <bean id="webscript.org.alfresco.rma.classification.classifycontent.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost"
       parent="rmBaseWebscript">
-      <property name="classificationService" ref="ClassificationService" />
+      <property name="contentClassificationService" ref="contentClassificationService" />
    </bean>
 
    <!-- REST impl for GET user security clearance -->

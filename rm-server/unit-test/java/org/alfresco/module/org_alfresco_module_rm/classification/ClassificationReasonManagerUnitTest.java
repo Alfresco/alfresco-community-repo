@@ -29,7 +29,7 @@ import org.junit.Test;
 
 /**
  * Unit tests for the {@link ClassificationReasonManager}.
- * 
+ *
  * @author tpage
  */
 public class ClassificationReasonManagerUnitTest
@@ -43,7 +43,8 @@ public class ClassificationReasonManagerUnitTest
 
     @Before public void setup()
     {
-        classificationReasonManager = new ClassificationReasonManager(REASONS);
+        classificationReasonManager = new ClassificationReasonManager();
+        classificationReasonManager.setClassificationReasons(REASONS);
     }
 
     @Test public void findClassificationById_found()

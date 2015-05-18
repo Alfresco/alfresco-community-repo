@@ -29,7 +29,7 @@ import org.junit.Test;
 
 /**
  * Unit tests for the {@link ClassificationLevelManager}.
- * 
+ *
  * @author tpage
  */
 public class ClassificationLevelManagerUnitTest
@@ -43,7 +43,8 @@ public class ClassificationLevelManagerUnitTest
 
     @Before public void setup()
     {
-        classificationLevelManager = new ClassificationLevelManager(LEVELS);          
+        classificationLevelManager = new ClassificationLevelManager();
+        classificationLevelManager.setClassificationLevels(LEVELS);
     }
 
     @Test public void findClassificationById_found()

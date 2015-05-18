@@ -20,14 +20,15 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_SECURITY_CLEARANCE;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CLEARANCE_LEVEL;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -58,12 +59,13 @@ public class SecurityClearanceServiceImplUnitTest
 {
     @InjectMocks private SecurityClearanceServiceImpl securityClearanceServiceImpl;
 
-    @Mock private AuthenticationUtil          mockedAuthenticationUtil;
-    @Mock private ClassificationService       mockClassificationService;
-    @Mock private DictionaryService           mockDictionaryService;
-    @Mock private NodeService                 mockNodeService;
-    @Mock private PersonService               mockPersonService;
-    @Mock private ClearanceLevelManager       mockClearanceLevelManager;
+    @Mock private AuthenticationUtil         mockAuthenticationUtil;
+    @Mock private ClassificationLevelManager mockClassificationLevelManager;
+    @Mock private DictionaryService          mockDictionaryService;
+    @Mock private NodeService                mockNodeService;
+    @Mock private PersonService              mockPersonService;
+    @Mock private ClassificationService      mockClassificationService;
+    @Mock private ClearanceLevelManager      mockClearanceLevelManager;
 
     @Before public void setUp()
     {
@@ -76,15 +78,15 @@ public class SecurityClearanceServiceImplUnitTest
         final PersonInfo info     = new PersonInfo(userNode, userName, firstName, lastName);
 
         when(mockPersonService.getPerson(eq(userName), anyBoolean())).thenReturn(userNode);
-        when(mockPersonService.getPerson(eq(userNode))).thenReturn(info);
+        when(mockPersonService.getPerson(userNode)).thenReturn(info);
 
-        when(mockNodeService.hasAspect(eq(userNode), eq(ASPECT_SECURITY_CLEARANCE))).thenReturn(clearanceLevel != null);
-        when(mockNodeService.getProperty(eq(userNode), eq(PROP_CLEARANCE_LEVEL))).thenReturn(clearanceLevel);
+        when(mockNodeService.hasAspect(userNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(clearanceLevel != null);
+        when(mockNodeService.getProperty(userNode, PROP_CLEARANCE_LEVEL)).thenReturn(clearanceLevel);
 
         if (clearanceLevel != null)
         {
             final ClassificationLevel dummyValue = new ClassificationLevel(clearanceLevel, clearanceLevel);
-            when(mockClassificationService.getClassificationLevelById(eq(clearanceLevel))).thenReturn(dummyValue);
+            when(mockClassificationLevelManager.findLevelById(clearanceLevel)).thenReturn(dummyValue);
         }
 
         return info;
@@ -93,246 +95,115 @@ public class SecurityClearanceServiceImplUnitTest
     @Test public void userWithNoClearanceGetsDefaultClearance()
     {
         final PersonInfo user1 = createMockPerson("user1", "User", "One", null);
-        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil, user1.getUserName());
-        
+        MockAuthenticationUtilHelper.setup(mockAuthenticationUtil, user1.getUserName());
         when(mockClassificationService.getUnclassifiedClassificationLevel())
-        	.thenReturn(ClassificationLevelManager.UNCLASSIFIED);
+            .thenReturn(ClassificationLevelManager.UNCLASSIFIED);
         when(mockClearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID))
-        	.thenReturn(ClearanceLevelManager.NO_CLEARANCE);
+            .thenReturn(ClearanceLevelManager.NO_CLEARANCE);
 
         final SecurityClearance clearance = securityClearanceServiceImpl.getUserSecurityClearance();
-        
+
         assertEquals(ClassificationLevelManager.UNCLASSIFIED, clearance.getClearanceLevel().getHighestClassificationLevel());
 
     }
 
-    /** Check that a user can have their clearance set. */
+    /** Check that a user can have their clearance set by an authorised user. */
     @Test public void setUserSecurityClearance_setClearance()
     {
-        // Create the user.
+        // Create the clearance.
+        String topSecretId = "ClearanceId";
+        ClassificationLevel level = new ClassificationLevel(topSecretId, "TopSecretKey");
+        ClearanceLevel clearanceLevel = new ClearanceLevel(level, "TopSecretKey");
+        when(mockClearanceLevelManager.findLevelByClassificationLevelId(topSecretId)).thenReturn(clearanceLevel);
+        when(mockClassificationLevelManager.getClassificationLevels()).thenReturn(ImmutableList.of(level));
+
+        // Create the authorised user.
+        String authorisedUserName = "authorisedUser";
+        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(authorisedUserName);
+        NodeRef authorisedPersonNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, authorisedUserName);
+        PersonInfo authorisedPersonInfo = new PersonInfo(authorisedPersonNode, authorisedUserName, "first", "last");
+        when(mockPersonService.getPerson(authorisedUserName, false)).thenReturn(authorisedPersonNode);
+        when(mockPersonService.getPerson(authorisedPersonNode)).thenReturn(authorisedPersonInfo);
+
+        // The authorised user is cleared to use this clearance.
+        when(mockNodeService.hasAspect(authorisedPersonNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(true);
+        when(mockNodeService.getProperty(authorisedPersonNode, PROP_CLEARANCE_LEVEL)).thenReturn(topSecretId);
+
+        // Create the user who will have their clearance set.
         String userName = "User 1";
-
         NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
-        PersonInfo personInfo = new PersonInfo(personNode, userName, "user", "two");
-
+        PersonInfo personInfo = new PersonInfo(personNode, userName, "first", "last");
         when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
         when(mockPersonService.getPerson(personNode)).thenReturn(personInfo);
 
-        // Create the clearance.
-        String clearanceId = "ClearanceId";
-        ClassificationLevel level = new ClassificationLevel(clearanceId, "TopSecretKey");
-        when(mockClassificationService.getClassificationLevelById(clearanceId)).thenReturn(level);
-        ClearanceLevel clearanceLevel = new ClearanceLevel(level, "TopSecretKey");
-        when(mockClearanceLevelManager.findLevelByClassificationLevelId(clearanceId)).thenReturn(clearanceLevel);
-
+        // Once the user's clearance has been set then the node service is queried about it.
         when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(true);
-        when(mockNodeService.getProperty(personNode, PROP_CLEARANCE_LEVEL)).thenReturn(clearanceId);
-
+        when(mockNodeService.getProperty(personNode, PROP_CLEARANCE_LEVEL)).thenReturn(topSecretId);
 
         // Call the method under test.
-        SecurityClearance securityClearance = securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
+        SecurityClearance securityClearance = securityClearanceServiceImpl.setUserSecurityClearance(userName, topSecretId);
 
+        // Check the returned value.
         assertEquals(personInfo, securityClearance.getPersonInfo());
         assertEquals(clearanceLevel, securityClearance.getClearanceLevel());
-
-        verify(mockNodeService).setProperty(personNode, PROP_CLEARANCE_LEVEL, clearanceId);
+        // Check the value stored in the node service.
+        verify(mockNodeService).setProperty(personNode, PROP_CLEARANCE_LEVEL, topSecretId);
     }
 
-    /**
-     * Check that a user cannot raise someone's clearance above their own. Here we check that an exception thrown by the
-     * classification service is passed through.
-     */
+    /** Check that a user cannot raise someone else's clearance above their own. */
     @Test(expected = LevelIdNotFound.class)
     public void setUserSecurityClearance_insufficientClearance()
     {
-        String userName = "User 1";
-        NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
-        when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
-        String clearanceId = "ClearanceId";
-        // If the user has insufficient clearance then they cannot access the level.
-        when(mockClassificationService.getClassificationLevelById(clearanceId)).thenThrow(new LevelIdNotFound(clearanceId));
+        // Create the "Top Secret" and "Confidential" clearances.
+        String topSecretId = "TopSecretClearanceId";
+        ClassificationLevel topSecret = new ClassificationLevel(topSecretId, "TopSecretKey");
+        ClearanceLevel topSecretClearance = new ClearanceLevel(topSecret, "TopSecretKey");
+        when(mockClearanceLevelManager.findLevelByClassificationLevelId(topSecretId)).thenReturn(topSecretClearance);
+        String confidentialId = "ConfidentialClearanceId";
+        ClassificationLevel confidential = new ClassificationLevel(confidentialId, "ConfidentialKey");
+        ClearanceLevel confidentialClearance = new ClearanceLevel(confidential, "ConfidentialKey");
+        when(mockClearanceLevelManager.findLevelByClassificationLevelId(confidentialId)).thenReturn(confidentialClearance);
+        when(mockClassificationLevelManager.getClassificationLevels()).thenReturn(ImmutableList.of(topSecret, confidential));
 
-        securityClearanceServiceImpl.setUserSecurityClearance(userName, clearanceId);
+        // Create the user attempting to use the API with "Confidential" clearance.
+        String userName = "unauthorisedUser";
+        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(userName);
+        NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
+        PersonInfo personInfo = new PersonInfo(personNode, userName, "first", "last");
+        when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
+        when(mockPersonService.getPerson(personNode)).thenReturn(personInfo);
+
+        // The authorised user is cleared to use this clearance.
+        when(mockNodeService.hasAspect(personNode, ASPECT_SECURITY_CLEARANCE)).thenReturn(true);
+        when(mockNodeService.getProperty(personNode, PROP_CLEARANCE_LEVEL)).thenReturn(confidentialId);
+
+        // Create the user who will have their clearance set.
+        String targetUserName = "Target User";
+        NodeRef targetPersonNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, targetUserName);
+        PersonInfo targetPersonInfo = new PersonInfo(targetPersonNode, targetUserName, "first", "last");
+        when(mockPersonService.getPerson(targetUserName, false)).thenReturn(targetPersonNode);
+        when(mockPersonService.getPerson(targetPersonNode)).thenReturn(targetPersonInfo);
+
+        // Call the method under test and expect an exception.
+        securityClearanceServiceImpl.setUserSecurityClearance(targetUserName, topSecretId);
     }
 
     /**
-     * Check that the initialise method creates a clearance level corresponding to each classification level and that
-     * the display label for the lowest clearance level is "No Clearance" (rather than "Unclassified").
+     * Check that a user with no clearance is not cleared to use the "Secret" classification.
      */
-    @Test public void initialise()
+    @Test public void isClearedForClassification()
     {
         ClassificationLevel topSecret = new ClassificationLevel("1", "TopSecret");
         ClassificationLevel secret = new ClassificationLevel("2", "Secret");
-        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, ClassificationLevelManager.UNCLASSIFIED);
-        when(mockClassificationService.getClassificationLevels()).thenReturn(classificationLevels );
+        ImmutableList<ClassificationLevel> classificationLevels = ImmutableList.of(topSecret, secret);
+        when(mockClassificationLevelManager.getClassificationLevels()).thenReturn(classificationLevels);
+
+        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), ClearanceLevelManager.NO_CLEARANCE);
 
         // Call the method under test.
-        securityClearanceServiceImpl.initialise();
+        boolean result = securityClearanceServiceImpl.isClearedForClassification(clearance, "2");
 
-        List<ClearanceLevel> clearanceLevels = securityClearanceServiceImpl.getClearanceManager().getClearanceLevels();
-        assertEquals("There should be one clearance level for each classification level.", classificationLevels.size(), clearanceLevels.size());
-        assertEquals("TopSecret", clearanceLevels.get(0).getDisplayLabel());
-        assertEquals("Secret", clearanceLevels.get(1).getDisplayLabel());
-        assertEquals("rm.classification.noClearance", clearanceLevels.get(2).getDisplayLabel());
-    }
-    
-    /**
-     * Given that the node is unclassified
-     * When I ask if the current user has clearance
-     * Then true
-     */
-    @Test public void clearedForUnclassifiedNode()
-    {
-    	NodeRef nodeRef = generateNodeRef(mockNodeService);
-    	when(mockClassificationService.getCurrentClassification(nodeRef))
-    		.thenReturn(ClassificationLevelManager.UNCLASSIFIED);
-    	
-    	assertTrue(securityClearanceServiceImpl.hasClearance(nodeRef));    	
-    }
-    
-    /**
-     * Given that the node is classified
-     * And the user has no security clearance
-     * When I ask if the current user has clearance
-     * Then false
-     */
-    @Test public void userWithNoClearanceIsntClearedOnClassifiedNode()
-    {
-    	// assign test classification to node
-    	String classificationLevelId = generateText();
-    	ClassificationLevel classificationLevel = new ClassificationLevel(classificationLevelId, generateText());
-    	NodeRef nodeRef = generateNodeRef(mockNodeService);    	
-    	when(mockClassificationService.getCurrentClassification(nodeRef))
-    		.thenReturn(classificationLevel);    	
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId(classificationLevelId))
-    		.thenReturn(new ClearanceLevel(classificationLevel, generateText()));
-    	
-    	// create user with no clearance
-    	final PersonInfo user1 = createMockPerson(generateText(), generateText(), generateText(), null);
-        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil, user1.getUserName());
-        when(mockClassificationService.getUnclassifiedClassificationLevel())
-    		.thenReturn(ClassificationLevelManager.UNCLASSIFIED);
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID))
-    		.thenReturn(ClearanceLevelManager.NO_CLEARANCE);
-    	
-    	assertFalse(securityClearanceServiceImpl.hasClearance(nodeRef));      	
-    }
-    
-    /**
-     * Given that the node is classified
-     * And the user has clearance grater than the classification
-     * When I ask if the user has clearance
-     * Then true
-     */
-    @Test public void classifiedNodeUserClearanceGreater()
-    {
-    	// init classification levels
-    	ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
-        ClassificationLevel secret = new ClassificationLevel("Secret", generateText());
-        ClassificationLevel confidential = new ClassificationLevel("Confidential", generateText());
-        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, confidential, ClassificationLevelManager.UNCLASSIFIED);
-        when(mockClassificationService.getClassificationLevels()).thenReturn(classificationLevels);
-
-        // init classification levels
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("TopSecret"))
-    		.thenReturn(new ClearanceLevel(topSecret, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("Secret"))
-    		.thenReturn(new ClearanceLevel(secret, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("Confidential"))
-    		.thenReturn(new ClearanceLevel(confidential, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID))
-			.thenReturn(ClearanceLevelManager.NO_CLEARANCE);
-    	when(mockClassificationService.getUnclassifiedClassificationLevel())
-			.thenReturn(ClassificationLevelManager.UNCLASSIFIED);
-    	
-    	// set nodes classification
-    	NodeRef nodeRef = generateNodeRef(mockNodeService);    	
-    	when(mockClassificationService.getCurrentClassification(nodeRef))
-    		.thenReturn(secret);    	
-    	
-    	// set users security clearance
-    	final PersonInfo user1 = createMockPerson(generateText(), generateText(), generateText(), "TopSecret");
-        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil, user1.getUserName());
-        
-        assertTrue(securityClearanceServiceImpl.hasClearance(nodeRef));    	
-    }
-    
-    /**
-     * Given that the node is classified
-     * And the user has clearance equal to the the classification
-     * When I ask if the user has clearance
-     * Then true
-     */
-    @Test public void classifiedNodeUserClearanceEqual()
-    {
-    	// init classification levels
-    	ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
-        ClassificationLevel secret = new ClassificationLevel("Secret", generateText());
-        ClassificationLevel confidential = new ClassificationLevel("Confidential", generateText());
-        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, confidential, ClassificationLevelManager.UNCLASSIFIED);
-        when(mockClassificationService.getClassificationLevels()).thenReturn(classificationLevels);
-
-        // init classification levels
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("TopSecret"))
-    		.thenReturn(new ClearanceLevel(topSecret, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("Secret"))
-    		.thenReturn(new ClearanceLevel(secret, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("Confidential"))
-    		.thenReturn(new ClearanceLevel(confidential, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID))
-			.thenReturn(ClearanceLevelManager.NO_CLEARANCE);
-    	when(mockClassificationService.getUnclassifiedClassificationLevel())
-			.thenReturn(ClassificationLevelManager.UNCLASSIFIED);
-    	
-    	// set nodes classification
-    	NodeRef nodeRef = generateNodeRef(mockNodeService);    	
-    	when(mockClassificationService.getCurrentClassification(nodeRef))
-    		.thenReturn(secret);    	
-    	
-    	// set users security clearance
-    	final PersonInfo user1 = createMockPerson(generateText(), generateText(), generateText(), "Secret");
-        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil, user1.getUserName());
-        
-        assertTrue(securityClearanceServiceImpl.hasClearance(nodeRef));    	
-    }
-    
-    /**
-     * Given that the node is classified
-     * And the user has clearance less than the classification
-     * When I ask if the user has clearance
-     * Then true
-     */
-    @Test public void classifiedNodeUserClearanceLess()
-    {
-    	// init classification levels
-    	ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
-        ClassificationLevel secret = new ClassificationLevel("Secret", generateText());
-        ClassificationLevel confidential = new ClassificationLevel("Confidential", generateText());
-        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, confidential, ClassificationLevelManager.UNCLASSIFIED);
-        when(mockClassificationService.getClassificationLevels()).thenReturn(classificationLevels);
-
-        // init classification levels
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("TopSecret"))
-    		.thenReturn(new ClearanceLevel(topSecret, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("Secret"))
-    		.thenReturn(new ClearanceLevel(secret, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId("Confidential"))
-    		.thenReturn(new ClearanceLevel(confidential, generateText()));
-    	when(mockClearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID))
-			.thenReturn(ClearanceLevelManager.NO_CLEARANCE);
-    	when(mockClassificationService.getUnclassifiedClassificationLevel())
-			.thenReturn(ClassificationLevelManager.UNCLASSIFIED);
-    	
-    	// set nodes classification
-    	NodeRef nodeRef = generateNodeRef(mockNodeService);    	
-    	when(mockClassificationService.getCurrentClassification(nodeRef))
-    		.thenReturn(secret);    	
-    	
-    	// set users security clearance
-    	final PersonInfo user1 = createMockPerson(generateText(), generateText(), generateText(), "Confidential");
-        MockAuthenticationUtilHelper.setup(mockedAuthenticationUtil, user1.getUserName());
-        
-        assertFalse(securityClearanceServiceImpl.hasClearance(nodeRef));    	
+        assertFalse("A user with no clearance should not be able to access the 'Secret' classification.", result);
     }
 
     /**

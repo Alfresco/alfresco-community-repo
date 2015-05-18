@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.model;
 
+import java.io.Serializable;
+
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -33,6 +35,9 @@ public interface ClassifiedContentModel
     /** Namespace details */
     String CLF_URI = "http://www.alfresco.org/model/classifiedcontent/1.0";
     String CLF_PREFIX = "clf";
+
+    Serializable[] LEVELS_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.levels" };
+    Serializable[] REASONS_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.reasons" };
 
     /** Classified aspect */
     QName ASPECT_CLASSIFIED = QName.createQName(CLF_URI, "classified");

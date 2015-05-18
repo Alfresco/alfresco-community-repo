@@ -28,7 +28,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.json.JSONArray;
@@ -50,23 +50,17 @@ public class ClassifyContentPost extends AbstractRmWebScript
     public static final String CLASSIFICATION_AUTHORITY = "classificationAuthority";
     public static final String CLASSIFICATION_REASONS = "classificationReasons";
 
-    /** Classification service */
-    private ClassificationService classificationService;
+    /** The service responsible for classifying content. */
+    private ContentClassificationService contentClassificationService;
 
     /**
-     * @return the classificationService
+     * Set the service responsible for classifying content.
+     *
+     * @param contentClassificationService The service responsible for classifying content.
      */
-    protected ClassificationService getClassificationService()
+    public void setContentClassificationService(ContentClassificationService contentClassificationService)
     {
-        return this.classificationService;
-    }
-
-    /**
-     * @param classificationService the classificationService to set
-     */
-    public void setClassificationService(ClassificationService classificationService)
-    {
-        this.classificationService = classificationService;
+        this.contentClassificationService = contentClassificationService;
     }
 
     /**
@@ -83,7 +77,7 @@ public class ClassifyContentPost extends AbstractRmWebScript
         Set<String> classificationReasonIds = getClassificationReasonIds(jsonObject);
         NodeRef document = parseRequestForNodeRef(req);
 
-        getClassificationService().classifyContent(classificationLevelId, classificationAuthority, classificationReasonIds, document);
+        contentClassificationService.classifyContent(classificationLevelId, classificationAuthority, classificationReasonIds, document);
 
         Map<String, Object> model = new HashMap<String, Object>(1);
         model.put(SUCCESS, true);

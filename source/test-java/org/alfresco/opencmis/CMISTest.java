@@ -59,6 +59,7 @@ import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -95,6 +96,7 @@ import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Ace;
 import org.apache.chemistry.opencmis.commons.data.AllowableActions;
 import org.apache.chemistry.opencmis.commons.data.CmisExtensionElement;
+import org.apache.chemistry.opencmis.commons.data.FailedToDeleteData;
 import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
@@ -109,6 +111,7 @@ import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.ChangeType;
 import org.apache.chemistry.opencmis.commons.enums.CmisVersion;
 import org.apache.chemistry.opencmis.commons.enums.IncludeRelationships;
+import org.apache.chemistry.opencmis.commons.enums.UnfileObject;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisConstraintException;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisRuntimeException;
@@ -159,6 +162,7 @@ public class CMISTest
     private AuditDAO auditDAO;
     private ActionService actionService;
     private RuleService ruleService;
+    private NodeArchiveService nodeArchiveService;
 
     private AlfrescoCmisServiceFactory factory;
 	
@@ -329,6 +333,7 @@ public class CMISTest
     	this.dictionaryDAO = (DictionaryDAO)ctx.getBean("dictionaryDAO");
     	this.cmisDictionaryService = (CMISDictionaryService)ctx.getBean("OpenCMISDictionaryService1.1");
         this.auditDAO = (AuditDAO) ctx.getBean("auditDAO");
+        this.nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
     }
     
     /**
@@ -525,16 +530,31 @@ public class CMISTest
         }
     }
 
-    private FileInfo createContent(final String folderName, final String docName, final boolean isRule)
+    private FileInfo createContent(final String folderName, final String docName,
+            final boolean isRule)
+    {
+        return createContent(null, folderName, docName, isRule);
+    }
+
+    private FileInfo createContent(final FileInfo parentFolder, final String folderName, final String docName, final boolean isRule)
     {
         final FileInfo folderInfo = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<FileInfo>()
         {
             @Override
             public FileInfo execute() throws Throwable
             {
-                NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+                NodeRef nodeRef;
 
-                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folderName, ContentModel.TYPE_FOLDER);
+                if (parentFolder != null)
+                {
+                    nodeRef = parentFolder.getNodeRef();
+                }
+                else
+                {
+                    nodeRef = repositoryHelper.getCompanyHome();
+                }
+                
+                FileInfo folderInfo = fileFolderService.create(nodeRef, folderName, ContentModel.TYPE_FOLDER);
                 nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folderName);
                 assertNotNull(folderInfo);
 
@@ -1010,6 +1030,107 @@ public class CMISTest
     	}
     }
    
+    /**
+     * Test for MNT-13366.
+     */
+    @Test
+    public void testDeleteTree()
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        FileInfo parentFolder = null;
+        FileInfo childFolder1 = null;
+
+        try
+        {
+            // Create a parent folder: parentFolder:
+            String parentFolderName = "parentFolder" + GUID.generate();
+            parentFolder = createContent(parentFolderName, null, false);
+            final NodeRef parentFolderNodeRef = parentFolder.getNodeRef();
+            final String parentFolderID = parentFolderNodeRef.getId();
+
+            // Create a child folder: parentFolder -> childFolder1:
+            String childFolder1Name = "childFolder1" + GUID.generate();
+            childFolder1 = createContent(parentFolder, childFolder1Name, null, false);
+            final NodeRef childFolder1NodeRef = childFolder1.getNodeRef();
+
+            // Create a child folder for previous child folder, which will contain a file:
+            // parentFolder -> childFolder1 -> childFolder2 -> testdoc.txt
+            String childFolder2Name = "childFolder2" + GUID.generate();
+            String docName = "testdoc.txt" + GUID.generate();
+            final NodeRef childFolder2NodeRef = createContent(childFolder1, childFolder2Name, docName, false).getNodeRef();
+
+            // Store a reference to the file "testdoc.txt" contained by childFolder2:
+            List<FileInfo> childFolder2FileList = fileFolderService.list(childFolder2NodeRef);
+            final NodeRef childFolder2FileNodeRef = childFolder2FileList.get(0).getNodeRef();
+
+            List<RepositoryInfo> repositories = withCmisService(new CmisServiceCallback<List<RepositoryInfo>>()
+            {
+                @Override
+                public List<RepositoryInfo> execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    return repositories;
+                }
+            });
+
+            assertTrue(repositories.size() > 0);
+            RepositoryInfo repo = repositories.get(0);
+            final String repositoryId = repo.getId();
+
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+
+                    // CMIS delete tree:
+                    FailedToDeleteData failedItems = cmisService.deleteTree(repositoryId, parentFolderID, Boolean.TRUE,
+                        UnfileObject.DELETE, Boolean.TRUE, null);
+
+                    assertEquals(failedItems.getIds().size(), 0);
+
+                    // Reference to the archive root node (the trash-can):
+                    NodeRef archiveRootNode = nodeArchiveService.getStoreArchiveNode(repositoryHelper.getCompanyHome().getStoreRef());
+
+                    // Get the archived ("canned") version of folders and file and check that hirarchy is correct:
+                    // ArchiveRoot -> archivedParentFolder -> archivedChildFolder1 -> archivedChildFolder2 -> archivedChildFolder2File.
+
+                    // Check parentFolder:
+                    NodeRef archivedParentFolderNodeRef = nodeArchiveService.getArchivedNode(parentFolderNodeRef);
+                    assertTrue(nodeService.getPrimaryParent(archivedParentFolderNodeRef).getParentRef().equals(archiveRootNode));
+
+                    // Check childFolder1:               
+                    NodeRef archivedChildFolder1NodeRef = nodeArchiveService.getArchivedNode(childFolder1NodeRef);
+                    assertTrue(nodeService.getPrimaryParent(archivedChildFolder1NodeRef).getParentRef().equals(archivedParentFolderNodeRef));
+                    assertFalse(nodeService.getPrimaryParent(archivedChildFolder1NodeRef).getParentRef().equals(archiveRootNode));
+
+                    // Check childFolder2:                    
+                    NodeRef archivedChildFolder2NodeRef = nodeArchiveService.getArchivedNode(childFolder2NodeRef);
+                    assertTrue(nodeService.getPrimaryParent(archivedChildFolder2NodeRef).getParentRef().equals(archivedChildFolder1NodeRef));
+                    assertFalse(nodeService.getPrimaryParent(archivedChildFolder2NodeRef).getParentRef().equals(archiveRootNode));
+
+                    // Check childFolder2's file ("testdoc.txt"):                     
+                    NodeRef archivedChildFolder2FileNodeRef = nodeArchiveService.getArchivedNode(childFolder2FileNodeRef);
+                    assertTrue(nodeService.getPrimaryParent(archivedChildFolder2FileNodeRef).getParentRef().equals(archivedChildFolder2NodeRef));
+                    assertFalse(nodeService.getPrimaryParent(archivedChildFolder2FileNodeRef).getParentRef().equals(archiveRootNode));
+                    
+                    return null;
+                };
+            });
+        }
+        finally
+        {
+            if (parentFolder != null && fileFolderService.exists(parentFolder.getNodeRef()))
+            {
+                fileFolderService.delete(parentFolder.getNodeRef());
+            }
+
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
     /**
      * Test for ALF-18151.
      */

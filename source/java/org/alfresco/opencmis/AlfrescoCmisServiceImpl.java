@@ -1688,40 +1688,15 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         final NodeRef folderNodeRef = getOrCreateFolderInfo(folderId, "Folder").getNodeRef();
         final FailedToDeleteDataImpl result = new FailedToDeleteDataImpl();
 
-        result.setIds(deleteBranch(folderNodeRef, continueOnFailure));
-        return result;
-    }
-
-    private List<String> deleteBranch(NodeRef nodeRef, boolean continueOnFailure)
-    {
-        List<String> result = new ArrayList<String>();
-
         try
         {
-            // remove children
-            List<ChildAssociationRef> childrenList = connector.getNodeService().getChildAssocs(nodeRef);
-            if (childrenList != null)
-            {
-                for (ChildAssociationRef child : childrenList)
-                {
-                    List<String> ftod = deleteBranch(child.getChildRef(), continueOnFailure);
-                    if (!ftod.isEmpty())
-                    {
-                        result.addAll(ftod);
-                        if (!continueOnFailure)
-                        {
-                            return result;
-                        }
-                    }
-                }
-            }
-
-            // attempt to delete the node
-            connector.deleteNode(nodeRef, true);
+            connector.deleteNode(folderNodeRef, true);
         }
         catch (Exception e)
         {
-            result.add(nodeRef.getId());
+            List<String> ids = new ArrayList<String>();
+            ids.add(folderId);
+            result.setIds(ids);
         }
 
         return result;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,6 +37,8 @@ public class FTPConfigBean
 
     /** The port. */
     private Integer port;
+
+    private Integer sessionTimeout;
 
     /** The allow anonymous. */
     private boolean allowAnonymous;
@@ -142,6 +144,24 @@ public class FTPConfigBean
     public void setPort(Integer port)
     {
         this.port = port;
+    }
+
+    /**
+     * Sets the timeout for socket session.
+     * @param sessionTimeout the new timeout
+     */
+    public void setSessionTimeout(Integer sessionTimeout)
+    {
+        this.sessionTimeout = sessionTimeout;
+    }
+
+    /**
+     * Gets the sesion timeout
+     * @return
+     */
+    public Integer getSessionTimeout()
+    {
+        return sessionTimeout;
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -97,7 +97,10 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   // Default FTP server port
   
   protected static final int DefaultFTPServerPort = 21;
-  
+
+  // Default FTP server session timeout
+  protected static final int DefaultFTPSrvSessionTimeout = 5000;
+
   // Default FTP anonymous account name
   
   protected static final String DefaultFTPAnonymousAccount = "anonymous";

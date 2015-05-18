@@ -228,6 +228,10 @@
          <value>${ftp.port}</value>
       </property>
 
+       <property name="sessionTimeout">
+           <value>${ftp.sessionTimeout}</value>
+       </property>
+
       <property name="bindTo">
          <value>${ftp.bindto}</value>
       </property>

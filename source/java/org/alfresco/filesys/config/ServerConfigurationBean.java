@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1227,6 +1227,22 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 // Use the default FTP port
 
                 ftpConfig.setFTPPort(DefaultFTPServerPort);
+            }
+
+            // Check for an FTP server timeout for connection to client
+            Integer sessionTimeout = ftpConfigBean.getSessionTimeout();
+            if (sessionTimeout != null)
+            {
+                ftpConfig.setFTPSrvSessionTimeout(sessionTimeout);
+                if (ftpConfig.getFTPSrvSessionTimeout() < 0)
+                    throw new AlfrescoRuntimeException("FTP server session timeout must have positive value or zero");
+            }
+            else
+            {
+
+                // Use the default timeout
+
+                ftpConfig.setFTPSrvSessionTimeout(DefaultFTPSrvSessionTimeout);
             }
 
             // Check if anonymous login is allowed

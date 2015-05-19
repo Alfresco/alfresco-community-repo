@@ -241,6 +241,11 @@
          <title>Undeletable</title>
       </aspect>
       
+      <!-- aspect to tag nodes that are, by default, unmovable -->
+      <aspect name="sys:unmovable">
+         <title>Unmovable</title>
+      </aspect>
+      
       <!-- aspect to tag nodes during delete operations -->
       <aspect name="sys:pendingDelete">
          <title>Pending Delete</title>

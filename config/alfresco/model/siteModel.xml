@@ -49,6 +49,8 @@
             <aspect>cm:titled</aspect>
             <!-- Sites are by default undeletable. Only deletable through the SiteService. -->
             <aspect>sys:undeletable</aspect>
+            <!-- Sites are by default unmovable. -->
+            <aspect>sys:unmovable</aspect>
          </mandatory-aspects>
       </type>
 

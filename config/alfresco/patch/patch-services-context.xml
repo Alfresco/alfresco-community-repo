@@ -1064,7 +1064,25 @@
           <value>alfresco/bootstrap/webscripts/blogsearch.get.html.ftl</value>
       </property>
    </bean>
-
+   
+   <bean id="patch.addUnmovableAspect" class="org.alfresco.repo.admin.patch.impl.AddUnmovableAspectToSitesPatch"
+      parent="basePatch">
+      <property name="id" value="patch.addUnmovableAspect" />
+      <property name="description" value="patch.addUnmovableAspect.description" />
+      <property name="fixesFromSchema">
+         <value>0</value>
+      </property>
+      <property name="fixesToSchema">
+         <value>9003</value>
+      </property>
+      <property name="targetSchema">
+         <value>9004</value>
+      </property>
+      <property name="siteService">
+         <ref bean="siteService" />
+      </property>
+   </bean>
+   
     <bean id="patch.imapSpacesTemplates3" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.imapSpacesTemplates3</value></property>
         <property name="description"><value>patch.imapSpacesLocaleTemplates2.description</value></property>

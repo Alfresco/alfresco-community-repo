@@ -982,6 +982,30 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
     
+    public void testMoveSite_ViaNodeService()
+    {
+        String siteShortName1 = "testMoveSite" + GUID.generate();
+        String siteShortName2 = "testMoveSite" + GUID.generate();
+        this.siteService.createSite(TEST_SITE_PRESET, siteShortName1, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        this.siteService.createSite(TEST_SITE_PRESET, siteShortName2, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        
+        SiteInfo siteInfo1 = this.siteService.getSite(siteShortName1);
+        assertNotNull(siteInfo1);
+        SiteInfo siteInfo2 = this.siteService.getSite(siteShortName2);
+        assertNotNull(siteInfo2);
+        
+        // move a site through the nodeService - not allowed
+        try
+        {
+            nodeService.moveNode(siteInfo1.getNodeRef(), siteInfo2.getNodeRef(), ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, GUID.generate()));
+            fail("Shouldn't be able to move a site via the nodeService");
+        }
+        catch (AlfrescoRuntimeException expected)
+        {
+            // Intentionally empty
+        }
+    }
+    
     public void testDeleteSite()
     {
         @SuppressWarnings("deprecation")

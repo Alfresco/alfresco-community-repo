@@ -277,7 +277,13 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
     </bean>
-
+    
+    <!-- The unmovable aspect -->
+    <bean id="unmovableAspect" class="org.alfresco.repo.node.UnmovableAspect" init-method="init">
+        <property name="nodeService" ref="NodeService"/>
+        <property name="policyComponent" ref="policyComponent"/>
+    </bean>
+    
     <!-- Encryptor for node properties -->
     <bean id="metadataEncryptor" class="org.alfresco.repo.node.encryption.MetadataEncryptor">
         <property name="dictionaryService" ref="dictionaryService" />

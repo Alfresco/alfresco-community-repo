@@ -714,6 +714,10 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                     SolrFacetHelper solrFacetHelper = services.getSolrFacetHelper();
                     for (String field: facets)
                     {
+                        if (field.isEmpty())
+                        {
+                            continue;
+                        }
                         final String modifiedField = "@" + field;
                         if (solrFacetHelper.hasFacetQueries(modifiedField))
                         {

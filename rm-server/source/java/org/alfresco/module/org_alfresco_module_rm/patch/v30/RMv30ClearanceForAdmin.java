@@ -18,31 +18,31 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch.v30;
 
-import org.alfresco.module.org_alfresco_module_rm.bootstrap.ClearancesForSpecialUsersBootstrapComponent;
+import org.alfresco.module.org_alfresco_module_rm.bootstrap.ClearanceForAdminBootstrapComponent;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 
 /**
- * Patch to provide the highest clearance to the admin and system users.
+ * Patch to provide the highest clearance to the admin user.
  *
  * @author tpage
  */
-public class RMv30ClearancesForSpecialUsers extends AbstractModulePatch
+public class RMv30ClearanceForAdmin extends AbstractModulePatch
 {
-    private ClearancesForSpecialUsersBootstrapComponent bootstrapComponent;
+    private ClearanceForAdminBootstrapComponent bootstrapComponent;
 
-    public void setBootstrapComponent(ClearancesForSpecialUsersBootstrapComponent bootstrapComponent)
+    public void setBootstrapComponent(ClearanceForAdminBootstrapComponent bootstrapComponent)
     {
         this.bootstrapComponent = bootstrapComponent;
     }
 
     /**
-     * Give the admin and system users the maximum clearance.
+     * Give the admin user the maximum clearance.
      *
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
      */
     @Override
     public void applyInternal()
     {
-        bootstrapComponent.createClearancesForSpecialUsers();
+        bootstrapComponent.createClearanceForAdmin();
     }
 }

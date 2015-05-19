@@ -23,7 +23,7 @@
       <property name="nodeService" ref="nodeService" />
       <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
       <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
-      <property name="clearancesForSpecialUsersBootstrapComponent" ref="clearancesForSpecialUsersBootstrapComponent"/>
+      <property name="clearanceForAdminBootstrapComponent" ref="clearanceForAdminBootstrapComponent"/>
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
       <property name="description" value="Bootstrap records management data"/>
@@ -47,9 +47,9 @@
       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
    </bean>
 
-   <!-- Clearances for special users bootstrap component -->
-   <bean id="clearancesForSpecialUsersBootstrapComponent"
-         class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ClearancesForSpecialUsersBootstrapComponent">
+   <!-- Clearance for admin bootstrap component -->
+   <bean id="clearanceForAdminBootstrapComponent"
+         class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ClearanceForAdminBootstrapComponent">
       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
       <property name="personService" ref="PersonService"/>
       <property name="nodeService" ref="NodeService"/>

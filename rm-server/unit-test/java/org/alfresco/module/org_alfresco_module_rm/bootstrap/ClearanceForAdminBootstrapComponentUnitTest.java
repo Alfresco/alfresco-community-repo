@@ -37,13 +37,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 /**
- * Unit tests for {@link ClearancesForSpecialUsersBootstrapComponent}.
+ * Unit tests for {@link ClearanceForAdminBootstrapComponent}.
  *
  * @author tpage
  */
-public class ClearancesForSpecialUsersBootstrapComponentUnitTest implements ClassifiedContentModel
+public class ClearanceForAdminBootstrapComponentUnitTest implements ClassifiedContentModel
 {
-    @InjectMocks ClearancesForSpecialUsersBootstrapComponent clearancesForSpecialUsersBootstrapComponent;
+    @InjectMocks ClearanceForAdminBootstrapComponent clearanceForAdminBootstrapComponent;
     @Mock AuthenticationUtil mockAuthenticationUtil;
     @Mock PersonService mockPersonService;
     @Mock NodeService mockNodeService;
@@ -54,8 +54,8 @@ public class ClearancesForSpecialUsersBootstrapComponentUnitTest implements Clas
         initMocks(this);
     }
 
-    /** Check that the system and admin users get assigned the provided clearance. */
-    @Test public void testCreateClearancesForSpecialUsers()
+    /** Check that the admin user gets assigned the provided clearance. */
+    @Test public void testCreateClearanceForAdmin()
     {
         // Allow the classification level id to be found.
         ClassificationLevel level = new ClassificationLevel("id", "displayLabelKey");
@@ -63,18 +63,14 @@ public class ClearancesForSpecialUsersBootstrapComponentUnitTest implements Clas
         when(mockClassificationLevelManager.getMostSecureLevel()).thenReturn(level);
         when(mockClassificationServiceBootstrap.getClassificationLevelManager()).thenReturn(mockClassificationLevelManager);
 
-        // Set up the admin and system users.
-        when(mockAuthenticationUtil.getSystemUserName()).thenReturn("system");
-        NodeRef system = new NodeRef("system://node/");
-        when(mockPersonService.getPerson("system")).thenReturn(system);
+        // Set up the admin user.
         when(mockAuthenticationUtil.getAdminUserName()).thenReturn("admin");
         NodeRef admin = new NodeRef("admin://node/");
-        when(mockPersonService.getPerson("admin")).thenReturn(admin);
+        when(mockPersonService.getPerson("admin", false)).thenReturn(admin);
 
         // Call the method under test.
-        clearancesForSpecialUsersBootstrapComponent.createClearancesForSpecialUsers();
+        clearanceForAdminBootstrapComponent.createClearanceForAdmin();
 
-        verify(mockNodeService).setProperty(system, PROP_CLEARANCE_LEVEL, "id");
         verify(mockNodeService).setProperty(admin, PROP_CLEARANCE_LEVEL, "id");
         // Check that the classification levels were loaded.
         verify(mockClassificationServiceBootstrap).onBootstrap(null);

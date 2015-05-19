@@ -22,19 +22,19 @@ import java.io.Serializable;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
-import org.alfresco.module.org_alfresco_module_rm.patch.v30.RMv30ClearancesForSpecialUsers;
+import org.alfresco.module.org_alfresco_module_rm.patch.v30.RMv30ClearanceForAdmin;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService;
 
 /**
- * Provide the highest clearance to the admin and system users. This needs to be run once (either bootstrapped into a
- * fresh system, or as part of an upgrade in {@link RMv30ClearancesForSpecialUsers}) per installation.
+ * Provide the highest clearance to the admin user. This needs to be run once (either bootstrapped into a
+ * fresh system, or as part of an upgrade in {@link RMv30ClearanceForAdmin}) per installation.
  *
  * @author tpage
  */
-public class ClearancesForSpecialUsersBootstrapComponent implements ClassifiedContentModel
+public class ClearanceForAdminBootstrapComponent implements ClassifiedContentModel
 {
     private AuthenticationUtil authenticationUtil;
     private NodeService nodeService;
@@ -47,9 +47,9 @@ public class ClearancesForSpecialUsersBootstrapComponent implements ClassifiedCo
     public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap) { this.classificationServiceBootstrap = classificationServiceBootstrap; }
 
     /**
-     * Give the admin and system users the maximum clearance.
+     * Give the admin user the maximum clearance.
      */
-    public void createClearancesForSpecialUsers()
+    public void createClearanceForAdmin()
     {
         // Ensure the classification levels are loaded before this patch runs. (Nb. This will result in the
         // classification service bootstrap method being called twice on the start-up that includes this call).
@@ -57,11 +57,8 @@ public class ClearancesForSpecialUsersBootstrapComponent implements ClassifiedCo
 
         Serializable mostSecureLevel = classificationServiceBootstrap.getClassificationLevelManager()
                     .getMostSecureLevel().getId();
-        String systemUserName = authenticationUtil.getSystemUserName();
-        NodeRef system = personService.getPerson(systemUserName);
-        nodeService.setProperty(system, PROP_CLEARANCE_LEVEL, mostSecureLevel);
         String adminUserName = authenticationUtil.getAdminUserName();
-        NodeRef admin = personService.getPerson(adminUserName);
+        NodeRef admin = personService.getPerson(adminUserName, false);
         nodeService.setProperty(admin, PROP_CLEARANCE_LEVEL, mostSecureLevel);
     }
 }

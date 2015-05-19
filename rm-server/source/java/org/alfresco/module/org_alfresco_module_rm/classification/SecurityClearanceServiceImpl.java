@@ -72,13 +72,18 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
     }
 
     /**
-     * Gets the users security clearnace.
+     * Gets the user's security clearance.
      *
-     * @param  userName						user name
-     * @return {@link SecurityClearance}	provides information about the user and their clearance level
+     * @param  userName user name
+     * @return {@link SecurityClearance} provides information about the user and their clearance level
      */
     private SecurityClearance getUserSecurityClearance(final String userName)
     {
+        if (authenticationUtil.isRunAsUserTheSystemUser())
+        {
+            return new SecurityClearance(null, clearanceManager.getMostSecureLevel());
+        }
+
         final NodeRef    personNode = personService.getPerson(userName, false);
         final PersonInfo personInfo = personService.getPerson(personNode);
 

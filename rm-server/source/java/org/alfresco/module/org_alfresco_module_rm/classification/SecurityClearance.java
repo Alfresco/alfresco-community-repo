@@ -39,7 +39,7 @@ public final class SecurityClearance implements Serializable
 
     public SecurityClearance(final PersonInfo personInfo, final ClearanceLevel clearanceLevel)
     {
-        Objects.requireNonNull(personInfo);
+        // Do not check the PersonInfo, as it may be null for the system user's SecurityClearance.
         Objects.requireNonNull(clearanceLevel);
 
         this.personInfo     = personInfo;

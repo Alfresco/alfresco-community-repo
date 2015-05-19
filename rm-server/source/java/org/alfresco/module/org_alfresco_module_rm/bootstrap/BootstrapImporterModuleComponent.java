@@ -43,8 +43,8 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 
     /** record contributors group bootstrap component */
     private RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent;
-    /** Clearances for special users bootstrap component. */
-    private ClearancesForSpecialUsersBootstrapComponent clearancesForSpecialUsersBootstrapComponent;
+    /** Clearance for admin bootstrap component. */
+    private ClearanceForAdminBootstrapComponent clearanceForAdminBootstrapComponent;
 
     /**
      * @param nodeService   node service
@@ -71,12 +71,12 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     }
 
     /**
-     * @param clearancesForSpecialUsersBootstrapComponent The bootstrap component that give the admin and system users
-     *            the maximum clearance.
+     * @param clearanceForAdminBootstrapComponent The bootstrap component that give the admin user the maximum
+     *            clearance.
      */
-    public void setClearancesForSpecialUsersBootstrapComponent(ClearancesForSpecialUsersBootstrapComponent clearancesForSpecialUsersBootstrapComponent)
+    public void setClearanceForAdminBootstrapComponent(ClearanceForAdminBootstrapComponent clearanceForAdminBootstrapComponent)
     {
-        this.clearancesForSpecialUsersBootstrapComponent = clearancesForSpecialUsersBootstrapComponent;
+        this.clearanceForAdminBootstrapComponent = clearanceForAdminBootstrapComponent;
     }
 
     /**
@@ -94,7 +94,7 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 
             // Bootstrap creation of initial data.
             recordContributorsGroupBootstrapComponent.createRecordContributorsGroup();
-            clearancesForSpecialUsersBootstrapComponent.createClearancesForSpecialUsers();
+            clearanceForAdminBootstrapComponent.createClearanceForAdmin();
 
             // init module schema number
             modulePatchExecuter.initSchemaVersion();

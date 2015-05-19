@@ -19,7 +19,10 @@
 package org.alfresco.repo.activities;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.events.types.ActivityEvent;
@@ -61,7 +64,17 @@ public class ActivityPostServiceImpl implements ActivityPostService
     private int estGridSize = 1;
     
     private boolean userNamesAreCaseSensitive = false;
-    
+
+    public void setIgnoredActivityTypes(String ignoredActivityTypes) 
+    {
+        if (ignoredActivityTypes!= null && ignoredActivityTypes.length() > 0)
+        {
+            this.ignoredActivityTypes = Arrays.asList(ignoredActivityTypes.split(","));
+        }
+    }
+
+    private List<String> ignoredActivityTypes = new ArrayList<>();
+
     public void setUserNamesAreCaseSensitive(boolean userNamesAreCaseSensitive)
     {
         this.userNamesAreCaseSensitive = userNamesAreCaseSensitive;
@@ -198,6 +211,13 @@ public class ActivityPostServiceImpl implements ActivityPostService
             if (activityType.length() > ActivityPostDAO.MAX_LEN_ACTIVITY_TYPE)
             {
                 throw new IllegalArgumentException("Invalid activity type - exceeds " + ActivityPostDAO.MAX_LEN_ACTIVITY_TYPE + " chars: " + activityType);
+            }
+
+            if (ignoredActivityTypes != null && ignoredActivityTypes.contains(activityType))
+            {
+                // do not log the activity for ignored activity types.
+                logger.debug("Ignoring activity type for posting: " + activityType);
+                return;
             }
             
             // optional - default to empty string

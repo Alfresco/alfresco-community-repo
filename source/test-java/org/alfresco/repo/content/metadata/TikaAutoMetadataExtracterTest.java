@@ -250,6 +250,20 @@ public void testImageVideo() throws Throwable {
       assertEquals("92", p.get("height"));
       assertEquals("8 8 8", p.get("Data BitsPerSample"));
       
+      // Image with wrong tiff:Width property. see MNT-13920 
+      p = openAndCheck("SizeSample.jpg", "image/jpeg");
+      // Check raw EXIF properties
+      assertEquals("1535 pixels", p.get("Image Width"));
+      assertEquals("367 pixels", p.get("Image Height"));
+      
+      // Map and check
+      Map<QName, Serializable> propsJPG = new HashMap<QName, Serializable>();
+      ContentReader readerJPG = new FileContentReader(open("SizeSample.jpg"));
+      readerJPG.setMimetype("image/jpeg");
+      extracter.extract(readerJPG, propsJPG);
+      assertEquals(1535, propsJPG.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "pixelXDimension")));
+      assertEquals(367, propsJPG.get(QName.createQName(NamespaceService.EXIF_MODEL_1_0_URI, "pixelYDimension")));
+      
       
       // Geo tagged image
       p = openAndCheck("GEO.jpg", "image/jpeg");

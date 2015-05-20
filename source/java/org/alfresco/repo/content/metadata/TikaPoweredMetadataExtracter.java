@@ -531,6 +531,30 @@ public abstract class TikaPoweredMetadataExtracter
     }
     
     /**
+     * Exif metadata for size also returns the string "pixels"
+     * after the number value , this function will 
+     * stop at the first non digit character found in the text
+     * @param sizeText string text
+     * @return the size value
+     */
+    protected String extractSize(String sizeText)
+    {
+        StringBuilder sizeValue = new StringBuilder();
+        for(char c : sizeText.toCharArray())
+        {
+            if(Character.isDigit(c))
+            {
+                sizeValue.append(c);
+            }
+            else
+            {
+                break;
+            }
+        }
+        return sizeValue.toString();
+    }
+    
+    /**
      * This content handler will capture entries from within
      *  the header of the Tika content XHTML, but ignore the
      *  rest.

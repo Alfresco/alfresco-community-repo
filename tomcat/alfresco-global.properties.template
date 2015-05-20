@@ -1,0 +1,11 @@
+db.name=alfresco
+db.url=jdbc:postgresql:${db.name}
+db.driver=org.postgresql.Driver
+
+# Allow maven to drop/create database
+db.master.url=jdbc:postgresql:template1
+db.master.username=postgres
+db.master.password=
+db.drop.command=drop database if exists ${db.name}
+db.create.command=create database ${db.name}
+

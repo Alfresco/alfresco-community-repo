@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import java.util.Comparator;
 
 /**
- * A class to compare classification levels.
+ * A class to compare classification levels. More secure classification levels are "higher" than less secure levels.
  *
  * @author tpage
  * @since 3.0
@@ -35,11 +35,15 @@ public class ClassificationLevelComparator implements Comparator<ClassificationL
         this.classificationLevelManager = classificationLevelManager;
     }
 
+    /**
+     * Return a positive number if the first classification level is more secure than the second. {@inheritDoc}
+     */
     @Override
     public int compare(ClassificationLevel oneLevel, ClassificationLevel otherLevel)
     {
         int oneIndex = classificationLevelManager.getClassificationLevels().indexOf(oneLevel);
         int otherIndex = classificationLevelManager.getClassificationLevels().indexOf(otherLevel);
-        return oneIndex - otherIndex;
+        // Smaller indexes are more secure.
+        return otherIndex - oneIndex;
     }
 }

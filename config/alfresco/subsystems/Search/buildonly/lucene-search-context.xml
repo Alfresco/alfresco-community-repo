@@ -275,6 +275,8 @@
         <property name="threadPoolExecutor" ref="search.indexThreadPoolExecutor" />
         <property name="bulkLoader" ref="nodeDAO" />
         <property name="transformerDebug" ref="transformerDebug" />
+        <property name="typeIndexFilter" ref="search.TypeIndexFilter" />
+        <property name="aspectIndexFilter" ref="search.AspectIndexFilter" />
     </bean>
     
     <bean id="search.adm.luceneQueryEngineImpl" class="org.alfresco.repo.search.impl.querymodel.impl.lucene.LuceneQueryEngine" >
@@ -329,6 +331,8 @@
         <property name="threadPoolExecutor">
             <ref bean="search.indexThreadPoolExecutor"></ref>
         </property>
+        <property name="typeIndexFilter" ref="search.TypeIndexFilter" />
+        <property name="aspectIndexFilter" ref="search.AspectIndexFilter" />
     </bean>
 
     <!-- Indexer and searchers for lucene -->

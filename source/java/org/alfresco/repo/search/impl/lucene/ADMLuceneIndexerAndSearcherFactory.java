@@ -21,8 +21,10 @@ package org.alfresco.repo.search.impl.lucene;
 import java.util.List;
 
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.search.AspectIndexFilter;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.search.SupportsBackgroundIndexing;
+import org.alfresco.repo.search.TypeIndexFilter;
 import org.alfresco.repo.search.impl.lucene.fts.FullTextSearchIndexer;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -46,6 +48,8 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
     private TransformerDebug transformerDebug;
 
     protected TransactionService transactionService;
+    protected TypeIndexFilter typeIndexFilter;
+    protected AspectIndexFilter aspectIndexFilter;
 
     /**
      * Set the dictinary service
@@ -101,6 +105,24 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         this.transactionService = transactionService;
     }
 
+    /**
+     * Setter of the typeIndexFilter
+     * @param typeIndexFilter
+     */
+    public void setTypeIndexFilter(TypeIndexFilter typeIndexFilter)
+    {
+        this.typeIndexFilter = typeIndexFilter;
+    }
+
+    /**
+     * Setter of the aspectIndexFilter
+     * @param aspectIndexFilter
+     */
+    public void setAspectIndexFilter(AspectIndexFilter aspectIndexFilter)
+    {
+        this.aspectIndexFilter = aspectIndexFilter;
+    }
+
     protected LuceneIndexer createIndexer(StoreRef storeRef, String deltaId)
     {
         storeRef = tenantService.getName(storeRef);
@@ -116,6 +138,8 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
         indexer.setTransformerDebug(transformerDebug);
         indexer.setTransactionService(transactionService);
         indexer.setMaxAtomicTransformationTime(getMaxTransformationTime());
+        indexer.setTypeIndexFilter(typeIndexFilter);
+        indexer.setAspectIndexFilter(aspectIndexFilter);
         return indexer;
     }
 

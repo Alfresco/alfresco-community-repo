@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -48,8 +48,10 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
+import org.alfresco.repo.search.AspectIndexFilter;
 import org.alfresco.repo.search.IndexerException;
 import org.alfresco.repo.search.MLAnalysisMode;
+import org.alfresco.repo.search.TypeIndexFilter;
 import org.alfresco.repo.search.impl.lucene.analysis.DateTimeAnalyser;
 import org.alfresco.repo.search.impl.lucene.analysis.MLTokenDuplicator;
 import org.alfresco.repo.search.impl.lucene.analysis.VerbatimAnalyser;
@@ -158,6 +160,16 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     private Map<String, Deque<Helper>> toFTSIndex = Collections.emptyMap();
 
     /**
+     * Ignore indexing by node type. By default TypeIndexFilter allows all types, so can be not set in unit tests.
+     */
+    private TypeIndexFilter typeIndexFilter = new TypeIndexFilter();
+
+    /**
+     * Ignore indexing by node aspects. By default AspectIndexFilter allows all aspects, so can be not set in unit tests.
+     */
+    private AspectIndexFilter aspectIndexFilter = new AspectIndexFilter();
+
+    /**
      * Default construction
      */
     ADMLuceneIndexerImpl()
@@ -202,6 +214,24 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
         this.transformerDebug = transformerDebug;
+    }
+
+    /**
+     * Setter of the typeIndexFilter
+     * @param typeIndexFilter
+     */
+    public void setTypeIndexFilter(TypeIndexFilter typeIndexFilter)
+    {
+        this.typeIndexFilter = typeIndexFilter;
+    }
+
+    /**
+     * Setter of the aspectIndexFilter
+     * @param aspectIndexFilter
+     */
+    public void setAspectIndexFilter(AspectIndexFilter aspectIndexFilter)
+    {
+        this.aspectIndexFilter = aspectIndexFilter;
     }
 
     /*
@@ -1030,6 +1060,14 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                 {
                     continue;
                 }
+            }
+            
+            QName nodeType = nodeService.getType(nodeRef);
+            Set<QName> aspects = nodeService.getAspects(nodeRef);
+            boolean ignoreRegeneration = (typeIndexFilter.shouldBeIgnored(nodeType) || aspectIndexFilter.shouldBeIgnored(aspects));
+            if (ignoreRegeneration)
+            {
+                continue;
             }
 
             // Skip the root, which is a single document

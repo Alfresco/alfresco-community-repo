@@ -11,7 +11,6 @@
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="ownableService" ref="ownableService"/>
         <property name="tenantService" ref="tenantService"/>
-        <property name="namespaceService" ref="namespaceService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="qnameDAO" ref="qnameDAO"/>
         <property name="solrDAO" ref="solrDAO" />
@@ -20,6 +19,18 @@
         <property name="enabled">
             <value>${search.solrTrackingSupport.enabled}</value>
         </property>
+        <property name="typeIndexFilter" ref="search.TypeIndexFilter" />
+        <property name="aspectIndexFilter" ref="search.AspectIndexFilter" />
+    </bean>
+
+    <!--  Ignore indexing by node type or by node aspects  -->
+    
+    <bean id="search.abstractIndexFilter" abstract="true" init-method="init" >
+        <property name="namespaceService" ref="namespaceService"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
+    </bean>
+    
+    <bean id="search.TypeIndexFilter" class="org.alfresco.repo.search.TypeIndexFilter" parent="search.abstractIndexFilter" singleton="true" >
         <property name="ignorePathsForSpecificTypes">
             <value>${search.solrTrackingSupport.ignorePathsForSpecificTypes}</value>
         </property>
@@ -27,8 +38,12 @@
             <list>
                 <value>{http://www.alfresco.org/model/content/1.0}person</value>
                 <value>{http://www.alfresco.org/model/application/1.0}configurations</value>
+                <value>{http://www.alfresco.org/model/content/1.0}authorityContainer</value>
             </list>
         </property>
+    </bean>
+    
+    <bean id="search.AspectIndexFilter" class="org.alfresco.repo.search.AspectIndexFilter" parent="search.abstractIndexFilter" singleton="true" >
         <property name="ignorePathsForSpecificAspects">
             <value>${search.solrTrackingSupport.ignorePathsForSpecificAspects}</value>
         </property>

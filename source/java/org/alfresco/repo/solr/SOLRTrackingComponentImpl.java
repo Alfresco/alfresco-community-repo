@@ -42,6 +42,8 @@ import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.search.AspectIndexFilter;
+import org.alfresco.repo.search.TypeIndexFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -59,8 +61,6 @@ import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.InvalidQNameException;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
@@ -81,15 +81,10 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private OwnableService ownableService;
     private TenantService tenantService;
     private DictionaryService dictionaryService;
-    private NamespaceService namespaceService;
     private boolean enabled = true;
     private boolean cacheAncestors =true;
-    private boolean ignorePathsForSpecificTypes = false;
-    private boolean ignorePathsForSpecificAspects = false;
-    private Set<QName> typesForIgnoringPaths = new HashSet<QName>();
-    private Set<QName> aspectsForIgnoringPaths = new HashSet<QName>();
-    private List<String> typesForIgnoringPathsString;
-    private List<String> aspectsForIgnoringPathsString;
+    private TypeIndexFilter typeIndexFilter;
+    private AspectIndexFilter aspectIndexFilter;
     
     
     @Override
@@ -102,36 +97,6 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
-    }
-
-    public boolean isIgnorePathsForSpecificTypes()
-    {
-        return ignorePathsForSpecificTypes;
-    }
-
-    public boolean isIgnorePathsForSpecificAspects()
-    {
-        return ignorePathsForSpecificAspects;
-    }
-
-    public void setIgnorePathsForSpecificTypes(boolean ignorePersonAndConfigurationPaths)
-    {
-        this.ignorePathsForSpecificTypes = ignorePersonAndConfigurationPaths;
-    }
-
-    public void setIgnorePathsForSpecificAspects(boolean ignorePathsForSpecificAspects)
-    {
-        this.ignorePathsForSpecificAspects = ignorePathsForSpecificAspects;
-    }
-
-    public void setTypesForIgnoringPaths(List<String> typesForIgnoringPaths)
-    {
-        typesForIgnoringPathsString = typesForIgnoringPaths;
-    }
-
-    public void setAspectsForIgnoringPaths(List<String> aspectsForIgnoringPaths)
-    {
-        this.aspectsForIgnoringPathsString = aspectsForIgnoringPaths;
     }
 
     /**
@@ -177,11 +142,6 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         this.dictionaryService = dictionaryService;
     }
 
-    public void setNamespaceService(NamespaceService namespaceService)
-    {
-        this.namespaceService = namespaceService;
-    }
-
     public void setAclDAO(AclDAO aclDAO)
     {
         this.aclDAO = aclDAO;
@@ -192,34 +152,14 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         this.dictionaryDAO = dictionaryDAO;
     }
 
-    private interface DefinitionExistChecker
+    public void setTypeIndexFilter(TypeIndexFilter typeIndexFilter)
     {
-        boolean isDefinitionExists(QName qName);
+        this.typeIndexFilter = typeIndexFilter;
     }
 
-    private void initIgnoringPathsByCriterion(List<String> initDataInString, Set<QName> dataForIgnoringPaths, DefinitionExistChecker dec)
+    public void setAspectIndexFilter(AspectIndexFilter aspectIndexFilter)
     {
-        if (null != initDataInString)
-        {
-            for (String qNameInString : initDataInString)
-            {
-                if ((null != qNameInString) && !qNameInString.isEmpty())
-                {
-                    try
-                    {
-                        QName qname = QName.resolveToQName(namespaceService, qNameInString);
-                        if (dec.isDefinitionExists(qname))
-                        {
-                            dataForIgnoringPaths.add(qname);
-                        }
-                    }
-                    catch (InvalidQNameException e)
-                    {
-                        // Just ignore
-                    }
-                }
-            }
-        }
+        this.aspectIndexFilter = aspectIndexFilter;
     }
 
     /**
@@ -236,24 +176,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "dictionaryDAO", dictionaryDAO);
         PropertyCheck.mandatory(this, "aclDAO", aclDAO);
-        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
-
-        initIgnoringPathsByCriterion(typesForIgnoringPathsString, typesForIgnoringPaths, new DefinitionExistChecker()
-        {
-            @Override
-            public boolean isDefinitionExists(QName qName)
-            {
-                return (null != dictionaryService.getType(qName));
-            }
-        });
-        initIgnoringPathsByCriterion(aspectsForIgnoringPathsString, aspectsForIgnoringPaths, new DefinitionExistChecker()
-        {
-            @Override
-            public boolean isDefinitionExists(QName qName)
-            {
-                return (null != dictionaryService.getAspect(qName));
-            }
-        });
+        PropertyCheck.mandatory(this, "typeIndexFilter", typeIndexFilter);
+        PropertyCheck.mandatory(this, "aspectIndexFilter", aspectIndexFilter);
     }
     
     @Override
@@ -813,9 +737,8 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             }
             nodeMetaData.setAspects(aspects);
 
-            boolean ignoreLargeMetadata = (ignorePathsForSpecificTypes && shouldBeIgnoredByType(getNodeType(nodeId))) ||
-                    (ignorePathsForSpecificAspects && shouldBeIgnoredByAspect(nodeId, aspects));
-            if (!ignoreLargeMetadata && (ignorePathsForSpecificTypes || ignorePathsForSpecificAspects))
+            boolean ignoreLargeMetadata = (typeIndexFilter.shouldBeIgnored(getNodeType(nodeId)) || aspectIndexFilter.shouldBeIgnored(getNodeAspects(nodeId)));
+            if (!ignoreLargeMetadata && (typeIndexFilter.isIgnorePathsForSpecificTypes() || aspectIndexFilter.isIgnorePathsForSpecificAspects()))
             {
                 // check if parent should be ignored
                 final List<Long> parentIds = new LinkedList<Long>();
@@ -849,14 +772,14 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                 if (!parentIds.isEmpty())
                 {
                     Long parentId = parentIds.iterator().next();
-                    if (ignorePathsForSpecificTypes)
+                    if (typeIndexFilter.isIgnorePathsForSpecificTypes())
                     {
                         QName parentType = getNodeType(parentId);
-                        ignoreLargeMetadata = shouldBeIgnoredByType(parentType);
+                        ignoreLargeMetadata = typeIndexFilter.shouldBeIgnored(parentType);
                     }
-                    if (!ignoreLargeMetadata && ignorePathsForSpecificAspects)
+                    if (!ignoreLargeMetadata && aspectIndexFilter.isIgnorePathsForSpecificAspects())
                     {
-                        ignoreLargeMetadata = shouldBeIgnoredByAspect(parentId);
+                        ignoreLargeMetadata = aspectIndexFilter.shouldBeIgnored(getNodeAspects(parentId));
                     }
                 }
             }
@@ -963,14 +886,14 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                             Pair<Long, NodeRef> childNodePair)
                     {
                         boolean addCurrentChildAssoc = true;
-                        if (ignorePathsForSpecificTypes)
+                        if (typeIndexFilter.isIgnorePathsForSpecificTypes())
                         {
                             QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
-                            addCurrentChildAssoc = !shouldBeIgnoredByType(nodeType);
+                            addCurrentChildAssoc = !typeIndexFilter.shouldBeIgnored(nodeType);
                         }
-                        if (!addCurrentChildAssoc && ignorePathsForSpecificAspects)
+                        if (!addCurrentChildAssoc && aspectIndexFilter.isIgnorePathsForSpecificAspects())
                         {
-                            addCurrentChildAssoc = !shouldBeIgnoredByAspect(childNodePair.getFirst());
+                            addCurrentChildAssoc = !aspectIndexFilter.shouldBeIgnored(getNodeAspects(childNodePair.getFirst()));
                         }
                         if (addCurrentChildAssoc)
                         {
@@ -1009,14 +932,14 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
                             Pair<Long, NodeRef> childNodePair)
                     {
                         boolean addCurrentId = true;
-                        if (ignorePathsForSpecificTypes)
+                        if (typeIndexFilter.isIgnorePathsForSpecificTypes())
                         {
                             QName nodeType = nodeDAO.getNodeType(childNodePair.getFirst());
-                            addCurrentId = !shouldBeIgnoredByType(nodeType);
+                            addCurrentId = !typeIndexFilter.shouldBeIgnored(nodeType);
                         }
                         if (!addCurrentId)
                         {
-                            addCurrentId = !shouldBeIgnoredByAspect(childNodePair.getFirst());
+                            addCurrentId = !aspectIndexFilter.shouldBeIgnored(getNodeAspects(childNodePair.getFirst()));
                         }
                         if (addCurrentId)
                         {
@@ -1106,30 +1029,13 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         return (null == type) ? (null) : (result);
     }
 
-    private boolean shouldBeIgnoredByType(QName nodeType)
-    {
-        if (null != nodeType)
-        {
-            if (typesForIgnoringPaths.contains(nodeType))
-            {
-                return true;
-            }
-
-            for (QName type : typesForIgnoringPaths)
-            {
-                if (dictionaryService.isSubClass(nodeType, type))
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     private Set<QName> getNodeAspects(Long nodeId)
     {
         Set<QName> aspects = new HashSet<QName>();
+        if (null == nodeId)
+        {
+            return aspects;
+        }
         Set<QName> sourceAspects = nodeDAO.getNodeAspects(nodeId);
         for(QName aspectQName : sourceAspects)
         {
@@ -1140,41 +1046,6 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
             }
         }
         return aspects;
-    }
-
-    private boolean shouldBeIgnoredByAspect(Long nodeId)
-    {
-        return shouldBeIgnoredByAspect(nodeId, null);
-    }
-
-    private boolean shouldBeIgnoredByAspect(Long nodeId, Set<QName> aspects)
-    {
-        if (null == nodeId)
-        {
-            return false;
-        }
-
-        aspects = (aspects != null) ? aspects : getNodeAspects(nodeId);
-
-        if (!aspects.isEmpty())
-        {
-            for (QName aspectForIgnoringPaths : aspectsForIgnoringPaths)
-            {
-                if (aspects.contains(aspectForIgnoringPaths))
-                {
-                    return true;
-                }
-                for (QName nodeAspect : aspects)
-                {
-                    if (dictionaryService.isSubClass(nodeAspect, aspectForIgnoringPaths))
-                    {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 
     /**

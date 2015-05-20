@@ -52,7 +52,6 @@ import org.alfresco.web.ui.common.PanelGenerator;
 import org.alfresco.web.ui.common.Utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.extensions.surf.site.AuthenticationUtil;
 
 /**
  * JSF Managed Bean. Backs the "login.jsp" view to provide the form fields used
@@ -78,6 +77,10 @@ public class LoginBean implements Serializable
     */
    private static final String PARAM_OUTCOME = "outcome";
 
+   /** flag to set in the user Session when an external authentication mechanism is used
+    *  this informs the framework that user cannot Change Password or Logout in the usual way */
+   private static final String SESSION_ATTRIBUTE_EXTERNAL_AUTH= "_alfExternalAuth";
+   
    private static final long serialVersionUID = 7417882503323795282L;
 
    /**
@@ -497,9 +500,10 @@ public class LoginBean implements Serializable
       return outcome;
    }
    
-   public boolean getIsExternalAuthentication(){
+   public boolean getIsExternalAuthentication()
+   {
 	   HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-	   return AuthenticationUtil.isExternalAuthentication(request);
+	   return (request.getSession().getAttribute(SESSION_ATTRIBUTE_EXTERNAL_AUTH) != null);
    }
    
    // ------------------------------------------------------------------------------

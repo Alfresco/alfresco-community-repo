@@ -258,7 +258,11 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
         {
             for (ChildAssociationRef ref : nodeService.getChildAssocs(facetsRoot))
             {
-                result.add(getFacetProperties(ref.getChildRef()));
+	            // MNT-13812 Check that child has facetField type
+	            if (nodeService.getType(ref.getChildRef()).equals(SolrFacetModel.TYPE_FACET_FIELD))
+	            {
+	                result.add(getFacetProperties(ref.getChildRef()));
+				}	
             }
         }
 
@@ -725,8 +729,12 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
 
         for (ChildAssociationRef associationRef : list)
         {
-            SolrFacetProperties fp = getFacetProperties(associationRef.getChildRef());
-            facets.put(fp.getFilterID(), fp);
+            // MNT-13812 Check that child has facetField type
+            if (nodeService.getType(associationRef.getChildRef()).equals(SolrFacetModel.TYPE_FACET_FIELD))
+            {
+                SolrFacetProperties fp = getFacetProperties(associationRef.getChildRef());
+                facets.put(fp.getFilterID(), fp);
+            }
         }
         return facets;
     }

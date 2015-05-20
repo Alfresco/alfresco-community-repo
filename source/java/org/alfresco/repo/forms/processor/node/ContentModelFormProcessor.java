@@ -48,7 +48,6 @@ import org.alfresco.repo.forms.processor.FilteredFormProcessor;
 import org.alfresco.repo.forms.processor.FormCreationData;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ChildAssociationDefinition;
-import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -65,6 +64,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -93,6 +93,8 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     protected NamespaceService namespaceService;
     
     protected ContentService contentService;
+    
+    protected PermissionService permissionService;
 
     /**
      * A regular expression which can be used to match property names. These
@@ -164,6 +166,16 @@ public abstract class ContentModelFormProcessor<ItemType, PersistType> extends
     public void setContentService(ContentService contentService)
     {
         this.contentService = contentService;
+    }
+    
+    /**
+     * Sets the content service
+     * 
+     * @param permissionService The PermissionService instance
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
     }
 
     protected void addPropertyDataIfRequired(QName propName, Form form, ContentModelItemData<?> itemData)

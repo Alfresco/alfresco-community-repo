@@ -38,6 +38,8 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.apache.commons.logging.Log;
@@ -162,7 +164,10 @@ public class NodeFormProcessor extends ContentModelFormProcessor<NodeRef, NodeRe
         {
             QName name = associationRef.getTypeQName();
             NodeRef target = associationRef.getTargetRef();
-            addAssocToMap(name, target, assocs);
+            if (nodeService.exists(target) && (permissionService.hasPermission(target, PermissionService.READ) == AccessStatus.ALLOWED))
+            {
+                addAssocToMap(name, target, assocs);
+            }
         }
         return assocs;
     }

@@ -68,6 +68,7 @@
         <property name="fileFolderService" ref="FileFolderService" />
         <property name="namespaceService" ref="NamespaceService" />
         <property name="fieldProcessorRegistry" ref="fieldProcessorRegistry" />
+        <property name="permissionService" ref="PermissionService" />
     </bean>
 
    <bean id="actionFormProcessor" class="org.alfresco.repo.forms.processor.action.ActionFormProcessor" init-method="register">

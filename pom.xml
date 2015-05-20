@@ -64,7 +64,7 @@
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-jlan-embed</artifactId>
-        <version>${project.version}</version>
+        <version>${dependency.alfresco-jlan.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- MBeans -->

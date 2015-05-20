@@ -1693,11 +1693,22 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         for (String key : this.properties.keySet())
         {
             Serializable value = (Serializable) this.properties.get(key);
+            QName qname= createQName(key);
+            
+            // MNT-8678
+            if (ContentModel.PROP_CONTENT.equals(qname) && (value instanceof ScriptContentData))
+            {
+                ScriptContentData contentData = (ScriptContentData) value;
+                if (contentData.getSize() == 0)
+                {
+                    continue;
+                }
+            }
             
             // perform the conversion from script wrapper object to repo serializable values
             value = getValueConverter().convertValueForRepo(value);
             
-            props.put(createQName(key), value);
+            props.put(qname, value);
         }
         this.nodeService.setProperties(this.nodeRef, props);
     }

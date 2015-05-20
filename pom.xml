@@ -190,7 +190,7 @@
                 <executions>
                     <execution>
                         <id>wipe-database</id>
-                        <phase>pre-clean</phase>
+                        <phase>clean</phase>
                         <goals>
                             <goal>execute</goal>
                         </goals>
@@ -200,7 +200,7 @@
                     </execution>
                     <execution>
                         <id>create-database</id>
-                        <phase>pre-clean</phase>
+                        <phase>clean</phase>
                         <goals>
                             <goal>execute</goal>
                         </goals>

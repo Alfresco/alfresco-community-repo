@@ -137,7 +137,6 @@
                                 <artifactItem>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>alfresco-jlan-embed</artifactId>
-                                    <version>${project.version}</version>
                                     <classifier>windll</classifier>
                                     <includes>*.dll</includes>
                                 </artifactItem>

@@ -50,7 +50,7 @@
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-core</artifactId>
-        <version>${project.version}</version>
+        <version>${dependency.alfresco-core.version}</version>
         <scope>provided</scope>
       </dependency>
       <!-- Data model -->

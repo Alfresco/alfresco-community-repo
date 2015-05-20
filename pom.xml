@@ -151,13 +151,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.extensions.surf</groupId>
-            <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <version>${dependency.spring.version}</version>
@@ -539,61 +532,7 @@
                 </plugins>
             </build>
         </profile>
-
-
-      <profile>
-         <id>integration-tests</id>
-         <activation>
-             <activeByDefault>false</activeByDefault>
-         </activation>
-         <build>
-             <plugins>
-                 <!-- Wipe the database before starting tests -->
-                 <plugin>
-                     <groupId>org.codehaus.mojo</groupId>
-                     <artifactId>sql-maven-plugin</artifactId>
-                     <executions>
-                         <execution>
-                             <id>wipe-database</id>
-                             <phase>pre-clean</phase>
-                             <goals>
-                                 <goal>execute</goal>
-                             </goals>
-                             <configuration>
-                                 <sqlCommand>${db.drop.command}</sqlCommand>
-                             </configuration>
-                         </execution>
-                         <execution>
-                             <id>create-database</id>
-                             <phase>pre-clean</phase>
-                             <goals>
-                                 <goal>execute</goal>
-                             </goals>
-                             <configuration>
-                                 <sqlCommand>${db.create.command}</sqlCommand>
-                             </configuration>
-                         </execution>
-                     </executions>
-                 </plugin>
-                 <plugin>
-                     <artifactId>maven-surefire-plugin</artifactId>
-                     <executions>
-                        <execution>
-                           <id>integration-tests</id>
-                           <goals>
-                              <goal>test</goal>
-                           </goals>
-                           <configuration>
-                             <includes>
-                               <include>**/FormUIGetRestApiIT.java</include>
-                             </includes>
-                           </configuration>
-                        </execution>
-                     </executions>
-                 </plugin>
-             </plugins>
-         </build>
-      </profile>
+        
         <!-- Tweaks required to make the build work in Eclipse -->
         <profile>
             <id>m2e</id>

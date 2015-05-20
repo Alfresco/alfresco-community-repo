@@ -18,7 +18,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-jlan-embed</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>

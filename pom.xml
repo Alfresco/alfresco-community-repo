@@ -303,8 +303,53 @@
                             <classifier>nossl</classifier>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>default-war</id>
+                        <goals>
+                            <goal>war</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <!-- Use the original, unfiltered web.xml -->
+                            <webappDirectory>${project.build.directory}/alfresco-ssl</webappDirectory>
+                            <webXml>${basedir}/source/web/WEB-INF/web.xml</webXml>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
+
+            <!--
+                Copy the "nossl" web.xml to the exploded webapp to allow running with plain HTTP.
+                The packaged alfresco.war will still contain the correct SSL-enabled web.xml but
+                only because the "default-war" execution ID is overridden to explicitly include
+                the original unfiltered web.xml.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-nossl-webxml-to-exploded-dir</id>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/nossl</directory>
+                                    <includes>
+                                        <include>web.xml</include>
+                                    </includes>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
 
             <!--
                 Configure the Tomcat plugin. Keeping the configuration separate from the 'run' profile,

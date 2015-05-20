@@ -15,6 +15,11 @@
         <maven.tomcat.path>/alfresco</maven.tomcat.path>
         <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
         <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
+
+        <runtime.data.folder>${basedir}/runtime</runtime.data.folder>
+        <solr.config.folder>${runtime.data.folder}/solr4-instance</solr.config.folder>
+        <!-- Filter solrcore.properties -->
+        <ALFRESCO_SOLR4_DATA_DIR>${solr.config.folder}/data</ALFRESCO_SOLR4_DATA_DIR>
     </properties>
 
     <dependencies>
@@ -308,17 +313,55 @@
                 </executions>
             </plugin>
 
+            <!--
+                Configure the Tomcat plugin. Keeping the configuration separate from the 'run' profile,
+                allows explicit running of tomcat, e.g: mvn tomcat7:run-war-only
+            -->
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>
                 <artifactId>tomcat7-maven-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${dependency.postgresql.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>${dependency.mysql.version}</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
                     <systemProperties>
-                        <db.url>${db.url}</db.url>
-                        <db.driver>${db.driver}</db.driver>
-                        <db.name>${db.name}</db.name>
-                        <db.username>${db.username}</db.username>
-                        <db.password>${db.password}</db.password>
+                        <dir.root>${runtime.data.folder}/alf_data</dir.root>
+                        <index.subsystem.name>solr4</index.subsystem.name>
+                        <solr.host>localhost</solr.host>
+                        <solr.secureComms>none</solr.secureComms>
+                        <solr.port>8080</solr.port>
+                        <solr.port.ssl></solr.port.ssl>
+                        <solr.backup.alfresco.numberToKeep>0</solr.backup.alfresco.numberToKeep>
+                        <solr.backup.archive.numberToKeep>0</solr.backup.archive.numberToKeep>
+                        <solr.solr.home>${solr.config.folder}</solr.solr.home>
+                        <solr.solr.model.dir>${solr.config.folder}/alfrescoModels</solr.solr.model.dir>
+                        <solr.solr.content.dir>${solr.config.folder}/content</solr.solr.content.dir>
                     </systemProperties>
+                    <delegate>false</delegate>
+                    <useSeparateTomcatClassLoader>true</useSeparateTomcatClassLoader>
+                    <contextFile>${basedir}/tomcat/alfresco-context.xml</contextFile>
+                    <tomcatUsers>${basedir}/tomcat/tomcat-users.xml</tomcatUsers>
+                    <webapps>
+                        <!-- Run solr4 alongside the repo -->
+                        <webapp>
+                            <groupId>org.alfresco</groupId>
+                            <artifactId>alfresco-solr4</artifactId>
+                            <version>${project.version}</version>
+                            <contextPath>/solr4</contextPath>
+                            <type>war</type>
+                            <asWebapp>true</asWebapp>
+                            <contextFile>${basedir}/tomcat/solr-context.xml</contextFile>
+                        </webapp>
+                    </webapps> 
                 </configuration>
             </plugin>
         </plugins>
@@ -329,6 +372,95 @@
             <id>run</id>
             <build>
                 <plugins>
+                    <!-- Create tomcat/shared/classes/alfresco-global.properties -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-alfresco-global-properties</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <target>
+                                        <mkdir dir="${basedir}/tomcat/shared/classes"/>
+                                        <copy file="${basedir}/tomcat/alfresco-global.properties.template"
+                                            tofile="${basedir}/tomcat/shared/classes/alfresco-global.properties" />
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <!-- Download and unpack the solr4 config zip file -->
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-dependency-plugin</artifactId>
+                      <executions>
+                        <execution>
+                          <id>unpack-solr4-config</id>
+                          <phase>generate-resources</phase>
+                          <goals>
+                            <goal>unpack</goal>
+                          </goals>
+                          <configuration>
+                            <outputDirectory>${project.build.directory}/solr4</outputDirectory>
+                            <artifactItems>
+                              <artifactItem>
+                                <groupId>org.alfresco</groupId>
+                                <artifactId>alfresco-solr4</artifactId>
+                                <version>${project.version}</version>
+                                <classifier>config</classifier>
+                                <overWrite>true</overWrite>
+                                <type>zip</type>
+                              </artifactItem>
+                            </artifactItems>
+                          </configuration>
+                        </execution>
+                      </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>filter-copy-solr4-config</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <outputDirectory>${solr.config.folder}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>${project.build.directory}/solr4</directory>
+                                            <excludes>
+                                                <exclude>workspace-SpacesStore/conf/solrcore.properties</exclude>
+                                                <exclude>archive-SpacesStore/conf/solrcore.properties</exclude>
+                                            </excludes>
+                                            <filtering>false</filtering>
+                                        </resource>
+                                        <resource>
+                                            <directory>${project.build.directory}/solr4</directory>
+                                            <includes>
+                                                <include>workspace-SpacesStore/conf/solrcore.properties</include>
+                                                <include>archive-SpacesStore/conf/solrcore.properties</include>
+                                            </includes>
+                                            <filtering>true</filtering>
+                                        </resource>
+                                    </resources>
+                                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                                    <delimiters>
+                                        <delimiter>@@</delimiter>
+                                    </delimiters>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                     <plugin>
                         <groupId>org.apache.tomcat.maven</groupId>
                         <artifactId>tomcat7-maven-plugin</artifactId>
@@ -337,7 +469,7 @@
                                 <id>run-exploded-webapp</id>
                                 <phase>prepare-package</phase>
                                 <goals>
-                                    <goal>run-war-only</goal>
+                                    <goal>run</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -345,6 +477,70 @@
                 </plugins>
             </build>
         </profile>
+
+        <!--
+            Use "mvn initialize -Ppurge" to drop repo, solr and DB data, then re-create an empty DB.
+            Or use with a later phase to build and start a fresh repo all in one go, e.g.
+            "mvn [clean] install -Ppurge,run"
+          -->
+        <profile>
+            <id>purge</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>delete-runtime-folders</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                                <configuration>
+                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                                    <filesets>
+                                        <fileset>
+                                            <directory>${runtime.data.folder}</directory>
+                                        </fileset>
+                                    </filesets>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>sql-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>drop-db</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>false</skip><!-- always run -->
+                                    <sqlCommand>${db.drop.command}</sqlCommand>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-db</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>execute</goal>
+                                </goals>
+                                <configuration>
+                                    <skip>false</skip><!-- always run -->
+                                    <sqlCommand>${db.create.command}</sqlCommand>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+
       <profile>
          <id>integration-tests</id>
          <activation>

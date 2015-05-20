@@ -252,35 +252,6 @@
                 </executions>
             </plugin>
 
-            <!-- NonSSL war: Replaces web.xml where applicable, commenting out the security-constraints -->
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <executions>
-                    <execution>
-                        <id>disable-securecomms</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <file>${basedir}/source/web/WEB-INF/web.xml</file>
-                    <outputFile>${project.build.directory}/nossl/web.xml</outputFile>
-                    <replacements>
-                        <replacement>
-                            <token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
-                            <value><![CDATA[<!-- ]]></value>
-                        </replacement>
-                        <replacement>
-                            <token><![CDATA[<!-- Toggle securecomms placeholder end -->]]></token>
-                            <value><![CDATA[--> ]]></value>
-                        </replacement>
-                    </replacements>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <!-- This allows overlays to be prepared on the FS for minification and faster run -->
@@ -290,6 +261,7 @@
                         <goals>
                             <goal>exploded</goal>
                         </goals>
+                        <!-- Must be done before the replacer filter-copies web.xml into place -->
                         <phase>prepare-package</phase>
                     </execution>
                     <!-- Another execution of the war plugin with non-SSL web.xml -->
@@ -299,7 +271,7 @@
                             <goal>war</goal>
                         </goals>
                         <configuration>
-                            <webXml>${project.build.directory}/nossl/web.xml</webXml>
+                            <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
                             <classifier>nossl</classifier>
                         </configuration>
                     </execution>
@@ -312,42 +284,38 @@
                         <configuration>
                             <!-- Use the original, unfiltered web.xml -->
                             <webappDirectory>${project.build.directory}/alfresco-ssl</webappDirectory>
-                            <webXml>${basedir}/source/web/WEB-INF/web.xml</webXml>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!--
-                Copy the "nossl" web.xml to the exploded webapp to allow running with plain HTTP.
-                The packaged alfresco.war will still contain the correct SSL-enabled web.xml but
-                only because the "default-war" execution ID is overridden to explicitly include
-                the original unfiltered web.xml.
-            -->
+            <!-- NonSSL war: Replaces web.xml where applicable, commenting out the security-constraints -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-nossl-webxml-to-exploded-dir</id>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
+                        <id>disable-securecomms</id>
                         <phase>prepare-package</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}/nossl</directory>
-                                    <includes>
-                                        <include>web.xml</include>
-                                    </includes>
-                                    <filtering>false</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <file>${basedir}/source/web/WEB-INF/web.xml</file>
+                    <outputFile>${project.build.directory}/${project.build.finalName}/WEB-INF/web.xml</outputFile>
+                    <replacements>
+                        <replacement>
+                            <token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
+                            <value><![CDATA[<!-- ]]></value>
+                        </replacement>
+                        <replacement>
+                            <token><![CDATA[<!-- Toggle securecomms placeholder end -->]]></token>
+                            <value><![CDATA[--> ]]></value>
+                        </replacement>
+                    </replacements>
+                </configuration>
             </plugin>
 
 

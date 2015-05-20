@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.query.PagingRequest;
@@ -49,22 +48,31 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
     private ClassificationLevelManager classificationLevelManager;
     private PersonService personService;
     private ClassificationServiceBootstrap classificationServiceBootstrap;
+    private ClassificationLevelComparator classificationLevelComparator;
 
     public void setClearanceManager(ClearanceLevelManager clearanceManager) { this.clearanceManager = clearanceManager; }
     public void setClassificationLevelManager(ClassificationLevelManager classificationLevelManager) { this.classificationLevelManager = classificationLevelManager; }
     public void setPersonService(PersonService service) { this.personService = service; }
     public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap) { this.classificationServiceBootstrap = classificationServiceBootstrap; }
+    public void setClassificationLevelComparator(ClassificationLevelComparator classificationLevelComparator) { this.classificationLevelComparator = classificationLevelComparator; }
 
     /** Store the references to the classification and clearance level managers in this class. */
     public void init()
     {
         this.classificationLevelManager = classificationServiceBootstrap.getClassificationLevelManager();
         this.clearanceManager = classificationServiceBootstrap.getClearanceLevelManager();
+
+        classificationLevelComparator = new ClassificationLevelComparator(classificationLevelManager);
     }
 
     @Override
     public SecurityClearance getUserSecurityClearance()
     {
+        if (authenticationUtil.isRunAsUserTheSystemUser())
+        {
+            return new SecurityClearance(null, clearanceManager.getMostSecureLevel());
+        }
+
         final String currentUser = authenticationUtil.getFullyAuthenticatedUser();
         ParameterCheck.mandatoryString("currentUser", currentUser);
 
@@ -79,11 +87,6 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
      */
     private SecurityClearance getUserSecurityClearance(final String userName)
     {
-        if (authenticationUtil.isRunAsUserTheSystemUser())
-        {
-            return new SecurityClearance(null, clearanceManager.getMostSecureLevel());
-        }
-
         final NodeRef    personNode = personService.getPerson(userName, false);
         final PersonInfo personInfo = personService.getPerson(personNode);
 
@@ -130,31 +133,26 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         };
     }
 
-    /**
-     * Check if a classification can be accessed by a user with a given clearance.
-     *
-     * @param clearance The clearance of the user.
-     * @param classificationId The classification level to look for.
-     * @return {@code true} if the user can access the classification level.
-     */
-    protected boolean isClearedForClassification(SecurityClearance clearance, String classificationId)
+    @Override
+    public boolean isCurrentUserClearedForClassification(String classificationId)
     {
-        ImmutableList<ClassificationLevel> classificationLevels = classificationLevelManager.getClassificationLevels();
+        // Get the current user's security clearance.
+        SecurityClearance securityClearance = getUserSecurityClearance();
 
-        String clearanceId = clearance.getClearanceLevel().getHighestClassificationLevel().getId();
-        for (ClassificationLevel classificationLevel : classificationLevels)
+        ClassificationLevel suppliedLevel;
+        try
         {
-            if (classificationLevel.getId().equals(clearanceId))
-            {
-                return true;
-            }
-            else if (classificationLevel.getId().equals(classificationId))
-            {
-                return false;
-            }
+            suppliedLevel = classificationLevelManager.findLevelById(classificationId);
         }
-        // Neither the clearance id nor the classification id were found - something's gone wrong.
-        throw new LevelIdNotFound(classificationId);
+        catch(LevelIdNotFound e)
+        {
+            // Return false to make "Level not found" indistinguishable from "Not cleared".
+            return false;
+        }
+        ClassificationLevel usersHighestLevel = securityClearance.getClearanceLevel().getHighestClassificationLevel();
+
+        int comparison = classificationLevelComparator.compare(usersHighestLevel, suppliedLevel);
+        return (comparison >= 0);
     }
 
     @Override
@@ -166,8 +164,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         final NodeRef personNode = personService.getPerson(userName, false);
 
         // Check the current user has clearance to see the specified level.
-        SecurityClearance userSecurityClearance = getUserSecurityClearance();
-        if (!isClearedForClassification(userSecurityClearance, clearanceId))
+        if (!isCurrentUserClearedForClassification(clearanceId))
         {
             throw new LevelIdNotFound(clearanceId);
         }

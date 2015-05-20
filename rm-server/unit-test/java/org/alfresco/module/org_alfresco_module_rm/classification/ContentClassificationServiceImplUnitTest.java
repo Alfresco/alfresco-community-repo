@@ -184,20 +184,6 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         verifyNoMoreInteractions(mockNodeService, mockLevelManager);
     }
 
-
-    /**
-     * Given that the node is unclassified
-     * When I ask if the current user has clearance
-     * Then true
-     */
-    @Test public void clearedForUnclassifiedNode()
-    {
-        // Content is unclassified by default.
-        NodeRef nodeRef = generateNodeRef(mockNodeService);
-
-        assertTrue(contentClassificationServiceImpl.hasClearance(nodeRef));
-    }
-
     /**
      * Given that the node is classified
      * And the user has no security clearance
@@ -223,11 +209,11 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
 
     /**
      * Given that the node is classified
-     * And the user has clearance grater than the classification
+     * And the user has clearance greater or equal to the the classification
      * When I ask if the user has clearance
      * Then true
      */
-    @Test public void classifiedNodeUserClearanceGreater()
+    @Test public void classifiedNodeUserClearanceAtLeast()
     {
         // init classification levels
         ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
@@ -244,39 +230,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockLevelManager.findLevelById(secretId)).thenReturn(secret);
 
         // set users security clearance
-        ClearanceLevel topSecretClearance = new ClearanceLevel(topSecret, "Top Secret");
-        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), topSecretClearance);
-        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(clearance);
-
-        assertTrue(contentClassificationServiceImpl.hasClearance(nodeRef));
-    }
-
-    /**
-     * Given that the node is classified
-     * And the user has clearance equal to the the classification
-     * When I ask if the user has clearance
-     * Then true
-     */
-    @Test public void classifiedNodeUserClearanceEqual()
-    {
-        // init classification levels
-        ClassificationLevel topSecret = new ClassificationLevel("TopSecret", generateText());
-        String secretId = "Secret";
-        ClassificationLevel secret = new ClassificationLevel(secretId, generateText());
-        ClassificationLevel confidential = new ClassificationLevel("Confidential", generateText());
-        List<ClassificationLevel> classificationLevels = Arrays.asList(topSecret, secret, confidential, ClassificationLevelManager.UNCLASSIFIED);
-        when(mockLevelManager.getClassificationLevels()).thenReturn(ImmutableList.copyOf(classificationLevels));
-
-        // set nodes classification
-        NodeRef nodeRef = generateNodeRef(mockNodeService);
-        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(true);
-        when(mockNodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION)).thenReturn(secretId);
-        when(mockLevelManager.findLevelById(secretId)).thenReturn(secret);
-
-        // set users security clearance
-        ClearanceLevel secretClearance = new ClearanceLevel(secret, "Secret");
-        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), secretClearance);
-        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(clearance);
+        when(mockSecurityClearanceService.isCurrentUserClearedForClassification("Secret")).thenReturn(true);
 
         assertTrue(contentClassificationServiceImpl.hasClearance(nodeRef));
     }
@@ -285,7 +239,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
      * Given that the node is classified
      * And the user has clearance less than the classification
      * When I ask if the user has clearance
-     * Then true
+     * Then false
      */
     @Test public void classifiedNodeUserClearanceLess()
     {
@@ -304,9 +258,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockLevelManager.findLevelById(secretId)).thenReturn(secret);
 
         // set users security clearance
-        ClearanceLevel confidentialClearance = new ClearanceLevel(confidential, "Confidential");
-        SecurityClearance clearance = new SecurityClearance(mock(PersonInfo.class), confidentialClearance);
-        when(mockSecurityClearanceService.getUserSecurityClearance()).thenReturn(clearance);
+        when(mockSecurityClearanceService.isCurrentUserClearedForClassification("Secret")).thenReturn(false);
 
         assertFalse(contentClassificationServiceImpl.hasClearance(nodeRef));
     }

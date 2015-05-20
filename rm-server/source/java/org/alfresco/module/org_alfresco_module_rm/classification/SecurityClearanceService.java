@@ -18,10 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import java.util.List;
+
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
-
-import java.util.List;
 
 /**
  * This service offers access to users' security clearance levels.
@@ -47,6 +47,15 @@ public interface SecurityClearanceService
      * @return security clearances for the specified page of users.
      */
     PagingResults<SecurityClearance> getUsersSecurityClearance(UserQueryParams queryParams);
+
+    /**
+     * Check if a classification can be accessed by the current user.
+     *
+     * @param classificationId The classification level to look for.
+     * @return {@code true} if the user can access the classification level; {@code false} if the user doesn't have
+     *         clearance, or the classification level doesn't exist.
+     */
+    boolean isCurrentUserClearedForClassification(String classificationId);
 
     /**
      * Set the clearance level for a user.

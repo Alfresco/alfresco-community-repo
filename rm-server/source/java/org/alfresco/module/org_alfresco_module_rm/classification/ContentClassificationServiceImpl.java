@@ -24,7 +24,6 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -132,37 +131,8 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
     @Override
     public boolean hasClearance(NodeRef nodeRef)
     {
-        boolean result = false;
-
         // Get the node's current classification
         ClassificationLevel currentClassification = getCurrentClassification(nodeRef);
-        if (ClassificationLevelManager.UNCLASSIFIED.equals(currentClassification))
-        {
-            // since the node is not classified user has clearance
-            result = true;
-        }
-        else
-        {
-            // Get the user's security clearance
-            SecurityClearance securityClearance = securityClearanceService.getUserSecurityClearance();
-            if (!ClearanceLevelManager.NO_CLEARANCE.equals(securityClearance.getClearanceLevel()))
-            {
-                // get the users highest classification clearance
-                ClassificationLevel highestClassification = securityClearance.getClearanceLevel().getHighestClassificationLevel();
-
-                // if classification is less than or equal to highest classification then user has clearance
-                List<ClassificationLevel> allClassificationLevels = levelManager.getClassificationLevels();
-                int highestIndex = allClassificationLevels.indexOf(highestClassification);
-                int currentIndex = allClassificationLevels.indexOf(currentClassification);
-
-                if (highestIndex <= currentIndex)
-                {
-                    // user has clearance
-                    result = true;
-                }
-            }
-        }
-
-        return result;
+        return securityClearanceService.isCurrentUserClearedForClassification(currentClassification.getId());
     }
 }

@@ -141,6 +141,11 @@
             <value>org.alfresco.service.cmr.repository.ContentIOException</value>
          </list>
       </property>
+      <property name="publicExceptions">
+         <list>
+            <value>org.alfresco.repo.content.ContentLimitViolationException</value>
+         </list>
+      </property>
    </bean>
 
    <bean id="webscripts.container" class="org.alfresco.repo.web.scripts.TenantRepositoryContainer" parent="baseAlfrescoRepositoryContainer" init-method="setup">

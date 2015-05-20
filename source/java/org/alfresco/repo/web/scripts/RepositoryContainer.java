@@ -91,6 +91,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     private ThresholdOutputStreamFactory streamFactory = null;
 
     private Class<?>[] notPublicExceptions = new Class<?>[] {};
+    private Class<?>[] publicExceptions = new Class<?>[] {};
 
     /*
      * Shame init is already used (by TenantRepositoryContainer).
@@ -197,6 +198,25 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         return notPublicExceptions;
     }
 
+    /**
+     * Exceptions which may contain information that need to display in UI
+     *
+     * @param publicExceptions - {@link Class}&lt;?&gt;[] instance which contains list of public exceptions
+     */
+    public void setPublicExceptions(List<Class<?>> publicExceptions)
+    {
+        this.publicExceptions = new Class<?>[] {};
+        if((null != publicExceptions) && !publicExceptions.isEmpty())
+        {
+            this.publicExceptions = publicExceptions.toArray(this.publicExceptions);
+        }
+    }
+
+    public Class<?>[] getPublicExceptions()
+    {
+        return publicExceptions;
+    }
+
     /* (non-Javadoc)
      * @see org.alfresco.web.scripts.Container#getDescription()
      */
@@ -282,7 +302,8 @@ public class RepositoryContainer extends AbstractRuntimeContainer
         catch (RuntimeException e)
         {
             Throwable hideCause = ExceptionStackUtil.getCause(e, notPublicExceptions);
-            if (hideCause != null)
+            Throwable displayCause = ExceptionStackUtil.getCause(e, publicExceptions);
+            if (displayCause == null && hideCause != null)
             {
                 AlfrescoRuntimeException alf = null;
                 if (e instanceof AlfrescoRuntimeException)

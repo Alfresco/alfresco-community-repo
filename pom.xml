@@ -29,12 +29,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>alfresco-web-framework-commons</artifactId>
-            <version>${project.version}</version>
-            <classifier>classes</classifier>
-        </dependency>
-        <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>fop</artifactId>
             <version>0.94</version>
@@ -154,7 +148,7 @@
         <dependency>
             <groupId>org.springframework.extensions.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

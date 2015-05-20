@@ -21,7 +21,7 @@ package org.alfresco.repo.action.constraint;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -130,7 +130,7 @@ public class FolderContentsParameterConstraint extends BaseParameterConstraint
             rootFolder = nodeRefs.get(0);
         }
         
-        Map<String, String> result = new HashMap<String, String>(23);
+        Map<String, String> result = new LinkedHashMap<String, String>(23);
         buildMap(result, rootFolder);        
         return result;
     }        

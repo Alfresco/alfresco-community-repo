@@ -19,7 +19,7 @@
 
 package org.alfresco.repo.action.constraint;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -56,7 +56,7 @@ public class EnumParameterConstraint extends BaseParameterConstraint
         Class<?> enumClass = getEnumClass();
                                            
         Object[] enumValues = enumClass.getEnumConstants();
-        Map<String, String> allowableValues = new HashMap<String, String>(enumValues.length);
+        Map<String, String> allowableValues = new LinkedHashMap<String, String>(enumValues.length);
         
         for (Object enumValue : enumValues)
         {

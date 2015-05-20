@@ -20,7 +20,7 @@
 package org.alfresco.repo.action.constraint;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -50,7 +50,7 @@ public class AspectParameterConstraint extends BaseParameterConstraint
     protected Map<String, String> getAllowableValuesImpl()
     {   
         Collection<QName> aspects = dictionaryService.getAllAspects();
-        Map<String, String> result = new HashMap<String, String>(aspects.size());
+        Map<String, String> result = new LinkedHashMap<String, String>(aspects.size());
         for (QName aspect : aspects)
         {
             AspectDefinition aspectDef = dictionaryService.getAspect(aspect);

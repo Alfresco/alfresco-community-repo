@@ -20,7 +20,7 @@
 package org.alfresco.repo.action.constraint;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -50,7 +50,7 @@ public class TypeParameterConstraint extends BaseParameterConstraint
     protected Map<String, String> getAllowableValuesImpl()
     {   
         Collection<QName> types = dictionaryService.getAllTypes();
-        Map<String, String> result = new HashMap<String, String>(types.size());
+        Map<String, String> result = new LinkedHashMap<String, String>(types.size());
         for (QName type : types)
         {
             TypeDefinition typeDef = dictionaryService.getType(type);

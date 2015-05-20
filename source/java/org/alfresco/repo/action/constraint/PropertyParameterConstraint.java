@@ -20,7 +20,7 @@
 package org.alfresco.repo.action.constraint;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -50,7 +50,7 @@ public class PropertyParameterConstraint extends BaseParameterConstraint
     protected Map<String, String> getAllowableValuesImpl()
     {   
         Collection<QName> properties = dictionaryService.getAllProperties(null);
-        Map<String, String> result = new HashMap<String, String>(properties.size());
+        Map<String, String> result = new LinkedHashMap<String, String>(properties.size());
         for (QName property : properties)
         {
             PropertyDefinition propertyDef = dictionaryService.getProperty(property);

@@ -132,7 +132,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>${project.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -221,7 +220,6 @@
                                 <artifactItem>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>alfresco-core</artifactId>
-                                    <version>${project.version}</version>
                                 </artifactItem>
                             </artifactItems>
                             <includes>log*.properties</includes>

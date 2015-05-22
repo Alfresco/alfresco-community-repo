@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -97,11 +98,12 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
             throw new UnsupportedOperationException(
                         "The content has already been classified. Reclassification is currently not supported.");
         }
+        if (!securityClearanceService.isCurrentUserClearedForClassification(classificationLevelId))
+        {
+            throw new LevelIdNotFound(classificationLevelId);
+        }
 
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        // Check the classification level id - an exception will be thrown if the id cannot be found
-        levelManager.findLevelById(classificationLevelId);
-
         // Initial classification id
         if (nodeService.getProperty(content, PROP_INITIAL_CLASSIFICATION) == null)
         {

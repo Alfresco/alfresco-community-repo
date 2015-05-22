@@ -118,7 +118,7 @@ public class SecurityClearanceServiceImplUnitTest
 
         // Create the authorised user.
         String authorisedUserName = "authorisedUser";
-        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(authorisedUserName);
+        when(mockAuthenticationUtil.getRunAsUser()).thenReturn(authorisedUserName);
         NodeRef authorisedPersonNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, authorisedUserName);
         PersonInfo authorisedPersonInfo = new PersonInfo(authorisedPersonNode, authorisedUserName, "first", "last");
         when(mockPersonService.getPerson(authorisedUserName, false)).thenReturn(authorisedPersonNode);
@@ -167,7 +167,7 @@ public class SecurityClearanceServiceImplUnitTest
 
         // Create the user attempting to use the API with "Confidential" clearance.
         String userName = "unauthorisedUser";
-        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(userName);
+        when(mockAuthenticationUtil.getRunAsUser()).thenReturn(userName);
         NodeRef personNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userName);
         PersonInfo personInfo = new PersonInfo(personNode, userName, "first", "last");
         when(mockPersonService.getPerson(userName, false)).thenReturn(personNode);
@@ -199,7 +199,7 @@ public class SecurityClearanceServiceImplUnitTest
         when(mockClassificationLevelManager.findLevelById("2")).thenReturn(secret);
 
         createMockPerson("Cleared", "Cleared", "Cleared", "2");
-        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn("Uncleared");
+        when(mockAuthenticationUtil.getRunAsUser()).thenReturn("Cleared");
         when(mockClearanceLevelManager.findLevelByClassificationLevelId("2")).thenReturn(new ClearanceLevel(secret, "Secret"));
 
         // The authenticated user's clearance level is high enough to view the classification.
@@ -220,7 +220,7 @@ public class SecurityClearanceServiceImplUnitTest
         when(mockClassificationLevelManager.findLevelById("2")).thenReturn(secret);
 
         createMockPerson("Uncleared", "Uncleared", "Uncleared", ClassificationLevelManager.UNCLASSIFIED_ID);
-        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn("Uncleared");
+        when(mockAuthenticationUtil.getRunAsUser()).thenReturn("Uncleared");
         when(mockClearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID)).thenReturn(ClearanceLevelManager.NO_CLEARANCE);
 
         // The authenticated user's clearance level not high enough.
@@ -238,8 +238,8 @@ public class SecurityClearanceServiceImplUnitTest
     @Test public void isCurrentUserClearedForClassification_classificationNotFound()
     {
         ClassificationLevel topSecret = new ClassificationLevel("1", "TopSecret");
-        createMockPerson("Uncleared", "Uncleared", "Uncleared", "1");
-        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn("Uncleared");
+        createMockPerson("Cleared", "Cleared", "Cleared", "1");
+        when(mockAuthenticationUtil.getRunAsUser()).thenReturn("Cleared");
         when(mockClearanceLevelManager.findLevelByClassificationLevelId("1")).thenReturn(new ClearanceLevel(topSecret, "TopSecret"));
         // Set up the made up classification.
         String madeUpId = "Made Up Id";

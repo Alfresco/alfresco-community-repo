@@ -22,8 +22,8 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.when;
 
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -32,7 +32,7 @@ import org.mockito.stubbing.Answer;
 
 /**
  * A helper to initialise a mock {@link AuthenticationUtil}.
- * 
+ *
  * @author tpage
  */
 public class MockAuthenticationUtilHelper
@@ -41,7 +41,7 @@ public class MockAuthenticationUtilHelper
      * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
      * permissions. If the mock is asked for details about the user then it assumes the currently authenticated user is
      * "admin".
-     * 
+     *
      * @param mockAuthenticationUtil The mock to initialise.
      */
     public static void setup(AuthenticationUtil mockAuthenticationUtil)
@@ -52,7 +52,7 @@ public class MockAuthenticationUtilHelper
     /**
      * Set up a Mockito mock <code>AuthenticationUtil</code> so that it executes all methods assuming the user has
      * permissions.
-     * 
+     *
      * @param mockAuthenticationUtil The mock to initialise.
      * @param fullyAuthenticatedUser The name of the user that last authenticated.
      */
@@ -87,8 +87,9 @@ public class MockAuthenticationUtilHelper
 
         }).when(mockAuthenticationUtil).<Object> runAs(any(RunAsWork.class), anyString());
 
-        doReturn("admin").when(mockAuthenticationUtil).getAdminUserName();
-        doReturn(fullyAuthenticatedUser).when(mockAuthenticationUtil).getFullyAuthenticatedUser();
-        doReturn("system").when(mockAuthenticationUtil).getSystemUserName();
+        when(mockAuthenticationUtil.getAdminUserName()).thenReturn("admin");
+        when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(fullyAuthenticatedUser);
+        when(mockAuthenticationUtil.getRunAsUser()).thenReturn(fullyAuthenticatedUser);
+        when(mockAuthenticationUtil.getSystemUserName()).thenReturn("system");
     }
 }

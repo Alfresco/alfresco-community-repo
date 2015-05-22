@@ -73,7 +73,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
             return new SecurityClearance(null, clearanceManager.getMostSecureLevel());
         }
 
-        final String currentUser = authenticationUtil.getFullyAuthenticatedUser();
+        final String currentUser = authenticationUtil.getRunAsUser();
         ParameterCheck.mandatoryString("currentUser", currentUser);
 
         return getUserSecurityClearance(currentUser);

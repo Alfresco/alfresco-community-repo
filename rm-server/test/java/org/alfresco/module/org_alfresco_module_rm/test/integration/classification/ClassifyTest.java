@@ -159,7 +159,7 @@ public class ClassifyTest extends BaseRMTestCase
             {
                 assertTrue("Record should have been classified.",
                             nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
-                assertEquals("Record should have be 'level1' classified.", CLASSIFICATION_LEVEL,
+                assertEquals("Record should be 'level1' classified.", CLASSIFICATION_LEVEL,
                             nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
             }
         });

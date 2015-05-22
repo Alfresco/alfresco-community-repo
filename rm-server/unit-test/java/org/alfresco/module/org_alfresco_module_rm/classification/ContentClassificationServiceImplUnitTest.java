@@ -40,6 +40,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -92,6 +93,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         NodeRef content = new NodeRef("fake://content/");
         when(mockDictionaryService.isSubClass(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
+        when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(true);
 
         // Call the method under test.
         contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
@@ -134,6 +136,24 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         NodeRef classifiedContent = new NodeRef("classified://content/");
         when(mockDictionaryService.isSubClass(mockNodeService.getType(classifiedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(true);
+
+        // Call the method under test.
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+                    Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
+    }
+
+    /**
+     * Check that a user can't classify content with a level that either (a) doesn't exist, or (b) they don't have
+     * clearance for.  (Both cases are covered by the same flow through the code).
+     */
+    @Test(expected = LevelIdNotFound.class)
+    public void classifyContent_notFound()
+    {
+        // Create a classified piece of content.
+        NodeRef classifiedContent = new NodeRef("classified://content/");
+        when(mockDictionaryService.isSubClass(mockNodeService.getType(classifiedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
+        when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(false);
 
         // Call the method under test.
         contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",

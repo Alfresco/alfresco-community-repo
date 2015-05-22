@@ -21,10 +21,14 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.classificati
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.Sets;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.GUID;
 
 /**
  * Classification level integration test
@@ -36,6 +40,7 @@ public class ClassifyTest extends BaseRMTestCase
 {
     /** test data */
     private static final String CLASSIFICATION_LEVEL = "level1";
+    private static final String LOWER_CLASSIFICATION_LEVEL = "level2";
     private static final String CLASSIFICATION_REASON = "Test Reason 1";
     private static final String CLASSIFICATION_AUTHORITY = "classification authority";
     private static final String RECORD_NAME = "recordname.txt";
@@ -105,6 +110,100 @@ public class ClassifyTest extends BaseRMTestCase
                 assertEquals(CLASSIFICATION_LEVEL, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
                 assertEquals(CLASSIFICATION_AUTHORITY, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
                 assertEquals(Collections.singletonList(CLASSIFICATION_REASON), (List<String>)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
+            }
+        });
+    }
+
+    /**
+     * Given I have "level1" clearance
+     * When I try to classify content with the level "level1"
+     * Then the content is classified.
+     */
+    public void testClassifyContent()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private String myUser;
+            private NodeRef record;
+
+            public void given() throws Exception
+            {
+                // Create RM Manager user
+                myUser = GUID.generate();
+                createPerson(myUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, myUser);
+                filePlanPermissionService.setPermission(rmContainer, myUser, FILING);
+                // Give user clearance.
+                securityClearanceService.setUserSecurityClearance(myUser, CLASSIFICATION_LEVEL);
+
+                // Create a record for the user to classify.
+                record = utils.createRecord(rmFolder, RECORD_NAME);
+            }
+
+            public void when() throws Exception
+            {
+                // As myUser:
+                doTestInTransaction(new Test<Void>()
+                {
+                    @Override
+                    public Void run()
+                    {
+                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFICATION_AUTHORITY,
+                                    Sets.newHashSet(CLASSIFICATION_REASON), record);
+                        return null;
+                    }
+                }, myUser);
+            }
+
+            public void then() throws Exception
+            {
+                assertTrue("Record should have been classified.",
+                            nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
+                assertEquals("Record should have be 'level1' classified.", CLASSIFICATION_LEVEL,
+                            nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
+            }
+        });
+    }
+
+    /**
+     * Given I have "level2" clearance
+     * When I call the classify content API directly using the level "level1"
+     * Then I receive an error that the level could not be found.
+     */
+    public void testClearanceNecessaryToClassifyContent()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(LevelIdNotFound.class)
+        {
+            private String myUser;
+            private NodeRef record;
+
+            public void given() throws Exception
+            {
+             // Create RM Manager user
+                myUser = GUID.generate();
+                createPerson(myUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, myUser);
+                filePlanPermissionService.setPermission(rmContainer, myUser, FILING);
+                // Give user clearance.
+                securityClearanceService.setUserSecurityClearance(myUser, LOWER_CLASSIFICATION_LEVEL);
+
+                // Create a record for the user to classify.
+                record = utils.createRecord(rmFolder, RECORD_NAME);
+            }
+
+            public void when() throws Exception
+            {
+                // As myUser:
+                doTestInTransaction(new Test<Void>()
+                {
+                    @Override
+                    public Void run()
+                    {
+                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFICATION_AUTHORITY,
+                                    Sets.newHashSet(CLASSIFICATION_REASON), record);
+                        return null;
+                    }
+                }, myUser);
             }
         });
     }

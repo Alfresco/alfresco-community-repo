@@ -9,7 +9,7 @@
          parent="rm.parentModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.v30.RMv30ClearanceForAdmin">
       <property name="description" value="Provide security clearance to the admin user."/>
-      <property name="fixesToSchema" value="1012"/>
+      <property name="fixesToSchema" value="2000"/>
       <property name="targetSchema" value="2001"/>
       <property name="bootstrapComponent" ref="clearanceForAdminBootstrapComponent"/>
    </bean>

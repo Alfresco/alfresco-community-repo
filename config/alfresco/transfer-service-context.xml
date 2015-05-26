@@ -55,6 +55,9 @@
 		init-method="init">
 		<property name="contentService" ref="ContentService" />
 		<property name="nodeService" ref="NodeService" />
+                <property name="isAuthenticationPreemptive">
+                    <value>true</value>
+                </property>
 	</bean>
 	
     <bean id="transferVersionChecker" class="org.alfresco.repo.transfer.TransferVersionCheckerImpl">

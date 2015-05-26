@@ -97,6 +97,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     private ContentService contentService;
 
     private NodeService nodeService;
+    private boolean isAuthenticationPreemptive = false;
 
     public HttpClientTransmitterImpl()
     {
@@ -113,6 +114,7 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
     public void init()
     {
         PropertyCheck.mandatory(this, "contentService", contentService);
+        httpClient.getParams().setAuthenticationPreemptive(isAuthenticationPreemptive);
     }
 
     /**
@@ -136,6 +138,15 @@ public class HttpClientTransmitterImpl implements TransferTransmitter
         this.httpClient = httpClient;
     }
 
+    /**
+     * Whether httpClient will use preemptive authentication or not.
+     * @param flag 
+     */
+    public void setIsAuthenticationPreemptive(boolean isAuthenticationPreemptive)
+    {
+        this.isAuthenticationPreemptive = isAuthenticationPreemptive;
+    }
+    
     /* (non-Javadoc)
      * @see org.alfresco.repo.transfer.Transmitter#verifyTarget(org.alfresco.service.cmr.transfer.TransferTarget)
      */

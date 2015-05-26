@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -52,6 +52,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
         IGNORE_TYPES.add(RuleModel.TYPE_RULE);
         IGNORE_TYPES.add(ActionModel.TYPE_ACTION);
         IGNORE_TYPES.add(ContentModel.TYPE_THUMBNAIL);
+        IGNORE_TYPES.add(ContentModel.TYPE_FAILED_THUMBNAIL);
         // Workaround to prevent rules running on cm:rating nodes (which happened for 'liked' folders ALF-8308 & ALF-8382)
         IGNORE_TYPES.add(ContentModel.TYPE_RATING);
         IGNORE_TYPES.add(ContentModel.TYPE_SYSTEM_FOLDER);

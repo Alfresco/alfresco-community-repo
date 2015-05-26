@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,6 +29,8 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
+import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.AbstractContentTransformer2;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
@@ -41,6 +43,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -54,6 +57,8 @@ import org.alfresco.service.cmr.repository.PagedSourceOptions;
 import org.alfresco.service.cmr.repository.ScriptLocation;
 import org.alfresco.service.cmr.repository.ScriptService;
 import org.alfresco.service.cmr.repository.TransformationOptions;
+import org.alfresco.service.cmr.rule.Rule;
+import org.alfresco.service.cmr.rule.RuleType;
 import org.alfresco.service.cmr.thumbnail.FailedThumbnailInfo;
 import org.alfresco.service.cmr.thumbnail.ThumbnailParentAssociationDetails;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
@@ -405,6 +410,76 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
                 });
     }
     
+    /**
+     * Inbound rule must not be applied on failed thumbnail
+     * 
+     * @see https://issues.alfresco.com/jira/browse/MNT-10914
+     */
+    public void testRuleExecutionOnFailedThumbnailChild() throws Exception
+    {
+        // create inbound rule on folder
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put("aspect-name", ContentModel.ASPECT_GEN_CLASSIFIABLE);
+        Rule rule = new Rule();
+        rule.setRuleType(RuleType.INBOUND);
+        Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME, params);
+        ActionCondition condition = this.actionService.createActionCondition(NoConditionEvaluator.NAME, null);
+        action.addActionCondition(condition);
+        rule.setAction(action);
+        rule.applyToChildren(true);
+        services.getRuleService().saveRule(folder, rule);
+
+        setComplete();
+        endTransaction();
+
+        final NodeRef corruptNode = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                return createCorruptedContent(folder);
+            }
+        });
+        // Make sure the source node is correctly set up before we start
+        // It should not be renditioned and should not be marked as having any failed thumbnails.
+        assertFalse(secureNodeService.hasAspect(corruptNode, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE));
+
+        // Attempt to perform a thumbnail that we know will fail.
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                ThumbnailDefinition thumbnailDef = thumbnailService.getThumbnailRegistry().getThumbnailDefinition("doclib");
+                Action createThumbnailAction = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, services);
+                actionService.executeAction(createThumbnailAction, corruptNode, true, true);
+                return null;
+            }
+        });
+        // The thumbnail attempt has now failed. But a compensating action should have been scheduled that will mark the
+        // source node with a failure aspect. As that is an asynchronous action, we need to wait for that to complete.
+
+        Thread.sleep(3000); // This should be long enough for the compensating action to run.
+
+        final NodeRef failedThumbnailNode = transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+        {
+            public NodeRef execute() throws Throwable
+            {
+                assertTrue("corrupt node should have failed thumbnails aspect", secureNodeService.hasAspect(corruptNode, ContentModel.ASPECT_FAILED_THUMBNAIL_SOURCE));
+
+                Map<String, FailedThumbnailInfo> failedThumbnails = thumbnailService.getFailedThumbnails(corruptNode);
+                assertEquals("Wrong number of failed thumbnails", 1, failedThumbnails.size());
+
+                assertTrue("Missing QName for failed thumbnail", failedThumbnails.containsKey("doclib"));
+                final FailedThumbnailInfo doclibFailureInfo = failedThumbnails.get("doclib");
+                assertNotNull("Failure info was null", doclibFailureInfo);
+
+                return doclibFailureInfo.getFailedThumbnailNode();
+            }
+        });
+
+        assertTrue("Rule must not be executed on document", secureNodeService.hasAspect(corruptNode, ContentModel.ASPECT_GEN_CLASSIFIABLE));
+        assertFalse("Rule must not be executed on failed thumbnail", secureNodeService.hasAspect(failedThumbnailNode, ContentModel.ASPECT_GEN_CLASSIFIABLE));
+    }
+
     /**
      * From 4.0.1 we support 'transient' thumbnail failure. This occurs when the {@link ContentTransformer}
      * cannot attempt to perform the transformation for some reason (e.g. process/service unavailable) and wishes

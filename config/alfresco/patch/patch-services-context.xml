@@ -1082,7 +1082,44 @@
          <ref bean="siteService" />
       </property>
    </bean>
-   
+
+   <bean id="patch.deleteClassifibleAspectForFailedThumbnail" class="org.alfresco.repo.admin.patch.impl.GenericDeleteAspectForTypePatch"
+      parent="basePatch">
+      <property name="id">
+         <value>patch.deleteClassifibleAspectForFailedThumbnail</value>
+      </property>
+      <property name="description">
+         <value>patch.deleteClassifibleAspectForFailedThumbnail.description</value>
+      </property>
+      <property name="fixesFromSchema">
+         <value>0</value>
+      </property>
+      <property name="fixesToSchema">
+         <value>9004</value>
+      </property>
+      <property name="targetSchema">
+         <value>9005</value>
+      </property>
+      <property name="patchDAO">
+         <ref bean="patchDAO" />
+      </property>
+      <property name="nodeDAO">
+         <ref bean="nodeDAO" />
+      </property>
+      <property name="retryingTransactionHelper">
+         <ref bean="retryingTransactionHelper" />
+      </property>
+      <property name="qnameDAO">
+         <ref bean="qnameDAO" />
+      </property>
+      <property name="qnameStringType">
+         <value>{http://www.alfresco.org/model/content/1.0}failedThumbnail</value>
+      </property>
+      <property name="qnameStringAspect">
+         <value>{http://www.alfresco.org/model/content/1.0}generalclassifiable</value>
+      </property>
+   </bean>
+
     <bean id="patch.imapSpacesTemplates3" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.imapSpacesTemplates3</value></property>
         <property name="description"><value>patch.imapSpacesLocaleTemplates2.description</value></property>

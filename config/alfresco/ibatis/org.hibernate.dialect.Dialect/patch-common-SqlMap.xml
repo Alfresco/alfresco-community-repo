@@ -55,6 +55,13 @@
         <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
         <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
+
+    <parameterMap id="parameter_qnameIdPairAndMinMaxNodeId" type="map">
+        <parameter property="qnameId1" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="qnameId2" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="minNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
     
     <parameterMap id="parameter_qnameCrcAndMinMaxNodeId" type="map">
         <parameter property="qnameCrcSites" jdbcType="BIGINT" javaType="java.lang.Long"/>
@@ -152,6 +159,21 @@
             and (np.actual_type_n = 3 or np.actual_type_n = 21)
             and np.node_id &gt;= #{minNodeId}
             and np.node_id &lt; #{maxNodeId}
+    </select>
+
+    <!-- Find nodes by type qname and aspect qname -->
+    
+    <select id="select_NodesByTypeAndAspectQNameQName" parameterMap="parameter_qnameIdPairAndMinMaxNodeId" resultType="java.lang.Long" >
+        select
+            n.id
+        from
+            alf_node n
+            join alf_node_aspects a on n.id = a.node_id
+        where
+            a.qname_id = #{qnameId2}
+            and n.type_qname_id = #{qnameId1}
+            and n.id &gt;= #{minNodeId}
+            and n.id &lt; #{maxNodeId}
     </select>
     
     <select id="select_CountNodesWithTypeId" parameterType="Ids" resultType="java.lang.Long" >

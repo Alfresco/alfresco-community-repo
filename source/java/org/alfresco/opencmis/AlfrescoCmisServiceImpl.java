@@ -1795,6 +1795,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             public void beforeProcess() throws Throwable
             {
                 // Authentication
+                AuthenticationUtil.pushAuthentication();
                 AuthenticationUtil.setFullyAuthenticatedUser(runAsUser);
             }
 
@@ -1802,7 +1803,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             public void afterProcess() throws Throwable
             {
                 // Clear authentication
-                AuthenticationUtil.clearCurrentSecurityContext();
+                AuthenticationUtil.popAuthentication();
             }
         };
 

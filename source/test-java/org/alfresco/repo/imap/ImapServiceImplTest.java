@@ -22,8 +22,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +36,17 @@ import java.util.Properties;
 
 import javax.mail.Flags;
 import javax.mail.Session;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.search.AndTerm;
+import javax.mail.search.BodyTerm;
+import javax.mail.search.ComparisonTerm;
+import javax.mail.search.FromTerm;
+import javax.mail.search.ReceivedDateTerm;
+import javax.mail.search.SearchTerm;
+import javax.mail.search.SentDateTerm;
+import javax.mail.search.SubjectTerm;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -1088,5 +1101,46 @@ public class ImapServiceImplTest extends TestCase
         NodeRef storeRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         List<NodeRef> nodeRefs = searchService.selectNodes(storeRootNodeRef, APP_COMPANY_HOME, null, namespaceService, false);
         return nodeRefs.get(0);
+    }
+
+    /**
+     * MNT-12773
+     * @throws AddressException
+     */
+    public void testSearchTerms() throws AddressException 
+    {
+        List<AlfrescoImapFolder> mf = imapService.listMailboxes(user, IMAP_ROOT+"/"+TEST_IMAP_FOLDER_NAME+"/_*", false);
+        ArrayList<Long> res = new ArrayList<Long>();
+        SearchTerm st = null;
+
+        st = new SentDateTerm(ComparisonTerm.LT, new Date());
+        extractSearchTermResultsToList(mf, st, res);
+        assertEquals("Size of mails isn't correct. Search by sent date", 3, res.size());
+
+        res.clear();
+        st = new SubjectTerm("For Test");
+        extractSearchTermResultsToList(mf, st, res);
+        assertEquals("Size of mails isn't correct. Search by subject", 1, res.size());
+
+        res.clear();
+        st = new FromTerm(new InternetAddress("admin@alfresco.com"));
+        extractSearchTermResultsToList(mf, st, res);
+        assertEquals("Size of mails isn't correct. Search by \"From\" term", 1, res.size());
+
+        res.clear();
+        st = new AndTerm(st, new SubjectTerm("For Test"));
+        extractSearchTermResultsToList(mf, st, res);
+        assertEquals("Size of mails isn't correct. Search by \"From\" and \"Subject\" terms", 1, res.size());
+    }
+
+    private void extractSearchTermResultsToList(List<AlfrescoImapFolder> folders, SearchTerm searchTerm, ArrayList<Long> resList)
+    {
+        for (AlfrescoImapFolder folder : folders)
+        {
+            for (long l : folder.search(searchTerm))
+            {
+                resList.add(l);
+            }
+        }
     }
 }

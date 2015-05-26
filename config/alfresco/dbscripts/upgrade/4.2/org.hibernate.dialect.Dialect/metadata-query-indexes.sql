@@ -7,16 +7,16 @@
 -- Please contact support@alfresco.com if you need assistance with the upgrade.
 --
 
-CREATE INDEX idx_alf_node_mdq ON alf_node (store_id, type_qname_id, id);
-CREATE INDEX idx_alf_node_cor ON alf_node (audit_creator, store_id, type_qname_id, id);
-CREATE INDEX idx_alf_node_crd ON alf_node (audit_created, store_id, type_qname_id, id);
-CREATE INDEX idx_alf_node_mor ON alf_node (audit_modifier, store_id, type_qname_id, id); 
-CREATE INDEX idx_alf_node_mod ON alf_node (audit_modified, store_id, type_qname_id, id); 
+CREATE INDEX idx_alf_node_mdq ON alf_node (store_id, type_qname_id, id);  --(optional)
+CREATE INDEX idx_alf_node_cor ON alf_node (audit_creator, store_id, type_qname_id, id);  --(optional)
+CREATE INDEX idx_alf_node_crd ON alf_node (audit_created, store_id, type_qname_id, id);  --(optional)
+CREATE INDEX idx_alf_node_mor ON alf_node (audit_modifier, store_id, type_qname_id, id);  --(optional)
+CREATE INDEX idx_alf_node_mod ON alf_node (audit_modified, store_id, type_qname_id, id);  --(optional)
 
-CREATE INDEX idx_alf_nprop_s ON alf_node_properties (qname_id, string_value, node_id);
-CREATE INDEX idx_alf_nprop_l ON alf_node_properties (qname_id, long_value, node_id);
+CREATE INDEX idx_alf_nprop_s ON alf_node_properties (qname_id, string_value, node_id);  --(optional)
+CREATE INDEX idx_alf_nprop_l ON alf_node_properties (qname_id, long_value, node_id);  --(optional)
 
-CREATE INDEX idx_alf_conturl_sz ON alf_content_url (content_size, id);
+CREATE INDEX idx_alf_conturl_sz ON alf_content_url (content_size, id);  --(optional)
 
 
 --

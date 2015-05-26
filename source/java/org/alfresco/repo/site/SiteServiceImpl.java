@@ -45,6 +45,7 @@ import org.alfresco.query.CannedQueryParameters;
 import org.alfresco.query.CannedQueryResults;
 import org.alfresco.query.CannedQuerySortDetails;
 import org.alfresco.query.CannedQuerySortDetails.SortOrder;
+import org.alfresco.query.PageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
@@ -106,6 +107,7 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.alfresco.util.PropertyMap;
@@ -1818,8 +1820,6 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
 
     public PagingResults<SiteMembership> listMembersPaged(String shortName, boolean collapseGroups, List<Pair<SiteService.SortFields, Boolean>> sortProps, PagingRequest pagingRequest)
     {
-        SiteMembershipCannedQueryFactory sitesCannedQueryFactory = (SiteMembershipCannedQueryFactory)cannedQueryRegistry.getNamedObject("sitesCannedQueryFactory");
-
         CannedQueryPageDetails pageDetails = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems());
 
         // sort details
@@ -1838,7 +1838,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         SiteMembersCannedQueryParams parameterBean = new SiteMembersCannedQueryParams(shortName, collapseGroups);
         CannedQueryParameters params = new CannedQueryParameters(parameterBean, pageDetails, sortDetails, pagingRequest.getRequestTotalCountMax(), pagingRequest.getQueryExecutionId());
 
-        CannedQuery<SiteMembership> query = sitesCannedQueryFactory.getCannedQuery(params);
+		CannedQuery<SiteMembership> query = new SiteMembersCannedQuery(this, personService, nodeService, params);
 
         CannedQueryResults<SiteMembership> results = query.execute();
 
@@ -3092,31 +3092,51 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     
     public PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest)
     {
-        SiteMembershipCannedQueryFactory sitesCannedQueryFactory = (SiteMembershipCannedQueryFactory)cannedQueryRegistry.getNamedObject("sitesCannedQueryFactory");
-
-        CannedQueryPageDetails pageDetails = new CannedQueryPageDetails(pagingRequest.getSkipCount(), pagingRequest.getMaxItems());
-        
-        // sort details
-        CannedQuerySortDetails sortDetails = null;
-        if(sortProps != null)
-        {
-            List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(sortProps.size());
+		List<SiteMembership> siteMembers = listSiteMemberships (userName, -1);
+	    final int totalSize = siteMembers.size();
+	 	final PageDetails pageDetails = PageDetails.getPageDetails(pagingRequest, totalSize);
+	 	final List<SiteMembership> resultList;
+	 	if (sortProps == null)
+	 	{
+	 		resultList = siteMembers;
+	 	}
+	 	else
+	 	{
+	 		List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(sortProps.size());
             for (Pair<SiteService.SortFields, Boolean> sortProp : sortProps)
             {
                 sortPairs.add(new Pair<SiteService.SortFields, SortOrder>(sortProp.getFirst(), (sortProp.getSecond() ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
             }
-            
-            sortDetails = new CannedQuerySortDetails(sortPairs);
-        }
+	 		TreeSet<SiteMembership> sortedSet = new TreeSet<SiteMembership>(new SiteMembershipComparator(sortPairs, SiteMembershipComparator.Type.SITES));
+	 		sortedSet.addAll(siteMembers);
+	 		resultList = new ArrayList<SiteMembership>(sortedSet);
+	 	}
+		
+	 	PagingResults<SiteMembership> res = new PagingResults<SiteMembership>() {
+			
+			@Override
+			public boolean hasMoreItems() {
+				return pageDetails.hasMoreItems();
+			}
+			
+			@Override
+			public Pair<Integer, Integer> getTotalResultCount() {
+				Integer size = totalSize;
+				return new Pair<Integer, Integer>(size, size);
+			}
+			
+			@Override
+			public String getQueryExecutionId() {
+				return GUID.generate();
+			}
+			
+			@Override
+			public List<SiteMembership> getPage() {
+				return resultList;
+			}
+		};
 
-        SitesCannedQueryParams parameterBean = new SitesCannedQueryParams(userName);
-        CannedQueryParameters params = new CannedQueryParameters(parameterBean, pageDetails, sortDetails, pagingRequest.getRequestTotalCountMax(), pagingRequest.getQueryExecutionId());
-
-        CannedQuery<SiteMembership> query = sitesCannedQueryFactory.getCannedQuery(params);
-        
-        CannedQueryResults<SiteMembership> results = query.execute();
-
-        return getPagingResults(pagingRequest, results);
+	    return res;
     }
 
     private <T extends Object> PagingResults<T> getPagingResults(PagingRequest pagingRequest, final CannedQueryResults<T> results)
@@ -3175,7 +3195,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             }
         };
     }
-
+	
     /**
      * Private sites have separate ACLs on each component and don't inherit from the
      * site which has consumer role for everyone.

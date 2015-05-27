@@ -57,6 +57,7 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
     private static final String ITEMS = "items";
     private static final String DATA = "data";
     private static final String NAME_FILTER = "nameFilter";
+    private static final String PAGE_NUMBER = "page";
 
     /** Security clearance service */
     private SecurityClearanceService securityClearanceService;
@@ -92,11 +93,19 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
         setSortProps(userQueryParams, req);
 
         PagingResults<SecurityClearance> usersSecurityClearance = getSecurityClearanceService().getUsersSecurityClearance(userQueryParams);
+
+        int total = getTotal(usersSecurityClearance).intValue();
+        int maxItems = userQueryParams.getMaxItems();
+        if (getPageNumber(req) > Math.ceil((double) total / (double) maxItems))
+        {
+            throw new WebScriptException("The requested page is not valid");
+        }
+
         List<SecurityClearance> securityClearanceItems = getSecurityClearanceItems(usersSecurityClearance);
 
         Map<String, Object> securityClearanceData = new HashMap<>();
-        securityClearanceData.put(TOTAL, getTotal(usersSecurityClearance));
-        securityClearanceData.put(MAX_ITEMS, userQueryParams.getMaxItems());
+        securityClearanceData.put(TOTAL, total);
+        securityClearanceData.put(MAX_ITEMS, maxItems);
         securityClearanceData.put(SKIP_COUNT, userQueryParams.getSkipCount());
         securityClearanceData.put(ITEM_COUNT, securityClearanceItems.size());
         securityClearanceData.put(ITEMS, securityClearanceItems);
@@ -143,6 +152,18 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
     private String getNameFilter(WebScriptRequest req)
     {
         return req.getParameter(NAME_FILTER);
+    }
+
+    /**
+     * Gets the page number from the webscript request
+     *
+     * @param req {@link WebScriptRequest} The webscript request
+     * @return <code>int</code> The page number
+     */
+    private int getPageNumber(WebScriptRequest req)
+    {
+        String pageNumber = req.getParameter(PAGE_NUMBER);
+        return isNotBlank(pageNumber) ? parseInt(pageNumber) : 1;
     }
 
     /**

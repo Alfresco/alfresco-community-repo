@@ -26,6 +26,17 @@
       <property name="extendingBeanName" value="rm.FileFolderService_security" />
    </bean>
 
+   <!-- Commented out due to startup error relating to proxyInterface-->
+   <!-- extended QuickShare bean definition -->
+   <!--<bean id="rm.QuickShareService" abstract="true"-->
+         <!--class="org.alfresco.repo.quickshare.ExtendedQuickShareServiceImpl">-->
+      <!--<property name="nodeService" ref="NodeService"/>-->
+   <!--</bean>-->
+   <!--<bean class="org.alfresco.util.BeanExtender">-->
+      <!--<property name="beanName" value="QuickShareService"/>-->
+      <!--<property name="extendingBeanName" value="rm.QuickShareService"/>-->
+   <!--</bean>-->
+
    <bean id="ExtendedPermissionService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.repo.security.permissions.impl.ExtendedPermissionService</value>

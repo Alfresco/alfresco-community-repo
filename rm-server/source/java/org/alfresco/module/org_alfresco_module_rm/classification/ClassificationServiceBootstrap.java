@@ -71,6 +71,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** Set the object from which configuration options will be read. */
     public void setClassificationServiceDAO(ClassificationServiceDAO classificationServiceDAO) { this.classificationServiceDAO = classificationServiceDAO; }
     public void setAttributeService(AttributeService attributeService) { this.attributeService = attributeService; }
+    /** Used in unit tests. */
+    protected void setClearanceLevelManager(ClearanceLevelManager clearanceLevelManager) { this.clearanceLevelManager = clearanceLevelManager; }
 
     public ClassificationLevelManager getClassificationLevelManager() { return classificationLevelManager; }
     public ClassificationReasonManager getClassificationReasonManager() { return classificationReasonManager; }

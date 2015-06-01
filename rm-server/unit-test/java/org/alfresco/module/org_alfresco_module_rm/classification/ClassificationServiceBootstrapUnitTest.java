@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -98,14 +99,18 @@ public class ClassificationServiceBootstrapUnitTest
     @Mock ClassificationServiceDAO mockClassificationServiceDAO;
     @Mock AttributeService mockAttributeService;
     @Mock AuthenticationUtil mockAuthenticationUtil;
+    @Mock ClearanceLevelManager mockClearanceLevelManager;
     /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
     @Mock Appender mockAppender;
     @Captor ArgumentCaptor<LoggingEvent> loggingEventCaptor;
+    @Captor ArgumentCaptor<List<ClearanceLevel>> clearanceLevelCaptor;
 
     @Before public void setUp()
     {
         MockitoAnnotations.initMocks(this);
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
+        // This seems to be necessary because the ClearanceLevelManager isn't a constructor argument.
+        classificationServiceBootstrap.setClearanceLevelManager(mockClearanceLevelManager);
     }
 
     @Test public void defaultLevelsConfigurationVanillaSystem()
@@ -223,11 +228,12 @@ public class ClassificationServiceBootstrapUnitTest
         ClassificationLevel topSecret = new ClassificationLevel("1", "TopSecret");
         ClassificationLevel secret = new ClassificationLevel("2", "Secret");
         ImmutableList<ClassificationLevel> classificationLevels = ImmutableList.of(topSecret, secret, ClassificationLevelManager.UNCLASSIFIED);
+        doNothing().when(mockClearanceLevelManager).setClearanceLevels(clearanceLevelCaptor.capture());
 
         // Call the method under test.
         classificationServiceBootstrap.initConfiguredClearanceLevels(classificationLevels);
 
-        List<ClearanceLevel> clearanceLevels = classificationServiceBootstrap.getClearanceLevelManager().getClearanceLevels();
+        List<ClearanceLevel> clearanceLevels = clearanceLevelCaptor.getValue();
         assertEquals("There should be one clearance level for each classification level.", classificationLevels.size(), clearanceLevels.size());
         assertEquals("TopSecret", clearanceLevels.get(0).getDisplayLabel());
         assertEquals("Secret", clearanceLevels.get(1).getDisplayLabel());

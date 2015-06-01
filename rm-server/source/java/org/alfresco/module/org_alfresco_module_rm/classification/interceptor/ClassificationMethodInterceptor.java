@@ -39,17 +39,17 @@ import org.springframework.context.ApplicationContextAware;
 
 /**
  * Classification method interceptor
- * 
+ *
  * @author Roy Wetherall
  * @since 3.0
  */
-public class ClassificationMethodInterceptor implements MethodInterceptor, ApplicationContextAware 
+public class ClassificationMethodInterceptor implements MethodInterceptor, ApplicationContextAware
 {
     private static final String KEY_PROCESSING = GUID.generate();
-    
+
     /** application context */
     private ApplicationContext applicationContext;
-    
+
 	/**
 	 * @param applicationContext   application context
 	 * @throws BeansException
@@ -59,12 +59,12 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     {
         this.applicationContext = applicationContext;
     }
-    
+
     protected AuthenticationUtil getAuthenticationUtil()
     {
         return (AuthenticationUtil)applicationContext.getBean("rm.authenticationUtil");
     }
-     
+
     /**
      * @return {@link ContentClassificationService} content classification service
      */
@@ -72,22 +72,22 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     {
         return (ContentClassificationService)applicationContext.getBean("contentClassificationService");
     }
-    
+
     protected AlfrescoTransactionSupport getAlfrescoTransactionSupport()
     {
         return (AlfrescoTransactionSupport)applicationContext.getBean("rm.alfrescoTransactionSupport");
-    }	
-    
+    }
+
     protected RetryingTransactionHelper getRetryingTransactionHelper()
     {
         return ((TransactionService)applicationContext.getBean("transactionService")).getRetryingTransactionHelper();
     }
-    
+
     protected ClassificationServiceBootstrap getClassificationServiceBootstrap()
     {
         return (ClassificationServiceBootstrap)applicationContext.getBean("classificationServiceBootstrap");
     }
-    
+
     protected NodeService getNodeService()
     {
         return (NodeService)applicationContext.getBean("dbNodeService");
@@ -96,31 +96,31 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     /**
      * Check that the current user is cleared to see the items passed as parameters to the current
      * method invocation.
-     * 
+     *
      * @param invocation    method invocation
      */
     @SuppressWarnings("rawtypes")
-	public void checkClassification(MethodInvocation invocation)
-	{	
+	public void checkClassification(final MethodInvocation invocation)
+	{
 	    // do in transaction
 	    getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
-            {	  
+            {
                 // ensure classification service has been bootstrapped
                 if (getClassificationServiceBootstrap().isInitialised())
                 {
                     // check that we are not already processing a classification check
-            	    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);	    
+            	    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);
             	    if (value == null)
-            	    {	        
+            	    {
             	        // check that we have an authenticated user and that they aren't "system"
-            	        if (getAuthenticationUtil().getFullyAuthenticatedUser() != null && 
+            	        if (getAuthenticationUtil().getFullyAuthenticatedUser() != null &&
                 	        !getAuthenticationUtil().isRunAsUserTheSystemUser())
                 	    {
                             Method method = invocation.getMethod();
                             Class[] params = method.getParameterTypes();
-                            
+
                             int position = 0;
                             for (Class param : params)
                             {
@@ -133,7 +133,7 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
                                     {
                                         // get the value of the parameter
                                         NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
-                                        
+
                                         // if node exists then see if the current user has clearance
                                         if (getNodeService().exists(testNodeRef) &&
                                             !getContentClassificaitonService().hasClearance(testNodeRef))
@@ -148,13 +148,13 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
                                         getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
                                     }
                                 }
-                                
+
                                 position++;
                             }
                 	    }
             	    }
                 }
-                
+
                 return null;
             }
         }, true);
@@ -168,13 +168,13 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     {
         // pre method invocation check
         checkClassification(invocation);
-        
+
         // method proceed
         Object result = invocation.proceed();
-        
+
         // post method invocation processing
         // TODO
-        
+
         return result;
     }
 }

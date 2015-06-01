@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
@@ -97,6 +98,10 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
         {
             throw new UnsupportedOperationException(
                         "The content has already been classified. Reclassification is currently not supported.");
+        }
+        if (nodeService.hasAspect(content, QuickShareModel.ASPECT_QSHARE))
+        {
+            throw new IllegalStateException("A shared content cannot be classified.");
         }
         if (!securityClearanceService.isCurrentUserClearedForClassification(classificationLevelId))
         {

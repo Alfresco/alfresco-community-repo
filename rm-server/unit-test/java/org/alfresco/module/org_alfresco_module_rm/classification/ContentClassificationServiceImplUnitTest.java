@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 import static org.junit.Assert.assertEquals;
@@ -38,7 +39,9 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
@@ -140,6 +143,18 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         // Call the method under test.
         contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
                     Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
+    }
+
+    /** Classify a piece of content that has already been shared */
+    @Test(expected = IllegalStateException.class)
+    public void classifySharedContent()
+    {
+        NodeRef sharedContent = generateNodeRef(mockNodeService);
+        when(mockDictionaryService.isSubClass(mockNodeService.getType(sharedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockNodeService.hasAspect(sharedContent, QuickShareModel.ASPECT_QSHARE)).thenReturn(true);
+
+        // Call the method under test.
+        contentClassificationServiceImpl.classifyContent(generateText(), generateText(), newHashSet(generateText(), generateText()), sharedContent);
     }
 
     /**

@@ -31,11 +31,11 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
  */
 public class ClassificationLevelManager
 {
-    /** Unclassified classification level */
-    public static final String UNCLASSIFIED_ID = "Unclassified";
-    private static final String UNCLASSIFIED_MSG = "rm.classification.unclassified";
-    public static final ClassificationLevel UNCLASSIFIED = new ClassificationLevel(UNCLASSIFIED_ID, UNCLASSIFIED_MSG);
-
+	/** Unclassified classification level */
+	public static final String UNCLASSIFIED_ID = "Unclassified";
+	private static final String UNCLASSIFIED_MSG = "rm.classification.unclassified";	
+	public static final ClassificationLevel UNCLASSIFIED = new ClassificationLevel(UNCLASSIFIED_ID, UNCLASSIFIED_MSG);
+	
     /** An immutable list of classification levels ordered from most to least secure. */
     private ImmutableList<ClassificationLevel> classificationLevels;
 

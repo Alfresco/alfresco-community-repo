@@ -41,7 +41,7 @@ import org.alfresco.util.ParameterCheck;
  * @since 3.0
  */
 public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements SecurityClearanceService
-{
+{    
     /** The clearance levels currently configured in this server. */
     private ClearanceLevelManager clearanceManager;
     /** The object containing the {@link ClassificationLevel}s in the system. */
@@ -50,6 +50,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
     private ClassificationServiceBootstrap classificationServiceBootstrap;
     private ClassificationLevelComparator classificationLevelComparator;
 
+    /** dependency setters */
     public void setClearanceManager(ClearanceLevelManager clearanceManager) { this.clearanceManager = clearanceManager; }
     public void setClassificationLevelManager(ClassificationLevelManager classificationLevelManager) { this.classificationLevelManager = classificationLevelManager; }
     public void setPersonService(PersonService service) { this.personService = service; }

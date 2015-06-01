@@ -56,6 +56,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** The clearance levels currently configured in this server. */
     private ClearanceLevelManager clearanceLevelManager = new ClearanceLevelManager();
     private ClassificationServiceDAO classificationServiceDAO;
+    
+    private boolean isInitialised = false;
 
     public ClassificationServiceBootstrap(AuthenticationUtil authUtil,
                                           TransactionService txService,
@@ -77,6 +79,11 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     public ClassificationLevelManager getClassificationLevelManager() { return classificationLevelManager; }
     public ClassificationReasonManager getClassificationReasonManager() { return classificationReasonManager; }
     public ClearanceLevelManager getClearanceLevelManager() { return clearanceLevelManager; }
+    
+    public boolean isInitialised()
+    {
+        return isInitialised;
+    }
 
     @Override public void onBootstrap(ApplicationEvent event)
     {
@@ -91,6 +98,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
                         initConfiguredClassificationLevels();
                         initConfiguredClassificationReasons();
                         initConfiguredClearanceLevels(classificationLevelManager.getClassificationLevels());
+                        isInitialised = true;
                         return null;
                     }
                 };

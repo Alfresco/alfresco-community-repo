@@ -55,6 +55,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     }
 
     /**
+
      * Create a list containing all classification levels up to and including the supplied level.
      *
      * @param allLevels The list of all the classification levels starting with the highest security.

@@ -43,7 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Tests for the get classification reasons API.
- * 
+ *
  * @author tpage
  */
 public class ReasonsGetUnitTest extends BaseWebScriptUnitTest
@@ -95,7 +95,7 @@ public class ReasonsGetUnitTest extends BaseWebScriptUnitTest
 
         // check the JSON result using Jackson to allow easy equality testing.
         ObjectMapper mapper = new ObjectMapper();
-        String expectedJSONString = "{\"data\":{\"items\":[{\"displayLabel\":\"labelA\",\"id\":\"idA\"},{\"displayLabel\":\"labelB\",\"id\":\"idB\"}]}}";
+        String expectedJSONString = "{\"data\":{\"items\":[{\"displayLabel\":\"labelA\",\"id\":\"idA\",\"fullReason\":\"idA: labelA\"},{\"displayLabel\":\"labelB\",\"id\":\"idB\",\"fullReason\":\"idB: labelB\"}]}}";
         JsonNode expected = mapper.readTree(expectedJSONString);
         assertEquals(expected, mapper.readTree(actualJSONString));
     }

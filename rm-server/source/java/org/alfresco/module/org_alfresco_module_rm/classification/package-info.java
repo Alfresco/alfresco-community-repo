@@ -22,7 +22,7 @@
  * Nodes within Alfresco can be given a {@link org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel}
  * which then restricts access to them to users having the appropriate clearance.
  * <p/>
- * The {@link org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService} is responsible
+ * The {@link org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService} is responsible
  * for the management of those levels and it is the
  * {@link org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService} which deals
  * wth users and their clearances.

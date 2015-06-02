@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class ClassificationLevelsGetUnitTest extends BaseWebScriptUnitTest
 
     /** ClassificationLevelsGet webscript instance */
     private @Spy @InjectMocks ClassificationLevelsGet webScript;
-    private @Mock ClassificationService mockClassificationService;
+    private @Mock ClassificationSchemeService mockClassificationSchemeService;
 
     private List<ClassificationLevel> classificationLevels;
 
@@ -83,7 +83,7 @@ public class ClassificationLevelsGetUnitTest extends BaseWebScriptUnitTest
                 new ClassificationLevel("id2", "labelKey2"));
 
         // setup interactions
-        doReturn(classificationLevels).when(mockClassificationService).getClassificationLevels();
+        doReturn(classificationLevels).when(mockClassificationSchemeService).getClassificationLevels();
 
         // execute web script
         JSONObject json = executeJSONWebScript(new HashMap<String, String>());

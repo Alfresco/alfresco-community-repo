@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -42,12 +42,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /**
- * Unit tests for {@link ClassificationServiceImpl}.
+ * Unit tests for {@link ClassificationSchemeServiceImpl}.
  *
  * @author Neil Mc Erlean
  * @since 3.0
  */
-public class ClassificationServiceImplUnitTest
+public class ClassificationSchemeServiceImplUnitTest
 {
     private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("Top Secret",   "rm.classification.topSecret",
                                                                                                "Secret",       "rm.classification.secret",
@@ -78,7 +78,7 @@ public class ClassificationServiceImplUnitTest
         return levels;
     }
 
-    @InjectMocks private ClassificationServiceImpl classificationServiceImpl;
+    @InjectMocks private ClassificationSchemeServiceImpl classificationSchemeServiceImpl;
 
     @Mock private NodeService                 mockNodeService;
     @Mock private DictionaryService           mockDictionaryService;
@@ -99,7 +99,7 @@ public class ClassificationServiceImplUnitTest
     {
         ClassificationLevel targetLevel = new ClassificationLevel("Secret", "rm.classification.secret");
 
-        List<ClassificationLevel> actual = classificationServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
+        List<ClassificationLevel> actual = classificationSchemeServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
 
         List<ClassificationLevel> expected = asLevelList("Secret",       "rm.classification.secret",
                                                          "Confidential", "rm.classification.confidential",
@@ -116,7 +116,7 @@ public class ClassificationServiceImplUnitTest
     {
         ClassificationLevel targetLevel = new ClassificationLevel("UnrecognisedLevel", "rm.classification.IMadeThisUp");
 
-        List<ClassificationLevel> actual = classificationServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
+        List<ClassificationLevel> actual = classificationSchemeServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
 
         assertEquals("Expected an empty list when the target level is not found.", 0, actual.size());
     }
@@ -127,7 +127,7 @@ public class ClassificationServiceImplUnitTest
         String levelId = "classificationLevelId1";
         ClassificationLevel classificationLevel = new ClassificationLevel(levelId, "displayLabelKey");
         when(mockLevelManager.findLevelById(levelId)).thenReturn(classificationLevel);
-        ClassificationLevel classificationLevelById = classificationServiceImpl.getClassificationLevelById(levelId);
+        ClassificationLevel classificationLevelById = classificationSchemeServiceImpl.getClassificationLevelById(levelId);
         assertEquals(classificationLevel, classificationLevelById);
     }
 
@@ -136,7 +136,7 @@ public class ClassificationServiceImplUnitTest
     {
         String classificationLevelId = "aRandomId";
         doThrow(new LevelIdNotFound("Id not found!")).when(mockLevelManager).findLevelById(classificationLevelId);
-        classificationServiceImpl.getClassificationLevelById(classificationLevelId);
+        classificationSchemeServiceImpl.getClassificationLevelById(classificationLevelId);
     }
 
     @Test
@@ -145,7 +145,7 @@ public class ClassificationServiceImplUnitTest
         String reasonId = "classificationReasonId1";
         ClassificationReason classificationReason = new ClassificationReason(reasonId, "displayLabelKey");
         when(mockReasonManager.findReasonById(reasonId)).thenReturn(classificationReason);
-        ClassificationReason classificationReasonById = classificationServiceImpl.getClassificationReasonById(reasonId);
+        ClassificationReason classificationReasonById = classificationSchemeServiceImpl.getClassificationReasonById(reasonId);
         assertEquals(classificationReason, classificationReasonById);
     }
 
@@ -154,6 +154,6 @@ public class ClassificationServiceImplUnitTest
     {
         String classificationReasonId = "aRandomId";
         doThrow(new ReasonIdNotFound("Id not found!")).when(mockReasonManager).findReasonById(classificationReasonId);
-        classificationServiceImpl.getClassificationReasonById(classificationReasonId);
+        classificationSchemeServiceImpl.getClassificationReasonById(classificationReasonId);
     }
 }

@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -63,14 +63,14 @@ public class ClassificationLevelManagerUnitTest
         ClassificationLevel actual = classificationLevelManager.getMostSecureLevel();
         assertEquals(LEVEL_1, actual);
     }
-    
+
     /**
      * Given that I have created the classification level manager with a list of classification levels
      * Then the unclassified level is available
      */
     @Test public void getUnclassifiedLevel()
     {
-        assertEquals(LEVELS.size() + 1, classificationLevelManager.getClassificationLevels().size());         	
-    	assertEquals(ClassificationLevelManager.UNCLASSIFIED, classificationLevelManager.findLevelById(ClassificationLevelManager.UNCLASSIFIED_ID));
-    }     
+        assertEquals(LEVELS.size() + 1, classificationLevelManager.getClassificationLevels().size());
+        assertEquals(ClassificationLevelManager.UNCLASSIFIED, classificationLevelManager.findLevelById(ClassificationLevelManager.UNCLASSIFIED_ID));
+    }
 }

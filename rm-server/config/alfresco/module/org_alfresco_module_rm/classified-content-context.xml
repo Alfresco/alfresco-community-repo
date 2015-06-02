@@ -35,32 +35,32 @@
         <property name="reasonConfigLocation" value="${rm.classification.reasonsFile}" />
    </bean>
 
-   <!--  Classification Service  -->
+   <!-- Classification Scheme Service -->
 
-   <bean id="classificationService"
-         class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl"
+   <bean id="classificationSchemeService"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeServiceImpl"
          parent="baseService" init-method="init">
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
       <property name="securityClearanceService" ref="securityClearanceService"/>
    </bean>
 
-   <bean id="ClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">
+   <bean id="ClassificationSchemeService" class="org.springframework.aop.framework.ProxyFactoryBean">
       <property name="proxyInterfaces">
-         <value>org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService</value>
+         <value>org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService</value>
       </property>
       <property name="target">
-         <ref bean="classificationService"/>
+         <ref bean="classificationSchemeService"/>
       </property>
       <property name="interceptorNames">
          <list>
-            <idref local="ClassificationService_transaction"/>
+            <idref local="ClassificationSchemeService_transaction"/>
             <idref bean="exceptionTranslator"/>
-            <idref local="ClassificationService_security"/>
+            <idref local="ClassificationSchemeService_security"/>
          </list>
       </property>
    </bean>
 
-   <bean id="ClassificationService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+   <bean id="ClassificationSchemeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
       <property name="transactionManager">
          <ref bean="transactionManager"/>
       </property>
@@ -71,22 +71,22 @@
       </property>
    </bean>
 
-   <!-- FIXME: We have to restrict methods in the classification service (with capabilities, etc.) -->
-   <bean id="ClassificationService_security" parent="baseSecurity">
+   <!-- FIXME: We have to restrict methods in the classification scheme service (with capabilities, etc.) -->
+   <bean id="ClassificationSchemeService_security" parent="baseSecurity">
       <property name="objectDefinitionSource">
          <value>
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevels=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasons=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationLevelById=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getClassificationReasonById=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.getUnclassifiedClassificationLevel=ACL_ALLOW
-            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService.*=ACL_DENY
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationLevels=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationReasons=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationLevelById=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationReasonById=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getUnclassifiedClassificationLevel=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.*=ACL_DENY
          </value>
       </property>
    </bean>
 
-   <bean id="ClassificationServiceProvider" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceProvider">
-      <constructor-arg ref="ClassificationService" index="0" />
+   <bean id="ClassificationSchemeServiceProvider" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeServiceProvider">
+      <constructor-arg ref="ClassificationSchemeService" index="0" />
    </bean>
 
    <bean id="classificationServiceBootstrap"

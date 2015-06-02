@@ -29,8 +29,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.dictionary.DictionaryService;

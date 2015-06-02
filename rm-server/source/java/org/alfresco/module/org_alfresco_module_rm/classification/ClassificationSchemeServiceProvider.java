@@ -26,34 +26,34 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * A Spring class used to provide the {@link ClassificationService} to non-Spring classes.
- * 
+ * A Spring class used to provide the {@link ClassificationSchemeService} to non-Spring classes.
+ *
  * @author tpage
  */
-public class ClassificationServiceProvider
+public class ClassificationSchemeServiceProvider
 {
     /** Logging utility for the class. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationSchemeServiceProvider.class);
     /** The Spring application context. */
-    private static final AtomicReference<ClassificationService> CLASSIFICATION_SERVICE_REF = new AtomicReference<>();
+    private static final AtomicReference<ClassificationSchemeService> CLASSIFICATION_SCHEME_SERVICE_REF = new AtomicReference<>();
 
-    /** Constructor that takes the classification service and makes it available statically. */
-    public ClassificationServiceProvider(ClassificationService classificationService)
+    /** Constructor that takes the classification scheme service and makes it available statically. */
+    public ClassificationSchemeServiceProvider(ClassificationSchemeService classificationSchemeService)
     {
-        ClassificationService oldClassificationService = CLASSIFICATION_SERVICE_REF.getAndSet(classificationService);
-        if (oldClassificationService != null)
+        ClassificationSchemeService oldClassificationSchemeService = CLASSIFICATION_SCHEME_SERVICE_REF.getAndSet(classificationSchemeService);
+        if (oldClassificationSchemeService != null)
         {
-            LOGGER.debug("Unexpected instantiation of ClassificationServiceProvider has updated reference to classification service.");
+            LOGGER.debug("Unexpected instantiation of ClassificationSchemeServiceProvider has updated reference to classification scheme service.");
         }
     }
 
     /**
-     * Get the <code>ClassificationService</code> as defined in the Spring context.
-     * 
+     * Get the <code>ClassificationSchemeService</code> as defined in the Spring context.
+     *
      * @return The service bean.
      */
-    public static ClassificationService getClassificationService()
+    public static ClassificationSchemeService getClassificationSchemeService()
     {
-        return CLASSIFICATION_SERVICE_REF.get();
+        return CLASSIFICATION_SCHEME_SERVICE_REF.get();
     }
 }

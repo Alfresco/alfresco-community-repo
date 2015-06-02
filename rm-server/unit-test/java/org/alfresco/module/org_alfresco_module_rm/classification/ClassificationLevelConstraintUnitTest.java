@@ -42,7 +42,7 @@ public class ClassificationLevelConstraintUnitTest
     private static final List<ClassificationLevel> DEFAULT_LEVELS = Arrays.asList(LEVEL_ONE, LEVEL_TWO);
 
     @InjectMocks ClassificationLevelConstraint classificationLevelConstraint;
-    @Mock ClassificationService mockClassificationService;
+    @Mock ClassificationSchemeService mockClassificationSchemeService;
 
     @Before
     public void setUp()
@@ -50,7 +50,7 @@ public class ClassificationLevelConstraintUnitTest
         MockitoAnnotations.initMocks(this);
 
         // Currently this list of levels suffices for all the tests.
-        doReturn(DEFAULT_LEVELS).when(mockClassificationService).getClassificationLevels();
+        doReturn(DEFAULT_LEVELS).when(mockClassificationSchemeService).getClassificationLevels();
     }
 
     /** Check that evaluateSingleValue throws no exceptions when an id is found. */

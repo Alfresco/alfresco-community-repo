@@ -29,7 +29,7 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
@@ -85,8 +85,8 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     /** File Plan Service */
     private FilePlanService filePlanService;
 
-    /** Classification Service */
-    private ClassificationService classificationService;
+    /** Classification Scheme Service */
+    private ClassificationSchemeService classificationSchemeService;
 
     /**
      * Returns the disposition service
@@ -109,13 +109,13 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     }
 
     /**
-     * Returns the classification service
+     * Returns the classification scheme service
      *
-     * @return Classification service
+     * @return Classification scheme service
      */
-    protected ClassificationService getClassificationService()
+    protected ClassificationSchemeService getClassificationSchemeService()
     {
-        return this.classificationService;
+        return this.classificationSchemeService;
     }
 
     /**
@@ -133,15 +133,15 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      */
     public void setFilePlanService(FilePlanService filePlanService)
     {
-		this.filePlanService = filePlanService;
-	}
+        this.filePlanService = filePlanService;
+    }
 
     /**
-     * @param classificationService classification service
+     * @param classificationSchemeService classification scheme service
      */
-    public void setClassificationService(ClassificationService classificationService)
+    public void setClassificationSchemeService(ClassificationSchemeService classificationSchemeService)
     {
-        this.classificationService = classificationService;
+        this.classificationSchemeService = classificationSchemeService;
     }
 
     /**
@@ -207,14 +207,14 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
             String initialClassificationId = (String) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION);
             if (isNotBlank(initialClassificationId))
             {
-                String initialClassificationDisplayLabel = getClassificationService().getClassificationLevelById(initialClassificationId).getDisplayLabel();
+                String initialClassificationDisplayLabel = getClassificationSchemeService().getClassificationLevelById(initialClassificationId).getDisplayLabel();
                 addTransientPropertyField(form, TRANSIENT_INITIAL_CLASSIFICATION, DataTypeDefinition.TEXT, initialClassificationDisplayLabel);
             }
 
             String currentClassificationId = (String) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION);
             if (isNotBlank(currentClassificationId))
             {
-                String currentClassificationDisplayLabel = getClassificationService().getClassificationLevelById(currentClassificationId).getDisplayLabel();
+                String currentClassificationDisplayLabel = getClassificationSchemeService().getClassificationLevelById(currentClassificationId).getDisplayLabel();
                 addTransientPropertyField(form, TRANSIENT_CURRENT_CLASSIFICATION, DataTypeDefinition.TEXT, currentClassificationDisplayLabel);
             }
 
@@ -227,7 +227,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                 for (int i = 0; i < size; i++)
                 {
                     String id = classificationReasons.get(i);
-                    String displayLabel = getClassificationService().getClassificationReasonById(id).getDisplayLabel();
+                    String displayLabel = getClassificationSchemeService().getClassificationReasonById(id).getDisplayLabel();
                     classificationReasonLabels.add(id + ": " + displayLabel + (i < size - 1 ? "|": ""));
                 }
                 addTransientPropertyField(form, TRANSIENT_CLASSIFICATION_REASON_LABELS, DataTypeDefinition.TEXT, classificationReasonLabels);

@@ -20,18 +20,18 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 
 /**
- * The Classification Service supports the 'Classified Records' feature, whereby Alfresco
- * content can be given a {@link ClassificationLevel}. This restricts access to that
- * content to users having the appropriate security clearance.
+ * The Classification Scheme Service supports the 'Classified Records' feature, whereby Alfresco content can be given a
+ * {@link ClassificationLevel}. This restricts access to that content to users having the appropriate security
+ * clearance.
  *
  * @author Neil Mc Erlean
  * @since 3.0
  */
-public interface ClassificationService
+public interface ClassificationSchemeService
 {
     /**
      * Returns an immutable list of the defined classification levels visible to the current user.

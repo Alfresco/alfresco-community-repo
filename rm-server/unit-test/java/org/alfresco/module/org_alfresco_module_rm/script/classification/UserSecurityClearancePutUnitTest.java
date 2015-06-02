@@ -10,7 +10,7 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClearanceLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
@@ -114,7 +114,7 @@ public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
         Map<String, String> parameters = buildParameters(USERNAME, username, CLEARANCE_ID, clearanceId);
 
         when(mockSecurityClearanceService.setUserSecurityClearance(username, clearanceId))
-            .thenThrow(new ClassificationServiceException.LevelIdNotFound(clearanceId));
+            .thenThrow(new ClassificationException.LevelIdNotFound(clearanceId));
 
         // Execute web script - this should throw the expected exception.
         executeJSONWebScript(parameters);
@@ -135,7 +135,7 @@ public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
         Map<String, String> parameters = buildParameters(USERNAME, username, CLEARANCE_ID, clearanceId);
 
         when(mockSecurityClearanceService.setUserSecurityClearance(username, clearanceId)).thenThrow(
-            new ClassificationServiceException.LevelIdNotFound(clearanceId));
+            new ClassificationException.LevelIdNotFound(clearanceId));
 
         try
         {

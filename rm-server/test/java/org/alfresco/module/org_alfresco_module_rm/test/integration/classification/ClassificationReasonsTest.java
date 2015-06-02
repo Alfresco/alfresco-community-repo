@@ -22,25 +22,24 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.classificati
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReason;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
 /**
  * Tests of classification reason handling.
- * 
+ *
  * @author tpage
  * @since 3.0
  */
 public class ClassificationReasonsTest extends BaseRMTestCase
 {
     /**
-     * Given the default classification reasons config file is on the classpath
-     * When the system has finished starting up
+     * Given the default classification reasons config file is on the classpath When the system has finished starting up
      * Then the classification service exposes the classification reasons.
      * <p>
-     * Note that this test requires a clean db, as otherwise the classification service will use the persisted
-     * classification reasons in preference to those given on the classpath (see the logic in {@link
-     * ClassificationServiceImpl#initConfiguredClassificationReasons()}).
+     * Note that this test requires a clean db, as otherwise the classification scheme service will use the persisted
+     * classification reasons in preference to those given on the classpath (see the logic in
+     * {@link ClassificationSchemeServiceImpl#initConfiguredClassificationReasons()}).
      */
     public void testLoadBootstrappedClassificationReasons() throws Exception
     {
@@ -58,8 +57,8 @@ public class ClassificationReasonsTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                // Check the classification service exposes the classification reasons.
-                List<ClassificationReason> reasons = classificationService.getClassificationReasons();
+                // Check the classification scheme service exposes the classification reasons.
+                List<ClassificationReason> reasons = classificationSchemeService.getClassificationReasons();
                 assertNotNull(reasons);
                 assertEquals("The default classification reasons in test/resources/alfresco/module/"
                             + "org_alfresco_module_rm/classification/rm-classification-reasons.json "

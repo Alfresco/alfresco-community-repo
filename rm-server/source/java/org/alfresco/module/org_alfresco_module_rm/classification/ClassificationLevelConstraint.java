@@ -29,20 +29,20 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
 
 /**
- * Check that a value is a valid {@link ClassificationLevel} by checking the {@link ClassificationService}.
- * 
+ * Check that a value is a valid {@link ClassificationLevel} by checking the {@link ClassificationSchemeService}.
+ *
  * @author tpage
  */
 public class ClassificationLevelConstraint extends AbstractConstraint
 {
-    /** The classification service provides access to the valid classification levels. */
-    private ClassificationService classificationService;
+    /** The classification scheme service provides access to the valid classification levels. */
+    private ClassificationSchemeService classificationSchemeService;
 
     /** Constraints must use a default constructor. */
     public ClassificationLevelConstraint()
     {
         super();
-        this.classificationService = ClassificationServiceProvider.getClassificationService();
+        this.classificationSchemeService = ClassificationSchemeServiceProvider.getClassificationSchemeService();
     }
 
     @Override
@@ -59,12 +59,12 @@ public class ClassificationLevelConstraint extends AbstractConstraint
     /**
      * Get the allowed values.  Note that these are <tt>String</tt> instances, but may
      * represent non-<tt>String</tt> values.  It is up to the caller to distinguish.
-     * 
+     *
      * @return Returns the values allowed
      */
     private List<String> getAllowedValues()
     {
-        List<ClassificationLevel> classificationLevels = classificationService.getClassificationLevels();
+        List<ClassificationLevel> classificationLevels = classificationSchemeService.getClassificationLevels();
         List<String> values = new ArrayList<String>();
         for (ClassificationLevel classificationLevel : classificationLevels)
         {

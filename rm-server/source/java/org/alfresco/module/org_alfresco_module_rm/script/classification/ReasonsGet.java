@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.script.classification;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
@@ -38,17 +38,17 @@ public class ReasonsGet extends AbstractRmWebScript
     /** Constants */
     private static final String REASONS = "reasons";
 
-    /** Classification service */
-    private ClassificationService classificationService;
+    /** Classification scheme service */
+    private ClassificationSchemeService classificationSchemeService;
 
     /**
-     * Sets the classification service
+     * Sets the classification scheme service
      *
-     * @param classificatonService The classification service
+     * @param classificationSchemeService The classification scheme service
      */
-    public void setClassificationService(ClassificationService classificationService)
+    public void setClassificationService(ClassificationSchemeService classificationSchemeService)
     {
-        this.classificationService = classificationService;
+        this.classificationSchemeService = classificationSchemeService;
     }
 
     /**
@@ -60,7 +60,7 @@ public class ReasonsGet extends AbstractRmWebScript
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
         Map<String, Object> result = new HashMap<String, Object>();
-        result.put(REASONS, classificationService.getClassificationReasons());
+        result.put(REASONS, classificationSchemeService.getClassificationReasons());
         return result;
     }
 }

@@ -235,8 +235,8 @@ public class ClassificationServiceBootstrapUnitTest
 
         List<ClearanceLevel> clearanceLevels = clearanceLevelCaptor.getValue();
         assertEquals("There should be one clearance level for each classification level.", classificationLevels.size(), clearanceLevels.size());
-        assertEquals("TopSecret", clearanceLevels.get(0).getDisplayLabel());
-        assertEquals("Secret", clearanceLevels.get(1).getDisplayLabel());
-        assertEquals("rm.classification.noClearance", clearanceLevels.get(2).getDisplayLabel());
+        assertEquals("TopSecret", clearanceLevels.get(0).getDisplayLabelKey());
+        assertEquals("Secret", clearanceLevels.get(1).getDisplayLabelKey());
+        assertEquals("rm.classification.noClearance", clearanceLevels.get(2).getDisplayLabelKey());
     }
 }

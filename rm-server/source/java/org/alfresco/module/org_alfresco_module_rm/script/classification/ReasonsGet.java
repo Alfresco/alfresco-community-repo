@@ -46,7 +46,7 @@ public class ReasonsGet extends AbstractRmWebScript
      *
      * @param classificationSchemeService The classification scheme service
      */
-    public void setClassificationService(ClassificationSchemeService classificationSchemeService)
+    public void setClassificationSchemeService(ClassificationSchemeService classificationSchemeService)
     {
         this.classificationSchemeService = classificationSchemeService;
     }

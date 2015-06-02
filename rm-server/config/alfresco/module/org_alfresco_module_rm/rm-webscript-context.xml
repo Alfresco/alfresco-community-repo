@@ -653,14 +653,14 @@
    <bean id="webscript.org.alfresco.rma.classification.reasons.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.classification.ReasonsGet"
       parent="rmBaseWebscript">
-      <property name="classificationService" ref="ClassificationService" />
+      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
    </bean>
 
    <!-- REST impl for GET classification levels -->
    <bean id="webscript.org.alfresco.rma.classification.classificationlevels.get"
       class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClassificationLevelsGet"
       parent="rmBaseWebscript">
-      <property name="classificationService" ref="ClassificationService"/>
+      <property name="classificationSchemeService" ref="ClassificationSchemeService"/>
    </bean>
 
     <!-- REST impl for GET clearance levels -->

@@ -219,7 +219,7 @@
       <property name="filterRegistry" ref="nodeFilterRegistry" />
       <property name="dispositionService" ref="dispositionService"/>
       <property name="filePlanService" ref="FilePlanService" />
-      <property name="classificationService" ref="ClassificationService" />
+      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
    </bean>
 
    <bean id="rmTypeFormFilter"

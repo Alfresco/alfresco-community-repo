@@ -84,4 +84,15 @@ public class ClearanceLevel
     }
 
     @Override public int hashCode() { return highestClassificationLevel.hashCode(); }
+
+    /**
+     * Get the display label key. This method is used for unit testing, where we want to avoid problems introduced by
+     * the static call to the I18N utility.
+     *
+     * @return The key for the display label of this security clearance.
+     */
+    protected String getDisplayLabelKey()
+    {
+        return displayLabelKey;
+    }
 }

@@ -22,21 +22,21 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Generic class for any runtime exception thrown within the {@link ClassificationService}.
+ * Generic class for any runtime exception to do with classified records.
  *
  * @author Neil Mc Erlean
  * @since 3.0
  */
-public class ClassificationServiceException extends AlfrescoRuntimeException
+public class ClassificationException extends AlfrescoRuntimeException
 {
     /** serial version uid */
     private static final long serialVersionUID = -7097573558438226725L;
 
-    public ClassificationServiceException(String msgId) { super(msgId); }
-    public ClassificationServiceException(String msgId, Throwable cause) { super(msgId, cause); }
+    public ClassificationException(String msgId) { super(msgId); }
+    public ClassificationException(String msgId, Throwable cause) { super(msgId, cause); }
 
     /** Represents a fatal error due to missing required configuration. */
-    public static class MissingConfiguration extends ClassificationServiceException
+    public static class MissingConfiguration extends ClassificationException
     {
         /** serial version uid */
         private static final long serialVersionUID = -750162955179494445L;
@@ -46,7 +46,7 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
 
     /** Represents a fatal error due to illegal configuration.
      *  The configuration was understood by the server, but was rejected as illegal. */
-    public static class IllegalConfiguration extends ClassificationServiceException
+    public static class IllegalConfiguration extends ClassificationException
     {
         /** serial version uid */
         private static final long serialVersionUID = -1139626996782741741L;
@@ -56,7 +56,7 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
 
     /** Represents a fatal error due to malformed configuration.
      *  The configuration could not be understood by the server. */
-    public static class MalformedConfiguration extends ClassificationServiceException
+    public static class MalformedConfiguration extends ClassificationException
     {
         /** serial version uid */
         private static final long serialVersionUID = 8191162359241035026L;
@@ -66,7 +66,7 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
     }
 
     /** The supplied classification level id was not found in the configured list. */
-    public static class LevelIdNotFound extends ClassificationServiceException
+    public static class LevelIdNotFound extends ClassificationException
     {
         /** serial version uid */
         private static final long serialVersionUID = -8507186704795004383L;
@@ -78,7 +78,7 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
     }
 
     /** The supplied classification reason id was not found in the configured list. */
-    public static class ReasonIdNotFound extends ClassificationServiceException
+    public static class ReasonIdNotFound extends ClassificationException
     {
         /** serial version uid */
         private static final long serialVersionUID = -643842413653375433L;
@@ -89,7 +89,7 @@ public class ClassificationServiceException extends AlfrescoRuntimeException
         }
     }
 
-    public static class InvalidNode extends ClassificationServiceException
+    public static class InvalidNode extends ClassificationException
     {
         /** serial version uid */
         private static final long serialVersionUID = -4485335425932302477L;

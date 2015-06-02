@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -62,7 +62,7 @@ public class SecurityClearanceServiceImplUnitTest
     @Mock private DictionaryService             mockDictionaryService;
     @Mock private NodeService                   mockNodeService;
     @Mock private PersonService                 mockPersonService;
-    @Mock private ClassificationService         mockClassificationService;
+    @Mock private ClassificationSchemeService   mockClassificationSchemeService;
     @Mock private ClearanceLevelManager         mockClearanceLevelManager;
     @Mock private ClassificationLevelComparator mockClassificationLevelComparator;
 
@@ -95,7 +95,7 @@ public class SecurityClearanceServiceImplUnitTest
     {
         final PersonInfo user1 = createMockPerson("user1", "User", "One", null);
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil, user1.getUserName());
-        when(mockClassificationService.getUnclassifiedClassificationLevel())
+        when(mockClassificationSchemeService.getUnclassifiedClassificationLevel())
             .thenReturn(ClassificationLevelManager.UNCLASSIFIED);
         when(mockClearanceLevelManager.findLevelByClassificationLevelId(ClassificationLevelManager.UNCLASSIFIED_ID))
             .thenReturn(ClearanceLevelManager.NO_CLEARANCE);

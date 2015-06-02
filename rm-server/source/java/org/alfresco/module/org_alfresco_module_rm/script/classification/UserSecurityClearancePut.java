@@ -18,7 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
@@ -72,7 +72,7 @@ public class UserSecurityClearancePut extends AbstractRmWebScript
             securityClearance = securityClearanceService.setUserSecurityClearance(username,
                 clearanceId);
         }
-        catch (ClassificationServiceException.LevelIdNotFound exception)
+        catch (ClassificationException.LevelIdNotFound exception)
         {
             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Unable to find clearance level");
         }

@@ -20,9 +20,9 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.util.Set;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.InvalidNode;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 

@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReason;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -53,7 +53,7 @@ public class ReasonsGetUnitTest extends BaseWebScriptUnitTest
 
     /** ReasonsGet webscript instance */
     private @Spy @InjectMocks ReasonsGet webScript;
-    private @Mock ClassificationService mockClassificationService;
+    private @Mock ClassificationSchemeService mockClassificationSchemeService;
 
     private List<ClassificationReason> reasonsList;
 
@@ -83,7 +83,7 @@ public class ReasonsGetUnitTest extends BaseWebScriptUnitTest
         reasonsList = Arrays.asList(reasonA, reasonB);
 
         // setup interactions
-        doReturn(reasonsList).when(mockClassificationService).getClassificationReasons();
+        doReturn(reasonsList).when(mockClassificationSchemeService).getClassificationReasons();
 
         // setup web script parameters
         Map<String, String> parameters = new HashMap<String, String>();

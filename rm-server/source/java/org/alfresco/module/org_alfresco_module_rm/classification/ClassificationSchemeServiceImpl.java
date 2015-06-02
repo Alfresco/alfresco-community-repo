@@ -23,8 +23,8 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import java.util.Collections;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -33,8 +33,8 @@ import org.alfresco.service.cmr.repository.NodeService;
  * @author Neil Mc Erlean
  * @since 3.0
  */
-public class ClassificationServiceImpl extends ServiceBaseImpl
-                                       implements ClassificationService, ClassifiedContentModel
+public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements ClassificationSchemeService,
+            ClassifiedContentModel
 {
     /** The classification levels currently configured in this server. */
     private ClassificationLevelManager levelManager;
@@ -94,7 +94,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService#getClassificationLevelById(java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService#getClassificationLevelById(java.lang.String)
      */
     @Override
     public ClassificationLevel getClassificationLevelById(String classificationLevelId) throws LevelIdNotFound
@@ -104,7 +104,7 @@ public class ClassificationServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationService#getClassificationReasonById(java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService#getClassificationReasonById(java.lang.String)
      */
     @Override
     public ClassificationReason getClassificationReasonById(String classificationReasonId) throws ReasonIdNotFound

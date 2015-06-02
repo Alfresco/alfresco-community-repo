@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.junit.Before;
 import org.junit.Test;
 

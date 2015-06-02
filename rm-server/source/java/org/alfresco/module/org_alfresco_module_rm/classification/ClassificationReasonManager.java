@@ -21,7 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import java.util.Collection;
 
 import com.google.common.collect.ImmutableList;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.ReasonIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 
 /**
  * Container for the configured {@link ClassificationReason} objects.

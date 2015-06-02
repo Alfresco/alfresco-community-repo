@@ -18,14 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceImplUnitTest.asLevelList;
+import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeServiceImplUnitTest.asLevelList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.MalformedConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MalformedConfiguration;
 import org.junit.Test;
 
 /**

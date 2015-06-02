@@ -62,7 +62,7 @@ public class ClassificationLevelsTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                List<ClassificationLevel> levels = classificationService.getClassificationLevels();
+                List<ClassificationLevel> levels = classificationSchemeService.getClassificationLevels();
                 assertNotNull(levels);
                 assertEquals("Expected 5 levels to be configured (4 defined in the test plus Unclassified)", 5, levels.size());
 
@@ -80,7 +80,7 @@ public class ClassificationLevelsTest extends BaseRMTestCase
                 assertEquals(level2.getId(), LEVEL2_ID);
                 assertEquals(level3.getId(), LEVEL3_ID);
                 assertEquals(level4.getId(), LEVEL4_ID);
-                
+
                 assertEquals(ClassificationLevelManager.UNCLASSIFIED, levels.get(4));
             }
         });

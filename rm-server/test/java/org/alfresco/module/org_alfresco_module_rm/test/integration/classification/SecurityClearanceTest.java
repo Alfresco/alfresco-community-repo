@@ -19,7 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClearanceLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;

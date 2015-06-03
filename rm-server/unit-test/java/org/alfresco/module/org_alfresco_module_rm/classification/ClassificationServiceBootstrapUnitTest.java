@@ -204,9 +204,10 @@ public class ClassificationServiceBootstrapUnitTest
         // Check that the warning message was logged.
         verify(mockAppender).doAppend(loggingEventCaptor.capture());
         List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
-        Stream<String> messages = loggingEvents.stream().map(event -> event.getRenderedMessage());
+        Stream<String> messages = loggingEvents.stream()
+                                               .map(LoggingEvent::getRenderedMessage);
         String expectedMessage = "Classification reasons configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
-        assertTrue("Warning message not found in log.", messages.anyMatch(message -> message == expectedMessage));
+        assertTrue("Warning message not found in log.", messages.anyMatch(message -> expectedMessage.equals(message)));
     }
 
     @Test(expected = MissingConfiguration.class)

@@ -166,6 +166,7 @@ public class CMISTest
     private ActionService actionService;
     private RuleService ruleService;
     private NodeArchiveService nodeArchiveService;
+    private DictionaryService dictionaryService;
 
     private AlfrescoCmisServiceFactory factory;
 	
@@ -337,6 +338,7 @@ public class CMISTest
     	this.cmisDictionaryService = (CMISDictionaryService)ctx.getBean("OpenCMISDictionaryService1.1");
         this.auditDAO = (AuditDAO) ctx.getBean("auditDAO");
         this.nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
+        this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
     }
     
     /**

@@ -922,4 +922,13 @@
       </property>
       <property name="capability" value="MoveDmRecords"/>
    </bean>
+
+   <bean id="classificationPropertyDecorator"
+         parent="baseDecorator"
+         class="org.alfresco.repo.jscript.app.ClassificationPropertyDecorator"
+         depends-on="classifiedContentDictionaryBootstrap">
+      <property name="propertyName" value="clf:currentClassification" />
+      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
+   </bean>
+
 </beans>

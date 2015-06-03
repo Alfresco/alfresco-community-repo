@@ -48,7 +48,7 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
     	clientContext = new OpenCMISClientContext(BindingType.ATOMPUB,
     			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco", network.getId(), "public"),
     			"admin@" + network.getId(), "admin", cmisParameters);
-    	
+        overrideVersionableAspectProperties(getTestFixture().getJettyComponent().getApplicationContext());
 	}
 
 	@AfterClass

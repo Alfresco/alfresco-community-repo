@@ -570,7 +570,7 @@ public class TestCMIS extends EnterpriseTestApi
                         return autoVersion;
                     }
                 }, personId, network1.getId());
-                assertEquals(Boolean.FALSE, autoVersion);
+                assertEquals(Boolean.TRUE, autoVersion);
             }
 
             // https://issues.alfresco.com/jira/browse/PUBLICAPI-92
@@ -1462,9 +1462,10 @@ public class TestCMIS extends EnterpriseTestApi
             properties.put(PropertyIds.DESCRIPTION, GUID.generate());
         }
         AlfrescoDocument doc1 = (AlfrescoDocument)doc.updateProperties(properties);
+        doc1 = (AlfrescoDocument)doc1.getObjectOfLatestVersion(false);
         String versionLabel1 = doc1.getVersionLabel();
 
-		assertEquals(versionLabel, versionLabel1);
+        assertTrue(Float.parseFloat(versionLabel) < Float.parseFloat(versionLabel1));
 
 		// ...and check that updating its content creates a new version
         fileContent = new ContentStreamImpl();
@@ -1481,7 +1482,7 @@ public class TestCMIS extends EnterpriseTestApi
         @SuppressWarnings("unused")
         String versionLabel2 = doc2.getVersionLabel();
 
-		assertEquals("Set content stream shouldn't create a new version automatically", versionLabel1, versionLabel2);
+        assertTrue("Set content stream should create a new version automatically", Float.parseFloat(versionLabel1) < Float.parseFloat(versionLabel2));
 	}
 	
 	/**

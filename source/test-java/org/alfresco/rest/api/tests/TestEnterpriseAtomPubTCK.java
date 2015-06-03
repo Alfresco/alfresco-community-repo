@@ -26,6 +26,10 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.OpenCMISClientContext;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.M2Aspect;
+import org.alfresco.repo.dictionary.M2Model;
+import org.alfresco.repo.dictionary.M2Property;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.util.JettyComponent;
@@ -35,6 +39,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
@@ -120,6 +125,8 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
     	cmisParameters.put(TestParameters.DEFAULT_TEST_FOLDER_PARENT, "/" + name);
     	clientContext = new OpenCMISClientContext(BindingType.ATOMPUB,
     			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco"), "admin", "admin", cmisParameters);
+
+        overrideVersionableAspectProperties(jetty.getApplicationContext());
 	}
 
 // Commented out: See https://issues.alfresco.com/jira/browse/MNT-11123?focusedCommentId=339130&page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel#comment-339130

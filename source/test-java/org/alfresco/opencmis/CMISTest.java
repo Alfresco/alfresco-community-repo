@@ -68,7 +68,6 @@ import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -3340,14 +3339,14 @@ public class CMISTest
                     String rootNodeId = cmisService.getObjectByPath(repositoryId, "/", null, true, IncludeRelationships.NONE, null, false, true, null).getId();
 
                     Collection<PropertyData<?>> propsList = new ArrayList<PropertyData<?>>();
-                    propsList.add(new PropertyStringImpl(CMISDictionaryModel.PROP_NAME, "Folder-" + GUID.generate()));
-                    propsList.add(new PropertyIdImpl(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, "cmis:folder"));
+                    propsList.add(new PropertyStringImpl(PropertyIds.NAME, "Folder-" + GUID.generate()));
+                    propsList.add(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, "cmis:folder"));
 
                     String folderId = cmisService.createFolder(repositoryId, new PropertiesImpl(propsList), rootNodeId, null, null, null, null);
 
                     propsList = new ArrayList<PropertyData<?>>();
-                    propsList.add(new PropertyStringImpl(CMISDictionaryModel.PROP_NAME, "File-" + GUID.generate()));
-                    propsList.add(new PropertyIdImpl(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, "cmis:document"));
+                    propsList.add(new PropertyStringImpl(PropertyIds.NAME, "File-" + GUID.generate()));
+                    propsList.add(new PropertyIdImpl(PropertyIds.OBJECT_TYPE_ID, "cmis:document"));
 
                     String nodeId = cmisService.createDocument(repositoryId, new PropertiesImpl(propsList), folderId, null, null, null, null, null, null);
 
@@ -3365,7 +3364,7 @@ public class CMISTest
                     assertTrue(nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_VERSIONABLE));
 
                     AspectDefinition ad = dictionaryService.getAspect(ContentModel.ASPECT_VERSIONABLE);
-                    Map<QName, PropertyDefinition> properties = ad.getProperties();
+                    Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> properties = ad.getProperties();
 
                     for (QName qName : new QName[] {ContentModel.PROP_INITIAL_VERSION, ContentModel.PROP_AUTO_VERSION, ContentModel.PROP_AUTO_VERSION_PROPS})
                     {
@@ -3373,7 +3372,7 @@ public class CMISTest
 
                         assertNotNull(property);
 
-                        PropertyDefinition pd = properties.get(qName);
+                        org.alfresco.service.cmr.dictionary.PropertyDefinition pd = properties.get(qName);
                         assertNotNull(pd.getDefaultValue());
 
                         assertEquals(property, Boolean.parseBoolean(pd.getDefaultValue()));

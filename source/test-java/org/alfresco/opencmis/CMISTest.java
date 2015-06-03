@@ -66,6 +66,9 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -734,7 +737,8 @@ public class CMISTest
 				@Override
 				public Void execute(CmisService cmisService)
 				{
-					cmisService.setContentStream(repositoryId, objectIdHolder, true, null, contentStreamHTML, null);
+                    Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId, objectIdHolder);
+                    cmisService.setContentStream(repositoryId, latestObjectIdHolder, true, null, contentStreamHTML, null);
 					return null;
 				}
             });
@@ -816,6 +820,12 @@ public class CMISTest
             });
             assertEquals("Mimetype is not defined correctly.", MimetypeMap.MIMETYPE_HTML, contentType);
         }
+    }
+
+    private Holder<String> getHolderOfObjectOfLatestVersion(CmisService cmisService, String repositoryId, Holder<String> currentHolder)
+    {
+        ObjectData oData = cmisService.getObjectOfLatestVersion(repositoryId, currentHolder.getValue(), null, Boolean.FALSE, null, null, null, null, null, null, null);
+        return new Holder<String>(oData.getId());
     }
 
     /**
@@ -1498,7 +1508,8 @@ public class CMISTest
             @Override
             public Void execute(CmisService cmisService)
             {
-                cmisService.updateProperties(repositoryId, objectIdHolder, null, newProperties, null);
+                Holder<String> latestObjectIdHolder = getHolderOfObjectOfLatestVersion(cmisService, repositoryId, objectIdHolder);
+                cmisService.updateProperties(repositoryId, latestObjectIdHolder, null, newProperties, null);
                 return null;
             }
         }, CmisVersion.CMIS_1_1);
@@ -3295,6 +3306,80 @@ public class CMISTest
             }
             // ensure that node and latest version both have the same set of aspects 
             assertEquals(latestVersionAspects, documentAspects);
+        }
+        finally
+        {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    /**
+     * Test to ensure that versioning properties have default values defined in Alfresco content model.
+     * Testing  <b>cm:initialVersion</b>, <b>cm:autoVersion</b> and <b>cm:autoVersionOnUpdateProps</b> properties 
+     * 
+     * @throws Exception
+     */
+    @Test
+    public void testVersioningPropertiesHaveDefaultValue() throws Exception
+    {
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        try
+        {
+            // Create document via CMIS
+            final NodeRef documentNodeRef = withCmisService(new CmisServiceCallback<NodeRef>()
+            {
+                @Override
+                public NodeRef execute(CmisService cmisService)
+                {
+                    String repositoryId = cmisService.getRepositoryInfos(null).get(0).getId();
+
+                    String rootNodeId = cmisService.getObjectByPath(repositoryId, "/", null, true, IncludeRelationships.NONE, null, false, true, null).getId();
+
+                    Collection<PropertyData<?>> propsList = new ArrayList<PropertyData<?>>();
+                    propsList.add(new PropertyStringImpl(CMISDictionaryModel.PROP_NAME, "Folder-" + GUID.generate()));
+                    propsList.add(new PropertyIdImpl(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, "cmis:folder"));
+
+                    String folderId = cmisService.createFolder(repositoryId, new PropertiesImpl(propsList), rootNodeId, null, null, null, null);
+
+                    propsList = new ArrayList<PropertyData<?>>();
+                    propsList.add(new PropertyStringImpl(CMISDictionaryModel.PROP_NAME, "File-" + GUID.generate()));
+                    propsList.add(new PropertyIdImpl(CMISDictionaryModel.PROP_OBJECT_TYPE_ID, "cmis:document"));
+
+                    String nodeId = cmisService.createDocument(repositoryId, new PropertiesImpl(propsList), folderId, null, null, null, null, null, null);
+
+                    return new NodeRef(nodeId.substring(0, nodeId.indexOf(';')));
+                }
+            }, CmisVersion.CMIS_1_1);
+
+            // check versioning properties
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<List<Void>>()
+            {
+                @Override
+                public List<Void> execute() throws Throwable
+                {
+                    assertTrue(nodeService.exists(documentNodeRef));
+                    assertTrue(nodeService.hasAspect(documentNodeRef, ContentModel.ASPECT_VERSIONABLE));
+
+                    AspectDefinition ad = dictionaryService.getAspect(ContentModel.ASPECT_VERSIONABLE);
+                    Map<QName, PropertyDefinition> properties = ad.getProperties();
+
+                    for (QName qName : new QName[] {ContentModel.PROP_INITIAL_VERSION, ContentModel.PROP_AUTO_VERSION, ContentModel.PROP_AUTO_VERSION_PROPS})
+                    {
+                        Serializable property = nodeService.getProperty(documentNodeRef, qName);
+
+                        assertNotNull(property);
+
+                        PropertyDefinition pd = properties.get(qName);
+                        assertNotNull(pd.getDefaultValue());
+
+                        assertEquals(property, Boolean.parseBoolean(pd.getDefaultValue()));
+                    }
+
+                    return null;
+                }
+            });
         }
         finally
         {

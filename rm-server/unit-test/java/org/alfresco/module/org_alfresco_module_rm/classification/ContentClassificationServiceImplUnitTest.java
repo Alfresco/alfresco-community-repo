@@ -45,6 +45,8 @@ import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
+import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -74,11 +76,13 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
     @Mock NodeService mockNodeService;
     @Mock DictionaryService mockDictionaryService;
     @Mock SecurityClearanceService mockSecurityClearanceService;
+    @Mock AuthenticationUtil mockAuthenticationUtil;
     @Captor ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
 
     @Before public void setUp()
     {
         MockitoAnnotations.initMocks(this);
+        MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
     }
 
     /** Classify a piece of content with a couple of reasons and check the NodeService is called correctly. */

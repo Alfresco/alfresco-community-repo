@@ -33,9 +33,8 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -48,15 +47,11 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
 {
     private ClassificationLevelManager levelManager;
     private ClassificationReasonManager reasonManager;
-    private NodeService nodeService;
-    private DictionaryService dictionaryService;
     private SecurityClearanceService securityClearanceService;
     private ClassificationServiceBootstrap classificationServiceBootstrap;
 
     public void setLevelManager(ClassificationLevelManager levelManager) { this.levelManager = levelManager; }
     public void setReasonManager(ClassificationReasonManager reasonManager) { this.reasonManager = reasonManager; }
-    public void setNodeService(NodeService nodeService) { this.nodeService = nodeService; }
-    public void setDictionaryService(DictionaryService dictionaryService) { this.dictionaryService = dictionaryService; }
     public void setSecurityClearanceService(SecurityClearanceService securityClearanceService) { this.securityClearanceService = securityClearanceService; }
     public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap) { this.classificationServiceBootstrap = classificationServiceBootstrap; }
 
@@ -83,7 +78,7 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
 
     @Override
     public void classifyContent(String classificationLevelId, String classificationAuthority,
-                Set<String> classificationReasonIds, NodeRef content)
+                Set<String> classificationReasonIds, final NodeRef content)
     {
         checkNotBlank("classificationLevelId", classificationLevelId);
         checkNotBlank("classificationAuthority", classificationAuthority);
@@ -108,7 +103,7 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
             throw new LevelIdNotFound(classificationLevelId);
         }
 
-        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        final Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         // Initial classification id
         if (nodeService.getProperty(content, PROP_INITIAL_CLASSIFICATION) == null)
         {
@@ -132,7 +127,14 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
         properties.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
 
         // Add aspect
-        nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
+        authenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            public Void doWork()
+            {
+                nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
+                return null;
+            }
+        });
     }
 
     @Override

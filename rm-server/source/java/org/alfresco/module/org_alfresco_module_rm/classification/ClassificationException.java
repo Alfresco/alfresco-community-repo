@@ -21,6 +21,9 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Generic class for any runtime exception to do with classified records.
  *
@@ -52,6 +55,22 @@ public class ClassificationException extends AlfrescoRuntimeException
         private static final long serialVersionUID = -1139626996782741741L;
 
         public IllegalConfiguration(String msgId) { super(msgId); }
+    }
+
+    /** Represents a fatal error due to illegal {@link ClassificationLevel#getId() classification level ID} configuration.
+     *  The configuration was understood by the server, but was rejected as illegal. */
+    public static class IllegalAbbreviationChars extends IllegalConfiguration
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = 98787676565465454L;
+
+        private final List<Character> illegalChars;
+        public IllegalAbbreviationChars(String msgId, List<Character> illegalChars)
+        {
+            super(msgId);
+            this.illegalChars = illegalChars;
+        }
+        public List<Character> getIllegalChars() { return Collections.unmodifiableList(illegalChars); }
     }
 
     /** Represents a fatal error due to malformed configuration.

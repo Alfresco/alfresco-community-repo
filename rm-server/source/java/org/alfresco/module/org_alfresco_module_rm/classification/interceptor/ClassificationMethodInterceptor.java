@@ -18,8 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor;
 
+import static org.codehaus.plexus.util.StringUtils.isNotBlank;
+
 import java.lang.reflect.Method;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
@@ -27,6 +30,7 @@ import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.transaction.TransactionService;
@@ -50,10 +54,10 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     /** application context */
     private ApplicationContext applicationContext;
 
-	/**
-	 * @param applicationContext   application context
-	 * @throws BeansException
-	 */
+    /**
+     * @param applicationContext   application context
+     * @throws BeansException
+     */
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
@@ -93,6 +97,11 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
         return (NodeService)applicationContext.getBean("dbNodeService");
     }
 
+    protected DictionaryService getDictionaryService()
+    {
+        return (DictionaryService)applicationContext.getBean("dictionaryService");
+    }
+
     /**
      * Check that the current user is cleared to see the items passed as parameters to the current
      * method invocation.
@@ -100,10 +109,10 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
      * @param invocation    method invocation
      */
     @SuppressWarnings("rawtypes")
-	public void checkClassification(final MethodInvocation invocation)
-	{
-	    // do in transaction
-	    getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+    public void checkClassification(final MethodInvocation invocation)
+    {
+        // do in transaction
+        getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
@@ -111,69 +120,92 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
                 if (getClassificationServiceBootstrap().isInitialised())
                 {
                     // check that we are not already processing a classification check
-            	    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);
-            	    if (value == null)
-            	    {
-            	        // check that we have an authenticated user and that they aren't "system"
-            	        if (getAuthenticationUtil().getFullyAuthenticatedUser() != null &&
-                	        !getAuthenticationUtil().isRunAsUserTheSystemUser())
-                	    {
-                            Method method = invocation.getMethod();
-                            Class[] params = method.getParameterTypes();
+                    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);
+                    if (value == null)
+                    {
+                        Method method = invocation.getMethod();
+                        Class[] params = method.getParameterTypes();
 
-                            int position = 0;
-                            for (Class param : params)
+                        int position = 0;
+                        for (Class param : params)
+                        {
+                            // if the param is a node reference
+                            if (NodeRef.class.isAssignableFrom(param))
                             {
-                                // if the param is a node reference
-                                if (NodeRef.class.isAssignableFrom(param))
+                                // mark the transaction as processing a classification check
+                                getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, Boolean.TRUE);
+                                try
                                 {
-                                    // mark the transaction as processing a classification check
-                                    getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, Boolean.TRUE);
-                                    try
-                                    {
-                                        // get the value of the parameter
-                                        NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
+                                    // get the value of the parameter
+                                    NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
 
-                                        // if node exists then see if the current user has clearance
-                                        if (getNodeService().exists(testNodeRef) &&
-                                            !getContentClassificaitonService().hasClearance(testNodeRef))
-                                        {
-                                            // throw exception
-                                            throw new AccessDeniedException("You do not have clearance!");
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        // clear the transaction as processed a classification check
-                                        getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
-                                    }
+                                    // if node exists then see if the current user has clearance
+                                    checkNode(testNodeRef);
                                 }
-
-                                position++;
+                                finally
+                                {
+                                    // clear the transaction as processed a classification check
+                                    getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
+                                }
                             }
-                	    }
-            	    }
+
+                            position++;
+                        }
+                    }
                 }
 
                 return null;
             }
         }, true);
-	}
+    }
 
-	/**
-	 * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
-	 */
+    private boolean validUser()
+    {
+        boolean result = false;
+
+        // check that we have an authenticated user and that they aren't "system"
+        if (isNotBlank(getAuthenticationUtil().getFullyAuthenticatedUser()) &&
+            !getAuthenticationUtil().isRunAsUserTheSystemUser())
+        {
+            result = true;
+        }
+
+        return result;
+    }
+
+    private void checkNode(NodeRef testNodeRef)
+    {
+        if (getNodeService().exists(testNodeRef) &&
+                getDictionaryService().isSubClass(getNodeService().getType(testNodeRef), ContentModel.TYPE_CONTENT) &&
+                !getContentClassificaitonService().hasClearance(testNodeRef))
+        {
+            // throw exception
+            throw new AccessDeniedException("You do not have clearance!");
+        }
+    }
+
+    /**
+     * @see org.aopalliance.intercept.MethodInterceptor#invoke(org.aopalliance.intercept.MethodInvocation)
+     */
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
-        // pre method invocation check
-        checkClassification(invocation);
+        boolean isValidUser = validUser();
+
+        if (isValidUser)
+        {
+            // pre method invocation check
+            checkClassification(invocation);
+        }
 
         // method proceed
         Object result = invocation.proceed();
 
-        // post method invocation processing
-        // TODO
+        if (isValidUser)
+        {
+            // post method invocation processing
+         // TODO
+        }
 
         return result;
     }

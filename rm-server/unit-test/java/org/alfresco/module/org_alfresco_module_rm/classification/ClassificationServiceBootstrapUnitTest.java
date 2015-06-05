@@ -57,14 +57,14 @@ import org.mockito.MockitoAnnotations;
  */
 public class ClassificationServiceBootstrapUnitTest
 {
-    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("Top Secret",   "rm.classification.topSecret",
-                                                                                               "Secret",       "rm.classification.secret",
-                                                                                               "Confidential", "rm.classification.confidential",
-                                                                                               "No Clearance", "rm.classification.noClearance");
-    private static final List<ClassificationLevel> ALT_CLASSIFICATION_LEVELS = asLevelList("Board",                "B",
-                                                                                           "Executive Management", "EM",
-                                                                                           "Employee",             "E",
-                                                                                           "Public",               "P");
+    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("TS", "rm.classification.topSecret",
+                                                                                               "S",  "rm.classification.secret",
+                                                                                               "C",  "rm.classification.confidential",
+                                                                                               "NC", "rm.classification.noClearance");
+    private static final List<ClassificationLevel> ALT_CLASSIFICATION_LEVELS = asLevelList("B",  "Board",
+                                                                                           "EM", "ExecutiveManagement",
+                                                                                           "E",  "Employee",
+                                                                                           "P",  "Public");
     private static final List<ClassificationReason> PLACEHOLDER_CLASSIFICATION_REASONS = asList(new ClassificationReason("id1", "label1"),
                                                                                                 new ClassificationReason("id2", "label2"));
     private static final List<ClassificationReason> ALTERNATIVE_CLASSIFICATION_REASONS = asList(new ClassificationReason("id8", "label8"),

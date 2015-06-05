@@ -1,14 +1,14 @@
 [
   {
-    "name" : "TopSecret",
+    "name" : "TS",
     "displayLabel" : "rm.classification.topSecret"
   },
   {
-    "name" : "Secret",
+    "name" : "S",
     "displayLabel" : "rm.classification.secret"
   },
   {
-    "name" : "Confidential",
+    "name" : "C",
     "displayLabel" : "rm.classification.confidential"
   }
 ]

@@ -56,6 +56,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** The clearance levels currently configured in this server. */
     private ClearanceLevelManager clearanceLevelManager = new ClearanceLevelManager();
     private ClassificationServiceDAO classificationServiceDAO;
+    private final ClassificationLevelValidation levelValidation = new ClassificationLevelValidation();
 
     public ClassificationServiceBootstrap(AuthenticationUtil authUtil,
                                           TransactionService txService,
@@ -113,11 +114,9 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
         LOGGER.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
         LOGGER.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
 
-        if (configurationLevels == null || configurationLevels.isEmpty())
-        {
-            throw new MissingConfiguration("Classification level configuration is missing.");
-        }
-        else if (!configurationLevels.equals(allPersistedLevels))
+        levelValidation.validateLevels(configurationLevels);
+
+        if (!configurationLevels.equals(allPersistedLevels))
         {
             attributeService.setAttribute((Serializable) configurationLevels, LEVELS_KEY);
             this.classificationLevelManager.setClassificationLevels(configurationLevels);

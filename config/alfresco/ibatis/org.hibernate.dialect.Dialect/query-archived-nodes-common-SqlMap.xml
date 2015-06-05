@@ -37,5 +37,6 @@
             </if>
             <if test="sortOrderAscending == true">order by childNode.id ASC</if>
             <if test="sortOrderAscending == false">order by childNode.id DESC</if>
+            <if test="limit != 0">limit #{limit}</if>
     </select>    
 </mapper>

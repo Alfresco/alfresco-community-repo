@@ -74,6 +74,9 @@ public class GetArchivedNodesCannedQuery extends AbstractCannedQueryPermissions<
             return Collections.emptyList();
         }
 
+        int resultsRequired = parameters.getResultsRequired();
+        paramBean.setLimit(resultsRequired);
+
         // note: refer to SQL for specific DB filtering and sorting
         List<ArchivedNodeEntity> results = cannedQueryDAO.executeQuery(QUERY_NAMESPACE,
                     QUERY_SELECT_GET_ARCHIVED_NODES, paramBean, 0, Integer.MAX_VALUE);

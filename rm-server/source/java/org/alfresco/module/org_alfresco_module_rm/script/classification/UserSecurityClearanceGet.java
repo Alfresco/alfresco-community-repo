@@ -96,7 +96,7 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
 
         int total = getTotal(usersSecurityClearance).intValue();
         int maxItems = userQueryParams.getMaxItems();
-        if (getPageNumber(req) > Math.ceil((double) total / (double) maxItems))
+        if (total != 0 && getPageNumber(req) > Math.ceil((double) total / (double) maxItems))
         {
             throw new WebScriptException("The requested page is not valid");
         }

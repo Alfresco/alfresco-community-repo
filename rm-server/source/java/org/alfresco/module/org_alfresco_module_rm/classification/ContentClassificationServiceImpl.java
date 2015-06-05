@@ -127,14 +127,14 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
         properties.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
 
         // Add aspect
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
+        authenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork()
             {
                 nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
                 return null;
             }
-        });
+        }, authenticationUtil.getAdminUserName());
     }
 
     @Override

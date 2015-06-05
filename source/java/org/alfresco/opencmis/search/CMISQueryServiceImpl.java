@@ -28,13 +28,16 @@ import org.alfresco.repo.search.impl.lucene.PagingLuceneResultSet;
 import org.alfresco.repo.search.impl.querymodel.Query;
 import org.alfresco.repo.search.impl.querymodel.QueryEngine;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
+import org.alfresco.repo.search.impl.querymodel.QueryModelException;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
+import org.alfresco.service.cmr.search.QueryConsistency;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.util.Pair;
 import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityJoin;
 import org.apache.chemistry.opencmis.commons.enums.CapabilityQuery;
@@ -46,7 +49,8 @@ public class CMISQueryServiceImpl implements CMISQueryService
 {
     private CMISDictionaryService cmisDictionaryService;
 
-    private QueryEngine queryEngine;
+    private QueryEngine luceneQueryEngine;
+    private QueryEngine dbQueryEngine;
 
     private NodeService nodeService;
 
@@ -59,11 +63,20 @@ public class CMISQueryServiceImpl implements CMISQueryService
 
     /**
      * @param queryEngine
-     *            the queryEngine to set
+     *            the luceneQueryEngine to set
      */
-    public void setQueryEngine(QueryEngine queryEngine)
+    public void setLuceneQueryEngine(QueryEngine queryEngine)
     {
-        this.queryEngine = queryEngine;
+        this.luceneQueryEngine = queryEngine;
+    }
+
+    /**
+     * @param queryEngine
+     *            the dbQueryEngine to set
+     */
+    public void setDbQueryEngine(QueryEngine queryEngine)
+    {
+        this.dbQueryEngine = queryEngine;
     }
 
     /**
@@ -86,26 +99,11 @@ public class CMISQueryServiceImpl implements CMISQueryService
 
     public CMISResultSet query(CMISQueryOptions options)
     {
-        CapabilityJoin joinSupport = getJoinSupport();
-        if (options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
-        {
-            joinSupport = CapabilityJoin.INNERONLY;
-        }
-
-        // TODO: Refactor to avoid duplication of valid scopes here and in
-        // CMISQueryParser
-
-        BaseTypeId[] validScopes = (options.getQueryMode() == CMISQueryMode.CMS_STRICT) ? CmisFunctionEvaluationContext.STRICT_SCOPES
-                : CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
-        CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
-        functionContext.setCmisDictionaryService(cmisDictionaryService);
-        functionContext.setNodeService(nodeService);
-        functionContext.setValidScopes(validScopes);
-
-        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
-        Query query = parser.parse(queryEngine.getQueryModelFactory(), functionContext);
-
-        QueryEngineResults results = queryEngine.executeQuery(query, options, functionContext);
+        Pair<Query, QueryEngineResults> resultPair = executeQuerySwitchingImpl(options);
+        
+        Query query = resultPair.getFirst();
+        QueryEngineResults results = resultPair.getSecond();
+        
         Map<String, ResultSet> wrapped = new HashMap<String, ResultSet>();
         Map<Set<String>, ResultSet> map = results.getResults();
         for (Set<String> group : map.keySet())
@@ -126,7 +124,66 @@ public class CMISQueryServiceImpl implements CMISQueryService
                 alfrescoDictionaryService);
         return cmis;
     }
+
+    private Pair<Query, QueryEngineResults> executeQuerySwitchingImpl(CMISQueryOptions options)
+    {
+        switch (options.getQueryConsistency())
+        {
+            case TRANSACTIONAL_IF_POSSIBLE :
+            {
+                try
+                {
+                    return executeQueryUsingEngine(dbQueryEngine, options);
+                }
+                catch(QueryModelException qme)
+                {
+                    return executeQueryUsingEngine(luceneQueryEngine, options);
+                }
+            }
+            case TRANSACTIONAL :
+            {
+                return executeQueryUsingEngine(dbQueryEngine, options);
+            }
+            case EVENTUAL :
+            case DEFAULT :
+            default :
+            {
+                return executeQueryUsingEngine(luceneQueryEngine, options);
+            }
+        }
+    }
     
+    private Pair<Query, QueryEngineResults> executeQueryUsingEngine(QueryEngine queryEngine, CMISQueryOptions options)
+    {
+        CapabilityJoin joinSupport = getJoinSupport();
+        if (options.getQueryMode() == CMISQueryOptions.CMISQueryMode.CMS_WITH_ALFRESCO_EXTENSIONS)
+        {
+            joinSupport = CapabilityJoin.INNERONLY;
+        }
+
+        // TODO: Refactor to avoid duplication of valid scopes here and in
+        // CMISQueryParser
+
+        BaseTypeId[] validScopes = (options.getQueryMode() == CMISQueryMode.CMS_STRICT) ? CmisFunctionEvaluationContext.STRICT_SCOPES
+                : CmisFunctionEvaluationContext.ALFRESCO_SCOPES;
+        CmisFunctionEvaluationContext functionContext = new CmisFunctionEvaluationContext();
+        functionContext.setCmisDictionaryService(cmisDictionaryService);
+        functionContext.setNodeService(nodeService);
+        functionContext.setValidScopes(validScopes);
+
+        CMISQueryParser parser = new CMISQueryParser(options, cmisDictionaryService, joinSupport);
+        QueryConsistency queryConsistency = options.getQueryConsistency();
+        if (queryConsistency == QueryConsistency.DEFAULT)
+        {
+        	options.setQueryConsistency(QueryConsistency.EVENTUAL);
+        }
+        
+        Query query = parser.parse(queryEngine.getQueryModelFactory(), functionContext);
+        QueryEngineResults queryEngineResults = queryEngine.executeQuery(query, options, functionContext);
+        
+        return new Pair<Query, QueryEngineResults>(query, queryEngineResults);
+    }
+
     /* MNT-8804 filter ResultSet for nodes with corrupted indexes */
     private ResultSet filterNotExistingNodes(ResultSet resultSet)
     {

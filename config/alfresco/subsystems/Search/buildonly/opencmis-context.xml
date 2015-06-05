@@ -6,14 +6,16 @@
 
     <bean id="search.OpenCMISQueryService" class="org.alfresco.opencmis.search.CMISQueryServiceImpl" >
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService" />   
-        <property name="queryEngine"            ref="search.adm.luceneQueryEngine" />
+        <property name="luceneQueryEngine"         ref="search.adm.luceneQueryEngine" />
+        <property name="dbQueryEngine"             ref="search.dbQueryEngine" />
         <property name="nodeService"            ref="nodeService" />
         <property name="alfrescoDictionaryService" ref="dictionaryService" />
     </bean>
     
     <bean id="search.OpenCMISQueryService1.1" class="org.alfresco.opencmis.search.CMISQueryServiceImpl" >
         <property name="OpenCMISDictionaryService" ref="OpenCMISDictionaryService1.1" />   
-        <property name="queryEngine"            ref="search.adm.luceneQueryEngine" />
+        <property name="luceneQueryEngine"         ref="search.adm.luceneQueryEngine" />
+        <property name="dbQueryEngine"             ref="search.dbQueryEngine" />
         <property name="nodeService"            ref="nodeService" />
         <property name="alfrescoDictionaryService" ref="dictionaryService" />
     </bean>    

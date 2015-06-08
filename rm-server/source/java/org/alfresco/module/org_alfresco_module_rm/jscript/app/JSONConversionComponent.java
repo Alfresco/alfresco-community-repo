@@ -18,6 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
+import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager.UNCLASSIFIED_ID;
+import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_CLASSIFIED;
+import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +69,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
+    private static final String IS_CLASSIFIED = "isClassified";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -241,6 +246,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             // Get the node reference for convenience
             NodeRef nodeRef = nodeInfo.getNodeRef();
 
+            // Is the node classified
+            rootJSONObject.put(IS_CLASSIFIED, isClassified(nodeRef));
+
             if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, ViewRecordsCapability.NAME)))
             {
                 // Indicate whether the node is a RM object or not
@@ -256,6 +264,28 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
         }
+    }
+
+    /**
+     * Checks if the node is classified or not. A node classified
+     * as "Unclassified" will be treated as not classified.
+     *
+     * @param nodeRef Node reference
+     * @return <code>true</code> if the node is classified, <code>false</code> otherwise
+     */
+    private boolean isClassified(NodeRef nodeRef)
+    {
+        boolean isClassified = false;
+
+        String currentClassification = (String) nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+
+        if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED) &&
+                !(UNCLASSIFIED_ID).equals(currentClassification))
+        {
+            isClassified = true;
+        }
+
+        return isClassified;
     }
 
     /**

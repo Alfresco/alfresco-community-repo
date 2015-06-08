@@ -18,8 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.jscript;
 
+import static com.google.common.collect.Sets.newHashSet;
+import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager.UNCLASSIFIED_ID;
+import static org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent.IS_CLASSIFIED;
+import static org.alfresco.util.GUID.generate;
+
 import java.io.Serializable;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.jscript.app.JSONConversionComponent;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -32,7 +38,11 @@ import org.json.JSONObject;
  */
 public class JSONConversionComponentTest extends BaseRMTestCase
 {
+    private static final String LEVEL1 = "level1";
+    private static final String REASON1 = "Test Reason 1";
+
     private JSONConversionComponent converter;
+    private ContentClassificationService contentClassificationService;
 
     private NodeRef record;
 
@@ -40,7 +50,8 @@ public class JSONConversionComponentTest extends BaseRMTestCase
     protected void initServices()
     {
         super.initServices();
-        converter = (JSONConversionComponent)applicationContext.getBean("jsonConversionComponent");
+        converter = (JSONConversionComponent) applicationContext.getBean("jsonConversionComponent");
+        contentClassificationService = (ContentClassificationService) applicationContext.getBean("ContentClassificationService");
     }
 
     @Override
@@ -50,6 +61,240 @@ public class JSONConversionComponentTest extends BaseRMTestCase
 
         // Create records
         record = utils.createRecord(rmFolder, "testRecord.txt");
+    }
+
+    @Override
+    protected boolean isCollaborationSiteTest()
+    {
+        return true;
+    }
+
+    /**
+     * Given a record exists in the RM site
+     * When I classify the record with a level not equal to "Unclassified" and convert it
+     * Then the result should include an attribute "isClassified" with the value "true"
+     */
+    public void testClassifyRecord_classified()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef record;
+            private String jsonString;
+
+            @Override
+            public void given() throws Exception
+            {
+                NodeRef category = filePlanService.createRecordCategory(filePlan, generate());
+                NodeRef folder = recordFolderService.createRecordFolder(category, generate());
+                record = utils.createRecord(folder, generate());
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON1), record);
+                jsonString = converter.toJSON(record, true);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                 assertNotNull(jsonString);
+                 JSONObject jsonObject = new JSONObject(jsonString);
+                 Object isClassifiedObject = jsonObject.get(IS_CLASSIFIED);
+                 assertNotNull(isClassifiedObject);
+                 assertTrue(((Boolean) isClassifiedObject).booleanValue());
+            }
+        });
+    }
+
+    /**
+     * Given a record exists in the RM site
+     * When I classify the record with the level "Unclassified" and convert it
+     * Then the result should include an attribute "isClassified" with the value "false"
+     */
+    public void testClassifyRecord_unclassified()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef record;
+            private String jsonString;
+
+            @Override
+            public void given() throws Exception
+            {
+                NodeRef category = filePlanService.createRecordCategory(filePlan, generate());
+                NodeRef folder = recordFolderService.createRecordFolder(category, generate());
+                record = utils.createRecord(folder, generate());
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), newHashSet(REASON1), record);
+                jsonString = converter.toJSON(record, true);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                 assertNotNull(jsonString);
+                 JSONObject jsonObject = new JSONObject(jsonString);
+                 Object isClassifiedObject = jsonObject.get(IS_CLASSIFIED);
+                 assertNotNull(isClassifiedObject);
+                 assertFalse(((Boolean) isClassifiedObject).booleanValue());
+            }
+        });
+    }
+
+    /**
+     * Given a record exists in the RM site
+     * When I classify the record with the level "Unclassified" and convert it
+     * Then the result should include an attribute "isClassified" with the value "false"
+     */
+    public void testClassifyRecord_notclassified()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef record;
+            private String jsonString;
+
+            @Override
+            public void given() throws Exception
+            {
+                NodeRef category = filePlanService.createRecordCategory(filePlan, generate());
+                NodeRef folder = recordFolderService.createRecordFolder(category, generate());
+                record = utils.createRecord(folder, generate());
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                jsonString = converter.toJSON(record, true);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                assertNotNull(jsonString);
+                JSONObject jsonObject = new JSONObject(jsonString);
+                Object isClassifiedObject = jsonObject.get(IS_CLASSIFIED);
+                assertNotNull(isClassifiedObject);
+                assertFalse(((Boolean) isClassifiedObject).booleanValue());
+            }
+        });
+    }
+
+    /**
+     * Given a file exists in a collaboration site
+     * When I classify the file with a level not equal to "Unclassified" and convert it
+     * Then the result should include an attribute "isClassified" with the value "true"
+     */
+    public void testClassifyFile_classified()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef file;
+            private String jsonString;
+
+            @Override
+            public void given() throws Exception
+            {
+                file = fileFolderService.create(documentLibrary, generate(), TYPE_CONTENT).getNodeRef();
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON1), file);
+                jsonString = converter.toJSON(file, true);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                 assertNotNull(jsonString);
+                 JSONObject jsonObject = new JSONObject(jsonString);
+                 Object isClassifiedObject = jsonObject.get(IS_CLASSIFIED);
+                 assertNotNull(isClassifiedObject);
+                 assertTrue(((Boolean) isClassifiedObject).booleanValue());
+            }
+        });
+    }
+
+    /**
+     * Given a file exists in a collaboration site
+     * When I classify the file with the level "Unclassified" and convert it
+     * Then the result should include an attribute "isClassified" with the value "false"
+     */
+    public void testClassifyFile_unclassified()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef file;
+            private String jsonString;
+
+            @Override
+            public void given() throws Exception
+            {
+                file = fileFolderService.create(documentLibrary, generate(), TYPE_CONTENT).getNodeRef();
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), newHashSet(REASON1), file);
+                jsonString = converter.toJSON(file, true);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                 assertNotNull(jsonString);
+                 JSONObject jsonObject = new JSONObject(jsonString);
+                 Object isClassifiedObject = jsonObject.get(IS_CLASSIFIED);
+                 assertNotNull(isClassifiedObject);
+                 assertFalse(((Boolean) isClassifiedObject).booleanValue());
+            }
+        });
+    }
+
+    /**
+     * Given a file exists in a collaboration site
+     * When I classify the file with the level "Unclassified" and convert it
+     * Then the result should include an attribute "isClassified" with the value "false"
+     */
+    public void testClassifyFile_notclassified()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef file;
+            private String jsonString;
+
+            @Override
+            public void given() throws Exception
+            {
+                NodeRef category = filePlanService.createRecordCategory(filePlan, generate());
+                NodeRef folder = recordFolderService.createRecordFolder(category, generate());
+                file = utils.createRecord(folder, generate());
+            }
+
+            @Override
+            public void when() throws Exception
+            {
+                jsonString = converter.toJSON(file, true);
+            }
+
+            @Override
+            public void then() throws Exception
+            {
+                assertNotNull(jsonString);
+                JSONObject jsonObject = new JSONObject(jsonString);
+                Object isClassifiedObject = jsonObject.get(IS_CLASSIFIED);
+                assertNotNull(isClassifiedObject);
+                assertFalse(((Boolean) isClassifiedObject).booleanValue());
+            }
+        });
     }
 
     public void testJSON() throws Exception

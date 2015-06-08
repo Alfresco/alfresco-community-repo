@@ -69,7 +69,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
-    private static final String IS_CLASSIFIED = "isClassified";
+    public static final String IS_CLASSIFIED = "isClassified";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;

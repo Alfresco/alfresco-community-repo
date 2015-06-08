@@ -1126,7 +1126,7 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                 // Check if the folder is empty                        
                 // Get pseudo files
                 PseudoFileList pseudoFileList = new PseudoFileList();
-                if (session.isPseudoFilesEnabled())
+                if (ctx.isPseudoFilesEnabled())
                 {
                     pseudoFileList = ctx.getPseudoFileOverlay().searchPseudoFiles(nodeRef, "*");
                 }

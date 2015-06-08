@@ -29,12 +29,10 @@ import static org.junit.Assert.assertTrue;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalAbbreviationChars;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Unit tests for the {@link ClassificationLevelValidation}.
@@ -97,11 +95,6 @@ public class ClassificationLevelValidationUnitTest
             return null;
         });
 
-        // Construct a sequence of Matchers - one for each illegal char we expect to see.
-        // Apologies for the Java generics madness here. This is really a List of Matchers of List<Character>
-        List<Matcher<? super Iterable<? super Character>>> containsCharMatchers = someIllegalChars.stream()
-                                                                                          .map(c -> hasItem(c))
-                                                                                          .collect(Collectors.toList());
-        assertThat(e.getIllegalChars(), allOf(containsCharMatchers));
+        assertThat(e.getIllegalChars(), allOf(hasItem('"'), hasItem('*'), hasItem('\\')));
     }
 }

@@ -32,7 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
 public class ClassificationLevelManager
 {
     /** Unclassified classification level */
-    public static final String UNCLASSIFIED_ID = "Unclassified";
+    public static final String UNCLASSIFIED_ID = "U";
     private static final String UNCLASSIFIED_MSG = "rm.classification.unclassified";
     public static final ClassificationLevel UNCLASSIFIED = new ClassificationLevel(UNCLASSIFIED_ID, UNCLASSIFIED_MSG);
 
@@ -46,7 +46,7 @@ public class ClassificationLevelManager
      */
     public void setClassificationLevels(List<ClassificationLevel> classificationLevels)
     {
-        List<ClassificationLevel> temp = new ArrayList<ClassificationLevel>(classificationLevels);
+        List<ClassificationLevel> temp = new ArrayList<>(classificationLevels);
         temp.add(temp.size(), UNCLASSIFIED);
         this.classificationLevels = ImmutableList.copyOf(temp);
     }

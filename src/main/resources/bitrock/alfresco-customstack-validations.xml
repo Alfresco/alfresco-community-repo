@@ -24,17 +24,17 @@
         <actionDefinition name="alfrescoSystemValidations">
             <actionList>
                 <setInstallerVariable name="reportValue" value=""/>
-                <setInstallerVariable name="msgArchitectureWarning" value="${tr('64bit architecture recommended')}"/>
-                <setInstallerVariable name="msgWindows32" value="${tr('32bit Microsoft Windows® is only supported for evaluation use.')}"/>
-                <setInstallerVariable name="msgMacOSX" value="${tr('Mac OS X® is only supported for evaluation use.')}"/>
-                <setInstallerVariable name="msgCpuSpeed" value="${tr('Insufficient CPU clock speed')}"/>
-                <setInstallerVariable name="msgCpuCores" value="${tr('Insufficient CPUs (cores)')}"/>
-                <setInstallerVariable name="msgRam" value="${tr('Insufficient system RAM')}"/>
-                <setInstallerVariable name="msgFileDescriptors" value="${tr('Insufficent file descriptors')}"/>
-                <setInstallerVariable name="msgCifsUdp" value="${tr('CIFS UDP ports in use')}"/>
-                <setInstallerVariable name="msgCifsTcp" value="${tr('CIFS TCP ports in use')}"/>
-                <setInstallerVariable name="msgSmtpTcp" value="${tr('SMTP TCP port in use')}"/>
-                <setInstallerVariable name="msgImapTcp" value="${tr('IMAP TCP port in use')}"/>
+                <setInstallerVariable name="msgArchitectureWarning" value="${tr('64bit architecture recommended')}&#xA;"/>
+                <setInstallerVariable name="msgWindows32" value="${tr('32bit Microsoft Windows® is only supported for evaluation use.')}&#xA;"/>
+                <setInstallerVariable name="msgMacOSX" value="${tr('Mac OS X® is only supported for evaluation use.')}&#xA;"/>
+                <setInstallerVariable name="msgCpuSpeed" value="${tr('Insufficient CPU clock speed')}&#xA;"/>
+                <setInstallerVariable name="msgCpuCores" value="${tr('Insufficient CPUs (cores)')}&#xA;"/>
+                <setInstallerVariable name="msgRam" value="${tr('Insufficient system RAM')}&#xA;"/>
+                <setInstallerVariable name="msgFileDescriptors" value="${tr('Insufficent file descriptors')}&#xA;"/>
+                <setInstallerVariable name="msgCifsUdp" value="${tr('CIFS UDP ports in use')}&#xA;"/>
+                <setInstallerVariable name="msgCifsTcp" value="${tr('CIFS TCP ports in use')}&#xA;"/>
+                <setInstallerVariable name="msgSmtpTcp" value="${tr('SMTP TCP port in use')}&#xA;"/>
+                <setInstallerVariable name="msgImapTcp" value="${tr('IMAP TCP port in use')}&#xA;"/>
                 <throwError>
                     <text>This installer is for Windows 64 bit.  Please download the Windows 32 bit version.</text>
                     <ruleList>
@@ -72,7 +72,7 @@
                     <values>machine_cpu_speed recommended_cpu_speed</values>
                     <actionList>
                         <mathExpression text="double(${${cpu_convertion}})/1000" variable="${cpu_convertion}GHz"/>
-                        <setInstallerVariableFromRegEx name="${cpu_convertion}GHz" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${cpu_convertion}GHz}"/>
+                        <setInstallerVariableFromRegEx name="${cpu_convertion}GHz" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${cpu_convertion}GHz}&#xA;"/>
                     </actionList>
                 </foreach>
                 <setInstallerVariable name="reportValue" value="${reportValue}${msgCpuSpeed} (${recommended_cpu_speedGHz} GHz+): ${machine_cpu_speedGHz} GHz&#xA;">
@@ -99,7 +99,7 @@
                     <values>machine_total_memory minimum_ram recommended_ram</values>
                     <actionList>
                         <mathExpression text="double(${${memory_convertion}})/1024" variable="${memory_convertion}GB"/>
-                        <setInstallerVariableFromRegEx name="${memory_convertion}GB" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${memory_convertion}GB}"/>
+                        <setInstallerVariableFromRegEx name="${memory_convertion}GB" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${memory_convertion}GB}&#xA;"/>
                     </actionList>
                 </foreach>
                 <throwError>
@@ -112,7 +112,7 @@
                         </compareValues>
                     </ruleList>
                 </throwError>
-                <setInstallerVariable name="reportValue" value="${reportValue}${msgRam} (${recommended_ramGB}GB+): ${machine_total_memoryGB}GB">
+                <setInstallerVariable name="reportValue" value="${reportValue}${msgRam} (${recommended_ramGB}GB+): ${machine_total_memoryGB}GB&#xA;">
                     <ruleList>
                         <compareValues>
                             <logic>less</logic>
@@ -127,7 +127,7 @@
                     </ruleList>
                 </setInstallerVariable>
                 <!-- File Descriptors validation-->
-                <setInstallerVariable name="reportValue" value="${reportValue}${msgFileDescriptors} (${minimum_file_descriptors}+)">
+                <setInstallerVariable name="reportValue" value="${reportValue}${msgFileDescriptors} (${minimum_file_descriptors}+)&#xA;">
                     <ruleList>
                         <resourceLimitTest type="open_files" logic="less" value="${minimum_file_descriptors}"/>
                         <platformTest type="windows" negate="1"/>
@@ -142,7 +142,7 @@
                         <foreach variables="cifs_udp_port_to_check">
                             <values>${netbd_port} ${netbd_port_1}</values>
                             <actionList>
-                                <setInstallerVariable name="cifsUdpPortList" value="${cifsUdpPortList} ${cifs_udp_port_to_check}">
+                                <setInstallerVariable name="cifsUdpPortList" value="${cifsUdpPortList} ${cifs_udp_port_to_check}&#xA;">
                                     <ruleList>
                                         <portTest port="${cifs_udp_port_to_check}" condition="cannot_bind"/>
                                         <platformTest  type="windows" negate="1"/>
@@ -159,7 +159,7 @@
                         <foreach variables="cifs_tcp_port_to_check">
                             <values>${netbd_port} ${netbd_port_2} ${smb_port}</values>
                             <actionList>
-                                <setInstallerVariable name="cifsTcpPortList" value="${cifsTcpPortList} ${cifs_tcp_port_to_check}">
+                                <setInstallerVariable name="cifsTcpPortList" value="${cifsTcpPortList} ${cifs_tcp_port_to_check}&#xA;">
                                     <ruleList>
                                         <portTest port="${cifs_tcp_port_to_check}" condition="cannot_bind"/>
                                         <platformTest  type="windows" negate="1"/>
@@ -187,7 +187,7 @@
                         <isTrue value="${installer_is_root_install}"/>
                     </ruleList>
                 </actionGroup>
-                <setInstallerVariable name="component(alfrescovalidations).parameter(alfresco_report).value" value="${reportValue}">
+                <setInstallerVariable name="component(alfrescovalidations).parameter(alfresco_report).value" value="${reportValue}&#xA;">
                     <ruleList>
                         <compareText text="${reportValue}" value="" logic="does_not_equal"/>
                     </ruleList>

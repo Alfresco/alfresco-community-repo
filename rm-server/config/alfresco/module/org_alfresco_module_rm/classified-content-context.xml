@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:aop="http://www.springframework.org/schema/aop"
 	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans 
-		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
-		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/aop
 		http://www.springframework.org/schema/aop/spring-aop-3.0.xsd ">
 
    <!--  Classified content model bootstrap -->
@@ -32,15 +32,39 @@
          </list>
       </property>
    </bean>
-   
+
    <!-- Classification Method Interceptor -->
 
-   <bean id="classificationMethodInterceptor" 
+   <bean id="classificationMethodInterceptor"
          class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor">
    </bean>
-   
-   <bean id="classificationMethodInterceptorPostProcessor" 
+
+   <bean id="classificationMethodInterceptorPostProcessor"
          class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
+
+   <bean id="basePostMethodInvocationProcessor"
+         abstract="true"
+         init-method="register">
+      <property name="classificationMethodInterceptor" ref="classificationMethodInterceptor" />
+      <property name="nodeService" ref="NodeService" />
+      <property name="dictionaryService" ref="DictionaryService" />
+      <property name="contentClassificationService" ref="ContentClassificationService" />
+   </bean>
+
+   <bean id="nodeRefPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.NodeRefPostMethodInvocationProcessor">
+   </bean>
+
+   <bean id="childAssociationRefPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ChildAssociationRefPostMethodInvocationProcessor">
+   </bean>
+
+   <bean id="associationRefPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AssociationRefPostMethodInvocationProcessor">
+   </bean>
 
    <!-- Classification service DAO -->
 

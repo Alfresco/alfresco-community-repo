@@ -18,13 +18,16 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor;
 
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.codehaus.plexus.util.StringUtils.isNotBlank;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -37,6 +40,7 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
+import org.apache.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -49,6 +53,12 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class ClassificationMethodInterceptor implements MethodInterceptor, ApplicationContextAware
 {
+    /** Logger */
+    private static Logger LOG = Logger.getLogger(ClassificationMethodInterceptor.class);
+
+    /** Post method invocation processors */
+    private Map<Class<?>, BasePostMethodInvocationProcessor> processors = new HashMap<Class<?>, BasePostMethodInvocationProcessor>();
+
     private static final String KEY_PROCESSING = GUID.generate();
 
     /** application context */
@@ -72,7 +82,7 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     /**
      * @return {@link ContentClassificationService} content classification service
      */
-    protected ContentClassificationService getContentClassificaitonService()
+    protected ContentClassificationService getContentClassificationService()
     {
         return (ContentClassificationService)applicationContext.getBean("contentClassificationService");
     }
@@ -100,6 +110,16 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     protected DictionaryService getDictionaryService()
     {
         return (DictionaryService)applicationContext.getBean("dictionaryService");
+    }
+
+    /**
+     * Registers the post method invocation processors
+     *
+     * @param object The object to register
+     */
+    public void register(BasePostMethodInvocationProcessor object)
+    {
+        processors.put(object.getClassName(), object);
     }
 
     /**
@@ -176,8 +196,8 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     private void checkNode(NodeRef testNodeRef)
     {
         if (getNodeService().exists(testNodeRef) &&
-                getDictionaryService().isSubClass(getNodeService().getType(testNodeRef), ContentModel.TYPE_CONTENT) &&
-                !getContentClassificaitonService().hasClearance(testNodeRef))
+                getDictionaryService().isSubClass(getNodeService().getType(testNodeRef), TYPE_CONTENT) &&
+                !getContentClassificationService().hasClearance(testNodeRef))
         {
             // throw exception
             throw new AccessDeniedException("You do not have clearance!");
@@ -192,19 +212,28 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     {
         boolean isValidUser = validUser();
 
+        // pre method invocation check
         if (isValidUser)
         {
-            // pre method invocation check
             checkClassification(invocation);
         }
 
         // method proceed
         Object result = invocation.proceed();
 
-        if (isValidUser)
+        // post method invocation processing
+        if (isValidUser && result != null)
         {
-            // post method invocation processing
-         // TODO
+            Class<? extends Object> clazz = result.getClass();
+            BasePostMethodInvocationProcessor processor = processors.get(clazz);
+            if (processor != null)
+            {
+                processor.process(result);
+            }
+            else
+            {
+                LOG.warn("No post method invocation processor found for '" + clazz + "'.");
+            }
         }
 
         return result;

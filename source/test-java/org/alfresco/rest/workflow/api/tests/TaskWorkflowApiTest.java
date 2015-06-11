@@ -55,6 +55,7 @@ import org.alfresco.rest.api.tests.PersonInfo;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
+import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
@@ -1053,6 +1054,29 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
         {
             cleanupProcessInstance(processInstance);
         }
+    }
+    
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testSetOutcome() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+        ProcessInfo processInf = startReviewPooledProcess(requestContext);
+        Task task = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInf.getId()).singleResult();
+        TasksClient tasksClient = publicApiClient.tasksClient();
+        activitiProcessEngine.getTaskService().saveTask(task);
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("select", "state,variables");
+        HttpResponse response = tasksClient.update("tasks",
+                        task.getId(),
+                        null,
+                        null,
+                        "{\"state\":\"completed\",\"variables\":[{\"name\":\"wf_reviewOutcome\",\"value\":\"Approve\",\"scope\":\"local\"},{\"name\":\"bpm_comment\",\"value\":\"approved by me\",\"scope\":\"local\"}]}",
+                        "Failed to update task", params);
+        assertEquals(200, response.getStatusCode());
+        HistoricTaskInstance historyTask = activitiProcessEngine.getHistoryService().createHistoricTaskInstanceQuery().taskId(task.getId()).includeProcessVariables().includeTaskLocalVariables().singleResult();
+        String outcome = (String) historyTask.getTaskLocalVariables().get("bpm_outcome");
+        assertEquals("Approve", outcome);
     }
     
     @Test

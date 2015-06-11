@@ -869,11 +869,13 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                         break;
                     case COMPLETED:
-                        setOutcome(localVariables, taskId);
                         if (localVariables.size() > 0)
                         {
                             activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
                         }
+                        
+                        setOutcome(taskId);
+                        
                         if (globalVariables.size() > 0)
                         {
                             activitiProcessEngine.getTaskService().complete(taskId, globalVariables);
@@ -900,11 +902,13 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                         }
                         break;
                     case RESOLVED:
-                        setOutcome(localVariables, taskId);
                         if (localVariables.size() > 0)
                         {
                             activitiProcessEngine.getTaskService().setVariablesLocal(taskId, localVariables);
                         }
+                        
+                        setOutcome(taskId);
+                        
                         if (globalVariables.size() > 0)
                         {
                             activitiProcessEngine.getTaskService().resolveTask(taskId, globalVariables);
@@ -1728,11 +1732,11 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
      * @param localVariables The variable, that will be set to the task
      * @param taskId The id of the task
      */
-    private void setOutcome(Map<String, Object> localVariables, String taskId)
+    private void setOutcome(String taskId)
     {
-        WorkflowQNameConverter qNameConverter = getQNameConverter();
         org.activiti.engine.task.Task task = activitiProcessEngine.getTaskService().createTaskQuery().taskId(taskId).singleResult();
         String outcomeValue = ActivitiConstants.DEFAULT_TRANSITION_NAME;
+        HashMap<QName, Serializable> updates = new HashMap<QName, Serializable>();
         Map<QName, Serializable> properties = propertyConverter.getTaskProperties(task);
         QName outcomePropName = (QName) properties.get(WorkflowModel.PROP_OUTCOME_PROPERTY_NAME);
         if (outcomePropName != null)
@@ -1743,6 +1747,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
                 outcomeValue = DefaultTypeConverter.INSTANCE.convert(String.class, rawOutcome);
             }
         }
-        localVariables.put(qNameConverter.mapQNameToName(WorkflowModel.PROP_OUTCOME), outcomeValue);
+        updates.put(WorkflowModel.PROP_OUTCOME, outcomeValue);
+        propertyConverter.updateTask(task, updates, null, null);
     }
 }

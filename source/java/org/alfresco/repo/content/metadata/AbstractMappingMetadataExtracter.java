@@ -1136,7 +1136,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     protected void checkIsEmbedSupported(ContentWriter writer)
     {
         String mimetype = writer.getMimetype();
-        if (!isSupported(mimetype))
+        if (!isEmbeddingSupported(mimetype))
         {
             throw new AlfrescoRuntimeException(
                     "Metadata extracter does not support embedding mimetype: \n" +

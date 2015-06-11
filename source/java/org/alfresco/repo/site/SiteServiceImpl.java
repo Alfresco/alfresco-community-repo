@@ -93,7 +93,6 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
-import org.alfresco.service.cmr.security.AuthorityService.AuthorityFilter;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -1234,8 +1233,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         Map<QName, Serializable> properties = this.directNodeService.getProperties(siteNodeRef);
         String shortName = (String) properties.get(ContentModel.PROP_NAME);
         String sitePreset = (String) properties.get(PROP_SITE_PRESET);
-        String title = (String) properties.get(ContentModel.PROP_TITLE);
-        String description = (String) properties.get(ContentModel.PROP_DESCRIPTION);
+        String title = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_TITLE));
+        String description = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_DESCRIPTION));
 
         // Get the visibility of the site
         SiteVisibility visibility = getSiteVisibility(siteNodeRef);
@@ -1783,6 +1782,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                                 break;
                             }
                         }
+                        break;
+                    default:
+                        // TODO: Should error but do not want to break anything here, so will fall through (DH)
                         break;
                     }
                 }

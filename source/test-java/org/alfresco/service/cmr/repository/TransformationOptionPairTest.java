@@ -132,6 +132,26 @@ public class TransformationOptionPairTest
     }
     
     @Test
+    public void testSetMaxClearLimit() throws Exception
+    {
+        long value = 1234;
+        pair.setMax(value, null);
+        pair.setLimit(-1, null);
+        long actual = pair.getMax();
+        assertEquals("Getter did not return set value", value, actual);
+    }
+
+    @Test
+    public void testSetLimitClearMax() throws Exception
+    {
+        long value = 1234;
+        pair.setLimit(value, null);
+        pair.setMax(-1, null);
+        long actual = pair.getLimit();
+        assertEquals("Getter did not return set value", value, actual);
+    }
+
+    @Test
     public void testSetClearSet() throws Exception
     {
         // Test there is no exception if we clear the other value first

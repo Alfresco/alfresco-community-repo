@@ -92,7 +92,10 @@ public class TransformationOptionPair implements Serializable
     private void setMax(long max)
     {
         this.max = max;
-        this.limit = -1;
+        if (max >= 0)
+        {
+            this.limit = -1;
+        }
     }
     
     public long getLimit()
@@ -111,8 +114,11 @@ public class TransformationOptionPair implements Serializable
     
     private void setLimit(long limit)
     {
-        this.max = -1;
         this.limit = limit;
+        if (limit >= 0)
+        {
+            this.max = -1;
+        }
     }
     
     public long getValue()
@@ -139,8 +145,16 @@ public class TransformationOptionPair implements Serializable
     }
 
     /**
-     * Defaults values that are set in this pair into the
-     * supplied pair.
+     * <b>This method overrides rather than defaults values into the supplied pair</b> (as the
+     * name might suggest), but because of the order in which it is called, this results in the
+     * correct defaults being set.
+     * <p>
+     * A call to this method overrides any values in the supplied pair parameter with those
+     * in this Object. The supplied pair parameter is being gradually built up by initially
+     * setting the most general values and then more specific values for each level. As a result  
+     * 'default' values from the more general levels will still exist at the end if more specific
+     * ones have not been supplied.
+     * 
      * @param pair to be set
      */
     public void defaultTo(TransformationOptionPair pair)

@@ -179,6 +179,8 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         int origLevel = getLevel(transformerName, sourceMimetype);
 
         TransformationOptionLimits limits = new TransformationOptionLimits();
+        // Start at the most general limits and then override with more specific values so that
+        // defaults from the most general get used if there is not something more specific.
         for (int level=0; level<origLevel; level++)
         {
               TransformationOptionLimits defaultLimits =

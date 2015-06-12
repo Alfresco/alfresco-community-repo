@@ -78,8 +78,16 @@ public class TransformationOptionLimits implements Serializable
     }
     
     /**
-     * Defaults values that are set in this object into the
-     * supplied limits.
+     * <b>This method overrides rather than defaults values into the supplied limits</b> (as the
+     * name might suggest), but because of the order in which it is called, this results in the
+     * correct defaults being set.
+     * <p>
+     * A call to this method overrides any values in the supplied limits parameter with those
+     * in this Object. The supplied limits parameter is being gradually built up by initially
+     * setting the most general limits and then more specific values for each level. As a result  
+     * 'default' values from the more general levels will still exist at the end if more specific
+     * ones have not been supplied.
+     * 
      * @param limits to be set
      */
     public void defaultTo(TransformationOptionLimits limits)

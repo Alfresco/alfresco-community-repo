@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager.UNCLASSIFIED_ID;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
@@ -143,5 +144,25 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
         // Get the node's current classification
         ClassificationLevel currentClassification = getCurrentClassification(nodeRef);
         return securityClearanceService.isCurrentUserClearedForClassification(currentClassification.getId());
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#isClassified(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public boolean isClassified(NodeRef nodeRef)
+    {
+        mandatory("nodeRef", nodeRef);
+
+        boolean isClassified = false;
+        String currentClassification = (String) nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+
+        if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED) &&
+                !(UNCLASSIFIED_ID).equals(currentClassification))
+        {
+            isClassified = true;
+        }
+
+        return isClassified;
     }
 }

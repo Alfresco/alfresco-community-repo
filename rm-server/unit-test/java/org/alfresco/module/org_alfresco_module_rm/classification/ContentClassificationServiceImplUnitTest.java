@@ -37,9 +37,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
@@ -59,6 +56,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 
 /**
  * Unit tests for {@link ContentClassificationServiceImpl}.
@@ -300,5 +300,49 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockSecurityClearanceService.isCurrentUserClearedForClassification("Secret")).thenReturn(false);
 
         assertFalse(contentClassificationServiceImpl.hasClearance(nodeRef));
+    }
+
+    /**
+     * Given that I classify a node with a level not equal to "Unclassified"
+     * When I ask if the node is classified
+     * Then return true
+     */
+    @Test public void contentClassified_levelNotUnclassified()
+    {
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+
+        when(mockNodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION)).thenReturn("level1");
+        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(true);
+
+        assertTrue(contentClassificationServiceImpl.isClassified(nodeRef));
+    }
+
+    /**
+     * Given that I classify a node with level "Unclassified"
+     * When I ask if the node is classified
+     * Then return false
+     */
+    @Test public void contentClassified_levelUnclassified()
+    {
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+
+        when(mockNodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION)).thenReturn(ClassificationLevelManager.UNCLASSIFIED_ID);
+        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(true);
+
+        assertFalse(contentClassificationServiceImpl.isClassified(nodeRef));
+    }
+
+    /**
+     * Given that a node is not classified
+     * When I ask if the node is classified
+     * Then return false
+     */
+    @Test public void contentNotClassified()
+    {
+        NodeRef nodeRef = generateNodeRef(mockNodeService);
+
+        when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(false);
+
+        assertFalse(contentClassificationServiceImpl.isClassified(nodeRef));
     }
 }

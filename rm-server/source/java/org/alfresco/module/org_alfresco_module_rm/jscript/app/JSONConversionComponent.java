@@ -18,9 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
+import static org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel.READ_RECORDS;
 import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager.UNCLASSIFIED_ID;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_CLASSIFIED;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION;
+import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -497,16 +499,22 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     /**
      * @see org.alfresco.repo.jscript.app.JSONConversionComponent#permissionsToJSON(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @SuppressWarnings("unchecked")
     protected JSONObject permissionsToJSON(final NodeRef nodeRef)
     {
-        JSONObject permissionsJSON = null;
+        JSONObject permissionsJSON = new JSONObject();
         if (!filePlanService.isFilePlanComponent(nodeRef))
         {
             permissionsJSON = super.permissionsToJSON(nodeRef);
         }
         else
         {
-            permissionsJSON = new JSONObject();
+            if (ALLOWED.equals(permissionService.hasPermission(nodeRef, READ_RECORDS)))
+            {
+                permissionsJSON.put("inherited", permissionService.getInheritParentPermissions(nodeRef));
+                permissionsJSON.put("roles", allSetPermissionsToJSON(nodeRef));
+                permissionsJSON.put("user", userPermissionsToJSON(nodeRef));
+            }
         }
         return permissionsJSON;
     }

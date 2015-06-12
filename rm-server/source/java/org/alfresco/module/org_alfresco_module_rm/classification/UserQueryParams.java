@@ -23,13 +23,13 @@ import static org.alfresco.model.ContentModel.PROP_FIRSTNAME;
 import static org.alfresco.model.ContentModel.PROP_LASTNAME;
 import static org.alfresco.model.ContentModel.PROP_USERNAME;
 
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.Pair;
-import org.alfresco.util.ParameterCheck;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.alfresco.service.namespace.QName;
+import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * Configurable options to be used when querying for users by {@link SecurityClearance}.
@@ -39,7 +39,7 @@ import java.util.List;
  */
 public final class UserQueryParams
 {
-    // Required parameter. No default value. This is the username fragment.
+    /** Required parameter. No default value. This is the username fragment. */
     private final String searchTerm;
 
     // These configurable parameters have default values.
@@ -48,10 +48,16 @@ public final class UserQueryParams
     private int                        skipCount = 0;
     private int                        maxItems  = 10;
 
+    /**
+     * Create a new object for searching for people.
+     *
+     * @param searchTerm The unescaped string to search for in the people service.
+     */
     public UserQueryParams(final String searchTerm)
     {
-        // A 'null' value here is allowed.
-        this.searchTerm = searchTerm;
+        ParameterCheck.mandatory("searchTerm", searchTerm);
+        // Escape backslashes before using in the query. (The person service does not do this for us)
+        this.searchTerm = searchTerm.replace("\\", "\\\\");
     }
 
     /** Sets the skip count required for the query. */

@@ -25,7 +25,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -119,7 +118,7 @@ public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
             }
         }).when(mockedSecurityClearanceService).getUsersSecurityClearance(any(UserQueryParams.class));
 
-        JSONObject response = executeJSONWebScript(new HashMap<String, String>());
+        JSONObject response = executeJSONWebScript(buildParameters("nameFilter", "userName"));
         assertNotNull(response);
 
         JSONObject data = response.getJSONObject("data");
@@ -188,7 +187,7 @@ public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
             }
         }).when(mockedSecurityClearanceService).getUsersSecurityClearance(any(UserQueryParams.class));
 
-        JSONObject response = executeJSONWebScript(buildParameters("pageSize", Integer.toString(pageSize), "startIndex", Integer.toString(startIndex)));
+        JSONObject response = executeJSONWebScript(buildParameters("nameFilter", "userName", "pageSize", Integer.toString(pageSize), "startIndex", Integer.toString(startIndex)));
         assertNotNull(response);
 
         ObjectMapper mapper = new ObjectMapper();

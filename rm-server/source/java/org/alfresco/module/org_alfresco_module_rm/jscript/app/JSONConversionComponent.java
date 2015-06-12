@@ -19,9 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
 import static org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel.READ_RECORDS;
-import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager.UNCLASSIFIED_ID;
-import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_CLASSIFIED;
-import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;
 
 import java.util.ArrayList;
@@ -32,6 +29,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
+import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -93,6 +91,9 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /** site service */
     private SiteService siteService;
+
+    /** Content classification service */
+    private ContentClassificationService contentClassificationService;
 
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
@@ -163,6 +164,14 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
+    }
+
+    /**
+     * @param contentClassificationService the contentClassificationService to set
+     */
+    public void setContentClassificationService(ContentClassificationService contentClassificationService)
+    {
+        this.contentClassificationService = contentClassificationService;
     }
 
     /**
@@ -249,7 +258,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             NodeRef nodeRef = nodeInfo.getNodeRef();
 
             // Is the node classified
-            rootJSONObject.put(IS_CLASSIFIED, isClassified(nodeRef));
+            rootJSONObject.put(IS_CLASSIFIED, contentClassificationService.isClassified(nodeRef));
 
             if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, ViewRecordsCapability.NAME)))
             {
@@ -266,28 +275,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 }
             }
         }
-    }
-
-    /**
-     * Checks if the node is classified or not. A node classified
-     * as "Unclassified" will be treated as not classified.
-     *
-     * @param nodeRef Node reference
-     * @return <code>true</code> if the node is classified, <code>false</code> otherwise
-     */
-    private boolean isClassified(NodeRef nodeRef)
-    {
-        boolean isClassified = false;
-
-        String currentClassification = (String) nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
-
-        if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED) &&
-                !(UNCLASSIFIED_ID).equals(currentClassification))
-        {
-            isClassified = true;
-        }
-
-        return isClassified;
     }
 
     /**

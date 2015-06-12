@@ -57,6 +57,15 @@ public interface ContentClassificationService
             throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
 
     /**
+     * Checks if the node is classified or not. A node classified
+     * as "Unclassified" will be treated as not classified.
+     *
+     * @param nodeRef Node reference
+     * @return <code>true</code> if the node is classified, <code>false</code> otherwise
+     */
+    boolean isClassified(NodeRef nodeRef);
+
+    /**
      * Indicates whether the currently authenticated user has clearance to see the
      * provided node.
      * <p>

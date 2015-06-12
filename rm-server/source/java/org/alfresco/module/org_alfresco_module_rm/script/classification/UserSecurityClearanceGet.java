@@ -147,11 +147,12 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
      * Gets the name filter from the webscript request
      *
      * @param req {@link WebScriptRequest} The webscript request
-     * @return {@link String} The name filter (can be null)
+     * @return {@link String} The name filter from the request (or the empty string if the request doesn't contain one).
      */
     private String getNameFilter(WebScriptRequest req)
     {
-        return req.getParameter(NAME_FILTER);
+        String nameFilter = req.getParameter(NAME_FILTER);
+        return (nameFilter != null ? nameFilter : "");
     }
 
     /**

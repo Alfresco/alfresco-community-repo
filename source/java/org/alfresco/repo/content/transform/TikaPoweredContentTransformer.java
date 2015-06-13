@@ -231,10 +231,11 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
           );
        }
 
-       InputStream is = reader.getContentInputStream();
+       InputStream is = null;
 
        long startTime = 0;
        try {
+          is = reader.getContentInputStream();
           if (logger.isDebugEnabled())
           {
              startTime = System.currentTimeMillis();

@@ -86,6 +86,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
     /**
      * Properties (needed to avoid changing method signatures)
      */
+    @Deprecated
     protected TransformationOptions options;
     
     /**
@@ -179,7 +180,7 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             throw new RuleServiceException(CONTENT_READER_NOT_FOUND_MESSAGE);
         }
 
-        options = newTransformationOptions(ruleAction, actionedUponNodeRef);
+        TransformationOptions options = newTransformationOptions(ruleAction, actionedUponNodeRef);
         // getExecuteAsychronously() is not true for async convert content rules, so using Thread name
         //        options.setUse(ruleAction.getExecuteAsychronously() ? "asyncRule" :"syncRule");
         options.setUse(Thread.currentThread().getName().contains("Async") ? "asyncRule" :"syncRule");
@@ -285,7 +286,6 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
             // TODO: Check failure patterns for actions.
             try
             {
-                options.setTargetNodeRef(copyNodeRef);
                 doTransform(ruleAction, actionedUponNodeRef, contentReader, copyNodeRef, contentWriter);
                 ruleAction.setParameterValue(PARAM_RESULT, copyNodeRef);
             }
@@ -317,6 +317,8 @@ public class TransformActionExecuter extends ActionExecuterAbstractBase
 
     {
         // transform - will throw NoTransformerException if there are no transformers
+        TransformationOptions options = newTransformationOptions(ruleAction, sourceNodeRef);
+        options.setTargetNodeRef(destinationNodeRef);
         this.contentService.transform(contentReader, contentWriter, options);
     }
     

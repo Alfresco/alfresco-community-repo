@@ -51,11 +51,11 @@ public class ChildAssociationRefPostMethodInvocationProcessor extends BasePostMe
         ChildAssociationRef childAssociationRef = ((ChildAssociationRef) object);
 
         NodeRef childRef = childAssociationRef.getChildRef();
-        check(childRef);
+        NodeRef filteredChildRef = filter(childRef);
 
         NodeRef parentRef = childAssociationRef.getParentRef();
-        check(parentRef);
+        NodeRef filteredParentRef = filter(parentRef);
 
-        return object;
+        return (filteredChildRef == null || filteredParentRef == null) ? null : object;
     }
 }

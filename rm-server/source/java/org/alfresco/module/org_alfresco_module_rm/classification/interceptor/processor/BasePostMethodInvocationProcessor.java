@@ -18,10 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import org.alfresco.model.ContentModel;
+import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -111,19 +111,19 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
+     * Gets the class name
+     *
+     * @return The class name
+     */
+    public abstract Class<?> getClassName();
+
+    /**
      * Performs checks on the given object and throws exception if not all checks pass
      *
      * @param object The object to check
      * @return The given object
      */
     public abstract <T extends Object> T process(T object);
-
-    /**
-     * Gets the class name
-     *
-     * @return The class name
-     */
-    public abstract Class<?> getClassName();
 
     /**
      * Registers the post method invocation processors
@@ -134,24 +134,24 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
-     * Performs checks on the given node:
-     *
-     * <ul>
-     *  <li>Does the node exist</li>
-     *  <li>Is it a content</li>
-     *  <li>Is the logged in user cleared to see the it.</li>
-     * </ul>
+     * Filters the node if the give node reference exist and it is a
+     * content but the logged in user is not cleared to see the it.
      *
      * @param nodeRef Node reference
+     * @return <code>null</code> if the give node reference has been
+     * filtered, the node reference itself otherwise
      */
-    protected void check(NodeRef nodeRef)
+    protected NodeRef filter(NodeRef nodeRef)
     {
+        NodeRef filter = nodeRef;
+
         if (getNodeService().exists(nodeRef) &&
-                getDictionaryService().isSubClass(getNodeService().getType(nodeRef), ContentModel.TYPE_CONTENT) &&
+                getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
                 !getContentClassificationService().hasClearance(nodeRef))
         {
-            // throw exception
-            throw new AccessDeniedException("You do not have clearance!");
+            filter = null;
         }
+
+        return filter;
     }
 }

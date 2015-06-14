@@ -66,6 +66,25 @@
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AssociationRefPostMethodInvocationProcessor">
    </bean>
 
+   <bean id="collectionPostMethodInvocationProcessor"
+      abstract="true"
+      parent="basePostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.CollectionPostMethodInvocationProcessor">
+      <property name="nodeRefPostMethodInvocationProcessor" ref="nodeRefPostMethodInvocationProcessor" />
+      <property name="childAssociationRefPostMethodInvocationProcessor" ref="childAssociationRefPostMethodInvocationProcessor" />
+      <property name="associationRefPostMethodInvocationProcessor" ref="associationRefPostMethodInvocationProcessor" />
+   </bean>
+
+   <bean id="setPostMethodInvocationProcessor"
+      parent="collectionPostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.SetPostMethodInvocationProcessor">
+   </bean>
+
+   <bean id="listPostMethodInvocationProcessor"
+      parent="collectionPostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ListPostMethodInvocationProcessor">
+   </bean>
+
    <!-- Classification service DAO -->
 
    <bean id="classificationServiceDAO" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceDAO">

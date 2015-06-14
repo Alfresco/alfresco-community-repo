@@ -137,7 +137,7 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Collection processNodeRef(Collection collection, Iterator iterator)
     {
-        CollectionUtils.filter(collection, new Filter<NodeRef>()
+        return CollectionUtils.filter(collection, new Filter<NodeRef>()
         {
             @Override
             public Boolean apply(NodeRef nodeRef)
@@ -145,8 +145,6 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
                 return getNodeRefPostMethodInvocationProcessor().process(nodeRef) != null;
             }
         });
-
-        return collection;
     }
 
     /**
@@ -158,7 +156,7 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Collection processAssociationRef(Collection collection, Iterator iterator)
     {
-        CollectionUtils.filter(collection, new Filter<AssociationRef>()
+        return CollectionUtils.filter(collection, new Filter<AssociationRef>()
         {
             @Override
             public Boolean apply(AssociationRef associationRef)
@@ -166,8 +164,6 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
                 return getAssociationRefPostMethodInvocationProcessor().process(associationRef) != null;
             }
         });
-
-        return collection;
     }
 
     /**
@@ -179,7 +175,7 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private Collection processChildAssociationRef(Collection collection, Iterator iterator)
     {
-        CollectionUtils.filter(collection, new Filter<ChildAssociationRef>()
+        return CollectionUtils.filter(collection, new Filter<ChildAssociationRef>()
         {
             @Override
             public Boolean apply(ChildAssociationRef childAssociationRef)
@@ -187,7 +183,5 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
                 return getChildAssociationRefPostMethodInvocationProcessor().process(childAssociationRef) != null;
             }
         });
-
-        return collection;
     }
 }

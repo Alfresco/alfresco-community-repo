@@ -51,11 +51,11 @@ public class AssociationRefPostMethodInvocationProcessor extends BasePostMethodI
         AssociationRef associationRef = ((AssociationRef) object);
 
         NodeRef sourceRef = associationRef.getSourceRef();
-        check(sourceRef);
+        NodeRef filteredSource = filter(sourceRef);
 
         NodeRef targetRef = associationRef.getTargetRef();
-        check(targetRef);
+        NodeRef filteredTarget = filter(targetRef);
 
-        return object;
+        return (filteredSource == null || filteredTarget == null) ? null : object;
     }
 }

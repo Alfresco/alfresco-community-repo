@@ -18,25 +18,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static org.alfresco.util.ParameterCheck.mandatory;
-
-import org.alfresco.service.cmr.repository.NodeRef;
+import java.util.List;
 
 /**
- * NodeRef Post Method Invocation Processor
+ * List Post Method Invocation Processor
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class NodeRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
+public class ListPostMethodInvocationProcessor extends CollectionPostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
      */
+    @SuppressWarnings("rawtypes")
     @Override
-    public Class<NodeRef> getClassName()
+    public Class<List> getClassName()
     {
-        return NodeRef.class;
+        return List.class;
     }
 
     /**
@@ -45,8 +44,6 @@ public class NodeRefPostMethodInvocationProcessor extends BasePostMethodInvocati
     @Override
     public <T> T process(T object)
     {
-        mandatory("object", object);
-
-        return filter((NodeRef) object) == null ? null : object;
+        return super.process(object);
     }
 }

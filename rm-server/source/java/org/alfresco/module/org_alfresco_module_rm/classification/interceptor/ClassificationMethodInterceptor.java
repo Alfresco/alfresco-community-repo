@@ -25,12 +25,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -129,13 +129,15 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
      * @param invocation    method invocation
      */
     @SuppressWarnings("rawtypes")
-    public void checkClassification(final MethodInvocation invocation)
+    public NodeRef checkClassification(final MethodInvocation invocation)
     {
         // do in transaction
-        getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        return getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
-            public Void execute() throws Throwable
+            public NodeRef execute() throws Throwable
             {
+                NodeRef result = null;
+
                 // ensure classification service has been bootstrapped
                 if (getClassificationServiceBootstrap().isInitialised())
                 {
@@ -160,7 +162,7 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
                                     NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
 
                                     // if node exists then see if the current user has clearance
-                                    checkNode(testNodeRef);
+                                    result = checkNode(testNodeRef);
                                 }
                                 finally
                                 {
@@ -174,12 +176,12 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
                     }
                 }
 
-                return null;
+                return result;
             }
         }, true);
     }
 
-    private boolean validUser()
+    private boolean isUserValid()
     {
         boolean result = false;
 
@@ -193,15 +195,20 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
         return result;
     }
 
-    private void checkNode(NodeRef testNodeRef)
+    private NodeRef checkNode(NodeRef testNodeRef) throws AccessDeniedException
     {
+        NodeRef result = testNodeRef;
+
         if (getNodeService().exists(testNodeRef) &&
                 getDictionaryService().isSubClass(getNodeService().getType(testNodeRef), TYPE_CONTENT) &&
                 !getContentClassificationService().hasClearance(testNodeRef))
         {
-            // throw exception
-            throw new AccessDeniedException("You do not have clearance!");
+            // FIXME
+            result = null;
+            //throw new AccessDeniedException("You do not have clearance!");
         }
+
+        return result;
     }
 
     /**
@@ -210,29 +217,59 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
-        boolean isValidUser = validUser();
+        // FIXME
+        //NodeRef preInvocation = null;
+        Object postInvocation = null;
+
+        boolean isUserValid = isUserValid();
 
         // pre method invocation check
-        if (isValidUser)
+        if (isUserValid)
         {
+            // FIXME
+            //preInvocation = checkClassification(invocation);
             checkClassification(invocation);
         }
 
         // method proceed
-        Object result = invocation.proceed();
+        postInvocation = invocation.proceed();
 
         // post method invocation processing
-        if (isValidUser && result != null)
+        if (isUserValid && postInvocation != null)
         {
-            Class<? extends Object> clazz = result.getClass();
-            BasePostMethodInvocationProcessor processor = processors.get(clazz);
+            Class<? extends Object> clazz = postInvocation.getClass();
+            BasePostMethodInvocationProcessor processor = getProcessor(processors, clazz);
+
             if (processor != null)
             {
-                processor.process(result);
+                postInvocation = processor.process(postInvocation);
             }
             else
             {
-                LOG.warn("No post method invocation processor found for '" + clazz + "'.");
+                LOG.debug("No post method invocation processor found for '" + clazz + "'.");
+            }
+        }
+
+        return postInvocation;
+    }
+
+    /**
+     * Gets the processor from the available processors
+     *
+     * @param processors Available processors
+     * @param clazz The runtime class of the post invocation object
+     * @return The suitable processor for the given class
+     */
+    private BasePostMethodInvocationProcessor getProcessor(Map<Class<?>, BasePostMethodInvocationProcessor> processors, Class<? extends Object> clazz)
+    {
+        BasePostMethodInvocationProcessor result = null;
+
+        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processor : processors.entrySet())
+        {
+            if (processor.getKey().isAssignableFrom(clazz))
+            {
+                result = processor.getValue();
+                break;
             }
         }
 

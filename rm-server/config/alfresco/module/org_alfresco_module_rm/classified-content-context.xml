@@ -56,6 +56,11 @@
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.NodeRefPostMethodInvocationProcessor">
    </bean>
 
+   <bean id="storeRefPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.StoreRefPostMethodInvocationProcessor">
+   </bean>
+
    <bean id="childAssociationRefPostMethodInvocationProcessor"
       parent="basePostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ChildAssociationRefPostMethodInvocationProcessor">

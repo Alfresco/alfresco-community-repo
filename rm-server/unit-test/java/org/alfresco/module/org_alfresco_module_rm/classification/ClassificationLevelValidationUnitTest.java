@@ -22,6 +22,7 @@ import static java.util.Arrays.asList;
 import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelValidation.ILLEGAL_ABBREVIATION_CHARS;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -49,6 +50,7 @@ public class ClassificationLevelValidationUnitTest
         validation.validateLevels(Collections.emptyList());
     }
 
+    /** Ensures that null, empty or whitespace-only IDs are rejected. */
     @Test public void nonEmptyAbbreviationsAreMandatory()
     {
         // A missing or empty level ID is illegal.
@@ -63,9 +65,30 @@ public class ClassificationLevelValidationUnitTest
     }
 
     @Test(expected=IllegalConfiguration.class)
+    public void systemUnclassifiedAbbreviationIsReserved()
+    {
+        validation.validateLevel(new ClassificationLevel("U", "value.does.not.matter"));
+    }
+
+    @Test(expected=IllegalConfiguration.class)
     public void longAbbreviationsAreIllegal()
     {
         validation.validateLevel(new ClassificationLevel("12345678901", "value.does.not.matter"));
+    }
+
+    @Test public void ensureUniquenessOfAbbreviationIds()
+    {
+        IllegalConfiguration e = expectedException(IllegalConfiguration.class, () ->
+        {
+            validation.validateLevels(asList(new ClassificationLevel("FOO", "value.does.not.matter"),
+                                             new ClassificationLevel("BAR", "value.does.not.matter"),
+                                             new ClassificationLevel("---", "value.does.not.matter"),
+                                             new ClassificationLevel("BAR", "value.does.not.matter"),
+                                             new ClassificationLevel("FOO", "value.does.not.matter")));
+            return null;
+        });
+        assertThat("Exception message did not identify the duplicate IDs", e.getMessage(),
+                   allOf(containsString("FOO"), containsString("BAR")));
     }
 
     /**

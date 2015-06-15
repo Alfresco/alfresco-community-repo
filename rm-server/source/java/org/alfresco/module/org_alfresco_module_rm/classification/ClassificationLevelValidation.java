@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static java.util.Arrays.asList;
+import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.getDuplicateElements;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalAbbreviationChars;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalConfiguration;
@@ -60,6 +61,10 @@ public class ClassificationLevelValidation
         {
             throw new MissingConfiguration("Classification level ID is missing.");
         }
+        else if (levelId.equals(ClassificationLevelManager.UNCLASSIFIED_ID))
+        {
+            throw new IllegalConfiguration("Unclassified ID abbreviation is reserved for system use.");
+        }
         else if (levelId.length() > ABBREVIATION_LENGTH_LIMIT)
         {
             throw new IllegalConfiguration("Illegal classification level abbreviation. Length " +
@@ -84,6 +89,12 @@ public class ClassificationLevelValidation
         if (levels == null || levels.isEmpty())
         {
             throw new MissingConfiguration("Classification level configuration is missing.");
+        }
+
+        final List<ClassificationLevel> duplicateLevels = getDuplicateElements(levels);
+        if (!duplicateLevels.isEmpty())
+        {
+            throw new IllegalConfiguration("Duplicate ID abbreviations are not allowed: " + duplicateLevels);
         }
 
         for (ClassificationLevel level : levels)

@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static java.util.Arrays.asList;
+import static org.apache.commons.collections.ListUtils.union;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -57,10 +58,13 @@ import org.mockito.MockitoAnnotations;
  */
 public class ClassificationServiceBootstrapUnitTest
 {
-    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("TS", "rm.classification.topSecret",
-                                                                                               "S",  "rm.classification.secret",
-                                                                                               "C",  "rm.classification.confidential",
-                                                                                               "U",  "rm.classification.unclassified");
+    private static final List<ClassificationLevel> DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS =
+            asLevelList("TS", "rm.classification.topSecret",
+                        "S",  "rm.classification.secret",
+                        "C",  "rm.classification.confidential");
+    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS =
+                                            union(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS,
+                                                  asLevelList("U", "rm.classification.unclassified"));
     private static final List<ClassificationLevel> ALT_CLASSIFICATION_LEVELS = asLevelList("B",  "Board",
                                                                                            "EM", "ExecutiveManagement",
                                                                                            "E",  "Employee",
@@ -115,12 +119,12 @@ public class ClassificationServiceBootstrapUnitTest
 
     @Test public void defaultLevelsConfigurationVanillaSystem()
     {
-        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(DEFAULT_CLASSIFICATION_LEVELS);
+        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS);
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         classificationServiceBootstrap.initConfiguredClassificationLevels();
 
-        verify(mockAttributeService).setAttribute(eq((Serializable) DEFAULT_CLASSIFICATION_LEVELS),
+        verify(mockAttributeService).setAttribute(eq((Serializable) DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS),
                 anyString(), anyString(), anyString());
     }
 

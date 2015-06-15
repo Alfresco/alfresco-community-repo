@@ -228,7 +228,7 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
         {
             // FIXME
             //preInvocation = checkClassification(invocation);
-            checkClassification(invocation);
+            //checkClassification(invocation);
         }
 
         // method proceed

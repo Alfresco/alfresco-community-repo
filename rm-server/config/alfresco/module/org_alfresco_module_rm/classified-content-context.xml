@@ -80,10 +80,13 @@
       <property name="associationRefPostMethodInvocationProcessor" ref="associationRefPostMethodInvocationProcessor" />
    </bean>
 
+   <!-- FIXME: Causes issues for the integration tests -->
+   <!--
    <bean id="setPostMethodInvocationProcessor"
       parent="collectionPostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.SetPostMethodInvocationProcessor">
    </bean>
+   -->
 
    <bean id="listPostMethodInvocationProcessor"
       parent="collectionPostMethodInvocationProcessor"

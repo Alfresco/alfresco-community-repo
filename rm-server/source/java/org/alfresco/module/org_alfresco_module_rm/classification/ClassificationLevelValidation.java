@@ -63,7 +63,8 @@ public class ClassificationLevelValidation
         }
         else if (levelId.equals(ClassificationLevelManager.UNCLASSIFIED_ID))
         {
-            throw new IllegalConfiguration("Unclassified ID abbreviation is reserved for system use.");
+            throw new IllegalConfiguration("The Unclassified ID abbreviation '" +
+                                           ClassificationLevelManager.UNCLASSIFIED_ID + "' is reserved for system use.");
         }
         else if (levelId.length() > ABBREVIATION_LENGTH_LIMIT)
         {

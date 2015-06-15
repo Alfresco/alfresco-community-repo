@@ -60,7 +60,7 @@ public class ClassificationServiceBootstrapUnitTest
     private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("TS", "rm.classification.topSecret",
                                                                                                "S",  "rm.classification.secret",
                                                                                                "C",  "rm.classification.confidential",
-                                                                                               "NC", "rm.classification.noClearance");
+                                                                                               "U",  "rm.classification.unclassified");
     private static final List<ClassificationLevel> ALT_CLASSIFICATION_LEVELS = asLevelList("B",  "Board",
                                                                                            "EM", "ExecutiveManagement",
                                                                                            "E",  "Employee",

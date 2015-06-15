@@ -110,17 +110,17 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
                 Class<? extends Object> clazz = iterator.next().getClass();
                 if (NodeRef.class.isAssignableFrom(clazz))
                 {
-                    result = processNodeRef(collection, iterator);
+                    result = processNodeRef(collection);
                 }
 
                 if (AssociationRef.class.isAssignableFrom(clazz))
                 {
-                    result = processAssociationRef(collection, iterator);
+                    result = processAssociationRef(collection);
                 }
 
                 if (ChildAssociationRef.class.isAssignableFrom(clazz))
                 {
-                    result = processChildAssociationRef(collection, iterator);
+                    result = processChildAssociationRef(collection);
                 }
             }
         }
@@ -135,7 +135,7 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
      * @return The processed collection
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Collection processNodeRef(Collection collection, Iterator iterator)
+    private Collection processNodeRef(Collection collection)
     {
         return CollectionUtils.filter(collection, new Filter<NodeRef>()
         {
@@ -154,7 +154,7 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
      * @return The processed collection
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Collection processAssociationRef(Collection collection, Iterator iterator)
+    private Collection processAssociationRef(Collection collection)
     {
         return CollectionUtils.filter(collection, new Filter<AssociationRef>()
         {
@@ -173,7 +173,7 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
      * @return The processed collection
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private Collection processChildAssociationRef(Collection collection, Iterator iterator)
+    private Collection processChildAssociationRef(Collection collection)
     {
         return CollectionUtils.filter(collection, new Filter<ChildAssociationRef>()
         {

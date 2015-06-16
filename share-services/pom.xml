@@ -91,6 +91,23 @@
                 <groupId>org.alfresco.maven.plugin</groupId>
                 <artifactId>alfresco-maven-plugin</artifactId>
                 <extensions>true</extensions>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Specification-Version>${version.major}.${version.minor}.${version.revision}</Specification-Version>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Build-Date>${maven.build.timestamp}</Build-Date>
+                            <Build-Name>${bamboo_planName}</Build-Name>
+                            <Build-Key>${bamboo_fullBuildKey}</Build-Key>
+                            <Build-Number>${bamboo_buildNumber}</Build-Number>
+                            <Build-Revision>${bamboo_repository_revision_number}</Build-Revision>
+                        </manifestEntries>
+                    </archive>
+                </configuration>                
             </plugin>
 
             <plugin>

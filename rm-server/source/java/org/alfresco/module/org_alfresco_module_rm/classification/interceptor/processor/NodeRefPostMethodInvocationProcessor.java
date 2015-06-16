@@ -46,6 +46,7 @@ public class NodeRefPostMethodInvocationProcessor extends BasePostMethodInvocati
     public <T> T process(T object)
     {
         mandatory("object", object);
+        checkObjectClass(object);
 
         return filter((NodeRef) object) == null ? null : object;
     }

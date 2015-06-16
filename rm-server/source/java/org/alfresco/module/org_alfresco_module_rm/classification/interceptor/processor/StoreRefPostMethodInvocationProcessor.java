@@ -47,6 +47,7 @@ public class StoreRefPostMethodInvocationProcessor extends BasePostMethodInvocat
     public <T> T process(T object)
     {
         mandatory("object", object);
+        checkObjectClass(object);
 
         NodeRef nodeRef = getNodeService().getRootNode((StoreRef) object);
 

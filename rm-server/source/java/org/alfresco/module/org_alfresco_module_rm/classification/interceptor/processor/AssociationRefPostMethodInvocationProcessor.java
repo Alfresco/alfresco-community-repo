@@ -47,6 +47,7 @@ public class AssociationRefPostMethodInvocationProcessor extends BasePostMethodI
     public <T> T process(T object)
     {
         mandatory("object", object);
+        checkObjectClass(object);
 
         AssociationRef associationRef = ((AssociationRef) object);
 

@@ -96,7 +96,7 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
         }
             
         Constraint constraint = FTSQueryParser.buildFTS(ftsExpression, factory, context, null, null, mode, options.getDefaultFTSFieldConnective(),
-                searchParameters.getQueryTemplates(), options.getDefaultFieldName());
+                searchParameters.getQueryTemplates(), options.getDefaultFieldName(), FTSQueryParser.RerankPhase.SINGLE_PASS);
         org.alfresco.repo.search.impl.querymodel.Query query = factory.createQuery(null, null, constraint, buildOrderings(factory, searchParameters));
 
         QueryEngineResults results = queryEngine.executeQuery(query, options, context);

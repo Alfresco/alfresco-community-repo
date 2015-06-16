@@ -544,12 +544,10 @@
         <dependency>
             <groupId>org.springframework.extensions.surf</groupId>
             <artifactId>spring-surf-core-configservice</artifactId>
-            <version>${dependency.webscripts.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.extensions.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun</groupId>
@@ -564,7 +562,6 @@
         <dependency>
             <groupId>org.springframework.extensions.surf</groupId>
             <artifactId>spring-webscripts-api</artifactId>
-            <version>${dependency.webscripts.version}</version>
         </dependency>
 
         <!-- Spring Social -->
@@ -805,7 +802,6 @@
         <dependency>
             <groupId>org.springframework.extensions.surf</groupId>
             <artifactId>spring-webscripts</artifactId>
-            <version>${dependency.webscripts.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

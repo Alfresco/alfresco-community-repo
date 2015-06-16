@@ -33,7 +33,7 @@ public class ListPostMethodInvocationProcessor extends CollectionPostMethodInvoc
      */
     @SuppressWarnings("rawtypes")
     @Override
-    public Class<List> getClassName()
+    protected Class<List> getClassName()
     {
         return List.class;
     }

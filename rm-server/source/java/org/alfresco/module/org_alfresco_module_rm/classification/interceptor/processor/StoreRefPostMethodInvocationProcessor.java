@@ -18,10 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static org.alfresco.util.ParameterCheck.mandatory;
+import java.util.Collection;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
 
 /**
  * StoreRef Post Method Invocation Processor
@@ -29,28 +31,41 @@ import org.alfresco.service.cmr.repository.StoreRef;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class StoreRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
+public class StoreRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
      */
     @Override
-    public Class<StoreRef> getClassName()
+    protected Class<StoreRef> getClassName()
     {
         return StoreRef.class;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
      */
     @Override
-    public <T> T process(T object)
+    protected <T> T processSingleElement(T object)
     {
-        mandatory("object", object);
-        checkObjectClass(object);
-
         NodeRef nodeRef = getNodeService().getRootNode((StoreRef) object);
-
         return filter(nodeRef) == null ? null : object;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processCollection(java.util.Collection)
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    protected Collection processCollection(Collection collection)
+    {
+        return CollectionUtils.filter(collection, new Filter<NodeRef>()
+        {
+            @Override
+            public Boolean apply(NodeRef nodeRef)
+            {
+                return processSingleElement(nodeRef) != null;
+            }
+        });
     }
 }

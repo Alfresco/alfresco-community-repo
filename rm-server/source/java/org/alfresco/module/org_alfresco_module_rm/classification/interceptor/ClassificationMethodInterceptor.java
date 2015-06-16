@@ -22,13 +22,12 @@ import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.codehaus.plexus.util.StringUtils.isNotBlank;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.alfresco.jlan.server.filesys.AccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor;
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessorRegistry;
 import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -55,9 +54,6 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
 {
     /** Logger */
     private static Logger LOG = Logger.getLogger(ClassificationMethodInterceptor.class);
-
-    /** Post method invocation processors */
-    private Map<Class<?>, BasePostMethodInvocationProcessor> processors = new HashMap<Class<?>, BasePostMethodInvocationProcessor>();
 
     private static final String KEY_PROCESSING = GUID.generate();
 
@@ -112,14 +108,9 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
         return (DictionaryService)applicationContext.getBean("dictionaryService");
     }
 
-    /**
-     * Registers the post method invocation processors
-     *
-     * @param object The object to register
-     */
-    public void register(BasePostMethodInvocationProcessor object)
+    protected PostMethodInvocationProcessorRegistry getPostMethodInvocationProcessorRegistry()
     {
-        processors.put(object.getClassName(), object);
+        return (PostMethodInvocationProcessorRegistry)applicationContext.getBean("postMethodInvocationProcessorRegistry");
     }
 
     /**
@@ -238,7 +229,7 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
         if (isUserValid && postInvocation != null)
         {
             Class<? extends Object> clazz = postInvocation.getClass();
-            BasePostMethodInvocationProcessor processor = getProcessor(processors, clazz);
+            BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessorRegistry().getProcessor(clazz);
 
             if (processor != null)
             {
@@ -251,28 +242,5 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
         }
 
         return postInvocation;
-    }
-
-    /**
-     * Gets the processor from the available processors
-     *
-     * @param processors Available processors
-     * @param clazz The runtime class of the post invocation object
-     * @return The suitable processor for the given class
-     */
-    private BasePostMethodInvocationProcessor getProcessor(Map<Class<?>, BasePostMethodInvocationProcessor> processors, Class<? extends Object> clazz)
-    {
-        BasePostMethodInvocationProcessor result = null;
-
-        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processor : processors.entrySet())
-        {
-            if (processor.getKey().isAssignableFrom(clazz))
-            {
-                result = processor.getValue();
-                break;
-            }
-        }
-
-        return result;
     }
 }

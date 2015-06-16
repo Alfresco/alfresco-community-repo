@@ -18,10 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static org.alfresco.util.ParameterCheck.mandatory;
+import java.util.Collection;
 
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.collections.CollectionUtils;
+import org.alfresco.util.collections.Filter;
 
 /**
  * ChildAssociationRef Post Method Invocation Processor
@@ -29,26 +31,23 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ChildAssociationRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
+public class ChildAssociationRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
      */
     @Override
-    public Class<ChildAssociationRef> getClassName()
+    protected Class<ChildAssociationRef> getClassName()
     {
         return ChildAssociationRef.class;
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
      */
     @Override
-    public <T> T process(T object)
+    protected <T> T processSingleElement(T object)
     {
-        mandatory("object", object);
-        checkObjectClass(object);
-
         ChildAssociationRef childAssociationRef = ((ChildAssociationRef) object);
 
         NodeRef childRef = childAssociationRef.getChildRef();
@@ -58,5 +57,22 @@ public class ChildAssociationRefPostMethodInvocationProcessor extends BasePostMe
         NodeRef filteredParentRef = filter(parentRef);
 
         return (filteredChildRef == null || filteredParentRef == null) ? null : object;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processCollection(java.util.Collection)
+     */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @Override
+    protected Collection processCollection(Collection collection)
+    {
+        return CollectionUtils.filter(collection, new Filter<ChildAssociationRef>()
+        {
+            @Override
+            public Boolean apply(ChildAssociationRef childAssociationRef)
+            {
+                return process(childAssociationRef) != null;
+            }
+        });
     }
 }

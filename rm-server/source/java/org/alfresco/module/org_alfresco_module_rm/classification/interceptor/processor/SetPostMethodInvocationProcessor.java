@@ -33,7 +33,7 @@ public class SetPostMethodInvocationProcessor extends CollectionPostMethodInvoca
      */
     @SuppressWarnings("rawtypes")
     @Override
-    public Class<Set> getClassName()
+    protected Class<Set> getClassName()
     {
         return Set.class;
     }

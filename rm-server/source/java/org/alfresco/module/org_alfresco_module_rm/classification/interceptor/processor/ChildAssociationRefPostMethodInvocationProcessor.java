@@ -47,6 +47,7 @@ public class ChildAssociationRefPostMethodInvocationProcessor extends BasePostMe
     public <T> T process(T object)
     {
         mandatory("object", object);
+        checkObjectClass(object);
 
         ChildAssociationRef childAssociationRef = ((ChildAssociationRef) object);
 

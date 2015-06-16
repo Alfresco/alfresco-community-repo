@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
+import static org.alfresco.util.ParameterCheck.mandatory;
+
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -99,6 +101,9 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
     @Override
     public <T> T process(T object)
     {
+        mandatory("object", object);
+        checkObjectClass(object);
+
         Object result = object;
 
         Collection collection = ((Collection) object);

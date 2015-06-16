@@ -502,22 +502,22 @@ public class Site implements Serializable
      * @return node representing the "container" folder (or null, if for some reason 
      *         the container can not be created - probably due to permissions)
      */
-    public ScriptNode getContainer(String componentId)
+    public ScriptNode getContainer(final String componentId)
     {
-    	ScriptNode container = null;
-    	try
-    	{
-    	    NodeRef containerNodeRef = this.siteService.getContainer(getShortName(), componentId);
-    	    if (containerNodeRef != null)
-    	    {
-    	        container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
-    	    }
-    	}
-        catch (AccessDeniedException ade)
+        ScriptNode container = null;
+        NodeRef containerNodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
         {
-            return null;
+            public NodeRef doWork() throws Exception
+            {
+                return Site.this.siteService.getContainer(getShortName(), componentId);
+            }
+        }, AuthenticationUtil.SYSTEM_USER_NAME);
+        
+        if (containerNodeRef != null)
+        {
+            container = new ScriptNode(containerNodeRef, this.serviceRegistry, this.scope);
         }
-    	return container;
+        return container;
     }
     
     /**

@@ -42,6 +42,9 @@
    <bean id="classificationMethodInterceptorPostProcessor"
          class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
 
+   <bean id="postMethodInvocationProcessorRegistry"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessorRegistry" />
+
    <bean id="basePostMethodInvocationProcessor"
          abstract="true"
          init-method="register">
@@ -49,25 +52,32 @@
       <property name="nodeService" ref="NodeService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="contentClassificationService" ref="ContentClassificationService" />
+      <property name="postMethodInvocationProcessorRegistry" ref="postMethodInvocationProcessorRegistry" />
+   </bean>
+
+   <bean id="abstractPostMethodInvocationProcessor"
+      abstract="true"
+      parent="basePostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor">
    </bean>
 
    <bean id="nodeRefPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
+      parent="abstractPostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.NodeRefPostMethodInvocationProcessor">
    </bean>
 
    <bean id="storeRefPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
+      parent="abstractPostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.StoreRefPostMethodInvocationProcessor">
    </bean>
 
    <bean id="childAssociationRefPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
+      parent="abstractPostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ChildAssociationRefPostMethodInvocationProcessor">
    </bean>
 
    <bean id="associationRefPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
+      parent="abstractPostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AssociationRefPostMethodInvocationProcessor">
    </bean>
 
@@ -75,9 +85,6 @@
       abstract="true"
       parent="basePostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.CollectionPostMethodInvocationProcessor">
-      <property name="nodeRefPostMethodInvocationProcessor" ref="nodeRefPostMethodInvocationProcessor" />
-      <property name="childAssociationRefPostMethodInvocationProcessor" ref="childAssociationRefPostMethodInvocationProcessor" />
-      <property name="associationRefPostMethodInvocationProcessor" ref="associationRefPostMethodInvocationProcessor" />
    </bean>
 
    <!-- FIXME: Causes issues for the integration tests -->

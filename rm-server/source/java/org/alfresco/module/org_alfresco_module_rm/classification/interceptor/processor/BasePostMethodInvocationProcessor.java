@@ -20,6 +20,8 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 
+import java.util.Collection;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor;
 import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationPostMethodInvocationException.NotSupportedClassTypeException;
@@ -46,6 +48,9 @@ public abstract class BasePostMethodInvocationProcessor
 
     /** Content classification service */
     private ContentClassificationService contentClassificationService;
+
+    /** Post method invocation processor registry */
+    private PostMethodInvocationProcessorRegistry postMethodInvocationProcessorRegistry;
 
     /**
      * @return the classificationMethodInterceptor
@@ -77,6 +82,14 @@ public abstract class BasePostMethodInvocationProcessor
     protected ContentClassificationService getContentClassificationService()
     {
         return this.contentClassificationService;
+    }
+
+    /**
+     * @return the postMethodInvocationProcessorRegistry
+     */
+    protected PostMethodInvocationProcessorRegistry getPostMethodInvocationProcessorRegistry()
+    {
+        return this.postMethodInvocationProcessorRegistry;
     }
 
     /**
@@ -112,11 +125,19 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
+     * @param postMethodInvocationProcessorRegistry the postMethodInvocationProcessorRegistry to set
+     */
+    public void setPostMethodInvocationProcessorRegistry(PostMethodInvocationProcessorRegistry postMethodInvocationProcessorRegistry)
+    {
+        this.postMethodInvocationProcessorRegistry = postMethodInvocationProcessorRegistry;
+    }
+
+    /**
      * Gets the class name
      *
      * @return The class name
      */
-    public abstract Class<?> getClassName();
+    protected abstract Class<?> getClassName();
 
     /**
      * Performs checks on the given object and throws exception if not all checks pass
@@ -131,7 +152,7 @@ public abstract class BasePostMethodInvocationProcessor
      */
     public void register()
     {
-        getClassificationMethodInterceptor().register(this);
+        getPostMethodInvocationProcessorRegistry().register(this);
     }
 
     /**
@@ -145,6 +166,17 @@ public abstract class BasePostMethodInvocationProcessor
         {
             throw new NotSupportedClassTypeException("The object is not an instance of '" + getClassName() + "' but '" + object.getClass() + "'.");
         }
+    }
+
+    /**
+     * Checks if the given object is a collection
+     *
+     * @param object Object to check
+     * @return <code>true</code> if the code is a collection, <code>false</code> otherwise
+     */
+    protected <T> boolean isCollection(T object)
+    {
+        return Collection.class.isAssignableFrom(object.getClass());
     }
 
     /**

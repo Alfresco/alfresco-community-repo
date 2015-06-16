@@ -21,16 +21,32 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
- * Collection Post Method Invocation Processor
+ * Abstract Post Method Invocation Processor
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public abstract class CollectionPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
+public abstract class AbstractPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
+    /**
+     * Abstract method to process a single element
+     *
+     * @param object The element to process
+     * @return Processed element
+     */
+    protected abstract <T> T processSingleElement(T object);
+
+    /**
+     * Abstract method to process a collection
+     *
+     * @param collection The collection to process
+     * @return Processed collection
+     */
+    @SuppressWarnings("rawtypes")
+    protected abstract Collection processCollection(Collection collection);
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
@@ -40,23 +56,23 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
     {
         mandatory("object", object);
 
-        Object result = object;
-        Collection collection = ((Collection) object);
+        T result = null;
 
-        if (!collection.isEmpty())
+        if (isCollection(object))
         {
-            Iterator iterator = collection.iterator();
-            if (iterator.hasNext())
+            Collection collection = ((Collection) object);
+            if (!collection.isEmpty())
             {
-                Class<? extends Object> clazz = iterator.next().getClass();
-                BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessorRegistry().getProcessor(clazz);
-                if (processor != null)
-                {
-                    result = processor.process(object);
-                }
+                checkObjectClass(collection.iterator().next());
+                result = (T) processCollection(collection);
             }
         }
+        else
+        {
+            checkObjectClass(object);
+            result = (T) processSingleElement(object);
+        }
 
-        return (T) result;
+        return result;
     }
 }

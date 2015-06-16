@@ -333,7 +333,7 @@
                 </dependencies>
                 <configuration>
                     <systemProperties>
-                        <dir.root>${runtime.data.folder}/alf_data</dir.root>
+                        <dir.root>${dir.root}</dir.root>
                         <index.subsystem.name>solr4</index.subsystem.name>
                         <solr.host>localhost</solr.host>
                         <solr.secureComms>none</solr.secureComms>

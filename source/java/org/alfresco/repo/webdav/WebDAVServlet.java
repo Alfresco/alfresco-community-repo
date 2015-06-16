@@ -94,6 +94,8 @@ public class WebDAVServlet extends HttpServlet
     private WebDAVHelper m_davHelper;
     private WebDAVActivityPoster activityPoster;
 
+    private WebDAVInitParameters initParams;
+
     /**
      * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
      *      javax.servlet.http.HttpServletResponse)
@@ -101,8 +103,14 @@ public class WebDAVServlet extends HttpServlet
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException,
             IOException
     {
+        if (!initParams.getEnabled())
+        {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
         long startTime = 0;
-        if (logger.isInfoEnabled())
+        if (logger.isTraceEnabled())
         {
             startTime = System.currentTimeMillis();
         }
@@ -147,9 +155,9 @@ public class WebDAVServlet extends HttpServlet
         }
         finally
         {
-            if (logger.isInfoEnabled())
+            if (logger.isTraceEnabled())
             {
-                logger.info(request.getMethod() + " took " + (System.currentTimeMillis()-startTime) + "ms to execute ["+request.getRequestURI()+"]");
+                logger.trace(request.getMethod() + " took " + (System.currentTimeMillis()-startTime) + "ms to execute ["+request.getRequestURI()+"]");
             }
 
             FileFilterMode.clearClient();
@@ -240,12 +248,13 @@ public class WebDAVServlet extends HttpServlet
         
         // Get global configuration properties
         WebApplicationContext wc = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
-        WebDAVInitParameters initParams = (WebDAVInitParameters) wc.getBean(BEAN_INIT_PARAMS);
+        initParams = (WebDAVInitParameters) wc.getBean(BEAN_INIT_PARAMS);
         
         // Render this servlet permanently unavailable if its enablement property is not set
         if (!initParams.getEnabled())
         {
-            throw new UnavailableException("WebDAV not enabled.");
+            logger.info("Marking servlet WebDAV as unavailable!");
+            return;
         }
         
         // Get root paths

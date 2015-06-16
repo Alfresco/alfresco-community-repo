@@ -11,6 +11,7 @@
     <name>Alfresco Installers</name>
 
     <properties>
+        <installer.version>2015-a-EA</installer.version>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${binaries.folder}/bitrock/bitrock-9.5.1</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
@@ -19,8 +20,8 @@
            ${binaries.folder}/build-classpath/license.xml
            --setvars
            project.outputDirectory=${project.build.directory}
-           project.version=${project.version}
-           project.fullName='Alfresco Community'
+           project.version=${installer.version}
+           project.fullName='Alfresco Community ${installer.version}'
            alfresco_edition=community
            distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}
            wcmqs_folder=${project.build.directory}/wcmqs

@@ -38,6 +38,7 @@ public interface ClassifiedContentModel
 
     Serializable[] LEVELS_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.levels" };
     Serializable[] REASONS_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.reasons" };
+    Serializable[] EXEMPTION_CATEGORIES_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.exemptionCategories" };
 
     /** Classified aspect */
     QName ASPECT_CLASSIFIED = QName.createQName(CLF_URI, "classified");

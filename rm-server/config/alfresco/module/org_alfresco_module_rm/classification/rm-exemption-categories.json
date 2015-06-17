@@ -1,0 +1,38 @@
+[
+  {
+    "id" : "1",
+    "displayLabel" : "rm.exemption-category.1"
+  },
+  {
+    "id" : "2",
+    "displayLabel" : "rm.exemption-category.2"
+  },
+  {
+    "id" : "3",
+    "displayLabel" : "rm.exemption-category.3"
+  },
+  {
+    "id" : "4",
+    "displayLabel" : "rm.exemption-category.4"
+  },
+  {
+    "id" : "5",
+    "displayLabel" : "rm.exemption-category.5"
+  },
+  {
+    "id" : "6",
+    "displayLabel" : "rm.exemption-category.6"
+  },
+  {
+    "id" : "7",
+    "displayLabel" : "rm.exemption-category.7"
+  },
+  {
+    "id" : "8",
+    "displayLabel" : "rm.exemption-category.8"
+  },
+  {
+    "id" : "9",
+    "displayLabel" : "rm.exemption-category.9"
+  }
+]

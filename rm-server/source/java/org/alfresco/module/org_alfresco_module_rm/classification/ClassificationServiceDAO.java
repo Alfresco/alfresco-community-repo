@@ -42,12 +42,16 @@ class ClassificationServiceDAO
 {
     private String levelConfigLocation;
     private String reasonConfigLocation;
+    private String exemptionCategoryConfigLocation;
 
     /** Set the location of the level configuration file relative to the classpath. */
     public void setLevelConfigLocation(String levelConfigLocation) { this.levelConfigLocation = levelConfigLocation; }
 
     /** Set the location of the reasons configuration file relative to the classpath. */
     public void setReasonConfigLocation(String reasonConfigLocation) { this.reasonConfigLocation = reasonConfigLocation; }
+
+    /** Set the location of the exemption categories configuration file relative to the classpath. */
+    public void setExemptionCategoryConfigLocation(String exemptionCategoryConfigLocation) { this.exemptionCategoryConfigLocation = exemptionCategoryConfigLocation; }
 
     /**
      * Gets the list (in descending order) of classification levels - as defined in the classpath.
@@ -113,6 +117,40 @@ class ClassificationServiceDAO
         catch (IOException | JSONException e)
         {
             throw new MalformedConfiguration("Could not read classification reason configuration", e);
+        }
+        return result;
+    }
+
+    /**
+     * Gets the list of exemption categories as defined in the classpath.
+     *
+     * @return the configured exemption categories in the given order, or an empty list if there are none.
+     */
+    public List<ExemptionCategory> getConfiguredExemptionCategories()
+    {
+        List<ExemptionCategory> result;
+        try (final InputStream in = this.getClass().getResourceAsStream(exemptionCategoryConfigLocation))
+        {
+            if (in == null) { result = Collections.emptyList(); }
+            else
+            {
+                final String jsonString = IOUtils.toString(in);
+                final JSONArray jsonArray = new JSONArray(new JSONTokener(jsonString));
+
+                result = new ArrayList<>(jsonArray.length());
+
+                for (int i = 0; i < jsonArray.length(); i++)
+                {
+                    final JSONObject nextObj = jsonArray.getJSONObject(i);
+                    final String id = nextObj.getString("id");
+                    final String displayLabelKey = nextObj.getString("displayLabel");
+                    result.add(new ExemptionCategory(id, displayLabelKey));
+                }
+            }
+        }
+        catch (IOException | JSONException e)
+        {
+            throw new MalformedConfiguration("Could not read exemption category configuration", e);
         }
         return result;
     }

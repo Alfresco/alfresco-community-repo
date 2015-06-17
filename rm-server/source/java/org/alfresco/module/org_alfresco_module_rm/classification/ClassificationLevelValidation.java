@@ -21,12 +21,12 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import static java.util.Arrays.asList;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.getDuplicateElements;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalAbbreviationChars;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class is responsible for validating {@link ClassificationLevel}s.
@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class ClassificationLevelValidation
 {
-    /** The maximum number of chatacters allowed in a {@link ClassificationLevel#getId() level ID}. */
+    /** The maximum number of characters allowed in a {@link ClassificationLevel#getId() level ID}. */
     private static final int ABBREVIATION_LENGTH_LIMIT = 10;
 
     /**

@@ -46,8 +46,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** Logging utility for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ClassificationServiceBootstrap.class);
 
-    private final AuthenticationUtil           authenticationUtil;
-    private final TransactionService           transactionService;
+    private final AuthenticationUtil authenticationUtil;
+    private final TransactionService transactionService;
     private AttributeService attributeService;
     /** The classification levels currently configured in this server. */
     private ClassificationLevelManager classificationLevelManager = new ClassificationLevelManager();
@@ -55,6 +55,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     private ClassificationReasonManager classificationReasonManager = new ClassificationReasonManager();
     /** The clearance levels currently configured in this server. */
     private ClearanceLevelManager clearanceLevelManager = new ClearanceLevelManager();
+    /** The exemption categories currently configured in this server. */
+    private ExemptionCategoryManager exemptionCategoryManager = new ExemptionCategoryManager();
     private ClassificationServiceDAO classificationServiceDAO;
     private final ClassificationLevelValidation levelValidation = new ClassificationLevelValidation();
 
@@ -73,10 +75,13 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     public void setClassificationServiceDAO(ClassificationServiceDAO classificationServiceDAO) { this.classificationServiceDAO = classificationServiceDAO; }
     public void setAttributeService(AttributeService attributeService) { this.attributeService = attributeService; }
     /** Used in unit tests. */
+    protected void setExemptionCategoryManager(ExemptionCategoryManager exemptionCategoryManager) { this.exemptionCategoryManager = exemptionCategoryManager; }
+    /** Used in unit tests. */
     protected void setClearanceLevelManager(ClearanceLevelManager clearanceLevelManager) { this.clearanceLevelManager = clearanceLevelManager; }
 
     public ClassificationLevelManager getClassificationLevelManager() { return classificationLevelManager; }
     public ClassificationReasonManager getClassificationReasonManager() { return classificationReasonManager; }
+    public ExemptionCategoryManager getExemptionCategoryManager() { return exemptionCategoryManager; }
     public ClearanceLevelManager getClearanceLevelManager() { return clearanceLevelManager; }
 
     @Override public void onBootstrap(ApplicationEvent event)
@@ -91,6 +96,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
                     {
                         initConfiguredClassificationLevels();
                         initConfiguredClassificationReasons();
+                        initConfiguredExemptionCategories();
                         initConfiguredClearanceLevels(classificationLevelManager.getClassificationLevels());
                         return null;
                     }
@@ -173,6 +179,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
         LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
         LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
 
+        // TODO Add reason validation.
+
         if (isEmpty(persistedReasons))
         {
             if (isEmpty(classpathReasons))
@@ -215,6 +223,64 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     private List<ClassificationReason> getConfigurationReasons()
     {
         return classificationServiceDAO.getConfiguredReasons();
+    }
+
+    /**
+     * Initialise the system's exemption categories by loading the values from a configuration file and storing them in
+     * the attribute service and the {@link ExemptionCategoryManager}.
+     */
+    protected void initConfiguredExemptionCategories()
+    {
+        final List<ExemptionCategory> persistedCategories = getPersistedCategories();
+        final List<ExemptionCategory> classpathCategories = getConfigurationCategories();
+
+        LOGGER.debug("Persisted exemption categories: {}", loggableStatusOf(persistedCategories));
+        LOGGER.debug("Classpath exemption categories: {}", loggableStatusOf(classpathCategories));
+
+        // TODO Add exemption category validation.
+
+        if (isEmpty(persistedCategories))
+        {
+            if (isEmpty(classpathCategories))
+            {
+                throw new MissingConfiguration("Exemption category configuration is missing.");
+            }
+            attributeService.setAttribute((Serializable) classpathCategories, EXEMPTION_CATEGORIES_KEY);
+            this.exemptionCategoryManager.setExemptionCategories(classpathCategories);
+        }
+        else
+        {
+            if (isEmpty(classpathCategories) || !classpathCategories.equals(persistedCategories))
+            {
+                LOGGER.warn("Exemption categories configured in classpath do not match those stored in Alfresco. "
+                            + "Alfresco will use the unchanged values stored in the database.");
+                // RM-2313 says that we should log a warning and proceed normally.
+            }
+            this.exemptionCategoryManager.setExemptionCategories(persistedCategories);
+        }
+    }
+
+    /**
+     * Gets the list of exemption categories as persisted in the system.
+     * @return the list of exemption categories if they have been persisted, else {@code null}.
+     */
+    private List<ExemptionCategory> getPersistedCategories()
+    {
+        return authenticationUtil.runAsSystem(new RunAsWork<List<ExemptionCategory>>()
+        {
+            @Override
+            @SuppressWarnings("unchecked")
+            public List<ExemptionCategory> doWork() throws Exception
+            {
+                return (List<ExemptionCategory>) attributeService.getAttribute(EXEMPTION_CATEGORIES_KEY);
+            }
+        });
+    }
+
+    /** Gets the list of exemption categories - as defined and ordered in the system configuration. */
+    private List<ExemptionCategory> getConfigurationCategories()
+    {
+        return classificationServiceDAO.getConfiguredExemptionCategories();
     }
 
     /**

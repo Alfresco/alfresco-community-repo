@@ -33,6 +33,7 @@
    <bean id="classificationServiceDAO" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceDAO">
         <property name="levelConfigLocation" value="${rm.classification.levelsFile}" />
         <property name="reasonConfigLocation" value="${rm.classification.reasonsFile}" />
+        <property name="exemptionCategoryConfigLocation" value="${rm.classification.exemptionCategoriesFile}" />
    </bean>
 
    <!-- Classification Scheme Service -->

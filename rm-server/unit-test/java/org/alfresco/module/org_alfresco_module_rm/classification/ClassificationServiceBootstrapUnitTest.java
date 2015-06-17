@@ -73,6 +73,9 @@ public class ClassificationServiceBootstrapUnitTest
                                                                                                 new ClassificationReason("id2", "label2"));
     private static final List<ClassificationReason> ALTERNATIVE_CLASSIFICATION_REASONS = asList(new ClassificationReason("id8", "label8"),
                                                                                                 new ClassificationReason("id9", "label9"));
+    private static final List<ExemptionCategory> EXEMPTION_CATEGORIES = asList(new ExemptionCategory("id1", "label1"),
+                                                                               new ExemptionCategory("id2", "label2"));
+    private static final List<ExemptionCategory> CHANGED_EXEMPTION_CATEGORIES = asList(new ExemptionCategory("id3", "label3"));
 
     /**
      * A convenience method for turning lists of level id Strings into lists
@@ -103,6 +106,7 @@ public class ClassificationServiceBootstrapUnitTest
     @Mock ClassificationServiceDAO mockClassificationServiceDAO;
     @Mock AttributeService mockAttributeService;
     @Mock AuthenticationUtil mockAuthenticationUtil;
+    @Mock ExemptionCategoryManager mockExemptionCategoryManager;
     @Mock ClearanceLevelManager mockClearanceLevelManager;
     /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
     @Mock Appender mockAppender;
@@ -113,7 +117,8 @@ public class ClassificationServiceBootstrapUnitTest
     {
         MockitoAnnotations.initMocks(this);
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
-        // This seems to be necessary because the ClearanceLevelManager isn't a constructor argument.
+        // This seems to be necessary because the POJO managers aren't constructor arguments.
+        classificationServiceBootstrap.setExemptionCategoryManager(mockExemptionCategoryManager);
         classificationServiceBootstrap.setClearanceLevelManager(mockClearanceLevelManager);
     }
 
@@ -222,6 +227,80 @@ public class ClassificationServiceBootstrapUnitTest
         when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
 
         classificationServiceBootstrap.initConfiguredClassificationReasons();
+    }
+
+    @Test
+    public void testInitConfiguredExemptionCategories_firstLoad()
+    {
+        when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
+                    .thenReturn((Serializable) null);
+        when(mockClassificationServiceDAO.getConfiguredExemptionCategories()).thenReturn(EXEMPTION_CATEGORIES);
+
+        classificationServiceBootstrap.initConfiguredExemptionCategories();
+
+        verify(mockExemptionCategoryManager).setExemptionCategories(EXEMPTION_CATEGORIES);
+    }
+
+    @Test
+    public void testInitConfiguredExemptionCategories_secondLoad()
+    {
+        when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
+                    .thenReturn((Serializable) EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.getConfiguredExemptionCategories()).thenReturn(EXEMPTION_CATEGORIES);
+
+        classificationServiceBootstrap.initConfiguredExemptionCategories();
+
+        verify(mockExemptionCategoryManager).setExemptionCategories(EXEMPTION_CATEGORIES);
+    }
+
+    /**
+     * Check that if the exemption categories supplied on the classpath differ from those already persisted then a
+     * warning is logged and no change is made to the persisted categories.
+     * <p>
+     * This test uses the underlying log4j implementation to insert a mock Appender, and tests this for the warning
+     * message. If the underlying logging framework is changed then this unit test will fail, and it may not be possible
+     * to/worth fixing.
+     */
+    @Test
+    public void testInitConfiguredExemptionCategories_changedCategories()
+    {
+        when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
+                    .thenReturn((Serializable) EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.getConfiguredExemptionCategories()).thenReturn(CHANGED_EXEMPTION_CATEGORIES);
+
+        // Put the mock Appender into the log4j logger and allow warning messages to be received.
+        org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceBootstrap.class);
+        log4jLogger.addAppender(mockAppender);
+        Level normalLevel = log4jLogger.getLevel();
+        log4jLogger.setLevel(Level.WARN);
+
+        // Call the method under test.
+        classificationServiceBootstrap.initConfiguredExemptionCategories();
+
+        // Reset the logging level for other tests.
+        log4jLogger.setLevel(normalLevel);
+
+        // Check the persisted values weren't changed.
+        verify(mockAttributeService, never()).setAttribute(any(Serializable.class),
+                anyString(), anyString(), anyString());
+
+        // Check that the warning message was logged.
+        verify(mockAppender).doAppend(loggingEventCaptor.capture());
+        List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
+        Stream<String> messages = loggingEvents.stream()
+                                               .map(LoggingEvent::getRenderedMessage);
+        String expectedMessage = "Exemption categories configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
+        assertTrue("Warning message not found in log.", messages.anyMatch(message -> expectedMessage.equals(message)));
+    }
+
+    @Test(expected = MissingConfiguration.class)
+    public void testInitConfiguredExemptionCategories_noCategoriesFound()
+    {
+        when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
+                    .thenReturn((Serializable) null);
+        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
+
+        classificationServiceBootstrap.initConfiguredExemptionCategories();
     }
 
     /**

@@ -22,7 +22,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.classificati
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReason;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 
 /**
@@ -39,7 +39,7 @@ public class ClassificationReasonsTest extends BaseRMTestCase
      * <p>
      * Note that this test requires a clean db, as otherwise the classification scheme service will use the persisted
      * classification reasons in preference to those given on the classpath (see the logic in
-     * {@link ClassificationSchemeServiceImpl#initConfiguredClassificationReasons()}).
+     * {@link ClassificationServiceBootstrap#initConfiguredClassificationReasons()}).
      */
     public void testLoadBootstrappedClassificationReasons() throws Exception
     {

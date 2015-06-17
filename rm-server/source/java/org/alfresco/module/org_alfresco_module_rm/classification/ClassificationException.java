@@ -18,11 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.service.cmr.repository.NodeRef;
-
 import java.util.Collections;
 import java.util.List;
+
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Generic class for any runtime exception to do with classified records.
@@ -105,6 +105,18 @@ public class ClassificationException extends AlfrescoRuntimeException
         public ReasonIdNotFound(String reasonId)
         {
             super("Could not find classification reason with id " + reasonId);
+        }
+    }
+
+    /** The supplied exemption category id was not found in the configured list. */
+    public static class ExemptionCategoryIdNotFound extends ClassificationException
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = -6754627999115496384L;
+
+        public ExemptionCategoryIdNotFound(String id)
+        {
+            super("Could not find classification reason with id " + id);
         }
     }
 

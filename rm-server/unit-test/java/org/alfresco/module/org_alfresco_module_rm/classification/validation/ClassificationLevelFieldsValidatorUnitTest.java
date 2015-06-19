@@ -16,39 +16,32 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.classification;
+package org.alfresco.module.org_alfresco_module_rm.classification.validation;
 
 import static java.util.Arrays.asList;
-import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelValidation.ILLEGAL_ABBREVIATION_CHARS;
+import static org.alfresco.module.org_alfresco_module_rm.classification.validation.FilenameFieldValidator.ILLEGAL_ABBREVIATION_CHARS;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalAbbreviationChars;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalConfiguration;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
-import org.junit.Test;
-
-import java.util.Collections;
 import java.util.List;
 
-/**
- * Unit tests for the {@link ClassificationLevelValidation}.
- * 
- * @author Neil Mc Erlean
- */
-public class ClassificationLevelValidationUnitTest
-{
-    private final ClassificationLevelValidation validation = new ClassificationLevelValidation();
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalAbbreviationChars;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
+import org.junit.Test;
 
-    @Test(expected=MissingConfiguration.class)
-    public void classificationLevelsAreRequired()
-    {
-        validation.validateLevels(Collections.emptyList());
-    }
+/**
+ * Unit tests for the {@link ClassificationLevelFieldsValidator}.
+ *
+ * @author Neil Mc Erlean
+ * @author tpage
+ */
+public class ClassificationLevelFieldsValidatorUnitTest
+{
+    private final ClassificationLevelFieldsValidator validator = new ClassificationLevelFieldsValidator();
 
     /** Ensures that null, empty or whitespace-only IDs are rejected. */
     @Test public void nonEmptyAbbreviationsAreMandatory()
@@ -58,7 +51,7 @@ public class ClassificationLevelValidationUnitTest
         {
             expectedException(IllegalArgumentException.class, () ->
             {
-                validation.validateLevel(new ClassificationLevel(illegalID, "value.does.not.matter"));
+                validator.validate(new ClassificationLevel(illegalID, "value.does.not.matter"));
                 return null;
             });
         }
@@ -67,29 +60,16 @@ public class ClassificationLevelValidationUnitTest
     @Test(expected=IllegalConfiguration.class)
     public void systemUnclassifiedAbbreviationIsReserved()
     {
-        validation.validateLevel(new ClassificationLevel("U", "value.does.not.matter"));
+        validator.validate(new ClassificationLevel("U", "value.does.not.matter"));
     }
 
     @Test(expected=IllegalConfiguration.class)
     public void longAbbreviationsAreIllegal()
     {
-        validation.validateLevel(new ClassificationLevel("12345678901", "value.does.not.matter"));
+        validator.validate(new ClassificationLevel("12345678901", "value.does.not.matter"));
     }
 
-    @Test public void ensureUniquenessOfAbbreviationIds()
-    {
-        IllegalConfiguration e = expectedException(IllegalConfiguration.class, () ->
-        {
-            validation.validateLevels(asList(new ClassificationLevel("FOO", "value.does.not.matter"),
-                                             new ClassificationLevel("BAR", "value.does.not.matter"),
-                                             new ClassificationLevel("---", "value.does.not.matter"),
-                                             new ClassificationLevel("BAR", "value.does.not.matter"),
-                                             new ClassificationLevel("FOO", "value.does.not.matter")));
-            return null;
-        });
-        assertThat("Exception message did not identify the duplicate IDs", e.getMessage(),
-                   allOf(containsString("FOO"), containsString("BAR")));
-    }
+
 
     /**
      * This test ensures that validation will catch any and all illegal characters in a
@@ -101,7 +81,7 @@ public class ClassificationLevelValidationUnitTest
         {
             IllegalAbbreviationChars e = expectedException(IllegalAbbreviationChars.class, () ->
             {
-                validation.validateLevel(new ClassificationLevel("Hello" + illegalChar, "value.does.not.matter"));
+                validator.validate(new ClassificationLevel("Hello" + illegalChar, "value.does.not.matter"));
                 return null;
             });
             assertTrue("Exception did not contain helpful example of illegal character",
@@ -113,7 +93,7 @@ public class ClassificationLevelValidationUnitTest
 
         IllegalAbbreviationChars e = expectedException(IllegalAbbreviationChars.class, () ->
         {
-            validation.validateLevel(new ClassificationLevel(someIllegalChars.toString(),
+            validator.validate(new ClassificationLevel(someIllegalChars.toString(),
                                                              "value.does.not.matter"));
             return null;
         });

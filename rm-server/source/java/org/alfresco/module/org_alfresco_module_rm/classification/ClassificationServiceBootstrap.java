@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationLevelValidation;
+
 import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;

@@ -103,9 +103,18 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
                 {
                     public Void execute()
                     {
-                        initConfiguredClassificationLevels();
-                        initConfiguredClassificationReasons();
-                        initConfiguredExemptionCategories();
+                        List<ClassificationLevel> levels = getConfiguredSchemeEntities(
+                                    ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
+                        classificationLevelManager.setClassificationLevels(levels);
+
+                        List<ClassificationReason> reasons = getConfiguredSchemeEntities(
+                                    ClassificationReason.class, REASONS_KEY, classificationReasonValidator);
+                        classificationReasonManager.setClassificationReasons(reasons);
+
+                        List<ExemptionCategory> exemptionCategories = getConfiguredSchemeEntities(
+                                    ExemptionCategory.class, EXEMPTION_CATEGORIES_KEY, exemptionCategoryValidator);
+                        exemptionCategoryManager.setExemptionCategories(exemptionCategories);
+
                         initConfiguredClearanceLevels(classificationLevelManager.getClassificationLevels());
                         return null;
                     }
@@ -117,179 +126,61 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     }
 
     /**
-     * Initialise the system's classification levels by loading the values from a configuration file and storing them
-     * in the attribute service and the {@link ClassificationLevelManager}.
+     * Gets an ordered list of some attribute persisted in the system.
+     * @return the list of values if they have been persisted, else {@code null}.
      */
-    protected void initConfiguredClassificationLevels()
+    private <T> List<T> getPersistedValues(Serializable[] key)
     {
-        final List<ClassificationLevel> allPersistedLevels  = getPersistedLevels();
-        final List<ClassificationLevel> configurationLevels = getConfigurationLevels();
-
-        // Note! We cannot log the level names or even the size of these lists for security reasons.
-        LOGGER.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
-        LOGGER.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
-
-        classificationLevelValidator.validate(configurationLevels, ClassificationLevel.class.getSimpleName());
-
-        if (!configurationLevels.equals(allPersistedLevels))
-        {
-            attributeService.setAttribute((Serializable) configurationLevels, LEVELS_KEY);
-            this.classificationLevelManager.setClassificationLevels(configurationLevels);
-        }
-        else
-        {
-            this.classificationLevelManager.setClassificationLevels(allPersistedLevels);
-        }
-    }
-
-    /**
-     * Gets the list (in descending order) of classification levels - as persisted in the system.
-     * @return the list of classification levels if they have been persisted, else {@code null}.
-     */
-    private List<ClassificationLevel> getPersistedLevels()
-    {
-        return authenticationUtil.runAsSystem(new RunAsWork<List<ClassificationLevel>>()
+        return authenticationUtil.runAsSystem(new RunAsWork<List<T>>()
         {
             @Override
             @SuppressWarnings("unchecked")
-            public List<ClassificationLevel> doWork() throws Exception
+            public List<T> doWork() throws Exception
             {
-                return (List<ClassificationLevel>) attributeService.getAttribute(LEVELS_KEY);
+                return (List<T>) attributeService.getAttribute(key);
             }
         });
-    }
-
-    /** Gets the list (in descending order) of classification levels - as defined in the system configuration. */
-    private List<ClassificationLevel> getConfigurationLevels()
-    {
-        return classificationServiceDAO.getConfiguredValues(ClassificationLevel.class);
     }
 
     private static boolean isEmpty(List<?> l) { return l == null || l.isEmpty(); }
 
     /** Helper method for debug-logging of sensitive lists. */
-    private String loggableStatusOf(List<?> l)
+    private String loggableStatusOf(List<? extends ClassificationSchemeEntity> l)
     {
         if      (l == null)   { return "null"; }
         else if (l.isEmpty()) { return "empty"; }
         else                  { return "non-empty"; }
     }
 
-    /**
-     * Initialise the system's classification reasons by loading the values from a configuration file and storing them
-     * in the attribute service and the {@link ClassificationReasonManager}.
-     */
-    protected void initConfiguredClassificationReasons()
+    protected <T extends ClassificationSchemeEntity> List<T> getConfiguredSchemeEntities(Class<T> clazz, Serializable[] key, ClassificationSchemeEntityValidator<T> validator)
     {
-        final List<ClassificationReason> persistedReasons = getPersistedReasons();
-        final List<ClassificationReason> classpathReasons = getConfigurationReasons();
+        final List<T> persistedValues = getPersistedValues(key);
+        final List<T> classpathValues = classificationServiceDAO.getConfiguredValues(clazz);
 
-        // Note! We cannot log the reasons or even the size of these lists for security reasons.
-        LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
-        LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
+        // Note! We cannot log the entities or even the size of these lists for security reasons.
+        LOGGER.debug("Persisted {}: {}", clazz.getSimpleName(), loggableStatusOf(persistedValues));
+        LOGGER.debug("Classpath {}: {}", clazz.getSimpleName(), loggableStatusOf(classpathValues));
 
-        classificationReasonValidator.validate(classpathReasons, ClassificationReason.class.getSimpleName());
+        validator.validate(classpathValues, clazz.getSimpleName());
 
-        if (isEmpty(persistedReasons))
+        if (isEmpty(persistedValues))
         {
-            if (isEmpty(classpathReasons))
+            if (isEmpty(classpathValues))
             {
-                throw new MissingConfiguration("Classification reason configuration is missing.");
+                throw new MissingConfiguration(clazz.getSimpleName() + " configuration is missing.");
             }
-            attributeService.setAttribute((Serializable) classpathReasons, REASONS_KEY);
-            this.classificationReasonManager.setClassificationReasons(classpathReasons);
+            attributeService.setAttribute((Serializable) classpathValues, key);
+            return classpathValues;
         }
         else
         {
-            if (isEmpty(classpathReasons) || !classpathReasons.equals(persistedReasons))
+            if (isEmpty(classpathValues) || !classpathValues.equals(persistedValues))
             {
-                LOGGER.warn("Classification reasons configured in classpath do not match those stored in Alfresco. "
+                LOGGER.warn(clazz.getSimpleName() + " data configured in classpath does not match data stored in Alfresco. "
                             + "Alfresco will use the unchanged values stored in the database.");
-                // RM-2073 says that we should log a warning and proceed normally.
             }
-            this.classificationReasonManager.setClassificationReasons(persistedReasons);
+            return persistedValues;
         }
-    }
-
-    /**
-     * Gets the list of classification reasons as persisted in the system.
-     * @return the list of classification reasons if they have been persisted, else {@code null}.
-     */
-    private List<ClassificationReason> getPersistedReasons()
-    {
-        return authenticationUtil.runAsSystem(new RunAsWork<List<ClassificationReason>>()
-        {
-            @Override
-            @SuppressWarnings("unchecked")
-            public List<ClassificationReason> doWork() throws Exception
-            {
-                return (List<ClassificationReason>) attributeService.getAttribute(REASONS_KEY);
-            }
-        });
-    }
-
-    /** Gets the list of classification reasons - as defined and ordered in the system configuration. */
-    private List<ClassificationReason> getConfigurationReasons()
-    {
-        return classificationServiceDAO.getConfiguredValues(ClassificationReason.class);
-    }
-
-    /**
-     * Initialise the system's exemption categories by loading the values from a configuration file and storing them in
-     * the attribute service and the {@link ExemptionCategoryManager}.
-     */
-    protected void initConfiguredExemptionCategories()
-    {
-        final List<ExemptionCategory> persistedCategories = getPersistedCategories();
-        final List<ExemptionCategory> classpathCategories = getConfigurationCategories();
-
-        LOGGER.debug("Persisted exemption categories: {}", loggableStatusOf(persistedCategories));
-        LOGGER.debug("Classpath exemption categories: {}", loggableStatusOf(classpathCategories));
-
-        exemptionCategoryValidator.validate(classpathCategories, ExemptionCategory.class.getSimpleName());
-
-        if (isEmpty(persistedCategories))
-        {
-            if (isEmpty(classpathCategories))
-            {
-                throw new MissingConfiguration("Exemption category configuration is missing.");
-            }
-            attributeService.setAttribute((Serializable) classpathCategories, EXEMPTION_CATEGORIES_KEY);
-            this.exemptionCategoryManager.setExemptionCategories(classpathCategories);
-        }
-        else
-        {
-            if (isEmpty(classpathCategories) || !classpathCategories.equals(persistedCategories))
-            {
-                LOGGER.warn("Exemption categories configured in classpath do not match those stored in Alfresco. "
-                            + "Alfresco will use the unchanged values stored in the database.");
-                // RM-2313 says that we should log a warning and proceed normally.
-            }
-            this.exemptionCategoryManager.setExemptionCategories(persistedCategories);
-        }
-    }
-
-    /**
-     * Gets the list of exemption categories as persisted in the system.
-     * @return the list of exemption categories if they have been persisted, else {@code null}.
-     */
-    private List<ExemptionCategory> getPersistedCategories()
-    {
-        return authenticationUtil.runAsSystem(new RunAsWork<List<ExemptionCategory>>()
-        {
-            @Override
-            @SuppressWarnings("unchecked")
-            public List<ExemptionCategory> doWork() throws Exception
-            {
-                return (List<ExemptionCategory>) attributeService.getAttribute(EXEMPTION_CATEGORIES_KEY);
-            }
-        });
-    }
-
-    /** Gets the list of exemption categories - as defined and ordered in the system configuration. */
-    private List<ExemptionCategory> getConfigurationCategories()
-    {
-        return classificationServiceDAO.getConfiguredValues(ExemptionCategory.class);
     }
 
     /**

@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationLevelFieldsValidator;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationReasonFieldsValidator;
 import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationSchemeEntityValidator;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ExemptionCategoryFieldsValidator;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -62,6 +64,10 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     private ClassificationServiceDAO classificationServiceDAO;
     private ClassificationLevelFieldsValidator classificationLevelFieldsValidator = new ClassificationLevelFieldsValidator();
     private ClassificationSchemeEntityValidator<ClassificationLevel> classificationLevelValidator = new ClassificationSchemeEntityValidator<>(classificationLevelFieldsValidator);
+    private ClassificationReasonFieldsValidator classificationReasonFieldsValidator = new ClassificationReasonFieldsValidator();
+    private ClassificationSchemeEntityValidator<ClassificationReason> classificationReasonValidator = new ClassificationSchemeEntityValidator<>(classificationReasonFieldsValidator);
+    private ExemptionCategoryFieldsValidator exemptionCategoryFieldsValidator = new ExemptionCategoryFieldsValidator();
+    private ClassificationSchemeEntityValidator<ExemptionCategory> exemptionCategoryValidator = new ClassificationSchemeEntityValidator<>(exemptionCategoryFieldsValidator);
 
     public ClassificationServiceBootstrap(AuthenticationUtil authUtil,
                                           TransactionService txService,
@@ -182,7 +188,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
         LOGGER.debug("Persisted classification reasons: {}", loggableStatusOf(persistedReasons));
         LOGGER.debug("Classpath classification reasons: {}", loggableStatusOf(classpathReasons));
 
-        // TODO Add reason validation.
+        classificationReasonValidator.validate(classpathReasons, ClassificationReason.class.getSimpleName());
 
         if (isEmpty(persistedReasons))
         {
@@ -240,7 +246,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
         LOGGER.debug("Persisted exemption categories: {}", loggableStatusOf(persistedCategories));
         LOGGER.debug("Classpath exemption categories: {}", loggableStatusOf(classpathCategories));
 
-        // TODO Add exemption category validation.
+        exemptionCategoryValidator.validate(classpathCategories, ExemptionCategory.class.getSimpleName());
 
         if (isEmpty(persistedCategories))
         {

@@ -68,7 +68,7 @@ public class PostMethodInvocationProcessorRegistry
 
         BasePostMethodInvocationProcessor result = null;
 
-        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processor : processors.entrySet())
+        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processor : getProcessors().entrySet())
         {
             if (processor.getKey().isAssignableFrom(clazz))
             {

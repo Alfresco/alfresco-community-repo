@@ -20,8 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import java.io.Serializable;
-
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -31,7 +29,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Neil Mc Erlean
  * @since 3.0
  */
-public final class ClassificationLevel implements Serializable
+public final class ClassificationLevel implements ClassificationSchemeEntity
 {
     /** serial version uid */
     private static final long serialVersionUID = -3375064867090476422L;

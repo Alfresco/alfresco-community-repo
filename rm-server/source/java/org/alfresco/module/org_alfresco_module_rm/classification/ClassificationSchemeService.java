@@ -71,4 +71,11 @@ public interface ClassificationSchemeService
      * @throws ReasonIdNotFound If the given classification reason id is not found
      */
     ClassificationReason getClassificationReasonById(String classificationReasonId) throws ReasonIdNotFound;
+
+    /**
+     * Returns an immutable list of the defined exemption categories.
+     *
+     * @return The exemption categories in the order that they are defined.
+     */
+    List<ExemptionCategory> getExemptionCategories();
 }

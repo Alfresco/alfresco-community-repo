@@ -40,6 +40,8 @@ public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements 
     private ClassificationLevelManager levelManager;
     /** The classification reasons currently configured in this server. */
     private ClassificationReasonManager reasonManager;
+    /** The exemption categories currently configured in this server. */
+    private ExemptionCategoryManager exemptionCategoryManager;
     private SecurityClearanceService securityClearanceService;
     private ClassificationServiceBootstrap classificationServiceBootstrap;
 
@@ -52,6 +54,7 @@ public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements 
     {
         levelManager = classificationServiceBootstrap.getClassificationLevelManager();
         reasonManager = classificationServiceBootstrap.getClassificationReasonManager();
+        exemptionCategoryManager = classificationServiceBootstrap.getExemptionCategoryManager();
     }
 
     /**
@@ -111,5 +114,12 @@ public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements 
     {
         checkNotBlank("classificationReasonId", classificationReasonId);
         return reasonManager.findReasonById(classificationReasonId);
+    }
+
+    @Override
+    public List<ExemptionCategory> getExemptionCategories()
+    {
+        return (exemptionCategoryManager == null ? Collections.<ExemptionCategory>emptyList() :
+            Collections.unmodifiableList(exemptionCategoryManager.getExemptionCategories()));
     }
 }

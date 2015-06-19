@@ -1,0 +1,10 @@
+[{
+    "id" : "Test Category 1",
+    "displayLabel" : "rm.test.exemption-category.one"
+  },{
+    "id" : "Test Category 2",
+    "displayLabel" : "rm.test.exemption-category.two"
+  },{
+    "id" : "Test Category 3",
+    "displayLabel" : "rm.test.exemption-category.three"
+}]

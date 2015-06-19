@@ -82,6 +82,7 @@
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationLevelById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationReasonById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getUnclassifiedClassificationLevel=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getExemptionCategories=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.*=ACL_DENY
          </value>
       </property>

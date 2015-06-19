@@ -270,6 +270,14 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
      * Check that if the exemption categories supplied on the classpath differ from those already persisted then a
      * warning is logged and no change is made to the persisted categories.
      * <p>
+     * <a href="https://issues.alfresco.com/jira/browse/RM-2322">RM-2322</a><pre>
+     * Given that I have already started the system once
+     * When I stop the system
+     * And modify the exemption categories
+     * And restart the system
+     * Then I am warned that the exemption categories have been changed
+     * And they are not altered
+     * </pre>
      * This test uses the underlying log4j implementation to insert a mock Appender, and tests this for the warning
      * message. If the underlying logging framework is changed then this unit test will fail, and it may not be possible
      * to/worth fixing.

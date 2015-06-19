@@ -124,7 +124,7 @@ public class ClassificationServiceBootstrapUnitTest
 
     @Test public void defaultLevelsConfigurationVanillaSystem()
     {
-        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS);
+        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationLevel.class)).thenReturn(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS);
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         classificationServiceBootstrap.initConfiguredClassificationLevels();
@@ -135,7 +135,7 @@ public class ClassificationServiceBootstrapUnitTest
 
     @Test public void alternativeLevelsConfigurationPreviouslyStartedSystem()
     {
-        when(mockClassificationServiceDAO.getConfiguredLevels()).thenReturn(ALT_CLASSIFICATION_LEVELS);
+        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationLevel.class)).thenReturn(ALT_CLASSIFICATION_LEVELS);
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                                    .thenReturn((Serializable) DEFAULT_CLASSIFICATION_LEVELS);
 
@@ -159,7 +159,7 @@ public class ClassificationServiceBootstrapUnitTest
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         // We'll use a small set of placeholder classification reasons.
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
         classificationServiceBootstrap.initConfiguredClassificationReasons();
 
@@ -171,7 +171,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         // The classification reasons stored are the same values that are found on the classpath.
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
         classificationServiceBootstrap.initConfiguredClassificationReasons();
 
@@ -192,7 +192,7 @@ public class ClassificationServiceBootstrapUnitTest
         // The classification reasons stored are different from those found on the classpath.
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(
                     (Serializable) PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
 
         // Put the mock Appender into the log4j logger and allow warning messages to be received.
         org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceBootstrap.class);
@@ -224,7 +224,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) null);
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
+        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(null);
 
         classificationServiceBootstrap.initConfiguredClassificationReasons();
     }
@@ -234,7 +234,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) null);
-        when(mockClassificationServiceDAO.getConfiguredExemptionCategories()).thenReturn(EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(EXEMPTION_CATEGORIES);
 
         classificationServiceBootstrap.initConfiguredExemptionCategories();
 
@@ -246,7 +246,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) EXEMPTION_CATEGORIES);
-        when(mockClassificationServiceDAO.getConfiguredExemptionCategories()).thenReturn(EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(EXEMPTION_CATEGORIES);
 
         classificationServiceBootstrap.initConfiguredExemptionCategories();
 
@@ -266,7 +266,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) EXEMPTION_CATEGORIES);
-        when(mockClassificationServiceDAO.getConfiguredExemptionCategories()).thenReturn(CHANGED_EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(CHANGED_EXEMPTION_CATEGORIES);
 
         // Put the mock Appender into the log4j logger and allow warning messages to be received.
         org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceBootstrap.class);
@@ -298,7 +298,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) null);
-        when(mockClassificationServiceDAO.getConfiguredReasons()).thenReturn(null);
+        when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(null);
 
         classificationServiceBootstrap.initConfiguredExemptionCategories();
     }

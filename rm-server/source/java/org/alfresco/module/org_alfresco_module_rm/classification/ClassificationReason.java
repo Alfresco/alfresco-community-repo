@@ -54,7 +54,15 @@ public final class ClassificationReason implements ClassificationSchemeEntity
      */
     public String getId()
     {
-        return this.id;
+        return id;
+    }
+
+    /**
+     * Returns the I18N key for the display label for the reason.
+     */
+    public String getDisplayLabelKey()
+    {
+        return displayLabelKey;
     }
 
     /**

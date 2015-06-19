@@ -45,7 +45,7 @@ public class ClassificationServiceDAOUnitTest
     {
         ClassificationServiceDAO c = new ClassificationServiceDAO();
         c.setLevelConfigLocation("/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json");
-        List<ClassificationLevel> config = c.getConfiguredLevels();
+        List<ClassificationLevel> config = c.getConfiguredValues(ClassificationLevel.class);
         assertEquals(DEFAULT_CLASSIFICATION_LEVELS, config);
     }
 
@@ -53,7 +53,7 @@ public class ClassificationServiceDAOUnitTest
     {
         ClassificationServiceDAO c = new ClassificationServiceDAO();
         c.setLevelConfigLocation("/no/such/resource");
-        assertTrue(c.getConfiguredLevels().isEmpty());
+        assertTrue(c.getConfiguredValues(ClassificationLevel.class).isEmpty());
     }
 
     @Test (expected = MalformedConfiguration.class)
@@ -61,14 +61,14 @@ public class ClassificationServiceDAOUnitTest
     {
         ClassificationServiceDAO c = new ClassificationServiceDAO();
         c.setLevelConfigLocation("/alfresco/classification/rm-classification-levels-malformed.json");
-        c.getConfiguredLevels();
+        c.getConfiguredValues(ClassificationLevel.class);
     }
 
     @Test public void getConfiguredReasons_readingDefaultConfigurationShouldWork()
     {
         ClassificationServiceDAO c = new ClassificationServiceDAO();
         c.setReasonConfigLocation("/alfresco/module/org_alfresco_module_rm/classification/rm-classification-reasons.json");
-        List<ClassificationReason> config = c.getConfiguredReasons();
+        List<ClassificationReason> config = c.getConfiguredValues(ClassificationReason.class);
         assertFalse(config.isEmpty());
     }
 
@@ -76,7 +76,7 @@ public class ClassificationServiceDAOUnitTest
     {
         ClassificationServiceDAO c = new ClassificationServiceDAO();
         c.setReasonConfigLocation("/no/such/resource");
-        assertTrue(c.getConfiguredReasons().isEmpty());
+        assertTrue(c.getConfiguredValues(ClassificationReason.class).isEmpty());
     }
 
     @Test (expected = MalformedConfiguration.class)
@@ -84,6 +84,6 @@ public class ClassificationServiceDAOUnitTest
     {
         ClassificationServiceDAO c = new ClassificationServiceDAO();
         c.setReasonConfigLocation("/alfresco/classification/rm-classification-levels-malformed.json");
-        c.getConfiguredReasons();
+        c.getConfiguredValues(ClassificationReason.class);
     }
 }

@@ -41,7 +41,7 @@ import org.alfresco.util.ParameterCheck;
  * @since 3.0
  */
 public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements SecurityClearanceService
-{    
+{
     /** The clearance levels currently configured in this server. */
     private ClearanceLevelManager clearanceManager;
     /** The object containing the {@link ClassificationLevel}s in the system. */
@@ -88,7 +88,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
      */
     private SecurityClearance getUserSecurityClearance(final String userName)
     {
-        final NodeRef    personNode = personService.getPerson(userName, false);
+        final NodeRef    personNode = personService.getPerson(userName, true);
         final PersonInfo personInfo = personService.getPerson(personNode);
 
         ClearanceLevel clearanceLevel = ClearanceLevelManager.NO_CLEARANCE;

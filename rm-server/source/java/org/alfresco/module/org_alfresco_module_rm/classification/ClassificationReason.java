@@ -19,8 +19,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import java.io.Serializable;
-
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -31,7 +29,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Tom Page
  * @since 3.0
  */
-public final class ClassificationReason implements Serializable
+public final class ClassificationReason implements ClassificationSchemeEntity
 {
     private static final long serialVersionUID = 4876939094239038838L;
     private final String id;
@@ -39,7 +37,7 @@ public final class ClassificationReason implements Serializable
 
     /**
      * Constructor to create a classification reason.
-     * 
+     *
      * @param id The unique identifier that represents this classification reason.
      * @param displayLabelKey The I18N key for the display label for the reason.
      */

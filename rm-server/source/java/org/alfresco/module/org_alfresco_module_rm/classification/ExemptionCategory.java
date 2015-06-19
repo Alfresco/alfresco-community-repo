@@ -20,8 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import java.io.Serializable;
-
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -32,7 +30,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author tpage
  * @since 3.0
  */
-public final class ExemptionCategory implements Serializable
+public final class ExemptionCategory implements ClassificationSchemeEntity
 {
     /** serial version uid */
     private static final long serialVersionUID = -8990809567320071986L;

@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MalformedConfiguration;
 import org.apache.commons.io.IOUtils;
@@ -40,62 +42,37 @@ import org.json.JSONTokener;
  */
 class ClassificationServiceDAO
 {
-    private String levelConfigLocation;
-    private String reasonConfigLocation;
-    private String exemptionCategoryConfigLocation;
+    /** A map from the simple name of a POJO type to the corresponding location of the configuration file. */
+    private Map<String, String> configLocations = new HashMap<>();
+
+    private ClassificationSchemeEntityFactory classificationSchemeEntityFactory = new ClassificationSchemeEntityFactory();
 
     /** Set the location of the level configuration file relative to the classpath. */
-    public void setLevelConfigLocation(String levelConfigLocation) { this.levelConfigLocation = levelConfigLocation; }
-
+    public void setLevelConfigLocation(String levelConfigLocation)
+    {
+        configLocations.put(ClassificationLevel.class.getSimpleName(), levelConfigLocation);
+    }
     /** Set the location of the reasons configuration file relative to the classpath. */
-    public void setReasonConfigLocation(String reasonConfigLocation) { this.reasonConfigLocation = reasonConfigLocation; }
+    public void setReasonConfigLocation(String reasonConfigLocation)
+    {
+        configLocations.put(ClassificationReason.class.getSimpleName(), reasonConfigLocation);
+    }
 
     /** Set the location of the exemption categories configuration file relative to the classpath. */
-    public void setExemptionCategoryConfigLocation(String exemptionCategoryConfigLocation) { this.exemptionCategoryConfigLocation = exemptionCategoryConfigLocation; }
-
-    /**
-     * Gets the list (in descending order) of classification levels - as defined in the classpath.
-     *
-     * @return the configured classification levels in descending order, or an empty list if there are none.
-     */
-    public List<ClassificationLevel> getConfiguredLevels()
+    public void setExemptionCategoryConfigLocation(String exemptionCategoryConfigLocation)
     {
-        List<ClassificationLevel> result;
-        try (final InputStream in = this.getClass().getResourceAsStream(levelConfigLocation))
-        {
-            if (in == null) { result = Collections.emptyList(); }
-            else
-            {
-                final String jsonString = IOUtils.toString(in);
-                final JSONArray jsonArray = new JSONArray(new JSONTokener(jsonString));
-
-                result = new ArrayList<>(jsonArray.length());
-
-                for (int i = 0; i < jsonArray.length(); i++)
-                {
-                    final JSONObject nextObj = jsonArray.getJSONObject(i);
-                    final String name = nextObj.getString("name");
-                    final String displayLabelKey = nextObj.getString("displayLabel");
-                    result.add(new ClassificationLevel(name, displayLabelKey));
-                }
-            }
-        }
-        catch (IOException | JSONException e)
-        {
-            throw new MalformedConfiguration("Could not read classification level configuration", e);
-        }
-        return result;
+        configLocations.put(ExemptionCategory.class.getSimpleName(), exemptionCategoryConfigLocation);
     }
 
     /**
-     * Gets the list of classification reasons as defined in the classpath.
+     * Gets the list of values as defined in the classpath.
      *
-     * @return the configured classification reasons in descending order, or an empty list if there are none.
+     * @return The configured values, or an empty list if there are none.
      */
-    public List<ClassificationReason> getConfiguredReasons()
+    public <T extends ClassificationSchemeEntity> List<T> getConfiguredValues(Class<T> clazz)
     {
-        List<ClassificationReason> result;
-        try (final InputStream in = this.getClass().getResourceAsStream(reasonConfigLocation))
+        List<T> result;
+        try (final InputStream in = this.getClass().getResourceAsStream(configLocations.get(clazz.getSimpleName())))
         {
             if (in == null) { result = Collections.emptyList(); }
             else
@@ -108,49 +85,14 @@ class ClassificationServiceDAO
                 for (int i = 0; i < jsonArray.length(); i++)
                 {
                     final JSONObject nextObj = jsonArray.getJSONObject(i);
-                    final String id = nextObj.getString("id");
-                    final String displayLabelKey = nextObj.getString("displayLabel");
-                    result.add(new ClassificationReason(id, displayLabelKey));
+                    result.add(classificationSchemeEntityFactory.create(clazz, nextObj));
                 }
             }
         }
         catch (IOException | JSONException e)
         {
-            throw new MalformedConfiguration("Could not read classification reason configuration", e);
-        }
-        return result;
-    }
-
-    /**
-     * Gets the list of exemption categories as defined in the classpath.
-     *
-     * @return the configured exemption categories in the given order, or an empty list if there are none.
-     */
-    public List<ExemptionCategory> getConfiguredExemptionCategories()
-    {
-        List<ExemptionCategory> result;
-        try (final InputStream in = this.getClass().getResourceAsStream(exemptionCategoryConfigLocation))
-        {
-            if (in == null) { result = Collections.emptyList(); }
-            else
-            {
-                final String jsonString = IOUtils.toString(in);
-                final JSONArray jsonArray = new JSONArray(new JSONTokener(jsonString));
-
-                result = new ArrayList<>(jsonArray.length());
-
-                for (int i = 0; i < jsonArray.length(); i++)
-                {
-                    final JSONObject nextObj = jsonArray.getJSONObject(i);
-                    final String id = nextObj.getString("id");
-                    final String displayLabelKey = nextObj.getString("displayLabel");
-                    result.add(new ExemptionCategory(id, displayLabelKey));
-                }
-            }
-        }
-        catch (IOException | JSONException e)
-        {
-            throw new MalformedConfiguration("Could not read exemption category configuration", e);
+            String message = "Could not read " + clazz.getSimpleName() + " configuration: " + configLocations.get(clazz.getSimpleName());
+            throw new MalformedConfiguration(message, e);
         }
         return result;
     }

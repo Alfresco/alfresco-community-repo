@@ -153,7 +153,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** Gets the list (in descending order) of classification levels - as defined in the system configuration. */
     private List<ClassificationLevel> getConfigurationLevels()
     {
-        return classificationServiceDAO.getConfiguredLevels();
+        return classificationServiceDAO.getConfiguredValues(ClassificationLevel.class);
     }
 
     private static boolean isEmpty(List<?> l) { return l == null || l.isEmpty(); }
@@ -222,7 +222,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** Gets the list of classification reasons - as defined and ordered in the system configuration. */
     private List<ClassificationReason> getConfigurationReasons()
     {
-        return classificationServiceDAO.getConfiguredReasons();
+        return classificationServiceDAO.getConfiguredValues(ClassificationReason.class);
     }
 
     /**
@@ -280,7 +280,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** Gets the list of exemption categories - as defined and ordered in the system configuration. */
     private List<ExemptionCategory> getConfigurationCategories()
     {
-        return classificationServiceDAO.getConfiguredExemptionCategories();
+        return classificationServiceDAO.getConfiguredValues(ExemptionCategory.class);
     }
 
     /**

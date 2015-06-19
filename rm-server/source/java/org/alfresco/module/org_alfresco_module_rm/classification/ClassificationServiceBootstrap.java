@@ -22,11 +22,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationLevelValidation;
-
 import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationLevelFieldsValidator;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationSchemeEntityValidator;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -60,7 +60,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     /** The exemption categories currently configured in this server. */
     private ExemptionCategoryManager exemptionCategoryManager = new ExemptionCategoryManager();
     private ClassificationServiceDAO classificationServiceDAO;
-    private final ClassificationLevelValidation levelValidation = new ClassificationLevelValidation();
+    private ClassificationLevelFieldsValidator classificationLevelFieldsValidator = new ClassificationLevelFieldsValidator();
+    private ClassificationSchemeEntityValidator<ClassificationLevel> classificationLevelValidator = new ClassificationSchemeEntityValidator<>(classificationLevelFieldsValidator);
 
     public ClassificationServiceBootstrap(AuthenticationUtil authUtil,
                                           TransactionService txService,
@@ -122,7 +123,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
         LOGGER.debug("Persisted classification levels: {}", loggableStatusOf(allPersistedLevels));
         LOGGER.debug("Classpath classification levels: {}", loggableStatusOf(configurationLevels));
 
-        levelValidation.validateLevels(configurationLevels);
+        classificationLevelValidator.validate(configurationLevels, ClassificationLevel.class.getSimpleName());
 
         if (!configurationLevels.equals(allPersistedLevels))
         {

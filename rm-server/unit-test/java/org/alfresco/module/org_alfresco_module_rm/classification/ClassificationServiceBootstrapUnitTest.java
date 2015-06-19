@@ -37,6 +37,11 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
+import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationLevelFieldsValidator;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationReasonFieldsValidator;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationSchemeEntityValidator;
+import org.alfresco.module.org_alfresco_module_rm.classification.validation.ExemptionCategoryFieldsValidator;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -56,23 +61,24 @@ import org.mockito.MockitoAnnotations;
  *
  * @author tpage
  */
-public class ClassificationServiceBootstrapUnitTest
+public class ClassificationServiceBootstrapUnitTest implements ClassifiedContentModel
 {
     private static final List<ClassificationLevel> DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS =
             asLevelList("TS", "rm.classification.topSecret",
                         "S",  "rm.classification.secret",
                         "C",  "rm.classification.confidential");
+    @SuppressWarnings("unchecked")
     private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS =
-                                            union(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS,
-                                                  asLevelList("U", "rm.classification.unclassified"));
+                                                    union(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS,
+                                                    asLevelList("U", "rm.classification.unclassified"));
     private static final List<ClassificationLevel> ALT_CLASSIFICATION_LEVELS = asLevelList("B",  "Board",
-                                                                                           "EM", "ExecutiveManagement",
-                                                                                           "E",  "Employee",
-                                                                                           "P",  "Public");
+                                                                                                            "EM", "ExecutiveManagement",
+                                                                                                            "E",  "Employee",
+                                                                                                            "P",  "Public");
     private static final List<ClassificationReason> PLACEHOLDER_CLASSIFICATION_REASONS = asList(new ClassificationReason("id1", "label1"),
-                                                                                                new ClassificationReason("id2", "label2"));
+                                                                                                                new ClassificationReason("id2", "label2"));
     private static final List<ClassificationReason> ALTERNATIVE_CLASSIFICATION_REASONS = asList(new ClassificationReason("id8", "label8"),
-                                                                                                new ClassificationReason("id9", "label9"));
+                                                                                                                new ClassificationReason("id9", "label9"));
     private static final List<ExemptionCategory> EXEMPTION_CATEGORIES = asList(new ExemptionCategory("id1", "label1"),
                                                                                new ExemptionCategory("id2", "label2"));
     private static final List<ExemptionCategory> CHANGED_EXEMPTION_CATEGORIES = asList(new ExemptionCategory("id3", "label3"));
@@ -113,6 +119,13 @@ public class ClassificationServiceBootstrapUnitTest
     @Captor ArgumentCaptor<LoggingEvent> loggingEventCaptor;
     @Captor ArgumentCaptor<List<ClearanceLevel>> clearanceLevelCaptor;
 
+    private ClassificationLevelFieldsValidator classificationLevelFieldsValidator = new ClassificationLevelFieldsValidator();
+    private ClassificationSchemeEntityValidator<ClassificationLevel> classificationLevelValidator = new ClassificationSchemeEntityValidator<>(classificationLevelFieldsValidator);
+    private ClassificationReasonFieldsValidator classificationReasonFieldsValidator = new ClassificationReasonFieldsValidator();
+    private ClassificationSchemeEntityValidator<ClassificationReason> classificationReasonValidator = new ClassificationSchemeEntityValidator<>(classificationReasonFieldsValidator);
+    private ExemptionCategoryFieldsValidator exemptionCategoryFieldsValidator = new ExemptionCategoryFieldsValidator();
+    private ClassificationSchemeEntityValidator<ExemptionCategory> exemptionCategoryValidator = new ClassificationSchemeEntityValidator<>(exemptionCategoryFieldsValidator);
+
     @Before public void setUp()
     {
         MockitoAnnotations.initMocks(this);
@@ -124,10 +137,10 @@ public class ClassificationServiceBootstrapUnitTest
 
     @Test public void defaultLevelsConfigurationVanillaSystem()
     {
-        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationLevel.class)).thenReturn(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS);
+        when(mockClassificationServiceDAO.<ClassificationLevel>getConfiguredValues(ClassificationLevel.class)).thenReturn(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS);
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
-        classificationServiceBootstrap.initConfiguredClassificationLevels();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
 
         verify(mockAttributeService).setAttribute(eq((Serializable) DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS),
                 anyString(), anyString(), anyString());
@@ -135,14 +148,14 @@ public class ClassificationServiceBootstrapUnitTest
 
     @Test public void alternativeLevelsConfigurationPreviouslyStartedSystem()
     {
-        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationLevel.class)).thenReturn(ALT_CLASSIFICATION_LEVELS);
+        when(mockClassificationServiceDAO.<ClassificationLevel>getConfiguredValues(ClassificationLevel.class)).thenReturn(ALT_CLASSIFICATION_LEVELS);
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                                    .thenReturn((Serializable) DEFAULT_CLASSIFICATION_LEVELS);
 
-        classificationServiceBootstrap.initConfiguredClassificationLevels();
+        List<ClassificationLevel> entities = classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
 
-        verify(mockAttributeService).setAttribute(eq((Serializable) ALT_CLASSIFICATION_LEVELS),
-                anyString(), anyString(), anyString());
+        // TODO Check that changing the behaviour here is ok.
+        assertEquals(DEFAULT_CLASSIFICATION_LEVELS, entities);
     }
 
     @Test (expected=MissingConfiguration.class)
@@ -150,7 +163,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
-        classificationServiceBootstrap.initConfiguredClassificationLevels();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
     }
 
     @Test public void pristineSystemShouldBootstrapReasonsConfiguration()
@@ -159,9 +172,9 @@ public class ClassificationServiceBootstrapUnitTest
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(null);
 
         // We'll use a small set of placeholder classification reasons.
-        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.<ClassificationReason>getConfiguredValues(ClassificationReason.class)).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
-        classificationServiceBootstrap.initConfiguredClassificationReasons();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationReason.class, REASONS_KEY, classificationReasonValidator);
 
         verify(mockAttributeService).setAttribute(eq((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS),
                 anyString(), anyString(), anyString());
@@ -171,9 +184,9 @@ public class ClassificationServiceBootstrapUnitTest
     {
         // The classification reasons stored are the same values that are found on the classpath.
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn((Serializable)PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.<ClassificationReason>getConfiguredValues(ClassificationReason.class)).thenReturn(PLACEHOLDER_CLASSIFICATION_REASONS);
 
-        classificationServiceBootstrap.initConfiguredClassificationReasons();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationReason.class, REASONS_KEY, classificationReasonValidator);
 
         verify(mockAttributeService, never()).setAttribute(any(Serializable.class),
                 anyString(), anyString(), anyString());
@@ -192,7 +205,7 @@ public class ClassificationServiceBootstrapUnitTest
         // The classification reasons stored are different from those found on the classpath.
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(
                     (Serializable) PLACEHOLDER_CLASSIFICATION_REASONS);
-        when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
+        when(mockClassificationServiceDAO.<ClassificationReason>getConfiguredValues(ClassificationReason.class)).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
 
         // Put the mock Appender into the log4j logger and allow warning messages to be received.
         org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceBootstrap.class);
@@ -201,7 +214,7 @@ public class ClassificationServiceBootstrapUnitTest
         log4jLogger.setLevel(Level.WARN);
 
         // Call the method under test.
-        classificationServiceBootstrap.initConfiguredClassificationReasons();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationReason.class, REASONS_KEY, classificationReasonValidator);
 
         // Reset the logging level for other tests.
         log4jLogger.setLevel(normalLevel);
@@ -215,7 +228,7 @@ public class ClassificationServiceBootstrapUnitTest
         List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
         Stream<String> messages = loggingEvents.stream()
                                                .map(LoggingEvent::getRenderedMessage);
-        String expectedMessage = "Classification reasons configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
+        String expectedMessage = "ClassificationReason data configured in classpath does not match data stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
         assertTrue("Warning message not found in log.", messages.anyMatch(message -> expectedMessage.equals(message)));
     }
 
@@ -226,7 +239,7 @@ public class ClassificationServiceBootstrapUnitTest
                     .thenReturn((Serializable) null);
         when(mockClassificationServiceDAO.getConfiguredValues(ClassificationReason.class)).thenReturn(null);
 
-        classificationServiceBootstrap.initConfiguredClassificationReasons();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationReason.class, REASONS_KEY, classificationReasonValidator);
     }
 
     @Test
@@ -234,11 +247,11 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) null);
-        when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.<ExemptionCategory>getConfiguredValues(ExemptionCategory.class)).thenReturn(EXEMPTION_CATEGORIES);
 
-        classificationServiceBootstrap.initConfiguredExemptionCategories();
+        List<ExemptionCategory> entities = classificationServiceBootstrap.getConfiguredSchemeEntities(ExemptionCategory.class, EXEMPTION_CATEGORIES_KEY, exemptionCategoryValidator);
 
-        verify(mockExemptionCategoryManager).setExemptionCategories(EXEMPTION_CATEGORIES);
+        assertEquals(EXEMPTION_CATEGORIES, entities);
     }
 
     @Test
@@ -246,11 +259,11 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) EXEMPTION_CATEGORIES);
-        when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.<ExemptionCategory>getConfiguredValues(ExemptionCategory.class)).thenReturn(EXEMPTION_CATEGORIES);
 
-        classificationServiceBootstrap.initConfiguredExemptionCategories();
+        List<ExemptionCategory> entities = classificationServiceBootstrap.getConfiguredSchemeEntities(ExemptionCategory.class, EXEMPTION_CATEGORIES_KEY, exemptionCategoryValidator);
 
-        verify(mockExemptionCategoryManager).setExemptionCategories(EXEMPTION_CATEGORIES);
+        assertEquals(EXEMPTION_CATEGORIES, entities);
     }
 
     /**
@@ -266,7 +279,7 @@ public class ClassificationServiceBootstrapUnitTest
     {
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
                     .thenReturn((Serializable) EXEMPTION_CATEGORIES);
-        when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(CHANGED_EXEMPTION_CATEGORIES);
+        when(mockClassificationServiceDAO.<ExemptionCategory>getConfiguredValues(ExemptionCategory.class)).thenReturn(CHANGED_EXEMPTION_CATEGORIES);
 
         // Put the mock Appender into the log4j logger and allow warning messages to be received.
         org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceBootstrap.class);
@@ -275,7 +288,7 @@ public class ClassificationServiceBootstrapUnitTest
         log4jLogger.setLevel(Level.WARN);
 
         // Call the method under test.
-        classificationServiceBootstrap.initConfiguredExemptionCategories();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ExemptionCategory.class, EXEMPTION_CATEGORIES_KEY, exemptionCategoryValidator);
 
         // Reset the logging level for other tests.
         log4jLogger.setLevel(normalLevel);
@@ -289,7 +302,7 @@ public class ClassificationServiceBootstrapUnitTest
         List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
         Stream<String> messages = loggingEvents.stream()
                                                .map(LoggingEvent::getRenderedMessage);
-        String expectedMessage = "Exemption categories configured in classpath do not match those stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
+        String expectedMessage = "ExemptionCategory data configured in classpath does not match data stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
         assertTrue("Warning message not found in log.", messages.anyMatch(message -> expectedMessage.equals(message)));
     }
 
@@ -300,7 +313,7 @@ public class ClassificationServiceBootstrapUnitTest
                     .thenReturn((Serializable) null);
         when(mockClassificationServiceDAO.getConfiguredValues(ExemptionCategory.class)).thenReturn(null);
 
-        classificationServiceBootstrap.initConfiguredExemptionCategories();
+        classificationServiceBootstrap.getConfiguredSchemeEntities(ExemptionCategory.class, EXEMPTION_CATEGORIES_KEY, exemptionCategoryValidator);
     }
 
     /**

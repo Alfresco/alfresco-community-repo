@@ -116,6 +116,11 @@
             <version>1.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.tomakehurst</groupId>
+            <artifactId>wiremock</artifactId>
+            <version>1.56</version>
+        </dependency>
         <!-- Enables JUnit remote testing -->
         <dependency>
             <groupId>com.tradeshift</groupId>

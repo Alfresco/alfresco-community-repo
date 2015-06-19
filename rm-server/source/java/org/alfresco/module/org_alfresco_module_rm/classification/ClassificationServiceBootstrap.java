@@ -129,7 +129,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
      * Gets an ordered list of some attribute persisted in the system.
      * @return the list of values if they have been persisted, else {@code null}.
      */
-    private <T> List<T> getPersistedValues(Serializable[] key)
+    private <T> List<T> getPersistedValues(final Serializable[] key)
     {
         return authenticationUtil.runAsSystem(new RunAsWork<List<T>>()
         {

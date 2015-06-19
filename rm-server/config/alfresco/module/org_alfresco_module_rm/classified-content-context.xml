@@ -24,6 +24,7 @@
       <property name="resourceBundles">
          <list>
             <value>alfresco.module.org_alfresco_module_rm.messages.classified-content</value>
+            <value>alfresco.module.org_alfresco_module_rm.messages.classified-content-notForTranslating</value>
          </list>
       </property>
    </bean>

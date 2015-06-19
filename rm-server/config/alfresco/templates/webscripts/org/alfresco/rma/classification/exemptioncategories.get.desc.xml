@@ -1,0 +1,8 @@
+<webscript>
+   <shortname>Records Management Exemption Categories</shortname>
+   <description>Gets the list of exemption categories.</description>
+   <url>/api/classification/exemptioncategories</url>
+   <format default="json"/>
+   <authentication>user</authentication>
+   <transaction allow="readonly">required</transaction>
+</webscript>

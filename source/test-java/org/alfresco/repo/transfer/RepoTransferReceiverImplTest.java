@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
@@ -46,6 +47,8 @@ import org.alfresco.repo.transfer.manifest.TransferManifestNode;
 import org.alfresco.repo.transfer.manifest.TransferManifestNormalNode;
 import org.alfresco.repo.transfer.manifest.XMLTransferManifestWriter;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -1441,8 +1444,12 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         log.info("start testAsyncCommit");
 
         this.setDefaultRollback(false);
-        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+        
+        localTestAsyncCommit();
+    }
 
+    private String localTestAsyncCommit() throws Exception, InterruptedException
+    {
         startNewTransaction();
         final String transferId = receiver.start("1234", true, receiver.getVersion());
         endTransaction();
@@ -1525,6 +1532,135 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         {
             endTransaction();
         }
+        return transferId;
+    }
+
+    public void testAsyncCommitWithSummaryReport() throws Exception
+    {
+        log.info("start testAsyncCommitWithSummaryReport");
+
+        this.setDefaultRollback(false);
+        Properties properties = (Properties) this.getApplicationContext().getBean("global-properties");
+        //save the value of this summary report property to restore later
+        String prevValue = properties.getProperty(TransferCommons.TS_SIMPLE_REPORT);
+        try
+        {
+            properties.put(TransferCommons.TS_SIMPLE_REPORT, Boolean.TRUE.toString());
+            assertTrue(Boolean.parseBoolean(properties.getProperty(TransferCommons.TS_SIMPLE_REPORT)));
+
+            localTestDestinationReports(true);
+
+        }
+        finally
+        {
+            if (prevValue == null)
+            {
+                properties.remove(TransferCommons.TS_SIMPLE_REPORT);
+            }
+            else
+            {
+                properties.put(TransferCommons.TS_SIMPLE_REPORT, prevValue);
+            }
+        }
+    }
+    
+    public void testAsyncCommitWithOutSummaryReport() throws Exception
+    {
+        log.info("start testAsyncCommitWithOutSummaryReport");
+
+        this.setDefaultRollback(false);
+        this.setDefaultRollback(false);
+        Properties properties = (Properties) this.getApplicationContext().getBean("global-properties");
+        //save the value of this summary report property to restore later
+        String prevValue = properties.getProperty(TransferCommons.TS_SIMPLE_REPORT);
+        try
+        {
+            properties.put(TransferCommons.TS_SIMPLE_REPORT, Boolean.FALSE.toString());
+            assertFalse(Boolean.parseBoolean(properties.getProperty(TransferCommons.TS_SIMPLE_REPORT)));
+
+            localTestDestinationReports(false);
+
+        }
+        finally
+        {
+            if (prevValue == null)
+            {
+                properties.remove(TransferCommons.TS_SIMPLE_REPORT);
+            }
+            else
+            {
+                properties.put(TransferCommons.TS_SIMPLE_REPORT, prevValue);
+            }
+        }
+    }
+
+    private void localTestDestinationReports(boolean testAlsoForSummaryReport) throws Exception, InterruptedException
+    {
+        final String transferId = localTestAsyncCommit();
+
+        // check the destination report was generated and
+        // check that the simplified destination transfer report was
+        // generated
+        FileFolderService fileFolderService = (FileFolderService) this.getApplicationContext().getBean("fileFolderService");
+
+        NodeRef destinationReportNodeRef = new NodeRef(transferId);
+        assertTrue(nodeService.exists(destinationReportNodeRef));
+        assertTrue(nodeService.getType(destinationReportNodeRef).equals(TransferModel.TYPE_TRANSFER_RECORD));
+
+        String destinationReportName = (String) nodeService.getProperties(destinationReportNodeRef).get(ContentModel.PROP_NAME);
+        String destinationReportWithoutExtension = destinationReportName.substring(0, destinationReportName.lastIndexOf("."));
+
+        NodeRef summaryReportsParentFolder = null;
+        String summaryReportsLocation = "/app:company_home/app:dictionary/app:transfers/app:inbound_transfer_records";
+        //properties.getProperty("spaces.transfer_summary_report.location"); getting the property from the properties bean does not work
+        summaryReportsParentFolder = getSummaryReportsParentFolder(summaryReportsLocation);
+
+        assertTrue(fileFolderService.getFileInfo(summaryReportsParentFolder).isFolder());
+
+        FileInfo simplifiedReportFile = null;
+        for (FileInfo fi : fileFolderService.list(summaryReportsParentFolder))
+        {
+            if (fi.getName().startsWith(destinationReportWithoutExtension)
+                    && fi.getName().contains(TransferSummaryReportImpl._SIMPLE_REPORT))
+            {
+                simplifiedReportFile = fi;
+            }
+        }
+        if (testAlsoForSummaryReport)
+        {
+            assertNotNull(simplifiedReportFile);
+        }
+        else
+        {
+            assertNull(simplifiedReportFile);
+        }
+    }
+
+    private NodeRef getSummaryReportsParentFolder(String transferSummaryReportLocation)
+    {
+        NodeRef reportParentFolder = null;
+        log.debug("Trying to find transfer summary report records folder: " + transferSummaryReportLocation);
+        ResultSet rs = null;
+
+        try
+        {
+            rs = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_XPATH, transferSummaryReportLocation);
+            if (rs.length() > 0)
+            {
+                reportParentFolder = rs.getNodeRef(0);
+
+                log.debug("Found transfer summary report records folder: " + reportParentFolder);
+            }
+
+        }
+        finally
+        {
+            if (rs != null)
+            {
+                rs.close();
+            }
+        }
+        return reportParentFolder;
     }
 
     /**

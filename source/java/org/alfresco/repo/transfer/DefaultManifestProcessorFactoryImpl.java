@@ -21,13 +21,16 @@ package org.alfresco.repo.transfer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.alfresco.repo.transfer.manifest.TransferManifestProcessor;
 import org.alfresco.repo.transfer.requisite.TransferRequsiteWriter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.search.CategoryService;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.transfer.TransferReceiver;
@@ -45,6 +48,10 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
     private AlienProcessor alienProcessor;
     private CategoryService categoryService;
     private TaggingService taggingService;
+    private SearchService searchService;
+    private String transferSummaryReportLocation;
+    private Properties properties;
+    private FileFolderService fileFolderService;
 
     /*
      * (non-Javadoc)
@@ -53,6 +60,18 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
      */
     public List<TransferManifestProcessor> getCommitProcessors(TransferReceiver receiver, String transferId)
     {
+        TransferSummaryReport transferSummaryReport = null;
+        if (isSimpleReportActive())
+        {
+            TransferSummaryReportImpl summaryReport = new TransferSummaryReportImpl(transferId);
+            summaryReport.setContentService(contentService);
+            summaryReport.setNodeService(nodeService);
+            summaryReport.setSearchService(searchService);
+            summaryReport.setFileFolderService(fileFolderService);
+            summaryReport.setTransferSummaryReportLocation(transferSummaryReportLocation);
+
+            transferSummaryReport = summaryReport;
+        }
         List<TransferManifestProcessor> processors = new ArrayList<TransferManifestProcessor>();
         CorrespondingNodeResolver nodeResolver = nodeResolverFactory.getResolver();
         
@@ -65,17 +84,20 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         primaryProcessor.setAlienProcessor(getAlienProcessor());
         primaryProcessor.setCategoryService(categoryService);
         primaryProcessor.setTaggingService(getTaggingService());
+        primaryProcessor.setTransferSummaryReport(transferSummaryReport);
         processors.add(primaryProcessor);
         
         RepoSecondaryManifestProcessorImpl secondaryProcessor = new RepoSecondaryManifestProcessorImpl(receiver, transferId);
         secondaryProcessor.setNodeResolver(nodeResolver);
         secondaryProcessor.setNodeService(nodeService);
+        secondaryProcessor.setTransferSummaryReport(transferSummaryReport);
         processors.add(secondaryProcessor);
         
         RepoTertiaryManifestProcessorImpl tertiaryProcessor = new RepoTertiaryManifestProcessorImpl(receiver, transferId);
         tertiaryProcessor.setNodeService(nodeService);
         tertiaryProcessor.setAlienProcessor(getAlienProcessor());
         tertiaryProcessor.setNodeResolver(nodeResolver);
+        tertiaryProcessor.setTransferSummaryReport(transferSummaryReport);
         processors.add(tertiaryProcessor);
         
         return processors;
@@ -149,6 +171,26 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
         return alienProcessor;
     }
 
+    public void setFileFolderService(FileFolderService fileFolderService)
+    {
+        this.fileFolderService = fileFolderService;
+    }
+
+    public void setProperties(Properties properties)
+    {
+        this.properties = properties;
+    }
+
+    public void setTransferSummaryReportLocation(String transferSummaryReportLocation)
+    {
+        this.transferSummaryReportLocation = transferSummaryReportLocation;
+    }
+
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
 	public CategoryService getCategoryService()
     {
 	    return categoryService;
@@ -167,6 +209,32 @@ public class DefaultManifestProcessorFactoryImpl implements ManifestProcessorFac
 	public void setTaggingService(TaggingService taggingService)
     {
 	    this.taggingService = taggingService;
+    }
+
+    /**
+     * If this returns true, then the transfer service reports should only
+     * contain entries about: Create, Update, Delete items ; see MNT-14059
+     * 
+     * @return true if the property to use a simple report is set in the
+     *         alfresco-globla.properties
+     */
+    protected boolean isSimpleReportActive()
+    {
+        return getBooleanProperty(TransferCommons.TS_SIMPLE_REPORT, false);
+    }
+
+    private boolean getBooleanProperty(String name, boolean defaultValue)
+    {
+        boolean value = defaultValue;
+        if (properties != null)
+        {
+            String property = properties.getProperty(name);
+            if (property != null)
+            {
+                value = property.trim().equalsIgnoreCase("true");
+            }
+        }
+        return value;
     }
 
 }

@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
@@ -897,6 +896,8 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                     List<TransferManifestProcessor> commitProcessors = manifestProcessorFactory.getCommitProcessors(
                             RepoTransferReceiverImpl.this, transferId);
 
+                    Set<TransferSummaryReport> summaryReports = new HashSet<TransferSummaryReport>();
+
                     SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
                     SAXParser parser = saxParserFactory.newSAXParser();
                     File snapshotFile = getSnapshotFile(transferId);
@@ -914,7 +915,10 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
 
                             //behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
                             behaviourFilter.disableBehaviour();
-
+                            if (processor instanceof TransferSummaryAware)
+                            {
+                                summaryReports.add(((TransferSummaryAware) processor).getTransferSummaryReport());
+                            }
                             try
                             {
                                 parser.parse(snapshotFile, reader);
@@ -924,6 +928,14 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
                                 behaviourFilter.enableBehaviour();
                             }
                             parser.reset();
+                        }
+
+                        for (TransferSummaryReport transferSummaryReport : summaryReports)
+                        {
+                            if (transferSummaryReport != null)
+                            {
+                                transferSummaryReport.finishSummaryReport();
+                            }
                         }
                     }
                     else

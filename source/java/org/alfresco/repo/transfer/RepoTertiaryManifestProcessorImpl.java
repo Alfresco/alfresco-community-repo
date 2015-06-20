@@ -277,6 +277,7 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
                                             // Yes the manifest repository Id and the from repository Id match.
                                             // Destination node if from the transferring repo and needs to be deleted. 
                                             logDeleted(node.getNodeRef(), childNodeRef, nodeService.getPath(childNodeRef).toString());
+                                            logSummaryDeleted(node.getNodeRef(), childNodeRef, nodeService.getPath(childNodeRef).toString());
                                             nodeService.deleteNode(childNodeRef);
                                         }
                                         else

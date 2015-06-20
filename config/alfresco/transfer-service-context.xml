@@ -158,6 +158,14 @@
 		<property name="alienProcessor" ref="alienProcessor" />
 		<property name="categoryService" ref="CategoryService" />
 	    <property name="taggingService" ref="TaggingService" />  
+        <property name="searchService" ref="SearchService" />
+        <property name="transferSummaryReportLocation">
+                <value>${spaces.transfer_summary_report.location}</value>
+        </property>
+        <property name="properties">
+            <ref bean="global-properties" />
+        </property>
+        <property name="fileFolderService" ref="FileFolderService"/>
 	</bean>
 
 	<bean id="transferNodeResolverFactory"

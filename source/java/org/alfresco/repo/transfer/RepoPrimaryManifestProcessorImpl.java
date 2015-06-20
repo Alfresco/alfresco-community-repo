@@ -174,7 +174,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                         + "  - deleting");
             }
             
-            logDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString());    
+            logDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString()); 
+            logSummaryDeleted(node.getNodeRef(), exNode, nodeService.getPath(exNode).toString()); 
             
             delete(node, exNode);
         }
@@ -347,6 +348,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
         }
         
         logCreated(node.getNodeRef(), newNode.getChildRef(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()).toString(), false);
+        logSummaryCreated(node.getNodeRef(), newNode.getChildRef(), newNode.getParentRef(), nodeService.getPath(newNode.getChildRef()).toString(), false);
         
         // Deal with the content properties
         writeContent(newNode.getChildRef(), contentProps);
@@ -433,6 +435,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             
             // Not alien or from another repo - delete it.
             logDeleted(node.getNodeRef(), nodeToDelete, nodeService.getPath(nodeToDelete).toString());
+            logSummaryDeleted(node.getNodeRef(), nodeToDelete, nodeService.getPath(nodeToDelete).toString());
             
             nodeService.deleteNode(nodeToDelete);
             if (log.isDebugEnabled())
@@ -541,6 +544,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             ChildAssociationRef newNode = nodeService.moveNode(nodeToUpdate, parentNodeRef, parentAssocType, parentAssocName);
             logMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath().toString(), newNode.getParentRef(), 
                     nodeService.getPath(newNode.getChildRef()).toString());
+            logSummaryMoved(node.getNodeRef(), nodeToUpdate, node.getParentPath().toString(), newNode.getParentRef(), 
+                    nodeService.getPath(newNode.getChildRef()).toString());
             
             /**
              * are we adding an alien node here? The transfer service has policies disabled 
@@ -606,8 +611,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
             nodeService.setProperties(nodeToUpdate, props);
 
             // Deal with the content properties
-            writeContent(nodeToUpdate, contentProps);
-
+           boolean contentUpdated = writeContent(nodeToUpdate, contentProps);
+            if (contentUpdated)
+            {
+                logSummaryUpdated(node.getNodeRef(), nodeToUpdate, nodeService.getPath(nodeToUpdate).toString());
+            }
             // Change the type of the content
             if(!nodeService.getType(nodeToUpdate).equals(node.getType()))
             {
@@ -850,9 +858,11 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     /**
      * @param nodeToUpdate
      * @param contentProps
+     * @return true if any content property has been updated for the needToUpdate node
      */
-    private void writeContent(NodeRef nodeToUpdate, Map<QName, Serializable> contentProps)
+    private boolean writeContent(NodeRef nodeToUpdate, Map<QName, Serializable> contentProps)
     {
+        boolean contentUpdated = false;
         File stagingDir = getStagingFolder();
         for (Map.Entry<QName, Serializable> contentEntry : contentProps.entrySet())
         {
@@ -863,6 +873,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 log.debug("content data is null or empty:" + nodeToUpdate);
                 ContentData cd = new ContentData(null, null, 0, null);
                 nodeService.setProperty(nodeToUpdate, contentEntry.getKey(), cd);
+                contentUpdated = true;
             }
             else
             {
@@ -877,8 +888,10 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
                 writer.setMimetype(contentData.getMimetype());
                 writer.setLocale(contentData.getLocale());
                 writer.putContent(stagedFile);
+                contentUpdated = true;
             }
         }
+        return contentUpdated;
     }
 
     protected boolean updateNeeded(TransferManifestNormalNode node, NodeRef nodeToUpdate)

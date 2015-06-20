@@ -48,7 +48,7 @@ import org.apache.commons.logging.LogFactory;
  * some utility methods for sub-classes.
  * @author Brian
  */
-public abstract class AbstractManifestProcessorBase implements TransferManifestProcessor
+public abstract class AbstractManifestProcessorBase implements TransferManifestProcessor,TransferSummaryAware
 {
     private static final Log log = LogFactory.getLog(AbstractManifestProcessorBase.class);
     private static final String MSG_ERROR_WHILE_COMMITTING_TRANSFER = "transfer_service.receiver.error_committing_transfer";
@@ -57,6 +57,7 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
     private String transferId;
     private int targetEndProgress;
     private int currProgress;
+    private TransferSummaryReport transferSummaryReport;
     
     public AbstractManifestProcessorBase(TransferReceiver receiver, String transferId)
     {
@@ -310,5 +311,61 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
         }
 
         log.trace(message.toString());
+    }
+
+    // summary report actions
+    public void setTransferSummaryReport(TransferSummaryReport transferSummaryReport)
+    {
+        this.transferSummaryReport = transferSummaryReport;
+    }
+
+    public TransferSummaryReport getTransferSummaryReport()
+    {
+        return transferSummaryReport;
+    }
+
+    protected void logSummaryComment(String message)
+    {
+        TransferSummaryReport transferSummaryReport = getTransferSummaryReport();
+        if (transferSummaryReport != null)
+        {
+            transferSummaryReport.logSummaryComment(message);
+        }
+    }
+
+    protected void logSummaryCreated(NodeRef sourceNode, NodeRef destNode, NodeRef newParentNode, String parentPath, boolean orphan)
+    {
+        TransferSummaryReport transferSummaryReport = getTransferSummaryReport();
+        if (transferSummaryReport != null)
+        {
+            transferSummaryReport.logSummaryCreated(sourceNode, destNode, newParentNode, parentPath, orphan);
+        }
+    }
+
+    protected void logSummaryDeleted(NodeRef sourceNode, NodeRef destNode, String parentPath)
+    {
+        TransferSummaryReport transferSummaryReport = getTransferSummaryReport();
+        if (transferSummaryReport != null)
+        {
+            transferSummaryReport.logSummaryDeleted(sourceNode, destNode, parentPath);
+        }
+    }
+
+    protected void logSummaryUpdated(NodeRef sourceNode, NodeRef destNode, String newPath)
+    {
+        TransferSummaryReport transferSummaryReport = getTransferSummaryReport();
+        if (transferSummaryReport != null)
+        {
+            transferSummaryReport.logSummaryUpdated(sourceNode, destNode, newPath);
+        }
+    }
+
+    protected void logSummaryMoved(NodeRef sourceNode, NodeRef destNode, String oldPath, NodeRef newParent, String newPath)
+    {
+        TransferSummaryReport transferSummaryReport = getTransferSummaryReport();
+        if (transferSummaryReport != null)
+        {
+            transferSummaryReport.logSummaryMoved(sourceNode, destNode, oldPath, newParent, newPath);
+        }
     }
 }

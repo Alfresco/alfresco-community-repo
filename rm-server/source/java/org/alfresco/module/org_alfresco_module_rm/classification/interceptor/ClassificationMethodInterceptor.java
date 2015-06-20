@@ -18,188 +18,61 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor;
 
-import static org.alfresco.model.ContentModel.TYPE_CONTENT;
-import static org.codehaus.plexus.util.StringUtils.isNotBlank;
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.getFullyAuthenticatedUser;
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.isRunAsUserTheSystemUser;
+import static org.alfresco.util.ParameterCheck.mandatory;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.lang.reflect.Method;
-
-import org.alfresco.jlan.server.filesys.AccessDeniedException;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
-import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessorRegistry;
-import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
-import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.GUID;
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessor;
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PreMethodInvocationProcessor;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.log4j.Logger;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 /**
  * Classification method interceptor
  *
  * @author Roy Wetherall
+ * @author Tuna Aksoy
  * @since 3.0
  */
-public class ClassificationMethodInterceptor implements MethodInterceptor, ApplicationContextAware
+public class ClassificationMethodInterceptor implements MethodInterceptor
 {
-    /** Logger */
-    private static Logger LOG = Logger.getLogger(ClassificationMethodInterceptor.class);
+    /** Pre method invocation processor */
+    private PreMethodInvocationProcessor preMethodInvocationProcessor;
 
-    private static final String KEY_PROCESSING = GUID.generate();
-
-    /** application context */
-    private ApplicationContext applicationContext;
+    /** Post method invocation processor */
+    private PostMethodInvocationProcessor postMethodInvocationProcessor;
 
     /**
-     * @param applicationContext   application context
-     * @throws BeansException
+     * @return the preMethodInvocationProcessor
      */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    protected PreMethodInvocationProcessor getPreMethodInvocationProcessor()
     {
-        this.applicationContext = applicationContext;
-    }
-
-    protected AuthenticationUtil getAuthenticationUtil()
-    {
-        return (AuthenticationUtil)applicationContext.getBean("rm.authenticationUtil");
+        return this.preMethodInvocationProcessor;
     }
 
     /**
-     * @return {@link ContentClassificationService} content classification service
+     * @return the postMethodInvocationProcessor
      */
-    protected ContentClassificationService getContentClassificationService()
+    protected PostMethodInvocationProcessor getPostMethodInvocationProcessor()
     {
-        return (ContentClassificationService)applicationContext.getBean("contentClassificationService");
-    }
-
-    protected AlfrescoTransactionSupport getAlfrescoTransactionSupport()
-    {
-        return (AlfrescoTransactionSupport)applicationContext.getBean("rm.alfrescoTransactionSupport");
-    }
-
-    protected RetryingTransactionHelper getRetryingTransactionHelper()
-    {
-        return ((TransactionService)applicationContext.getBean("transactionService")).getRetryingTransactionHelper();
-    }
-
-    protected ClassificationServiceBootstrap getClassificationServiceBootstrap()
-    {
-        return (ClassificationServiceBootstrap)applicationContext.getBean("classificationServiceBootstrap");
-    }
-
-    protected NodeService getNodeService()
-    {
-        return (NodeService)applicationContext.getBean("dbNodeService");
-    }
-
-    protected DictionaryService getDictionaryService()
-    {
-        return (DictionaryService)applicationContext.getBean("dictionaryService");
-    }
-
-    protected PostMethodInvocationProcessorRegistry getPostMethodInvocationProcessorRegistry()
-    {
-        return (PostMethodInvocationProcessorRegistry)applicationContext.getBean("postMethodInvocationProcessorRegistry");
+        return this.postMethodInvocationProcessor;
     }
 
     /**
-     * Check that the current user is cleared to see the items passed as parameters to the current
-     * method invocation.
-     *
-     * @param invocation    method invocation
+     * @param postMethodInvocationProcessor the postMethodInvocationProcessor to set
      */
-    @SuppressWarnings("rawtypes")
-    public NodeRef checkClassification(final MethodInvocation invocation)
+    public void setPostMethodInvocationProcessor(PostMethodInvocationProcessor postMethodInvocationProcessor)
     {
-        // do in transaction
-        return getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
-        {
-            public NodeRef execute() throws Throwable
-            {
-                NodeRef result = null;
-
-                // ensure classification service has been bootstrapped
-                if (getClassificationServiceBootstrap().isInitialised())
-                {
-                    // check that we are not already processing a classification check
-                    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);
-                    if (value == null)
-                    {
-                        Method method = invocation.getMethod();
-                        Class[] params = method.getParameterTypes();
-
-                        int position = 0;
-                        for (Class param : params)
-                        {
-                            // if the param is a node reference
-                            if (NodeRef.class.isAssignableFrom(param))
-                            {
-                                // mark the transaction as processing a classification check
-                                getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, Boolean.TRUE);
-                                try
-                                {
-                                    // get the value of the parameter
-                                    NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
-
-                                    // if node exists then see if the current user has clearance
-                                    result = checkNode(testNodeRef);
-                                }
-                                finally
-                                {
-                                    // clear the transaction as processed a classification check
-                                    getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
-                                }
-                            }
-
-                            position++;
-                        }
-                    }
-                }
-
-                return result;
-            }
-        }, true);
+        this.postMethodInvocationProcessor = postMethodInvocationProcessor;
     }
 
-    private boolean isUserValid()
+    /**
+     * @param preMethodInvocationProcessor the preMethodInvocationProcessor to set
+     */
+    public void setPreMethodInvocationProcessor(PreMethodInvocationProcessor preMethodInvocationProcessor)
     {
-        boolean result = false;
-
-        // check that we have an authenticated user and that they aren't "system"
-        if (isNotBlank(getAuthenticationUtil().getFullyAuthenticatedUser()) &&
-            !getAuthenticationUtil().isRunAsUserTheSystemUser())
-        {
-            result = true;
-        }
-
-        return result;
-    }
-
-    private NodeRef checkNode(NodeRef testNodeRef) throws AccessDeniedException
-    {
-        NodeRef result = testNodeRef;
-
-        if (getNodeService().exists(testNodeRef) &&
-                getDictionaryService().isSubClass(getNodeService().getType(testNodeRef), TYPE_CONTENT) &&
-                !getContentClassificationService().hasClearance(testNodeRef))
-        {
-            // FIXME
-            result = null;
-            //throw new AccessDeniedException("You do not have clearance!");
-        }
-
-        return result;
+        this.preMethodInvocationProcessor = preMethodInvocationProcessor;
     }
 
     /**
@@ -208,39 +81,49 @@ public class ClassificationMethodInterceptor implements MethodInterceptor, Appli
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable
     {
-        // FIXME
-        //NodeRef preInvocation = null;
-        Object postInvocation = null;
+        mandatory("invocation", invocation);
 
+        Object result = null;
+
+        boolean canProceed = true;
         boolean isUserValid = isUserValid();
 
-        // pre method invocation check
         if (isUserValid)
         {
-            // FIXME
-            //preInvocation = checkClassification(invocation);
-            //checkClassification(invocation);
+            //FIXME!!!
+            // Pre method invocation processing
+            //canProceed = getPreMethodInvocationProcessor().process(invocation);
         }
 
-        // method proceed
-        postInvocation = invocation.proceed();
-
-        // post method invocation processing
-        if (isUserValid && postInvocation != null)
+        if (canProceed)
         {
-            Class<? extends Object> clazz = postInvocation.getClass();
-            BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessorRegistry().getProcessor(clazz);
+            // Method invocation
+            result = invocation.proceed();
 
-            if (processor != null)
+            // Post method invocation processing
+            if (isUserValid && result != null)
             {
-                postInvocation = processor.process(postInvocation);
-            }
-            else
-            {
-                LOG.debug("No post method invocation processor found for '" + clazz + "'.");
+                result = getPostMethodInvocationProcessor().process(result);
             }
         }
 
-        return postInvocation;
+        return result;
+    }
+
+    /**
+     * Checks if we have an authenticated user and that they aren't "System"
+     *
+     * @return <code>true</code> if we have an authenticated user and that they aren't "System", <code>false</code> otherwise.
+     */
+    private boolean isUserValid()
+    {
+        boolean result = false;
+
+        if (isNotBlank(getFullyAuthenticatedUser()) && !isRunAsUserTheSystemUser())
+        {
+            result = true;
+        }
+
+        return result;
     }
 }

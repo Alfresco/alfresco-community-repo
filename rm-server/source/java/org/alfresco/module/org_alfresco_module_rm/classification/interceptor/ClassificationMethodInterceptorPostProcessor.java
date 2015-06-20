@@ -32,17 +32,17 @@ import org.springframework.beans.factory.support.ManagedList;
  * <p>
  * Bean factory post processor that inspects available beans and adds the classification method interceptor
  * to all public services.
- * 
+ *
  * @author Roy Wetherall
  * @since 3.0.a
  */
 public class ClassificationMethodInterceptorPostProcessor implements BeanFactoryPostProcessor
 {
     private static final String PROP_INTERCEPTOR_NAMES = "interceptorNames";
-    private static final String TYPE_PROXY_FACTORY_BEAN = "ProxyFactoryBean";   
+    private static final String TYPE_PROXY_FACTORY_BEAN = "ProxyFactoryBean";
     private static final String POSTFIX_SERVICE = "Service";
     private static final String BEAN_NAME_CLASSIFICATION_METHOD_INTERCEPTOR = "classificationMethodInterceptor";
-    
+
     /**
      * @see org.springframework.beans.factory.config.BeanFactoryPostProcessor#postProcessBeanFactory(org.springframework.beans.factory.config.ConfigurableListableBeanFactory)
      */
@@ -56,27 +56,27 @@ public class ClassificationMethodInterceptorPostProcessor implements BeanFactory
         {
             // get bean definition
             BeanDefinition beanDefinition = beanFactory.getBeanDefinition(bean);
-            
+
             // only modify proxy factory beans that follow the public service naming postfix convention
-            if (beanDefinition.getBeanClassName() != null && 
+            if (beanDefinition.getBeanClassName() != null &&
                 beanDefinition.getBeanClassName().endsWith(TYPE_PROXY_FACTORY_BEAN) &&
                 bean.endsWith(POSTFIX_SERVICE))
-            {                     
+            {
                 // get the property values for the bean definition
                 MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
                 if (propertyValues.contains(PROP_INTERCEPTOR_NAMES))
                 {
                     // get the current list of interceptor names
-                    PropertyValue value = propertyValues.getPropertyValue(PROP_INTERCEPTOR_NAMES);                    
+                    PropertyValue value = propertyValues.getPropertyValue(PROP_INTERCEPTOR_NAMES);
                     ManagedList<RuntimeBeanNameReference> list = (ManagedList<RuntimeBeanNameReference>)value.getValue();
                     if (!list.isEmpty())
                     {
                         // add reference to classification method interceptor
                         RuntimeBeanNameReference beanReference = new RuntimeBeanNameReference(BEAN_NAME_CLASSIFICATION_METHOD_INTERCEPTOR);
                         list.add(beanReference);
-                    }                    
+                    }
                 }
             }
-        }        
+        }
     }
 }

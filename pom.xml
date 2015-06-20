@@ -883,34 +883,6 @@
             </activation>
             <build>
                 <plugins>
-                    <!-- Wipe the database before starting tests -->
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>sql-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>wipe-database</id>
-                                <phase>clean</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <sqlCommand>${db.drop.command}</sqlCommand>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>create-database</id>
-                                <phase>clean</phase>
-                                <goals>
-                                    <goal>execute</goal>
-                                </goals>
-                                <configuration>
-                                    <sqlCommand>${db.create.command}</sqlCommand>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <plugin>
                         <artifactId>maven-surefire-plugin</artifactId>
                         <executions>

@@ -18,8 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static org.alfresco.util.ParameterCheck.mandatory;
-
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -34,29 +32,29 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({ "rawtypes" })
     @Override
     public <T> T process(T object)
     {
-        mandatory("object", object);
+        T result = object;
 
-        Object result = object;
-        Collection collection = ((Collection) object);
-
-        if (!collection.isEmpty())
+        if (result != null)
         {
-            Iterator iterator = collection.iterator();
-            if (iterator.hasNext())
+            Collection collection = ((Collection) result);
+            if (!collection.isEmpty())
             {
-                Class<? extends Object> clazz = iterator.next().getClass();
-                BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessorRegistry().getProcessor(clazz);
-                if (processor != null)
+                Iterator iterator = collection.iterator();
+                if (iterator.hasNext())
                 {
-                    result = processor.process(object);
+                    BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(iterator.next());
+                    if (processor != null)
+                    {
+                        result = processor.process(object);
+                    }
                 }
             }
         }
 
-        return (T) result;
+        return result;
     }
 }

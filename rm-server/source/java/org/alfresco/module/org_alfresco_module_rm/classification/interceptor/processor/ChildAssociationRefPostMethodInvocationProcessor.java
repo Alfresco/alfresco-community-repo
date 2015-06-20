@@ -71,7 +71,7 @@ public class ChildAssociationRefPostMethodInvocationProcessor extends AbstractPo
             @Override
             public Boolean apply(ChildAssociationRef childAssociationRef)
             {
-                return process(childAssociationRef) != null;
+                return processSingleElement(childAssociationRef) != null;
             }
         });
     }

@@ -22,6 +22,10 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 /**
  * Registry for post method invocation processors
@@ -29,8 +33,11 @@ import java.util.Map;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class PostMethodInvocationProcessorRegistry
+public class PostMethodInvocationProcessor
 {
+    /** Logger */
+    private static Logger LOG = Logger.getLogger(PostMethodInvocationProcessor.class);
+
     /** Post method invocation processors */
     private Map<Class<?>, BasePostMethodInvocationProcessor> processors = new HashMap<Class<?>, BasePostMethodInvocationProcessor>();
 
@@ -51,7 +58,7 @@ public class PostMethodInvocationProcessorRegistry
      *
      * @return the processors Available processors
      */
-    public Map<Class<?>, BasePostMethodInvocationProcessor> getProcessors()
+    private Map<Class<?>, BasePostMethodInvocationProcessor> getProcessors()
     {
         return this.processors;
     }
@@ -59,21 +66,49 @@ public class PostMethodInvocationProcessorRegistry
     /**
      * Gets the processor from the available processors
      *
-     * @param clazz The runtime class of the post invocation object
+     * @param object The post invocation object
      * @return The suitable processor for the given class
      */
-    public BasePostMethodInvocationProcessor getProcessor(Class<? extends Object> clazz)
+    protected BasePostMethodInvocationProcessor getProcessor(Object object)
     {
-        mandatory("clazz", clazz);
+        mandatory("object", object);
 
         BasePostMethodInvocationProcessor result = null;
+        Class<? extends Object> clazz = object.getClass();
 
-        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processor : getProcessors().entrySet())
+        Set<Entry<Class<?>, BasePostMethodInvocationProcessor>> processorsEntrySet = getProcessors().entrySet();
+        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processorEntry : processorsEntrySet)
         {
-            if (processor.getKey().isAssignableFrom(clazz))
+            if (processorEntry.getKey().isAssignableFrom(clazz))
             {
-                result = processor.getValue();
+                result = processorEntry.getValue();
                 break;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Processes the given object
+     *
+     * @param object The object to process
+     * @return The processed object
+     */
+    public <T> T process(T object)
+    {
+        T result = object;
+
+        if (result != null)
+        {
+            BasePostMethodInvocationProcessor processor = getProcessor(result);
+            if (processor != null)
+            {
+                result = processor.process(result);
+            }
+            else
+            {
+                LOG.debug("No processor found for '" + result + "'.");
             }
         }
 

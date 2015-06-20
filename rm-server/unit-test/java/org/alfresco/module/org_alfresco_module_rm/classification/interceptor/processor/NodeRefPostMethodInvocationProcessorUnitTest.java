@@ -46,12 +46,6 @@ public class NodeRefPostMethodInvocationProcessorUnitTest extends BaseUnitTest
     @InjectMocks private NodeRefPostMethodInvocationProcessor nodeRefPostMethodInvocationProcessor;
     @Mock private ContentClassificationService mockedContentClassificationService;
 
-    @Test (expected = IllegalArgumentException.class)
-    public void testProcessingNull()
-    {
-        nodeRefPostMethodInvocationProcessor.process(null);
-    }
-
     @Test (expected = NotSupportedClassTypeException.class)
     public void testProccessingAnotherClassType()
     {

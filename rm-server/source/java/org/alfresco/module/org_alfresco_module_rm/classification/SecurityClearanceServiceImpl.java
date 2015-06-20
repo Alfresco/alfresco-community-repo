@@ -88,7 +88,7 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
      */
     private SecurityClearance getUserSecurityClearance(final String userName)
     {
-        final NodeRef    personNode = personService.getPerson(userName, true);
+        final NodeRef    personNode = personService.getPerson(userName, false);
         final PersonInfo personInfo = personService.getPerson(personNode);
 
         ClearanceLevel clearanceLevel = ClearanceLevelManager.NO_CLEARANCE;

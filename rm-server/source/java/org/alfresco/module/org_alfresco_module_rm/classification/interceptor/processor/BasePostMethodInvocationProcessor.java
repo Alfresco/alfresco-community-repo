@@ -23,7 +23,6 @@ import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import java.util.Collection;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor;
 import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationPostMethodInvocationException.NotSupportedClassTypeException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -37,9 +36,6 @@ import org.alfresco.service.cmr.repository.NodeService;
  */
 public abstract class BasePostMethodInvocationProcessor
 {
-    /** Classification method interceptor */
-    private ClassificationMethodInterceptor classificationMethodInterceptor;
-
     /** Node service */
     private NodeService nodeService;
 
@@ -49,16 +45,8 @@ public abstract class BasePostMethodInvocationProcessor
     /** Content classification service */
     private ContentClassificationService contentClassificationService;
 
-    /** Post method invocation processor registry */
-    private PostMethodInvocationProcessorRegistry postMethodInvocationProcessorRegistry;
-
-    /**
-     * @return the classificationMethodInterceptor
-     */
-    protected ClassificationMethodInterceptor getClassificationMethodInterceptor()
-    {
-        return this.classificationMethodInterceptor;
-    }
+    /** Post method invocation processor */
+    private PostMethodInvocationProcessor postMethodInvocationProcessor;
 
     /**
      * @return the nodeService
@@ -85,19 +73,11 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
-     * @return the postMethodInvocationProcessorRegistry
+     * @return the postMethodInvocationProcessor
      */
-    protected PostMethodInvocationProcessorRegistry getPostMethodInvocationProcessorRegistry()
+    protected PostMethodInvocationProcessor getPostMethodInvocationProcessor()
     {
-        return this.postMethodInvocationProcessorRegistry;
-    }
-
-    /**
-     * @param classificationMethodInterceptor the classificationMethodInterceptor to set
-     */
-    public void setClassificationMethodInterceptor(ClassificationMethodInterceptor classificationMethodInterceptor)
-    {
-        this.classificationMethodInterceptor = classificationMethodInterceptor;
+        return this.postMethodInvocationProcessor;
     }
 
     /**
@@ -125,11 +105,11 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
-     * @param postMethodInvocationProcessorRegistry the postMethodInvocationProcessorRegistry to set
+     * @param postMethodInvocationProcessor the postMethodInvocationProcessor to set
      */
-    public void setPostMethodInvocationProcessorRegistry(PostMethodInvocationProcessorRegistry postMethodInvocationProcessorRegistry)
+    public void setPostMethodInvocationProcessor(PostMethodInvocationProcessor postMethodInvocationProcessor)
     {
-        this.postMethodInvocationProcessorRegistry = postMethodInvocationProcessorRegistry;
+        this.postMethodInvocationProcessor = postMethodInvocationProcessor;
     }
 
     /**
@@ -152,7 +132,7 @@ public abstract class BasePostMethodInvocationProcessor
      */
     public void register()
     {
-        getPostMethodInvocationProcessorRegistry().register(this);
+        getPostMethodInvocationProcessor().register(this);
     }
 
     /**

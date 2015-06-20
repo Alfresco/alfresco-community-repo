@@ -35,24 +35,30 @@
 
    <!-- Classification Method Interceptor -->
 
+   <bean id="preMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PreMethodInvocationProcessor">
+   </bean>
+
+   <bean id="postMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessor">
+   </bean>
+
    <bean id="classificationMethodInterceptor"
-         class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor">
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor">
+      <property name="preMethodInvocationProcessor" ref="preMethodInvocationProcessor" />
+      <property name="postMethodInvocationProcessor" ref="postMethodInvocationProcessor" />
    </bean>
 
    <bean id="classificationMethodInterceptorPostProcessor"
-         class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
-
-   <bean id="postMethodInvocationProcessorRegistry"
-         class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessorRegistry" />
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
 
    <bean id="basePostMethodInvocationProcessor"
-         abstract="true"
-         init-method="register">
-      <property name="classificationMethodInterceptor" ref="classificationMethodInterceptor" />
+      abstract="true"
+      init-method="register">
       <property name="nodeService" ref="NodeService" />
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="contentClassificationService" ref="ContentClassificationService" />
-      <property name="postMethodInvocationProcessorRegistry" ref="postMethodInvocationProcessorRegistry" />
+      <property name="postMethodInvocationProcessor" ref="postMethodInvocationProcessor" />
    </bean>
 
    <bean id="abstractPostMethodInvocationProcessor"

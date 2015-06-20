@@ -85,5 +85,6 @@
     </postInstallationActionList>
     <postUninstallationActionList>
         <deleteFile path="${alfresco_data_directory}/solr4" />
+        <deleteFile path="${installdir}/solr4" />
     </postUninstallationActionList>
 </component>

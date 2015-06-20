@@ -50,12 +50,12 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * list of types of services that need registration, this is still
      * OK.
      */
-	
-	private static int COMMIT_ORDER_NORMAL=0;
-	private static int COMMIT_ORDER_INTEGRITY=1;
-	private static int COMMIT_ORDER_LUCENE=2;
-	private static int COMMIT_ORDER_DAO=3;
-	private static int COMMIT_ORDER_CACHE=4;
+    
+    private static int COMMIT_ORDER_NORMAL=0;
+    private static int COMMIT_ORDER_INTEGRITY=1;
+    private static int COMMIT_ORDER_LUCENE=2;
+    private static int COMMIT_ORDER_DAO=3;
+    private static int COMMIT_ORDER_CACHE=4;
     
     /**
      * The order of synchronization set to be 100 less than the Hibernate synchronization order
@@ -146,30 +146,30 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      */
     public static boolean isDirty() 
     {
-    	Set<TransactionListener> allListeners = getListeners();
-    	for(TransactionListener listener : allListeners)
-    	{
-    		if(listener instanceof TransactionalDao)
-    		{
-    			TransactionalDao service = (TransactionalDao)listener;
-    	        if (service.isDirty())
-    	        {
-    	            return true;
-    	        }
-    			
-    		}
-    		else if (listener instanceof DAOAdapter)
-    		{
-    			DAOAdapter adapter = (DAOAdapter)listener;
-    			TransactionalDao service = adapter.getService();
-    	        if (service.isDirty())
-    	        {
-    	            return true;
-    	        }
-    		}
-    		
-    	}
-    	       
+        Set<TransactionListener> allListeners = getListeners();
+        for(TransactionListener listener : allListeners)
+        {
+            if(listener instanceof TransactionalDao)
+            {
+                TransactionalDao service = (TransactionalDao)listener;
+                if (service.isDirty())
+                {
+                    return true;
+                }
+                
+            }
+            else if (listener instanceof DAOAdapter)
+            {
+                DAOAdapter adapter = (DAOAdapter)listener;
+                TransactionalDao service = adapter.getService();
+                if (service.isDirty())
+                {
+                    return true;
+                }
+            }
+            
+        }
+               
         return false;
     }
     
@@ -271,8 +271,8 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      */
     public static void bindListener(TransactionListener listener)
     {
-    	boolean bound = false;
-    	
+        boolean bound = false;
+        
         if (listener instanceof IntegrityChecker)
         {
             bound = bindListener(listener, COMMIT_ORDER_INTEGRITY);

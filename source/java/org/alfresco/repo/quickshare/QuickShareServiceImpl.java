@@ -343,6 +343,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         
         Map<String, Object> metadata = new HashMap<String, Object>(8);
         
+        metadata.put("nodeRef", nodeRef.toString());
         metadata.put("name", nodeProps.get(ContentModel.PROP_NAME));
         metadata.put("title", nodeProps.get(ContentModel.PROP_TITLE));
         
@@ -401,7 +402,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         	metadata.put("sharable", sharable);        	
         }
 
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<String, Object>(2);
         model.put("item", metadata);
         return model;
     }
@@ -451,6 +452,7 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         {
             logger.debug("QuickShare - retrieved metadata: "+sharedId+" ["+nodeRef+"]["+model+"]");
         }
+        //model.put("nodeRef", nodeRef)
         
         return model;
     }

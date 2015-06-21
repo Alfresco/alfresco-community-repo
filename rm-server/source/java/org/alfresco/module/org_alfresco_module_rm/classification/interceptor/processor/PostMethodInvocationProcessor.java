@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 
 import static org.alfresco.util.ParameterCheck.mandatory;
 
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -76,13 +77,21 @@ public class PostMethodInvocationProcessor
         BasePostMethodInvocationProcessor result = null;
         Class<? extends Object> clazz = object.getClass();
 
-        Set<Entry<Class<?>, BasePostMethodInvocationProcessor>> processorsEntrySet = getProcessors().entrySet();
-        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processorEntry : processorsEntrySet)
+        if (clazz.isArray())
         {
-            if (processorEntry.getKey().isAssignableFrom(clazz))
+            result = getProcessors().get(Array.class);
+        }
+
+        if (result == null)
+        {
+            Set<Entry<Class<?>, BasePostMethodInvocationProcessor>> processorsEntrySet = getProcessors().entrySet();
+            for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processorEntry : processorsEntrySet)
             {
-                result = processorEntry.getValue();
-                break;
+                if (processorEntry.getKey().isAssignableFrom(clazz))
+                {
+                    result = processorEntry.getValue();
+                    break;
+                }
             }
         }
 

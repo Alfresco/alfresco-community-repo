@@ -48,6 +48,7 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class PreMethodInvocationProcessor implements ApplicationContextAware
 {
+    /** Key to mark the transaction as processing */
     private static final String KEY_PROCESSING = generate();
 
     private ApplicationContext applicationContext;
@@ -88,6 +89,120 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
         return (DictionaryService)applicationContext.getBean("dictionaryService");
     }
 
+//    /** Transaction service */
+//    private TransactionService transactionService;
+//
+//    /** Classification service bootstrap */
+//    private ClassificationServiceBootstrap classificationServiceBootstrap;
+//
+//    /** Alfresco transaction support */
+//    private AlfrescoTransactionSupport alfrescoTransactionSupport;
+//
+//    /** Node service */
+//    private NodeService nodeService;
+//
+//    /** Dictionary service */
+//    private DictionaryService dictionaryService;
+//
+//    /** Content classification service */
+//    private ContentClassificationService contentClassificationService;
+//
+//    /**
+//     * @return the transactionService
+//     */
+//    protected TransactionService getTransactionService()
+//    {
+//        return this.transactionService;
+//    }
+//
+//    /**
+//     * @return the classificationServiceBootstrap
+//     */
+//    protected ClassificationServiceBootstrap getClassificationServiceBootstrap()
+//    {
+//        return this.classificationServiceBootstrap;
+//    }
+//
+//    /**
+//     * @return the alfrescoTransactionSupport
+//     */
+//    protected AlfrescoTransactionSupport getAlfrescoTransactionSupport()
+//    {
+//        return this.alfrescoTransactionSupport;
+//    }
+//
+//    /**
+//     * @return the nodeService
+//     */
+//    protected NodeService getNodeService()
+//    {
+//        return this.nodeService;
+//    }
+//
+//    /**
+//     * @return the dictionaryService
+//     */
+//    protected DictionaryService getDictionaryService()
+//    {
+//        return this.dictionaryService;
+//    }
+//
+//    /**
+//     * @return the contentClassificationService
+//     */
+//    protected ContentClassificationService getContentClassificationService()
+//    {
+//        return this.contentClassificationService;
+//    }
+//
+//    /**
+//     * @param transactionService the transactionService to set
+//     */
+//    public void setTransactionService(TransactionService transactionService)
+//    {
+//        this.transactionService = transactionService;
+//    }
+//
+//    /**
+//     * @param classificationServiceBootstrap the classificationServiceBootstrap to set
+//     */
+//    public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap)
+//    {
+//        this.classificationServiceBootstrap = classificationServiceBootstrap;
+//    }
+//
+//    /**
+//     * @param alfrescoTransactionSupport the alfrescoTransactionSupport to set
+//     */
+//    public void setAlfrescoTransactionSupport(AlfrescoTransactionSupport alfrescoTransactionSupport)
+//    {
+//        this.alfrescoTransactionSupport = alfrescoTransactionSupport;
+//    }
+//
+//    /**
+//     * @param nodeService the nodeService to set
+//     */
+//    public void setNodeService(NodeService nodeService)
+//    {
+//        this.nodeService = nodeService;
+//    }
+//
+//    /**
+//     * @param dictionaryService the dictionaryService to set
+//     */
+//    public void setDictionaryService(DictionaryService dictionaryService)
+//    {
+//        this.dictionaryService = dictionaryService;
+//    }
+//
+//    /**
+//     * @param contentClassificationService the contentClassificationService to set
+//     */
+//    public void setContentClassificationService(ContentClassificationService contentClassificationService)
+//    {
+//        this.contentClassificationService = contentClassificationService;
+//    }
+
     /**
      * Checks if the current user is cleared to see the items
      * passed as parameters to the current method invocation.
@@ -100,7 +215,7 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
         mandatory("invocation", invocation);
 
         // do in transaction
-        return getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+        return /*getTransactionService().*/getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
         {
             @SuppressWarnings("rawtypes")
             public Boolean execute() throws Throwable

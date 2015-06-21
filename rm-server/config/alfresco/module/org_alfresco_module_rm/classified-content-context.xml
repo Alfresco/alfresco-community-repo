@@ -95,6 +95,11 @@
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AssociationRefPostMethodInvocationProcessor">
    </bean>
 
+   <bean id="permissionCheckValuePostMethodInvocationProcessor"
+      parent="abstractPostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PermissionCheckValuePostMethodInvocationProcessor">
+   </bean>
+
    <bean id="collectionPostMethodInvocationProcessor"
       abstract="true"
       parent="basePostMethodInvocationProcessor"

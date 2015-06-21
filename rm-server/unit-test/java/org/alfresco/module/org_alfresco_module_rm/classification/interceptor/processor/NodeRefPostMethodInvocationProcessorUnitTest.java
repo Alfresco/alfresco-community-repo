@@ -28,7 +28,6 @@ import static org.springframework.extensions.webscripts.GUID.generate;
 import java.util.ArrayList;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationPostMethodInvocationException.NotSupportedClassTypeException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
@@ -45,13 +44,6 @@ public class NodeRefPostMethodInvocationProcessorUnitTest extends BaseUnitTest
 {
     @InjectMocks private NodeRefPostMethodInvocationProcessor nodeRefPostMethodInvocationProcessor;
     @Mock private ContentClassificationService mockedContentClassificationService;
-
-    @Test (expected = NotSupportedClassTypeException.class)
-    public void testProccessingAnotherClassType()
-    {
-        NodeRef nodeRef = generateNodeRef();
-        nodeRefPostMethodInvocationProcessor.process(nodeRef.getStoreRef());
-    }
 
     @Test
     public void testProcessingNonExistingNode()

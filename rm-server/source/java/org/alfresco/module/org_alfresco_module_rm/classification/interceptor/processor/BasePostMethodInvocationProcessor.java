@@ -23,7 +23,6 @@ import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import java.util.Collection;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationPostMethodInvocationException.NotSupportedClassTypeException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -133,19 +132,6 @@ public abstract class BasePostMethodInvocationProcessor
     public void register()
     {
         getPostMethodInvocationProcessor().register(this);
-    }
-
-    /**
-     * Checks if the given object's class is suitable for the processor
-     *
-     * @param object The object to process
-     */
-    protected void checkObjectClass(Object object)
-    {
-        if (!(object.getClass().equals(getClassName())))
-        {
-            throw new NotSupportedClassTypeException("The object is not an instance of '" + getClassName() + "' but '" + object.getClass() + "'.");
-        }
     }
 
     /**

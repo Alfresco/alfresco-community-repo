@@ -18,23 +18,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
+import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * NodeRef Post Method Invocation Processor
+ * Permission Check Value Post Method Invocation Processor
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class NodeRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
+public class PermissionCheckValuePostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
      */
     @Override
-    protected Class<NodeRef> getClassName()
+    protected Class<PermissionCheckValue> getClassName()
     {
-        return NodeRef.class;
+        return PermissionCheckValue.class;
     }
 
     /**
@@ -43,7 +44,8 @@ public class NodeRefPostMethodInvocationProcessor extends AbstractPostMethodInvo
     @Override
     protected <T> T processSingleElement(T object)
     {
-        NodeRef nodeRef = getClassName().cast(object);
+        PermissionCheckValue permissionCheckValue = getClassName().cast(object);
+        NodeRef nodeRef = permissionCheckValue.getNodeRef();
         return filter(nodeRef) == null ? null : object;
     }
 }

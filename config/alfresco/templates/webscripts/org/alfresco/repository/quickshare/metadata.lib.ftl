@@ -1,6 +1,7 @@
 <#macro resultsJSON item>
 <#escape x as jsonUtils.encodeJSONString(x)>
 {
+    "nodeRef": "${item.nodeRef}",
     "name": "${item.name}",
     "title": "${item.title!""}",
     "mimetype": "${item.mimetype!""}",

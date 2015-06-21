@@ -18,12 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import java.util.Collection;
-
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.util.collections.CollectionUtils;
-import org.alfresco.util.collections.Filter;
 
 /**
  * StoreRef Post Method Invocation Processor
@@ -48,24 +44,8 @@ public class StoreRefPostMethodInvocationProcessor extends AbstractPostMethodInv
     @Override
     protected <T> T processSingleElement(T object)
     {
-        NodeRef nodeRef = getNodeService().getRootNode((StoreRef) object);
+        StoreRef storeRef = getClassName().cast(object);
+        NodeRef nodeRef = getNodeService().getRootNode(storeRef);
         return filter(nodeRef) == null ? null : object;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processCollection(java.util.Collection)
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    protected Collection processCollection(Collection collection)
-    {
-        return CollectionUtils.filter(collection, new Filter<NodeRef>()
-        {
-            @Override
-            public Boolean apply(NodeRef nodeRef)
-            {
-                return processSingleElement(nodeRef) != null;
-            }
-        });
     }
 }

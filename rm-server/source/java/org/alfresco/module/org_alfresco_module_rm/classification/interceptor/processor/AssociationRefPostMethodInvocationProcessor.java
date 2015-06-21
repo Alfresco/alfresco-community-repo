@@ -18,12 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import java.util.Collection;
-
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.util.collections.CollectionUtils;
-import org.alfresco.util.collections.Filter;
 
 /**
  * AssociationRef Post Method Invocation Processor
@@ -48,7 +44,7 @@ public class AssociationRefPostMethodInvocationProcessor extends AbstractPostMet
     @Override
     protected <T> T processSingleElement(T object)
     {
-        AssociationRef associationRef = (AssociationRef) object;
+        AssociationRef associationRef = getClassName().cast(object);
 
         NodeRef sourceRef = associationRef.getSourceRef();
         NodeRef filteredSource = filter(sourceRef);
@@ -57,22 +53,5 @@ public class AssociationRefPostMethodInvocationProcessor extends AbstractPostMet
         NodeRef filteredTarget = filter(targetRef);
 
         return (filteredSource == null || filteredTarget == null) ? null : object;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processCollection(java.util.Collection)
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    @Override
-    protected Collection processCollection(Collection collection)
-    {
-        return CollectionUtils.filter(collection, new Filter<AssociationRef>()
-        {
-            @Override
-            public Boolean apply(AssociationRef associationRef)
-            {
-                return processSingleElement(associationRef) != null;
-            }
-        });
     }
 }

@@ -18,20 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
-import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.security.permissions.impl.model.PermissionModel;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.util.GUID;
 
 /**
  * Enforce classification integration test
@@ -42,16 +30,16 @@ import org.alfresco.util.GUID;
 public class EnforceClassificationTest extends BaseRMTestCase
 {
 	/** test data */
-	private static final String CLASSIFICATION_LEVEL1 = "level1";
-	private static final String CLASSIFICATION_LEVEL2 = "level2";
-	private static final String CLASSIFICATION_LEVEL3 = "level3";
-	private static final String CLASSIFICATION_LEVEL4 = "level4";
-
-	private static final String CLASSIFICATION_REASON = "Test Reason 1";
-	private static final String CLASSIFICATION_AUTHORITY = "classification.authority";
-	private static final String RECORD_NAME = "recordname.txt";
-
-	private ContentClassificationService contentClassificationService;
+//	private static final String CLASSIFICATION_LEVEL1 = "level1";
+//	private static final String CLASSIFICATION_LEVEL2 = "level2";
+//	private static final String CLASSIFICATION_LEVEL3 = "level3";
+//	private static final String CLASSIFICATION_LEVEL4 = "level4";
+//
+//	private static final String CLASSIFICATION_REASON = "Test Reason 1";
+//	private static final String CLASSIFICATION_AUTHORITY = "classification.authority";
+//	private static final String RECORD_NAME = "recordname.txt";
+//
+//	private ContentClassificationService contentClassificationService;
 
 	@Override
 	protected void initServices()

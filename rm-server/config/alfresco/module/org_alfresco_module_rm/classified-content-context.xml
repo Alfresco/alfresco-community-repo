@@ -119,6 +119,14 @@
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ListPostMethodInvocationProcessor">
    </bean>
 
+   <!-- FIXME: Implementation needs to be changed -->
+   <!--
+   <bean id="resultSetPostMethodInvocationProcessor"
+      parent="collectionPostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ResultSetPostMethodInvocationProcessor">
+   </bean>
+   -->
+
    <bean id="arrayPostMethodInvocationProcessor"
       parent="abstractPostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ArrayPostMethodInvocationProcessor">

@@ -37,13 +37,4 @@ public class ListPostMethodInvocationProcessor extends CollectionPostMethodInvoc
     {
         return List.class;
     }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
-     */
-    @Override
-    public <T> T process(T object)
-    {
-        return super.process(object);
-    }
 }

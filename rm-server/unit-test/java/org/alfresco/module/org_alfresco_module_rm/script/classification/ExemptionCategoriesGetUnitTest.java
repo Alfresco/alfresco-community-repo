@@ -19,11 +19,11 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,13 +77,13 @@ public class ExemptionCategoriesGetUnitTest extends BaseWebScriptUnitTest
         // Create test data.
         ExemptionCategory exemptionCategoryA = new ExemptionCategory("idA", "labelA");
         ExemptionCategory exemptionCategoryB = new ExemptionCategory("idB", "labelB");
-        List<ExemptionCategory> exemptionCategories = Arrays.asList(exemptionCategoryA, exemptionCategoryB);
+        List<ExemptionCategory> exemptionCategories = asList(exemptionCategoryA, exemptionCategoryB);
 
         // setup interactions
         doReturn(exemptionCategories).when(mockClassificationSchemeService).getExemptionCategories();
 
         // setup web script parameters
-        Map<String, String> parameters = new HashMap<String, String>();
+        Map<String, String> parameters = new HashMap<>();
 
         // execute web script
         JSONObject json = executeJSONWebScript(parameters);
@@ -92,7 +92,12 @@ public class ExemptionCategoriesGetUnitTest extends BaseWebScriptUnitTest
 
         // check the JSON result using Jackson to allow easy equality testing.
         ObjectMapper mapper = new ObjectMapper();
-        String expectedJSONString = "{\"data\":{\"items\":[{\"displayLabel\":\"labelA\",\"id\":\"idA\",\"fullCategory\":\"idA: labelA\"},{\"displayLabel\":\"labelB\",\"id\":\"idB\",\"fullCategory\":\"idB: labelB\"}]}}";
+        String expectedJSONString = "{\"data\":{" +
+                                         "\"items\":[" +
+                                           "{\"displayLabel\":\"labelA\"," + "\"id\":\"idA\"," + "\"fullCategory\":\"idA: labelA\"}," +
+                                           "{\"displayLabel\":\"labelB\",\"id\":\"idB\",\"fullCategory\":\"idB: labelB\"}" +
+                                         "]" +
+                                    "}}";
         JsonNode expected = mapper.readTree(expectedJSONString);
         assertEquals(expected, mapper.readTree(actualJSONString));
     }

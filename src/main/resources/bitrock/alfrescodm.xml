@@ -107,6 +107,12 @@
                         </regExMatch>
                     </ruleList>
                 </throwError>
+                <throwError>
+                    <text>Password must not contain non-ascii characters</text>
+                    <ruleList>
+                        <stringTest text="${alfresco_admin_password}" type="not_ascii" />
+                    </ruleList>
+                </throwError>
 	    </validationActionList>
         </passwordParameter>
 

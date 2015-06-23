@@ -68,9 +68,9 @@ function testGetFormForContentNode()
     test.assertEquals("Name", nameField.label);
     test.assertEquals("Title", titleField.label);
     test.assertEquals("Description", descField.label);
-    test.assertEquals("Originator", originatorField.label);
-    test.assertEquals("Addressee", addresseeField.label);
-    test.assertEquals("Addressees", addresseesField.label);
+    test.assertEquals("From", originatorField.label);
+    test.assertEquals("To", addresseeField.label);
+    test.assertEquals("CC", addresseesField.label);
     test.assertEquals("Subject", subjectField.label);
     test.assertEquals("Sent Date", sentDateField.label);
     test.assertEquals("References", referencesField.label);

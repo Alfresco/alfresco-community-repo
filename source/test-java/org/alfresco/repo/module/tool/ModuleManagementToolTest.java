@@ -18,24 +18,18 @@
  */
 package org.alfresco.repo.module.tool;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-import junit.framework.TestCase;
-
-import org.alfresco.util.TempFileProvider;
-import org.springframework.util.FileCopyUtils;
-
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import de.schlichtherle.truezip.file.TVFS;
+import junit.framework.TestCase;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.util.TempFileProvider;
+import org.springframework.util.FileCopyUtils;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @see org.alfresco.repo.module.tool.ModuleManagementTool
@@ -346,19 +340,74 @@ public class ModuleManagementToolTest extends TestCase
         checkForFileExistance(warLocation, files);   
     }
     
-    public void testList()
-        throws Exception
+    public void testList() throws Exception
     {
         String warLocation = getFileLocation(".war", "module/test.war");
-        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
-        
         this.manager.listModules(warLocation);
-        
-        this.manager.installModule(ampLocation, warLocation);
-        
-        this.manager.listModules(warLocation);        
     }
-    
+
+    public void testListAndInstall() throws Exception {
+
+        String warLocation = getFileLocation(".war", "module/test.war");
+        String ampLocation = getFileLocation(".amp", "module/test_v1.amp");
+        String ampV2Location = getFileLocation(".amp", "module/test_v2.amp");
+
+        TFile war = new TFile(warLocation);
+
+        List<ModuleDetails> details = this.manager.warHelper.listModules(war);
+        assertNotNull(details);
+        assertEquals(details.size(), 0);
+
+        this.manager.installModule(ampLocation, warLocation);
+
+        details = this.manager.warHelper.listModules(war);
+        assertNotNull(details);
+        assertEquals(details.size(), 1);
+        ModuleDetails aModule = details.get(0);
+        assertEquals("test", aModule.getId());
+        assertEquals("1.0", aModule.getModuleVersionNumber().toString());
+
+        this.manager.installModule(ampV2Location, warLocation);
+
+        details = this.manager.warHelper.listModules(war);
+        assertNotNull(details);
+        assertEquals(details.size(), 1);
+        aModule = details.get(0);
+        assertEquals("test", aModule.getId());
+        assertEquals("2.0", aModule.getModuleVersionNumber().toString());
+
+        String testAmpDepV2Location = getFileLocation(".amp", "module/dependent_on_test_v2.amp");
+        String testAmp7 = getFileLocation(".amp", "module/test_v7.amp");
+
+        this.manager.installModule(testAmpDepV2Location, warLocation, false, true, false);
+        this.manager.installModule(testAmp7, warLocation, false, true, false);
+
+        details = this.manager.warHelper.listModules(war);
+        assertNotNull(details);
+        assertEquals(details.size(), 3);
+
+        //Sort them by installation date
+        details.sort(new Comparator<ModuleDetails>() {
+            @Override
+            public int compare(ModuleDetails a, ModuleDetails b) {
+                return a.getInstallDate().compareTo(b.getInstallDate());
+            }
+        });
+
+        ModuleDetails installedModule = details.get(0);
+        assertEquals("test", installedModule.getId());
+        assertEquals("2.0", installedModule.getModuleVersionNumber().toString());
+
+        installedModule = details.get(1);
+        assertEquals("org.alfresco.module.test.dependent", installedModule.getId());
+        assertEquals("2.0", installedModule.getModuleVersionNumber().toString());
+
+        installedModule = details.get(2);
+        assertEquals("forcedtest", installedModule.getId());
+        assertEquals("1.0", installedModule.getModuleVersionNumber().toString());
+
+    }
+
     private String getFileLocation(String extension, String location)
         throws IOException
     {

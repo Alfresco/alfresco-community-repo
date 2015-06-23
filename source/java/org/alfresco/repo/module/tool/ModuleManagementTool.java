@@ -18,28 +18,20 @@
  */
 package org.alfresco.repo.module.tool;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Date;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
+import de.schlichtherle.truezip.file.*;
+import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
+import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleInstallState;
-import org.alfresco.util.VersionNumber;
 import org.safehaus.uuid.UUIDGenerator;
 
-import de.schlichtherle.truezip.file.TArchiveDetector;
-import de.schlichtherle.truezip.file.TConfig;
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
-import de.schlichtherle.truezip.file.TVFS;
-import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
-import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Module management tool.
@@ -399,6 +391,14 @@ public class ModuleManagementTool implements LogOutput
         return dirChanges;
     }
 
+    /**
+     * Backsup a given WAR file.
+     *
+     * @see ModuleManagementTool#installModule(String, String, boolean, boolean, boolean)
+     *
+     * @param warFile   the location of the AMP file to be installed
+     * @param warFileLocation   the location of the WAR file into which the AMP file is to be installed
+     */
     private void backupWar(TFile warFile, boolean backupWAR) throws IOException
     {
 
@@ -664,69 +664,27 @@ public class ModuleManagementTool implements LogOutput
      */
     public void listModules(String warLocation)
     {
-        ModuleDetails moduleDetails = null;
         boolean previous = this.verbose;
         this.verbose = true;
-        boolean moduleFound = false;
-        
+
         try
         {
-            TFile moduleDir = new TFile(warLocation + WarHelper.MODULE_NAMESPACE_DIR);
-            if (moduleDir.exists() == false)
+            List<ModuleDetails> modulesFound =  warHelper.listModules(new TFile(warLocation));
+
+            if (modulesFound.size() < 1)
             {
                 outputVerboseMessage("No modules are installed in this WAR file");
             }
-            
-            java.io.File[] dirs = moduleDir.listFiles();
-            if (dirs != null && dirs.length != 0)
-            {
-                for (java.io.File dir : dirs)
-                {
-                    if (dir.isDirectory() == true)
-                    {
-                        TFile moduleProperties = new TFile(dir.getPath() + WarHelper.MODULE_CONFIG_IN_WAR);
-                        if (moduleProperties.exists() == true)
-                        {
-                            InputStream is = null;
-                            try
-                            {
-                                moduleFound = true;
-                                is = new TFileInputStream(moduleProperties);
-                                moduleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is);
-                            }
-                            catch (AlfrescoRuntimeException exception)
-                            {
-                                throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "' " + exception.getMessage(), exception);
-                            }
-                            catch (IOException exception)
-                            {
-                                throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "'", exception);
-                            }
-                            finally
-                            {
-                                if (is != null)
-                                {
-                                    try { is.close(); } catch (Throwable e ) {}
-                                }
-                            }
-                            outputVerboseMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
-                            outputVerboseMessage("   Title:        " + moduleDetails.getTitle(), true);
-                            outputVerboseMessage("   Version:      " + moduleDetails.getModuleVersionNumber(), true);
-                            outputVerboseMessage("   Install Date: " + moduleDetails.getInstallDate(), true);                
-                            outputVerboseMessage("   Description:   " + moduleDetails.getDescription(), true); 
-                        }
-                    }
-                }
+
+            for (Iterator<ModuleDetails> iterator = modulesFound.iterator(); iterator.hasNext(); ) {
+                ModuleDetails moduleDetails =  iterator.next();
+                outputVerboseMessage("Module '" + moduleDetails.getId() + "' installed in '" + warLocation + "'");
+                outputVerboseMessage("   Title:        " + moduleDetails.getTitle(), true);
+                outputVerboseMessage("   Version:      " + moduleDetails.getModuleVersionNumber(), true);
+                outputVerboseMessage("   Install Date: " + moduleDetails.getInstallDate(), true);
+                outputVerboseMessage("   Description:   " + moduleDetails.getDescription(), true);
             }
-            else
-            {
-                outputVerboseMessage("No modules are installed in this WAR file");
-            }
-            if (!moduleFound)
-            {
-                outputVerboseMessage("No modules were found in this WAR file");                
-            }
-            
+
         }
         finally
         {

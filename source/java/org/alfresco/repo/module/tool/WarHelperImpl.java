@@ -1,5 +1,13 @@
 package org.alfresco.repo.module.tool;
 
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.repo.module.ModuleDetailsImpl;
+import org.alfresco.service.cmr.module.ModuleDependency;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.util.VersionNumber;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -7,14 +15,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
-
-import org.alfresco.repo.module.ModuleDetailsImpl;
-import org.alfresco.service.cmr.module.ModuleDependency;
-import org.alfresco.service.cmr.module.ModuleDetails;
-import org.alfresco.util.VersionNumber;
-
-import de.schlichtherle.truezip.file.TFile;
-import de.schlichtherle.truezip.file.TFileInputStream;
 
 
 /**
@@ -138,7 +138,7 @@ public class WarHelperImpl implements WarHelper
 	 * Compares the version information with the module details to see if their valid.  If they are invalid then it throws an exception.
 	 * @param warVersion
 	 * @param installingModuleDetails
-	 * @throws ModuleManagementToolException
+	 * @throws ModuleManagementToolException/home/gethin/development/projects/updatetool/code/update-tool
 	 */
 	private void checkVersions(VersionNumber warVersion, ModuleDetails installingModuleDetails) throws ModuleManagementToolException
 	{
@@ -274,6 +274,65 @@ public class WarHelperImpl implements WarHelper
         if (MANIFEST_SHARE.equals(title)) return true;  //It is share
         
         return false; //default
+    }
+
+
+    /**
+     * Lists all the currently installed modules in the WAR
+     *
+     * @param war the war
+     * @throws ModuleManagementToolException
+     */
+    @Override
+    public List<ModuleDetails> listModules(TFile war)
+    {
+        List<ModuleDetails> moduleDetails = new ArrayList<>();
+        boolean moduleFound = false;
+
+        TFile moduleDir = new TFile(war, WarHelper.MODULE_NAMESPACE_DIR);
+        if (moduleDir.exists() == false)
+        {
+            return moduleDetails; //empty
+        }
+
+        java.io.File[] dirs = moduleDir.listFiles();
+        if (dirs != null && dirs.length != 0)
+        {
+            for (java.io.File dir : dirs)
+            {
+                if (dir.isDirectory() == true)
+                {
+                    TFile moduleProperties = new TFile(dir.getPath() + WarHelper.MODULE_CONFIG_IN_WAR);
+                    if (moduleProperties.exists() == true)
+                    {
+                        InputStream is = null;
+                        try
+                        {
+                            moduleFound = true;
+                            is = new TFileInputStream(moduleProperties);
+                            moduleDetails.add(ModuleDetailsHelper.createModuleDetailsFromPropertiesStream(is));
+                        }
+                        catch (AlfrescoRuntimeException exception)
+                        {
+                            throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "' " + exception.getMessage(), exception);
+                        }
+                        catch (IOException exception)
+                        {
+                            throw new ModuleManagementToolException("Unable to open module properties file '" + moduleProperties.getPath() + "'", exception);
+                        }
+                        finally
+                        {
+                            if (is != null)
+                            {
+                                try { is.close(); } catch (Throwable e ) {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return moduleDetails;
     }
 
     /**

@@ -4,6 +4,8 @@ import org.alfresco.service.cmr.module.ModuleDetails;
 
 import de.schlichtherle.truezip.file.TFile;
 
+import java.util.List;
+
 /**
  * Performs various actions on a war file or exploded war directory
  *
@@ -54,5 +56,13 @@ public interface WarHelper
      * @return boolean - true if it is a share war
      */
 	public boolean isShareWar(TFile war);
-    
+
+    /**
+     * Lists all the currently installed modules in the WAR
+     * @since 5.1
+     * @param war the war
+     * @return List<ModuleDetails> an unordered list of module details.
+     * @throws ModuleManagementToolException
+     */
+    List<ModuleDetails> listModules(TFile war);
 }

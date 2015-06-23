@@ -1,30 +1,24 @@
 package org.alfresco.repo.module.tool;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Properties;
-
-import org.alfresco.repo.module.ModuleDetailsImpl;
-import org.alfresco.repo.module.ModuleVersionNumber;
-import org.alfresco.service.cmr.module.ModuleDetails;
-import org.alfresco.util.TempFileProvider;
-import org.alfresco.util.VersionNumber;
-import org.junit.Test;
-import org.springframework.util.FileCopyUtils;
-
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TConfig;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.fs.archive.zip.ZipDriver;
 import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
+import org.alfresco.repo.module.ModuleDetailsImpl;
+import org.alfresco.repo.module.ModuleVersionNumber;
+import org.alfresco.service.cmr.module.ModuleDetails;
+import org.alfresco.service.cmr.module.ModuleInstallState;
+import org.alfresco.util.TempFileProvider;
+import org.alfresco.util.VersionNumber;
+import org.junit.Test;
+import org.springframework.util.FileCopyUtils;
+
+import java.io.*;
+import java.util.List;
+import java.util.Properties;
+
+import static org.junit.Assert.*;
 
 /**
  * Tests the war helper. 
@@ -295,7 +289,26 @@ public class WarHelperImplTest extends WarHelperImpl
 		}
         
     }
-    
+
+    @Test
+    public void testListModules() throws Exception
+    {
+        TFile theWar =  getFile(".war", "module/test.war");
+
+        List<ModuleDetails> details = this.listModules(theWar);
+        assertNotNull(details);
+        assertEquals(details.size(), 0);
+
+        theWar =  getFile(".war", "module/share-4.2.a.war");
+        details = this.listModules(theWar);
+        assertNotNull(details);
+        assertEquals(details.size(), 1);
+        ModuleDetails aModule = details.get(0);
+        assertEquals("alfresco-mm-share", aModule.getId());
+        assertEquals("0.1.5.6", aModule.getModuleVersionNumber().toString());
+        assertEquals(ModuleInstallState.INSTALLED, aModule.getInstallState());
+
+    }
 
 	private Properties dummyModuleProperties() {
 		Properties props = new Properties();

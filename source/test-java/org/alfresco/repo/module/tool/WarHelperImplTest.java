@@ -17,6 +17,7 @@ import org.springframework.util.FileCopyUtils;
 import java.io.*;
 import java.util.List;
 import java.util.Properties;
+import java.util.jar.Manifest;
 
 import static org.junit.Assert.*;
 
@@ -288,6 +289,25 @@ public class WarHelperImplTest extends WarHelperImpl
 			assertTrue(exception.getMessage().endsWith("can only be installed in one of the following editions[Enterprise]"));
 		}
         
+    }
+
+
+    @Test
+    public void testfindManifest() throws Exception {
+        //Now check the compatible versions using the manifest
+        TFile theWar = getFile(".war", "module/share-3.4.11.war");
+        Manifest manifest = this.findManifest(theWar);
+
+        assertNotNull(manifest);
+        assertEquals("Alfresco Share Enterprise", manifest.getMainAttributes().getValue(MANIFEST_IMPLEMENTATION_TITLE));
+        assertEquals("3.4.11", manifest.getMainAttributes().getValue(MANIFEST_SPECIFICATION_VERSION));
+
+        theWar = getFile(".war", "module/alfresco-4.2.a.war");
+        manifest = this.findManifest(theWar);
+
+        assertNotNull(manifest);
+        assertEquals("Alfresco Repository Community", manifest.getMainAttributes().getValue(MANIFEST_IMPLEMENTATION_TITLE));
+        assertEquals("4.2.a", manifest.getMainAttributes().getValue(MANIFEST_SPECIFICATION_VERSION));
     }
 
     @Test

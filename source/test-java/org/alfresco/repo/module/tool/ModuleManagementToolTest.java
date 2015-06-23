@@ -28,6 +28,7 @@ import org.springframework.util.FileCopyUtils;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -387,7 +388,7 @@ public class ModuleManagementToolTest extends TestCase
         assertEquals(details.size(), 3);
 
         //Sort them by installation date
-        details.sort(new Comparator<ModuleDetails>() {
+        Collections.sort(details, new Comparator<ModuleDetails>() {
             @Override
             public int compare(ModuleDetails a, ModuleDetails b) {
                 return a.getInstallDate().compareTo(b.getInstallDate());

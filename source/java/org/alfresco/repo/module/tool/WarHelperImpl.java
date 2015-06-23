@@ -1,5 +1,6 @@
 package org.alfresco.repo.module.tool;
 
+import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TFileInputStream;
 import org.alfresco.error.AlfrescoRuntimeException;
@@ -110,20 +111,33 @@ public class WarHelperImpl implements WarHelper
      * @throws ModuleManagementToolException
      */
 	protected String findManifestArtibute(TFile war, String attributeName) throws ModuleManagementToolException {
-		
-		InputStream is = null;
-		
-		try 
-		{
-			is = new TFileInputStream(war+MANIFEST_FILE);
-			Manifest manifest = new Manifest(is);
-			Attributes attribs = manifest.getMainAttributes();
-			return attribs.getValue(attributeName);
-		} 
-			catch (IOException e) 
-		{
-            throw new ModuleManagementToolException("Unabled to read a manifest for the war file: "+ war);     
-		}
+
+        Manifest manifest = findManifest(war);
+        Attributes attribs = manifest.getMainAttributes();
+        return attribs.getValue(attributeName);
+	}
+
+    /**
+     * Finds a single attribute from a war manifest file.
+     * @param war the war
+     * @return Manifest
+     * @throws ModuleManagementToolException
+     */
+    @Override
+    public Manifest findManifest(TFile war) throws ModuleManagementToolException {
+
+        InputStream is = null;
+
+        try
+        {
+            is = new TFileInputStream(war+MANIFEST_FILE);
+            Manifest manifest = new Manifest(is);
+            return manifest;
+        }
+        catch (IOException e)
+        {
+            throw new ModuleManagementToolException("Unabled to read a manifest for the war file: "+ war);
+        }
         finally
         {
             if (is != null)
@@ -131,8 +145,7 @@ public class WarHelperImpl implements WarHelper
                 try { is.close(); } catch (Throwable e ) {}
             }
         }
-	}
-
+    }
 
 	/**
 	 * Compares the version information with the module details to see if their valid.  If they are invalid then it throws an exception.
@@ -333,6 +346,36 @@ public class WarHelperImpl implements WarHelper
         }
 
         return moduleDetails;
+    }
+
+    /**
+     * Backs up a given file or directory.
+     *
+     * @param file   the file to backup
+     * @return the absolute path to the backup file.
+     */
+    @Override
+    public String backup(TFile file) throws IOException
+    {
+
+        String backupLocation = file.getAbsolutePath()+"-" + System.currentTimeMillis() + ".bak";
+
+        if (file.isArchive())
+        {
+            log.info("Backing up file...");
+            TFile source = new TFile(file.getAbsolutePath(), TArchiveDetector.NULL);
+            TFile backup = new TFile(backupLocation, TArchiveDetector.NULL);
+            source.cp_rp(backup);   //Just copy the file
+        }
+        else
+        {
+            log.info("Backing up DIRECTORY...");
+            TFile backup = new TFile(backupLocation);
+            file.cp_rp(backup);   //Copy the directory
+        }
+        log.info("The back up is at '" + backupLocation + "'");
+
+        return backupLocation;
     }
 
     /**

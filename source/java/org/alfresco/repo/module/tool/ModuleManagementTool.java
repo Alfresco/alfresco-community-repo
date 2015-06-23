@@ -397,7 +397,7 @@ public class ModuleManagementTool implements LogOutput
      * @see ModuleManagementTool#installModule(String, String, boolean, boolean, boolean)
      *
      * @param warFile   the location of the AMP file to be installed
-     * @param warFileLocation   the location of the WAR file into which the AMP file is to be installed
+     * @param backupWAR true if you want it to perform the backup
      */
     private void backupWar(TFile warFile, boolean backupWAR) throws IOException
     {
@@ -405,24 +405,7 @@ public class ModuleManagementTool implements LogOutput
         // Make a backup of the war we are going to modify
         if (backupWAR == true)
         {
-
-                String backupLocation = warFile.getAbsolutePath()+"-" + System.currentTimeMillis() + ".bak";
-                
-                if (warFile.isArchive())
-                {
-                    outputVerboseMessage("Backing up WAR file...");
-                    TFile source = new TFile(warFile.getAbsolutePath(), TArchiveDetector.NULL);
-                    TFile backup = new TFile(backupLocation, TArchiveDetector.NULL);
-                    source.cp_rp(backup);   //Just copy the file
-                }
-                else
-                {
-                    outputVerboseMessage("Backing up war DIRECTORY...");
-                    TFile backup = new TFile(backupLocation);
-                    warFile.cp_rp(backup);   //Copy the directory
-                }        
-                outputVerboseMessage("WAR has been backed up to '" + backupLocation + "'");
-
+            warHelper.backup(warFile);
         }
     }
     

@@ -19,15 +19,14 @@
 package org.alfresco.module.org_alfresco_module_rm.classification.validation;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.IllegalConfiguration;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.ExemptionCategory;
 import org.junit.Test;
 
 /**
  * Unit tests for the {@link ExemptionCategoryFieldsValidator}.
  *
- * @author onechiforescu
- * 
+ * @author Oana Nechiforescu
+ * @since 3.0
  */
 
 public class ExemptionCategoryFieldsValidatorUnitTest 
@@ -35,7 +34,7 @@ public class ExemptionCategoryFieldsValidatorUnitTest
 
     ExemptionCategoryFieldsValidator exemptionCategoryFieldsValidator = new ExemptionCategoryFieldsValidator();
 
-    @Test(expected = MissingConfiguration.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testMissingExemptionCategoryID() 
     {
 
@@ -44,7 +43,7 @@ public class ExemptionCategoryFieldsValidatorUnitTest
 
     } 
     
-    @Test(expected = MissingConfiguration.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testMissingExemptionCategoryLabel() 
     {
 

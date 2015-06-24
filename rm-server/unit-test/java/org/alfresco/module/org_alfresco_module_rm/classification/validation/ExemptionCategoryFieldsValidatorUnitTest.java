@@ -28,37 +28,29 @@ import org.junit.Test;
  * @author Oana Nechiforescu
  * @since 3.0
  */
-
-public class ExemptionCategoryFieldsValidatorUnitTest 
+public class ExemptionCategoryFieldsValidatorUnitTest
 {
-
+    /** Exemption category fields validator */
     ExemptionCategoryFieldsValidator exemptionCategoryFieldsValidator = new ExemptionCategoryFieldsValidator();
 
     @Test(expected = IllegalArgumentException.class)
-    public void testMissingExemptionCategoryID() 
+    public void testMissingExemptionCategoryID()
     {
-
         ExemptionCategory exemptionCategory = new ExemptionCategory("", "label");
         exemptionCategoryFieldsValidator.validate(exemptionCategory);
-
-    } 
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void testMissingExemptionCategoryLabel() 
-    {
-
-        ExemptionCategory exemptionCategory = new ExemptionCategory("12@1", "");
-        exemptionCategoryFieldsValidator.validate(exemptionCategory);
-
-    }    
-     
-    @Test(expected = IllegalConfiguration.class)
-    public void testExemptionIDStartingWithNonAlphanumericCharacter() 
-    {
-
-        ExemptionCategory exemptionCategory = new ExemptionCategory(" 12", "critical");
-        exemptionCategoryFieldsValidator.validate(exemptionCategory);
-
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void testMissingExemptionCategoryLabel()
+    {
+        ExemptionCategory exemptionCategory = new ExemptionCategory("12@1", "");
+        exemptionCategoryFieldsValidator.validate(exemptionCategory);
+    }
+
+    @Test(expected = IllegalConfiguration.class)
+    public void testExemptionIDStartingWithNonAlphanumericCharacter()
+    {
+        ExemptionCategory exemptionCategory = new ExemptionCategory(" 12", "critical");
+        exemptionCategoryFieldsValidator.validate(exemptionCategory);
+    }
 }

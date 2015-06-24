@@ -127,6 +127,11 @@
    </bean>
    -->
 
+   <bean id="pagingResultsPostMethodInvocationProcessor"
+      parent="abstractPostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PagingResultsPostMethodInvocationProcessor">
+   </bean>
+
    <bean id="arrayPostMethodInvocationProcessor"
       parent="abstractPostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ArrayPostMethodInvocationProcessor">

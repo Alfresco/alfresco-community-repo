@@ -19,7 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_AUTHORITY;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_AGENCY;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_LEVEL_ID;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_REASONS;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
@@ -61,7 +61,7 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
     private static final String ID = "id";
     private static final String SUCCESS = "success";
     private static final String LEVEL_ID = "aLevelId";
-    private static final String AUTHORITY = "anAuthority";
+    private static final String AGENCY = "anAgency";
     private static final String REASON1_ID = "reason1Id";
     private static final String REASON2_ID = "reason2Id";
 
@@ -116,7 +116,7 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         assertEquals(getStringValueFromJSONObject(json, SUCCESS), Boolean.TRUE.toString());
 
         // Verify that the classify content method was called
-        verify(mockedContentClassificationService, times(1)).classifyContent(LEVEL_ID, AUTHORITY, newHashSet(REASON1_ID, REASON2_ID), record);
+        verify(mockedContentClassificationService, times(1)).classifyContent(LEVEL_ID, AGENCY, newHashSet(REASON1_ID, REASON2_ID), record);
     }
 
     /**
@@ -128,7 +128,7 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
     {
         JSONObject content = new JSONObject();
         putValuetoJSONObject(content, CLASSIFICATION_LEVEL_ID, LEVEL_ID);
-        putValuetoJSONObject(content, CLASSIFICATION_AUTHORITY, AUTHORITY);
+        putValuetoJSONObject(content, CLASSIFICATION_AGENCY, AGENCY);
 
         JSONObject classificationReason1 = new JSONObject();
         putValuetoJSONObject(classificationReason1, ID, REASON1_ID);

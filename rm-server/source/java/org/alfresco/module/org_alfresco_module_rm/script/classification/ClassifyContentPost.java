@@ -47,7 +47,7 @@ public class ClassifyContentPost extends AbstractRmWebScript
 {
     /** Constants */
     public static final String CLASSIFICATION_LEVEL_ID = "classificationLevelId";
-    public static final String CLASSIFICATION_AUTHORITY = "classificationAuthority";
+    public static final String CLASSIFICATION_AGENCY = "classificationAgency";
     public static final String CLASSIFICATION_REASONS = "classificationReasons";
 
     /** The service responsible for classifying content. */
@@ -73,13 +73,13 @@ public class ClassifyContentPost extends AbstractRmWebScript
     {
         JSONObject jsonObject = getRequestContentAsJsonObject(req);
         String classificationLevelId = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_LEVEL_ID);
-        String classificationAuthority = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_AUTHORITY);
+        String classificationAgency = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_AGENCY);
         Set<String> classificationReasonIds = getClassificationReasonIds(jsonObject);
         NodeRef document = parseRequestForNodeRef(req);
 
-        contentClassificationService.classifyContent(classificationLevelId, classificationAuthority, classificationReasonIds, document);
+        contentClassificationService.classifyContent(classificationLevelId, classificationAgency, classificationReasonIds, document);
 
-        Map<String, Object> model = new HashMap<String, Object>(1);
+        Map<String, Object> model = new HashMap<>(1);
         model.put(SUCCESS, true);
 
         return model;

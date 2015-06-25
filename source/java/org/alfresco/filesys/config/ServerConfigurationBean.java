@@ -83,7 +83,11 @@ import org.alfresco.jlan.util.Platform;
 import org.alfresco.jlan.util.StringList;
 import org.alfresco.jlan.util.X64;
 import org.alfresco.repo.management.subsystems.ActivateableBean;
+import org.alfresco.repo.management.subsystems.LoggableErrorEvent;
+import org.alfresco.util.PortUtil;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.extensions.config.element.GenericConfigElement;
 
 
@@ -99,8 +103,10 @@ import org.springframework.extensions.config.element.GenericConfigElement;
  * @author dward
  * @author mrogers
  */
-public class ServerConfigurationBean extends AbstractServerConfigurationBean implements DisposableBean
+public class ServerConfigurationBean extends AbstractServerConfigurationBean implements DisposableBean, ApplicationEventPublisherAware
 {
+    private static final String FTP_PORT_OCCUPIED_MESSAGE = "system.ftp.err.port_in_use";
+    
     private CIFSConfigBean cifsConfigBean;
     private FTPConfigBean ftpConfigBean;
     private NFSConfigBean nfsConfigBean;
@@ -110,7 +116,8 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
 
     private ThreadRequestPool threadPool;
     protected ClusterConfigBean clusterConfigBean;
-
+    private ApplicationEventPublisher applicationEventPublisher;
+    
     /**
      * Default constructor
      */
@@ -1220,6 +1227,13 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
                 ftpConfig.setFTPPort(port);
                 if (ftpConfig.getFTPPort() <= 0 || ftpConfig.getFTPPort() >= 65535)
                     throw new AlfrescoRuntimeException("FTP server port out of valid range");
+                
+                // Check if port is occupied.
+                if (!PortUtil.isPortFree(port))
+                {
+                    applicationEventPublisher.publishEvent(new LoggableErrorEvent(this,
+                            new AlfrescoRuntimeException(FTP_PORT_OCCUPIED_MESSAGE, new String[] { "" + port })));
+                }             
             }
             else
             {
@@ -2367,4 +2381,10 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
         }
     }
 
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
+    {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+    
 }

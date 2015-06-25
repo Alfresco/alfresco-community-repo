@@ -452,6 +452,9 @@
         <property name="persister">
         	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
         </property>
+        <property name="loggableErrorEventMatcher">
+            <value>^.*ServerConfigurationBean.*$</value>
+        </property>
     </bean>
 
    <bean id="fileServerConfiguration" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
@@ -498,6 +501,9 @@
                </entry>
             </map>
         </property>
+        <property name="loggableErrorEventMatcher">
+            <value>^.*AlfrescoImapServer.*$</value>
+        </property>
     </bean>
 
     <!-- Outbound Email subsystem -->
@@ -533,6 +539,9 @@
         </property>
         <property name="autoStart">
             <value>true</value>
+        </property>
+        <property name="loggableErrorEventMatcher">
+            <value>^.*EmailServer.*$</value>
         </property>
     </bean>
 

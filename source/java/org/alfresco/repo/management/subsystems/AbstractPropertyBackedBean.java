@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.alfresco.error.AlfrescoRuntimeException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -92,6 +93,7 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
     /** Resolves placeholders in the property defaults. */
     private DefaultResolver defaultResolver = new DefaultResolver();
+    private LoggableErrorEvent loggableErrorEvent;
 
     /** The lifecycle states. */
     protected enum RuntimeState {UNINITIALIZED, STOPPED, PENDING_BROADCAST_START, STARTED};
@@ -101,9 +103,29 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /** The state. */
     private PropertyBackedBeanState state;
     
+    private int timeoutForLoggableErrorEventMonitoringThread = 60000;
+    private int incrementForLoggableErrorEventMonitoringThread = 100;
+    
     /** Lock for concurrent access. */
     protected ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    
+    private String loggableErrorEventMatcher = "";
+    
+    public void setLoggableErrorEventMatcher(String loggableErrorEventMatcher)
+    {
+        this.loggableErrorEventMatcher = loggableErrorEventMatcher;
+    }
 
+    public void setTimeoutForLoggableErrorEventMonitoringThread(int timeout)
+    {
+        timeoutForLoggableErrorEventMonitoringThread = timeout;
+    }
+    
+    public void setIncrementForLoggableErrorEventMonitoringThread(int increment)
+    {
+        incrementForLoggableErrorEventMonitoringThread = increment;
+    }
+    
     /**
      * Used in conjunction with {@link #localSetProperties} to control setting of
      * properties from either a JMX client or by code in the local Alfresco
@@ -602,8 +624,25 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                 this.lock.writeLock().unlock();
             }
         }
-    }
+        else if (event instanceof LoggableErrorEvent)
+        {
+            Object source = event.getSource();
+            if ((source != null) && source.getClass().getName().matches(loggableErrorEventMatcher))
+            {
+                this.lock.writeLock().lock();
 
+                try
+                {
+                    this.loggableErrorEvent = (LoggableErrorEvent) event;
+                }
+                finally
+                {
+                    this.lock.writeLock().unlock();
+                }
+            }
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */
@@ -973,15 +1012,89 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         }
     }
    
+    private class LoggableErrorEventMonitoringThread extends Thread
+    {
+        private int counter = 0;
+        private AlfrescoRuntimeException caughtException = null;
+
+        public void run()
+        {
+            while (true)
+            {
+                AbstractPropertyBackedBean.this.lock.readLock().lock();
+
+                try
+                {
+                    if (loggableErrorEvent != null)
+                    {
+                        caughtException = loggableErrorEvent.getException();
+                    }
+
+                }
+                finally
+                {
+                    AbstractPropertyBackedBean.this.lock.readLock().unlock();
+                }
+
+                if (counter >= timeoutForLoggableErrorEventMonitoringThread || caughtException != null)
+                {
+                    break;
+                }
+
+                try
+                {
+                    Thread.sleep(incrementForLoggableErrorEventMonitoringThread);
+                    counter += incrementForLoggableErrorEventMonitoringThread;
+                }
+                catch (InterruptedException ie)
+                {
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug(ie.toString());
+                    }
+                }
+            }
+
+            if (caughtException != null)
+            {
+                if (logger.isErrorEnabled())
+                {
+                    logger.error(caughtException.toString());
+                }
+                
+                loggableErrorEvent = null;
+                throw caughtException;
+            }
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */
     public final void start()
     {
         this.lock.writeLock().lock();
+
         try
         {
             start(true, false);
+
+            if (loggableErrorEvent != null)
+            {
+                AlfrescoRuntimeException caughtException = loggableErrorEvent.getException();
+                
+                if (logger.isErrorEnabled())
+                {
+                    logger.error(caughtException.toString());
+                }
+                
+                loggableErrorEvent = null;
+                throw caughtException;
+            }
+            else
+            {
+                (new LoggableErrorEventMonitoringThread()).start();
+            }
         }
         finally
         {

@@ -242,13 +242,13 @@
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-driver-zip</artifactId>
-            <version>7.5.5</version>
+            <version>${dependency.truezip.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>de.schlichtherle.truezip</groupId>
             <artifactId>truezip-file</artifactId>
-            <version>7.5.5</version>
+            <version>${dependency.truezip.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

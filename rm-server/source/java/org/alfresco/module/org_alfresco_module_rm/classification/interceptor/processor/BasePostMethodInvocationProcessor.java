@@ -23,9 +23,12 @@ import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import java.util.Collection;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
+import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.Pair;
 
 /**
  * Base class for post method invocation processors
@@ -44,8 +47,14 @@ public abstract class BasePostMethodInvocationProcessor
     /** Content classification service */
     private ContentClassificationService contentClassificationService;
 
+    /** Security Clearance Service */
+    private SecurityClearanceService securityClearanceService;
+
     /** Post method invocation processor */
     private PostMethodInvocationProcessor postMethodInvocationProcessor;
+
+    /** Cache to hold the filtered node information */
+    private SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> cache;
 
     /**
      * @return the nodeService
@@ -72,11 +81,27 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
+     * @return the securityClearanceService
+     */
+    protected SecurityClearanceService getSecurityClearanceService()
+    {
+        return this.securityClearanceService;
+    }
+
+    /**
      * @return the postMethodInvocationProcessor
      */
     protected PostMethodInvocationProcessor getPostMethodInvocationProcessor()
     {
         return this.postMethodInvocationProcessor;
+    }
+
+    /**
+     * @return the cache
+     */
+    protected SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> getCache()
+    {
+        return this.cache;
     }
 
     /**
@@ -104,11 +129,27 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
+     * @param securityClearanceService the securityClearanceService to set
+     */
+    public void setSecurityClearanceService(SecurityClearanceService securityClearanceService)
+    {
+        this.securityClearanceService = securityClearanceService;
+    }
+
+    /**
      * @param postMethodInvocationProcessor the postMethodInvocationProcessor to set
      */
     public void setPostMethodInvocationProcessor(PostMethodInvocationProcessor postMethodInvocationProcessor)
     {
         this.postMethodInvocationProcessor = postMethodInvocationProcessor;
+    }
+
+    /**
+     * @param cache the cache to set
+     */
+    public void setCache(SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> cache)
+    {
+        this.cache = cache;
     }
 
     /**
@@ -163,6 +204,29 @@ public abstract class BasePostMethodInvocationProcessor
         {
             filter = null;
         }
+
+//        if (filter != null)
+//        {
+//            String uniqueCacheKey = getFullyAuthenticatedUser() /*+ userClearance?*/;
+//
+//            Pair<String, NodeRef> cacheKey = new Pair<String, NodeRef>(uniqueCacheKey, filter);
+//            Pair<Boolean, NodeRef> cacheValue = getCache().get(cacheKey);
+//
+//            if (cacheValue == null || !cacheValue.getFirst().booleanValue())
+//            {
+//                if (getNodeService().exists(nodeRef) &&
+//                        getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
+//                        !getContentClassificationService().hasClearance(nodeRef))
+//                {
+//                    filter = null;
+//                }
+//                getCache().put(new Pair<String, NodeRef>(uniqueCacheKey, nodeRef), new Pair<Boolean, NodeRef>(true, filter));
+//            }
+//            else
+//            {
+//                filter = getCache().get(cacheKey).getSecond();
+//            }
+//        }
 
         return filter;
     }

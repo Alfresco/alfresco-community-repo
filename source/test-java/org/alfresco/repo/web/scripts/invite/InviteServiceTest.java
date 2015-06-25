@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1027,7 +1027,6 @@ public class InviteServiceTest extends BaseWebScriptTest
             for (String user : allUsersArr)
             {
                 final String userName = user;
-                ;
 
                 // Create a person with a blank email address and
                 AuthenticationUtil.runAs(new RunAsWork<Object>()
@@ -1076,7 +1075,16 @@ public class InviteServiceTest extends BaseWebScriptTest
                     }
                 }
             }
-            assertEquals(3, siteUsers.size());
+
+            // MNT-14113: User admin console: sorting users causes some to disappear
+            // 
+            // It was decided to make the search results of AFTS (indexed) search to be the
+            // same as the CQ search results. Therefore, 'People.getPeople(String filter)'
+            // transforms 'filter' to '*<filter>*' (adds leading wildcard).
+            // 'InviterUser' is the creator of the test site (see the 'setUp()' method).
+            // Thus, plus one more user ('user1', 'user2', 'user3' and the creator
+            // 'InviterUser')
+            assertEquals(4, siteUsers.size());
 
             // cancel invite different manager
             String inviteId = (String) collInv.get("inviteId");

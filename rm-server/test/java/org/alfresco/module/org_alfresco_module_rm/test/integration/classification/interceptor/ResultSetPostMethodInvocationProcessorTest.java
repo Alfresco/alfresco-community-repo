@@ -16,8 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Integer.MAX_VALUE;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
@@ -87,7 +88,7 @@ public class ResultSetPostMethodInvocationProcessorTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        //contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
+                        contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
 
                         return null;
                     }

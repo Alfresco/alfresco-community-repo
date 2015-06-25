@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
@@ -32,18 +32,18 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Classification Post Method Invocation Test
+ * Enforcement of classification for records with relationship
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ClassificationPostMethodInvocationTest extends BaseRMTestCase
+public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
 {
     private static final String LEVEL1 = "level1";
     private static final String LEVEL3 = "level3";
     private static final String REASON = "Test Reason 1";
 
-    public void testClassificationPostMethodInvocation()
+    public void testRelationshipClassification()
     {
         /**
          * Given a test user has been created
@@ -56,9 +56,9 @@ public class ClassificationPostMethodInvocationTest extends BaseRMTestCase
          * and a relationship between those two records has been created
          *
          * Then the admin user should see both records in the folder
-         * and the admin user should see in the relationship table 
+         * and the admin user should see in the relationship table
          * (in the details page of the record) the other record
-         * 
+         *
          * and the test user should see only the unclassified record in the same folder
          * and the relationship table should be empty.
          */

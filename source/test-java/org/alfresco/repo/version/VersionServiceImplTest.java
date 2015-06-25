@@ -2695,4 +2695,33 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             }
         }
     }
+    
+    public void test_MNT14143()
+    {
+        // Create a non-versionable node
+        final NodeRef node = createNewNode();
+        
+        Map<QName, Serializable> verProperties = new HashMap<QName, Serializable>(1);
+        verProperties.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
+        this.versionService.ensureVersioningEnabled(node, verProperties);
+        
+        // add 'dublincore' aspect
+        nodeService.addAspect(node, ContentModel.ASPECT_DUBLINCORE, null);
+        nodeService.setProperty(node, ContentModel.PROP_SUBJECT, "Test subject");
+        
+        Version version10 = this.versionService.getCurrentVersion(node);
+        assertEquals("1.0", version10.getVersionLabel());
+        createVersion(node);
+        Version version11 = this.versionService.getCurrentVersion(node);
+        assertEquals("1.1", version11.getVersionLabel());
+        
+        this.versionService.revert(node, version10);
+        
+        assertFalse(nodeService.hasAspect(node, ContentModel.ASPECT_DUBLINCORE));
+        
+        this.versionService.revert(node, version11);
+        
+        assertTrue(nodeService.hasAspect(node, ContentModel.ASPECT_DUBLINCORE));
+        
+    }
 }

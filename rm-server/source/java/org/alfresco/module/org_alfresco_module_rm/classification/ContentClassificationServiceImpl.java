@@ -78,11 +78,11 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
     };
 
     @Override
-    public void classifyContent(String classificationLevelId, String classificationAuthority,
+    public void classifyContent(String classificationLevelId, String classificationAgency,
                 Set<String> classificationReasonIds, final NodeRef content)
     {
         checkNotBlank("classificationLevelId", classificationLevelId);
-        checkNotBlank("classificationAuthority", classificationAuthority);
+        checkNotBlank("classificationAgency", classificationAgency);
         mandatory("classificationReasonIds", classificationReasonIds);
         mandatory("content", content);
 
@@ -114,8 +114,8 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
         // Current classification id
         properties.put(PROP_CURRENT_CLASSIFICATION, classificationLevelId);
 
-        // Classification authority
-        properties.put(PROP_CLASSIFICATION_AUTHORITY, classificationAuthority);
+        // Classification agency
+        properties.put(PROP_CLASSIFICATION_AGENCY, classificationAgency);
 
         // Classification reason ids
         HashSet<String> classificationReasons = new HashSet<>();

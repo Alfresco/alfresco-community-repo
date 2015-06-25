@@ -60,9 +60,9 @@
                   <constraint ref="clf:classificationLevelRestriction" />
                </constraints>
             </property>
-            <property name="clf:classificationAuthority">
-               <title>Classification Authority</title>
-               <description>The classification authority</description>
+            <property name="clf:classificationAgency">
+               <title>Classification Agency</title>
+               <description>The classification agency</description>
                <type>d:text</type>
             </property>
             <property name="clf:classificationReasons">

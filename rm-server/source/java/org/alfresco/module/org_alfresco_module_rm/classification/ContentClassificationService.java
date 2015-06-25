@@ -45,7 +45,7 @@ public interface ContentClassificationService
      * Classify a piece of content.
      *
      * @param classificationLevelId The security clearance needed to access the content.
-     * @param classificationAuthority The name of the authority responsible for the classification of this content.
+     * @param classificationAgency The name of the agency responsible for the classification of this content.
      * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
      * @param content The node to classify.
      * @throws LevelIdNotFound If the supplied level id is not found.
@@ -53,7 +53,7 @@ public interface ContentClassificationService
      * @throws InvalidNodeRefException If the node could not be found.
      * @throws InvalidNode If the supplied node is not a content node.
      */
-    void classifyContent(String classificationLevelId, String classificationAuthority, Set<String> classificationReasonIds, NodeRef content)
+    void classifyContent(String classificationLevelId, String classificationAgency, Set<String> classificationReasonIds, NodeRef content)
             throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
 
     /**

@@ -103,7 +103,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(true);
 
         // Call the method under test.
-        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAgency",
                     Sets.newHashSet("reasonId1", "reasonId2"), content);
 
         verify(mockNodeService).addAspect(eq(content), eq(ClassifiedContentModel.ASPECT_CLASSIFIED),
@@ -112,12 +112,12 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         Map<QName, Serializable> properties = propertiesCaptor.getValue();
         HashSet<QName> expectedPropertyKeys = Sets.newHashSet(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION,
                     ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION,
-                    ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY,
+                    ClassifiedContentModel.PROP_CLASSIFICATION_AGENCY,
                     ClassifiedContentModel.PROP_CLASSIFICATION_REASONS);
         assertEquals("Aspect created with unexpected set of keys.", expectedPropertyKeys, properties.keySet());
         assertEquals("Unexpected initial classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
         assertEquals("Unexpected current classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
-        assertEquals("Unexpected authority.", "classificationAuthority", properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_AUTHORITY));
+        assertEquals("Unexpected agency.", "classificationAgency", properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_AGENCY));
         Set<String> expectedReasonIds = Sets.newHashSet("reasonId1", "reasonId2");
         assertEquals("Unexpected set of reasons.", expectedReasonIds, properties.get(ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
     }
@@ -131,7 +131,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockNodeService.getType(notAPieceOfContent)).thenReturn(ContentModel.TYPE_FOLDER);
 
         // Call the method under test.
-        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAgency",
                     Sets.newHashSet("reasonId1", "reasonId2"), notAPieceOfContent);
     }
 
@@ -145,7 +145,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(true);
 
         // Call the method under test.
-        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAgency",
                     Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
     }
 
@@ -175,7 +175,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(false);
 
         // Call the method under test.
-        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAuthority",
+        contentClassificationServiceImpl.classifyContent("levelId1", "classificationAgency",
                     Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
     }
 

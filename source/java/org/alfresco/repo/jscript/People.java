@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
@@ -718,8 +717,12 @@ public class People extends BaseScopableProcessorExtension implements Initializi
             // single word with no field will go against _PERSON and expand
 
             // fts-alfresco property search i.e. location:"maidenhead"
-            query.append(term.substring(0, propIndex + 1)).append('"')
-                        .append(term.substring(propIndex + 1));
+            query.append(term.substring(0, propIndex + 1)).append('"');
+            if (propIndex < 0)
+            {
+                query.append('*');
+            }
+            query.append(term.substring(propIndex + 1));
             if (propIndex > 0)
             {
                 query.append('"');
@@ -753,7 +756,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
                     {
                         // simple search: first name, last name and username
                         // starting with term
-                        query.append("_PERSON:\"");
+                        query.append("_PERSON:\"*");
                         query.append(token);
                         query.append("*\" ");
                     }
@@ -766,7 +769,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
                         {
                             token = token.substring(0, token.lastIndexOf("*"));
                         }
-                        multiPartNames.append("\"");
+                        multiPartNames.append("\"*");
                         multiPartNames.append(token);
                         multiPartNames.append("*\"");
                         if (firstToken)

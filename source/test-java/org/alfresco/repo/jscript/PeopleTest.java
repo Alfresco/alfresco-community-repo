@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,7 +18,9 @@
  */
 package org.alfresco.repo.jscript;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.UserTransaction;
 
@@ -27,6 +29,7 @@ import junit.framework.TestCase;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.transaction.TransactionService;
@@ -49,6 +52,12 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class PeopleTest extends TestCase
 {
+    private static final String SIMPLE_FILTER = "a";
+
+    private static final String CQ_SIMPLE_FILTER = SIMPLE_FILTER + " [hint:useCQ]";
+
+    private static final String DEFAULT_SORT_BY_FIELD = "username";
+
 
     private static final UserInfo USER_1 = new UserInfo("user1", "john junior", "lewis second");
     private static final UserInfo USER_2 = new UserInfo("user2", "john senior", "lewis second");
@@ -169,6 +178,33 @@ public class PeopleTest extends TestCase
         assertEquals(USER_7.getLastName(), persons.get(0).getLastName());
         assertEquals(USER_8.getLastName(), persons.get(0).getLastName());
 
+    }
+
+    /**
+     * Test for <a href="https://issues.alfresco.com/jira/browse/MNT-14113">MNT-14113</a>. <br />
+     * <br />
+     * This test is also valid for SOLR1 and SOLR4!
+     */
+    public void testGetPeopleByPatternIndexedAndCQ() throws Exception
+    {
+        ScriptPagingDetails paging = new ScriptPagingDetails(0, 0);
+        List<PersonInfo> unsortedPeople = people.getPeopleImpl(CQ_SIMPLE_FILTER, paging, null, null);
+        assertNotNull("No one person is found!", unsortedPeople);
+
+        Set<NodeRef> expectedUsers = new HashSet<NodeRef>();
+        for (PersonInfo person : unsortedPeople)
+        {
+            expectedUsers.add(person.getNodeRef());
+        }
+
+        List<PersonInfo> sortedPeople = people.getPeopleImpl(SIMPLE_FILTER, paging, DEFAULT_SORT_BY_FIELD, null);
+        assertNotNull("No one person is found and sorted!", sortedPeople);
+        assertEquals(expectedUsers.size(), sortedPeople.size());
+
+        for (PersonInfo person : sortedPeople)
+        {
+            assertTrue(("Unexpected person: '" + person.getUserName() + "[" + person.getNodeRef() + "]'"), expectedUsers.contains(person.getNodeRef()));
+        }
     }
 
     private void createUser(UserInfo... userInfo)

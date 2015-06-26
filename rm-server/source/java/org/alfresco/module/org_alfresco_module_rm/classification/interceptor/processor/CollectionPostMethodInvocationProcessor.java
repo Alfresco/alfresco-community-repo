@@ -27,11 +27,8 @@ import java.util.Iterator;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public abstract class CollectionPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
+public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
-     */
     @SuppressWarnings({ "rawtypes" })
     @Override
     public <T> T process(T object)
@@ -56,5 +53,11 @@ public abstract class CollectionPostMethodInvocationProcessor extends BasePostMe
         }
 
         return result;
+    }
+
+    @Override
+    protected Class<?> getClassName()
+    {
+        return Collection.class;
     }
 }

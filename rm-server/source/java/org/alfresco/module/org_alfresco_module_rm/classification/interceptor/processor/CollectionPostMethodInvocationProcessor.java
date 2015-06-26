@@ -29,7 +29,19 @@ import java.util.Iterator;
  */
 public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
-    @SuppressWarnings({ "rawtypes" })
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
+     */
+    @Override
+    protected Class<?> getClassName()
+    {
+        return Collection.class;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
+     */
+    @SuppressWarnings("rawtypes")
     @Override
     public <T> T process(T object)
     {
@@ -53,11 +65,5 @@ public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvoc
         }
 
         return result;
-    }
-
-    @Override
-    protected Class<?> getClassName()
-    {
-        return Collection.class;
     }
 }

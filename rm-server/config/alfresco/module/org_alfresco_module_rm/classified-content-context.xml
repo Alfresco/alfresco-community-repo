@@ -110,34 +110,26 @@
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.CollectionPostMethodInvocationProcessor">
    </bean>
 
-   <!-- FIXME: Causes issues for the integration tests -->
-   <!--
-   <bean id="setPostMethodInvocationProcessor"
-      parent="collectionPostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.SetPostMethodInvocationProcessor">
-   </bean>
-   -->
-
-   <bean id="listPostMethodInvocationProcessor"
-      parent="collectionPostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ListPostMethodInvocationProcessor">
-   </bean>
-
    <!-- FIXME: Implementation needs to be changed -->
    <!--
    <bean id="resultSetPostMethodInvocationProcessor"
-      parent="collectionPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ResultSetPostMethodInvocationProcessor">
    </bean>
    -->
 
+   <bean id="queryEngineResultsPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.QueryEngineResultsPostMethodInvocationProcessor">
+   </bean>
+
    <bean id="pagingResultsPostMethodInvocationProcessor"
-      parent="abstractPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PagingResultsPostMethodInvocationProcessor">
    </bean>
 
    <bean id="arrayPostMethodInvocationProcessor"
-      parent="abstractPostMethodInvocationProcessor"
+      parent="basePostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ArrayPostMethodInvocationProcessor">
    </bean>
 

@@ -27,13 +27,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.Sets;
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+
+import com.google.common.collect.Sets;
 
 /**
  * Unit tests for {@link QueryEngineResultPostMethodInvocationProcessor}.
@@ -62,7 +64,7 @@ public class QueryEngineResultsPostMethodInvocationProcessorUnitTest
     {
         initMocks(this);
 
-        when(mockPostMethodInvocationProcessor.getProcessorForClass(ResultSet.class)).thenReturn(mockResultSetPMIP);
+        when(mockPostMethodInvocationProcessor.getProcessor(Mockito.any())).thenReturn(mockResultSetPMIP);
 
         when(mockResultSetPMIP.process(UNCLASSIFIED_RESULT_SET)).thenReturn(UNCLASSIFIED_RESULT_SET);
         when(mockResultSetPMIP.process(CLASSIFIED_RESULT_SET)).thenReturn(null);

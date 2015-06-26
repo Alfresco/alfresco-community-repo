@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
@@ -33,35 +34,42 @@ import org.alfresco.service.cmr.search.ResultSet;
  */
 public class QueryEngineResultsPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
-    /** The post method invocation processor for {@link ResultSet ResultSets}. */
-    private BasePostMethodInvocationProcessor resultSetProcessor;
-
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
+     */
     @Override
     protected Class<QueryEngineResults> getClassName()
     {
         return QueryEngineResults.class;
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
+     */
     @SuppressWarnings("unchecked")
     @Override
     public <T> T process(T object)
     {
-        if (resultSetProcessor == null)
-        {
-            resultSetProcessor = getPostMethodInvocationProcessor().getProcessorForClass(ResultSet.class);
-        }
-
         QueryEngineResults queryEngineResults = getClassName().cast(object);
         Map<Set<String>, ResultSet> resultsMap = queryEngineResults.getResults();
         Map<Set<String>, ResultSet> returnMap = new HashMap<>();
-        for (Set<String> key : resultsMap.keySet())
+        BasePostMethodInvocationProcessor processor = null;
+
+        for (Entry<Set<String>, ResultSet> entry : resultsMap.entrySet())
         {
-            ResultSet newResultSet = resultSetProcessor.process(resultsMap.get(key));
+            ResultSet value = entry.getValue();
+            if (processor == null)
+            {
+                processor = getPostMethodInvocationProcessor().getProcessor(value);
+            }
+
+            ResultSet newResultSet = processor.process(value);
             if (newResultSet != null)
             {
-                returnMap.put(key, newResultSet);
+                returnMap.put(entry.getKey(), newResultSet);
             }
         }
+
         return (T) new QueryEngineResults(returnMap);
     }
 }

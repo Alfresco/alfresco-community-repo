@@ -99,30 +99,6 @@ public class PostMethodInvocationProcessor
     }
 
     /**
-     * Gets the processor from the available processors.
-     *
-     * @param clazz The class of the post invocation object.
-     * @return The suitable processor for the given class.
-     */
-    protected BasePostMethodInvocationProcessor getProcessorForClass(Class<? extends Object> clazz)
-    {
-        mandatory("clazz", clazz);
-        BasePostMethodInvocationProcessor result = null;
-
-        Set<Entry<Class<?>, BasePostMethodInvocationProcessor>> processorsEntrySet = getProcessors().entrySet();
-        for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processorEntry : processorsEntrySet)
-        {
-            if (processorEntry.getKey().isAssignableFrom(clazz))
-            {
-                result = processorEntry.getValue();
-                break;
-            }
-        }
-
-        return result;
-    }
-
-    /**
      * Processes the given object
      *
      * @param object The object to process

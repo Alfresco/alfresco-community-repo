@@ -18,30 +18,22 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
 import static org.alfresco.util.GUID.generate;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Tests for enforcement of classification when browsing documents in the document library
+ * Tests for enforcement of classification when searching documents in the document library
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class DocumentClassificationEnforcementTest extends BaseRMTestCase
+public class DocumentSearchClassificationEnforcementTest extends SearchClassificationEnforcementTestBase
 {
-    private static final String LEVEL1 = "level1";
-    private static final String LEVEL2 = "level2";
-    private static final String REASON = "Test Reason 1";
-
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
      */
@@ -56,18 +48,22 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
         /**
          * Given that a test user without security clearance exists
          * and two documents are created in the document library
+         * and one of the documents is classified with the highest security level
          *
-         * When one of the documents is classified with the highest security level
+         * When I search for the documents as admin
+         * Then I will see both documents
          *
-         * Then as the admin user I will see both documents
-         * and as the test user I will only see the unclassified document
+         * When I search for the documents as the test user
+         * Then I will only see the unclassified document
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            private String myUser;
             private NodeRef folder;
             private NodeRef doc1;
             private NodeRef doc2;
+            private String searchQuery = generate();
+            private List<NodeRef> resultsForAdmin;
+            private List<NodeRef> resultsForTestUser;
 
             /**
              * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
@@ -75,13 +71,15 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void given() throws Exception
             {
-                myUser = generate();
-                createPerson(myUser);
-                siteService.setMembership(collabSiteId, myUser, SITE_MANAGER);
+                testUser = generate();
+                createPerson(testUser);
+                siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
 
                 folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                doc1 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
-                doc2 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
+                doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
             }
 
             /**
@@ -90,7 +88,8 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
+                resultsForAdmin = searchAsAdmin(searchQuery);
+                resultsForTestUser = searchAsTestUser(searchQuery);
             }
 
             /**
@@ -104,13 +103,10 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(2, childAssociationRefs.size());
-
-                        ArrayList<NodeRef> docs = newArrayList(doc1, doc2);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
+                        assertNotNull(resultsForAdmin);
+                        assertEquals(2, resultsForAdmin.size());
+                        assertTrue(resultsForAdmin.contains(doc1));
+                        assertTrue(resultsForAdmin.contains(doc2));
 
                         return null;
                     }
@@ -121,14 +117,13 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(1, childAssociationRefs.size());
-                        assertEquals(doc2, childAssociationRefs.get(0).getChildRef());
+                        assertNotNull(resultsForTestUser);
+                        assertEquals(1, resultsForTestUser.size());
+                        assertTrue(resultsForTestUser.contains(doc2));
 
                         return null;
                     }
-                }, myUser);
+                }, testUser);
             }
         });
     }
@@ -138,22 +133,26 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
         /**
          * Given that a test user with mid-level security clearance exists
          * and three documents are created in the document library
-         *
-         * When one of the documents is classified with the highest security level
+         * and one of the documents is classified with the highest security level
          * and another document is classified with the mid-level security level
          *
-         * Then as the admin user I will see all three documents
-         * and as the test user I will see the unclassified document
+         * When I search for the documents as admin
+         * Then I will see all three documents
+         *
+         * When I search for the documents as the test user
+         * Then I will see the unclassified document
          * and the document with the mid-level classification
          * and I won't be able to see the document with the classification greater than my clearance level
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            private String myUser;
             private NodeRef folder;
             private NodeRef doc1;
             private NodeRef doc2;
             private NodeRef doc3;
+            private String searchQuery = generate();
+            private List<NodeRef> resultsForAdmin;
+            private List<NodeRef> resultsForTestUser;
 
             /**
              * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
@@ -161,15 +160,18 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void given() throws Exception
             {
-                myUser = generate();
-                createPerson(myUser);
-                siteService.setMembership(collabSiteId, myUser, SITE_MANAGER);
-                securityClearanceService.setUserSecurityClearance(myUser, LEVEL2);
+                testUser = generate();
+                createPerson(testUser);
+                siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
+                securityClearanceService.setUserSecurityClearance(testUser, LEVEL2);
 
                 folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                doc1 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
-                doc2 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
-                doc3 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
+                doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
             }
 
             /**
@@ -178,8 +180,8 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
+                resultsForAdmin = searchAsAdmin(searchQuery);
+                resultsForTestUser = searchAsTestUser(searchQuery);
             }
 
             /**
@@ -193,14 +195,11 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(3, childAssociationRefs.size());
-
-                        ArrayList<NodeRef> docs = newArrayList(doc1, doc2, doc3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(2).getChildRef()));
+                        assertNotNull(resultsForAdmin);
+                        assertEquals(3, resultsForAdmin.size());
+                        assertTrue(resultsForAdmin.contains(doc1));
+                        assertTrue(resultsForAdmin.contains(doc2));
+                        assertTrue(resultsForAdmin.contains(doc3));
 
                         return null;
                     }
@@ -211,17 +210,14 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(2, childAssociationRefs.size());
-
-                        ArrayList<NodeRef> docs = newArrayList(doc2, doc3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
+                        assertNotNull(resultsForTestUser);
+                        assertEquals(2, resultsForTestUser.size());
+                        assertTrue(resultsForTestUser.contains(doc2));
+                        assertTrue(resultsForTestUser.contains(doc3));
 
                         return null;
                     }
-                }, myUser);
+                }, testUser);
             }
         });
     }
@@ -231,20 +227,24 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
         /**
          * Given that a test user with highest level security clearance exists
          * and three documents are created in the document library
-         *
-         * When one of the documents is classified with the highest security level
+         * and one of the documents is classified with the highest security level
          * and another document is classified with the mid-level security level
          *
-         * Then as the admin user I will see all three documents
-         * and as the test user I will see all three documents
+         * When I search for the documents as admin
+         * Then I will see all three documents
+         *
+         * When I search for the documents as the test user
+         * Then I will see all three documents
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            private String myUser;
             private NodeRef folder;
             private NodeRef doc1;
             private NodeRef doc2;
             private NodeRef doc3;
+            private String searchQuery = generate();
+            private List<NodeRef> resultsForAdmin;
+            private List<NodeRef> resultsForTestUser;
 
             /**
              * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
@@ -252,15 +252,18 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void given() throws Exception
             {
-                myUser = generate();
-                createPerson(myUser);
-                siteService.setMembership(collabSiteId, myUser, SITE_MANAGER);
-                securityClearanceService.setUserSecurityClearance(myUser, LEVEL1);
+                testUser = generate();
+                createPerson(testUser);
+                siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
+                securityClearanceService.setUserSecurityClearance(testUser, LEVEL1);
 
                 folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                doc1 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
-                doc2 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
-                doc3 = fileFolderService.create(folder, generate(), TYPE_CONTENT).getNodeRef();
+                doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
             }
 
             /**
@@ -269,8 +272,8 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
+                resultsForAdmin = searchAsAdmin(searchQuery);
+                resultsForTestUser = searchAsTestUser(searchQuery);
             }
 
             /**
@@ -284,14 +287,11 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(3, childAssociationRefs.size());
-
-                        ArrayList<NodeRef> docs = newArrayList(doc1, doc2, doc3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(2).getChildRef()));
+                        assertNotNull(resultsForAdmin);
+                        assertEquals(3, resultsForAdmin.size());
+                        assertTrue(resultsForAdmin.contains(doc1));
+                        assertTrue(resultsForAdmin.contains(doc2));
+                        assertTrue(resultsForAdmin.contains(doc3));
 
                         return null;
                     }
@@ -302,18 +302,15 @@ public class DocumentClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(3, childAssociationRefs.size());
-
-                        ArrayList<NodeRef> docs = newArrayList(doc1, doc2, doc3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(2).getChildRef()));
+                        assertNotNull(resultsForTestUser);
+                        assertEquals(3, resultsForTestUser.size());
+                        assertTrue(resultsForTestUser.contains(doc1));
+                        assertTrue(resultsForTestUser.contains(doc2));
+                        assertTrue(resultsForTestUser.contains(doc3));
 
                         return null;
                     }
-                }, myUser);
+                }, testUser);
             }
         });
     }

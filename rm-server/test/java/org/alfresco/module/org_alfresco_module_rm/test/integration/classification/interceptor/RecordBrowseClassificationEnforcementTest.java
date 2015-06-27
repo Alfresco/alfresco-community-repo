@@ -23,10 +23,8 @@ import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_USER;
 import static org.alfresco.util.GUID.generate;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -36,33 +34,31 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class RecordClassificationEnforcementTest extends BaseRMTestCase
+public class RecordBrowseClassificationEnforcementTest extends BrowseClassificationEnforcementTestBase
 {
-    private static final String LEVEL1 = "level1";
-    private static final String LEVEL2 = "level2";
-    private static final String REASON = "Test Reason 1";
-
     public void testUserWithNoSecurityClearance()
     {
         /**
          * Given that a test user without security clearance exists
          * and the test user is added to the RM Users role
          * and a category, a folder and two records are created in the file plan
-         *
-         * When the test user is given read permissions on the category
+         * and the test user is given read permissions on the category
          * and one of the records is classified with the highest security level
          *
+         * When I browse the file plan as admin
+         * Then I will see both documents
          *
-         * Then as the admin user I will see both records
-         * and as the test user I will only see the unclassified record
+         * When I browse the file plan as the test user
+         * Then I will only see the unclassified record
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            private String myUser;
             private NodeRef category;
             private NodeRef folder;
             private NodeRef record1;
             private NodeRef record2;
+            private List<ChildAssociationRef> resultsForAdmin;
+            private List<ChildAssociationRef> resultsForTestUser;
 
             /**
              * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
@@ -70,14 +66,16 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void given() throws Exception
             {
-                myUser = generate();
-                createPerson(myUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, myUser);
+                testUser = generate();
+                createPerson(testUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, testUser);
 
                 category = filePlanService.createRecordCategory(filePlan, generate());
                 folder = recordFolderService.createRecordFolder(category, generate());
                 record1 = utils.createRecord(folder, generate());
                 record2 = utils.createRecord(folder, generate());
+
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
             }
 
             /**
@@ -86,8 +84,10 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                filePlanPermissionService.setPermission(category, myUser, READ_RECORDS);
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                filePlanPermissionService.setPermission(category, testUser, READ_RECORDS);
+
+                resultsForAdmin = browseAsAdmin(folder);
+                resultsForTestUser = browseAsTestUser(folder);
             }
 
             /**
@@ -101,12 +101,12 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(folder);
-                        assertEquals(2, childAssocs.size());
+                        assertNotNull(resultsForAdmin);
+                        assertEquals(2, resultsForAdmin.size());
 
-                        List<NodeRef> recordList = newArrayList(record1, record2);
-                        assertTrue(recordList.contains(childAssocs.get(0).getChildRef()));
-                        assertTrue(recordList.contains(childAssocs.get(1).getChildRef()));
+                        List<NodeRef> records = newArrayList(record1, record2);
+                        assertTrue(records.contains(resultsForAdmin.get(0).getChildRef()));
+                        assertTrue(records.contains(resultsForAdmin.get(1).getChildRef()));
 
                         return null;
                     }
@@ -117,13 +117,13 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(folder);
-                        assertEquals(1, childAssocs.size());
-                        assertEquals(record2, childAssocs.get(0).getChildRef());
+                        assertNotNull(resultsForTestUser);
+                        assertEquals(1, resultsForTestUser.size());
+                        assertEquals(record2, resultsForTestUser.get(0).getChildRef());
 
                         return null;
                     }
-                }, myUser);
+                }, testUser);
             }
         });
     }
@@ -134,24 +134,27 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
          * Given that a test user with mid-level security clearance exists
          * and the test user is added to the RM Users role
          * and a category, a folder and three records are created in the file plan
-         *
-         * When the test user is given read permissions on the category
+         * and the test user is given read permissions on the category
          * and one of the records is classified with the highest security level
          * and another record is classified with the mid-level security level
          *
-         * Then as the admin user I will see all three records
-         * and as the test user I will see the unclassified record
+         * When I browse the file plan as admin
+         * Then I will see all three records
+         *
+         * When I browse the file plan as the test user
+         * Then I will see the unclassified record
          * and the record with the mid-level classification
          * and I won't be able to see the record with the classification greater than my clearance level
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            private String myUser;
             private NodeRef category;
             private NodeRef folder;
             private NodeRef record1;
             private NodeRef record2;
             private NodeRef record3;
+            private List<ChildAssociationRef> resultsForAdmin;
+            private List<ChildAssociationRef> resultsForTestUser;
 
             /**
              * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
@@ -159,16 +162,19 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void given() throws Exception
             {
-                myUser = generate();
-                createPerson(myUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, myUser);
-                securityClearanceService.setUserSecurityClearance(myUser, LEVEL2);
+                testUser = generate();
+                createPerson(testUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, testUser);
+                securityClearanceService.setUserSecurityClearance(testUser, LEVEL2);
 
                 category = filePlanService.createRecordCategory(filePlan, generate());
                 folder = recordFolderService.createRecordFolder(category, generate());
                 record1 = utils.createRecord(folder, generate());
                 record2 = utils.createRecord(folder, generate());
                 record3 = utils.createRecord(folder, generate());
+
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
             }
 
             /**
@@ -177,9 +183,10 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                filePlanPermissionService.setPermission(category, myUser, READ_RECORDS);
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
+                filePlanPermissionService.setPermission(category, testUser, READ_RECORDS);
+
+                resultsForAdmin = browseAsAdmin(folder);
+                resultsForTestUser = browseAsTestUser(folder);
             }
 
             /**
@@ -193,14 +200,13 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(3, childAssociationRefs.size());
+                        assertNotNull(resultsForAdmin);
+                        assertEquals(3, resultsForAdmin.size());
 
-                        ArrayList<NodeRef> docs = newArrayList(record1, record2, record3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(2).getChildRef()));
+                        List<NodeRef> records = newArrayList(record1, record2, record3);
+                        assertTrue(records.contains(resultsForAdmin.get(0).getChildRef()));
+                        assertTrue(records.contains(resultsForAdmin.get(1).getChildRef()));
+                        assertTrue(records.contains(resultsForAdmin.get(2).getChildRef()));
 
                         return null;
                     }
@@ -211,17 +217,16 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(2, childAssociationRefs.size());
+                        assertNotNull(resultsForTestUser);
+                        assertEquals(2, resultsForTestUser.size());
 
-                        ArrayList<NodeRef> docs = newArrayList(record2, record3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
+                        List<NodeRef> records = newArrayList(record2, record3);
+                        assertTrue(records.contains(resultsForTestUser.get(0).getChildRef()));
+                        assertTrue(records.contains(resultsForTestUser.get(1).getChildRef()));
 
                         return null;
                     }
-                }, myUser);
+                }, testUser);
             }
         });
     }
@@ -232,22 +237,25 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
          * Given that a test user with highest level security clearance exists
          * and the test user is added to the RM Users role
          * and a category, a folder and three records are created in the file plan
-         *
-         * When the test user is given read permissions on the category
+         * and the test user is given read permissions on the category
          * and one of the records is classified with the highest security level
          * and another record is classified with the mid-level security level
          *
-         * Then as the admin user I will see all three records
-         * and as the test user I will see all three records
+         * When I browse the file plan as admin
+         * The I will see all three records
+         *
+         * When I browse the file plan as the test user
+         * The I will see all three records
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            private String myUser;
             private NodeRef category;
             private NodeRef folder;
             private NodeRef record1;
             private NodeRef record2;
             private NodeRef record3;
+            private List<ChildAssociationRef> resultsForAdmin;
+            private List<ChildAssociationRef> resultsForTestUser;
 
             /**
              * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
@@ -255,16 +263,19 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void given() throws Exception
             {
-                myUser = generate();
-                createPerson(myUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, myUser);
-                securityClearanceService.setUserSecurityClearance(myUser, LEVEL1);
+                testUser = generate();
+                createPerson(testUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, testUser);
+                securityClearanceService.setUserSecurityClearance(testUser, LEVEL1);
 
                 category = filePlanService.createRecordCategory(filePlan, generate());
                 folder = recordFolderService.createRecordFolder(category, generate());
                 record1 = utils.createRecord(folder, generate());
                 record2 = utils.createRecord(folder, generate());
                 record3 = utils.createRecord(folder, generate());
+
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
             }
 
             /**
@@ -273,9 +284,10 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                filePlanPermissionService.setPermission(category, myUser, READ_RECORDS);
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
+                filePlanPermissionService.setPermission(category, testUser, READ_RECORDS);
+
+                resultsForAdmin = browseAsAdmin(folder);
+                resultsForTestUser = browseAsTestUser(folder);
             }
 
             /**
@@ -289,14 +301,13 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(3, childAssociationRefs.size());
+                        assertNotNull(resultsForAdmin);
+                        assertEquals(3, resultsForAdmin.size());
 
-                        ArrayList<NodeRef> docs = newArrayList(record1, record2, record3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(2).getChildRef()));
+                        List<NodeRef> records = newArrayList(record1, record2, record3);
+                        assertTrue(records.contains(resultsForAdmin.get(0).getChildRef()));
+                        assertTrue(records.contains(resultsForAdmin.get(1).getChildRef()));
+                        assertTrue(records.contains(resultsForAdmin.get(2).getChildRef()));
 
                         return null;
                     }
@@ -307,18 +318,17 @@ public class RecordClassificationEnforcementTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        List<ChildAssociationRef> childAssociationRefs = nodeService.getChildAssocs(folder);
-                        assertNotNull(childAssociationRefs);
-                        assertEquals(3, childAssociationRefs.size());
+                        assertNotNull(resultsForTestUser);
+                        assertEquals(3, resultsForTestUser.size());
 
-                        ArrayList<NodeRef> docs = newArrayList(record1, record2, record3);
-                        assertTrue(docs.contains(childAssociationRefs.get(0).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(1).getChildRef()));
-                        assertTrue(docs.contains(childAssociationRefs.get(2).getChildRef()));
+                        List<NodeRef> records = newArrayList(record1, record2, record3);
+                        assertTrue(records.contains(resultsForTestUser.get(0).getChildRef()));
+                        assertTrue(records.contains(resultsForTestUser.get(1).getChildRef()));
+                        assertTrue(records.contains(resultsForTestUser.get(2).getChildRef()));
 
                         return null;
                     }
-                }, myUser);
+                }, testUser);
             }
         });
     }

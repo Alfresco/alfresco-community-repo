@@ -105,18 +105,14 @@
    </bean>
 
    <bean id="collectionPostMethodInvocationProcessor"
-      abstract="true"
       parent="basePostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.CollectionPostMethodInvocationProcessor">
    </bean>
 
-   <!-- FIXME: Implementation needs to be changed -->
-   <!--
    <bean id="resultSetPostMethodInvocationProcessor"
       parent="basePostMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ResultSetPostMethodInvocationProcessor">
    </bean>
-   -->
 
    <bean id="queryEngineResultsPostMethodInvocationProcessor"
       parent="basePostMethodInvocationProcessor"

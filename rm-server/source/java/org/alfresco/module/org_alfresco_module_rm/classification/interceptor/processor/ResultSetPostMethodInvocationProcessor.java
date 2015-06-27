@@ -18,16 +18,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
+import static org.alfresco.service.cmr.search.PermissionEvaluationMode.EAGER;
+
 import java.util.BitSet;
-import java.util.Iterator;
-import java.util.List;
 
 import org.alfresco.repo.search.SimpleResultSetMetaData;
 import org.alfresco.repo.security.permissions.impl.acegi.FilteringResultSet;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetMetaData;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
  * ResultSet Post Method Invocation Processor
@@ -46,7 +48,6 @@ public class ResultSetPostMethodInvocationProcessor extends BasePostMethodInvoca
         return ResultSet.class;
     }
 
-    // FIXME: Change implementation
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.CollectionPostMethodInvocationProcessor#process(java.lang.Object)
      */
@@ -55,46 +56,61 @@ public class ResultSetPostMethodInvocationProcessor extends BasePostMethodInvoca
     public <T> T process(T object)
     {
         T result = object;
-        ResultSet resultSet = getClassName().cast(result);
-        BitSet inclusionMask = new BitSet(resultSet.length());
-        FilteringResultSet filteringResultSet = new FilteringResultSet(resultSet, inclusionMask);
 
-        filteringResultSet.setResultSetMetaData(
-                new SimpleResultSetMetaData(
-                        resultSet.getResultSetMetaData().getLimitedBy(),
-                        PermissionEvaluationMode.EAGER,
-                        resultSet.getResultSetMetaData().getSearchParameters()));
-
-        List<NodeRef> nodeRefs = resultSet.getNodeRefs();
-        if (!nodeRefs.isEmpty())
+        if (result != null)
         {
-            Iterator<NodeRef> iterator = nodeRefs.iterator();
-            BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(iterator.next());
+            ResultSet returnedObject = getClassName().cast(object);
 
-            for (int i = 0; i < nodeRefs.size(); i++)
+            BitSet inclusionMask = new BitSet(returnedObject.length());
+            FilteringResultSet filteringResultSet = new FilteringResultSet(returnedObject, inclusionMask);
+
+            ResultSetMetaData resultSetMetaData = returnedObject.getResultSetMetaData();
+            SearchParameters searchParameters = resultSetMetaData.getSearchParameters();
+
+            BasePostMethodInvocationProcessor nodeRefProcessor = null;
+            BasePostMethodInvocationProcessor childAssociationRefProcessor = null;
+
+            for (int i = 0; i < returnedObject.length(); i++)
             {
-                if (processor.process(nodeRefs.get(i)) == null)
+                ResultSetRow row = returnedObject.getRow(i);
+                NodeRef nodeRef = row.getNodeRef();
+
+                if (nodeRefProcessor == null)
+                {
+                    nodeRefProcessor = getPostMethodInvocationProcessor().getProcessor(nodeRef);
+                }
+
+                NodeRef processedNodeRef = nodeRefProcessor.process(nodeRef);
+                if (processedNodeRef == null)
                 {
                     inclusionMask.set(i, false);
                 }
-            }
-        }
-
-        List<ChildAssociationRef> childAssocRefs = getClassName().cast(filteringResultSet).getChildAssocRefs();
-        if (!childAssocRefs.isEmpty())
-        {
-            Iterator<ChildAssociationRef> iterator = childAssocRefs.iterator();
-            BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(iterator.next());
-
-            for (int i = 0; i < childAssocRefs.size(); i++)
-            {
-                if (processor.process(nodeRefs.get(i)) == null)
+                else
                 {
-                    inclusionMask.set(i, false);
+                    ChildAssociationRef childAssocRef = row.getChildAssocRef();
+
+                    if (childAssociationRefProcessor == null)
+                    {
+                        childAssociationRefProcessor = getPostMethodInvocationProcessor().getProcessor(childAssocRef);
+                    }
+
+                    ChildAssociationRef childAssociationRef = childAssociationRefProcessor.process(childAssocRef);
+                    if (childAssociationRef == null)
+                    {
+                        inclusionMask.set(i, false);
+                    }
+                    else
+                    {
+                        inclusionMask.set(i, true);
+                    }
                 }
             }
+
+            SimpleResultSetMetaData simpleResultSetMetaData = new SimpleResultSetMetaData(resultSetMetaData.getLimitedBy(), EAGER, searchParameters);
+            filteringResultSet.setResultSetMetaData(simpleResultSetMetaData);
+            result = (T) filteringResultSet;
         }
 
-        return (T) filteringResultSet;
+        return result;
     }
 }

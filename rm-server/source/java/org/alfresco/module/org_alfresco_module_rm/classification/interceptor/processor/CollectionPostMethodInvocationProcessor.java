@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Collection Post Method Invocation Processor
@@ -35,7 +36,8 @@ public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvoc
     @Override
     protected Class<?> getClassName()
     {
-        return Collection.class;
+        // FIXME!!!
+        return List.class;
     }
 
     /**

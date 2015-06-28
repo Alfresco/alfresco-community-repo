@@ -32,7 +32,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Base class for post method invocation processors
@@ -40,7 +39,6 @@ import org.springframework.test.context.ContextConfiguration;
  * @author Tuna Aksoy
  * @since 3.0
  */
-@ContextConfiguration(locations = {"classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"})
 public abstract class BasePostMethodInvocationProcessor
 {
     /** Node service */

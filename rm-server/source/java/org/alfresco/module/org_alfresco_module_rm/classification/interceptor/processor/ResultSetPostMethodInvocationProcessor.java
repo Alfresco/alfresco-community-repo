@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetMetaData;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.springframework.stereotype.Component;
 
 /**
  * ResultSet Post Method Invocation Processor
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
  * @author Tuna Aksoy
  * @since 3.0
  */
+@Component
 public class ResultSetPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**

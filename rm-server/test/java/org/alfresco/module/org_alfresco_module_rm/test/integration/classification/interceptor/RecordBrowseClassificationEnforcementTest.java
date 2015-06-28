@@ -20,7 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.classificati
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
-import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_USER;
+import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_ADMIN;
 import static org.alfresco.util.GUID.generate;
 
 import java.util.List;
@@ -40,9 +40,8 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
     {
         /**
          * Given that a test user without security clearance exists
-         * and the test user is added to the RM Users role
+         * and the test user is added to the RM Admin role
          * and a category, a folder and two records are created in the file plan
-         * and the test user is given read permissions on the category
          * and one of the records is classified with the highest security level
          *
          * When I browse the file plan as admin
@@ -68,7 +67,7 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
             {
                 testUser = generate();
                 createPerson(testUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, testUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
 
                 category = filePlanService.createRecordCategory(filePlan, generate());
                 folder = recordFolderService.createRecordFolder(category, generate());
@@ -84,8 +83,6 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
             @Override
             public void when() throws Exception
             {
-                filePlanPermissionService.setPermission(category, testUser, READ_RECORDS);
-
                 resultsForAdmin = browseAsAdmin(folder);
                 resultsForTestUser = browseAsTestUser(folder);
             }
@@ -132,9 +129,8 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
     {
         /**
          * Given that a test user with mid-level security clearance exists
-         * and the test user is added to the RM Users role
+         * and the test user is added to the RM Admin role
          * and a category, a folder and three records are created in the file plan
-         * and the test user is given read permissions on the category
          * and one of the records is classified with the highest security level
          * and another record is classified with the mid-level security level
          *
@@ -164,7 +160,7 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
             {
                 testUser = generate();
                 createPerson(testUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, testUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
                 securityClearanceService.setUserSecurityClearance(testUser, LEVEL2);
 
                 category = filePlanService.createRecordCategory(filePlan, generate());
@@ -183,8 +179,6 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
             @Override
             public void when() throws Exception
             {
-                filePlanPermissionService.setPermission(category, testUser, READ_RECORDS);
-
                 resultsForAdmin = browseAsAdmin(folder);
                 resultsForTestUser = browseAsTestUser(folder);
             }
@@ -235,9 +229,8 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
     {
         /**
          * Given that a test user with highest level security clearance exists
-         * and the test user is added to the RM Users role
+         * and the test user is added to the RM Admin role
          * and a category, a folder and three records are created in the file plan
-         * and the test user is given read permissions on the category
          * and one of the records is classified with the highest security level
          * and another record is classified with the mid-level security level
          *
@@ -265,7 +258,7 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
             {
                 testUser = generate();
                 createPerson(testUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_USER, testUser);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
                 securityClearanceService.setUserSecurityClearance(testUser, LEVEL1);
 
                 category = filePlanService.createRecordCategory(filePlan, generate());
@@ -284,8 +277,6 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
             @Override
             public void when() throws Exception
             {
-                filePlanPermissionService.setPermission(category, testUser, READ_RECORDS);
-
                 resultsForAdmin = browseAsAdmin(folder);
                 resultsForTestUser = browseAsTestUser(folder);
             }

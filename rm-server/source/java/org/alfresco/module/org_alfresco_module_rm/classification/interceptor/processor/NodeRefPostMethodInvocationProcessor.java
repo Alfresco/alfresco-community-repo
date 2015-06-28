@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.springframework.stereotype.Component;
 
 /**
  * NodeRef Post Method Invocation Processor
@@ -26,6 +27,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 3.0
  */
+@Component
 public class NodeRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
 {
     /**

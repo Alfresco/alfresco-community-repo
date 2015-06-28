@@ -22,6 +22,8 @@ import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 
 import java.util.Collection;
 
+import javax.annotation.PostConstruct;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.repo.cache.SimpleCache;
@@ -29,6 +31,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.util.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 
 /**
  * Base class for post method invocation processors
@@ -36,25 +40,32 @@ import org.alfresco.util.Pair;
  * @author Tuna Aksoy
  * @since 3.0
  */
+@ContextConfiguration(locations = {"classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"})
 public abstract class BasePostMethodInvocationProcessor
 {
     /** Node service */
+    @Autowired
     private NodeService nodeService;
 
     /** Dictionary service */
+    @Autowired
     private DictionaryService dictionaryService;
 
     /** Content classification service */
+    @Autowired
     private ContentClassificationService contentClassificationService;
 
     /** Security Clearance Service */
+    @Autowired
     private SecurityClearanceService securityClearanceService;
 
     /** Post method invocation processor */
+    @Autowired
     private PostMethodInvocationProcessor postMethodInvocationProcessor;
 
     /** Cache to hold the filtered node information */
-    private SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> cache;
+    @Autowired
+    private SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> basePostMethodInvocationProcessorCache;
 
     /**
      * @return the nodeService
@@ -101,7 +112,7 @@ public abstract class BasePostMethodInvocationProcessor
      */
     protected SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> getCache()
     {
-        return this.cache;
+        return this.basePostMethodInvocationProcessorCache;
     }
 
     /**
@@ -149,7 +160,7 @@ public abstract class BasePostMethodInvocationProcessor
      */
     public void setCache(SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> cache)
     {
-        this.cache = cache;
+        this.basePostMethodInvocationProcessorCache = cache;
     }
 
     /**
@@ -170,6 +181,7 @@ public abstract class BasePostMethodInvocationProcessor
     /**
      * Registers the post method invocation processors
      */
+    @PostConstruct
     public void register()
     {
         getPostMethodInvocationProcessor().register(this);

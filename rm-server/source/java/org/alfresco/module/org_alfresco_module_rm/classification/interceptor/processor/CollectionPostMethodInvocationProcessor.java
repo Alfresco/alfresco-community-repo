@@ -22,12 +22,15 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 /**
  * Collection Post Method Invocation Processor
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
+@Component
 public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**

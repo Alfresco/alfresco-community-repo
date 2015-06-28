@@ -19,52 +19,44 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
 import static com.google.common.collect.Sets.newHashSet;
-import static java.lang.Integer.MAX_VALUE;
-import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
+import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_ADMIN;
 import static org.alfresco.util.GUID.generate;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.util.Pair;
 
 /**
- * Tests for enforcement of classification when searching documents in the document library
+ * Enforcement of classification when searching records in the file plan
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class DocumentSearchClassificationEnforcementTest extends SearchClassificationEnforcementTestBase
+public class RecordSearchClassificationEnforcementTest extends SearchClassificationEnforcementTestBase
 {
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
-     */
-    @Override
-    protected boolean isCollaborationSiteTest()
-    {
-        return true;
-    }
-
     public void testUserWithNoSecurityClearance()
     {
         /**
          * Given that a test user without security clearance exists
-         * and two documents are created in the document library
-         * and one of the documents is classified with the highest security level
+         * and the test user is added to the RM Admin role
+         * and a category, a folder and two records are created in the file plan
+         * and one of the records is classified with the highest security level
          *
-         * When I search for the documents as admin
-         * Then I will see both documents
+         * When I search for the records as admin
+         * Then I will see both records
          *
-         * When I search for the documents as the test user
-         * Then I will only see the unclassified document
+         * When I search for the records as the test user
+         * Then I will only see the unclassified record
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
+            private NodeRef category;
             private NodeRef folder;
-            private NodeRef doc1;
-            private NodeRef doc2;
+            private NodeRef record1;
+            private NodeRef record2;
             private String searchQuery = generate();
             private List<NodeRef> resultsForAdmin;
             private List<NodeRef> resultsForTestUser;
@@ -77,13 +69,14 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
             {
                 testUser = generate();
                 createPerson(testUser);
-                siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
 
-                folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
-                doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                category = filePlanService.createRecordCategory(filePlan, generate());
+                folder = recordFolderService.createRecordFolder(category, generate());
+                record1 = utils.createRecord(folder, searchQuery + generate());
+                record2 = utils.createRecord(folder, searchQuery + generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
             }
 
             /**
@@ -109,8 +102,8 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                     {
                         assertNotNull(resultsForAdmin);
                         assertEquals(2, resultsForAdmin.size());
-                        assertTrue(resultsForAdmin.contains(doc1));
-                        assertTrue(resultsForAdmin.contains(doc2));
+                        assertTrue(resultsForAdmin.contains(record1));
+                        assertTrue(resultsForAdmin.contains(record2));
 
                         return null;
                     }
@@ -123,7 +116,7 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                     {
                         assertNotNull(resultsForTestUser);
                         assertEquals(1, resultsForTestUser.size());
-                        assertTrue(resultsForTestUser.contains(doc2));
+                        assertTrue(resultsForTestUser.contains(record2));
 
                         return null;
                     }
@@ -136,24 +129,26 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
     {
         /**
          * Given that a test user with mid-level security clearance exists
-         * and three documents are created in the document library
-         * and one of the documents is classified with the highest security level
-         * and another document is classified with the mid-level security level
+         * and the test user is added to the RM Admin role
+         * and a category, a folder and three records are created in the file plan
+         * and one of the records is classified with the highest security level
+         * and another record is classified with the mid-level security level
          *
-         * When I search for the documents as admin
-         * Then I will see all three documents
+         * When I search for the records as admin
+         * The I will see all three records
          *
-         * When I search for the documents as the test user
+         * When I search for the records as the test user
          * Then I will see the unclassified document
          * and the document with the mid-level classification
          * and I won't be able to see the document with the classification greater than my clearance level
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
+            private NodeRef category;
             private NodeRef folder;
-            private NodeRef doc1;
-            private NodeRef doc2;
-            private NodeRef doc3;
+            private NodeRef record1;
+            private NodeRef record2;
+            private NodeRef record3;
             private String searchQuery = generate();
             private List<NodeRef> resultsForAdmin;
             private List<NodeRef> resultsForTestUser;
@@ -166,16 +161,17 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
             {
                 testUser = generate();
                 createPerson(testUser);
-                siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
                 securityClearanceService.setUserSecurityClearance(testUser, LEVEL2);
 
-                folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
-                doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
-                doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                category = filePlanService.createRecordCategory(filePlan, generate());
+                folder = recordFolderService.createRecordFolder(category, generate());
+                record1 = utils.createRecord(folder, searchQuery + generate());
+                record2 = utils.createRecord(folder, searchQuery + generate());
+                record3 = utils.createRecord(folder, searchQuery + generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
             }
 
             /**
@@ -201,9 +197,9 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                     {
                         assertNotNull(resultsForAdmin);
                         assertEquals(3, resultsForAdmin.size());
-                        assertTrue(resultsForAdmin.contains(doc1));
-                        assertTrue(resultsForAdmin.contains(doc2));
-                        assertTrue(resultsForAdmin.contains(doc3));
+                        assertTrue(resultsForAdmin.contains(record1));
+                        assertTrue(resultsForAdmin.contains(record2));
+                        assertTrue(resultsForAdmin.contains(record3));
 
                         return null;
                     }
@@ -216,8 +212,8 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                     {
                         assertNotNull(resultsForTestUser);
                         assertEquals(2, resultsForTestUser.size());
-                        assertTrue(resultsForTestUser.contains(doc2));
-                        assertTrue(resultsForTestUser.contains(doc3));
+                        assertTrue(resultsForTestUser.contains(record2));
+                        assertTrue(resultsForTestUser.contains(record3));
 
                         return null;
                     }
@@ -230,22 +226,24 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
     {
         /**
          * Given that a test user with highest level security clearance exists
-         * and three documents are created in the document library
-         * and one of the documents is classified with the highest security level
-         * and another document is classified with the mid-level security level
+         * and the test user is added to the RM Admin role
+         * and a category, a folder and three records are created in the file plan
+         * and one of the records is classified with the highest security level
+         * and another record is classified with the mid-level security level
          *
-         * When I search for the documents as admin
-         * Then I will see all three documents
+         * When I search for the records as admin
+         * The I will see all three records
          *
-         * When I search for the documents as the test user
-         * Then I will see all three documents
+         * When I search for the records as the test user
+         * The I will see all three records
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
+            private NodeRef category;
             private NodeRef folder;
-            private NodeRef doc1;
-            private NodeRef doc2;
-            private NodeRef doc3;
+            private NodeRef record1;
+            private NodeRef record2;
+            private NodeRef record3;
             private String searchQuery = generate();
             private List<NodeRef> resultsForAdmin;
             private List<NodeRef> resultsForTestUser;
@@ -258,16 +256,17 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
             {
                 testUser = generate();
                 createPerson(testUser);
-                siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
+                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
                 securityClearanceService.setUserSecurityClearance(testUser, LEVEL1);
 
-                folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
-                doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
-                doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
+                category = filePlanService.createRecordCategory(filePlan, generate());
+                folder = recordFolderService.createRecordFolder(category, generate());
+                record1 = utils.createRecord(folder, searchQuery + generate());
+                record2 = utils.createRecord(folder, searchQuery + generate());
+                record3 = utils.createRecord(folder, searchQuery + generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
             }
 
             /**
@@ -293,9 +292,9 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                     {
                         assertNotNull(resultsForAdmin);
                         assertEquals(3, resultsForAdmin.size());
-                        assertTrue(resultsForAdmin.contains(doc1));
-                        assertTrue(resultsForAdmin.contains(doc2));
-                        assertTrue(resultsForAdmin.contains(doc3));
+                        assertTrue(resultsForAdmin.contains(record1));
+                        assertTrue(resultsForAdmin.contains(record2));
+                        assertTrue(resultsForAdmin.contains(record3));
 
                         return null;
                     }
@@ -308,9 +307,9 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                     {
                         assertNotNull(resultsForTestUser);
                         assertEquals(3, resultsForTestUser.size());
-                        assertTrue(resultsForTestUser.contains(doc1));
-                        assertTrue(resultsForTestUser.contains(doc2));
-                        assertTrue(resultsForTestUser.contains(doc3));
+                        assertTrue(resultsForTestUser.contains(record1));
+                        assertTrue(resultsForTestUser.contains(record2));
+                        assertTrue(resultsForTestUser.contains(record3));
 
                         return null;
                     }
@@ -325,11 +324,17 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
     @Override
     protected List<NodeRef> search(String searchQuery)
     {
-        SearchParameters searchParameters = new SearchParameters();
-        searchParameters.setQuery("cm:name:" + searchQuery + "*");
-        searchParameters.setLanguage(LANGUAGE_FTS_ALFRESCO);
-        searchParameters.addStore(STORE_REF_WORKSPACE_SPACESSTORE);
-        searchParameters.setMaxItems(MAX_VALUE);
-        return searchService.query(searchParameters).getNodeRefs();
+        String query = "cm:name:" + searchQuery + "*";
+        RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
+        searchParameters.setIncludeUndeclaredRecords(true);
+        List<Pair<NodeRef, NodeRef>> result = rmSearchService.search(siteId, query, searchParameters);
+
+        List<NodeRef> filteredResult = new ArrayList<>();
+        for (Pair<NodeRef, NodeRef> pair : result)
+        {
+            filteredResult.add(pair.getSecond());
+        }
+
+        return filteredResult;
     }
 }

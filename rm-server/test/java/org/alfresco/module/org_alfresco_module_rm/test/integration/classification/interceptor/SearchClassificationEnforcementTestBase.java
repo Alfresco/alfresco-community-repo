@@ -18,16 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
-import static java.lang.Integer.MAX_VALUE;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
-import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.search.SearchParameters;
 
 /**
  * Base class for classification enforcement tests for the search action
@@ -35,26 +31,23 @@ import org.alfresco.service.cmr.search.SearchParameters;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class SearchClassificationEnforcementTestBase extends BaseRMTestCase
+public abstract class SearchClassificationEnforcementTestBase extends BaseRMTestCase
 {
     protected String testUser;
     protected static final String LEVEL1 = "level1";
     protected static final String LEVEL2 = "level2";
     protected static final String REASON = "Test Reason 1";
 
-    protected List<NodeRef> search(String searchQuery, String userName)
+    protected abstract List<NodeRef> search(String searchQuery);
+
+    private List<NodeRef> search(String searchQuery, String userName)
     {
         return doTestInTransaction(new Test<List<NodeRef>>()
         {
             @Override
             public List<NodeRef> run()
             {
-                SearchParameters searchParameters = new SearchParameters();
-                searchParameters.setQuery("cm:name:" + searchQuery + "*");
-                searchParameters.setLanguage(LANGUAGE_FTS_ALFRESCO);
-                searchParameters.addStore(STORE_REF_WORKSPACE_SPACESSTORE);
-                searchParameters.setMaxItems(MAX_VALUE);
-                return searchService.query(searchParameters).getNodeRefs();
+                return search(searchQuery);
             }
         }, userName);
     }

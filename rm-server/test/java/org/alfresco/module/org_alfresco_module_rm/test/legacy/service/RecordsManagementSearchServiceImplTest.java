@@ -47,7 +47,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
     private static final String SEARCH3 = "search3";
     private static final String SEARCH4 = "search4";
 
-    private static final String USER1 = generate();
+    private String user;
 
     private NodeRef folderLevelRecordFolder;
     private NodeRef recordLevelRecordFolder;
@@ -72,7 +72,8 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 assertNotNull(searches);
                 numberOfReports = searches.size();
 
-                createPerson(USER1);
+                user = generate();
+                createPerson(user);
 
                 return null;
             }
@@ -163,7 +164,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 return null;
             }
 
-        }, USER1);
+        }, user);
 
         // Get searches (as admin user)
         doTestInTransaction(new Test<Void>()
@@ -222,7 +223,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 return null;
             }
 
-        }, USER1);
+        }, user);
 
         // Update search (as admin user)
         doTestInTransaction(new Test<Void>()

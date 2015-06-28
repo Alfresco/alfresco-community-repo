@@ -46,14 +46,25 @@ public class ChildAssociationRefPostMethodInvocationProcessor extends AbstractPo
     @Override
     protected <T> T processSingleElement(T object)
     {
+        T result;
+
         ChildAssociationRef childAssociationRef = getClassName().cast(object);
 
         NodeRef childRef = childAssociationRef.getChildRef();
         NodeRef filteredChildRef = filter(childRef);
 
         NodeRef parentRef = childAssociationRef.getParentRef();
-        NodeRef filteredParentRef = filter(parentRef);
+        NodeRef filteredParentRef;
+        if (parentRef == null)
+        {
+            result = filteredChildRef == null ? null : object;
+        }
+        else
+        {
+            filteredParentRef = filter(parentRef);
+            result = (filteredChildRef == null || filteredParentRef == null) ? null : object;
+        }
 
-        return (filteredChildRef == null || filteredParentRef == null) ? null : object;
+        return result;
     }
 }

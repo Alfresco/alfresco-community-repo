@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.alfresco.repo.search.impl.querymodel.QueryEngineResults;
 import org.alfresco.service.cmr.search.ResultSet;
+import org.springframework.stereotype.Component;
 
 /**
  * A post method invocation processor for {@link QueryEngineResults}.
@@ -32,6 +33,7 @@ import org.alfresco.service.cmr.search.ResultSet;
  * @author Tom Page
  * @since 3.0
  */
+@Component
 public class QueryEngineResultsPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**

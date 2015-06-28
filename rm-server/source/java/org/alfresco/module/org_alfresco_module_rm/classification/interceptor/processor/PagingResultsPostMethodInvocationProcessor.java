@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.alfresco.query.PagingResults;
 import org.alfresco.util.Pair;
+import org.springframework.stereotype.Component;
 
 /**
  * PagingResults Post Method Invocation Processor
@@ -29,6 +30,7 @@ import org.alfresco.util.Pair;
  * @author Tuna Aksoy
  * @since 3.0
  */
+@Component
 public class PagingResultsPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**

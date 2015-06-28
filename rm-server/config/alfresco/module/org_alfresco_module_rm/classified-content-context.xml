@@ -2,11 +2,17 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xmlns:aop="http://www.springframework.org/schema/aop"
+   xmlns:context="http://www.springframework.org/schema/context"
    xsi:schemaLocation="
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-3.0.xsd
       http://www.springframework.org/schema/beans
       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
       http://www.springframework.org/schema/aop
       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd ">
+
+   <context:annotation-config/>
+   <context:component-scan base-package="org.alfresco.module.org_alfresco_module_rm.classification.interceptor"/>
 
    <!--  Classified content model bootstrap -->
 
@@ -61,73 +67,6 @@
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
 
    <bean id="basePostMethodInvocationProcessorCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
-
-   <bean id="basePostMethodInvocationProcessor"
-      abstract="true"
-      init-method="register">
-      <property name="nodeService" ref="NodeService" />
-      <property name="dictionaryService" ref="DictionaryService" />
-      <property name="contentClassificationService" ref="ContentClassificationService" />
-      <property name="securityClearanceService" ref="SecurityClearanceService" />
-      <property name="postMethodInvocationProcessor" ref="postMethodInvocationProcessor" />
-      <property name="cache" ref="basePostMethodInvocationProcessorCache" />
-   </bean>
-
-   <bean id="abstractPostMethodInvocationProcessor"
-      abstract="true"
-      parent="basePostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="nodeRefPostMethodInvocationProcessor"
-      parent="abstractPostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.NodeRefPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="storeRefPostMethodInvocationProcessor"
-      parent="abstractPostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.StoreRefPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="childAssociationRefPostMethodInvocationProcessor"
-      parent="abstractPostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ChildAssociationRefPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="associationRefPostMethodInvocationProcessor"
-      parent="abstractPostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AssociationRefPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="permissionCheckValuePostMethodInvocationProcessor"
-      parent="abstractPostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PermissionCheckValuePostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="collectionPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.CollectionPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="resultSetPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ResultSetPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="queryEngineResultsPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.QueryEngineResultsPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="pagingResultsPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PagingResultsPostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="arrayPostMethodInvocationProcessor"
-      parent="basePostMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ArrayPostMethodInvocationProcessor">
-   </bean>
 
    <!-- Classification service DAO -->
 

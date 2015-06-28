@@ -25,12 +25,15 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
 /**
  * Array Post Method Invocation Processor
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
+@Component
 public class ArrayPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**

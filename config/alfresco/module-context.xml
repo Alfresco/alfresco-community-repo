@@ -24,6 +24,10 @@
    </bean>
 
    <!-- Import of installed modules -->
+   
+   <!--  bootstrap context first - for any resources shared between modules like the data list model -->
+   <import resource="classpath*:alfresco/module/*/module-bootstrap-context.xml"/>
+   <!--  the main context for each module -->
    <import resource="classpath*:alfresco/module/*/module-context.xml"/>
    <import resource="classpath*:alfresco/module/*/module-uninstall-context.xml"/>
 

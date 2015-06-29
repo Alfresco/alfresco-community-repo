@@ -23,6 +23,8 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.transaction.TransactionService;
 import org.springframework.aop.framework.ProxyFactoryBean;
 
 /**
@@ -42,6 +44,9 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
 
     /** Records management audit service */
     protected RecordsManagementAuditService recordsManagementAuditService;
+
+    /** transaction service */
+    private TransactionService transactionService;
 
     /**
      * Set action service
@@ -74,6 +79,15 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
     }
 
     /**
+     * @param transactionService    transaction service
+     * @since 3.0.a
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    /**
      * Register the action
      */
     public void registerAction()
@@ -82,8 +96,16 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
         {
             public Void doWork()
             {
-                RecordsManagementAction action = (RecordsManagementAction)getObject();
-                recordsManagementActionService.register(action);
+                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        RecordsManagementAction action = (RecordsManagementAction)getObject();
+                        recordsManagementActionService.register(action);
+
+                        return null;
+                    }
+                });
 
                 return null;
             }

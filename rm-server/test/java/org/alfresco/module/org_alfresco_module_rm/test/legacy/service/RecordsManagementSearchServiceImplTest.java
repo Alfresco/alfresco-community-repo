@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
+import static org.alfresco.util.GUID.generate;
+
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters;
@@ -26,14 +28,12 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
-import org.alfresco.util.TestWithUserUtils;
 
 /**
  * Search service implementation unit test.
  *
  * @author Roy Wetherall
  */
-@SuppressWarnings("unused")
 public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
 {
     @Override
@@ -47,18 +47,10 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
     private static final String SEARCH3 = "search3";
     private static final String SEARCH4 = "search4";
 
-    private static final String USER1 = "user1";
-    private static final String USER2 = "user2";
+    private String user;
 
     private NodeRef folderLevelRecordFolder;
     private NodeRef recordLevelRecordFolder;
-
-    private NodeRef recordOne;
-    private NodeRef recordTwo;
-    private NodeRef recordThree;
-    private NodeRef recordFour;
-    private NodeRef recordFive;
-    private NodeRef recordSix;
 
     private int numberOfReports;
 
@@ -75,14 +67,13 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                // Create test users
-                TestWithUserUtils.createUser(USER1, USER1, rootNodeRef, nodeService, authenticationService);
-                TestWithUserUtils.createUser(USER2, USER2, rootNodeRef, nodeService, authenticationService);
-
                 // Count the number of pre-defined reports
                 List<SavedSearchDetails> searches = rmSearchService.getSavedSearches(siteId);
                 assertNotNull(searches);
                 numberOfReports = searches.size();
+
+                user = generate();
+                createPerson(user);
 
                 return null;
             }
@@ -105,35 +96,16 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 folderLevelRecordFolder = mhRecordFolder42;
                 recordLevelRecordFolder = mhRecordFolder43;
 
-                recordOne = utils.createRecord(folderLevelRecordFolder, "recordOne.txt", null, "record one - folder level - elephant");
-                recordTwo = utils.createRecord(folderLevelRecordFolder, "recordTwo.txt", null, "record two - folder level - snake");
-                recordThree = utils.createRecord(folderLevelRecordFolder, "recordThree.txt", null, "record three - folder level - monkey");
-                recordFour = utils.createRecord(recordLevelRecordFolder, "recordFour.txt", null, "record four - record level - elephant");
-                recordFive = utils.createRecord(recordLevelRecordFolder, "recordFive.txt", null, "record five - record level - snake");
-                recordSix = utils.createRecord(recordLevelRecordFolder, "recordSix.txt", null, "record six - record level - monkey");
+                utils.createRecord(folderLevelRecordFolder, "recordOne.txt", null, "record one - folder level - elephant");
+                utils.createRecord(folderLevelRecordFolder, "recordTwo.txt", null, "record two - folder level - snake");
+                utils.createRecord(folderLevelRecordFolder, "recordThree.txt", null, "record three - folder level - monkey");
+                utils.createRecord(recordLevelRecordFolder, "recordFour.txt", null, "record four - record level - elephant");
+                utils.createRecord(recordLevelRecordFolder, "recordFive.txt", null, "record five - record level - snake");
+                utils.createRecord(recordLevelRecordFolder, "recordSix.txt", null, "record six - record level - monkey");
 
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
-    }
-
-    @Override
-    protected void tearDown() throws Exception
-    {
-        doTestInTransaction(new Test<Void>()
-        {
-            @Override
-            public Void run()
-            {
-                // Delete test users
-                TestWithUserUtils.deleteUser(USER1, USER1, rootNodeRef, nodeService, authenticationService);
-                TestWithUserUtils.deleteUser(USER2, USER2, rootNodeRef, nodeService, authenticationService);
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-
-        super.tearDown();
     }
 
     public void testSearch()
@@ -192,7 +164,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 return null;
             }
 
-        }, USER1);
+        }, user);
 
         // Get searches (as admin user)
         doTestInTransaction(new Test<Void>()
@@ -251,7 +223,7 @@ public class RecordsManagementSearchServiceImplTest extends BaseRMTestCase
                 return null;
             }
 
-        }, USER1);
+        }, user);
 
         // Update search (as admin user)
         doTestInTransaction(new Test<Void>()

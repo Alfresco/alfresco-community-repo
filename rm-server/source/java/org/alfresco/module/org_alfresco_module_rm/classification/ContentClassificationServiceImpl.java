@@ -34,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -63,18 +64,24 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
     }
 
     @Override
-    public ClassificationLevel getCurrentClassification(NodeRef nodeRef)
+    public ClassificationLevel getCurrentClassification(final NodeRef nodeRef)
     {
-        // by default everything is unclassified
-        ClassificationLevel result = ClassificationLevelManager.UNCLASSIFIED;
-
-        if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED))
+        return AuthenticationUtil.runAsSystem(new RunAsWork<ClassificationLevel>()
         {
-            String classificationId = (String)nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
-            result = levelManager.findLevelById(classificationId);
-        }
+            public ClassificationLevel doWork() throws Exception
+            {
+                // by default everything is unclassified
+                ClassificationLevel result = ClassificationLevelManager.UNCLASSIFIED;
 
-        return result;
+                if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED))
+                {
+                    String classificationId = (String)nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+                    result = levelManager.findLevelById(classificationId);
+                }
+
+                return result;
+            }
+        });
     };
 
     @Override

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+   <!-- Share Service Module Bootstrap -->
+    
+   <bean id="datalistModelBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">
+      <property name="models">
+         <list>
+            <!-- Share Data Lists model -->
+            <value>alfresco/model/datalistModel.xml</value>
+         </list>
+      </property>
+      <property name="labels">
+         <list>
+            <value>alfresco/messages/data-list-model</value>
+         </list>
+      </property>
+   </bean>
+   
+</beans>
+

@@ -42,4 +42,13 @@ public class AlfrescoTransactionSupport
     {
         org.alfresco.repo.transaction.AlfrescoTransactionSupport.unbindResource(key);
     }
+
+    /**
+     * @see org.alfresco.repo.transaction.AlfrescoTransactionSupport#getResource(Object)
+     * @since 3.0.a
+     */
+    public Object getResource(Object key)
+    {
+        return org.alfresco.repo.transaction.AlfrescoTransactionSupport.getResource(key);
+    }
 }

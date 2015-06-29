@@ -61,7 +61,7 @@ public class ResultSetPostMethodInvocationProcessor extends BasePostMethodInvoca
 
         if (result != null)
         {
-            ResultSet returnedObject = getClassName().cast(object);
+            ResultSet returnedObject = getClassName().cast(result);
 
             BitSet inclusionMask = new BitSet(returnedObject.length());
             FilteringResultSet filteringResultSet = new FilteringResultSet(returnedObject, inclusionMask);

@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
 import static java.lang.reflect.Array.newInstance;
-import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -52,39 +51,40 @@ public class ArrayPostMethodInvocationProcessor extends BasePostMethodInvocation
     @Override
     public <T> T process(T object)
     {
-        mandatory("object", object);
-
         T result = object;
-        T[] objects = (T[]) result;
-        T obj = objects[0];
 
-        BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(obj);
-        if (processor != null)
+        if (result != null)
         {
-            int length = objects.length;
-            List processedObjects = new ArrayList();
+            T[] objects = (T[]) result;
+            T obj = objects[0];
 
-            for (int i = 0; i < length; i++)
+            BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(obj);
+            if (processor != null)
             {
-                Object processedObject = processor.process(objects[i]);
-                if (processedObject != null)
+                int length = objects.length;
+                List processedObjects = new ArrayList();
+
+                for (int i = 0; i < length; i++)
                 {
-                    processedObjects.add(processedObject);
+                    Object processedObject = processor.process(objects[i]);
+                    if (processedObject != null)
+                    {
+                        processedObjects.add(processedObject);
+                    }
                 }
+
+                int size = processedObjects.size();
+                T[] objs = (T[]) newInstance(obj.getClass(), size);
+
+                for (int i = 0; i < size; i++)
+                {
+                    objs[i] = (T) processedObjects.get(i);
+                }
+
+                result = (T) objs;
             }
-
-            int size = processedObjects.size();
-            T[] objs = (T[]) newInstance(obj.getClass(), size);
-
-            for (int i = 0; i < size; i++)
-            {
-                objs[i] = (T) processedObjects.get(i);
-            }
-
-            result = (T) objs;
         }
 
         return result;
     }
-
 }

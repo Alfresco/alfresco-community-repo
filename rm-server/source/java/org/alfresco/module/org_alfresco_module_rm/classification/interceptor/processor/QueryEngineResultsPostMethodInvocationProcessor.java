@@ -52,26 +52,33 @@ public class QueryEngineResultsPostMethodInvocationProcessor extends BasePostMet
     @Override
     public <T> T process(T object)
     {
-        QueryEngineResults queryEngineResults = getClassName().cast(object);
-        Map<Set<String>, ResultSet> resultsMap = queryEngineResults.getResults();
-        Map<Set<String>, ResultSet> returnMap = new HashMap<>();
-        BasePostMethodInvocationProcessor processor = null;
+        T result = object;
 
-        for (Entry<Set<String>, ResultSet> entry : resultsMap.entrySet())
+        if (result != null)
         {
-            ResultSet value = entry.getValue();
-            if (processor == null)
+            QueryEngineResults queryEngineResults = getClassName().cast(result);
+            Map<Set<String>, ResultSet> resultsMap = queryEngineResults.getResults();
+            Map<Set<String>, ResultSet> returnMap = new HashMap<>();
+            BasePostMethodInvocationProcessor processor = null;
+
+            for (Entry<Set<String>, ResultSet> entry : resultsMap.entrySet())
             {
-                processor = getPostMethodInvocationProcessor().getProcessor(value);
+                ResultSet value = entry.getValue();
+                if (processor == null)
+                {
+                    processor = getPostMethodInvocationProcessor().getProcessor(value);
+                }
+
+                ResultSet newResultSet = processor.process(value);
+                if (newResultSet != null)
+                {
+                    returnMap.put(entry.getKey(), newResultSet);
+                }
             }
 
-            ResultSet newResultSet = processor.process(value);
-            if (newResultSet != null)
-            {
-                returnMap.put(entry.getKey(), newResultSet);
-            }
+            result = (T) new QueryEngineResults(returnMap);
         }
 
-        return (T) new QueryEngineResults(returnMap);
+        return result;
     }
 }

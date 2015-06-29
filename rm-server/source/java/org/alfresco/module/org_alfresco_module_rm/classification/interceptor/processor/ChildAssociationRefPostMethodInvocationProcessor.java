@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * @since 3.0
  */
 @Component
-public class ChildAssociationRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
+public class ChildAssociationRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
@@ -41,28 +41,34 @@ public class ChildAssociationRefPostMethodInvocationProcessor extends AbstractPo
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
     @Override
-    protected <T> T processSingleElement(T object)
+    public <T> T process(T object)
     {
-        T result;
+        T result = object;
 
-        ChildAssociationRef childAssociationRef = getClassName().cast(object);
-
-        NodeRef childRef = childAssociationRef.getChildRef();
-        NodeRef filteredChildRef = filter(childRef);
-
-        NodeRef parentRef = childAssociationRef.getParentRef();
-        NodeRef filteredParentRef;
-        if (parentRef == null)
+        if (result != null)
         {
-            result = filteredChildRef == null ? null : object;
-        }
-        else
-        {
-            filteredParentRef = filter(parentRef);
-            result = (filteredChildRef == null || filteredParentRef == null) ? null : object;
+            ChildAssociationRef childAssociationRef = getClassName().cast(result);
+
+            NodeRef childRef = childAssociationRef.getChildRef();
+            NodeRef filteredChildRef = filter(childRef);
+
+            NodeRef parentRef = childAssociationRef.getParentRef();
+            NodeRef filteredParentRef;
+            if (parentRef == null && filteredChildRef == null)
+            {
+                result = null;
+            }
+            else
+            {
+                filteredParentRef = filter(parentRef);
+                if (filteredChildRef == null || filteredParentRef == null)
+                {
+                    result = null;
+                }
+            }
         }
 
         return result;

@@ -24,11 +24,9 @@ import javax.annotation.PostConstruct;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
-import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,10 +56,6 @@ public abstract class BasePostMethodInvocationProcessor
     /** Post method invocation processor */
     @Autowired
     private PostMethodInvocationProcessor postMethodInvocationProcessor;
-
-    /** Cache to hold the filtered node information */
-    @Autowired
-    private SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> basePostMethodInvocationProcessorCache;
 
     /**
      * @return the nodeService
@@ -101,14 +95,6 @@ public abstract class BasePostMethodInvocationProcessor
     protected PostMethodInvocationProcessor getPostMethodInvocationProcessor()
     {
         return this.postMethodInvocationProcessor;
-    }
-
-    /**
-     * @return the cache
-     */
-    protected SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> getCache()
-    {
-        return this.basePostMethodInvocationProcessorCache;
     }
 
     /**
@@ -152,11 +138,12 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
-     * @param cache the cache to set
+     * Registers the post method invocation processors
      */
-    public void setCache(SimpleCache<Pair<String, NodeRef>, Pair<Boolean, NodeRef>> cache)
+    @PostConstruct
+    public void register()
     {
-        this.basePostMethodInvocationProcessorCache = cache;
+        getPostMethodInvocationProcessor().register(this);
     }
 
     /**
@@ -172,16 +159,7 @@ public abstract class BasePostMethodInvocationProcessor
      * @param object The object to check
      * @return The given object
      */
-    public abstract <T extends Object> T process(T object);
-
-    /**
-     * Registers the post method invocation processors
-     */
-    @PostConstruct
-    public void register()
-    {
-        getPostMethodInvocationProcessor().register(this);
-    }
+    protected abstract <T extends Object> T process(T object);
 
     /**
      * Filters the node if the give node reference exist and it is a
@@ -201,29 +179,6 @@ public abstract class BasePostMethodInvocationProcessor
         {
             filter = null;
         }
-
-//        if (filter != null)
-//        {
-//            String uniqueCacheKey = getFullyAuthenticatedUser() /*+ userClearance?*/;
-//
-//            Pair<String, NodeRef> cacheKey = new Pair<String, NodeRef>(uniqueCacheKey, filter);
-//            Pair<Boolean, NodeRef> cacheValue = getCache().get(cacheKey);
-//
-//            if (cacheValue == null || !cacheValue.getFirst().booleanValue())
-//            {
-//                if (getNodeService().exists(nodeRef) &&
-//                        getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
-//                        !getContentClassificationService().hasClearance(nodeRef))
-//                {
-//                    filter = null;
-//                }
-//                getCache().put(new Pair<String, NodeRef>(uniqueCacheKey, nodeRef), new Pair<Boolean, NodeRef>(true, filter));
-//            }
-//            else
-//            {
-//                filter = getCache().get(cacheKey).getSecond();
-//            }
-//        }
 
         return filter;
     }

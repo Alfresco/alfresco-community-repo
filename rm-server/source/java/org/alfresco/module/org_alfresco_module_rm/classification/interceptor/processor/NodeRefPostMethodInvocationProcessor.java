@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
  * @since 3.0
  */
 @Component
-public class NodeRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
+public class NodeRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
@@ -40,12 +40,22 @@ public class NodeRefPostMethodInvocationProcessor extends AbstractPostMethodInvo
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
     @Override
-    protected <T> T processSingleElement(T object)
+    public <T> T process(T object)
     {
-        NodeRef nodeRef = getClassName().cast(object);
-        return filter(nodeRef) == null ? null : object;
+        T result = object;
+
+        if (result != null)
+        {
+            NodeRef nodeRef = getClassName().cast(result);
+            if (filter(nodeRef) == null)
+            {
+                result = null;
+            }
+        }
+
+        return result;
     }
 }

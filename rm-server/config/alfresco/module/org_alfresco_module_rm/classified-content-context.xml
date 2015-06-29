@@ -66,8 +66,6 @@
    <bean id="classificationMethodInterceptorPostProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
 
-   <bean id="basePostMethodInvocationProcessorCache" class="org.alfresco.repo.cache.DefaultSimpleCache" />
-
    <!-- Classification service DAO -->
 
    <bean id="classificationServiceDAO" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceDAO">

@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * @since 3.0
  */
 @Component
-public class StoreRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
+public class StoreRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
@@ -44,10 +44,20 @@ public class StoreRefPostMethodInvocationProcessor extends AbstractPostMethodInv
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
      */
     @Override
-    protected <T> T processSingleElement(T object)
+    public <T> T process(T object)
     {
-        StoreRef storeRef = getClassName().cast(object);
-        NodeRef nodeRef = getNodeService().getRootNode(storeRef);
-        return filter(nodeRef) == null ? null : object;
+        T result = object;
+
+        if (result != null)
+        {
+            StoreRef storeRef = getClassName().cast(result);
+            NodeRef nodeRef = getNodeService().getRootNode(storeRef);
+            if (filter(nodeRef) == null)
+            {
+                result = null;
+            }
+        }
+
+        return result;
     }
 }

@@ -20,8 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 
-import java.util.Collection;
-
 import javax.annotation.PostConstruct;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
@@ -183,17 +181,6 @@ public abstract class BasePostMethodInvocationProcessor
     public void register()
     {
         getPostMethodInvocationProcessor().register(this);
-    }
-
-    /**
-     * Checks if the given object is a collection
-     *
-     * @param object Object to check
-     * @return <code>true</code> if the code is a collection, <code>false</code> otherwise
-     */
-    protected <T> boolean isCollection(T object)
-    {
-        return Collection.class.isAssignableFrom(object.getClass());
     }
 
     /**

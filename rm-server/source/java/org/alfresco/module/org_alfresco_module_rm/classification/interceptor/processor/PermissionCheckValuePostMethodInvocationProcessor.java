@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * @since 3.0
  */
 @Component
-public class PermissionCheckValuePostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
+public class PermissionCheckValuePostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
@@ -41,13 +41,23 @@ public class PermissionCheckValuePostMethodInvocationProcessor extends AbstractP
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
     @Override
-    protected <T> T processSingleElement(T object)
+    public <T> T process(T object)
     {
-        PermissionCheckValue permissionCheckValue = getClassName().cast(object);
-        NodeRef nodeRef = permissionCheckValue.getNodeRef();
-        return filter(nodeRef) == null ? null : object;
+        T result = object;
+
+        if (result != null)
+        {
+            PermissionCheckValue permissionCheckValue = getClassName().cast(result);
+            NodeRef nodeRef = permissionCheckValue.getNodeRef();
+            if (filter(nodeRef) == null)
+            {
+                result = null;
+            }
+        }
+
+        return result;
     }
 }

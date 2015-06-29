@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
  * @since 3.0
  */
 @Component
-public class AssociationRefPostMethodInvocationProcessor extends AbstractPostMethodInvocationProcessor
+public class AssociationRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
@@ -41,19 +41,29 @@ public class AssociationRefPostMethodInvocationProcessor extends AbstractPostMet
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
     @Override
-    protected <T> T processSingleElement(T object)
+    public <T> T process(T object)
     {
-        AssociationRef associationRef = getClassName().cast(object);
+        T result = object;
 
-        NodeRef sourceRef = associationRef.getSourceRef();
-        NodeRef filteredSource = filter(sourceRef);
+        if (result != null)
+        {
+            AssociationRef associationRef = getClassName().cast(result);
 
-        NodeRef targetRef = associationRef.getTargetRef();
-        NodeRef filteredTarget = filter(targetRef);
+            NodeRef sourceRef = associationRef.getSourceRef();
+            NodeRef filteredSource = filter(sourceRef);
 
-        return (filteredSource == null || filteredTarget == null) ? null : object;
+            NodeRef targetRef = associationRef.getTargetRef();
+            NodeRef filteredTarget = filter(targetRef);
+
+            if (filteredSource == null || filteredTarget == null)
+            {
+                result = null;
+            }
+        }
+
+        return result;
     }
 }

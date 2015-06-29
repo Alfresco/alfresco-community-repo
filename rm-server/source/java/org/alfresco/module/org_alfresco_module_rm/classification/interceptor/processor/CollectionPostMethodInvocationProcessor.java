@@ -24,7 +24,7 @@ import java.util.Iterator;
 import org.springframework.stereotype.Component;
 
 /**
- * Collection Post Method Invocation Processor
+ * Collection Post Method Invocation Processor.
  *
  * @author Tuna Aksoy
  * @since 3.0
@@ -44,40 +44,81 @@ public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvoc
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public <T> T process(T object)
     {
-        T result = object;
+        Collection collection = ((Collection) object);
 
-        if (result != null)
+        if (collection != null)
         {
-            Collection collection = ((Collection) result);
-            if (!collection.isEmpty())
+            BasePostMethodInvocationProcessor processor = pickProcessor(collection);
+            if (processor != null)
             {
-                Iterator iterator = collection.iterator();
-                while (iterator.hasNext())
-                {
-                    Object next = iterator.next();
-                    // TODO: Can we guarantee that all the elements of a collection can be processed by the same processor?
-                    BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(next);
-                    if (processor != null)
-                    {
-                        Object processed = processor.process(next);
-                        if (processed == null)
-                        {
-                            iterator.remove();
-                        }
-                        else if (!processed.equals(next))
-                        {
-                            // TODO Support this, as it will be hit by e.g. collections of collections.
-                            throw new IllegalStateException("Modifying members of a collection is not yet supported.");
-                        }
-                    }
-                }
+                object = (T) processCollection(collection, processor);
             }
         }
 
-        return result;
+        return object;
+    }
+
+    /**
+     * Process a collection using the supplied processor.
+     *
+     * @param collection The collection to be processed.
+     * @param processor A collection suitable for access by someone with the current security clearance.
+     */
+    protected <T> Collection<T> processCollection(Collection<T> collection, BasePostMethodInvocationProcessor processor)
+    {
+        Iterator<T> iterator = collection.iterator();
+        while (iterator.hasNext())
+        {
+            Object next = iterator.next();
+            Object processed = processor.process(next);
+            try
+            {
+                if (processed == null)
+                {
+                    iterator.remove();
+                }
+                else if (!processed.equals(next))
+                {
+                    // Modifying members of this type of collection is not supported, so filter the whole collection.
+                    return null;
+                }
+            }
+            catch (UnsupportedOperationException e)
+            {
+                // If the collection cannot be modified and it contains classified data then the whole thing must be filtered.
+                return null;
+            }
+        }
+        return collection;
+    }
+
+    /**
+     * Pick a suitable processor for the members of the collection. We assume that all the elements of a collection can
+     * be processed by the same processor.
+     *
+     * @param collection The collection to be processed.
+     * @return The chosen processor, or {@code null} if no suitable processor could be found.
+     */
+    @SuppressWarnings("rawtypes")
+    private BasePostMethodInvocationProcessor pickProcessor(Collection collection)
+    {
+        Iterator iterator = collection.iterator();
+        while (iterator.hasNext())
+        {
+            Object next = iterator.next();
+            if (next != null)
+            {
+                BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(next);
+                if (processor != null)
+                {
+                    return processor;
+                }
+            }
+        }
+        return null;
     }
 }

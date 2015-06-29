@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.springframework.stereotype.Component;
 
@@ -39,8 +38,7 @@ public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvoc
     @Override
     protected Class<?> getClassName()
     {
-        // FIXME!!!
-        return List.class;
+        return Collection.class;
     }
 
     /**
@@ -58,12 +56,23 @@ public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvoc
             if (!collection.isEmpty())
             {
                 Iterator iterator = collection.iterator();
-                if (iterator.hasNext())
+                while (iterator.hasNext())
                 {
-                    BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(iterator.next());
+                    Object next = iterator.next();
+                    // TODO: Can we guarantee that all the elements of a collection can be processed by the same processor?
+                    BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(next);
                     if (processor != null)
                     {
-                        result = processor.process(object);
+                        Object processed = processor.process(next);
+                        if (processed == null)
+                        {
+                            iterator.remove();
+                        }
+                        else if (!processed.equals(next))
+                        {
+                            // TODO Support this, as it will be hit by e.g. collections of collections.
+                            throw new IllegalStateException("Modifying members of a collection is not yet supported.");
+                        }
                     }
                 }
             }

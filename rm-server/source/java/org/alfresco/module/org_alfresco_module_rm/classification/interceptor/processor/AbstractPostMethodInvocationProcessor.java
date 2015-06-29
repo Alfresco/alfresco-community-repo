@@ -18,10 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import java.util.Collection;
-
-import org.alfresco.util.collections.CollectionUtils;
-import org.alfresco.util.collections.Filter;
 
 /**
  * Abstract Post Method Invocation Processor
@@ -40,28 +36,8 @@ public abstract class AbstractPostMethodInvocationProcessor extends BasePostMeth
     protected abstract <T> T processSingleElement(T object);
 
     /**
-     * Processes a collection
-     *
-     * @param collection The collection to process
-     * @return Processed collection
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Collection processCollection(Collection collection)
-    {
-        return CollectionUtils.filter(collection, new Filter()
-        {
-            @Override
-            public Boolean apply(Object element)
-            {
-                return processSingleElement(element) != null;
-            }
-        });
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public <T> T process(T object)
     {
@@ -69,18 +45,7 @@ public abstract class AbstractPostMethodInvocationProcessor extends BasePostMeth
 
         if (result != null)
         {
-            if (isCollection(result))
-            {
-                Collection collection = ((Collection) result);
-                if (!collection.isEmpty())
-                {
-                    result = (T) processCollection(collection);
-                }
-            }
-            else
-            {
-                result = processSingleElement(result);
-            }
+            result = processSingleElement(result);
         }
 
         return result;

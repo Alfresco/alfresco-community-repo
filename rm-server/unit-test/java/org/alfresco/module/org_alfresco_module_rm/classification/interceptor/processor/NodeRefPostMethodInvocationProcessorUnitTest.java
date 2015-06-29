@@ -18,14 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static com.google.common.collect.ImmutableList.copyOf;
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.Collections.unmodifiableCollection;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.extensions.webscripts.GUID.generate;
-
-import java.util.ArrayList;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
@@ -90,83 +85,9 @@ public class NodeRefPostMethodInvocationProcessorUnitTest extends BaseUnitTest
     }
 
     @Test
-    public void testCollection_bothNodesConent_userClearedForBoth()
+    public void testProcessingNull()
     {
-        NodeRef nodeRef1 = generateNodeRef();
-        NodeRef nodeRef2 = generateNodeRef();
-        ArrayList<NodeRef> nodeRefs = newArrayList(nodeRef1, nodeRef2);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef1), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef1)).thenReturn(true);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef2), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef2)).thenReturn(true);
-
-        assertEquals(nodeRefs, nodeRefPostMethodInvocationProcessor.process(nodeRefs));
-    }
-
-    @Test
-    public void testCollection_bothNodesContent_userClearedForOne()
-    {
-        NodeRef nodeRef1 = generateNodeRef();
-        NodeRef nodeRef2 = generateNodeRef();
-        ArrayList<NodeRef> nodeRefs = newArrayList(nodeRef1, nodeRef2);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef1), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef1)).thenReturn(true);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef2), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef2)).thenReturn(false);
-
-        assertEquals(newArrayList(nodeRef1), nodeRefPostMethodInvocationProcessor.process(nodeRefs));
-    }
-
-    @SuppressWarnings("rawtypes")
-    @Test
-    public void testCollection_bothNodesContent_userClearedForNone()
-    {
-        NodeRef nodeRef1 = generateNodeRef();
-        NodeRef nodeRef2 = generateNodeRef();
-        ArrayList<NodeRef> nodeRefs = newArrayList(nodeRef1, nodeRef2);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef1), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef1)).thenReturn(false);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef2), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef2)).thenReturn(false);
-
-        assertEquals(new ArrayList(), nodeRefPostMethodInvocationProcessor.process(unmodifiableCollection(nodeRefs)));
-    }
-
-    @Test
-    public void testCollection_onlyOneNodeContent_userClearedForBoth()
-    {
-        NodeRef nodeRef1 = generateNodeRef();
-        NodeRef nodeRef2 = generateNodeRef();
-        ArrayList<NodeRef> nodeRefs = newArrayList(nodeRef1, nodeRef2);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef1), TYPE_CONTENT)).thenReturn(false);
-        when(mockedContentClassificationService.hasClearance(nodeRef1)).thenReturn(true);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef2), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef2)).thenReturn(true);
-
-        assertEquals(nodeRefs, nodeRefPostMethodInvocationProcessor.process(copyOf(nodeRefs)));
-    }
-
-    @Test
-    public void testCollection_bothNodesNotContent_userClearedForBoth()
-    {
-        NodeRef nodeRef1 = generateNodeRef();
-        NodeRef nodeRef2 = generateNodeRef();
-        ArrayList<NodeRef> nodeRefs = newArrayList(nodeRef1, nodeRef2);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef1), TYPE_CONTENT)).thenReturn(false);
-        when(mockedContentClassificationService.hasClearance(nodeRef1)).thenReturn(true);
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef2), TYPE_CONTENT)).thenReturn(false);
-        when(mockedContentClassificationService.hasClearance(nodeRef2)).thenReturn(true);
-
-        assertEquals(nodeRefs, nodeRefPostMethodInvocationProcessor.process(copyOf(nodeRefs)));
+        assertEquals("Expected null to be passed through without error.", null,
+                    nodeRefPostMethodInvocationProcessor.process((NodeRef) null));
     }
 }

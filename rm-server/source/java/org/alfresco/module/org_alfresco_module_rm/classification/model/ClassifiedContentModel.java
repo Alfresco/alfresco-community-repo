@@ -45,6 +45,7 @@ public interface ClassifiedContentModel
     QName PROP_INITIAL_CLASSIFICATION = QName.createQName(CLF_URI, "initialClassification");
     QName PROP_CURRENT_CLASSIFICATION = QName.createQName(CLF_URI, "currentClassification");
     QName PROP_CLASSIFICATION_AGENCY  = QName.createQName(CLF_URI, "classificationAgency");
+    QName PROP_CLASSIFIED_BY = QName.createQName(CLF_URI, "classifiedBy");
     QName PROP_CLASSIFICATION_REASONS = QName.createQName(CLF_URI, "classificationReasons");
 
     /** Security Clearance aspect. */

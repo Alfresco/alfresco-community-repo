@@ -92,7 +92,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON1), record);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON1), record);
                 jsonString = converter.toJSON(record, true);
             }
 
@@ -131,7 +131,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), newHashSet(REASON1), record);
+                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), generate(), newHashSet(REASON1), record);
                 jsonString = converter.toJSON(record, true);
             }
 
@@ -206,7 +206,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON1), file);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON1), file);
                 jsonString = converter.toJSON(file, true);
             }
 
@@ -243,7 +243,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), newHashSet(REASON1), file);
+                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), generate(), newHashSet(REASON1), file);
                 jsonString = converter.toJSON(file, true);
             }
 

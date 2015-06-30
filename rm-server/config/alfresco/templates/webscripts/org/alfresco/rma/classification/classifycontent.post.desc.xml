@@ -6,6 +6,7 @@
   The body of the post should be in the form, e.g.<br/>
   {<br/>
     "classificationLevelId": "aLevelId",<br/>
+    "classifiedBy": "some person or entity",<br/>
     "classificationAgency": "anAgency",<br/>
     "classificationReasons": [<br/>
       {<br/>

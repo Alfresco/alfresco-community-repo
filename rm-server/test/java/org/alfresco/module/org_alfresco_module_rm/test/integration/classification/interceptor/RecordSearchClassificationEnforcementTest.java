@@ -76,7 +76,7 @@ public class RecordSearchClassificationEnforcementTest extends SearchClassificat
                 record1 = utils.createRecord(folder, searchQuery + generate());
                 record2 = utils.createRecord(folder, searchQuery + generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
             }
 
             /**
@@ -170,8 +170,8 @@ public class RecordSearchClassificationEnforcementTest extends SearchClassificat
                 record2 = utils.createRecord(folder, searchQuery + generate());
                 record3 = utils.createRecord(folder, searchQuery + generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
             }
 
             /**
@@ -265,8 +265,8 @@ public class RecordSearchClassificationEnforcementTest extends SearchClassificat
                 record2 = utils.createRecord(folder, searchQuery + generate());
                 record3 = utils.createRecord(folder, searchQuery + generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
             }
 
             /**

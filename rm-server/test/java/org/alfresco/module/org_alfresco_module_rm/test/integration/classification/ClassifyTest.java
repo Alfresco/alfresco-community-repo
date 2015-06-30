@@ -43,6 +43,7 @@ public class ClassifyTest extends BaseRMTestCase
     private static final String LOWER_CLASSIFICATION_LEVEL = "level2";
     private static final String CLASSIFICATION_REASON = "Test Reason 1";
     private static final String CLASSIFICATION_AGENCY = "classification agency";
+    private static final String CLASSIFIED_BY = "classified by text";
     private static final String RECORD_NAME = "recordname.txt";
 
     /**
@@ -69,6 +70,7 @@ public class ClassifyTest extends BaseRMTestCase
             {
                 contentClassificationService.classifyContent(
                         CLASSIFICATION_LEVEL,
+                        CLASSIFIED_BY,
                         CLASSIFICATION_AGENCY,
                         Collections.singleton(CLASSIFICATION_REASON),
                         record);
@@ -97,6 +99,7 @@ public class ClassifyTest extends BaseRMTestCase
             {
                 contentClassificationService.classifyContent(
                         CLASSIFICATION_LEVEL,
+                        CLASSIFIED_BY,
                         CLASSIFICATION_AGENCY,
                         Collections.singleton(CLASSIFICATION_REASON),
                         record);
@@ -106,10 +109,11 @@ public class ClassifyTest extends BaseRMTestCase
             public void then() throws Exception
             {
                 assertTrue(nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
-                assertEquals(CLASSIFICATION_LEVEL, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
+                assertEquals(CLASSIFICATION_LEVEL, (String) nodeService.getProperty(record, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
                 assertEquals(CLASSIFICATION_LEVEL, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
                 assertEquals(CLASSIFICATION_AGENCY, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_AGENCY));
-                assertEquals(Collections.singletonList(CLASSIFICATION_REASON), (List<String>)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
+                assertEquals(CLASSIFIED_BY, (String)nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFIED_BY));
+                assertEquals(Collections.singletonList(CLASSIFICATION_REASON), nodeService.getProperty(record, ClassifiedContentModel.PROP_CLASSIFICATION_REASONS));
             }
         });
     }
@@ -148,7 +152,7 @@ public class ClassifyTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFICATION_AGENCY,
+                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFIED_BY, CLASSIFICATION_AGENCY,
                                     Sets.newHashSet(CLASSIFICATION_REASON), record);
                         return null;
                     }
@@ -199,7 +203,7 @@ public class ClassifyTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFICATION_AGENCY,
+                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFIED_BY, CLASSIFICATION_AGENCY,
                                     Sets.newHashSet(CLASSIFICATION_REASON), record);
                         return null;
                     }

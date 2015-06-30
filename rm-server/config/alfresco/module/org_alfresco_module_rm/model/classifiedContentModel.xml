@@ -64,6 +64,14 @@
                <title>Classification Agency</title>
                <description>The classification agency</description>
                <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="clf:classifiedBy">
+                <!-- Note that this need not be a username. It can be any text. -->
+                <title>Classified By</title>
+                <description>Name of whoever has applied the classification</description>
+                <type>d:text</type>
+                <mandatory>true</mandatory>
             </property>
             <property name="clf:classificationReasons">
                <title>Classification Reasons</title>

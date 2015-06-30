@@ -145,6 +145,7 @@
          class="org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceServiceImpl"
          parent="baseService" init-method="init">
       <property name="personService" ref="PersonService"/>
+      <property name="authenticationUtil" ref="rm.authenticationUtil" />
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
    </bean>
 

@@ -18,7 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static java.util.Arrays.asList;
+import static org.alfresco.util.GUID.generate;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isA;
@@ -26,9 +30,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -43,25 +50,25 @@ import org.mockito.Mock;
  */
 public class CollectionPostMethodInvocationProcessorUnitTest
 {
-    private static final String NON_FILTERED = "NON_FILTERED";
-    private static final String FILTERED = "FILTERED";
-    private static final String CHANGED_INPUT = "CHANGED_INPUT";
-    private static final String CHANGED_OUTPUT = "CHANGED_OUTPUT";
+    private static final String REALLY_LONG_OUTPUT_STRING = generate() + generate();
+    private static final String NON_FILTERED = generate();
+    private static final String FILTERED = generate();
 
-    @InjectMocks CollectionPostMethodInvocationProcessor collectionPostMethodInvocationProcessor;
-    @Mock PostMethodInvocationProcessor mockPostMethodInvocationProcessor;
-    @Mock BasePostMethodInvocationProcessor mockStringProcessor;
+    @InjectMocks private CollectionPostMethodInvocationProcessor collectionPostMethodInvocationProcessor;
+    @Mock private PostMethodInvocationProcessor mockPostMethodInvocationProcessor;
+    @Mock private BasePostMethodInvocationProcessor mockStringProcessor;
 
     @Before
     public void setUp()
     {
         initMocks(this);
 
+        when(mockPostMethodInvocationProcessor.getProcessor(isA(List.class))).thenReturn(collectionPostMethodInvocationProcessor);
         when(mockPostMethodInvocationProcessor.getProcessor(isA(String.class))).thenReturn(mockStringProcessor);
 
+        when(mockStringProcessor.process(REALLY_LONG_OUTPUT_STRING)).thenReturn(REALLY_LONG_OUTPUT_STRING);
         when(mockStringProcessor.process(NON_FILTERED)).thenReturn(NON_FILTERED);
         when(mockStringProcessor.process(FILTERED)).thenReturn(null);
-        when(mockStringProcessor.process(CHANGED_INPUT)).thenReturn(CHANGED_OUTPUT);
     }
 
     @Test
@@ -84,9 +91,19 @@ public class CollectionPostMethodInvocationProcessorUnitTest
     }
 
     @Test
+    public void testProcess_emptyList()
+    {
+        List<String> collection = new ArrayList<>();
+
+        Collection<String> result = collectionPostMethodInvocationProcessor.process(collection);
+
+        assertEquals(collection, result);
+    }
+
+    @Test
     public void testProcess_nonFilteredMember()
     {
-        Object collection = Arrays.asList(NON_FILTERED);
+        Object collection = asList(NON_FILTERED);
 
         Object result = collectionPostMethodInvocationProcessor.process(collection);
 
@@ -96,42 +113,76 @@ public class CollectionPostMethodInvocationProcessorUnitTest
     @Test
     public void testProcess_filteredMemberInModifiableList()
     {
-        List<String> collection = new ArrayList<>(Arrays.asList(FILTERED));
+        List<String> collection = newArrayList(FILTERED);
 
         Collection<String> result = collectionPostMethodInvocationProcessor.process(collection);
 
         assertTrue("Expected an empty list.", result.isEmpty());
     }
 
-    @Test
+    @Test(expected = UnsupportedOperationException.class)
     public void testProcess_filteredMemberInUnmodifiableList()
     {
-        List<String> collection = Arrays.asList(FILTERED, NON_FILTERED);
+        List<String> collection = asList(FILTERED, NON_FILTERED);
 
-        Collection<String> result = collectionPostMethodInvocationProcessor.process(collection);
-
-        assertNull("Since the collection could not be modified the whole thing should be filtered.", result);
-    }
-
-    @Test
-    public void testProcess_modifiedMember()
-    {
-        List<String> collection = Arrays.asList(NON_FILTERED, CHANGED_INPUT);
-
-        Collection<String> result = collectionPostMethodInvocationProcessor.process(collection);
-
-        assertNull("Since the Collection interface does not support replacement, the whole collection should be filtered.",
-                    result);
+        collectionPostMethodInvocationProcessor.process(collection);
     }
 
     @Test
     public void testProcess_noProcessorDefined()
     {
-        List<Integer> collection = Arrays.asList(1, 4, 91);
+        List<Integer> collection = asList(1, 4, 91);
 
         Collection<Integer> result = collectionPostMethodInvocationProcessor.process(collection);
 
-        assertEquals("If no processor is defined for the members then the whole list should be returned.", collection,
-                    result);
+        assertEquals("If no processor is defined for the members then the whole list should be returned.", collection, result);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testProcess_listOfLists()
+    {
+        List<String> innerListA = newArrayList(FILTERED, NON_FILTERED);
+        List<String> innerListB = newArrayList(FILTERED, NON_FILTERED);
+        List<List<String>> collection = newArrayList(innerListA, innerListB);
+
+        Collection<List<String>> result = collectionPostMethodInvocationProcessor.process(collection);
+
+        List<String> expectedInnerListA = asList(NON_FILTERED);
+        List<String> expectedInnerListB = asList(NON_FILTERED);
+        List<List<String>> expected = asList(expectedInnerListA, expectedInnerListB);
+        assertEquals(expected, result);
+    }
+
+    /**
+     * Given I have a sorted set of input strings
+     * When I pass it to the collection processor
+     * Then I expect items above my clearance to be filtered
+     * And I expect items below my clearance to be passed through
+     * And I expect the output set to be sorted using the same comparator as the input.
+     */
+    @Test
+    public void testProcess_sortedSet()
+    {
+        // Create a custom comparator that sorts based on the length of the strings.
+        Comparator<String> comparator = new Comparator<String>()
+        {
+            public int compare(String o1, String o2)
+            {
+                return o1.length() - o2.length();
+            }
+        };
+
+        SortedSet<String> collection = new TreeSet<>(comparator);
+        collection.add(REALLY_LONG_OUTPUT_STRING);
+        collection.add(NON_FILTERED);
+        collection.add(FILTERED);
+
+        Collection<String> result = collectionPostMethodInvocationProcessor.process(collection);
+
+        Iterator<String> iterator = result.iterator();
+        assertEquals("Expected the first element to be the shortest", NON_FILTERED, iterator.next());
+        assertEquals("Expected the second element to be the longest", REALLY_LONG_OUTPUT_STRING, iterator.next());
+        assertFalse("Expected two elements in output", iterator.hasNext());
     }
 }

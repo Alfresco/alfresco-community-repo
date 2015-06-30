@@ -55,7 +55,7 @@ public class ResultSetPostMethodInvocationProcessor extends BasePostMethodInvoca
      */
     @SuppressWarnings({ "unchecked" })
     @Override
-    public <T> T process(T object)
+    protected <T> T process(T object)
     {
         T result = object;
 

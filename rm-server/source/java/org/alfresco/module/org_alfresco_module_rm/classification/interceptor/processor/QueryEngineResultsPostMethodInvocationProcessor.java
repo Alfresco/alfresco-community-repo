@@ -50,7 +50,7 @@ public class QueryEngineResultsPostMethodInvocationProcessor extends BasePostMet
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T process(T object)
+    protected <T> T process(T object)
     {
         T result = object;
 

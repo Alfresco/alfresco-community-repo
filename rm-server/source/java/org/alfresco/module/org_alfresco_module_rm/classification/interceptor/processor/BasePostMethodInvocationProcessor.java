@@ -98,50 +98,10 @@ public abstract class BasePostMethodInvocationProcessor
     }
 
     /**
-     * @param nodeService the nodeService to set
-     */
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    /**
-     * @param dictionaryService the dictionaryService to set
-     */
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
-    }
-
-    /**
-     * @param contentClassificationService the contentClassificationService to set
-     */
-    public void setContentClassificationService(ContentClassificationService contentClassificationService)
-    {
-        this.contentClassificationService = contentClassificationService;
-    }
-
-    /**
-     * @param securityClearanceService the securityClearanceService to set
-     */
-    public void setSecurityClearanceService(SecurityClearanceService securityClearanceService)
-    {
-        this.securityClearanceService = securityClearanceService;
-    }
-
-    /**
-     * @param postMethodInvocationProcessor the postMethodInvocationProcessor to set
-     */
-    public void setPostMethodInvocationProcessor(PostMethodInvocationProcessor postMethodInvocationProcessor)
-    {
-        this.postMethodInvocationProcessor = postMethodInvocationProcessor;
-    }
-
-    /**
      * Registers the post method invocation processors
      */
     @PostConstruct
-    public void register()
+    private void register()
     {
         getPostMethodInvocationProcessor().register(this);
     }

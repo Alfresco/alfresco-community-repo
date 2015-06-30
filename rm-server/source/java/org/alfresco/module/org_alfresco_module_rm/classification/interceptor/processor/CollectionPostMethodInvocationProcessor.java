@@ -35,8 +35,9 @@ public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvoc
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#getClassName()
      */
+    @SuppressWarnings("rawtypes")
     @Override
-    protected Class<?> getClassName()
+    protected Class<Collection> getClassName()
     {
         return Collection.class;
     }
@@ -46,79 +47,38 @@ public class CollectionPostMethodInvocationProcessor extends BasePostMethodInvoc
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public <T> T process(T object)
+    protected <T> T process(T object)
     {
-        Collection collection = ((Collection) object);
+        T result = object;
 
-        if (collection != null)
+        if (result != null)
         {
-            BasePostMethodInvocationProcessor processor = pickProcessor(collection);
-            if (processor != null)
-            {
-                object = (T) processCollection(collection, processor);
-            }
-        }
+            BasePostMethodInvocationProcessor processor = null;
+            Collection collection = getClassName().cast(object);
+            Iterator<T> iterator = collection.iterator();
 
-        return object;
-    }
-
-    /**
-     * Process a collection using the supplied processor.
-     *
-     * @param collection The collection to be processed.
-     * @param processor A collection suitable for access by someone with the current security clearance.
-     */
-    protected <T> Collection<T> processCollection(Collection<T> collection, BasePostMethodInvocationProcessor processor)
-    {
-        Iterator<T> iterator = collection.iterator();
-        while (iterator.hasNext())
-        {
-            Object next = iterator.next();
-            Object processed = processor.process(next);
-            try
+            while (iterator.hasNext())
             {
-                if (processed == null)
+                Object element = iterator.next();
+                if (processor == null)
+                {
+                    processor = getPostMethodInvocationProcessor().getProcessor(element);
+                    if (processor == null)
+                    {
+                        break;
+                    }
+                }
+
+                Object processedElement = processor.process(element);
+                if (processedElement == null)
                 {
                     iterator.remove();
                 }
-                else if (!processed.equals(next))
-                {
-                    // Modifying members of this type of collection is not supported, so filter the whole collection.
-                    return null;
-                }
             }
-            catch (UnsupportedOperationException e)
-            {
-                // If the collection cannot be modified and it contains classified data then the whole thing must be filtered.
-                return null;
-            }
-        }
-        return collection;
-    }
 
-    /**
-     * Pick a suitable processor for the members of the collection. We assume that all the elements of a collection can
-     * be processed by the same processor.
-     *
-     * @param collection The collection to be processed.
-     * @return The chosen processor, or {@code null} if no suitable processor could be found.
-     */
-    @SuppressWarnings("rawtypes")
-    private BasePostMethodInvocationProcessor pickProcessor(Collection collection)
-    {
-        Iterator iterator = collection.iterator();
-        while (iterator.hasNext())
-        {
-            Object next = iterator.next();
-            if (next != null)
-            {
-                BasePostMethodInvocationProcessor processor = getPostMethodInvocationProcessor().getProcessor(next);
-                if (processor != null)
-                {
-                    return processor;
-                }
-            }
+            result = (T) collection;
         }
-        return null;
+
+        return result;
     }
 }

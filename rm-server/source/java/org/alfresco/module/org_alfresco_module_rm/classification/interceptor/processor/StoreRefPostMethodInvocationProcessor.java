@@ -41,10 +41,10 @@ public class StoreRefPostMethodInvocationProcessor extends BasePostMethodInvocat
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AbstractPostMethodInvocationProcessor#processSingleElement(java.lang.Object)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.BasePostMethodInvocationProcessor#process(java.lang.Object)
      */
     @Override
-    public <T> T process(T object)
+    protected <T> T process(T object)
     {
         T result = object;
 

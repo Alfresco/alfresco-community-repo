@@ -18,18 +18,20 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
+import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+import static org.alfresco.util.GUID.generate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 
 /**
  * Array Post Method Invocation Processor Unit Test
@@ -37,40 +39,38 @@ import org.mockito.Mockito;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ArrayPostMethodInvocationProcessorUnitTest extends BaseUnitTest
+public class ArrayPostMethodInvocationProcessorUnitTest
 {
-    @InjectMocks ArrayPostMethodInvocationProcessor arrayPostMethodInvocationProcessor;
-    @Mock private ContentClassificationService mockedContentClassificationService;
+    private static final NodeRef NODE_REF_1 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, generate());
+    private static final NodeRef NODE_REF_2 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, generate());
+    private static final NodeRef NODE_REF_3 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, generate());
+    private static final NodeRef NODE_REF_4 = new NodeRef(STORE_REF_WORKSPACE_SPACESSTORE, generate());
+
+    @InjectMocks private ArrayPostMethodInvocationProcessor arrayPostMethodInvocationProcessor;
     @Mock private PostMethodInvocationProcessor mockedPostMethodInvocationProcessor;
+    @Mock private BasePostMethodInvocationProcessor mockedNodeRefProcessor;
+
+    @Before
+    public void setUp()
+    {
+        initMocks(this);
+
+        when(mockedPostMethodInvocationProcessor.getProcessor(isA(NodeRef.class))).thenReturn(mockedNodeRefProcessor);
+
+        when(mockedNodeRefProcessor.process(NODE_REF_1)).thenReturn(NODE_REF_1);
+        when(mockedNodeRefProcessor.process(NODE_REF_2)).thenReturn(null);
+        when(mockedNodeRefProcessor.process(NODE_REF_3)).thenReturn(NODE_REF_3);
+        when(mockedNodeRefProcessor.process(NODE_REF_4)).thenReturn(null);
+    }
 
     @Test
     public void testArrayPostMethodInvocationProcessor()
     {
-        NodeRefPostMethodInvocationProcessor processor = new NodeRefPostMethodInvocationProcessor();
-        processor.setNodeService(mockedNodeService);
-        processor.setDictionaryService(mockedDictionaryService);
-        processor.setContentClassificationService(mockedContentClassificationService);
-
-        NodeRef nodeRef1 = generateNodeRef();
-        NodeRef nodeRef2 = generateNodeRef();
-        NodeRef nodeRef3 = generateNodeRef();
-        NodeRef nodeRef4 = generateNodeRef();
-
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef1), TYPE_CONTENT)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef2), TYPE_CONTENT)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef3), TYPE_CONTENT)).thenReturn(true);
-        when(mockedDictionaryService.isSubClass(mockedNodeService.getType(nodeRef4), TYPE_CONTENT)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef1)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef2)).thenReturn(false);
-        when(mockedContentClassificationService.hasClearance(nodeRef3)).thenReturn(true);
-        when(mockedContentClassificationService.hasClearance(nodeRef4)).thenReturn(false);
-        when(mockedPostMethodInvocationProcessor.getProcessor(Mockito.any())).thenReturn(processor);
-
-        NodeRef[] nodes = new NodeRef[] { nodeRef1, nodeRef2, nodeRef3, nodeRef4 };
+        NodeRef[] nodes = new NodeRef[] { NODE_REF_1, NODE_REF_2, NODE_REF_3, NODE_REF_4 };
         NodeRef[] processedNodes = arrayPostMethodInvocationProcessor.process(nodes);
 
         assertEquals(2, processedNodes.length);
-        assertTrue(ArrayUtils.contains(processedNodes, nodeRef1));
-        assertTrue(ArrayUtils.contains(processedNodes, nodeRef3));
+        assertTrue(ArrayUtils.contains(processedNodes, NODE_REF_1));
+        assertTrue(ArrayUtils.contains(processedNodes, NODE_REF_3));
     }
 }

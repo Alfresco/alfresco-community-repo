@@ -96,9 +96,9 @@ public class SavedSearchClassificationEnforcementTest extends SearchClassificati
                 searchParameters.setIncludeUndeclaredRecords(true);
                 rmSearchService.saveSearch(siteId, savedSearchName, generate(), searchQuery + "*", searchParameters, true);
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record3);
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record5);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record3);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record5);
             }
 
             /**

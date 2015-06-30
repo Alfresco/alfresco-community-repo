@@ -83,7 +83,7 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
                 doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc1);
             }
 
             /**
@@ -174,8 +174,8 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
                 doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), doc2);
             }
 
             /**
@@ -266,8 +266,8 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
                 doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), doc2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), doc2);
             }
 
             /**

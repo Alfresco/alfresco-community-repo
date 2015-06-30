@@ -86,7 +86,7 @@ public class RM2260Test extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        contentClassificationService.classifyContent(LEVEL, generate(), newHashSet(REASON), record);
+                        contentClassificationService.classifyContent(LEVEL, generate(), generate(), newHashSet(REASON), record);
                         return null;
                     }
                 }, myUser);

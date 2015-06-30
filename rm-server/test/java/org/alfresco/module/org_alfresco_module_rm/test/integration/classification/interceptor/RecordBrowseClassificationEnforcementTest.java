@@ -74,7 +74,7 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
                 record1 = utils.createRecord(folder, generate());
                 record2 = utils.createRecord(folder, generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
             }
 
             /**
@@ -169,8 +169,8 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
                 record2 = utils.createRecord(folder, generate());
                 record3 = utils.createRecord(folder, generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
             }
 
             /**
@@ -267,8 +267,8 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
                 record2 = utils.createRecord(folder, generate());
                 record3 = utils.createRecord(folder, generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), newHashSet(REASON), record2);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
             }
 
             /**

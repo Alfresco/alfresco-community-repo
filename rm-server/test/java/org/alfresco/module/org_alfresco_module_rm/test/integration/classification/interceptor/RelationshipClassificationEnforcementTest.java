@@ -94,7 +94,7 @@ public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
             {
                 filePlanPermissionService.setPermission(category, myUser, FILING);
                 securityClearanceService.setUserSecurityClearance(myUser, LEVEL3);
-                contentClassificationService.classifyContent(LEVEL1, generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
                 relationshipService.addRelationship(CUSTOM_REF_RENDITION.getLocalName(), record1, record2);
             }
 

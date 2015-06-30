@@ -85,11 +85,11 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
     };
 
     @Override
-    public void classifyContent(String classificationLevelId, String classificationAgency,
-                Set<String> classificationReasonIds, final NodeRef content)
+    public void classifyContent(String classificationLevelId, String classifiedBy, String classificationAgency,
+                                Set<String> classificationReasonIds, final NodeRef content)
     {
         checkNotBlank("classificationLevelId", classificationLevelId);
-        checkNotBlank("classificationAgency", classificationAgency);
+        mandatory("classifiedBy", classifiedBy);
         mandatory("classificationReasonIds", classificationReasonIds);
         mandatory("content", content);
 
@@ -111,7 +111,7 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
             throw new LevelIdNotFound(classificationLevelId);
         }
 
-        final Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+        final Map<QName, Serializable> properties = new HashMap<>();
         // Initial classification id
         if (nodeService.getProperty(content, PROP_INITIAL_CLASSIFICATION) == null)
         {
@@ -123,6 +123,8 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
 
         // Classification agency
         properties.put(PROP_CLASSIFICATION_AGENCY, classificationAgency);
+
+        properties.put(PROP_CLASSIFIED_BY, classifiedBy);
 
         // Classification reason ids
         HashSet<String> classificationReasons = new HashSet<>();

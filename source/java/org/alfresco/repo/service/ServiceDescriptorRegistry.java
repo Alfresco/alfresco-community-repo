@@ -51,6 +51,7 @@ import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
+import org.alfresco.service.cmr.repository.DocumentLinkService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -463,5 +464,10 @@ public class ServiceDescriptorRegistry
     {
         final String beanName = "facet.facetLabelDisplayHandlerRegistry";
         return (FacetLabelDisplayHandlerRegistry) beanFactory.getBean(beanName);
+    }
+
+    @Override
+    public DocumentLinkService getDocumentLinkService() {
+        return (DocumentLinkService)getService(DOCUMENT_LINK_SERVICE);
     }
 }

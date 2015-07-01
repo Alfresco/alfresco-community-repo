@@ -54,6 +54,7 @@ import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
+import org.alfresco.service.cmr.repository.DocumentLinkService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -484,6 +485,12 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     public ModuleService getModuleService()
     {
         // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public DocumentLinkService getDocumentLinkService() {
+        // A mock response
         return null;
     }
 }

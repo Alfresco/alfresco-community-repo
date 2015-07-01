@@ -1166,4 +1166,31 @@
         </property>
     </bean>
 
+    <bean id="DocumentLinkService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.service.cmr.repository.DocumentLinkService</value>
+        </property>
+        <property name="target">
+            <ref bean="documentLinkService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="DocumentLinkService_transaction"/>
+                <idref local="exceptionTranslator" />
+                <idref bean="DocumentLinkService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="DocumentLinkService_transaction"
+        class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
 </beans>

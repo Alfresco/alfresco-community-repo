@@ -52,6 +52,7 @@ import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
+import org.alfresco.service.cmr.repository.DocumentLinkService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.ScriptService;
@@ -140,6 +141,7 @@ public interface ServiceRegistry
     static final QName BLOG_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "BlogService");
     static final QName CALENDAR_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CalendarService");
     static final QName NOTIFICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NotificationService");
+    static final QName DOCUMENT_LINK_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DocumentLinkService");
     
     // CMIS
     static final QName CMIS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISService");
@@ -518,4 +520,11 @@ public interface ServiceRegistry
      */
     @NotAuditable
     FacetLabelDisplayHandlerRegistry getFacetLabelDisplayHandlerRegistry();
+    
+    /**
+     *  Get the document link service
+     * @return the document link service
+     */
+    @NotAuditable
+    DocumentLinkService getDocumentLinkService();
 }

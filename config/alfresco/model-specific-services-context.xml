@@ -93,6 +93,13 @@
       <property name="hiddenAspect" ref="hiddenAspect"/>
    </bean>
 
+   <bean name="documentLinkService" class="org.alfresco.repo.doclink.DocumentLinkServiceImpl">
+   	   <property name="nodeService" ref="NodeService"/>
+   	   <property name="dictionaryService" ref="dictionaryService"/>
+   	   <property name="searchService" ref="admSearchService"/>
+   	   <property name="namespaceService" ref="namespaceService"/>
+   </bean>
+
    <bean id="mlTranslationInterceptor" class="org.alfresco.repo.model.filefolder.MLTranslationInterceptor" >
       <property name="nodeService">
          <ref bean="nodeService"/>

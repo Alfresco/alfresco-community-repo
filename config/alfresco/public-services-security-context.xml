@@ -1203,5 +1203,30 @@
         <property name="service" value="org.alfresco.repo.node.archive.NodeArchiveService" />
         <property name="methodName" value="listArchivedNodes" />
     </bean>
-    
+
+    <!-- ===================== -->
+    <!-- Document Link Service -->
+    <!-- ===================== -->
+
+    <bean id="DocumentLinkService_security"
+        class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager">
+            <ref bean="authenticationManager"/>
+        </property>
+        <property name="accessDecisionManager">
+            <ref local="accessDecisionManager"/>
+        </property>
+        <property name="afterInvocationManager">
+            <ref local="afterInvocationManager"/>
+        </property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.repository.DocumentLinkService.createDocumentLink=ACL_NODE.0.sys:base.Read,ACL_NODE.1.sys:base.CreateChildren
+                org.alfresco.service.cmr.repository.DocumentLinkService.getLinkDestination=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.repository.DocumentLinkService.deleteLinksToDocument=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.repository.DocumentLinkService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+
 </beans>

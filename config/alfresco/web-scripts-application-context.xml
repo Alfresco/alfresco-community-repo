@@ -1840,5 +1840,21 @@
          <ref bean="workflowInterpreter" />
       </property>
    </bean>
+
+   <bean id="webscript.org.alfresco.repository.doclink.doclink.post"
+          class="org.alfresco.repo.web.scripts.doclink.DocLinkPost"
+          parent="webscript">
+        <property name="nodeService" ref="NodeService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="documentLinkService" ref="DocumentLinkService" />
+   </bean>
+
+   <bean id="webscript.org.alfresco.repository.doclink.doclinks.delete"
+          class="org.alfresco.repo.web.scripts.doclink.DocLinksDelete"
+          parent="webscript">
+        <property name="nodeService" ref="NodeService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="documentLinkService" ref="DocumentLinkService" />
+   </bean>
    
 </beans>

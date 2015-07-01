@@ -1,0 +1,57 @@
+<webscript>
+  <shortname>Delete links of a document</shortname>
+  <description>Delete all links having as given destination</description>
+  <url>/api/node/doclink/{store_type}/{store_id}/{id}/delete</url>
+  <url>/api/site/doclink/{site}/{container}/{path}/delete</url>
+  <url>/api/site/doclink/{site}/{container}/delete</url>
+  <format default="json">argument</format>
+  <authentication>user</authentication>
+  <transaction>required</transaction>
+ <args>
+    <arg>
+      <shortname>store_type</shortname>
+      <description>Protocol for the destination store, e.g. workspace or versionstore.</description>
+    </arg>
+    <arg>
+      <shortname>store_id</shortname>
+      <description>The destination identifier, which may be specific to the protocol, e.g. spacesstore.</description>
+    </arg>
+    <arg>
+      <shortname>id</shortname>
+      <description>The identifier of the destination node.</description>
+    </arg>
+    <arg>
+      <shortname>site</shortname>
+      <description>The site ID of the destination.</description>
+    </arg>
+    <arg>
+      <shortname>container</shortname>
+      <description>The container folder for the site.</description>
+    </arg>
+    <arg>
+      <shortname>path</shortname>
+      <description>The path to the destination node in the site's container.</description>
+    </arg>
+  </args>
+   <requests>
+   </requests>
+  <responses>
+    <response>
+        <format>json</format>
+        <type>
+            <![CDATA[
+   <pre>
+   {
+      "total": "3",
+      "deleted": "1",
+      "error details": [
+          "workspace://SpacesStore/48afc4b7-d91a-4167-8b9e-db14961b8fed 04290001 Access Denied.  You do not have the appropriate permissions to perform this operation.",
+          "workspace://SpacesStore/10b18342-8e70-4dc0-ba73-4b0a6fdf5a9b 04290002 Access Denied.  You do not have the appropriate permissions to perform this operation."
+      ]
+   }
+   </pre>
+            ]]>
+        </type>
+    </response>
+  </responses>
+</webscript>

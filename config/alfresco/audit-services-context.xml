@@ -31,11 +31,11 @@
         <property name="auditModelRegistry" ref="Audit"/>
         <property name="propertyValueDAO" ref="propertyValueDAO"/>
         <property name="userAuditFilter" ref="userAuditFilter"/>
-	    <property name="auditFilter">
-		    <bean class="org.alfresco.repo.audit.PropertyAuditFilter">
-		        <property name="properties" ref="global-properties" />
-		    </bean>
-	    </property>
+        <property name="auditFilter">
+            <bean class="org.alfresco.repo.audit.PropertyAuditFilter">
+                <property name="properties" ref="global-properties" />
+            </bean>
+        </property>
     </bean>
     
     <!-- User Audit Filter -->

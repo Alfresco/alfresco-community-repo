@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -806,7 +806,20 @@ public class AuditComponentImpl implements AuditComponent
         Map<String, DataGenerator> generators = application.getDataGenerators(generatorKeys);
         Map<String, Serializable> auditData = generateData(generators);
 
-        // MNT-8401
+        // Now extract values
+        Map<String, Serializable> extractedData = AuthenticationUtil.runAs(new RunAsWork<Map<String, Serializable>>()
+        {
+            public Map<String, Serializable> doWork() throws Exception
+            {
+                return extractData(application, values);
+            }
+        }, AuthenticationUtil.getSystemUserName());
+
+        // Combine extracted and generated values (extracted data takes precedence)
+        auditData.putAll(extractedData);
+
+        // Filter data
+        // See MNT-14136, MNT-8401
         for (Map.Entry<String, Serializable> value : auditData.entrySet())
         {
             String root = value.getKey();
@@ -818,18 +831,6 @@ public class AuditComponentImpl implements AuditComponent
                 return Collections.emptyMap();
             }
         }
-
-        // Now extract values
-        Map<String, Serializable> extractedData = AuthenticationUtil.runAs(new RunAsWork<Map<String, Serializable>>()
-        {
-            public Map<String, Serializable> doWork() throws Exception
-            {
-                return extractData(application, values);
-            }
-        }, AuthenticationUtil.getSystemUserName());
-        
-        // Combine extracted and generated values (extracted data takes precedence)
-        auditData.putAll(extractedData);
 
         // Time and username are intrinsic
         long time = System.currentTimeMillis();

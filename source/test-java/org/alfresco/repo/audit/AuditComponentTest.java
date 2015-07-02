@@ -20,13 +20,7 @@ package org.alfresco.repo.audit;
 
 import java.io.Serializable;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import junit.framework.TestCase;
 
@@ -95,7 +89,7 @@ public class AuditComponentTest extends TestCase
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private AuditModelRegistryImpl auditModelRegistry;
-    private AuditComponent auditComponent;
+    private AuditComponentImpl auditComponent;
     private AuditService auditService;
     private ServiceRegistry serviceRegistry;
     private TransactionService transactionService;
@@ -114,7 +108,7 @@ public class AuditComponentTest extends TestCase
         UserAuditFilter userAuditFilter = new UserAuditFilter();
         userAuditFilter.setUserFilterPattern("~System;~null;.*");
         userAuditFilter.afterPropertiesSet();
-        auditComponent = (AuditComponent) ctx.getBean("auditComponent");
+        auditComponent = (AuditComponentImpl) ctx.getBean("auditComponent");
         auditComponent.setUserAuditFilter(userAuditFilter);
         serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
         auditService = serviceRegistry.getAuditService();
@@ -815,6 +809,9 @@ public class AuditComponentTest extends TestCase
         assertTrue("There should be exactly one audit entry for the API test", success);
     }
 
+    /**
+     * Test for MNT-10070 and MNT-14136
+     */
     public void testApplication() throws Exception
     {
         // Register the test model
@@ -849,10 +846,24 @@ public class AuditComponentTest extends TestCase
         // auditComponent
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
 
-        UserAuditFilter userAuditFilter = new UserAuditFilter();
-        userAuditFilter.setUserFilterPattern("~System;~null;.*");
-        userAuditFilter.afterPropertiesSet();
-        auditComponent.setUserAuditFilter(userAuditFilter);
+        PropertyAuditFilter filter = new PropertyAuditFilter();
+        Properties properties = new Properties();
+        properties.put("audit.enabled", "true");
+
+        properties.put("audit.app1.enabled", "true");
+        properties.put("audit.filter.app1.default.enabled", "true");
+        properties.put("audit.filter.app1.default.user", "~System;~null;.*");
+
+        properties.put("audit.app2.enabled", "true");
+        properties.put("audit.filter.app2.default.enabled", "true");
+        properties.put("audit.filter.app2.default.user", "~System;~null;~admin;.*");
+
+        properties.put("audit.app3.enabled", "true");
+        properties.put("audit.filter.app3.default.enabled", "true");
+        properties.put("audit.filter.app3.default.user", "~System;~null;.*");
+
+        filter.setProperties(properties);
+        auditComponent.setAuditFilter(filter);
 
         Map<String, Serializable> auditMap = new HashMap<String, Serializable>();
         auditMap.put("/transaction/user", AuthenticationUtil.getFullyAuthenticatedUser());
@@ -864,7 +875,7 @@ public class AuditComponentTest extends TestCase
         assertFalse("Audit values is empty.", recordedAuditMap.isEmpty());
 
         Map<String, Serializable> expected = new HashMap<String, Serializable>();
-        expected.put("/" + APPLICATION_TWO + "/transaction/user", AuthenticationUtil.getFullyAuthenticatedUser());
+        // There should not be app2
         expected.put("/" + APPLICATION_ONE + "/transaction/action", "CREATE");
         expected.put("/" + APPLICATION_THREE + "/transaction/type", "cm:content");
 

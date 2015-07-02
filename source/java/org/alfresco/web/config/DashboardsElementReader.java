@@ -115,7 +115,7 @@ public class DashboardsElementReader implements ConfigElementReader
    /**
     * Parse a single Layout definition from config.
     * 
-    * @param config
+    * @param config Element
     * 
     * @return LayoutDefinition for the specified config element.
     */
@@ -154,8 +154,8 @@ public class DashboardsElementReader implements ConfigElementReader
    /**
     * Return a mandatory layout attribute layout. Throw an exception if the value is not found.
     * 
-    * @param config
-    * @param attr
+    * @param config Element
+    * @param attr String
     * 
     * @return String value
     */
@@ -172,7 +172,7 @@ public class DashboardsElementReader implements ConfigElementReader
    /**
     * Parse a single Dashlet definition from config.
     * 
-    * @param config
+    * @param config Element
     * 
     * @return DashletDefinition for the specified config element.
     */
@@ -212,8 +212,8 @@ public class DashboardsElementReader implements ConfigElementReader
    /**
     * Return a mandatory dashlet attribute layout. Throw an exception if the value is not found.
     * 
-    * @param config
-    * @param attr
+    * @param config Element
+    * @param attr String
     * 
     * @return String value
     */

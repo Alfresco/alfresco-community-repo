@@ -64,7 +64,7 @@ public class ConfigAdminConsoleBean
     /**
      * Sets the command result
      *
-     * @param result
+     * @param result String
      */
     public void setResult(String result)
     {

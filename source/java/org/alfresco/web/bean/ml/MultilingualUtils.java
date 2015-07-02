@@ -46,9 +46,9 @@ public class MultilingualUtils implements Serializable
      * Returns true if the current user has enough right to add a content to the space
      * where the pivot translation is located in.
      *
-     * @param multlingualDocument
-     * @param fc
-     * @return
+     * @param multlingualDocument Node
+     * @param fc FacesContext
+     * @return boolean
      */
     public static boolean canAddChildrenToPivotSpace(Node multlingualDocument, FacesContext fc)
     {
@@ -66,9 +66,9 @@ public class MultilingualUtils implements Serializable
     /**
      * Returns true if the current user can delete each translation of the mlContainer of the given node
      *
-     * @param multlingualDocument
-     * @param fc
-     * @return
+     * @param multlingualDocument Node
+     * @param fc FacesContext
+     * @return boolean
      */
     public static boolean canDeleteEachTranslation(Node multlingualDocument, FacesContext fc)
     {
@@ -97,9 +97,9 @@ public class MultilingualUtils implements Serializable
     /**
      * Returns true if the current user can move each translation of the mlContainer of the given node
      *
-     * @param multlingualDocument
-     * @param fc
-     * @return
+     * @param multlingualDocument Node
+     * @param fc FacesContext
+     * @return boolean
      */
     public static boolean canMoveEachTranslation(Node multlingualDocument, FacesContext fc)
     {
@@ -126,9 +126,9 @@ public class MultilingualUtils implements Serializable
      * Returns true if the current user can delete each translation and create
  *   * a new content in the space
      *
-     * @param multlingualDocument
-     * @param fc
-     * @return
+     * @param multlingualDocument Node
+     * @param fc FacesContext
+     * @return boolean
      */
     public static boolean canStartNewEditon(Node multlingualDocument, FacesContext fc)
     {

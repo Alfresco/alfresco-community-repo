@@ -60,8 +60,8 @@ public class WebClientPortletAuthenticatorFactory implements PortletAuthenticato
         /**
          * Construct
          * 
-         * @param req
-         * @param res
+         * @param req RenderRequest
+         * @param res RenderResponse
          */
         public WebClientPortletAuthenticator(RenderRequest req, RenderResponse res)
         {

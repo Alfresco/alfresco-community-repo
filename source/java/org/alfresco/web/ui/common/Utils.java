@@ -981,7 +981,7 @@ public final class Utils extends StringUtils
    
    /**
     * Parse XML format date YYYY-MM-DDTHH:MM:SS
-    * @param isoDate
+    * @param isoDate String
     * @return Date or null if failed to parse
     */
    public static Date parseXMLDateFormat(String isoDate)
@@ -1184,7 +1184,7 @@ public final class Utils extends StringUtils
     * <p/>
     * "C-3PO" becomes null.
     * 
-    * @param nameFilter
+    * @param nameFilter String
     * @return A Pair<firstName, lastName> if the String is valid, else <tt>null</tt>.
     */
    private static Pair<String, String> tokeniseName(String nameFilter)

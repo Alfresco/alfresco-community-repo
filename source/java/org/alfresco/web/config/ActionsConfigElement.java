@@ -55,7 +55,7 @@ public class ActionsConfigElement extends ConfigElementAdapter
    }
    
    /**
-    * @param name
+    * @param name String
     */
    public ActionsConfigElement(String name)
    {

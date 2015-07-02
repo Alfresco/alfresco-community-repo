@@ -464,7 +464,7 @@ public class UISelectList extends UIInput implements NamingContainer
     * Set the transient current row index. Setting this value causes all child components to
     * have their ID values reset - so that cached clientID values are regenerated when next requested.
     * 
-    * @param rowIndex
+    * @param rowIndex int
     */
    public void setRowIndex(int rowIndex)
    {

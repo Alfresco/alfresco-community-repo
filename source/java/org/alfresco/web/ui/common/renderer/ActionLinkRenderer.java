@@ -113,8 +113,9 @@ public class ActionLinkRenderer extends BaseRenderer
    /**
     * Render ActionLink as plain link and image
     * 
-    * @param context
-    * @param link
+    * @param context FacesContext
+    * @param out Writer
+    * @param link UIActionLink
     */
    private void renderActionLink(FacesContext context, Writer out, UIActionLink link)
       throws IOException
@@ -176,8 +177,9 @@ public class ActionLinkRenderer extends BaseRenderer
    /**
     * Render ActionLink as plain link and image
     * 
-    * @param context
-    * @param link
+    * @param context FacesContext
+    * @param out Writer
+    * @param link UIActionLink
     */
    private void renderActionLinkAnchor(final FacesContext context, 
                                        final Writer out, 
@@ -272,9 +274,9 @@ public class ActionLinkRenderer extends BaseRenderer
    }
 
    /**
-    * @param link
-    * @param out
-    * @param href
+    * @param link UIActionLink
+    * @param out Writer
+    * @param href String
     */
    private void renderHrefParams(UIActionLink link, Writer out, String href)
       throws IOException
@@ -312,9 +314,11 @@ public class ActionLinkRenderer extends BaseRenderer
    
    /**
     * Render ActionLink as menu image and item link
-    * 
-    * @param context
-    * @param link
+    *
+    * @param context FacesContext
+    * @param out Writer
+    * @param link UIActionLink
+    * @param padding int
     */
    private void renderMenuAction(FacesContext context, Writer out, UIActionLink link, int padding)
       throws IOException

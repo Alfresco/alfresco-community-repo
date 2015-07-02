@@ -44,7 +44,6 @@ public class ReportedException extends RuntimeException
      * the transaction to rollback.
      * 
      * @param error The error to be thrown
-    * @throws Throwable 
      */
     public static void throwIfNecessary(Throwable error)
     {

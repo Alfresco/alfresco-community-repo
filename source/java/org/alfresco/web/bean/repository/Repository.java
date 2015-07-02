@@ -234,7 +234,7 @@ public final class Repository
    /** 
     * Helper to get the display name path for a category node. 
     * 
-    * @param nodeService 
+    * @param nodeService NodeService
     * @param ref the category node ref
     * @return display name string for the specified category node.
     */ 

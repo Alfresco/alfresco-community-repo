@@ -148,7 +148,7 @@ public class EditNodeCategoriesDialog extends BaseDialogBean
    /**
     * Sets the categories Map
     *
-    * @param categories
+    * @param categories List
     */
    public void setCategories(List categories)
    {

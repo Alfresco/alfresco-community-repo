@@ -592,7 +592,7 @@ public class GroupsDialog extends BaseDialogBean
    /**
      * Simple setter
      * 
-     * @param groupsSearchCriteria
+     * @param groupsSearchCriteria String
      */
     public void setGroupsSearchCriteria(String groupsSearchCriteria)
     {

@@ -168,7 +168,7 @@ public class RulesDialog extends BaseDialogBean implements IContextListener, Fil
    
    /**
     * Reapply the currently defines rules to the
-    * @param event
+    * @param event ActionEvent
     */
    public void reapplyRules(ActionEvent event)
    {

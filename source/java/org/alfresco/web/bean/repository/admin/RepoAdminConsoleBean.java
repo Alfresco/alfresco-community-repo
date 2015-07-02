@@ -83,7 +83,7 @@ public class RepoAdminConsoleBean implements Serializable
     /**
      * Sets the command result
      *
-     * @param result
+     * @param result String
      */
     public void setResult(String result)
     {

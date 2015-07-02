@@ -211,7 +211,7 @@ public class EditOfflineDialog extends CheckinCheckoutDialog
    }
 
    /**
-    * @param continueCountdown
+    * @param continueCountdown boolean
     */
    public void setContinueCountdown(boolean continueCountdown)
    {

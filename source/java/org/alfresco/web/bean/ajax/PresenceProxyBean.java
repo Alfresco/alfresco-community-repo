@@ -69,8 +69,6 @@ public class PresenceProxyBean implements Serializable
 
    /**
     * Perform request
-    *  
-    * @throws IOException
     */
    public String getUrlResponse(String requestUrl)
    {

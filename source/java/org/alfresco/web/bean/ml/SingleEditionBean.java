@@ -40,7 +40,7 @@ public class SingleEditionBean implements Serializable
     private List<MapNode> translations = null;
 
     /**
-     * @return
+     * @return String
      */
     public String getEditionLabel()
     {

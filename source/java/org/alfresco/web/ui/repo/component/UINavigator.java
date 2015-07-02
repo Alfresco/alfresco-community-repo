@@ -405,7 +405,7 @@ public class UINavigator extends SelfRenderingComponent
    /**
     * Sets the active area for the navigator panel
     * 
-    * @param activeArea
+    * @param activeArea String
     */
    public void setActiveArea(String activeArea)
    {

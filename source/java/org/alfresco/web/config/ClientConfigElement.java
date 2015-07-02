@@ -520,7 +520,7 @@ public class ClientConfigElement extends ConfigElementAdapter
     * Set if the the result set from a search will be of limited size.
     * If negative it is unlimited, by convention, this is set to -1.
     * 
-    * @param searchMaxResults
+    * @param searchMaxResults int
     */
    /*package*/ void setSearchMaxResults(int searchMaxResults)
    {
@@ -543,7 +543,7 @@ public class ClientConfigElement extends ConfigElementAdapter
     * will be of limited size. If negative it is unlimited, by default, 
     * this is set to 500.
     * 
-    * @param selectorsSearchMaxResults
+    * @param selectorsSearchMaxResults int
     */
    /*package*/ void setSelectorsSearchMaxResults(int selectorsSearchMaxResults)
    {
@@ -566,7 +566,7 @@ public class ClientConfigElement extends ConfigElementAdapter
     * will be of limited size. If negative it is unlimited, by default, 
     * this is set to 500.
     * 
-    * @param inviteUsersMaxResults
+    * @param inviteUsersMaxResults int
     */
    /*package*/ void setInviteUsersMaxResults(int inviteUsersMaxResults)
    {
@@ -588,7 +588,7 @@ public class ClientConfigElement extends ConfigElementAdapter
     * Set if the the number of completed tasks displayed shall be limited.
     * If negative it is unlimited, by default, this is set to 100.
     *
-    * @param tasksCompletedMaxResults
+    * @param tasksCompletedMaxResults int
     */
    /*package*/ void setTasksCompletedMaxResults(int tasksCompletedMaxResults)
    {
@@ -638,7 +638,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    /**
     * Sets whether AJAX support is enabled in the client
     * 
-    * @param ajaxEnabled
+    * @param ajaxEnabled boolean
     */
    /*package*/ void setNodeSummaryEnabled(boolean ajaxEnabled)
    {
@@ -917,7 +917,7 @@ public class ClientConfigElement extends ConfigElementAdapter
    }
 
    /**
-    * @param isBulkFetchEnabled 
+    * @param isBulkFetchEnabled boolean
     */
    /*package*/ void setBulkFetchEnabled(boolean isBulkFetchEnabled)
    {

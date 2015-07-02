@@ -313,7 +313,7 @@ public class UIRichList extends UIComponentBase implements IDataContainer,Serial
    /**
     * Sets the current page size used for the list.
     * 
-    * @param val
+    * @param val int
     */
    public void setPageSize(int val)
    {

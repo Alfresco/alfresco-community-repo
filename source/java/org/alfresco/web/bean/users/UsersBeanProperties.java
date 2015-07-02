@@ -210,7 +210,7 @@ public class UsersBeanProperties implements Serializable
    }
    
    /**
-    * @param userRegistrySynchronizer
+    * @param userRegistrySynchronizer UserRegistrySynchronizer
     */
    public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
    {

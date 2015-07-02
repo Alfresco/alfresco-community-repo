@@ -169,7 +169,7 @@ public class UsersDialog extends BaseDialogBean implements IContextListener, Cha
     * Called in preparation for actions that need to setup a Person context on
     * the Users bean before an action page is called. 
     * 
-    * @param personId
+    * @param personId String
     */
    public void setupUserAction(String personId)
    {

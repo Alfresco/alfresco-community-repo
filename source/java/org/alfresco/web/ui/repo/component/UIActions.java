@@ -281,8 +281,11 @@ public class UIActions extends SelfRenderingComponent
    /**
     * Build an action group as reusable UIActionLink components.
     * 
-    * @param context
-    * @param actionGroup
+    * @param context FacesContext
+    * @param config ActionsConfigElement
+    * @param actionGroup ActionGroup
+    * @param contextId String
+    * @throws IOException
     */
    @SuppressWarnings("unchecked")
    private void buildActionGroup(

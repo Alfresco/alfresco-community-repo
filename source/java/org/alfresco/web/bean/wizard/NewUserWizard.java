@@ -919,9 +919,9 @@ public class NewUserWizard extends AbstractWizardBean
    /**
     * Validate Email field data is acceptable
     * 
-    * @param context
-    * @param component
-    * @param value
+    * @param context FacesContext
+    * @param component UIComponent
+    * @param value Object
     * @throws ValidatorException
     */
    public void validateEmail(FacesContext context, UIComponent component, Object value) throws ValidatorException
